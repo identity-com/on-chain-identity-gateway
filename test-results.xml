@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="0.0110" tests="4" failures="0">
+  <testsuite name="Root Suite" timestamp="2021-04-23T14:59:22" tests="0" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="findGatewayToken" timestamp="2021-04-23T14:59:22" tests="0" file="/home/kevin/code/ociv-gatekeeper-client/test/unit/findGatewayToken.test.ts" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="with no token accounts found" timestamp="2021-04-23T14:59:22" tests="2" file="/home/kevin/code/ociv-gatekeeper-client/test/unit/findGatewayToken.test.ts" time="0.0040" failures="0">
+    <testcase name="findGatewayToken with no token accounts found should return null with no value" time="0.0030" classname="should return null with no value">
+    </testcase>
+    <testcase name="findGatewayToken with no token accounts found should return null with an empty array" time="0.0010" classname="should return null with an empty array">
+    </testcase>
+  </testsuite>
+  <testsuite name="with token accounts found" timestamp="2021-04-23T14:59:22" tests="0" file="/home/kevin/code/ociv-gatekeeper-client/test/unit/findGatewayToken.test.ts" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="with a frozen account" timestamp="2021-04-23T14:59:22" tests="1" file="/home/kevin/code/ociv-gatekeeper-client/test/unit/findGatewayToken.test.ts" time="0.0010" failures="0">
+    <testcase name="findGatewayToken with token accounts found with a frozen account should return null" time="0.0010" classname="should return null">
+    </testcase>
+  </testsuite>
+  <testsuite name="with a valid account" timestamp="2021-04-23T14:59:22" tests="1" file="/home/kevin/code/ociv-gatekeeper-client/test/unit/findGatewayToken.test.ts" time="0.0060" failures="0">
+    <testcase name="findGatewayToken with token accounts found with a valid account should return the public key" time="0.0060" classname="should return the public key">
+    </testcase>
+  </testsuite>
+</testsuites>
