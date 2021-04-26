@@ -24,15 +24,14 @@ export type GatekeeperRecord = {
 
 
 
-const handleFetchError = (response: AxiosResponse): AxiosResponse => {
+const throwIfErrorResponse = (response: AxiosResponse): void => {
   if (response.status > 299) {
-    console.error('handleFetchError', response);
+    console.error('throwIfErrorResponse', response);
     const errorJson = response.data;
     const errorMessage = errorJson.message || response.statusText;
-    console.log('handleFetchError', { errorJson, errorMessage });
+    console.log('throwIfErrorResponse', { errorJson, errorMessage });
     throw new Error(errorMessage);
   }
-  return response;
 };
 
 export type GatekeeperClientConfig = {
@@ -40,7 +39,7 @@ export type GatekeeperClientConfig = {
 }
 
 export interface GatekeeperClientInterface {
-  createGatewayToken(walletPublicKey: PublicKey, scopeRequestId?: string):Promise<GatekeeperRecord>;
+  createGatewayToken(walletPublicKey: PublicKey, presentationRequestId?: string):Promise<GatekeeperRecord>;
   auditGatewayToken(token: string): Promise<GatekeeperRecord | null>
 }
 export type CreateTokenRequest = {
@@ -54,13 +53,13 @@ export type GatekeeperRequest = CreateTokenRequest | AirdropRequest;
 export type GatekeeperResponse = GatekeeperRecord | null | {};
 const postGatekeeperServer = async <T extends GatekeeperRequest,  U extends GatekeeperResponse>(baseUrl: string, body: T, path: string = ''): Promise<U> => {
   const postResponse = await axios.post(`${baseUrl}${path}`, body);
-  await handleFetchError(postResponse);
+  await throwIfErrorResponse(postResponse);
   return postResponse.data;
 }
 export class GatekeeperClient implements GatekeeperClientInterface {
   config: GatekeeperClientConfig;
   constructor(config: GatekeeperClientConfig) {
-    if (!config || !config?.baseUrl) {
+    if (!config) {
       throw new Error('No valid config provided');
     }
     this.config = config;
@@ -76,25 +75,22 @@ export class GatekeeperClient implements GatekeeperClientInterface {
    * If called and a gateway token already exists for this wallet, it will throw an exception
    *
    * @param {PublicKey} walletPublicKey
-   * @param {string} [scopeRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
+   * @param {string} [presentationRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
    */
-  async createGatewayToken(walletPublicKey: PublicKey, scopeRequestId?: string):Promise<GatekeeperRecord> {
-
+  async createGatewayToken(walletPublicKey: PublicKey, presentationRequestId?: string):Promise<GatekeeperRecord> {
     console.log('Creating a new gatekeeper token')
-
-    const body = scopeRequestId ? { scopeRequest : scopeRequestId } : { address: walletPublicKey.toBase58() };
+    const body = presentationRequestId ? { scopeRequest : presentationRequestId } : { address: walletPublicKey.toBase58() };
     return postGatekeeperServer<CreateTokenRequest, GatekeeperRecord>(this.baseUrl, body);
   }
 
   async auditGatewayToken(token: string): Promise<GatekeeperRecord | null> {
     const getResponse = await axios.get(`${this.baseUrl}/${token}`);
-    await handleFetchError(getResponse);
+    await throwIfErrorResponse(getResponse);
     return getResponse.data;
   }
 
   async requestAirdrop(walletPublicKey: PublicKey): Promise<void> {
     console.log(`Requesting airdrop to key ${walletPublicKey.toBase58()}`);
-
     await postGatekeeperServer<AirdropRequest, null>(this.baseUrl, {publicKey: walletPublicKey.toBase58()}, '/airdrop');
   }
 }

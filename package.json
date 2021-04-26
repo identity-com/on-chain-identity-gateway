@@ -12,9 +12,8 @@
     "clean": "rimraf -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "prepublishOnly": "yarn run build",
-    "test:unit": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=lcov ts-mocha --timeout 20000 --paths --exit -R mocha-circleci-reporter 'test/unit/**/*.ts'",
-    "test": "yarn test:unit && yarn coverage",
-    "coverage": "FORCE_COLOR=1 nyc report --reporter=text && nyc check-coverage"
+    "test:unit": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --timeout 20000 --paths --exit -R mocha-circleci-reporter 'test/unit/**/*.ts'",
+    "test": "yarn test:unit"
   },
   "dependencies": {
     "@solana/web3.js": "^1.5.0",
@@ -25,8 +24,10 @@
     "typescript": "^4.2.4"
   },
   "devDependencies": {
+    "@types/chai-as-promised": "^7.1.3",
     "@types/expect": "^24.3.0",
     "@types/mocha": "^8.2.2",
+    "@types/sinon-chai": "^3.2.5",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "mocha": "^8.3.2",

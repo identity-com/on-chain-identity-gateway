@@ -23,7 +23,7 @@ export declare type GatekeeperClientConfig = {
     baseUrl: string;
 };
 export interface GatekeeperClientInterface {
-    createGatewayToken(walletPublicKey: PublicKey, scopeRequestId?: string): Promise<GatekeeperRecord>;
+    createGatewayToken(walletPublicKey: PublicKey, presentationRequestId?: string): Promise<GatekeeperRecord>;
     auditGatewayToken(token: string): Promise<GatekeeperRecord | null>;
 }
 export declare type CreateTokenRequest = {
@@ -44,9 +44,9 @@ export declare class GatekeeperClient implements GatekeeperClientInterface {
      * If called and a gateway token already exists for this wallet, it will throw an exception
      *
      * @param {PublicKey} walletPublicKey
-     * @param {string} [scopeRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
+     * @param {string} [presentationRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
      */
-    createGatewayToken(walletPublicKey: PublicKey, scopeRequestId?: string): Promise<GatekeeperRecord>;
+    createGatewayToken(walletPublicKey: PublicKey, presentationRequestId?: string): Promise<GatekeeperRecord>;
     auditGatewayToken(token: string): Promise<GatekeeperRecord | null>;
     requestAirdrop(walletPublicKey: PublicKey): Promise<void>;
 }

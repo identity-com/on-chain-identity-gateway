@@ -12,6 +12,7 @@ describe('findGatewayToken', () => {
   let gatekeeperKey: PublicKey;
   let testAccount: Account;
   let getParsedTokenAccountsByOwnerStub: SinonStub;
+  afterEach(sandbox.restore);
   beforeEach(() => {
     connection = new Connection(clusterApiUrl('devnet'));
     owner = new Account().publicKey;
