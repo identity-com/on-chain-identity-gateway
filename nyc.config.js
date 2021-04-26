@@ -8,6 +8,6 @@ module.exports = {
   functions: 100,
   statements: 100,
   branches: 84,
-  include: ["src/**"],
+  include: ['src/**'],
   reportDir: `${__dirname}/coverage`,
 };

@@ -1,10 +1,10 @@
-import { GatekeeperClient, GatekeeperClientConfig, GatekeeperRecord } from "../../src";
+import { GatekeeperClient, GatekeeperClientConfig, GatekeeperRecord } from '../../src';
 import chai from 'chai';
-import { Account, PublicKey } from "@solana/web3.js";
-import sinon from "sinon";
+import { Account, PublicKey } from '@solana/web3.js';
+import sinon from 'sinon';
 import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
-import axios from "axios";
+import axios from 'axios';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -16,7 +16,7 @@ describe('GatekeeperClient', () => {
   afterEach(sandbox.restore);
   context('constructor', () => {
     it('should throw an error if no config is provided', () => {
-      expect(() => new GatekeeperClient({} as GatekeeperClientConfig)).to.throw('No valid config provided');
+      return expect(() => new GatekeeperClient(null as GatekeeperClientConfig)).throws('No valid config provided');
     });
 
     it('should add config as an instance variable', () => {
@@ -43,14 +43,14 @@ describe('GatekeeperClient', () => {
       walletPublicKey = new Account().publicKey;
       baseUrl = 'test_baseUrl';
       gatekeeperClientInst = new GatekeeperClient({ baseUrl });
-    })
+    });
 
     context('with only the walletPublicKey passed', () => {
       it('should call post with an address param', async () => {
         const expectation = sandbox.mock(axios)
           .expects('post')
           .withArgs(`${baseUrl}`, { address: walletPublicKey.toBase58() });
-        
+
         expectation.resolves({ status: 200 });
         await gatekeeperClientInst.createGatewayToken(walletPublicKey);
         expectation.verify();
@@ -66,12 +66,11 @@ describe('GatekeeperClient', () => {
     });
 
     context('with a presentationRequestId passed', () => {
-      
       it('should call post with a scopeRequest param', async () => {
         const expectation = sandbox.mock(axios)
           .expects('post')
           .withArgs(`${baseUrl}`, { scopeRequest: presentationRequestId });
-        
+
         expectation.resolves({ status: 200 });
         await gatekeeperClientInst.createGatewayToken(walletPublicKey, presentationRequestId);
         expectation.verify();
@@ -107,29 +106,28 @@ describe('GatekeeperClient', () => {
       });
     });
   });
-  
+
   context('auditGatewayToken', () => {
     let gatekeeperClientInst:GatekeeperClient;
     let baseUrl: string;
-    let walletPublicKey: PublicKey;
-    const gatekeeperRecord: GatekeeperRecord = {
-      approved: true,
-      country: 'IE',
-      ipAddress: '123',
-      name: 'test',
-      timestamp: new Date().toISOString(),
-      token: 'test_token',
-    }
+    let gatekeeperRecord: GatekeeperRecord;
     beforeEach(() => {
-      walletPublicKey = new Account().publicKey;
+      gatekeeperRecord = {
+        approved: true,
+        country: 'IE',
+        ipAddress: '123',
+        name: 'test',
+        timestamp: new Date().toISOString(),
+        token: 'test_token',
+      };
       baseUrl = 'test_baseUrl';
       gatekeeperClientInst = new GatekeeperClient({ baseUrl });
-    })
+    });
 
     it('should do a server lookup using the token in the path', async () => {
       const token = 'test_token';
       const expectation = sandbox.mock(axios).expects('get').withArgs(`${baseUrl}/${token}`);
-      
+
       expectation.resolves({ status: 200 });
       await gatekeeperClientInst.auditGatewayToken(token);
       expectation.verify();
@@ -174,11 +172,11 @@ describe('GatekeeperClient', () => {
       walletPublicKey = new Account().publicKey;
       baseUrl = 'test_baseUrl';
       gatekeeperClientInst = new GatekeeperClient({ baseUrl });
-    })
+    });
 
     it('should make a server POST request using the wallet public key', async () => {
-      const expectation = sandbox.mock(axios).expects('post').withArgs(`${baseUrl}/airdrop`, {publicKey: walletPublicKey.toBase58()});
-      
+      const expectation = sandbox.mock(axios).expects('post').withArgs(`${baseUrl}/airdrop`, { publicKey: walletPublicKey.toBase58() });
+
       expectation.resolves({ status: 200 });
       await gatekeeperClientInst.requestAirdrop(walletPublicKey);
       expectation.verify();
@@ -186,10 +184,10 @@ describe('GatekeeperClient', () => {
 
     it('should return undefined', async () => {
       const serverResponse = { status: 200 };
-      sandbox.stub(axios, 'post').withArgs(`${baseUrl}/airdrop`, {publicKey: walletPublicKey.toBase58()}).resolves(serverResponse);
-      
+      sandbox.stub(axios, 'post').withArgs(`${baseUrl}/airdrop`, { publicKey: walletPublicKey.toBase58() }).resolves(serverResponse);
+
       const requestAirdropResponse = await gatekeeperClientInst.requestAirdrop(walletPublicKey);
-      expect(requestAirdropResponse).to.be.undefined;
+      expect(requestAirdropResponse).to.eq(undefined);
     });
   });
 });
