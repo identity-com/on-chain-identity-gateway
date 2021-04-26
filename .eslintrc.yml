@@ -1,3 +1,19 @@
+
+
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaVersion: 2020
+  sourceType: module
+plugins:
+  - mocha
+  - prettier
+  - '@typescript-eslint'
+extends:
+  - standard
+  - 'plugin:mocha/recommended'
+  - 'eslint:recommended'
+  - 'plugin:@typescript-eslint/eslint-recommended'
+  - 'plugin:@typescript-eslint/recommended'
 rules:
   '@typescript-eslint/ban-ts-ignore':
     - 'off'
@@ -53,17 +69,3 @@ rules:
 env:
   browser: true
   es6: true
-extends:
-  - standard
-  - 'plugin:mocha/recommended'
-  - 'eslint:recommended'
-  - 'plugin:@typescript-eslint/eslint-recommended'
-  - 'plugin:@typescript-eslint/recommended'
-parser: '@typescript-eslint/parser'
-parserOptions:
-  ecmaVersion: 2018
-  sourceType: module
-plugins:
-  - mocha
-  - prettier
-  - '@typescript-eslint'
