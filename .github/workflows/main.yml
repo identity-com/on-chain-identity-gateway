@@ -44,7 +44,7 @@ jobs:
       - name: Build
         run: yarn build
 
-  Unit tests:
+  unit_tests:
     name: Test the Gatekeeper client library with dependencies stubbed out
 
     runs-on: ${{ matrix.os }}
