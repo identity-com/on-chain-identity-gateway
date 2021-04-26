@@ -4,7 +4,7 @@ on:
   pull_request:
 jobs:
   build:
-    name: Build, lint, and test the library on ${{ matrix.os }}
+    name: Build, lint the library on ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -37,9 +37,6 @@ jobs:
 
       - name: Lint
         run: yarn lint
-
-      - name: Test
-        run: yarn test
 
       - name: Build
         run: yarn build
