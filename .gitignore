@@ -59,4 +59,4 @@ swapProgramId
 *.history
 
 # tests
-**/*/test-results.xml
+*test-results.xml
