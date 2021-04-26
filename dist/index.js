@@ -14,24 +14,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findGatewayToken = exports.GatekeeperClient = void 0;
 const axios_1 = __importDefault(require("axios"));
-const handleFetchError = (response) => {
+const throwIfErrorResponse = (response) => {
     if (response.status > 299) {
-        console.error('handleFetchError', response);
+        console.error('throwIfErrorResponse', response);
         const errorJson = response.data;
         const errorMessage = errorJson.message || response.statusText;
-        console.log('handleFetchError', { errorJson, errorMessage });
+        console.log('throwIfErrorResponse', { errorJson, errorMessage });
         throw new Error(errorMessage);
     }
-    return response;
 };
 const postGatekeeperServer = (baseUrl, body, path = '') => __awaiter(void 0, void 0, void 0, function* () {
     const postResponse = yield axios_1.default.post(`${baseUrl}${path}`, body);
-    yield handleFetchError(postResponse);
+    yield throwIfErrorResponse(postResponse);
     return postResponse.data;
 });
 class GatekeeperClient {
     constructor(config) {
-        if (!config || !(config === null || config === void 0 ? void 0 : config.baseUrl)) {
+        if (!config) {
             throw new Error('No valid config provided');
         }
         this.config = config;
@@ -44,19 +43,19 @@ class GatekeeperClient {
      * If called and a gateway token already exists for this wallet, it will throw an exception
      *
      * @param {PublicKey} walletPublicKey
-     * @param {string} [scopeRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
+     * @param {string} [presentationRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
      */
-    createGatewayToken(walletPublicKey, scopeRequestId) {
+    createGatewayToken(walletPublicKey, presentationRequestId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('Creating a new gatekeeper token');
-            const body = scopeRequestId ? { scopeRequest: scopeRequestId } : { address: walletPublicKey.toBase58() };
+            const body = presentationRequestId ? { scopeRequest: presentationRequestId } : { address: walletPublicKey.toBase58() };
             return postGatekeeperServer(this.baseUrl, body);
         });
     }
     auditGatewayToken(token) {
         return __awaiter(this, void 0, void 0, function* () {
             const getResponse = yield axios_1.default.get(`${this.baseUrl}/${token}`);
-            yield handleFetchError(getResponse);
+            yield throwIfErrorResponse(getResponse);
             return getResponse.data;
         });
     }
