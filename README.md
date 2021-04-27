@@ -46,6 +46,9 @@ Requests that a gateway token be created for the given Solana public key. Return
 const gatewayToken = await gatekeeperClientInst.createGatewayToken(walletPublicKey);
 ```
 Alternatively, a gateway token can be requested by providing the Solana public key and a Civic verifiablePresentationId. The gatekeeper server validates that the verifiablePresentation is completed successfully before creating the gateway token.
+```
+const gatewayToken = await gatekeeperClientInst.createGatewayToken(walletPublicKey, presentationRequestId);
+```
 
 #### auditGatewayToken
 Requests a GatekeeperRecord for the given gateway token. The requester must have sufficient privileges to access the GatekeeperRecord.
