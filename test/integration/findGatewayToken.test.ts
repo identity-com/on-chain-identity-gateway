@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { Connection, PublicKey, Account } from '@solana/web3.js';
 import axios from 'axios';
 import { findGatewayToken } from '../../src';
-import { baseUrl, civicNetEndpoint, MINT_AUTHORITY_PUBLIC_KEY, wait } from '../../test/support/testSupport';
+import { gatekeeperServerBaseUrl, civicNetEndpoint, MINT_AUTHORITY_PUBLIC_KEY, wait } from '../../test/support/testSupport';
 
 const chainUpdateDelay = 8000; // minimum delay through trial and error
 describe('findGatewayToken integration tests', () => {
@@ -15,7 +15,7 @@ describe('findGatewayToken integration tests', () => {
     owner = new Account().publicKey;
     mintAuthorityPublicKey = new PublicKey(MINT_AUTHORITY_PUBLIC_KEY);
     console.log('gatekeeperKey', mintAuthorityPublicKey.toBase58());
-    const gatewayTokenResponse = await axios.post(`${baseUrl}`, { address: owner.toBase58() });
+    const gatewayTokenResponse = await axios.post(`${gatekeeperServerBaseUrl}`, { address: owner.toBase58() });
     ({ token: gatewayToken } = gatewayTokenResponse.data);
     console.log('newly created gatewayToken', gatewayToken);
     console.log(`waiting ${chainUpdateDelay}ms for the chain to update...`);
@@ -41,7 +41,7 @@ describe('findGatewayToken integration tests', () => {
       let revokedToken;
       beforeEach('revoke the test account gatewayToken', async () => {
         revokedToken = await findGatewayToken(connection, owner, mintAuthorityPublicKey);
-        await axios.delete(`${baseUrl}/${revokedToken}`);
+        await axios.delete(`${gatekeeperServerBaseUrl}/${revokedToken}`);
         await wait(chainUpdateDelay);
       });
       it('should return null', async () => {
