@@ -1,3 +1,4 @@
+/* eslint-disable mocha/no-skipped-tests */
 import { expect } from 'chai';
 import { Connection, PublicKey, Account } from '@solana/web3.js';
 import axios from 'axios';
@@ -5,7 +6,8 @@ import { findGatewayToken } from '../../src';
 import { gatekeeperServerBaseUrl, civicNetEndpoint, MINT_AUTHORITY_PUBLIC_KEY, wait } from '../../test/support/testSupport';
 
 const chainUpdateDelay = 8000; // minimum delay through trial and error
-describe('findGatewayToken integration tests', () => {
+// TODO IDCOM-208 unskip when ipCheckOverride is implemented
+describe.skip('findGatewayToken integration tests', () => {
   let connection: Connection;
   let owner: PublicKey;
   let mintAuthorityPublicKey: PublicKey;
