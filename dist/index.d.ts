@@ -34,7 +34,7 @@ export declare type AirdropRequest = {
     publicKey: string;
 };
 export declare type GatekeeperRequest = CreateTokenRequest | AirdropRequest;
-export declare type GatekeeperResponse = GatekeeperRecord | null | {};
+export declare type GatekeeperResponse = GatekeeperRecord | null | Record<string, unknown>;
 export declare class GatekeeperClient implements GatekeeperClientInterface {
     config: GatekeeperClientConfig;
     constructor(config: GatekeeperClientConfig);

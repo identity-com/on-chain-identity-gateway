@@ -22,8 +22,6 @@ export type GatekeeperRecord = {
   },
 }
 
-
-
 const throwIfErrorResponse = (response: AxiosResponse): void => {
   if (response.status > 299) {
     console.error('throwIfErrorResponse', response);
@@ -50,12 +48,12 @@ export type AirdropRequest = {
   publicKey: string;
 }
 export type GatekeeperRequest = CreateTokenRequest | AirdropRequest;
-export type GatekeeperResponse = GatekeeperRecord | null | {};
-const postGatekeeperServer = async <T extends GatekeeperRequest,  U extends GatekeeperResponse>(baseUrl: string, body: T, path: string = ''): Promise<U> => {
+export type GatekeeperResponse = GatekeeperRecord | null | Record<string, unknown>;
+const postGatekeeperServer = async <T extends GatekeeperRequest, U extends GatekeeperResponse>(baseUrl: string, body: T, path = ''): Promise<U> => {
   const postResponse = await axios.post(`${baseUrl}${path}`, body);
   await throwIfErrorResponse(postResponse);
   return postResponse.data;
-}
+};
 export class GatekeeperClient implements GatekeeperClientInterface {
   config: GatekeeperClientConfig;
   constructor(config: GatekeeperClientConfig) {
@@ -69,7 +67,6 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     return this.config.baseUrl;
   }
 
-  
   /**
    * This function creates gateway tokens for current connected wallet
    * If called and a gateway token already exists for this wallet, it will throw an exception
@@ -78,8 +75,8 @@ export class GatekeeperClient implements GatekeeperClientInterface {
    * @param {string} [presentationRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
    */
   async createGatewayToken(walletPublicKey: PublicKey, presentationRequestId?: string):Promise<GatekeeperRecord> {
-    console.log('Creating a new gatekeeper token')
-    const body = presentationRequestId ? { scopeRequest : presentationRequestId } : { address: walletPublicKey.toBase58() };
+    console.log('Creating a new gatekeeper token');
+    const body = presentationRequestId ? { scopeRequest: presentationRequestId } : { address: walletPublicKey.toBase58() };
     return postGatekeeperServer<CreateTokenRequest, GatekeeperRecord>(this.baseUrl, body);
   }
 
@@ -91,16 +88,16 @@ export class GatekeeperClient implements GatekeeperClientInterface {
 
   async requestAirdrop(walletPublicKey: PublicKey): Promise<void> {
     console.log(`Requesting airdrop to key ${walletPublicKey.toBase58()}`);
-    await postGatekeeperServer<AirdropRequest, null>(this.baseUrl, {publicKey: walletPublicKey.toBase58()}, '/airdrop');
+    await postGatekeeperServer<AirdropRequest, null>(this.baseUrl, { publicKey: walletPublicKey.toBase58() }, '/airdrop');
   }
 }
- 
+
 /**
  * attempts to fetch a gateway token from the Solana blockchain. Will return null if the token account doesn't exist
  * or has been frozen
- * @param {Connection} connection 
- * @param {PublicKey} owner 
- * @param {PublicKey} gatekeeperKey 
+ * @param {Connection} connection
+ * @param {PublicKey} owner
+ * @param {PublicKey} gatekeeperKey
  * @returns Promise<PublicKey | null>
  */
 export const findGatewayToken = async (connection: Connection, owner: PublicKey, gatekeeperKey: PublicKey): Promise<PublicKey | null> => {
