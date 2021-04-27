@@ -1,10 +1,10 @@
-import { GatekeeperClient, GatekeeperClientConfig, GatekeeperRecord } from '../../src';
 import chai from 'chai';
 import { Account, PublicKey } from '@solana/web3.js';
 import sinon from 'sinon';
 import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import axios from 'axios';
+import { GatekeeperClient, GatekeeperClientConfig, GatekeeperRecord } from '../../src';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -89,8 +89,8 @@ describe('GatekeeperClient', () => {
       context('with a server response not 2xx', () => {
         it('should throw an error with statusText if present', () => {
           const statusText = 'server error';
-          const serverResponse = { status: 500, statusText, data: {} };
-          sandbox.stub(axios, 'post').withArgs(`${baseUrl}`, { scopeRequest: presentationRequestId }).resolves(serverResponse);
+          const serverResponse = { response: { status: 500, statusText, data: {} } };
+          sandbox.stub(axios, 'post').withArgs(`${baseUrl}`, { scopeRequest: presentationRequestId }).rejects(serverResponse);
           return expect(gatekeeperClientInst.createGatewayToken(walletPublicKey, presentationRequestId))
             .rejectedWith(statusText);
         });
@@ -98,10 +98,17 @@ describe('GatekeeperClient', () => {
         it('data error message should take precedence over statusText if both are present', () => {
           const statusText = 'server error';
           const dataErrorMessage = 'Blocked IP 123';
-          const serverResponse = { status: 500, statusText, data: { message: dataErrorMessage } };
-          sandbox.stub(axios, 'post').withArgs(`${baseUrl}`, { scopeRequest: presentationRequestId }).resolves(serverResponse);
+          const serverResponse = { response: { status: 500, statusText, data: { message: dataErrorMessage } } };
+          sandbox.stub(axios, 'post').withArgs(`${baseUrl}`, { scopeRequest: presentationRequestId }).rejects(serverResponse);
           return expect(gatekeeperClientInst.createGatewayToken(walletPublicKey, presentationRequestId))
             .rejectedWith(dataErrorMessage);
+        });
+
+        it('should return a normal error if no data or response are present', () => {
+          const error = new Error('server error');
+          sandbox.stub(axios, 'post').withArgs(`${baseUrl}`, { scopeRequest: presentationRequestId }).rejects(error);
+          return expect(gatekeeperClientInst.createGatewayToken(walletPublicKey, presentationRequestId))
+            .rejectedWith(error.message);
         });
       });
     });
@@ -145,8 +152,8 @@ describe('GatekeeperClient', () => {
       context('with a server response not 2xx', () => {
         it('should throw an error with statusText if present', () => {
           const statusText = 'server error';
-          const serverResponse = { status: 500, statusText, data: {} };
-          sandbox.stub(axios, 'get').withArgs(`${baseUrl}/${token}`).resolves(serverResponse);
+          const serverResponse = { response: { status: 500, statusText, data: {} } };
+          sandbox.stub(axios, 'get').withArgs(`${baseUrl}/${token}`).rejects(serverResponse);
           return expect(gatekeeperClientInst.auditGatewayToken(token))
             .rejectedWith(statusText);
         });
@@ -154,10 +161,17 @@ describe('GatekeeperClient', () => {
         it('data error message should take precedence over statusText if both are present', () => {
           const statusText = 'server error';
           const dataErrorMessage = 'audit error';
-          const serverResponse = { status: 500, statusText, data: { message: dataErrorMessage } };
-          sandbox.stub(axios, 'get').withArgs(`${baseUrl}/${token}`).resolves(serverResponse);
+          const serverResponse = { response: { status: 500, statusText, data: { message: dataErrorMessage } } };
+          sandbox.stub(axios, 'get').withArgs(`${baseUrl}/${token}`).rejects(serverResponse);
           return expect(gatekeeperClientInst.auditGatewayToken(token))
             .rejectedWith(dataErrorMessage);
+        });
+
+        it('should return a normal error if no data or response are present', () => {
+          const error = new Error('server error');
+          sandbox.stub(axios, 'get').withArgs(`${baseUrl}/${token}`).rejects(error);
+          return expect(gatekeeperClientInst.auditGatewayToken(token))
+            .rejectedWith(error.message);
         });
       });
     });
