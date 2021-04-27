@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { findGatewayToken } from '../../src';
 import { clusterApiUrl, Connection, PublicKey, Account } from '@solana/web3.js';
 import { SinonStub } from 'sinon';
+import { findGatewayToken } from '../../src';
 
 const sandbox = sinon.createSandbox();
 const getAccountWithState = (state: string, pubkey: PublicKey) => ({ pubkey, account: { data: { parsed: { info: { state } } } } });

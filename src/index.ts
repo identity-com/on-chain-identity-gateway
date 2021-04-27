@@ -22,14 +22,12 @@ export type GatekeeperRecord = {
   },
 }
 
-const throwIfErrorResponse = (response: AxiosResponse): void => {
-  if (response.status > 299) {
-    console.error('throwIfErrorResponse', response);
-    const errorJson = response.data;
-    const errorMessage = errorJson.message || response.statusText;
-    console.log('throwIfErrorResponse', { errorJson, errorMessage });
-    throw new Error(errorMessage);
-  }
+const errorMessageFromResponse = (response: AxiosResponse): string | undefined => {
+  console.error('errorFromAxiosResponse', response);
+  const errorJson = response.data;
+  const errorMessage = errorJson.message || response.statusText;
+  console.log('errorFromAxiosResponse', { errorJson, errorMessage });
+  return errorMessage;
 };
 
 export type GatekeeperClientConfig = {
@@ -50,10 +48,15 @@ export type AirdropRequest = {
 export type GatekeeperRequest = CreateTokenRequest | AirdropRequest;
 export type GatekeeperResponse = GatekeeperRecord | null | Record<string, unknown>;
 const postGatekeeperServer = async <T extends GatekeeperRequest, U extends GatekeeperResponse>(baseUrl: string, body: T, path = ''): Promise<U> => {
-  const postResponse = await axios.post(`${baseUrl}${path}`, body);
-  await throwIfErrorResponse(postResponse);
-  return postResponse.data;
+  try {
+    const postResponse = await axios.post(`${baseUrl}${path}`, body);
+    return postResponse.data;
+  } catch (error) {
+    if (error.response) throw new Error(errorMessageFromResponse(error.response));
+    throw error;
+  }
 };
+
 export class GatekeeperClient implements GatekeeperClientInterface {
   config: GatekeeperClientConfig;
   constructor(config: GatekeeperClientConfig) {
@@ -81,9 +84,13 @@ export class GatekeeperClient implements GatekeeperClientInterface {
   }
 
   async auditGatewayToken(token: string): Promise<GatekeeperRecord | null> {
-    const getResponse = await axios.get(`${this.baseUrl}/${token}`);
-    await throwIfErrorResponse(getResponse);
-    return getResponse.data;
+    try {
+      const getResponse = await axios.get(`${this.baseUrl}/${token}`);
+      return getResponse.data;
+    } catch (error) {
+      if (error.response) throw new Error(errorMessageFromResponse(error.response));
+      throw error;
+    }
   }
 
   async requestAirdrop(walletPublicKey: PublicKey): Promise<void> {
@@ -97,14 +104,14 @@ export class GatekeeperClient implements GatekeeperClientInterface {
  * or has been frozen
  * @param {Connection} connection
  * @param {PublicKey} owner
- * @param {PublicKey} gatekeeperKey
+ * @param {PublicKey} mintAuthorityPublicKey
  * @returns Promise<PublicKey | null>
  */
-export const findGatewayToken = async (connection: Connection, owner: PublicKey, gatekeeperKey: PublicKey): Promise<PublicKey | null> => {
+export const findGatewayToken = async (connection: Connection, owner: PublicKey, mintAuthorityPublicKey: PublicKey): Promise<PublicKey | null> => {
   const accountsResponse = await connection.getParsedTokenAccountsByOwner(
     owner,
     {
-      mint: gatekeeperKey,
+      mint: mintAuthorityPublicKey,
     },
   );
 

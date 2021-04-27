@@ -47,6 +47,8 @@ rules:
     - 'off'
   mocha/no-mocha-arrows:
     - 'off'
+  mocha/no-hooks-for-single-case:
+    - 'off'
 env:
   browser: true
   es6: true
