@@ -30,7 +30,7 @@ describe('GatekeeperClient', () => {
     gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl });
   });
   // TODO IDCOM-208 unskip when ipCheckOverride is implemented
-  context('createGatewayToken', () => {
+  context.skip('createGatewayToken', () => {
     context('with a valid walletPublicKey passed', () => {
       it('should retrieve a gatekeeper record', async () => {
         const gatekeeperRecord = await gatekeeperClientInst.createGatewayToken(walletPublicKey);
