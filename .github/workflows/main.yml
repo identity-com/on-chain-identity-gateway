@@ -109,4 +109,4 @@ jobs:
         run: yarn install
 
       - name: Integration tests
-        run: yarn test:intgration
+        run: yarn test:integration
