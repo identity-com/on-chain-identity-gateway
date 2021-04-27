@@ -103,6 +103,13 @@ describe('GatekeeperClient', () => {
           return expect(gatekeeperClientInst.createGatewayToken(walletPublicKey, presentationRequestId))
             .rejectedWith(dataErrorMessage);
         });
+
+        it('should return a normal error if no data or response are present', () => {
+          const error = new Error('server error');
+          sandbox.stub(axios, 'post').withArgs(`${baseUrl}`, { scopeRequest: presentationRequestId }).rejects(error);
+          return expect(gatekeeperClientInst.createGatewayToken(walletPublicKey, presentationRequestId))
+            .rejectedWith(error.message);
+        });
       });
     });
   });
@@ -158,6 +165,13 @@ describe('GatekeeperClient', () => {
           sandbox.stub(axios, 'get').withArgs(`${baseUrl}/${token}`).rejects(serverResponse);
           return expect(gatekeeperClientInst.auditGatewayToken(token))
             .rejectedWith(dataErrorMessage);
+        });
+
+        it('should return a normal error if no data or response are present', () => {
+          const error = new Error('server error');
+          sandbox.stub(axios, 'get').withArgs(`${baseUrl}/${token}`).rejects(error);
+          return expect(gatekeeperClientInst.auditGatewayToken(token))
+            .rejectedWith(error.message);
         });
       });
     });

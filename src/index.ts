@@ -78,7 +78,7 @@ export class GatekeeperClient implements GatekeeperClientInterface {
    * @param {string} [presentationRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
    */
   async createGatewayToken(walletPublicKey: PublicKey, presentationRequestId?: string):Promise<GatekeeperRecord> {
-    console.log('Creating a new gatekeeper token');
+    console.log('Creating a new gatekeeper token...');
     const body = presentationRequestId ? { scopeRequest: presentationRequestId } : { address: walletPublicKey.toBase58() };
     return postGatekeeperServer<CreateTokenRequest, GatekeeperRecord>(this.baseUrl, body);
   }
@@ -94,7 +94,7 @@ export class GatekeeperClient implements GatekeeperClientInterface {
   }
 
   async requestAirdrop(walletPublicKey: PublicKey): Promise<void> {
-    console.log(`Requesting airdrop to key ${walletPublicKey.toBase58()}`);
+    console.log(`Requesting airdrop to key ${walletPublicKey.toBase58()}...`);
     await postGatekeeperServer<AirdropRequest, null>(this.baseUrl, { publicKey: walletPublicKey.toBase58() }, '/airdrop');
   }
 }
