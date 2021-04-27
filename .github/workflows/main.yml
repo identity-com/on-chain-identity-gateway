@@ -42,7 +42,7 @@ jobs:
         run: yarn build
 
   unit_tests:
-    name: Test the Gatekeeper client library with dependencies stubbed out
+    name: Tests with dependencies stubbed out
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -75,3 +75,38 @@ jobs:
 
       - name: Unit tests
         run: yarn test:unit
+
+  integration_tests:
+    name: Tests against real chain/gatekeeper test environments
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ['15.x']
+        os: [ubuntu-latest]
+
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./node_modules
+          key: yarn-${{ hashFiles('yarn.lock') }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Integration tests
+        run: yarn test:integration
