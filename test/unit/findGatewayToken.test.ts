@@ -5,12 +5,11 @@ import { clusterApiUrl, Connection, PublicKey, Account } from '@solana/web3.js';
 import { SinonStub } from 'sinon';
 
 const sandbox = sinon.createSandbox();
-const getAccountWithState = (state: string, pubkey: PublicKey) => ({ pubkey, account: { data: { parsed: { info: { state }}}}})
+const getAccountWithState = (state: string, pubkey: PublicKey) => ({ pubkey, account: { data: { parsed: { info: { state } } } } });
 describe('findGatewayToken', () => {
   let connection: Connection;
   let owner: PublicKey;
   let gatekeeperKey: PublicKey;
-  let testAccount: Account;
   let getParsedTokenAccountsByOwnerStub: SinonStub;
   afterEach(sandbox.restore);
   beforeEach(() => {
@@ -26,13 +25,13 @@ describe('findGatewayToken', () => {
     it('should return null with no value', async () => {
       getParsedTokenAccountsByOwnerStub.resolves({});
       const findGatewayTokenResponse = await findGatewayToken(connection, owner, gatekeeperKey);
-      expect(findGatewayTokenResponse).to.be.null;
+      expect(findGatewayTokenResponse).to.eq(null);
     });
 
     it('should return null with an empty array', async () => {
-      getParsedTokenAccountsByOwnerStub.resolves({ value: []});
+      getParsedTokenAccountsByOwnerStub.resolves({ value: [] });
       const findGatewayTokenResponse = await findGatewayToken(connection, owner, gatekeeperKey);
-      expect(findGatewayTokenResponse).to.be.null;
+      expect(findGatewayTokenResponse).to.eq(null);
     });
   });
 
@@ -41,8 +40,8 @@ describe('findGatewayToken', () => {
       it('should return null', async () => {
         getParsedTokenAccountsByOwnerStub.resolves({ value: [getAccountWithState('frozen', owner)] });
         const findGatewayTokenResponse = await findGatewayToken(connection, owner, gatekeeperKey);
-        expect(findGatewayTokenResponse).to.be.null;
-      })
+        expect(findGatewayTokenResponse).to.eq(null);
+      });
     });
 
     context('with a valid account', () => {
@@ -51,7 +50,7 @@ describe('findGatewayToken', () => {
         getParsedTokenAccountsByOwnerStub.resolves({ value: [getAccountWithState('valid', testPubKey)] });
         const findGatewayTokenResponse = await findGatewayToken(connection, owner, gatekeeperKey);
         expect(findGatewayTokenResponse).to.eq(testPubKey);
-      })
+      });
     });
   });
 });
