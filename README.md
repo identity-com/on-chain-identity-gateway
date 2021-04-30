@@ -51,11 +51,11 @@ An optional parameter 'selfDeclarationTextAgreedTo' can be provided indicating t
 ```
 const selfDeclarationTextAgreedTo = 'I declare I am not resident in <not-allowed-territory>'
 ...<UI for user to agree to text>
-const gatewayToken = await gatekeeperClientInst.createGatewayToken(walletPublicKey, selfDeclarationTextAgreedTo);
+const gatewayToken = await gatekeeperClientInst.createGatewayToken({ walletPublicKey, selfDeclarationTextAgreedTo });
 ```
-A gateway token can be requested by providing the Solana public key and a Civic presentationRequestId. The gatekeeper server validates that the presentation provided by the user is completed successfully before creating the gateway token.
+A gateway token can be requested by providing a Civic presentationRequestId. The gatekeeper server validates that the presentation provided by the user is successful and a token is generated. The presentationRequest created by the DAPP should contain the publicKey address to create the gateway token for.
 ```
-const gatewayToken = await gatekeeperClientInst.createGatewayToken(walletPublicKey, null, presentationRequestId);
+const gatewayToken = await gatekeeperClientInst.createGatewayToken({ presentationRequestId });
 ```
 
 #### auditGatewayToken

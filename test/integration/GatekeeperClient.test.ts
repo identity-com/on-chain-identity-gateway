@@ -5,7 +5,7 @@ import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import chaiSubset from 'chai-subset';
 import { GatekeeperClient, GatekeeperRecord } from '../../src';
-import { gatekeeperServerBaseUrl } from '../../test/support/testSupport';
+import { gatekeeperServerBaseUrl, nonUsIPOverrideHeaders } from '../../test/support/testSupport';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -23,13 +23,13 @@ const expectCreatedGatekeeperRecord = (gatekeeperRecord: GatekeeperRecord) => {
   expect(gatekeeperRecord.selfDeclarationTextAgreedTo).to.be.a('string');
 };
 
-describe('GatekeeperClient', () => {
+describe('GatekeeperClient Integration tests', () => {
   let gatekeeperClientInst:GatekeeperClient;
   let walletPublicKey: PublicKey;
 
   beforeEach(() => {
     walletPublicKey = new Account().publicKey;
-    gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl });
+    gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl, headers: nonUsIPOverrideHeaders });
   });
   context('createGatewayToken', () => {
     context('with a valid walletPublicKey passed', () => {
@@ -54,7 +54,7 @@ describe('GatekeeperClient', () => {
     let gatekeeperClientInst:GatekeeperClient;
     let gatewayToken;
     beforeEach(async () => {
-      gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl });
+      gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl, headers: nonUsIPOverrideHeaders });
     });
 
     context('with a good token and selfDeclarationTextAgreedTo', () => {
@@ -89,7 +89,7 @@ describe('GatekeeperClient', () => {
     let gatekeeperClientInst:GatekeeperClient;
 
     beforeEach(() => {
-      gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl });
+      gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl, headers: nonUsIPOverrideHeaders });
     });
 
     it('should make a server POST request using the wallet public key', async () => {
