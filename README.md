@@ -6,7 +6,7 @@ This library provides a client and uility methods for helping Decentralized Apps
     - [Installation](#installation)
     - [Import](#import)
   - [Functions/Classes](#functionsclasses)
-    - [findGatewayToken](#findgatewaytoken)
+    - [findGatewayTokens](#findgatewaytokens)
     - [GatekeeperClient](#gatekeeperclient)
       - [initialisation](#initialisation)
       - [createGatewayToken](#creategatewaytoken)
@@ -24,17 +24,19 @@ import { GatekeeperClient, GatekeeperClientConfig, GatekeeperRecord, findGateway
 ```
 
 ## Functions/Classes
-### findGatewayToken
-Utility method for finding a gateway token for a given public key. This method does the lookup against the Solana blockchain. Returns null if a gateway token doesn't exist for the given public key.
+### findGatewayTokens
+Utility method for finding gateway token created for a given public key. This method does the lookup against the Solana blockchain. Returns an empty array if gateway tokens doen't exist for the given public key.
 ```
-const gatewayToken: PublicKey = await findGatewayToken(connection, owner, mintAuthorityPublicKey);
+const gatewayToken: PublicKey = await findGatewayToken(connection, owner, gatekeeperKey);
 ```
+Optionally, a 'revoked' flag can be passed to allow retrieval of all, even revoked, tokens.
 
 ### GatekeeperClient
 The GatekeeperClient is a class with helper methods to enable communication with a Gatekeeper server.
 
 #### initialisation
-The baseUrl of the gatekeeper server must be provided when creating a client instance:
+The baseUrl of the gatekeeper server must be provided when creating a client instance. Additional headers can be passed in config
+that will be added to HTTP requests to the gatekeeper-api:
 ```
 const baseUrl: string = 'http://<gateway url>';
 const clientInst = new GatekeeperClient({ baseUrl });
@@ -45,9 +47,15 @@ Requests that a gateway token be created for the given Solana public key. Return
 ```
 const gatewayToken = await gatekeeperClientInst.createGatewayToken(walletPublicKey);
 ```
-Alternatively, a gateway token can be requested by providing the Solana public key and a Civic verifiablePresentationId. The gatekeeper server validates that the verifiablePresentation is completed successfully before creating the gateway token.
+An optional parameter 'selfDeclarationTextAgreedTo' can be provided indicating that the requester has read and agreed to the passed text.
 ```
-const gatewayToken = await gatekeeperClientInst.createGatewayToken(walletPublicKey, presentationRequestId);
+const selfDeclarationTextAgreedTo = 'I declare I am not resident in <not-allowed-territory>'
+...<UI for user to agree to text>
+const gatewayToken = await gatekeeperClientInst.createGatewayToken(walletPublicKey, selfDeclarationTextAgreedTo);
+```
+A gateway token can be requested by providing the Solana public key and a Civic presentationRequestId. The gatekeeper server validates that the presentation provided by the user is completed successfully before creating the gateway token.
+```
+const gatewayToken = await gatekeeperClientInst.createGatewayToken(walletPublicKey, null, presentationRequestId);
 ```
 
 #### auditGatewayToken

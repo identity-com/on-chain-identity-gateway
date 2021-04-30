@@ -60,3 +60,5 @@ swapProgramId
 
 # tests
 *test-results.xml
+
+/dist

@@ -1,6 +1,9 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { AccountInfo, Connection, ParsedAccountData, PublicKey, RpcResponseAndContext } from '@solana/web3.js';
 import axios, { AxiosResponse } from 'axios';
 
+export const TOKEN_PROGRAM_ID = new PublicKey(
+  'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+);
 export type GatekeeperRecord = {
   timestamp: string;
   token: string;
@@ -8,6 +11,7 @@ export type GatekeeperRecord = {
   ipAddress: string;
   country: string;
   approved: boolean;
+  selfDeclarationTextAgreedTo: string;
   document?: {
     nationality: string,
     name: {
@@ -32,30 +36,31 @@ const errorMessageFromResponse = (response: AxiosResponse): string | undefined =
 
 export type GatekeeperClientConfig = {
   baseUrl: string;
+  headers?: Record<string, string>
 }
 
-export interface GatekeeperClientInterface {
-  createGatewayToken(walletPublicKey: PublicKey, presentationRequestId?: string):Promise<GatekeeperRecord>;
-  auditGatewayToken(token: string): Promise<GatekeeperRecord | null>
+export type TokenCreationRequest = {
+  walletPublicKey?: PublicKey;
+  selfDeclarationTextAgreedTo?: string;
+  presentationRequestId?: string;
 }
-export type CreateTokenRequest = {
+
+type ServerTokenRequest = {
   scopeRequest?: string;
   address?: string;
+  selfDeclarationTextAgreedTo?: string;
 }
+export interface GatekeeperClientInterface {
+  createGatewayToken(tokenCreationRequest: ServerTokenRequest):Promise<GatekeeperRecord>;
+  auditGatewayToken(token: string): Promise<GatekeeperRecord | null>;
+  requestAirdrop(walletPublicKey: PublicKey): Promise<void>;
+}
+
 export type AirdropRequest = {
-  publicKey: string;
+  address: string;
 }
-export type GatekeeperRequest = CreateTokenRequest | AirdropRequest;
+export type GatekeeperRequest = ServerTokenRequest | AirdropRequest;
 export type GatekeeperResponse = GatekeeperRecord | null | Record<string, unknown>;
-const postGatekeeperServer = async <T extends GatekeeperRequest, U extends GatekeeperResponse>(baseUrl: string, body: T, path = ''): Promise<U> => {
-  try {
-    const postResponse = await axios.post(`${baseUrl}${path}`, body);
-    return postResponse.data;
-  } catch (error) {
-    if (error.response) throw new Error(errorMessageFromResponse(error.response));
-    throw error;
-  }
-};
 
 export class GatekeeperClient implements GatekeeperClientInterface {
   config: GatekeeperClientConfig;
@@ -70,17 +75,40 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     return this.config.baseUrl;
   }
 
+  get headers(): Record<string, string> {
+    return this.config.headers || {};
+  }
+
+  async postGatekeeperServer<T extends GatekeeperRequest, U extends GatekeeperResponse>(body: T, path = ''): Promise<U> {
+    try {
+      const postResponse = await axios.post(`${this.baseUrl}${path}`, body, this.headers ? { headers: this.headers } : {});
+      return postResponse.data;
+    } catch (error) {
+      if (error.response) throw new Error(errorMessageFromResponse(error.response));
+      throw error;
+    }
+  }
+
   /**
    * This function creates gateway tokens for current connected wallet
    * If called and a gateway token already exists for this wallet, it will throw an exception
    *
    * @param {PublicKey} walletPublicKey
+   * @param {string} [selfDeclarationTextAgreedTo] - the text that a user had to agree to in order to call createGatewayToken
    * @param {string} [presentationRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
    */
-  async createGatewayToken(walletPublicKey: PublicKey, presentationRequestId?: string):Promise<GatekeeperRecord> {
-    console.log('Creating a new gatekeeper token...');
-    const body = presentationRequestId ? { scopeRequest: presentationRequestId } : { address: walletPublicKey.toBase58() };
-    return postGatekeeperServer<CreateTokenRequest, GatekeeperRecord>(this.baseUrl, body);
+  async createGatewayToken({ walletPublicKey, selfDeclarationTextAgreedTo, presentationRequestId }: TokenCreationRequest):Promise<GatekeeperRecord> {
+    if (!walletPublicKey && !presentationRequestId) throw new Error('walletPublicKey or a presentationRequestId must be provided in the token creation request');
+
+    const body = presentationRequestId
+      ? { presentationRequestId }
+      : { address: walletPublicKey?.toBase58() };
+    const gatewayTokenCreationRequest = {
+      ...body,
+      ...(selfDeclarationTextAgreedTo ? { selfDeclarationTextAgreedTo } : {}),
+    };
+    console.log('Requesting a new gatekeeper token...', gatewayTokenCreationRequest);
+    return this.postGatekeeperServer<ServerTokenRequest, GatekeeperRecord>(gatewayTokenCreationRequest);
   }
 
   async auditGatewayToken(token: string): Promise<GatekeeperRecord | null> {
@@ -95,33 +123,51 @@ export class GatekeeperClient implements GatekeeperClientInterface {
 
   async requestAirdrop(walletPublicKey: PublicKey): Promise<void> {
     console.log(`Requesting airdrop to key ${walletPublicKey.toBase58()}...`);
-    await postGatekeeperServer<AirdropRequest, null>(this.baseUrl, { publicKey: walletPublicKey.toBase58() }, '/airdrop');
+    await this.postGatekeeperServer<AirdropRequest, null>({ address: walletPublicKey.toBase58() }, '/airdrop');
   }
 }
 
-/**
- * attempts to fetch a gateway token from the Solana blockchain. Will return null if the token account doesn't exist
- * or has been frozen
- * @param {Connection} connection
- * @param {PublicKey} owner
- * @param {PublicKey} mintAuthorityPublicKey
- * @returns Promise<PublicKey | null>
- */
-export const findGatewayToken = async (connection: Connection, owner: PublicKey, mintAuthorityPublicKey: PublicKey): Promise<PublicKey | null> => {
-  const accountsResponse = await connection.getParsedTokenAccountsByOwner(
+export type GatewayToken = {
+  //  the key used to reference the gatekeeper
+  // note - this is not necessarily the publicKey of the gatekeeper themselves
+  // While spl-token is used as the gateway token program, this is the gatekeeper mint
+  gatekeeperKey: PublicKey;
+  // governanceKey: PublicKey TODO
+  owner: PublicKey;
+  isValid: boolean;
+  publicKey: PublicKey;
+  programId: PublicKey;
+};
+
+export const findGatewayTokens = async (
+  connection: Connection,
+  owner: PublicKey,
+  gatekeeperKey: PublicKey,
+  showRevoked = false,
+): Promise<GatewayToken[]> => {
+  const accountsResponse: RpcResponseAndContext<
+    Array<{
+      pubkey: PublicKey;
+      account: AccountInfo<ParsedAccountData>;
+    }>
+  > = await connection.getParsedTokenAccountsByOwner(
     owner,
     {
-      mint: mintAuthorityPublicKey,
+      mint: gatekeeperKey,
     },
   );
 
-  if (!accountsResponse.value) return null;
+  if (!accountsResponse.value) return [];
 
-  const validAccounts = accountsResponse.value.filter(
-    (entry) => entry?.account?.data?.parsed?.info?.state !== 'frozen',
-  );
+  const toGatewayToken = (entry: { pubkey: PublicKey, account: AccountInfo<ParsedAccountData> }) => ({
+    programId: TOKEN_PROGRAM_ID,
+    publicKey: entry.pubkey,
+    owner,
+    gatekeeperKey: gatekeeperKey,
+    isValid: entry.account?.data?.parsed?.info?.state !== 'frozen',
+  });
 
-  if (!validAccounts.length) return null;
-
-  return validAccounts[0].pubkey;
+  return accountsResponse.value
+    .map(toGatewayToken)
+    .filter((gatewayToken) => gatewayToken.isValid || showRevoked);
 };
