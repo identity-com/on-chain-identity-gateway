@@ -1,10 +1,10 @@
 {
-  "name": "ociv-gatekeeper-client",
+  "name": "on-chain-identity-client",
   "version": "1.0.0",
   "description": "Client for interacting with OCIV gatekeepers",
   "main": "dist/index",
   "types": "dist/index",
-  "repository": "git@github.com:identity-com/ociv-gatekeeper-client.git",
+  "repository": "git@github.com:identity-com/on-chain-identity-client.git",
   "author": "Kevin Colgan <kevin@civic.com>",
   "license": "MIT",
   "scripts": {

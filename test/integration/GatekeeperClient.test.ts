@@ -12,6 +12,7 @@ chai.use(chaiAsPromised);
 chai.use(chaiSubset);
 const { expect } = chai;
 
+const selfDeclarationTextAgreedTo = 'test_selfDeclarationTextAgreedTo';
 const expectCreatedGatekeeperRecord = (gatekeeperRecord: GatekeeperRecord) => {
   expect(gatekeeperRecord.approved).to.eq(true);
   expect(gatekeeperRecord.country).to.be.a('string');
@@ -19,6 +20,7 @@ const expectCreatedGatekeeperRecord = (gatekeeperRecord: GatekeeperRecord) => {
   expect(gatekeeperRecord.name).to.be.a('string');
   expect(gatekeeperRecord.timestamp).to.be.a('string');
   expect(gatekeeperRecord.token).to.be.a('string');
+  expect(gatekeeperRecord.selfDeclarationTextAgreedTo).to.be.a('string');
 };
 
 describe('GatekeeperClient', () => {
@@ -29,11 +31,10 @@ describe('GatekeeperClient', () => {
     walletPublicKey = new Account().publicKey;
     gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl });
   });
-  // TODO IDCOM-208 unskip when ipCheckOverride is implemented
-  context.skip('createGatewayToken', () => {
+  context('createGatewayToken', () => {
     context('with a valid walletPublicKey passed', () => {
       it('should retrieve a gatekeeper record', async () => {
-        const gatekeeperRecord = await gatekeeperClientInst.createGatewayToken(walletPublicKey);
+        const gatekeeperRecord = await gatekeeperClientInst.createGatewayToken({ walletPublicKey });
         expectCreatedGatekeeperRecord(gatekeeperRecord);
       });
     });
@@ -42,29 +43,29 @@ describe('GatekeeperClient', () => {
       context('with a server response not 2xx', () => {
         it('should throw an error with server message for a 500 response', () => {
           const badWalletPublicKey = { toBase58: () => 'bad public key' };
-          return expect(gatekeeperClientInst.createGatewayToken(badWalletPublicKey as PublicKey))
+          return expect(gatekeeperClientInst.createGatewayToken({ walletPublicKey: badWalletPublicKey as PublicKey }))
             .rejectedWith('Non-base58 character');
         });
       });
     });
   });
 
-  // TODO IDCOM-208 unskip when ipCheckOverride is implemented
-  context.skip('auditGatewayToken', () => {
+  context('auditGatewayToken', () => {
     let gatekeeperClientInst:GatekeeperClient;
     let gatewayToken;
     beforeEach(async () => {
       gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl });
     });
 
-    context('with a good token', () => {
+    context('with a good token and selfDeclarationTextAgreedTo', () => {
       beforeEach(async () => {
-        ({ token: gatewayToken } = await gatekeeperClientInst.createGatewayToken(walletPublicKey));
+        ({ token: gatewayToken } = await gatekeeperClientInst.createGatewayToken({ walletPublicKey, selfDeclarationTextAgreedTo }));
       });
 
-      it('should do a server lookup using the token in the path', async () => {
+      it('should retrieve a gatekeeper record for the token', async () => {
         const auditResponse: GatekeeperRecord = await gatekeeperClientInst.auditGatewayToken(gatewayToken);
         expectCreatedGatekeeperRecord(auditResponse);
+        expect(auditResponse.selfDeclarationTextAgreedTo).to.eq(selfDeclarationTextAgreedTo);
       });
     });
 
