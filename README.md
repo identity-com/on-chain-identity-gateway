@@ -25,7 +25,7 @@ import { GatekeeperClient, GatekeeperClientConfig, GatekeeperRecord, findGateway
 
 ## Functions/Classes
 ### findGatewayTokens
-Utility method for finding gateway token created for a given public key. This method does the lookup against the Solana blockchain. Returns an empty array if gateway tokens doen't exist for the given public key.
+Utility method for finding gateway token created for a given public key. This method does the lookup against the Solana blockchain. Returns an empty array if gateway tokens doesn't exist for the given public key.
 ```
 const gatewayToken: PublicKey = await findGatewayToken(connection, owner, gatekeeperKey);
 ```
