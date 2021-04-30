@@ -7,7 +7,7 @@ module.exports = {
   lines: 100,
   functions: 100,
   statements: 100,
-  branches: 84,
+  branches: 86,
   include: ['src/**'],
   reportDir: `${__dirname}/coverage`,
 };
