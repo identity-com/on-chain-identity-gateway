@@ -1,5 +1,8 @@
-# on-chain-identity-client
-This library provides a client and uility methods for helping Decentralized Apps (DAPPs) to make use of on-chain identity methods like gateway token retrieval, lookup, and revocation.
+# On-chain Identity Gateway - Client library
+
+This library provides a client and utility methods for helping 
+decentralized Apps (dApps) to make use of on-chain identity methods
+like gateway token retrieval, lookup, and revocation.
 
 - [on-chain-identity-client](#on-chain-identity-client)
   - [Usage](#usage)
