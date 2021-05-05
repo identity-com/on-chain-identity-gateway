@@ -1,0 +1,43 @@
+# On-chain Identity Gateway
+
+Welcome to the Identity.com On-chain Identity Gateway monorepo.
+
+This repository contains libraries that help a
+smart contract or program on the Blockchain with regulations
+and guidances from 
+[FATF](https://www.fatf-gafi.org/media/fatf/documents/recommendations/March%202021%20-%20VA%20Guidance%20update%20-%20Sixth%20draft%20-%20Public%20consultation.pdf),
+[US OFAC](https://home.treasury.gov/policy-issues/office-of-foreign-assets-control-sanctions-programs-and-information),
+[US OCC BSA](https://www.occ.treas.gov/topics/supervision-and-examination/bsa/index-bsa.html) and others.
+
+## Cross-chain
+
+This repository focuses on the Solana blockchain, but other implementations,
+as well as cross-chain features, are coming soon.
+
+## The Model
+
+On-chain applications require users to present a Gateway Token, which proves that they have
+been verified by a Gateway Provider to use the dApp. This token is tied to their wallet
+and is non-transferable.
+
+https://lucid.app/lucidchart/4f890182-deae-46a0-bd2d-9abd3da803d3/view
+
+## Integration
+
+### For DeFi developers (Solana)
+
+#### On-chain: 
+Follow the steps in solana/integration-lib to add gateway functionality to your dApp
+
+#### Client/UI:
+Follow the steps in solana/client to integrate the client library into to your dApp's
+client library and/or UI.
+
+### For Gateway providers
+If you are interested in becoming a gateway provider, and issuing gateway tokens,
+please contact us at contact@identity.org
+
+## Contributing
+
+Before contributing, please read the [contributing guidelines](CONTRIBUTING.md)
+and [code of conduct](CODE_OF_CONDUCT.md).
