@@ -23,6 +23,20 @@ and is non-transferable.
 ![Component View](docs/components.png)
 [Source](https://lucid.app/lucidchart/4f890182-deae-46a0-bd2d-9abd3da803d3/view)
 
+## Repo structure
+
+This repository contains a number of libraries,
+which combine to define the on-chain gateway protocol.
+
+Inside each chain's directory (e.g. solana/) are the following libraries:
+
+| Directory      	| Description                                                                                               | Published at                                                              |
+|------------------	|---------------------------------------------------------------------------------------------------------	|---------------------------------------------------------------------------|
+| client            | Used by dApp developers to discover and use gateway tokens and to interact with gatekeepers             	| [npm](https://www.npmjs.com/package/@identity.com/solana-gateway-client) 	|
+| integration-lib	| Used by on-chain program or smart-contract developers to restrict the contract to authorised users only 	|                                                                           |
+| program           | The source-code for the gateway program or smart-contract                                               	|                                                                           |
+| gatekeeper-lib    | Used by gatekeepers to allow them to issue gateway tokens on the chain.                                 	| [npm](https://www.npmjs.com/package/@identity.com/solana-gatekeeper-lib) 	|                                	| Published at [npm](https://www.npmjs.com/package/@identity.com/solana-gatekeeper-lib) 	|
+
 ## Integration
 
 ### For DeFi developers (Solana)
