@@ -52,7 +52,6 @@ yarn-error.log*
 
 .eslintcache
 .idea
-swapProgramId
 
 # VSCode
 *.vscode
@@ -60,3 +59,5 @@ swapProgramId
 
 # tests
 *test-results.xml
+
+dist/
