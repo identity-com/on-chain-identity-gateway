@@ -1,0 +1,74 @@
+{
+  "name": "@identity.com/gatekeeper-lib",
+  "description": "Library and CLI to manage OCIV Gateway Tokens",
+  "version": "1.0.1",
+  "author": "dankelleher @dankelleher",
+  "bin": {
+    "ociv": "./bin/run"
+  },
+  "bugs": "https://github.com/identity-com/ociv/issues",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.12.0",
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/plugin-help": "^3",
+    "@solana/spl-token": "^0.1.2",
+    "@solana/web3.js": "^1.2.2",
+    "geoip-country": "^4.0.61",
+    "stream-to-string": "^1.2.0",
+    "tslib": "^1"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1",
+    "@oclif/test": "^1",
+    "@types/bn.js": "^5.1.0",
+    "@types/chai": "^4",
+    "@types/geoip-country": "^4.0.0",
+    "@types/mocha": "^5",
+    "@types/node": "^10",
+    "chai": "^4",
+    "eslint": "^5.13",
+    "eslint-config-oclif": "^3.1",
+    "eslint-config-oclif-typescript": "^0.1",
+    "globby": "^10",
+    "mocha": "^5",
+    "nyc": "^14",
+    "oclif": "^1.17.0",
+    "ts-node": "^8",
+    "typescript": "^4.2.3",
+    "postinstall-prepare": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/dist",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/identity-com/ociv",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "oclif": {
+    "commands": "./dist/commands",
+    "bin": "ociv",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "repository": "identity-com/gatekeeper-lib",
+  "scripts": {
+    "build": "rm -rf dist && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "postpack": "rm -f oclif.manifest.json",
+    "posttest": "eslint . --ext .ts --config .eslintrc",
+    "prepack": "yarn build",
+    "prepare": "yarn build",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "version": "oclif-dev readme && git add README.md"
+  },
+  "types": "dist/index.d.ts"
+}
