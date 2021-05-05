@@ -20,7 +20,8 @@ On-chain applications require users to present a Gateway Token, which proves tha
 been verified by a Gateway Provider to use the dApp. This token is tied to their wallet
 and is non-transferable.
 
-https://lucid.app/lucidchart/4f890182-deae-46a0-bd2d-9abd3da803d3/view
+![Component View](docs/components.png)
+[Source](https://lucid.app/lucidchart/4f890182-deae-46a0-bd2d-9abd3da803d3/view)
 
 ## Integration
 
