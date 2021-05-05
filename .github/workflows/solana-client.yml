@@ -3,8 +3,8 @@ on:
   push:
   pull_request:
 jobs:
-  build:
-    name: Build, lint the library on ${{ matrix.os }}
+  solana-client-build:
+    name: Build, lint the solana client library on ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -14,7 +14,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: .
+        working-directory: ./solana/client
 
     steps:
       - name: Checkout repo
@@ -41,8 +41,8 @@ jobs:
       - name: Build
         run: yarn build
 
-  unit_tests:
-    name: Tests with dependencies stubbed out
+  solana-client-unit_tests:
+    name: Test the solana client with dependencies stubbed out
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -52,7 +52,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: .
+        working-directory: ./solana/client
 
     steps:
       - name: Checkout repo
@@ -76,8 +76,8 @@ jobs:
       - name: Unit tests
         run: yarn test:unit
 
-  integration_tests:
-    name: Tests against real chain/gatekeeper test environments
+  solana-client-integration_tests:
+    name: Test the solana client against real chain/gatekeeper test environments
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -87,7 +87,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: .
+        working-directory: ./solana/client
 
     steps:
       - name: Checkout repo
