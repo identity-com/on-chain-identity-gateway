@@ -15,11 +15,11 @@ Library and CLI to manage OCIV Gateway Tokens
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @identity.com/gatekeeper-lib
+$ npm install -g @identity.com/solana-gatekeeper-lib
 $ ociv COMMAND
 running command...
 $ ociv (-v|--version|version)
-@identity.com/gatekeeper-lib/1.0.2 darwin-x64 node-v16.0.0
+@identity.com/solana-gatekeeper-lib/1.0.2 darwin-x64 node-v16.0.0
 $ ociv --help [COMMAND]
 USAGE
   $ ociv COMMAND
