@@ -1,5 +1,5 @@
 {
-  "name": "@identity.com/gatekeeper-lib",
+  "name": "@identity.com/solana-gatekeeper-lib",
   "description": "Library and CLI to manage OCIV Gateway Tokens",
   "version": "1.0.2",
   "author": "dankelleher @dankelleher",
