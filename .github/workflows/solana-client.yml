@@ -30,7 +30,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-client-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-client-${{ hashFiles('yarn.lock') }}
 
       - name: Install
         run: yarn install
@@ -68,7 +68,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-client-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
         run: yarn install
@@ -103,7 +103,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-client-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
         run: yarn install
