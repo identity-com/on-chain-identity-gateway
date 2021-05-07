@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/solana-gateway-client",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Client for interacting with OCIV gatekeepers",
   "main": "dist/index",
   "types": "dist/index",
@@ -25,9 +25,9 @@
     "@types/chai": "^4.2.16",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-subset": "^1.3.3",
-    "@types/sinon": "^10.0.0",
     "@types/expect": "^24.3.0",
     "@types/mocha": "^8.2.2",
+    "@types/sinon": "^10.0.0",
     "@types/sinon-chai": "^3.2.5",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",

@@ -3,10 +3,10 @@
 use {
     crate::{
         borsh as program_borsh,
-        error::SolariumError,
+        error::GatewayError,
         id,
-        instruction::SolariumInstruction,
-        state::{get_inbox_address_with_seed, InboxData},
+        instruction::GatewayInstruction,
+        state::{get_gateway_token_address_with_seed, GatewayTokenData},
     },
     borsh::{BorshDeserialize, BorshSerialize},
     sol_did::{validate_owner},
@@ -26,15 +26,15 @@ use {
 use crate::state::{ADDRESS_SEED, Message};
 
 
-fn check_authority(authority_info: &AccountInfo, did: &AccountInfo, inbox: &InboxData) -> ProgramResult {
+fn check_authority(authority_info: &AccountInfo, did: &AccountInfo, gateway_token: &GatewayTokenData) -> ProgramResult {
     if !authority_info.is_signer {
-        msg!("Inbox authority signature missing");
+        msg!("Gateway Token authority signature missing");
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    if !(inbox.owner.eq(did.key)) {
-        msg!("Incorrect Inbox authority provided");
-        return Err(SolariumError::IncorrectAuthority.into())
+    if !(gateway_token.owner.eq(did.key)) {
+        msg!("Incorrect Gateway Token authority provided");
+        return Err(GatewayError::IncorrectAuthority.into())
     }
     
     validate_owner(did, &[authority_info])
@@ -46,16 +46,12 @@ pub fn process_instruction(
     accounts: &[AccountInfo],
     input: &[u8],
 ) -> ProgramResult {
-    let instruction = SolariumInstruction::try_from_slice(input)?;
+    let instruction = GatewayInstruction::try_from_slice(input)?;
     let account_info_iter = &mut accounts.iter();
 
     match instruction {
-        SolariumInstruction::Initialize { } => { //size, alias } => {
-            msg!("SolariumInstruction::Initialize");
-            let message_content_size: u64 = 256;
-            let message_size = 1 + 32 + message_content_size;
-            let size: u64 = (u64::from(InboxData::DEFAULT_SIZE) * message_size) + 32 + 16;
-
+        GatewayInstruction::Issue { } => {
+            msg!("GatewayInstruction::Issue");
             let funder_info = next_account_info(account_info_iter)?;
             let data_info = next_account_info(account_info_iter)?;
             let owner_did_info = next_account_info(account_info_iter)?;
@@ -63,20 +59,22 @@ pub fn process_instruction(
             let system_program_info = next_account_info(account_info_iter)?;
             let rent = &Rent::from_account_info(rent_info)?;
             
-            let (inbox_address, inbox_bump_seed) = get_inbox_address_with_seed(owner_did_info.key);
-            if inbox_address != *data_info.key {
-                msg!("Error: inbox address derivation mismatch");
+            let size
+            
+            let (gateway_token_address, gateway_token_bump_seed) = get_gateway_token_address_with_seed(owner_did_info.key);
+            if gateway_token_address != *data_info.key {
+                msg!("Error: gateway_token address derivation mismatch");
                 return Err(ProgramError::InvalidArgument);
             }
             
             let data_len = data_info.data.borrow().len();
             if data_len > 0 {
-                msg!("Inbox account already initialized");
+                msg!("Gateway_token account already initialized");
                 return Err(ProgramError::AccountAlreadyInitialized);
             }
             
-            let inbox_signer_seeds: &[&[_]] =
-                &[&owner_did_info.key.to_bytes(), ADDRESS_SEED, &[inbox_bump_seed]];
+            let gateway_token_signer_seeds: &[&[_]] =
+                &[&owner_did_info.key.to_bytes(), ADDRESS_SEED, &[gateway_token_bump_seed]];
             
             msg!("Creating data account");
             invoke_signed(
@@ -92,73 +90,12 @@ pub fn process_instruction(
                     data_info.clone(),
                     system_program_info.clone(),
                 ],
-                &[&inbox_signer_seeds],
+                &[&gateway_token_signer_seeds],
             )?;
             
-            let inbox = InboxData::new(*owner_did_info.key);
-            inbox.serialize(&mut *data_info.data.borrow_mut())
+            let gateway_token = Gateway_tokenData::new(*owner_did_info.key);
+            gateway_token.serialize(&mut *data_info.data.borrow_mut())
                 .map_err(|e| e.into())
-        }
-
-        SolariumInstruction::Post { message } => {
-            msg!("SolariumInstruction::Post");
-            let data_info = next_account_info(account_info_iter)?;
-            let sender_did_info = next_account_info(account_info_iter)?;
-            let sender_info = next_account_info(account_info_iter)?;
-            let mut inbox =
-                program_borsh::try_from_slice_incomplete::<InboxData>(*data_info.data.borrow())?;
-            if !inbox.is_initialized() {
-                msg!("Inbox account not initialized");
-                return Err(ProgramError::UninitializedAccount);
-            }
-
-            // Check that the sender of the message is valid
-            // the sender signer is an authority on the DID.
-            validate_owner(sender_did_info, &[sender_info]).unwrap();
-            
-            let message_info = Message::new(*sender_did_info.key, message);
-            
-            inbox.post(message_info);
-
-            inbox.serialize(&mut *data_info.data.borrow_mut())
-                .map_err(|e| e.into())
-            
-            // check_authority(authority_info, &account_data)?;
-            // let start = offset as usize;
-            // let end = start + data.len();
-            // if end > data_info.data.borrow().len() {
-            //     return Err(ProgramError::AccountDataTooSmall);
-            // } else {
-            //     data_info.data.borrow_mut()[start..end].copy_from_slice(&data);
-            // }
-            // 
-            // // make sure the written bytes are valid by trying to deserialize
-            // // the update account buffer
-            // let _account_data =
-            //     program_borsh::try_from_slice_incomplete::<InboxData>(*data_info.data.borrow())?;
-            // Ok(())
-        }
-
-        SolariumInstruction::CloseAccount => {
-            msg!("SolariumInstruction::CloseAccount");
-            let data_info = next_account_info(account_info_iter)?;
-            let owner_did_info = next_account_info(account_info_iter)?;
-            let authority_info = next_account_info(account_info_iter)?;
-            let destination_info = next_account_info(account_info_iter)?;
-            let account_data =
-                program_borsh::try_from_slice_incomplete::<InboxData>(*data_info.data.borrow())?;
-            if !account_data.is_initialized() {
-                msg!("Inbox not initialized");
-                return Err(ProgramError::UninitializedAccount);
-            }
-            check_authority(authority_info, owner_did_info, &account_data)?;
-            let destination_starting_lamports = destination_info.lamports();
-            let data_lamports = data_info.lamports();
-            **data_info.lamports.borrow_mut() = 0;
-            **destination_info.lamports.borrow_mut() = destination_starting_lamports
-                .checked_add(data_lamports)
-                .ok_or(SolariumError::Overflow)?;
-            Ok(())
         }
     }
 }
