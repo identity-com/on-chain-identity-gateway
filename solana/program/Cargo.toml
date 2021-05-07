@@ -1,9 +1,9 @@
 [package]
-name = "solarium"
+name = "gateway"
 version = "0.1.0"
-description = "Solana Program Library ID Program"
-authors = ["Solana Maintainers <maintainers@solana.foundation>"]
-repository = "https://github.com/identity-com/sol-did"
+description = "OCIV Gateway Program"
+authors = ["Daniel Kelleher <daniel@identity.com>"]
+repository = "https://github.com/identity-com/on-chain-identity-gateway"
 license = "Apache-2.0"
 edition = "2018"
 
@@ -16,13 +16,15 @@ borsh = "0.8.1"
 borsh-derive = "0.8.1"
 num-derive = "0.3"
 num-traits = "0.2"
-sol-did = {version = "0.1.1", features = [ "no-entrypoint" ] }
 solana-program = "1.5.10"
+spl-token = {version = "3.1.0", features = ["no-entrypoint"]}
+spl-associated-token-account = {version = "1.0.2", features = ["no-entrypoint"]}
 thiserror = "1.0"
 
 [dev-dependencies]
 solana-program-test = "1.5.10"
 solana-sdk = "1.5.10"
+tokio = { version = "1.0", features = ["macros"]}
 
 [lib]
 crate-type = ["cdylib", "lib"]
