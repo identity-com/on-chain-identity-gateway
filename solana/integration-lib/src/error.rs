@@ -1,0 +1,43 @@
+//! Error types
+
+use {
+    num_derive::FromPrimitive,
+    solana_program::{
+        decode_error::DecodeError, program_error::ProgramError
+    },
+    thiserror::Error,
+};
+
+/// Errors that may be returned by the program.
+#[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
+pub enum GatewayError {
+    /// The gatekeeper listed in the gateway token is not accepted
+    #[error("The gatekeeper listed in the gateway token is not accepted")]
+    IncorrectGatekeeper,
+
+    /// The gateway token's owner is not the account placing the order
+    #[error("The gateway token's owner is not the account placing the order")]
+    InvalidOwner,
+
+    /// The gateway token account is not of the correct type
+    #[error("The gateway token account is not of the correct type")]
+    InvalidToken,
+
+    /// The gateway token was revoked
+    #[error("The gateway token was revoked")]
+    TokenRevoked,
+
+    /// The gateway token was expected to be revoked, but was not
+    #[error("The gateway token was expected to be revoked, but was not")]
+    ExpectedRevokedToken
+}
+impl From<GatewayError> for ProgramError {
+    fn from(e: GatewayError) -> Self {
+        ProgramError::Custom(e as u32)
+    }
+}
+impl<T> DecodeError<T> for GatewayError {
+    fn type_of() -> &'static str {
+        "Gateway Error"
+    }
+}
