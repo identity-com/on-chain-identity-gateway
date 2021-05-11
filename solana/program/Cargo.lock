@@ -918,23 +918,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gateway"
-version = "0.1.0"
-dependencies = [
- "borsh",
- "borsh-derive",
- "num-derive",
- "num-traits",
- "solana-program",
- "solana-program-test",
- "solana-sdk",
- "spl-associated-token-account",
- "spl-token",
- "thiserror",
- "tokio 1.5.0",
-]
-
-[[package]]
 name = "generic-array"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2423,6 +2406,23 @@ dependencies = [
  "quote 1.0.9",
  "rustc_version",
  "syn 1.0.72",
+]
+
+[[package]]
+name = "solana-gateway-program"
+version = "0.1.0"
+dependencies = [
+ "borsh",
+ "borsh-derive",
+ "num-derive",
+ "num-traits",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "spl-associated-token-account",
+ "spl-token",
+ "thiserror",
+ "tokio 1.5.0",
 ]
 
 [[package]]

@@ -1,5 +1,5 @@
 [package]
-name = "gateway"
+name = "solana-gateway-program"
 version = "0.1.0"
 description = "OCIV Gateway Program"
 authors = ["Daniel Kelleher <daniel@identity.com>"]
