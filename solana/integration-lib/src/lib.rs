@@ -4,58 +4,31 @@
 #[macro_use]
 pub mod error;
 pub mod state;
+mod borsh;
 
-use spl_token::{
-    state::{Account, AccountState},
+use crate::{
+    borsh as program_borsh,
+    state::{GatewayToken, GatewayTokenState},
+    error::GatewayError
 };
 use solana_program::{
     account_info::AccountInfo,
     pubkey::Pubkey,
-    program_pack::Pack,
     msg
 };
 
-use solana_program::program_error::ProgramError;
-use crate::error::GatewayError;
-
 pub struct Gateway {}
 impl Gateway {
-    #[inline]
-    fn gateway_token_program_id() -> Pubkey {
-        spl_token::id()
-    }
-
-    /// Unpacks a spl_token `Account`.
-    fn unpack_token_account(
-        account_info: &AccountInfo,
-        token_program_id: &Pubkey,
-    ) -> Result<Account, ProgramError> {
-        if account_info.owner != token_program_id {
-            Err(ProgramError::IncorrectProgramId)
-        } else {
-            Account::unpack(&account_info.data.borrow())
-                .map_err(|_| ProgramError::InvalidAccountData)
-        }
-    }
-
     /// Unpacks an account into a gateway token object
-    /// NOTE - currently a gateway token is represented as an spl token 
-    fn parse_gateway_token(account_info: &AccountInfo,
-                           program_id: &Pubkey) -> Result<Account, GatewayError> {
-        Self::unpack_token_account(account_info, program_id).or(Err(GatewayError::InvalidToken))
-    }
-
-    fn gateway_token_valid_state(
-        gateway_token: &Account,
-    ) -> bool {
-        gateway_token.state != AccountState::Frozen
+    fn parse_gateway_token(account_info: &AccountInfo) -> Result<GatewayToken, GatewayError> {
+        program_borsh::try_from_slice_incomplete::<GatewayToken>(*account_info.data.borrow()).map_err(|_| GatewayError::InvalidToken)
     }
 
     /// Returns an error if the gateway token was NOT revoked
     pub fn expect_revoked_gateway_token(
-        gateway_token: &Account,
+        gateway_token: &GatewayToken,
     ) -> Result<(), GatewayError> {
-        if Self::gateway_token_valid_state(gateway_token) {
+        if gateway_token.state != GatewayTokenState::Revoked {
             msg!("Gateway token has not been revoked");
             return Err(GatewayError::ExpectedRevokedToken);
         }
@@ -69,7 +42,6 @@ impl Gateway {
     ) -> Result<(), GatewayError> {
         let gateway_token_result = Gateway::parse_gateway_token(
             gateway_token_info,
-            &Gateway::gateway_token_program_id()
         );
 
         match gateway_token_result {
@@ -81,26 +53,45 @@ impl Gateway {
     /// Verifies the gateway token belongs to the expected owner,
     /// is signed by the gatekeeper and is not revoked.
     pub fn verify_gateway_token(
-        gateway_token: &Account,
+        gateway_token: &GatewayToken,
         expected_owner: &Pubkey,
-        expected_gatekeeper_key: &Pubkey,
+        expected_gatekeeper_network_key: &Pubkey,
     ) -> Result<(), GatewayError> {
-        if *expected_owner != gateway_token.owner {
-            msg!("Gateway token does not have the correct owner. Expected: {} Was: {}", *expected_owner, gateway_token.owner);
+        if *expected_owner != gateway_token.owner_wallet {
+            msg!("Gateway token does not have the correct owner. Expected: {} Was: {}", *expected_owner, gateway_token.owner_wallet);
             return Err(GatewayError::InvalidOwner);
         }
 
-        if *expected_gatekeeper_key != gateway_token.mint {
-            msg!("Gateway token not issued by correct gatekeeper");
+        if *expected_gatekeeper_network_key != gateway_token.gatekeeper_network {
+            msg!("Gateway token not issued by correct gatekeeper network");
             return Err(GatewayError::IncorrectGatekeeper);
         }
 
-        if !Self::gateway_token_valid_state(gateway_token) {
-            msg!("Gateway token has been revoked");
+        if !gateway_token.is_vanilla() {
+            msg!("Gateway token is of an invalid type. Only vanilla gateway tokens can be verified.");
+            return Err(GatewayError::InvalidToken);
+        }
+
+        if !gateway_token.is_valid_vanilla() {
+            msg!("Gateway token is invalid. It has either been revoked or frozen, or has expired");
             return Err(GatewayError::TokenRevoked);
         }
 
         Ok(())
+    }
+
+    pub fn gateway_token_reference(
+        gateway_token_info: &AccountInfo
+    ) -> Result<Pubkey, GatewayError> {
+        let gateway_token_result = Gateway::parse_gateway_token(
+            gateway_token_info
+        );
+
+        match gateway_token_result {
+            // Non-identity-linked token - the token key is the reference, identity-linked token - the parent token is the reference
+            Ok(gateway_token) => Ok(gateway_token.parent_gateway_token.unwrap_or(*gateway_token_info.key)),
+            Err(error) => Err(error)
+        }
     }
 
     /// Verifies the gateway token accout parses to a valid gateway token,
@@ -113,8 +104,7 @@ impl Gateway {
         expected_gatekeeper_key: &Pubkey,
     )  -> Result<(), GatewayError> {
         let gateway_token_result = Gateway::parse_gateway_token(
-            gateway_token_info,
-            &Gateway::gateway_token_program_id()
+            gateway_token_info
         );
 
         match gateway_token_result {

@@ -66,7 +66,7 @@ Creates a short-lived (zero-rent) session token and pays the gatekeeper in CVC.
 - `gatekeeper_network: Pubkey`    The gateway network that issued the token
 - `issuing_gatekeeper: Pubkey`    The specific gatekeeper that issued the token
 - `state: [Active, Revoked, Frozen]`  The current state of the token (see [below](#gateway-token-state))
-- `expiry: Option([u64;2])`   - The expiry time of the token. [Epoch, Slot] 
+- `expiry: Option(UnixTimestamp)`   - The expiry time of the token as a unix timestamp  (i64) 
 - `transaction_details: Option(TransactionDetailsStruct)` (see [below](#transaction-details-structure))
 
 #### Features
