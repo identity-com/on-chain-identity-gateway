@@ -610,6 +610,8 @@ dependencies = [
 name = "solana-gateway"
 version = "0.0.1"
 dependencies = [
+ "borsh",
+ "borsh-derive",
  "num-derive",
  "num-traits",
  "solana-program",
