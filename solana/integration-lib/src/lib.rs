@@ -3,6 +3,7 @@
 
 #[macro_use]
 pub mod error;
+pub mod state;
 
 use spl_token::{
     state::{Account, AccountState},
