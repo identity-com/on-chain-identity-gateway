@@ -112,6 +112,10 @@ impl GatewayToken {
         // check that one of the transaction signers is an authority on the DID
         validate_owner(did, signers).is_ok()
     }
+    
+    pub fn is_session_token(&self) -> bool {
+        self.parent_gateway_token.is_some()
+    }
 
     // pub fn matches_transaction_details(&self, transaction_details: &dyn CompatibleTransactionDetails) -> bool {
     //     if !self.has_feature(Feature::TransactionLinked) { return false }
