@@ -16,6 +16,10 @@ use solana_program::{
     pubkey::Pubkey,
     msg
 };
+use num_traits::AsPrimitive;
+
+// Session gateway tokens, that have a lamport balance that exceeds this value, are rejected
+const MAX_SESSION_TOKEN_BALANCE: u64 = 0;
 
 pub struct Gateway {}
 impl Gateway {
@@ -56,6 +60,7 @@ impl Gateway {
         gateway_token: &GatewayToken,
         expected_owner: &Pubkey,
         expected_gatekeeper_network_key: &Pubkey,
+        gateway_token_account_balance: u64,
     ) -> Result<(), GatewayError> {
         if *expected_owner != gateway_token.owner_wallet {
             msg!("Gateway token does not have the correct owner. Expected: {} Was: {}", *expected_owner, gateway_token.owner_wallet);
@@ -70,6 +75,11 @@ impl Gateway {
         if !gateway_token.is_vanilla() {
             msg!("Gateway token is of an invalid type. Only vanilla gateway tokens can be verified.");
             return Err(GatewayError::InvalidToken);
+        }
+        
+        if gateway_token.is_session_token() && gateway_token_account_balance > MAX_SESSION_TOKEN_BALANCE {
+            msg!("Gateway token is a session token, but has a lamport balance that would make it exceed the lifetime of the transaction.");
+            return Err(GatewayError::InvalidSessionToken);
         }
 
         if !gateway_token.is_valid() {
@@ -108,7 +118,12 @@ impl Gateway {
         );
 
         match gateway_token_result {
-            Ok(gateway_token) => Gateway::verify_gateway_token(&gateway_token, expected_owner, expected_gatekeeper_key),
+            Ok(gateway_token) => Gateway::verify_gateway_token(
+                &gateway_token,
+                expected_owner,
+                expected_gatekeeper_key,
+                gateway_token_info.lamports.borrow().as_()
+            ),
             Err(_) => gateway_token_result.map(|_| ())
         }
     }
