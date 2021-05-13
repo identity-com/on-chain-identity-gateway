@@ -4,14 +4,17 @@ use {
     sol_did::validate_owner,
     solana_program::{
         pubkey::Pubkey,
-        sysvar::clock::Clock,
-        clock::UnixTimestamp,
+        clock::{UnixTimestamp},
+        sysvar::{
+            clock::{Clock}, Sysvar
+        },
         account_info::AccountInfo
     }
 };
 
-fn before(timestamp: UnixTimestamp, now: &Clock) -> bool {
-    now.unix_timestamp > timestamp
+fn before_now(timestamp: UnixTimestamp) -> bool {
+    let clock = Clock::get().unwrap();
+    clock.unix_timestamp > timestamp
 }
 
 /// Defines the gateway token structure
@@ -38,6 +41,18 @@ pub struct GatewayToken {
     // pub transaction_details: Option<dyn CompatibleTransactionDetails>
 }
 impl GatewayToken {
+    // TODO should probably do away with the feature bitmap and just infer
+    // the features from the properties. This is currently not typesafe as
+    // you can set a feature (eg Expirable) without giving the gateway token
+    // the appropriate properites (e.g. expiry). It was added to help
+    // serialisation but this is not necessary unless we use traits for different
+    // features.
+    /// Set a feature flag on a gateway token
+    pub fn set_feature(&mut self, feature: Feature) {
+        let ordinal = feature as u8;
+        self.features |= 1 << ordinal;
+    }
+
     /// Tests if the gateway token has the required feature
     pub fn has_feature(&self, feature: Feature) -> bool {
         let ordinal = feature as u8;
@@ -47,7 +62,7 @@ impl GatewayToken {
             false
         }
     }
-    
+
     /// Checks if this is a "vanilla" token,
     /// ie one that needs no additional account inputs to validate it
     pub fn is_vanilla(&self) -> bool {
@@ -61,19 +76,24 @@ impl GatewayToken {
     }
 
     /// Checks if a vanilla gateway token is in a valid state
-    pub fn is_valid_vanilla(&self,) -> bool {
-        self.is_vanilla() && self.is_valid_state()
+    /// Use is_valid_exotic to validate exotic gateway tokens
+    pub fn is_valid(&self) -> bool {
+        self.is_vanilla() && self.is_valid_state() && !self.has_expired()
+    }
+
+    pub fn has_expired(&self)-> bool {
+        self.has_feature(Feature::Expirable) && before_now(self.expiry.unwrap())
     }
 
     /// Checks if the exotic gateway token is in a valid state (not inactive or expired)
     /// Note, this does not check association to any wallet.
-    pub fn is_valid_exotic(&self, clock: &Clock, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
+    pub fn is_valid_exotic(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
         // Check the token is active
         if !self.is_valid_state() { return false }
 
         // Check the token has not expired
-        if self.has_feature(Feature::Expirable) && !before(self.expiry.unwrap(), clock) { return false }
-        
+        if self.has_expired() { return false }
+
         // Check that the token is owned by did (if identity-linked)
         if self.has_feature(Feature::IdentityLinked) && !self.owned_by_did(did, signers) { return false }
 
@@ -85,14 +105,18 @@ impl GatewayToken {
     pub fn owned_by_did(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
         // check if this gateway token is linked to an identity
         if !self.has_feature(Feature::IdentityLinked) { return false }
-        
+
         // check if the passed-in did is the owner of this gateway token 
         if *did.key != self.owner_identity.unwrap() { return false }
-        
+
         // check that one of the transaction signers is an authority on the DID
         validate_owner(did, signers).is_ok()
     }
     
+    pub fn is_session_token(&self) -> bool {
+        self.parent_gateway_token.is_some()
+    }
+
     // pub fn matches_transaction_details(&self, transaction_details: &dyn CompatibleTransactionDetails) -> bool {
     //     if !self.has_feature(Feature::TransactionLinked) { return false }
     //     
@@ -119,7 +143,7 @@ impl Default for GatewayTokenState {
 /// Feature flag names. The values are encoded as a bitmap in a gateway token
 /// NOTE: There may be only 8 values here, as long as the "features" bitmap is a u8
 pub enum Feature {
-    /// The token is valid for the current transaction only. Must have its lamport balance set to 0.                                        	|
+    /// The token is valid for the current transaction only. Must have its lamport balance set to 0.
     Session,
     /// The expiry field must be set and the expiry slot & epoch must not be in the past.
     Expirable,
@@ -153,5 +177,185 @@ impl CompatibleTransactionDetails for SimpleTransactionDetails {
     /// The amount and the token must match for these transaction details to be considered compatible
     fn compatible_with(&self, rhs: Self) -> bool {
         self.eq(&rhs)
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    use solana_program::program_stubs;
+    use std::{
+        sync::Once,
+        time::{SystemTime, UNIX_EPOCH},
+        rc::Rc,
+        cell::RefCell
+    };
+    use sol_did::state::{SolData, VerificationMethod};
+    use solana_sdk::{
+        signature::{Keypair, Signer}
+    };
+    
+    static INIT_TESTS: Once = Once::new();
+
+    // Get the current unix timestamp from SystemTime
+    fn now() -> UnixTimestamp {
+        let start = SystemTime::now();
+        let now = start
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+
+        now.as_secs() as UnixTimestamp
+    }
+
+    // Create stubs for anything we need that is provided by the solana runtime
+    struct TestSyscallStubs {}
+    impl program_stubs::SyscallStubs for TestSyscallStubs {
+        // create a stub clock object and set it at the provided address
+        fn sol_get_clock_sysvar(&self, var_addr: *mut u8) -> u64 {
+            // we only need the unix_timestamp
+            let stub_clock = Clock {
+                slot: 0,
+                epoch_start_timestamp: 0,
+                epoch: 0,
+                leader_schedule_epoch: 0,
+                unix_timestamp: now()
+            };
+
+            // rust magic
+            unsafe {
+                *(var_addr as *mut _ as *mut Clock) = stub_clock;
+            }
+
+            0
+        }
+    }
+    // Inject stubs into the solana program singleton
+    fn init() {
+        INIT_TESTS.call_once(|| {
+            program_stubs::set_syscall_stubs(Box::new(TestSyscallStubs {}));
+        });
+    }
+
+    fn stub_vanilla_gateway_token() -> GatewayToken {
+        GatewayToken {
+            features: 0,
+            parent_gateway_token: None,
+            owner_wallet: Default::default(),
+            owner_identity: None,
+            gatekeeper_network: Default::default(),
+            issuing_gatekeeper: Default::default(),
+            state: Default::default(),
+            expiry: None
+        }
+    }
+
+    fn stub_identity(identity_owner: &Keypair) -> SolData {
+        let key_id = "default";
+        SolData {
+            authority: Default::default(),
+            version: "".to_string(),
+            verification_method: vec![VerificationMethod {
+                id: key_id.to_string(),
+                verification_type: "".to_string(),
+                pubkey: identity_owner.pubkey()
+            }],
+            authentication: vec![],
+            capability_invocation: vec![key_id.to_string()],
+            capability_delegation: vec![],
+            key_agreement: vec![],
+            assertion_method: vec![],
+            service: vec![]
+        }
+    }
+
+    #[test]
+    fn serialize_data() {
+        let token = stub_vanilla_gateway_token();
+        let serialized = token.try_to_vec().unwrap();
+        let deserialized = GatewayToken::try_from_slice(&serialized).unwrap();
+        assert_eq!(token, deserialized);
+    }
+
+    #[test]
+    fn is_inactive() {
+        let mut token = stub_vanilla_gateway_token();
+        token.state = GatewayTokenState::Revoked;
+        assert!(!token.is_valid());
+
+        token.state = GatewayTokenState::Frozen;
+        assert!(!token.is_valid());
+    }
+
+    #[test]
+    fn set_feature() {
+        let mut token = stub_vanilla_gateway_token();
+        assert!(!token.has_feature(Feature::Expirable));
+        token.set_feature(Feature::Expirable);
+        assert!(token.has_feature(Feature::Expirable))
+    }
+
+    #[test]
+    fn has_expired() {
+        init();
+        let mut token = stub_vanilla_gateway_token();
+
+        token.set_feature(Feature::Expirable);
+        token.expiry = Some(now() - 1000);
+
+        assert!(token.has_expired());
+        assert!(!token.is_valid());
+    }
+
+    // Tests that a gateway token that is owned by a DID can be checked.
+    // This test is verbose, mainly because of the AccountInfo object which uses a lot of references. 
+    #[test]
+    fn owned_by_identity() {
+        // the address of the DID on-chain
+        let did_key: Pubkey = Pubkey::new_from_array([100; 32]);
+        // a key held by the holder of the DID
+        let identity_owner: Keypair = Keypair::new();
+
+        // create the DID and serialise it
+        let identity = stub_identity(&identity_owner);
+        let mut serialized_identity = identity.try_to_vec().unwrap();
+
+        // create an AccountInfo object referencing the DID
+        let mut did_lamports = 0;
+        let did_account_info = AccountInfo {
+            key: &did_key,
+            is_signer: false,
+            is_writable: false,
+            lamports: Rc::new(RefCell::new(&mut did_lamports)),
+            data: Rc::new(RefCell::new(&mut serialized_identity)),
+            owner: &sol_did::id(),
+            executable: false,
+            rent_epoch: 0
+        };
+
+        // create an AccountInfo object referencing the identity owner
+        let mut signer_lamports = 0;
+        let signer_account_info = AccountInfo {
+            key: &identity_owner.pubkey(),
+            is_signer: true,
+            is_writable: false,
+            lamports: Rc::new(RefCell::new(&mut signer_lamports)),
+            data: Rc::new(RefCell::new(&mut [])),
+            owner: &Default::default(),
+            executable: false,
+            rent_epoch: 0
+        };
+
+        // create a gateway token linked to the DID
+        let mut token = stub_vanilla_gateway_token();
+        token.set_feature(Feature::IdentityLinked);
+        token.owner_identity = Some(*did_account_info.key);
+
+        // verify that the token is owned by the DID and that the signer account is a valid
+        // signer of the DID
+        assert!(token.owned_by_did(&did_account_info, &[&signer_account_info]));
+        
+        // verify that the token can be used in this transaction, as a signature from
+        // a valid signer of the linked identity has been provided.
+        assert!(token.is_valid_exotic(&did_account_info, &[&signer_account_info]))
     }
 }
