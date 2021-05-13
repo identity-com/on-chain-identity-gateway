@@ -41,6 +41,20 @@ pub struct GatewayToken {
     // pub transaction_details: Option<dyn CompatibleTransactionDetails>
 }
 impl GatewayToken {
+    pub fn new_vanilla(owner_wallet: &Pubkey, gatekeeper_network: &Pubkey, issuing_gatekeeper: &Pubkey) -> Self {
+        Self {
+            features: 0,
+            parent_gateway_token: None,
+            owner_wallet: *owner_wallet,
+
+            owner_identity: None,
+            gatekeeper_network: *gatekeeper_network,
+            issuing_gatekeeper: *issuing_gatekeeper,
+            state: Default::default(),
+            expiry: None
+        }
+    }
+    
     // TODO should probably do away with the feature bitmap and just infer
     // the features from the properties. This is currently not typesafe as
     // you can set a feature (eg Expirable) without giving the gateway token

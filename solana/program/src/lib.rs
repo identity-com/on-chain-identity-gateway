@@ -1,7 +1,6 @@
 //! SOL program
 #![deny(missing_docs)]
 
-pub mod borsh;
 mod entrypoint;
 pub mod error;
 pub mod instruction;
