@@ -12,10 +12,23 @@ use {
         system_program, sysvar,
     }
 };
+use crate::state::get_gatekeeper_address_with_seed;
 
 /// Instructions supported by the program
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq)]
 pub enum GatewayInstruction {
+    /// Add a new Gatekeeper to a network
+    ///
+    /// Accounts expected by this instruction:
+    ///
+    /// 0. `[writable, signer]`    funder_account: the payer of the transaction
+    //  3. `[writeable]`           gatekeeper_account: the destination account containing details of the gatekeeper
+    //  4. `[]`                    gatekeeper_authority: the authority that owns the gatekeeper account
+    //  5. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
+    /// 6. `[]`                    Rent sysvar
+    /// 7. `[]`                    System program
+    AddGatekeeper {},
+    
     /// Issue a new gateway token
     ///
     /// Accounts expected by this instruction:
@@ -35,7 +48,30 @@ pub enum GatewayInstruction {
     }
 }
 
-/// Create a `GatewayInstruction::Issue` instruction
+/// Create a `GatewayInstruction::AddGatekeeper` instruction
+pub fn add_gatekeeper(
+    funder_account: &Pubkey,        // the payer of the transaction
+    gatekeeper_authority: &Pubkey,  // the authority that owns the gatekeeper account
+    gatekeeper_network: &Pubkey,    // the gatekeeper network to which the gatekeeper belongs
+) -> Instruction {
+    let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(gatekeeper_authority);
+    Instruction::new_with_borsh(
+        id(),
+        &GatewayInstruction::AddGatekeeper { },
+        vec![
+            AccountMeta::new(*funder_account, true),
+            AccountMeta::new(gatekeeper_account, false),
+
+            AccountMeta::new_readonly(*gatekeeper_authority, false),
+            AccountMeta::new_readonly(*gatekeeper_network, false),
+
+            AccountMeta::new_readonly(sysvar::rent::id(), false),
+            AccountMeta::new_readonly(system_program::id(), false),
+        ],
+    )
+}
+
+/// Create a `GatewayInstruction::IssueVanilla` instruction
 pub fn issue_vanilla(
     funder_account: &Pubkey,        // the payer of the transaction
     owner: &Pubkey,                 // the wallet that the gateway token is issued for
