@@ -3,14 +3,14 @@
 use {
     crate::{
         id,
-        state::{get_gateway_address_with_seed, Message, GatewayData},
+        state::{get_gateway_token_address_with_seed, AddressSeed},
     },
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::{
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
         system_program, sysvar,
-    },
+    }
 };
 
 /// Instructions supported by the program
@@ -20,31 +20,43 @@ pub enum GatewayInstruction {
     ///
     /// Accounts expected by this instruction:
     ///
-    /// 0. `[writable, signer]` Funding account, must be a system account
-    /// 1. `[writable]` Unallocated gateway token account, must be a program address
-    /// 2. `[]` Gateway owner DID
-    /// 3. `[]` Rent sysvar
-    /// 4. `[]` System program
-    Issue {
-        
+    /// 0. `[writable, signer]`    funder_account: the payer of the transaction
+    //  1. `[writable]`            gateway_token: the destination account of the gateway token
+    //  2. `[]`                    owner: the wallet that the gateway token is issued for
+    //  3. `[]`                    gatekeeper_account: the account containing details of the gatekeeper issuing the gateway token
+    //  4. `[signer]`              gatekeeper_authority: the authority that owns the gatekeeper account
+    //  5. `[]`                    gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
+    /// 6. `[]`                    Rent sysvar
+    /// 7. `[]`                    System program
+    IssueVanilla {
+        /// An optional seed to use when generating a gateway token
+        /// allowing multiple gateway tokens per wallet
+        seed: Option<AddressSeed>
     }
 }
 
 /// Create a `GatewayInstruction::Issue` instruction
-pub fn issue(
-    funder_account: &Pubkey,
-    owner_did: &Pubkey,
-    size: u8,
-    alias: String
+pub fn issue_vanilla(
+    funder_account: &Pubkey,        // the payer of the transaction
+    owner: &Pubkey,                 // the wallet that the gateway token is issued for
+    gatekeeper_account: &Pubkey,    // the account containing details of the gatekeeper issuing the gateway token
+    gatekeeper_authority: &Pubkey,  // the authority that owns the gatekeeper account
+    gatekeeper_network: &Pubkey,    // the gatekeeper network to which the gatekeeper belongs
+    seed: Option<AddressSeed>       // optional seed to use when generating a gateway token
 ) -> Instruction {
-    let (gateway_account, _) = get_gateway_address_with_seed(owner_did);
+    let (gateway_account, _) = get_gateway_token_address_with_seed(owner, &seed);
     Instruction::new_with_borsh(
         id(),
-        &GatewayInstruction::Issue { },
+        &GatewayInstruction::IssueVanilla { seed },
         vec![
             AccountMeta::new(*funder_account, true),
             AccountMeta::new(gateway_account, false),
-            AccountMeta::new_readonly(*owner_did, false),
+            
+            AccountMeta::new_readonly(*owner, false),
+            AccountMeta::new_readonly(*gatekeeper_account, false),
+            AccountMeta::new_readonly(*gatekeeper_authority, true),
+            AccountMeta::new_readonly(*gatekeeper_network, false),
+            
             AccountMeta::new_readonly(sysvar::rent::id(), false),
             AccountMeta::new_readonly(system_program::id(), false),
         ],

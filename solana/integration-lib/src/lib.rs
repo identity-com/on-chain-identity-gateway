@@ -4,7 +4,7 @@
 #[macro_use]
 pub mod error;
 pub mod state;
-mod borsh;
+pub mod borsh;
 
 use crate::{
     borsh as program_borsh,
