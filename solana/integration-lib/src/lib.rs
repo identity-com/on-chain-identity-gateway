@@ -72,7 +72,7 @@ impl Gateway {
             return Err(GatewayError::InvalidToken);
         }
 
-        if !gateway_token.is_valid_vanilla() {
+        if !gateway_token.is_valid() {
             msg!("Gateway token is invalid. It has either been revoked or frozen, or has expired");
             return Err(GatewayError::TokenRevoked);
         }
