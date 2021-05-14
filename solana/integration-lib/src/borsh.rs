@@ -9,7 +9,7 @@ pub fn try_from_slice_incomplete<T: BorshDeserialize>(data: &[u8]) -> Result<T, 
     Ok(result)
 }
 
-/// Helper struct which to count how much data would be written during serialization
+/// Helper struct to count how much data would be written during serialization
 /// TODO remove after this is released in solana_program
 #[derive(Default)]
 struct WriteCounter {

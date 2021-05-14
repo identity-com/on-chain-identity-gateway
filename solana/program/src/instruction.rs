@@ -63,7 +63,7 @@ pub fn add_gatekeeper(
             AccountMeta::new(gatekeeper_account, false),
 
             AccountMeta::new_readonly(*gatekeeper_authority, false),
-            AccountMeta::new_readonly(*gatekeeper_network, false),
+            AccountMeta::new_readonly(*gatekeeper_network, true),
 
             AccountMeta::new_readonly(sysvar::rent::id(), false),
             AccountMeta::new_readonly(system_program::id(), false),
@@ -102,18 +102,13 @@ pub fn issue_vanilla(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::state::tests::test_gateway_data;
     use solana_program::program_error::ProgramError;
+    use solana_gateway::state::GatewayToken;
 
     #[test]
-    fn serialize_issue() {
-        let size = GatewayData::DEFAULT_SIZE;
-        let alias = "Alice";
-        let init_data = test_gateway_data();
-        let mut expected = vec![0];
-        expected.extend_from_slice(&size.to_le_bytes());
-        expected.append(&mut init_data.try_to_vec().unwrap());
-        let instruction = GatewayInstruction::Initialize { };//size, alias };
+    fn serialize_issue_vanilla() {
+        let mut expected = [1,0];
+        let instruction = GatewayInstruction::IssueVanilla { seed: None };
         assert_eq!(instruction.try_to_vec().unwrap(), expected);
         assert_eq!(
             GatewayInstruction::try_from_slice(&expected).unwrap(),
