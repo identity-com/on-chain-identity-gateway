@@ -33,7 +33,7 @@ use {
 use solana_gateway_program::state::get_gatekeeper_address_with_seed;
 
 fn program_test() -> ProgramTest {
-    ProgramTest::new("gateway-program", id(), processor!(process_instruction))
+    ProgramTest::new("solana_gateway_program", id(), processor!(process_instruction))
 }
 
 async fn add_gatekeeper(
