@@ -61,3 +61,4 @@ yarn-error.log*
 
 dist/
 target/
+test-ledger/

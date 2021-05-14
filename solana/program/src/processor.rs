@@ -74,6 +74,7 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
     };
     let size = get_instance_packed_len(&gatekeeper_account).unwrap() as u64;
 
+    msg!("Creating gatekeeper account");
     invoke_signed(
         &system_instruction::create_account(
             funder_info.key,
@@ -84,11 +85,13 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         ),
         &[
             funder_info.clone(),
-            gatekeeper_authority_info.clone(),
+            gatekeeper_account_info.clone(),
             system_program_info.clone(),
         ],
         &[&gatekeeper_signer_seeds],
     )?;
+
+    msg!("Gatekeeper account created");
 
     gatekeeper_account.serialize(&mut *gatekeeper_account_info.data.borrow_mut())
         .map_err(|e| e.into()) as ProgramResult
