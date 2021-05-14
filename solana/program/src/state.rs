@@ -40,11 +40,3 @@ pub fn get_gatekeeper_address_with_seed(authority: &Pubkey) -> (Pubkey, u8) {
         &[&authority.to_bytes(), GATEKEEPER_ADDRESS_SEED],
         &id())
 }
-
-#[cfg(test)]
-pub mod tests {
-    use super::*;
-    use crate::borsh as program_borsh;
-
-
-}

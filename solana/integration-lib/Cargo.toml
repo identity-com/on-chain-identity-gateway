@@ -16,7 +16,7 @@ no-entrypoint = []
 borsh = "0.8.1"
 borsh-derive = "0.8.1"
 solana-program = "1.6.8"
-sol-did = "0.1.1"
+sol-did = { version = "0.1.1", features = [ "no-entrypoint" ]}
 num-derive = "0.3"
 num-traits = "0.2.12"
 thiserror = "1.0.20"
