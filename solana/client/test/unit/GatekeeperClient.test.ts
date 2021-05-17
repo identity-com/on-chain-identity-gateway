@@ -1,6 +1,6 @@
 import chai from 'chai';
-import { Account, PublicKey } from '@solana/web3.js';
-import sinon from 'sinon';
+import { Keypair, PublicKey } from '@solana/web3.js';
+import * as sinon from 'sinon';
 import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import axios from 'axios';
@@ -49,7 +49,7 @@ describe('GatekeeperClient', () => {
     let walletPublicKey: PublicKey;
 
     beforeEach(() => {
-      walletPublicKey = new Account().publicKey;
+      walletPublicKey = Keypair.generate().publicKey;
       baseUrl = 'test_baseUrl';
       gatekeeperClientInst = new GatekeeperClient({ baseUrl });
     });
@@ -220,7 +220,7 @@ describe('GatekeeperClient', () => {
     let walletPublicKey: PublicKey;
 
     beforeEach(() => {
-      walletPublicKey = new Account().publicKey;
+      walletPublicKey = Keypair.generate().publicKey;
       baseUrl = 'test_baseUrl';
       gatekeeperClientInst = new GatekeeperClient({ baseUrl });
     });

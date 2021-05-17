@@ -1,16 +1,23 @@
-import {Buffer} from "buffer";
-import {Connection, PublicKey} from "@solana/web3.js";
-import {AccountInfo, AccountLayout, TOKEN_PROGRAM_ID} from "@solana/spl-token";
+import { Buffer } from "buffer";
+import { Connection, PublicKey } from "@solana/web3.js";
+import {
+  AccountInfo,
+  AccountLayout,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 
-export const gatewayTokenInfo = async (connection: Connection, tokenAccount: PublicKey):Promise<AccountInfo> => {
+export const gatewayTokenInfo = async (
+  connection: Connection,
+  tokenAccount: PublicKey
+): Promise<AccountInfo> => {
   const info = await connection.getAccountInfo(tokenAccount);
 
   if (info === null) {
-    throw new Error('Account not found');
+    throw new Error("Account not found");
   }
 
   if (!info.owner.equals(TOKEN_PROGRAM_ID)) {
-    throw new Error('Not an SPL Token');
+    throw new Error("Not an SPL Token");
   }
 
   if (info.data.length != AccountLayout.span) {
@@ -26,4 +33,4 @@ export const gatewayTokenInfo = async (connection: Connection, tokenAccount: Pub
   accountInfo.isFrozen = accountInfo.state === 2;
 
   return accountInfo;
-}
+};
