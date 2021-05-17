@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import axios from 'axios';
-import { GatekeeperClient, GatekeeperClientConfig, GatekeeperRecord } from '../../src';
+import { GatekeeperClient, GatekeeperRecord } from '../../src';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -15,10 +15,6 @@ const presentationRequestId = 'test_presentationRequestId';
 describe('GatekeeperClient', () => {
   afterEach(sandbox.restore);
   context('constructor', () => {
-    it('should throw an error if no config is provided', () => {
-      return expect(() => new GatekeeperClient(null as GatekeeperClientConfig)).throws('No valid config provided');
-    });
-
     it('should add config as an instance variable', () => {
       const baseUrl = 'test_baseUrl';
       const clientInst = new GatekeeperClient({ baseUrl });
@@ -180,7 +176,7 @@ describe('GatekeeperClient', () => {
     it('should return the returned gatekeeper record', async () => {
       const token = 'test_token';
       sandbox.stub(axios, 'get').withArgs(`${baseUrl}/${token}`).resolves({ status: 200, data: gatekeeperRecord });
-      const auditGatewayTokenResponse: GatekeeperRecord = await gatekeeperClientInst.auditGatewayToken(token);
+      const auditGatewayTokenResponse = await gatekeeperClientInst.auditGatewayToken(token);
       expect(auditGatewayTokenResponse).to.deep.eq(gatekeeperRecord);
     });
 

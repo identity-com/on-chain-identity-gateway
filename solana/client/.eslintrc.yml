@@ -49,6 +49,12 @@ rules:
     - 'off'
   mocha/no-hooks-for-single-case:
     - 'off'
+overrides:
+  - files:
+    - test/**
+    rules:
+      no-unused-expressions:
+        - 'off'
 env:
   browser: true
   es6: true
