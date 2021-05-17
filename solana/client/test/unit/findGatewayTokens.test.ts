@@ -1,8 +1,7 @@
 import chai from 'chai';
 import chaiSubset from 'chai-subset';
-import * as sinon from 'sinon';
-import { clusterApiUrl, Connection, PublicKey, Account } from '@solana/web3.js';
-import { SinonStub } from 'sinon';
+import sinon from 'sinon';
+import { clusterApiUrl, Connection, PublicKey, Keypair } from '@solana/web3.js';
 import { findGatewayTokens, TOKEN_PROGRAM_ID } from '../../src';
 
 chai.use(chaiSubset);
@@ -13,12 +12,12 @@ describe('findGatewayTokens', () => {
   let connection: Connection;
   let owner: PublicKey;
   let gatekeeperKey: PublicKey;
-  let getParsedTokenAccountsByOwnerStub: SinonStub;
+  let getParsedTokenAccountsByOwnerStub: sinon.SinonStub;
   afterEach(sandbox.restore);
   beforeEach(() => {
     connection = new Connection(clusterApiUrl('devnet'));
-    owner = new Account().publicKey;
-    gatekeeperKey = new Account().publicKey;
+    owner = Keypair.generate().publicKey;
+    gatekeeperKey = Keypair.generate().publicKey;
     getParsedTokenAccountsByOwnerStub = sandbox.stub(connection, 'getParsedTokenAccountsByOwner').withArgs(owner,
       {
         mint: gatekeeperKey,
@@ -50,7 +49,7 @@ describe('findGatewayTokens', () => {
 
       context('with a valid account', () => {
         it('should return an array with a gateway token', async () => {
-          const testPubKey = new Account().publicKey;
+          const testPubKey = Keypair.generate().publicKey;
           getParsedTokenAccountsByOwnerStub.resolves({ value: [getAccountWithState('valid', testPubKey)] });
           const findGatewayTokensResponse = await findGatewayTokens(connection, owner, gatekeeperKey);
           expect(findGatewayTokensResponse.length).to.deep.eq(1);
@@ -68,7 +67,7 @@ describe('findGatewayTokens', () => {
     context('with showRevoked true', () => {
       context('with a frozen account', () => {
         it('should return an array with the revoked account marked as inValid false', async () => {
-          const testPubKey = new Account().publicKey;
+          const testPubKey = Keypair.generate().publicKey;
           getParsedTokenAccountsByOwnerStub.resolves({ value: [getAccountWithState('frozen', testPubKey)] });
           const findGatewayTokensResponse = await findGatewayTokens(connection, owner, gatekeeperKey, true);
           expect(findGatewayTokensResponse).to.containSubset([{
@@ -83,8 +82,8 @@ describe('findGatewayTokens', () => {
 
       context('with a valid account and a revoked account', () => {
         it('should return an array with the valid and revoked gateway tokens', async () => {
-          const testPubKey = new Account().publicKey;
-          const revokedPubKey = new Account().publicKey;
+          const testPubKey = Keypair.generate().publicKey;
+          const revokedPubKey = Keypair.generate().publicKey;
           getParsedTokenAccountsByOwnerStub.resolves({ value: [getAccountWithState('valid', testPubKey), getAccountWithState('frozen', revokedPubKey)] });
           const findGatewayTokensResponse = await findGatewayTokens(connection, owner, gatekeeperKey, true);
           expect(findGatewayTokensResponse.length).to.eq(2);

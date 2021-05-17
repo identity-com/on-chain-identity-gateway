@@ -1,13 +1,20 @@
-import {Account, Connection, PublicKey} from "@solana/web3.js";
-import {Token, TOKEN_PROGRAM_ID} from "@solana/spl-token";
-import {gatewayTokenInfo} from "../util/token";
+import { Keypair, Connection, PublicKey } from "@solana/web3.js";
+import { Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { gatewayTokenInfo } from "../util/token";
+import { keypairToAccount } from "../util/account";
 
 export class RevokeService {
-  constructor(private connection: Connection, private gatekeeper: Account)  {}
+  constructor(private connection: Connection, private gatekeeper: Keypair) {}
 
-  async revoke(gatewayToken: PublicKey):Promise<void> {
-    const accountInfo = await gatewayTokenInfo(this.connection, gatewayToken)
-    const mint =  new Token(this.connection, accountInfo.mint, TOKEN_PROGRAM_ID, this.gatekeeper)
+  async revoke(gatewayToken: PublicKey): Promise<void> {
+    const accountInfo = await gatewayTokenInfo(this.connection, gatewayToken);
+    const gatekeeperAccount = keypairToAccount(this.gatekeeper);
+    const mint = new Token(
+      this.connection,
+      accountInfo.mint,
+      TOKEN_PROGRAM_ID,
+      gatekeeperAccount
+    );
 
     await mint.freezeAccount(gatewayToken, this.gatekeeper, []);
   }

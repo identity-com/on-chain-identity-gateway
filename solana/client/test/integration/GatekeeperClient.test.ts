@@ -1,11 +1,11 @@
 /* eslint-disable mocha/no-skipped-tests */
 import chai from 'chai';
-import { Account, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import chaiSubset from 'chai-subset';
 import { GatekeeperClient, GatekeeperRecord } from '../../src';
-import { gatekeeperServerBaseUrl, nonUsIPOverrideHeaders } from '../../test/support/testSupport';
+import { gatekeeperServerBaseUrl, nonUsIPOverrideHeaders } from '../support/testSupport';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -28,7 +28,7 @@ describe('GatekeeperClient Integration tests', () => {
   let walletPublicKey: PublicKey;
 
   beforeEach(() => {
-    walletPublicKey = new Account().publicKey;
+    walletPublicKey = Keypair.generate().publicKey;
     gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl, headers: nonUsIPOverrideHeaders });
   });
   context('createGatewayToken', () => {
@@ -79,7 +79,7 @@ describe('GatekeeperClient Integration tests', () => {
 
     context('for a token not created by the gatekeeper', () => {
       it('should throw an error with server message for a 500 response', () => {
-        return expect(gatekeeperClientInst.auditGatewayToken(new Account().publicKey.toBase58()))
+        return expect(gatekeeperClientInst.auditGatewayToken(Keypair.generate().publicKey.toBase58()))
           .rejectedWith('NoSuchKey');
       });
     });
