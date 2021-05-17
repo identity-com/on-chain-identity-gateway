@@ -13,15 +13,6 @@ chai.use(chaiSubset);
 const { expect } = chai;
 
 const selfDeclarationTextAgreedTo = 'test_selfDeclarationTextAgreedTo';
-const expectCreatedGatekeeperRecord = (gatekeeperRecord: GatekeeperRecord) => {
-  expect(gatekeeperRecord.approved).to.eq(true);
-  expect(gatekeeperRecord.country).to.be.a('string');
-  expect(gatekeeperRecord.ipAddress).to.be.a('string');
-  expect(gatekeeperRecord.name).to.be.a('string');
-  expect(gatekeeperRecord.timestamp).to.be.a('string');
-  expect(gatekeeperRecord.token).to.be.a('string');
-  expect(gatekeeperRecord.selfDeclarationTextAgreedTo).to.be.a('string');
-};
 
 describe('GatekeeperClient Integration tests', () => {
   let gatekeeperClientInst:GatekeeperClient;
@@ -35,7 +26,7 @@ describe('GatekeeperClient Integration tests', () => {
     context('with a valid walletPublicKey passed', () => {
       it('should retrieve a gatekeeper record', async () => {
         const gatekeeperRecord = await gatekeeperClientInst.createGatewayToken({ walletPublicKey });
-        expectCreatedGatekeeperRecord(gatekeeperRecord);
+        expect(gatekeeperRecord).not.to.be.null;
       });
     });
 
@@ -52,7 +43,7 @@ describe('GatekeeperClient Integration tests', () => {
 
   context('auditGatewayToken', () => {
     let gatekeeperClientInst:GatekeeperClient;
-    let gatewayToken;
+    let gatewayToken:string;
     beforeEach(async () => {
       gatekeeperClientInst = new GatekeeperClient({ baseUrl: gatekeeperServerBaseUrl, headers: nonUsIPOverrideHeaders });
     });
@@ -63,9 +54,9 @@ describe('GatekeeperClient Integration tests', () => {
       });
 
       it('should retrieve a gatekeeper record for the token', async () => {
-        const auditResponse: GatekeeperRecord = await gatekeeperClientInst.auditGatewayToken(gatewayToken);
-        expectCreatedGatekeeperRecord(auditResponse);
-        expect(auditResponse.selfDeclarationTextAgreedTo).to.eq(selfDeclarationTextAgreedTo);
+        const auditResponse: GatekeeperRecord | null = await gatekeeperClientInst.auditGatewayToken(gatewayToken);
+        expect(auditResponse).not.to.be.null;
+        expect(auditResponse!.selfDeclarationTextAgreedTo).to.eq(selfDeclarationTextAgreedTo);
       });
     });
 

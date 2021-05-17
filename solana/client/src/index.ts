@@ -65,9 +65,6 @@ export type GatekeeperResponse = GatekeeperRecord | null | Record<string, unknow
 export class GatekeeperClient implements GatekeeperClientInterface {
   config: GatekeeperClientConfig;
   constructor(config: GatekeeperClientConfig) {
-    if (!config) {
-      throw new Error('No valid config provided');
-    }
     this.config = config;
   }
 
