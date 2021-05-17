@@ -36,43 +36,16 @@ fn program_test() -> ProgramTest {
     ProgramTest::new("solana_gateway_program", id(), processor!(process_instruction))
 }
 
-async fn add_gatekeeper(
-    context: &mut ProgramTestContext,
-    authority: &Pubkey,
-    network: &Keypair,
-) -> transport::Result<()> {
-    let transaction = Transaction::new_signed_with_payer(
-        &[instruction::add_gatekeeper(
-            &context.payer.pubkey(),
-            authority,
-            &network.pubkey(),
-        )],
-        Some(&context.payer.pubkey()),
-        &[&context.payer, &network],
-        context.last_blockhash,
-    );
-    context.banks_client.process_transaction(transaction).await
-}
-
 #[tokio::test]
 async fn add_gatekeeper_should_succeed() {
-    let mut context = program_test().start_with_context().await;
+    let mut context = GatewayContext::new();
 
     let authority = Pubkey::new_unique();
     let network = Keypair::new();
-    let (gatekeeper_address, _) = get_gatekeeper_address_with_seed(&authority);
-    add_gatekeeper(&mut context, &authority, &network)
+    let gatekeeper = context.add_gatekeeper(&authority, &network)
         .await
         .unwrap();
-    let account_info = context
-        .banks_client
-        .get_account(gatekeeper_address)
-        .await
-        .unwrap()
-        .unwrap();
-    let account_data: Gatekeeper =
-        program_borsh::try_from_slice_incomplete::<Gatekeeper>(&account_info.data).unwrap();
     
-    assert_eq!(account_data.authority, authority);
-    assert_eq!(account_data.network, network.pubkey());
+    assert_eq!(gatekeeper.authority, authority);
+    assert_eq!(gatekeeper.network, network.pubkey());
 }
