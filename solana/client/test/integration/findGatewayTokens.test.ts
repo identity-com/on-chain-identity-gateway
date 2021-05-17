@@ -1,6 +1,6 @@
 /* eslint-disable mocha/no-skipped-tests */
 import { expect } from 'chai';
-import { Connection, PublicKey, Account } from '@solana/web3.js';
+import { Connection, PublicKey, Keypair } from '@solana/web3.js';
 import axios from 'axios';
 import { findGatewayTokens, GatewayToken } from '../../src';
 import { gatekeeperServerBaseUrl, civicNetEndpoint, MINT_AUTHORITY_PUBLIC_KEY, wait, nonUsIPOverrideHeaders } from '../support/testSupport';
@@ -13,7 +13,7 @@ describe('findGatewayToken integration tests', () => {
   let gatewayToken: string;
   before('Create a gatewayToken for the test account', async () => {
     connection = new Connection(civicNetEndpoint);
-    owner = new Account().publicKey;
+    owner = Keypair.generate().publicKey;
     gatekeeperKey = new PublicKey(MINT_AUTHORITY_PUBLIC_KEY);
     console.log('gatekeeperKey', gatekeeperKey.toBase58());
     const gatewayTokenResponse = await axios.post(`${gatekeeperServerBaseUrl}`,
@@ -33,7 +33,7 @@ describe('findGatewayToken integration tests', () => {
 
   context('with no token accounts found', () => {
     it('should return an empty array', async () => {
-      const findGatewayTokenResponse = await findGatewayTokens(connection, new Account().publicKey, gatekeeperKey);
+      const findGatewayTokenResponse = await findGatewayTokens(connection, Keypair.generate().publicKey, gatekeeperKey);
       expect(findGatewayTokenResponse).to.deep.eq([]);
     });
   });

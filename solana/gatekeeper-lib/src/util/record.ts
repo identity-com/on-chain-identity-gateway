@@ -1,14 +1,16 @@
-import * as fs from 'fs'
-import {REGISTER, REGISTER_BUCKET_S3} from './constants'
-import {PublicKey} from '@solana/web3.js'
-import * as streamToString from 'stream-to-string'
+import * as fs from "fs";
+import { REGISTER, REGISTER_BUCKET_S3 } from "./constants";
+import { PublicKey } from "@solana/web3.js";
+import * as streamToString from "stream-to-string";
 import {
   S3Client,
   CreateBucketCommand,
   HeadBucketCommand,
   PutObjectCommand,
-  CreateBucketOutput, PutObjectOutput, GetObjectCommand,
-} from '@aws-sdk/client-s3'
+  CreateBucketOutput,
+  PutObjectOutput,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
 import ReadableStream = NodeJS.ReadableStream;
 
 export type AuditRecord = {
@@ -19,11 +21,15 @@ export type AuditRecord = {
   country: string;
   approved: boolean;
   selfDeclarationTextAgreedTo: string;
-}
+};
 
-const readRegister = () => fs.promises.readFile(REGISTER).then((file: Buffer) =>
-  file.toString('utf-8').split('\n')
-  .map((line: string) => line.split(',')))
+const readRegister = () =>
+  fs.promises.readFile(REGISTER).then((file: Buffer) =>
+    file
+      .toString("utf-8")
+      .split("\n")
+      .map((line: string) => line.split(","))
+  );
 
 export interface Recorder {
   store(record: AuditRecord): Promise<void>;
@@ -32,36 +38,47 @@ export interface Recorder {
 
 export class DummyRecorder implements Recorder {
   lookup(gatewayToken: PublicKey): Promise<AuditRecord | null> {
-    return Promise.resolve(null)
+    return Promise.resolve(null);
   }
 
   store(record: AuditRecord): Promise<void> {
-    return Promise.resolve(undefined)
+    return Promise.resolve(undefined);
   }
 }
 
 export class RecorderFS implements Recorder {
   async store(record: AuditRecord) {
-    const row = [record.timestamp, record.token, record.name, record.ipAddress, record.country, record.approved, record.selfDeclarationTextAgreedTo].join(',') + '\n'
-    await fs.promises.appendFile(REGISTER, row)
+    const row =
+      [
+        record.timestamp,
+        record.token,
+        record.name,
+        record.ipAddress,
+        record.country,
+        record.approved,
+        record.selfDeclarationTextAgreedTo,
+      ].join(",") + "\n";
+    await fs.promises.appendFile(REGISTER, row);
   }
 
   async lookup(gatewayToken: PublicKey): Promise<AuditRecord | null> {
-    const register = await readRegister()
+    const register = await readRegister();
 
-    const entry = register.find((entry: Array<string>) => entry[1] === gatewayToken.toBase58())
+    const entry = register.find(
+      (entry: Array<string>) => entry[1] === gatewayToken.toBase58()
+    );
 
-    if (!entry) return null
+    if (!entry) return null;
 
     return {
-      timestamp: entry[0] || '-',
-      token: entry[1] || '-',
-      name: entry[2] || '-',
-      ipAddress: entry[3] || '-',
-      country: entry[4] || '-',
-      approved: entry[5] == 'true',
-      selfDeclarationTextAgreedTo: entry[6] || '-',
-    }
+      timestamp: entry[0] || "-",
+      token: entry[1] || "-",
+      name: entry[2] || "-",
+      ipAddress: entry[3] || "-",
+      country: entry[4] || "-",
+      approved: entry[5] == "true",
+      selfDeclarationTextAgreedTo: entry[6] || "-",
+    };
   }
 }
 
@@ -72,31 +89,35 @@ export class RecorderS3 implements Recorder {
 
   private directory: string;
 
-  constructor(bucket: string = REGISTER_BUCKET_S3, directory = 'dev') {
-    this.bucket = bucket
-    this.directory = directory
-    this.client = new S3Client({region: 'us-east-1'})
+  constructor(bucket: string = REGISTER_BUCKET_S3, directory = "dev") {
+    this.bucket = bucket;
+    this.directory = directory;
+    this.client = new S3Client({ region: "us-east-1" });
   }
 
   private async checkBucketPresent(): Promise<boolean> {
-    const command = new HeadBucketCommand({Bucket: this.bucket})
-    return this.client.send(command).then(r => {
-      console.log(r)
-      return r
-    }).then(() => true).catch(() => false)
+    const command = new HeadBucketCommand({ Bucket: this.bucket });
+    return this.client
+      .send(command)
+      .then((r) => {
+        console.log(r);
+        return r;
+      })
+      .then(() => true)
+      .catch(() => false);
   }
 
   private async createBucket(): Promise<CreateBucketOutput> {
-    const command = new CreateBucketCommand({Bucket: this.bucket})
-    return this.client.send(command)
+    const command = new CreateBucketCommand({ Bucket: this.bucket });
+    return this.client.send(command);
   }
 
   private recordToKey(record: AuditRecord): string {
-    return this.directory + '/' + record.token
+    return this.directory + "/" + record.token;
   }
 
   private tokenToKey(token: PublicKey): string {
-    return this.directory + '/' + token.toBase58()
+    return this.directory + "/" + token.toBase58();
   }
 
   private async putRecord(record: AuditRecord): Promise<PutObjectOutput> {
@@ -104,31 +125,34 @@ export class RecorderS3 implements Recorder {
       Key: this.recordToKey(record),
       Body: JSON.stringify(record),
       Bucket: this.bucket,
-    })
-    return this.client.send(command)
+    });
+    return this.client.send(command);
   }
 
   private async getRecord(token: PublicKey): Promise<AuditRecord> {
     const command = new GetObjectCommand({
       Key: this.tokenToKey(token),
       Bucket: this.bucket,
-    })
-    const getObjectResponse = await this.client.send(command)
-    if (!getObjectResponse || !getObjectResponse.Body) throw new Error('No record found for token ' + token.toBase58())
+    });
+    const getObjectResponse = await this.client.send(command);
+    if (!getObjectResponse || !getObjectResponse.Body)
+      throw new Error("No record found for token " + token.toBase58());
 
-    const recordString = await streamToString(getObjectResponse.Body as ReadableStream)
-    return JSON.parse(recordString) as AuditRecord
+    const recordString = await streamToString(
+      getObjectResponse.Body as ReadableStream
+    );
+    return JSON.parse(recordString) as AuditRecord;
   }
 
   async store(record: AuditRecord) {
-    if (!await this.checkBucketPresent()) {
-      await this.createBucket()
+    if (!(await this.checkBucketPresent())) {
+      await this.createBucket();
     }
 
-    return this.putRecord(record).then(() => {})
+    return this.putRecord(record).then(() => {});
   }
 
   async lookup(gatewayToken: PublicKey): Promise<AuditRecord | null> {
-    return this.getRecord(gatewayToken)
+    return this.getRecord(gatewayToken);
   }
 }

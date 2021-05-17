@@ -314,10 +314,10 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@solana/web3.js@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.5.0.tgz#4819ecad0408ec55f3d47a227627856002a7358b"
-  integrity sha512-o9Md2wDRKcI7uQksOp6yW6llhfCEm2QyblvM1qTjIbmaxuJn2ID2p0hIsJM7p+p88I/neFt+rodi58kVvk98Cg==
+"@solana/web3.js@^1.11.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.11.0.tgz#1cc9a25381687c82e444ad0633f028e050a06753"
+  integrity sha512-kmngWxntzp0HNhWInd7/3g2uqxdOrahvaHOyjilcRe+WCiC777gERz3+eIAbxIYx2zAZPjy02MZzLgoRHccZoQ==
   dependencies:
     "@babel/runtime" "^7.12.5"
     bn.js "^5.0.0"
