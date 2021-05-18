@@ -42,7 +42,6 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
     connection,
     payer,
     gatekeeperNetwork.publicKey,
-    gatekeeperAccount,
     gatekeeperAuthority
   );
   const owner = argv.owner
