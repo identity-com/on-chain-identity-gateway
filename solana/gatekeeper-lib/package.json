@@ -73,7 +73,7 @@
     "posttest": "yarn lint",
     "prepack": "yarn build",
     "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs ../program/target/deploy/solana_gateway_program.so --reset",
-    "lint": "eslint . --ext .ts --config .eslintrc",
+    "lint": "eslint src/ --ext .ts",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md"
   },
