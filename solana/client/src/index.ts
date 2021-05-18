@@ -1,7 +1,7 @@
 import { AccountInfo, Connection, PublicKey } from "@solana/web3.js";
 import axios, { AxiosResponse } from "axios";
-import { PROGRAM_ID } from "../../gatekeeper-lib/src/util/constants";
 import { GatewayTokenData } from "./solana/GatewayTokenData";
+import { PROGRAM_ID } from "./constants";
 
 // Based on solana/integration-lib/src/state.rs
 // If the optional the parent-gateway-token field is populated, this value will be
