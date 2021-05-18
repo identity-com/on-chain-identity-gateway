@@ -50,9 +50,6 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
     : Keypair.generate().publicKey;
 
   console.log("owner", owner.toBase58());
-  const issuedToken = await gatekeeperService.issueVanilla(
-    owner,
-    Buffer.from([0])
-  );
+  const issuedToken = await gatekeeperService.issueVanilla(owner);
   console.log("issuedToken", issuedToken);
 })().catch((error) => console.error(error));

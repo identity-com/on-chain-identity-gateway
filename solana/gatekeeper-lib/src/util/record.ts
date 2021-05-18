@@ -13,6 +13,12 @@ import {
 } from "@aws-sdk/client-s3";
 import ReadableStream = NodeJS.ReadableStream;
 
+export type PII = {
+  name?: string;
+  ipAddress?: string;
+  selfDeclarationTextAgreedTo?: string;
+} & Record<string, any>;
+
 export type AuditRecord = {
   timestamp: string;
   token: string;
