@@ -16,7 +16,7 @@
     "test:integration": "STAGE=${STAGE:-dev} ts-mocha --timeout 40000 --exit --paths 'test/integration/**/*.ts'",
     "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs ../program/target/deploy/solana_gateway_program.so --reset",
     "test": "yarn test:unit && yarn test:integration",
-    "lint": "eslint '*/**/*.{ts,tsx}' --quiet"
+    "lint": "eslint src/ test/ scripts/ --ext .ts"
   },
   "dependencies": {
     "@solana/web3.js": "^1.11.0",
