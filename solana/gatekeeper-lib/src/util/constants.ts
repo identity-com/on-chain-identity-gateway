@@ -4,7 +4,7 @@ export const COUNTRY_BLACKLIST = ["US"];
 export const REGISTER = "./register.csv";
 export const REGISTER_BUCKET_S3 = "ociv-register.civic.com";
 
-// Should equal the contents of solaaa/program/program-id.md
+// Should equal the contents of solana/program/program-id.md
 export const PROGRAM_ID: PublicKey = new PublicKey(
   "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
 );
