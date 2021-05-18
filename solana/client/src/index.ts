@@ -163,10 +163,8 @@ export class GatekeeperClient implements GatekeeperClientInterface {
 }
 
 export type GatewayToken = {
-  //  the key used to reference the gatekeeper
-  // note - this is not necessarily the publicKey of the gatekeeper themselves
-  // While spl-token is used as the gateway token program, this is the gatekeeper mint
-  gatekeeperKey: PublicKey;
+  //  the key used to reference the issuing gatekeeper
+  issuingGatekeeper: PublicKey;
   gatekeeperNetwork: PublicKey;
   owner: PublicKey;
   isValid: boolean;
@@ -186,10 +184,10 @@ const dataToGatewayToken = (
   // TODO IDCOM-306
   owner: data.owner.toPublicKey(),
   programId: PROGRAM_ID,
-  isValid: true, // TODO IDCOM-306
+  isValid: !!data.state.active, // TODO IDCOM-306
   publicKey,
-  gatekeeperKey: data.owner.toPublicKey(), // Temp TODO IDCOM-306
-  gatekeeperNetwork: data.owner.toPublicKey(), // Temp TODO IDCOM-306
+  issuingGatekeeper: data.issuingGatekeeper.toPublicKey(),
+  gatekeeperNetwork: data.gatekeeperNetwork.toPublicKey(), // Temp TODO IDCOM-306
 });
 
 export const findGatewayTokens = async (

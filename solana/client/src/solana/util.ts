@@ -5,19 +5,19 @@ import {
   sendAndConfirmTransaction,
   Transaction,
   TransactionSignature,
-} from '@solana/web3.js';
+} from "@solana/web3.js";
 import {
   GATEKEEPER_NONCE_SEED_STRING,
   PROGRAM_ID,
   SOLANA_COMMITMENT,
-} from '../constants';
+} from "../constants";
 
 export const getGatekeeperAccountKeyFromGatekeeperAuthority = async (
-  authority: PublicKey,
+  authority: PublicKey
 ): Promise<PublicKey> => {
   const publicKeyNonce = await PublicKey.findProgramAddress(
-    [authority.toBuffer(), Buffer.from(GATEKEEPER_NONCE_SEED_STRING, 'utf8')],
-    PROGRAM_ID,
+    [authority.toBuffer(), Buffer.from(GATEKEEPER_NONCE_SEED_STRING, "utf8")],
+    PROGRAM_ID
   );
   return publicKeyNonce[0];
 };
@@ -30,5 +30,5 @@ export const send = (
   sendAndConfirmTransaction(connection, transaction, signers, {
     skipPreflight: false,
     commitment: SOLANA_COMMITMENT,
-    preflightCommitment: 'recent',
+    preflightCommitment: "recent",
   });
