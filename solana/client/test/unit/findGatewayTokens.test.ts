@@ -2,7 +2,8 @@ import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import { clusterApiUrl, Connection, PublicKey, Keypair } from "@solana/web3.js";
-import { findGatewayTokens, TOKEN_PROGRAM_ID } from "../../src";
+import { findGatewayTokens } from "../../src";
+import { PROGRAM_ID } from "../../../gatekeeper-lib/src/util/constants";
 
 chai.use(chaiSubset);
 const { expect } = chai;
@@ -15,21 +16,19 @@ describe("findGatewayTokens", () => {
   let connection: Connection;
   let owner: PublicKey;
   let gatekeeperKey: PublicKey;
-  let getParsedTokenAccountsByOwnerStub: sinon.SinonStub;
+  let getProgramAccountsStub: sinon.SinonStub;
   afterEach(sandbox.restore);
   beforeEach(() => {
     connection = new Connection(clusterApiUrl("devnet"));
     owner = Keypair.generate().publicKey;
     gatekeeperKey = Keypair.generate().publicKey;
-    getParsedTokenAccountsByOwnerStub = sandbox
-      .stub(connection, "getParsedTokenAccountsByOwner")
-      .withArgs(owner, {
-        mint: gatekeeperKey,
-      });
+    getProgramAccountsStub = sandbox
+      .stub(connection, "getProgramAccounts")
+      .withArgs(PROGRAM_ID);
   });
   context("with no token accounts found", () => {
     it("with no value in connection call response should return an empty array", async () => {
-      getParsedTokenAccountsByOwnerStub.resolves({});
+      getProgramAccountsStub.resolves([]);
       const findGatewayTokensResponse = await findGatewayTokens(
         connection,
         owner,
@@ -39,7 +38,7 @@ describe("findGatewayTokens", () => {
     });
 
     it("with an empty array returned in connection call response should return an empty array", async () => {
-      getParsedTokenAccountsByOwnerStub.resolves({ value: [] });
+      getProgramAccountsStub.resolves([]);
       const findGatewayTokensResponse = await findGatewayTokens(
         connection,
         owner,
@@ -53,9 +52,9 @@ describe("findGatewayTokens", () => {
     context("with showRevoked false", () => {
       context("with a frozen account", () => {
         it("should return an empty array", async () => {
-          getParsedTokenAccountsByOwnerStub.resolves({
-            value: [getAccountWithState("frozen", owner)],
-          });
+          getProgramAccountsStub.resolves([
+            getAccountWithState("frozen", owner),
+          ]);
           const findGatewayTokensResponse = await findGatewayTokens(
             connection,
             owner,
@@ -68,9 +67,9 @@ describe("findGatewayTokens", () => {
       context("with a valid account", () => {
         it("should return an array with a gateway token", async () => {
           const testPubKey = Keypair.generate().publicKey;
-          getParsedTokenAccountsByOwnerStub.resolves({
-            value: [getAccountWithState("valid", testPubKey)],
-          });
+          getProgramAccountsStub.resolves([
+            getAccountWithState("valid", testPubKey),
+          ]);
           const findGatewayTokensResponse = await findGatewayTokens(
             connection,
             owner,
@@ -82,7 +81,7 @@ describe("findGatewayTokens", () => {
             owner,
             isValid: true,
             publicKey: testPubKey,
-            programId: TOKEN_PROGRAM_ID,
+            programId: PROGRAM_ID,
           });
         });
       });
@@ -92,9 +91,9 @@ describe("findGatewayTokens", () => {
       context("with a frozen account", () => {
         it("should return an array with the revoked account marked as inValid false", async () => {
           const testPubKey = Keypair.generate().publicKey;
-          getParsedTokenAccountsByOwnerStub.resolves({
-            value: [getAccountWithState("frozen", testPubKey)],
-          });
+          getProgramAccountsStub.resolves([
+            getAccountWithState("frozen", testPubKey),
+          ]);
           const findGatewayTokensResponse = await findGatewayTokens(
             connection,
             owner,
@@ -107,7 +106,7 @@ describe("findGatewayTokens", () => {
               owner,
               isValid: false,
               publicKey: testPubKey,
-              programId: TOKEN_PROGRAM_ID,
+              programId: PROGRAM_ID,
             },
           ]);
         });
@@ -117,12 +116,10 @@ describe("findGatewayTokens", () => {
         it("should return an array with the valid and revoked gateway tokens", async () => {
           const testPubKey = Keypair.generate().publicKey;
           const revokedPubKey = Keypair.generate().publicKey;
-          getParsedTokenAccountsByOwnerStub.resolves({
-            value: [
-              getAccountWithState("valid", testPubKey),
-              getAccountWithState("frozen", revokedPubKey),
-            ],
-          });
+          getProgramAccountsStub.resolves([
+            getAccountWithState("valid", testPubKey),
+            getAccountWithState("frozen", revokedPubKey),
+          ]);
           const findGatewayTokensResponse = await findGatewayTokens(
             connection,
             owner,
@@ -136,14 +133,14 @@ describe("findGatewayTokens", () => {
               owner,
               isValid: true,
               publicKey: testPubKey,
-              programId: TOKEN_PROGRAM_ID,
+              programId: PROGRAM_ID,
             },
             {
               gatekeeperKey,
               owner,
               isValid: false,
               publicKey: revokedPubKey,
-              programId: TOKEN_PROGRAM_ID,
+              programId: PROGRAM_ID,
             },
           ]);
         });
