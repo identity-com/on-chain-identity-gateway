@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.11.0",
-    "axios": "^0.21.1"
+    "axios": "^0.21.1",
+    "borsh": "^0.4.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.16",
