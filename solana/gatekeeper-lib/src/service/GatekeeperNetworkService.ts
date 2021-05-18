@@ -12,15 +12,15 @@ export class GatekeeperNetworkService {
     private gatekeeperNetwork: Keypair
   ) {}
 
-  async addGatekeeper(gatekeeper: PublicKey): Promise<PublicKey> {
+  async addGatekeeper(gatekeeperAuthority: PublicKey): Promise<PublicKey> {
     const gatekeeperAccount =
-      await getGatekeeperAccountKeyFromGatekeeperAuthority(gatekeeper);
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(gatekeeperAuthority);
 
     const transaction = new Transaction().add(
       addGatekeeper(
         this.payer.publicKey,
         gatekeeperAccount,
-        gatekeeper,
+        gatekeeperAuthority,
         this.gatekeeperNetwork.publicKey
       )
     );
