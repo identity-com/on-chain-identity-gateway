@@ -145,7 +145,7 @@ fn issue_vanilla(accounts: &[AccountInfo], seed: &Option<[u8; 8]>) -> ProgramRes
     let gateway_token = GatewayToken::new_vanilla(
         owner_info.key,
         gatekeeper_network_info.key,
-        gatekeeper_account_info.key);
+        gatekeeper_authority_info.key);
     let size = get_instance_packed_len(&gateway_token).unwrap() as u64;
 
     invoke_signed(
