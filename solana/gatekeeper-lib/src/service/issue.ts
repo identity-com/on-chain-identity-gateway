@@ -6,22 +6,9 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { AccountLayout, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import * as geoip from "geoip-country";
-import { Recorder, RecorderFS } from "../util/record";
 
-const COUNTRY_BLACKLIST = ["US"];
-
-const ipLookup = (ip: string) => geoip.lookup(ip);
-const validIp = (ip: string) => {
-  const ipDetails = ipLookup(ip);
-  return ipDetails && !COUNTRY_BLACKLIST.includes(ipDetails.country);
-};
-
-export type PII = {
-  name?: string;
-  ipAddress?: string;
-  selfDeclarationTextAgreedTo?: string;
-} & Record<string, any>;
+import { PII, Recorder, RecorderFS } from "../util/record";
+import { ipLookup, validIp } from "../util/ipCheck";
 
 export class IssueService {
   constructor(
