@@ -1,14 +1,7 @@
 import { homedir } from "os";
 import * as path from "path";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { GatewayTokenData } from "../src/solana/GatewayTokenData";
-import { findGatewayTokens } from "../src";
-
-// Should equal the contents of solana/program/program-id.md
-export const PROGRAM_ID: PublicKey = new PublicKey(
-  "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
-);
-const GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET = 2;
+import { findGatewayTokens, GatewayToken } from "../src";
 
 const mySecretKey = require(path.join(
   homedir(),
@@ -30,6 +23,13 @@ const gatekeeperNetworkKey = new PublicKey(
   "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv"
 );
 
+const prettyPrint = (gatewayToken: GatewayToken) => ({
+  owner: gatewayToken.owner.toBase58(),
+  gatekeeperNetwork: gatewayToken.gatekeeperNetwork.toBase58(),
+  gatekeeper: gatewayToken.issuingGatekeeper.toBase58(),
+  valid: gatewayToken.isValid,
+});
+
 (async function () {
   console.log("My pubkey as a byte array: ", myKeypair.publicKey.toBuffer());
   const accounts = await findGatewayTokens(
@@ -38,5 +38,5 @@ const gatekeeperNetworkKey = new PublicKey(
     gatekeeperNetworkKey
   );
   console.log("Found Accounts");
-  console.log(accounts);
+  console.log(accounts.map(prettyPrint));
 })().catch((error) => console.error(error));
