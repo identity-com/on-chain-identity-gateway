@@ -32,8 +32,7 @@ async fn add_gatekeeper_should_fail_without_gatekeeper_network_signature() {
 
     let authority = Pubkey::new_unique();
     let network = Keypair::new();
-    let gatekeeper = context.add_gatekeeper(&authority, &network).await;
-
-    assert_eq!(gatekeeper.authority, authority);
-    assert_eq!(gatekeeper.network, network.pubkey());
+    let result = context.attempt_add_gatekeeper_without_network_signature(&authority, &network.pubkey()).await;
+    
+    assert!(result.is_err());
 }
