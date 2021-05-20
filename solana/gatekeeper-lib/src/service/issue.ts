@@ -8,7 +8,6 @@ import {
 import { AccountLayout, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 import { PII, Recorder, RecorderFS } from "../util/record";
-import { ipLookup, validIp } from "../util/ipCheck";
 
 export class IssueService {
   constructor(
@@ -26,10 +25,6 @@ export class IssueService {
 
     console.log("this.mintAccountPublicKey", this.mintAccountPublicKey);
     const recipientTokenAccount = Keypair.generate();
-
-    const ipDetails = pii.ipAddress ? ipLookup(pii.ipAddress) : null;
-    const approved =
-      (pii.ipAddress && (!checkIp || validIp(pii.ipAddress))) || false;
 
     const record = {
       timestamp: new Date().toISOString(),
