@@ -1,5 +1,5 @@
 import { Assignable, Enum, SCHEMA } from "./solanaBorsh";
-import { PROGRAM_ID } from "../constants";
+import { PROGRAM_ID } from "./constants";
 import {
   AccountMeta,
   PublicKey,
@@ -15,6 +15,7 @@ import {
  */
 
 class AddGatekeeper extends Assignable {}
+class IssueVanilla extends Assignable {}
 
 class GatewayInstruction extends Enum {
   addGatekeeper?: AddGatekeeper;
@@ -22,6 +23,12 @@ class GatewayInstruction extends Enum {
   static addGatekeeper(): GatewayInstruction {
     return new GatewayInstruction({
       addGatekeeper: new AddGatekeeper({}),
+    });
+  }
+
+  static issueVanilla(seed: Uint8Array): GatewayInstruction {
+    return new GatewayInstruction({
+      issueVanilla: new IssueVanilla({ seed }),
     });
   }
 }
@@ -48,12 +55,46 @@ export function addGatekeeper(
   });
 }
 
+export function issueVanilla(
+  seed: Uint8Array,
+  gatewayTokenAccount: PublicKey,
+  payer: PublicKey,
+  gatekeeperAccount: PublicKey,
+  owner: PublicKey,
+  gatekeeperAuthority: PublicKey,
+  gatekeeperNetwork: PublicKey
+): TransactionInstruction {
+  const keys: AccountMeta[] = [
+    { pubkey: payer, isSigner: true, isWritable: true },
+    { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
+    { pubkey: owner, isSigner: false, isWritable: false },
+    { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
+    { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
+    { pubkey: gatekeeperNetwork, isSigner: false, isWritable: false },
+    { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  ];
+  const data = GatewayInstruction.issueVanilla(seed).encode();
+  return new TransactionInstruction({
+    keys,
+    programId: PROGRAM_ID,
+    data,
+  });
+}
+
 SCHEMA.set(GatewayInstruction, {
   kind: "enum",
   field: "enum",
-  values: [["addGatekeeper", AddGatekeeper]],
+  values: [
+    ["addGatekeeper", AddGatekeeper],
+    ["issueVanilla", IssueVanilla],
+  ],
 });
 SCHEMA.set(AddGatekeeper, {
   kind: "struct",
   fields: [],
+});
+SCHEMA.set(IssueVanilla, {
+  kind: "struct",
+  fields: [["seed", [1]]],
 });

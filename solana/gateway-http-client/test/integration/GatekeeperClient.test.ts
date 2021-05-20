@@ -3,11 +3,12 @@ import { Keypair, PublicKey } from "@solana/web3.js";
 import chaiAsPromised from "chai-as-promised";
 import sinonChai from "sinon-chai";
 import chaiSubset from "chai-subset";
-import { GatekeeperClient, GatekeeperRecord } from "../../src";
+import { GatekeeperClient } from "../../src";
 import {
   gatekeeperServerBaseUrl,
   nonUsIPOverrideHeaders,
 } from "../support/testSupport";
+import { GatekeeperRecord } from "../../src/types";
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);

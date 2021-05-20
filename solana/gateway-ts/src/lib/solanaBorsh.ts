@@ -1,5 +1,7 @@
 import { BinaryReader, BorshError, Schema, serialize } from "borsh";
 
+export const SCHEMA: Schema = new Map();
+
 // Class wrapping a plain object
 export abstract class Assignable {
   constructor(properties: { [key: string]: any }) {
@@ -36,8 +38,6 @@ export abstract class Enum extends Assignable {
     });
   }
 }
-
-export const SCHEMA: Schema = new Map();
 
 // TODO PR for leaving extra bytes, a lot of code copied from
 // https://github.com/near/borsh-js/blob/master/borsh-ts/index.ts

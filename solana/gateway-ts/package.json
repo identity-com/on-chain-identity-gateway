@@ -1,7 +1,7 @@
 {
-  "name": "@identity.com/solana-gateway-client",
-  "version": "1.0.5",
-  "description": "Client for interacting with OCIV gatekeepers",
+  "name": "@identity.com/solana-gateway-ts",
+  "version": "1.0.0",
+  "description": "Typescript adapters for interacting with Solana gateway program",
   "main": "dist/index",
   "types": "dist/index",
   "repository": "git@github.com:identity-com/on-chain-identity-gateway.git",
@@ -13,9 +13,8 @@
     "compile": "tsc -p tsconfig.build.json",
     "prepare": "yarn build",
     "test:unit": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'test/unit/**/*.ts'",
-    "test:integration": "STAGE=${STAGE:-dev} ts-mocha --timeout 40000 --exit --paths 'test/integration/**/*.ts'",
     "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs ../program/target/deploy/solana_gateway_program.so --reset",
-    "test": "yarn test:unit && yarn test:integration",
+    "test": "yarn test:unit",
     "lint": "eslint src/ test/ scripts/ --ext .ts"
   },
   "dependencies": {

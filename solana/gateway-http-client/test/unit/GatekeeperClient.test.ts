@@ -4,7 +4,8 @@ import * as sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import sinonChai from "sinon-chai";
 import axios from "axios";
-import { GatekeeperClient, GatekeeperRecord } from "../../src";
+import { GatekeeperClient } from "../../src";
+import { GatekeeperRecord } from "../../src/types";
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);

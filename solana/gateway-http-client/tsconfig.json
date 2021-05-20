@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.build.json",
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "include": [
+    "**/*.ts", "../gateway-ts/test/unit/findGatewayTokens.test.ts", "../gateway-ts/test/integration/findGatewayTokens.test.ts",
+  ],
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "rootDir": ".",
+  }
+}

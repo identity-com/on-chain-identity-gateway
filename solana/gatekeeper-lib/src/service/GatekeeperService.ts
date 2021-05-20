@@ -1,10 +1,10 @@
 import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
-import { issueVanilla } from "../util/solana/instruction";
 import {
   getGatekeeperAccountKeyFromGatekeeperAuthority,
   getGatewayTokenKeyForOwner,
   send,
-} from "../util/solana/util";
+  issueVanilla,
+} from "@identity.com/solana-gateway-ts";
 import { PII, Recorder, RecorderFS } from "../util/record";
 
 export class GatekeeperService {
