@@ -3,7 +3,7 @@ on:
   push:
   pull_request:
 jobs:
-  solana-client-build:
+  solana-gatekeeper-ts-build:
     name: Build, lint the solana client library on ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
@@ -14,7 +14,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./solana/client
+        working-directory: ./solana/gatekeeper-ts
 
     steps:
       - name: Checkout repo
@@ -30,7 +30,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-solana-client-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-gatekeeper-ts-${{ hashFiles('yarn.lock') }}
 
       - name: Install
         run: yarn install
@@ -41,7 +41,7 @@ jobs:
       - name: Build
         run: yarn build
 
-  solana-client-unit_tests:
+  solana-gatekeeper-ts-unit_tests:
     name: Test the solana client with dependencies stubbed out
 
     runs-on: ${{ matrix.os }}
@@ -52,7 +52,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./solana/client
+        working-directory: ./solana/gatekeeper-ts
 
     steps:
       - name: Checkout repo
@@ -68,7 +68,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-solana-client-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-gatekeeper-ts-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
         run: yarn install
@@ -76,7 +76,7 @@ jobs:
       - name: Unit tests
         run: yarn test:unit
 
-  solana-client-integration_tests:
+  solana-gatekeeper-ts-integration_tests:
     name: Test the solana client against real chain/gatekeeper test environments
 
     runs-on: ${{ matrix.os }}
@@ -87,7 +87,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./solana/client
+        working-directory: ./solana/gatekeeper-ts
 
     steps:
       - name: Checkout repo
@@ -103,7 +103,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-solana-client-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-gatekeeper-ts-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
         run: yarn install
