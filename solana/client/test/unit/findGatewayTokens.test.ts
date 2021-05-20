@@ -19,13 +19,14 @@ const getAccountWithState = (
   state: GatewayTokenState,
   pubkey: PublicKey,
   ownerKey: PublicKey,
+  gatekeeperNetworkKey: PublicKey,
   gatekeeperKey: PublicKey
 ) => {
   const gtData = new GatewayTokenData({
     state,
     owner: AssignablePublicKey.fromPublicKey(ownerKey),
     issuingGatekeeper: AssignablePublicKey.fromPublicKey(gatekeeperKey),
-    gatekeeperNetwork: AssignablePublicKey.fromPublicKey(gatekeeperKey),
+    gatekeeperNetwork: AssignablePublicKey.fromPublicKey(gatekeeperNetworkKey),
     features: [0],
     parentGatewayToken: [0],
     ownerIdentity: [0],
@@ -38,12 +39,14 @@ describe("findGatewayTokens", () => {
   let connection: Connection;
   let owner: PublicKey;
   let gatekeeperKey: PublicKey;
+  let gatekeeperNetworkKey: PublicKey;
   let getProgramAccountsStub: sinon.SinonStub;
   afterEach(sandbox.restore);
   beforeEach(() => {
     connection = new Connection(clusterApiUrl("devnet"));
     owner = Keypair.generate().publicKey;
     gatekeeperKey = Keypair.generate().publicKey;
+    gatekeeperNetworkKey = Keypair.generate().publicKey;
     getProgramAccountsStub = sandbox
       .stub(connection, "getProgramAccounts")
       .withArgs(PROGRAM_ID);
@@ -54,7 +57,7 @@ describe("findGatewayTokens", () => {
       const findGatewayTokensResponse = await findGatewayTokens(
         connection,
         owner,
-        gatekeeperKey
+        gatekeeperNetworkKey
       );
       expect(findGatewayTokensResponse).to.deep.eq([]);
     });
@@ -64,7 +67,7 @@ describe("findGatewayTokens", () => {
       const findGatewayTokensResponse = await findGatewayTokens(
         connection,
         owner,
-        gatekeeperKey
+        gatekeeperNetworkKey
       );
       expect(findGatewayTokensResponse).to.deep.eq([]);
     });
@@ -79,13 +82,14 @@ describe("findGatewayTokens", () => {
               new GatewayTokenState({ frozen: new Frozen({}) }),
               owner,
               owner,
+              gatekeeperNetworkKey,
               gatekeeperKey
             ),
           ]);
           const findGatewayTokensResponse = await findGatewayTokens(
             connection,
             owner,
-            gatekeeperKey
+            gatekeeperNetworkKey
           );
           expect(findGatewayTokensResponse).to.deep.eq([]);
         });
@@ -99,18 +103,19 @@ describe("findGatewayTokens", () => {
               new GatewayTokenState({ active: new Active({}) }),
               testPubKey,
               owner,
+              gatekeeperNetworkKey,
               gatekeeperKey
             ),
           ]);
           const findGatewayTokensResponse = await findGatewayTokens(
             connection,
             owner,
-            gatekeeperKey
+            gatekeeperNetworkKey
           );
           expect(findGatewayTokensResponse.length).to.deep.eq(1);
           expect(findGatewayTokensResponse[0]).to.deep.eq({
             issuingGatekeeper: gatekeeperKey,
-            gatekeeperNetwork: gatekeeperKey,
+            gatekeeperNetwork: gatekeeperNetworkKey,
             owner,
             isValid: true,
             programId: new PublicKey(PROGRAM_ID.toBase58()), // Key has to be re-constructed here for deep.eq to work.
@@ -129,18 +134,19 @@ describe("findGatewayTokens", () => {
               new GatewayTokenState({ frozen: new Frozen({}) }),
               testPubKey,
               owner,
+              gatekeeperNetworkKey,
               gatekeeperKey
             ),
           ]);
           const findGatewayTokensResponse = await findGatewayTokens(
             connection,
             owner,
-            gatekeeperKey,
+            gatekeeperNetworkKey,
             true
           );
           expect(findGatewayTokensResponse).to.containSubset([
             {
-              gatekeeperNetwork: gatekeeperKey,
+              gatekeeperNetwork: gatekeeperNetworkKey,
               owner,
               isValid: false,
               publicKey: testPubKey,
@@ -159,25 +165,27 @@ describe("findGatewayTokens", () => {
               new GatewayTokenState({ active: new Active({}) }),
               testPubKey,
               owner,
+              gatekeeperNetworkKey,
               gatekeeperKey
             ),
             getAccountWithState(
               new GatewayTokenState({ frozen: new Frozen({}) }),
               revokedPubKey,
               owner,
+              gatekeeperNetworkKey,
               gatekeeperKey
             ),
           ]);
           const findGatewayTokensResponse = await findGatewayTokens(
             connection,
             owner,
-            gatekeeperKey,
+            gatekeeperNetworkKey,
             true
           );
           expect(findGatewayTokensResponse.length).to.eq(2);
           expect(findGatewayTokensResponse).to.containSubset([
             {
-              gatekeeperNetwork: gatekeeperKey,
+              gatekeeperNetwork: gatekeeperNetworkKey,
               issuingGatekeeper: gatekeeperKey,
               owner,
               isValid: true,
@@ -185,7 +193,7 @@ describe("findGatewayTokens", () => {
               programId: PROGRAM_ID,
             },
             {
-              gatekeeperNetwork: gatekeeperKey,
+              gatekeeperNetwork: gatekeeperNetworkKey,
               issuingGatekeeper: gatekeeperKey,
               owner,
               isValid: false,
