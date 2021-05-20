@@ -48,4 +48,5 @@ async fn issue_gateway_token_should_succeed() {
     let gatewayToken = context.issue_token(&owner, &authority, &gatekeeper.authority, &network).await;
 
     assert_eq!(gatewayToken.owner_wallet, owner);
+    assert_eq!(gatewayToken.issuing_gatekeeper, gatekeeper.authority);
 }

@@ -66,8 +66,8 @@ impl GatewayContext {
             &[instruction::issue_vanilla(
                 &self.context.payer.pubkey(),
                 owner,
-                &gatekeeper,
-                &authority,
+                gatekeeper,
+                authority,
                 &network.pubkey(),
                 None
             )],
@@ -136,21 +136,15 @@ impl GatewayContext {
         network: &Keypair,
     ) -> GatewayToken {
         let (gateway_account, _) = get_gateway_token_address_with_seed(&owner, &None);
-
-        self.issue_gateway_transaction(
-            &owner,
-            &authority,
-            &gatekeeper,
-            network
-        );
-
+        self.issue_gateway_transaction(&owner, &authority, &gatekeeper, network)
+            .await
+            .unwrap();
         let account_info = self.context
             .banks_client
             .get_account(gateway_account)
             .await
             .unwrap()
             .unwrap();
-
         let account_data: GatewayToken =
             program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data).unwrap();
 
