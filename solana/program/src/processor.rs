@@ -23,7 +23,9 @@ use {
         borsh::{try_from_slice_incomplete, get_instance_packed_len}
     }
 };
-use crate::state::{get_gatekeeper_address_with_seed, GATEKEEPER_ADDRESS_SEED};
+use crate::state::{get_gatekeeper_address_with_seed, GATEKEEPER_ADDRESS_SEED, Transitionable};
+use solana_gateway::state::GatewayTokenState;
+use solana_gateway::error::GatewayError;
 
 /// Instruction processor
 pub fn process_instruction(
@@ -35,7 +37,8 @@ pub fn process_instruction(
 
     match instruction {
         GatewayInstruction::AddGatekeeper { } => add_gatekeeper(accounts),
-        GatewayInstruction::IssueVanilla { seed  } => issue_vanilla(accounts, &seed)
+        GatewayInstruction::IssueVanilla { seed  } => issue_vanilla(accounts, &seed),
+        GatewayInstruction::SetState { state  } => set_state(accounts, state)
     }
 }
 
@@ -50,6 +53,11 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
     let rent_info = next_account_info(account_info_iter)?;
     let system_program_info = next_account_info(account_info_iter)?;
     let rent = &Rent::from_account_info(rent_info)?;
+
+    if !gatekeeper_network_info.is_signer {
+        msg!("Gatekeeper network signature missing");
+        return Err(ProgramError::MissingRequiredSignature);
+    }
 
     let (gatekeeper_address, gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
         gatekeeper_authority_info.key
@@ -145,7 +153,7 @@ fn issue_vanilla(accounts: &[AccountInfo], seed: &Option<[u8; 8]>) -> ProgramRes
     let gateway_token = GatewayToken::new_vanilla(
         owner_info.key,
         gatekeeper_network_info.key,
-        gatekeeper_account_info.key);
+        gatekeeper_authority_info.key);
     let size = get_instance_packed_len(&gateway_token).unwrap() as u64;
 
     invoke_signed(
@@ -164,6 +172,49 @@ fn issue_vanilla(accounts: &[AccountInfo], seed: &Option<[u8; 8]>) -> ProgramRes
         &[&gateway_token_signer_seeds],
     )?;
 
+    gateway_token.serialize(&mut *gateway_token_info.data.borrow_mut())
+        .map_err(|e| e.into()) as ProgramResult
+}
+
+fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResult {
+    msg!("GatewayInstruction::SetState");
+    let account_info_iter = &mut accounts.iter();
+    let gateway_token_info = next_account_info(account_info_iter)?;
+    let gatekeeper_authority_info = next_account_info(account_info_iter)?;
+    let gatekeeper_account_info = next_account_info(account_info_iter)?;
+
+    let mut gateway_token = try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
+    let gatekeeper_account = try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
+
+    // check the gatekeeper account matches the passed-in gatekeeper key
+    if gatekeeper_account.authority != *gatekeeper_authority_info.key {
+        msg!("Error: incorrect gatekeeper authority");
+        return Err(ProgramError::InvalidArgument);
+    }
+
+    // check the gatekeeper account network matches the network on the gateway token
+    if gatekeeper_account.network != gateway_token.gatekeeper_network {
+        msg!("Error: incorrect gatekeeper network");
+        return Err(ProgramError::InvalidArgument);
+    }
+    
+    // check that the required state change is allowed
+    if !gateway_token.is_valid_state_change(&state) {
+        msg!("Error: incorrect gatekeeper network");
+        return Err(GatewayError::InvalidStateChange.into());
+    }
+
+    // Only the issuing gatekeeper can freeze or unfreeze a GT
+    // Any gatekeeper in the network (checked above) can revoke
+    if state == GatewayTokenState::Frozen || state == GatewayTokenState::Active {
+        if gateway_token.issuing_gatekeeper != *gatekeeper_authority_info.key  {
+            msg!("Error: Only the issuing gatekeeper can freeze or unfreeze");
+            return Err(GatewayError::IncorrectGatekeeper.into());
+        }  
+    }
+
+    gateway_token.state = state;
+    
     gateway_token.serialize(&mut *gateway_token_info.data.borrow_mut())
         .map_err(|e| e.into()) as ProgramResult
 }
