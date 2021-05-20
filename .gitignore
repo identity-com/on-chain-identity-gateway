@@ -62,3 +62,5 @@ yarn-error.log*
 dist/
 target/
 test-ledger/
+
+*oclif.manifest.json
