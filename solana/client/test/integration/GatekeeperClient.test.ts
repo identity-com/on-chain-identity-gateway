@@ -63,18 +63,16 @@ describe("GatekeeperClient Integration tests", () => {
 
     context("with a good token and selfDeclarationTextAgreedTo", () => {
       beforeEach(async () => {
-        ({
-          token: gatewayToken,
-        } = await gatekeeperClientInst.createGatewayToken({
-          walletPublicKey,
-          selfDeclarationTextAgreedTo,
-        }));
+        ({ token: gatewayToken } =
+          await gatekeeperClientInst.createGatewayToken({
+            walletPublicKey,
+            selfDeclarationTextAgreedTo,
+          }));
       });
 
       it("should retrieve a gatekeeper record for the token", async () => {
-        const auditResponse: GatekeeperRecord | null = await gatekeeperClientInst.auditGatewayToken(
-          gatewayToken
-        );
+        const auditResponse: GatekeeperRecord | null =
+          await gatekeeperClientInst.auditGatewayToken(gatewayToken);
         expect(auditResponse).not.to.be.null;
         expect(auditResponse!.selfDeclarationTextAgreedTo).to.eq(
           selfDeclarationTextAgreedTo
