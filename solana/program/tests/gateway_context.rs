@@ -19,6 +19,7 @@ use solana_gateway::{
 use solana_sdk::signature::Signer;
 use solana_sdk::instruction::{AccountMeta, Instruction};
 use solana_gateway_program::instruction::GatewayInstruction;
+use solana_gateway::state::GatewayToken;
 
 fn program_test() -> ProgramTest {
     ProgramTest::new("solana_gateway_program", id(), processor!(process_instruction))
@@ -99,6 +100,22 @@ impl GatewayContext {
             .unwrap();
         let account_data: Gatekeeper =
             program_borsh::try_from_slice_incomplete::<Gatekeeper>(&account_info.data).unwrap();
+
+        account_data
+    }
+    
+    pub async fn get_gateway_token(
+        &mut self,
+        gateway_token_address: &Pubkey
+    ) -> GatewayToken {
+        let account_info = self.context
+            .banks_client
+            .get_account(*gateway_token_address)
+            .await
+            .unwrap()
+            .unwrap();
+        let account_data: GatewayToken =
+            program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data).unwrap();
 
         account_data
     }
