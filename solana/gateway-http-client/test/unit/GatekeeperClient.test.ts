@@ -79,9 +79,8 @@ describe("GatekeeperClient", () => {
         const data = { test: "test" };
         const serverResponse = { status: 200, data };
         sandbox.stub(axios, "post").resolves(serverResponse);
-        const createGatewayTokenResponse = await gatekeeperClientInst.createGatewayToken(
-          { walletPublicKey }
-        );
+        const createGatewayTokenResponse =
+          await gatekeeperClientInst.createGatewayToken({ walletPublicKey });
         expect(createGatewayTokenResponse).deep.eq(data);
       });
     });
@@ -114,9 +113,11 @@ describe("GatekeeperClient", () => {
             address: walletPublicKey.toBase58(),
           })
           .resolves(serverResponse);
-        const createGatewayTokenResponse = await gatekeeperClientInst.createGatewayToken(
-          { walletPublicKey, selfDeclarationTextAgreedTo }
-        );
+        const createGatewayTokenResponse =
+          await gatekeeperClientInst.createGatewayToken({
+            walletPublicKey,
+            selfDeclarationTextAgreedTo,
+          });
         expect(createGatewayTokenResponse).deep.eq(data);
       });
     });
@@ -143,9 +144,11 @@ describe("GatekeeperClient", () => {
           .stub(axios, "post")
           .withArgs(`${baseUrl}`, { presentationRequestId })
           .resolves(serverResponse);
-        const createGatewayTokenResponse = await gatekeeperClientInst.createGatewayToken(
-          { walletPublicKey, presentationRequestId }
-        );
+        const createGatewayTokenResponse =
+          await gatekeeperClientInst.createGatewayToken({
+            walletPublicKey,
+            presentationRequestId,
+          });
         expect(createGatewayTokenResponse).deep.eq(data);
       });
     });
@@ -244,9 +247,8 @@ describe("GatekeeperClient", () => {
         .stub(axios, "get")
         .withArgs(`${baseUrl}/${token}`)
         .resolves({ status: 200, data: gatekeeperRecord });
-      const auditGatewayTokenResponse = await gatekeeperClientInst.auditGatewayToken(
-        token
-      );
+      const auditGatewayTokenResponse =
+        await gatekeeperClientInst.auditGatewayToken(token);
       expect(auditGatewayTokenResponse).to.deep.eq(gatekeeperRecord);
     });
 
