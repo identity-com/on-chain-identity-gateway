@@ -3,7 +3,7 @@ import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import { clusterApiUrl, Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { findGatewayTokens } from "../../src";
-import { PROGRAM_ID } from "../../../gatekeeper-lib/src/util/constants";
+import { PROGRAM_ID } from "../../src/constants";
 import {
   Frozen,
   Active,
