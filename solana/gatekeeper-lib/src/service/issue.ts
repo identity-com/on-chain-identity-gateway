@@ -6,8 +6,13 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { AccountLayout, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Recorder, RecorderFS } from "../util/record";
 
-import { PII, Recorder, RecorderFS } from "../util/record";
+export type PII = {
+  name?: string;
+  ipAddress?: string;
+  selfDeclarationTextAgreedTo?: string;
+} & Record<string, any>;
 
 export class IssueService {
   constructor(
@@ -31,16 +36,10 @@ export class IssueService {
       token: recipientTokenAccount.publicKey.toBase58(),
       ...pii,
       name: pii.name || "-",
-      ipAddress: pii.ipAddress || "-",
-      country: ipDetails?.country || "-",
-      approved,
+      ipAddress: pii.ipDetails?.ipAddress || "-",
+      country: pii.ipDetails?.country || "-",
       selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || "-",
     };
-
-    if (!record.approved) {
-      console.log(record);
-      throw new Error("Blocked IP " + pii.ipAddress);
-    }
 
     const storeRecordPromise = this.recorder.store(record);
 

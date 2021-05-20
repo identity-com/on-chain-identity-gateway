@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ ociv COMMAND
 running command...
 $ ociv (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.0.4 darwin-x64 node-v16.0.0
+@identity.com/solana-gatekeeper-lib/1.0.4 linux-x64 node-v12.14.0
 $ ociv --help [COMMAND]
 USAGE
   $ ociv COMMAND
