@@ -13,10 +13,14 @@
     "noImplicitAny": true,
     "typeRoots": ["types/", "node_modules/@types"],
     "outDir": "dist",
+    "rootDir": "src",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
+  "include": [
+    "src/**/*"
+  ],
   "exclude": [
     "test/**/*",
     "node_modules",
