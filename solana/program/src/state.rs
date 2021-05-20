@@ -6,6 +6,7 @@ use {
         pubkey::Pubkey
     }
 };
+use solana_gateway::state::{ GatewayTokenState, GatewayToken };
 
 /// A Gatekeeper account
 #[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq)]
@@ -15,6 +16,35 @@ pub struct Gatekeeper {
 
     /// The public key of the network to which this gatekeeper belongs  
     pub network: Pubkey,
+}
+
+pub trait Transitionable<State> {
+    fn is_valid_state_change(&self, new_state: State) -> bool;
+}
+impl Transitionable<GatewayTokenState> for GatewayToken {
+    /// defines the set of valid state transitions for gateway tokens.
+    /// Active GTs can be frozen or revoked
+    /// Frozen GTs can be unfrozen (active) or revoked
+    /// Revoked GTs cannot be transitioned
+    fn is_valid_state_change(&self, new_state: GatewayTokenState) -> bool {
+        match new_state {
+            GatewayTokenState::Active => {
+                match self.state {
+                    GatewayTokenState::Active => false,
+                    GatewayTokenState::Frozen => true,
+                    GatewayTokenState::Revoked => true
+                }
+            }
+            GatewayTokenState::Frozen => {
+                match self.state {
+                    GatewayTokenState::Active => true,
+                    GatewayTokenState::Frozen => false,
+                    GatewayTokenState::Revoked => true
+                }
+            }
+            GatewayTokenState::Revoked => false
+        }
+    }
 }
 
 /// The seed string used to derive a program address for a gateway token from an owner account
