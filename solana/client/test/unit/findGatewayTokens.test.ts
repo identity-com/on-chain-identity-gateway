@@ -1,6 +1,6 @@
 import chai from "chai";
 import chaiSubset from "chai-subset";
-import sinon, { assert } from "sinon";
+import sinon from "sinon";
 import { clusterApiUrl, Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { findGatewayTokens } from "../../src";
 import { PROGRAM_ID } from "../../../gatekeeper-lib/src/util/constants";
