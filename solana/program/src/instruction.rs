@@ -13,6 +13,7 @@ use {
     }
 };
 use crate::state::get_gatekeeper_address_with_seed;
+use solana_gateway::state::GatewayTokenState;
 
 /// Instructions supported by the program
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq)]
@@ -22,11 +23,11 @@ pub enum GatewayInstruction {
     /// Accounts expected by this instruction:
     ///
     /// 0. `[writable, signer]`    funder_account: the payer of the transaction
-    //  3. `[writeable]`           gatekeeper_account: the destination account containing details of the gatekeeper
-    //  4. `[]`                    gatekeeper_authority: the authority that owns the gatekeeper account
-    //  5. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
-    /// 6. `[]`                    Rent sysvar
-    /// 7. `[]`                    System program
+    /// 1. `[writeable]`           gatekeeper_account: the destination account containing details of the gatekeeper
+    /// 2. `[]`                    gatekeeper_authority: the authority that owns the gatekeeper account
+    /// 3. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
+    /// 4. `[]`                    Rent sysvar
+    /// 5. `[]`                    System program
     AddGatekeeper {},
     
     /// Issue a new gateway token
@@ -34,17 +35,28 @@ pub enum GatewayInstruction {
     /// Accounts expected by this instruction:
     ///
     /// 0. `[writable, signer]`    funder_account: the payer of the transaction
-    //  1. `[writable]`            gateway_token: the destination account of the gateway token
-    //  2. `[]`                    owner: the wallet that the gateway token is issued for
-    //  3. `[]`                    gatekeeper_account: the account containing details of the gatekeeper issuing the gateway token
-    //  4. `[signer]`              gatekeeper_authority: the authority that owns the gatekeeper account
-    //  5. `[]`                    gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
+    /// 1. `[writable]`            gateway_token: the destination account of the gateway token
+    /// 2. `[]`                    owner: the wallet that the gateway token is issued for
+    /// 3. `[]`                    gatekeeper_account: the account containing details of the gatekeeper issuing the gateway token
+    /// 4. `[signer]`              gatekeeper_authority: the authority that owns the gatekeeper account
+    /// 5. `[]`                    gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
     /// 6. `[]`                    Rent sysvar
     /// 7. `[]`                    System program
     IssueVanilla {
         /// An optional seed to use when generating a gateway token
         /// allowing multiple gateway tokens per wallet
         seed: Option<AddressSeed>
+    },
+
+    /// Update the gateway token state
+    ///
+    /// Accounts expected by this instruction:
+    ///
+    /// 0. `[writable]`            gateway_token: the destination account of the gateway token
+    /// 1. `[signer]`              gatekeeper_authority: the gatekeeper authority that is making the change
+    /// 2. `[]`                    gatekeeper_account: the account containing details of the gatekeeper
+    SetState {
+        state: GatewayTokenState
     }
 }
 
