@@ -3,17 +3,16 @@
 use {
     crate::{
         id,
-        state::{get_gateway_token_address_with_seed, AddressSeed},
+        state::{get_gateway_token_address_with_seed, get_gatekeeper_address_with_seed, AddressSeed},
     },
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::{
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
         system_program, sysvar,
-    }
+    },
+    solana_gateway::state::{GatewayTokenState},
 };
-use crate::state::get_gatekeeper_address_with_seed;
-use solana_gateway::state::GatewayTokenState;
 
 /// Instructions supported by the program
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq)]
@@ -49,6 +48,7 @@ pub enum GatewayInstruction {
     },
 
     /// Update the gateway token state
+    /// Revoke, freeze or unfreeze
     ///
     /// Accounts expected by this instruction:
     ///
@@ -56,6 +56,7 @@ pub enum GatewayInstruction {
     /// 1. `[signer]`              gatekeeper_authority: the gatekeeper authority that is making the change
     /// 2. `[]`                    gatekeeper_account: the account containing details of the gatekeeper
     SetState {
+        /// The new state of the gateway token
         state: GatewayTokenState
     }
 }
@@ -115,11 +116,10 @@ pub fn issue_vanilla(
 mod tests {
     use super::*;
     use solana_program::program_error::ProgramError;
-    use solana_gateway::state::GatewayToken;
 
     #[test]
     fn serialize_issue_vanilla() {
-        let mut expected = [1,0];
+        let expected = [1,0];
         let instruction = GatewayInstruction::IssueVanilla { seed: None };
         assert_eq!(instruction.try_to_vec().unwrap(), expected);
         assert_eq!(

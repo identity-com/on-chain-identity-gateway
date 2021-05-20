@@ -37,7 +37,8 @@ pub fn process_instruction(
 
     match instruction {
         GatewayInstruction::AddGatekeeper { } => add_gatekeeper(accounts),
-        GatewayInstruction::IssueVanilla { seed  } => issue_vanilla(accounts, &seed)
+        GatewayInstruction::IssueVanilla { seed  } => issue_vanilla(accounts, &seed),
+        GatewayInstruction::SetState { state  } => set_state(accounts, state)
     }
 }
 
@@ -52,6 +53,11 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
     let rent_info = next_account_info(account_info_iter)?;
     let system_program_info = next_account_info(account_info_iter)?;
     let rent = &Rent::from_account_info(rent_info)?;
+
+    if !gatekeeper_network_info.is_signer {
+        msg!("Gatekeeper network signature missing");
+        return Err(ProgramError::MissingRequiredSignature);
+    }
 
     let (gatekeeper_address, gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
         gatekeeper_authority_info.key
@@ -177,7 +183,7 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
     let gatekeeper_authority_info = next_account_info(account_info_iter)?;
     let gatekeeper_account_info = next_account_info(account_info_iter)?;
 
-    let gateway_token = try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
+    let mut gateway_token = try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
     let gatekeeper_account = try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
 
     // check the gatekeeper account matches the passed-in gatekeeper key
@@ -187,15 +193,15 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
     }
 
     // check the gatekeeper account network matches the network on the gateway token
-    if gatekeeper_account.network != *gateway_token.gatekeeper_network {
+    if gatekeeper_account.network != gateway_token.gatekeeper_network {
         msg!("Error: incorrect gatekeeper network");
         return Err(ProgramError::InvalidArgument);
     }
     
     // check that the required state change is allowed
-    if !gateway_token.is_valid_state_change(state) {
+    if !gateway_token.is_valid_state_change(&state) {
         msg!("Error: incorrect gatekeeper network");
-        return Err(GatewayError::InvalidStateChange);
+        return Err(GatewayError::InvalidStateChange.into());
     }
 
     // Only the issuing gatekeeper can freeze or unfreeze a GT
@@ -203,7 +209,7 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
     if state == GatewayTokenState::Frozen || state == GatewayTokenState::Active {
         if gateway_token.issuing_gatekeeper != *gatekeeper_authority_info.key  {
             msg!("Error: Only the issuing gatekeeper can freeze or unfreeze");
-            return Err(GatewayError::IncorrectGatekeeper);
+            return Err(GatewayError::IncorrectGatekeeper.into());
         }  
     }
 
