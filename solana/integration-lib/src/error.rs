@@ -33,7 +33,10 @@ pub enum GatewayError {
 
     /// The gateway token was expected to be revoked, but was not
     #[error("The gateway token was expected to be revoked, but was not")]
-    ExpectedRevokedToken
+    ExpectedRevokedToken,
+
+    #[error("Invalid state change")]
+    InvalidStateChange
 }
 impl From<GatewayError> for ProgramError {
     fn from(e: GatewayError) -> Self {

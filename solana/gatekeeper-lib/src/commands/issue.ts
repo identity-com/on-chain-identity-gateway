@@ -8,12 +8,6 @@ import * as fs from "fs";
 import { IssueService } from "../service/issue";
 import { COUNTRY_BLACKLIST, REGISTER } from "../util/constants";
 
-const ipLookup = (ip: string) => geoip.lookup(ip);
-const validIp = (ip: string) => {
-  const ipDetails = ipLookup(ip);
-  return ipDetails && !COUNTRY_BLACKLIST.includes(ipDetails.country);
-};
-
 type Record = {
   timestamp: string;
   token: string;
