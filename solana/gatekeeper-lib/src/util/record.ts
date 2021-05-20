@@ -25,7 +25,6 @@ export type AuditRecord = {
   name: string;
   ipAddress: string;
   country: string;
-  approved: boolean;
   selfDeclarationTextAgreedTo: string;
 };
 
@@ -61,7 +60,6 @@ export class RecorderFS implements Recorder {
         record.name,
         record.ipAddress,
         record.country,
-        record.approved,
         record.selfDeclarationTextAgreedTo,
       ].join(",") + "\n";
     await fs.promises.appendFile(REGISTER, row);
@@ -82,7 +80,6 @@ export class RecorderFS implements Recorder {
       name: entry[2] || "-",
       ipAddress: entry[3] || "-",
       country: entry[4] || "-",
-      approved: entry[5] == "true",
       selfDeclarationTextAgreedTo: entry[6] || "-",
     };
   }

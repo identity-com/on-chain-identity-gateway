@@ -6,7 +6,6 @@ import {
   send,
 } from "../util/solana/util";
 import { PII, Recorder, RecorderFS } from "../util/record";
-import { ipLookup, validIp } from "../util/ipCheck";
 
 export class GatekeeperService {
   constructor(
@@ -46,27 +45,16 @@ export class GatekeeperService {
   }
 
   async issue(recipient: PublicKey, pii: PII, checkIp = false) {
-    // TODO move the IP details check to the API
-    const ipDetails = pii.ipAddress ? ipLookup(pii.ipAddress) : null;
-    const approved =
-      (pii.ipAddress && (!checkIp || validIp(pii.ipAddress))) || false;
-
     const recipientTokenAccount = await this.issueVanilla(recipient);
     const record = {
       timestamp: new Date().toISOString(),
       token: recipientTokenAccount.toBase58(),
       ...pii,
       name: pii.name || "-",
-      ipAddress: pii.ipAddress || "-",
-      country: ipDetails?.country || "-",
-      approved,
+      ipAddress: pii.ipDetails?.ipAddress || "-",
+      country: pii.ipDetails?.country || "-",
       selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || "-",
     };
-
-    if (!record.approved) {
-      console.log(record);
-      throw new Error("Blocked IP " + pii.ipAddress);
-    }
 
     const storeRecordPromise = this.recorder.store(record);
 
