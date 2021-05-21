@@ -6,8 +6,9 @@ import { GatekeeperService } from "../src/service/GatekeeperService";
 import { homedir } from "os";
 import * as path from "path";
 import { argv } from "yargs";
+import { AuditRecord } from "../src/util/record";
 /**
- * Usage: ts-node ./scripts/revokeGatewayToken.ts
+ * Usage: ts-node ./scripts/testGatewayTokenStates.ts
  */
 const mySecretKey = require(path.join(
   homedir(),
@@ -53,11 +54,25 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
     : Keypair.generate().publicKey;
 
   console.log("owner", owner.toBase58());
-  const issuedRecord = await gatekeeperService.issue(owner, {});
-  console.log("issuedRecord", issuedRecord);
-  console.log(`revoking ${issuedRecord.token}...`);
-  const revokedTokenRecord = await gatekeeperService.revoke(
-    new PublicKey(issuedRecord.token)
+  let auditRecord: AuditRecord;
+  auditRecord = await gatekeeperService.issue(owner, {});
+  console.log("issuedRecord", auditRecord);
+
+  console.log(`freezing ${auditRecord.token}...`);
+  auditRecord = await gatekeeperService.freeze(
+    new PublicKey(auditRecord.token)
   );
-  console.log("revokedTokenRecord", revokedTokenRecord);
+  console.log("frozenTokenRecord", auditRecord);
+
+  console.log(`unfreezing ${auditRecord.token}...`);
+  auditRecord = await gatekeeperService.unfreeze(
+    new PublicKey(auditRecord.token)
+  );
+  console.log("unfrozenTokenRecord", auditRecord);
+
+  console.log(`revoking ${auditRecord.token}...`);
+  auditRecord = await gatekeeperService.revoke(
+    new PublicKey(auditRecord.token)
+  );
+  console.log("revokedTokenRecord", auditRecord);
 })().catch((error) => console.error(error));
