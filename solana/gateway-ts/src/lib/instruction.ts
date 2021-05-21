@@ -7,7 +7,7 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from "@solana/web3.js";
-import { GatewayTokenState } from "./GatewayTokenData";
+import { Active, Frozen, GatewayTokenState, Revoked } from "./GatewayTokenData";
 
 /**
  * Creates instructions to send to the gateway program.
@@ -36,19 +36,19 @@ class GatewayInstruction extends Enum {
 
   static revoke(): GatewayInstruction {
     return new GatewayInstruction({
-      setState: new SetState({ state: "revoked" }),
+      setState: new SetState({ revoked: Revoked }),
     });
   }
 
   static freeze(): GatewayInstruction {
     return new GatewayInstruction({
-      setState: new SetState({ state: "frozen" }),
+      setState: new SetState({ frozen: Frozen }),
     });
   }
 
   static unfreeze(): GatewayInstruction {
     return new GatewayInstruction({
-      setState: new SetState({ state: "active" }),
+      setState: new SetState({ active: Active }),
     });
   }
 }
