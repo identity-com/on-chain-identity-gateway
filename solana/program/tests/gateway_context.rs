@@ -58,21 +58,21 @@ impl GatewayContext {
     async fn issue_gateway_transaction(
         &mut self,
         owner: &Pubkey,
-        authority: &Pubkey,
-        gatekeeper: &Pubkey,
-        network: &Keypair,
+        gatekeeper_authority: &Keypair,
+        gatekeeper_account: &Pubkey,
+        network: &Pubkey,
     ) -> transport::Result<()> {
         let transaction = Transaction::new_signed_with_payer(
             &[instruction::issue_vanilla(
                 &self.context.payer.pubkey(),
                 owner,
-                gatekeeper,
-                authority,
-                &network.pubkey(),
+                gatekeeper_account,
+                &gatekeeper_authority.pubkey(),
+                &network,
                 None
             )],
             Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, &network],
+            &[&self.context.payer, &gatekeeper_authority],
             self.context.last_blockhash,
         );
         self.context.banks_client.process_transaction(transaction).await
@@ -128,22 +128,15 @@ impl GatewayContext {
         account_data
     }
 
-    pub async fn issue_token(
+    pub async fn issue_gateway_token(
         &mut self,
         owner: &Pubkey,
-        authority: &Pubkey,
-        network: &Keypair,
+        gatekeeper_authority: &Keypair,
+        network: &Pubkey,
     ) -> GatewayToken {
-        let (gatekeeper_address, _) = get_gatekeeper_address_with_seed(&authority);
-        let gatekeeper_address_account_info = self.context
-            .banks_client
-            .get_account(gatekeeper_address)
-            .await
-            .unwrap()
-            .unwrap();
-
+        let (gatekeeper_address, _) = get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
         let (gateway_account, _) = get_gateway_token_address_with_seed(&owner, &None);
-        self.issue_gateway_transaction(&owner, &authority, &gatekeeper_address_account_info.owner, network)
+        self.issue_gateway_transaction(&owner, gatekeeper_authority, &gatekeeper_address, network)
             .await
             .unwrap();
 

@@ -40,13 +40,17 @@ async fn add_gatekeeper_should_fail_without_gatekeeper_network_signature() {
 #[tokio::test]
 async fn issue_gateway_token_should_succeed() {
     let mut context = GatewayContext::new().await;
-
+    
     let owner = Pubkey::new_unique();
-    let authority = Pubkey::new_unique();
+    let authority = Keypair::new();
     let network = Keypair::new();
-    context.add_gatekeeper(&authority, &network).await;
-    let gateway_token = context.issue_token(&owner, &authority, &network).await;
+    
+    // first add the gatekeeper to the network
+    context.add_gatekeeper(&authority.pubkey(), &network).await;
+    
+    // now issue a gateway token as that gatekeeper
+    let gateway_token = context.issue_gateway_token(&owner, &authority, &network.pubkey()).await;
 
     assert_eq!(gateway_token.owner_wallet, owner);
-    assert_eq!(gateway_token.issuing_gatekeeper, authority);
+    assert_eq!(gateway_token.issuing_gatekeeper, authority.pubkey());
 }
