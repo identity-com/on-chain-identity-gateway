@@ -1,16 +1,17 @@
-import {
-  Keypair,
-  Connection,
-  PublicKey,
-  Transaction,
-  sendAndConfirmTransaction,
-} from "@solana/web3.js";
+import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import {
   getGatekeeperAccountKeyFromGatekeeperAuthority,
   getGatewayTokenKeyForOwner,
   issueVanilla,
+  revoke,
 } from "@identity.com/solana-gateway-ts";
-import { PII, Recorder, RecorderFS } from "../util/record";
+import {
+  AuditRecord,
+  GatewayTokenStatus,
+  PII,
+  Recorder,
+  RecorderFS,
+} from "../util/record";
 import { send } from "../util/connection";
 
 export class GatekeeperService {
@@ -50,7 +51,7 @@ export class GatekeeperService {
     return gatewayTokenKey;
   }
 
-  async issue(recipient: PublicKey, pii: PII, checkIp = false) {
+  async issue(recipient: PublicKey, pii: PII): Promise<AuditRecord> {
     const recipientTokenAccount = await this.issueVanilla(recipient);
     const record = {
       timestamp: new Date().toISOString(),
@@ -60,9 +61,46 @@ export class GatekeeperService {
       ipAddress: pii.ipDetails?.ipAddress || "-",
       country: pii.ipDetails?.country || "-",
       selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || "-",
+      status: GatewayTokenStatus.ACTIVE,
     };
 
     const storeRecordPromise = this.recorder.store(record);
+
+    await storeRecordPromise;
+
+    return record;
+  }
+
+  async revoke(gatewayTokenKey: PublicKey): Promise<AuditRecord> {
+    const gatekeeperAccount =
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(
+        this.gatekeeperAuthority.publicKey
+      );
+    const transaction = new Transaction().add(
+      revoke(
+        gatewayTokenKey,
+        this.gatekeeperAuthority.publicKey,
+        gatekeeperAccount
+      )
+    );
+
+    await send(
+      this.connection,
+      transaction,
+      this.payer,
+      this.gatekeeperAuthority
+    );
+
+    const record = await this.recorder.lookup(gatewayTokenKey);
+    if (!record)
+      throw new Error(`No Audit record found for token ${gatewayTokenKey}`);
+
+    const updatedRecord = {
+      ...record,
+      status: GatewayTokenStatus.REVOKED,
+      timestamp: new Date().toISOString(),
+    };
+    const storeRecordPromise = await this.recorder.store(updatedRecord);
 
     await storeRecordPromise;
 
