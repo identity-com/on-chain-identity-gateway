@@ -13,6 +13,7 @@ use {
     },
     solana_gateway::state::{GatewayTokenState},
 };
+use solana_program::clock::UnixTimestamp;
 
 /// Instructions supported by the program
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq)]
@@ -28,7 +29,7 @@ pub enum GatewayInstruction {
     /// 4. `[]`                    Rent sysvar
     /// 5. `[]`                    System program
     AddGatekeeper {},
-    
+
     /// Issue a new gateway token
     ///
     /// Accounts expected by this instruction:
@@ -44,7 +45,9 @@ pub enum GatewayInstruction {
     IssueVanilla {
         /// An optional seed to use when generating a gateway token
         /// allowing multiple gateway tokens per wallet
-        seed: Option<AddressSeed>
+        seed: Option<AddressSeed>,
+        /// An optional unix timestamp at which point the issued token is no longer valid
+        expire_time: Option<UnixTimestamp>
     },
 
     /// Update the gateway token state
@@ -58,6 +61,18 @@ pub enum GatewayInstruction {
     SetState {
         /// The new state of the gateway token
         state: GatewayTokenState
+    },
+
+    /// Update the gateway token expiry time
+    ///
+    /// Accounts expected by this instruction:
+    ///
+    /// 0. `[writable]`            gateway_token: the destination account of the gateway token
+    /// 1. `[signer]`              gatekeeper_authority: the gatekeeper authority that is making the change
+    /// 2. `[]`                    gatekeeper_account: the account containing details of the gatekeeper
+    UpdateExpiry {
+        ///  the new expiry time of the gateway token
+        expire_time: UnixTimestamp
     }
 }
 
@@ -91,23 +106,65 @@ pub fn issue_vanilla(
     gatekeeper_account: &Pubkey,    // the account containing details of the gatekeeper issuing the gateway token
     gatekeeper_authority: &Pubkey,  // the authority that owns the gatekeeper account
     gatekeeper_network: &Pubkey,    // the gatekeeper network to which the gatekeeper belongs
-    seed: Option<AddressSeed>       // optional seed to use when generating a gateway token
+    seed: Option<AddressSeed>,       // optional seed to use when generating a gateway token
+    expire_time: Option<UnixTimestamp>// optional unix timestamp at which point the issued token is no longer valid
 ) -> Instruction {
-    let (gateway_account, _) = get_gateway_token_address_with_seed(owner, &seed);
+    let (gateway_token, _) = get_gateway_token_address_with_seed(owner, &seed);
     Instruction::new_with_borsh(
         id(),
-        &GatewayInstruction::IssueVanilla { seed },
+        &GatewayInstruction::IssueVanilla { seed, expire_time },
         vec![
             AccountMeta::new(*funder_account, true),
-            AccountMeta::new(gateway_account, false),
-            
+            AccountMeta::new(gateway_token, false),
+
             AccountMeta::new_readonly(*owner, false),
             AccountMeta::new_readonly(*gatekeeper_account, false),
             AccountMeta::new_readonly(*gatekeeper_authority, true),
             AccountMeta::new_readonly(*gatekeeper_network, false),
-            
+
             AccountMeta::new_readonly(sysvar::rent::id(), false),
             AccountMeta::new_readonly(system_program::id(), false),
+        ],
+    )
+}
+
+/// Create a `GatewayInstruction::SetState` instruction
+pub fn set_state(
+    gateway_token: &Pubkey,                 // the gateway token account
+    gatekeeper_authority: &Pubkey,          // the authority that owns the gatekeeper account
+    gatekeeper_account: &Pubkey,            // the account containing details of the gatekeeper issuing the gateway token
+    gateway_token_state: GatewayTokenState  // the state of the token to transition to
+) -> Instruction {
+    Instruction::new_with_borsh(
+        id(),
+        &GatewayInstruction::SetState { state: gateway_token_state },
+        vec![
+            AccountMeta::new(*gateway_token, false),
+
+            AccountMeta::new_readonly(*gatekeeper_authority, true),
+            AccountMeta::new_readonly(*gatekeeper_account, false),
+
+            AccountMeta::new_readonly(sysvar::rent::id(), false),
+            AccountMeta::new_readonly(system_program::id(), false),
+        ],
+    )
+}
+
+
+/// Create a `GatewayInstruction::UpdateExpiry` instruction
+pub fn update_expiry(
+    gateway_token: &Pubkey,         // the gateway token account
+    gatekeeper_authority: &Pubkey,  // the authority that owns the gatekeeper account
+    gatekeeper_account: &Pubkey,    // the account containing details of the gatekeeper that issued the gateway token
+    expire_time: UnixTimestamp      // new expiry time for the accountn
+) -> Instruction {
+    Instruction::new_with_borsh(
+        id(),
+        &GatewayInstruction::UpdateExpiry { expire_time },
+        vec![
+            AccountMeta::new(*gateway_token, false),
+            AccountMeta::new_readonly(*gatekeeper_authority, true),
+            AccountMeta::new_readonly(*gatekeeper_account, false),
         ],
     )
 }
@@ -119,8 +176,8 @@ mod tests {
 
     #[test]
     fn serialize_issue_vanilla() {
-        let expected = [1,0];
-        let instruction = GatewayInstruction::IssueVanilla { seed: None };
+        let expected = [1,0,0];
+        let instruction = GatewayInstruction::IssueVanilla { seed: None, expire_time: None };
         assert_eq!(instruction.try_to_vec().unwrap(), expected);
         assert_eq!(
             GatewayInstruction::try_from_slice(&expected).unwrap(),

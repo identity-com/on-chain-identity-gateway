@@ -904,10 +904,10 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@identity.com/solana-gateway-ts@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.0.3.tgz#123cde4589167c599902907cd651f7f803424173"
-  integrity sha512-XiIPkTt5KcQvUqZgykzIpW5v7zlrHcY2K7iRnzPHk4h8XhUCS2vhWHeX+xmshUR5f2lNzG598NtVlC9ShvZOZQ==
+"@identity.com/solana-gateway-ts@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.0.6.tgz#cb35a8872d4cd185930a4bb15fd34f499a73dc15"
+  integrity sha512-WIVfXZwfJhBUtzZQeX2x4Z+j5/pcxOfQ5Me3DTHPcOQ3Fkoy5Vx5ZlXnwaNuBqyMGkCPRA8D6bjCxh/Tb00OCg==
   dependencies:
     "@solana/web3.js" "^1.11.0"
     borsh "^0.4.0"
@@ -5317,8 +5317,10 @@ rpc-websockets@^7.4.2:
   dependencies:
     "@babel/runtime" "^7.11.2"
     assert-args "^1.2.1"
+    bufferutil "^4.0.1"
     circular-json "^0.5.9"
     eventemitter3 "^4.0.7"
+    utf-8-validate "^5.0.2"
     uuid "^8.3.0"
     ws "^7.3.1"
   optionalDependencies:

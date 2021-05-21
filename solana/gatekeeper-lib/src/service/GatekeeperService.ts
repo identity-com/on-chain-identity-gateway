@@ -1,17 +1,45 @@
+import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import {
-  Keypair,
-  Connection,
-  PublicKey,
-  Transaction,
-  sendAndConfirmTransaction,
-} from "@solana/web3.js";
-import {
+  freeze,
+  GatewayToken,
   getGatekeeperAccountKeyFromGatekeeperAuthority,
+  getGatewayToken,
   getGatewayTokenKeyForOwner,
   issueVanilla,
+  revoke,
+  State,
+  unfreeze,
+  updateExpiry,
 } from "@identity.com/solana-gateway-ts";
-import { PII, Recorder, RecorderFS } from "../util/record";
+import { AuditRecord, PII, Recorder, RecorderFS } from "../util/record";
 import { send } from "../util/connection";
+
+const updateRecordState = async (
+  recorder: Recorder,
+  gatewayTokenKey: PublicKey,
+  state: State
+): Promise<AuditRecord> => {
+  const record = await recorder.lookup(gatewayTokenKey);
+  console.log("existing record", record);
+  if (!record)
+    throw new Error(`No Audit record found for token ${gatewayTokenKey}`);
+
+  const updatedRecord = {
+    timestamp: new Date().toISOString(),
+    token: record.token,
+    name: record.name,
+    ipAddress: record.ipAddress,
+    country: record.country,
+    selfDeclarationTextAgreedTo: record.selfDeclarationTextAgreedTo,
+    state,
+  };
+  await recorder.store(updatedRecord);
+  return updatedRecord;
+};
+
+type GatekeeperConfig = {
+  defaultExpirySeconds?: number;
+};
 
 export class GatekeeperService {
   constructor(
@@ -19,24 +47,52 @@ export class GatekeeperService {
     private payer: Keypair,
     private gatekeeperNetwork: PublicKey,
     private gatekeeperAuthority: Keypair,
-    private recorder: Recorder = new RecorderFS()
+    private recorder: Recorder = new RecorderFS(),
+    private config: GatekeeperConfig = {}
   ) {}
 
-  async issueVanilla(owner: PublicKey, seed: Uint8Array = Buffer.from([0])) {
+  private getDefaultExpireTime(): number | undefined {
+    if (!this.config.defaultExpirySeconds) return undefined;
+    const now = Math.floor(Date.now() / 1000);
+    return now + this.config.defaultExpirySeconds;
+  }
+
+  private getGatewayTokenOrError(
+    gatewayTokenKey: PublicKey
+  ): Promise<GatewayToken> {
+    return getGatewayToken(this.connection, gatewayTokenKey).then(
+      (gatewayToken) => {
+        if (!gatewayToken)
+          throw new Error(
+            "Error retrieving gateway token at address " + gatewayTokenKey
+          );
+        return gatewayToken;
+      }
+    );
+  }
+
+  private async issueVanilla(
+    owner: PublicKey,
+    seed?: Uint8Array
+  ): Promise<GatewayToken> {
     const gatewayTokenKey = await getGatewayTokenKeyForOwner(owner);
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
       );
+
+    const expireTime = this.getDefaultExpireTime();
+
     const transaction = new Transaction().add(
       issueVanilla(
-        seed,
         gatewayTokenKey,
         this.payer.publicKey,
         gatekeeperAccount,
         owner,
         this.gatekeeperAuthority.publicKey,
-        this.gatekeeperNetwork
+        this.gatekeeperNetwork,
+        seed,
+        expireTime
       )
     );
 
@@ -47,25 +103,119 @@ export class GatekeeperService {
       this.gatekeeperAuthority
     );
 
-    return gatewayTokenKey;
+    return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 
-  async issue(recipient: PublicKey, pii: PII, checkIp = false) {
-    const recipientTokenAccount = await this.issueVanilla(recipient);
-    const record = {
+  async issue(recipient: PublicKey, pii: PII): Promise<GatewayToken> {
+    const gatewayToken = await this.issueVanilla(recipient);
+    const record: AuditRecord = {
       timestamp: new Date().toISOString(),
-      token: recipientTokenAccount.toBase58(),
+      token: gatewayToken.publicKey.toBase58(),
       ...pii,
       name: pii.name || "-",
       ipAddress: pii.ipDetails?.ipAddress || "-",
       country: pii.ipDetails?.country || "-",
       selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || "-",
+      state: gatewayToken.state,
     };
 
-    const storeRecordPromise = this.recorder.store(record);
+    await this.recorder.store(record);
 
-    await storeRecordPromise;
+    return gatewayToken;
+  }
 
-    return record;
+  async revoke(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
+    const gatekeeperAccount =
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(
+        this.gatekeeperAuthority.publicKey
+      );
+    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
+    const transaction = new Transaction().add(
+      revoke(
+        gatewayTokenKey,
+        this.gatekeeperAuthority.publicKey,
+        gatekeeperAccount
+      )
+    );
+
+    await send(this.connection, transaction, this.gatekeeperAuthority);
+
+    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
+
+    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+
+    return gatewayToken;
+  }
+
+  async freeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
+    const gatekeeperAccount =
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(
+        this.gatekeeperAuthority.publicKey
+      );
+    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
+    const transaction = new Transaction().add(
+      freeze(
+        gatewayTokenKey,
+        this.gatekeeperAuthority.publicKey,
+        gatekeeperAccount
+      )
+    );
+
+    await send(this.connection, transaction, this.gatekeeperAuthority);
+
+    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
+
+    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+
+    return gatewayToken;
+  }
+
+  async unfreeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
+    const gatekeeperAccount =
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(
+        this.gatekeeperAuthority.publicKey
+      );
+    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
+    const transaction = new Transaction().add(
+      unfreeze(
+        gatewayTokenKey,
+        this.gatekeeperAuthority.publicKey,
+        gatekeeperAccount
+      )
+    );
+
+    await send(this.connection, transaction, this.gatekeeperAuthority);
+
+    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
+
+    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+
+    return gatewayToken;
+  }
+
+  async updateExpiry(
+    gatewayTokenKey: PublicKey,
+    expireTime: number
+  ): Promise<GatewayToken> {
+    const gatekeeperAccount =
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(
+        this.gatekeeperAuthority.publicKey
+      );
+    const transaction = new Transaction().add(
+      updateExpiry(
+        gatewayTokenKey,
+        this.gatekeeperAuthority.publicKey,
+        gatekeeperAccount,
+        expireTime
+      )
+    );
+
+    await send(this.connection, transaction, this.gatekeeperAuthority);
+
+    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
+
+    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+
+    return gatewayToken;
   }
 }

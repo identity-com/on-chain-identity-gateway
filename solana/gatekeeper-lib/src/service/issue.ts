@@ -7,6 +7,7 @@ import {
 } from "@solana/web3.js";
 import { AccountLayout, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Recorder, RecorderFS } from "../util/record";
+import { State } from "@identity.com/solana-gateway-ts";
 
 export type PII = {
   name?: string;
@@ -14,6 +15,7 @@ export type PII = {
   selfDeclarationTextAgreedTo?: string;
 } & Record<string, any>;
 
+// TODO remove deprecated service
 export class IssueService {
   constructor(
     private connection: Connection,
@@ -39,6 +41,7 @@ export class IssueService {
       ipAddress: pii.ipDetails?.ipAddress || "-",
       country: pii.ipDetails?.country || "-",
       selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || "-",
+      state: State.ACTIVE,
     };
 
     const storeRecordPromise = this.recorder.store(record);

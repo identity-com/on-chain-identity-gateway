@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ ociv COMMAND
 running command...
 $ ociv (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.0.5 linux-x64 node-v12.14.0
+@identity.com/solana-gatekeeper-lib/1.0.5 darwin-x64 node-v16.0.0
 $ ociv --help [COMMAND]
 USAGE
   $ ociv COMMAND
@@ -28,11 +28,14 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`ociv audit GATEWAYTOKEN`](#ociv-audit-gatewaytoken)
-* [`ociv help [COMMAND]`](#ociv-help-command)
-* [`ociv issue ADDRESS`](#ociv-issue-address)
-* [`ociv revoke GATEWAYTOKEN`](#ociv-revoke-gatewaytoken)
-* [`ociv verify GATEWAYTOKEN`](#ociv-verify-gatewaytoken)
+- [gatekeeper-lib](#gatekeeper-lib)
+- [Usage](#usage)
+- [Commands](#commands)
+  - [`ociv audit GATEWAYTOKEN`](#ociv-audit-gatewaytoken)
+  - [`ociv help [COMMAND]`](#ociv-help-command)
+  - [`ociv issue ADDRESS`](#ociv-issue-address)
+  - [`ociv revoke GATEWAYTOKEN`](#ociv-revoke-gatewaytoken)
+  - [`ociv verify GATEWAYTOKEN`](#ociv-verify-gatewaytoken)
 
 ## `ociv audit GATEWAYTOKEN`
 
