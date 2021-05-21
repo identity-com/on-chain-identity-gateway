@@ -52,24 +52,15 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
     : Keypair.generate().publicKey;
 
   console.log("owner", owner.toBase58());
-  let auditRecord: AuditRecord = await gatekeeperService.issue(owner, {});
-  console.log("issuedRecord", auditRecord);
+  let gatewayToken = await gatekeeperService.issue(owner, {});
+  console.log("issued token in the past", gatewayToken);
+  console.log("token is valid", gatewayToken.isValid());
 
-  console.log(`freezing ${auditRecord.token}...`);
-  auditRecord = await gatekeeperService.freeze(
-    new PublicKey(auditRecord.token)
+  const later = Math.floor(Date.now() / 1000) + 10000;
+  gatewayToken = await gatekeeperService.updateExpiry(
+    gatewayToken.publicKey,
+    later
   );
-  console.log("frozenTokenRecord", auditRecord);
-
-  console.log(`unfreezing ${auditRecord.token}...`);
-  auditRecord = await gatekeeperService.unfreeze(
-    new PublicKey(auditRecord.token)
-  );
-  console.log("unfrozenTokenRecord", auditRecord);
-
-  console.log(`revoking ${auditRecord.token}...`);
-  auditRecord = await gatekeeperService.revoke(
-    new PublicKey(auditRecord.token)
-  );
-  console.log("revokedTokenRecord", auditRecord);
+  console.log("updated the token expiry", gatewayToken.expiryTime);
+  console.log("token is valid", gatewayToken.isValid());
 })().catch((error) => console.error(error));

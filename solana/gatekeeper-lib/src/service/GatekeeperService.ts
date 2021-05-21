@@ -1,26 +1,23 @@
 import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import {
   freeze,
+  GatewayToken,
   getGatekeeperAccountKeyFromGatekeeperAuthority,
+  getGatewayToken,
   getGatewayTokenKeyForOwner,
   issueVanilla,
   revoke,
+  State,
   unfreeze,
   updateExpiry,
 } from "@identity.com/solana-gateway-ts";
-import {
-  AuditRecord,
-  GatewayTokenStatus,
-  PII,
-  Recorder,
-  RecorderFS,
-} from "../util/record";
+import { AuditRecord, PII, Recorder, RecorderFS } from "../util/record";
 import { send } from "../util/connection";
 
-const updateRecordStatus = async (
+const updateRecordState = async (
   recorder: Recorder,
   gatewayTokenKey: PublicKey,
-  status: GatewayTokenStatus
+  state: State
 ): Promise<AuditRecord> => {
   const record = await recorder.lookup(gatewayTokenKey);
   console.log("existing record", record);
@@ -34,7 +31,7 @@ const updateRecordStatus = async (
     ipAddress: record.ipAddress,
     country: record.country,
     selfDeclarationTextAgreedTo: record.selfDeclarationTextAgreedTo,
-    status,
+    state,
   };
   await recorder.store(updatedRecord);
   return updatedRecord;
@@ -60,7 +57,24 @@ export class GatekeeperService {
     return now + this.config.defaultExpirySeconds;
   }
 
-  private async issueVanilla(owner: PublicKey, seed?: Uint8Array) {
+  private getGatewayTokenOrError(
+    gatewayTokenKey: PublicKey
+  ): Promise<GatewayToken> {
+    return getGatewayToken(this.connection, gatewayTokenKey).then(
+      (gatewayToken) => {
+        if (!gatewayToken)
+          throw new Error(
+            "Error retrieving gateway token at address " + gatewayTokenKey
+          );
+        return gatewayToken;
+      }
+    );
+  }
+
+  private async issueVanilla(
+    owner: PublicKey,
+    seed?: Uint8Array
+  ): Promise<GatewayToken> {
     const gatewayTokenKey = await getGatewayTokenKeyForOwner(owner);
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
@@ -89,30 +103,28 @@ export class GatekeeperService {
       this.gatekeeperAuthority
     );
 
-    return gatewayTokenKey;
+    return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 
-  async issue(recipient: PublicKey, pii: PII): Promise<AuditRecord> {
-    const recipientTokenAccount = await this.issueVanilla(recipient);
-    const record = {
+  async issue(recipient: PublicKey, pii: PII): Promise<GatewayToken> {
+    const gatewayToken = await this.issueVanilla(recipient);
+    const record: AuditRecord = {
       timestamp: new Date().toISOString(),
-      token: recipientTokenAccount.toBase58(),
+      token: gatewayToken.publicKey.toBase58(),
       ...pii,
       name: pii.name || "-",
       ipAddress: pii.ipDetails?.ipAddress || "-",
       country: pii.ipDetails?.country || "-",
       selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || "-",
-      status: GatewayTokenStatus.ACTIVE,
+      state: gatewayToken.state,
     };
 
-    const storeRecordPromise = this.recorder.store(record);
+    await this.recorder.store(record);
 
-    await storeRecordPromise;
-
-    return record;
+    return gatewayToken;
   }
 
-  async revoke(gatewayTokenKey: PublicKey): Promise<AuditRecord> {
+  async revoke(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
@@ -128,16 +140,14 @@ export class GatekeeperService {
 
     await send(this.connection, transaction, this.gatekeeperAuthority);
 
-    const updatedRecord = await updateRecordStatus(
-      this.recorder,
-      gatewayTokenKey,
-      GatewayTokenStatus.REVOKED
-    );
+    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    return updatedRecord;
+    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+
+    return gatewayToken;
   }
 
-  async freeze(gatewayTokenKey: PublicKey): Promise<AuditRecord> {
+  async freeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
@@ -153,16 +163,14 @@ export class GatekeeperService {
 
     await send(this.connection, transaction, this.gatekeeperAuthority);
 
-    const updatedRecord = await updateRecordStatus(
-      this.recorder,
-      gatewayTokenKey,
-      GatewayTokenStatus.FROZEN
-    );
+    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    return updatedRecord;
+    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+
+    return gatewayToken;
   }
 
-  async unfreeze(gatewayTokenKey: PublicKey): Promise<AuditRecord> {
+  async unfreeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
@@ -178,19 +186,17 @@ export class GatekeeperService {
 
     await send(this.connection, transaction, this.gatekeeperAuthority);
 
-    const updatedRecord = await updateRecordStatus(
-      this.recorder,
-      gatewayTokenKey,
-      GatewayTokenStatus.ACTIVE
-    );
+    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    return updatedRecord;
+    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+
+    return gatewayToken;
   }
 
   async updateExpiry(
     gatewayTokenKey: PublicKey,
     expireTime: number
-  ): Promise<AuditRecord> {
+  ): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
@@ -206,10 +212,10 @@ export class GatekeeperService {
 
     await send(this.connection, transaction, this.gatekeeperAuthority);
 
-    return updateRecordStatus(
-      this.recorder,
-      gatewayTokenKey,
-      GatewayTokenStatus.ACTIVE
-    );
+    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
+
+    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+
+    return gatewayToken;
   }
 }

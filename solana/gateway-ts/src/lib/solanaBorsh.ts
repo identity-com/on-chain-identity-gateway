@@ -1,4 +1,4 @@
-import { BinaryReader, BorshError, Schema, serialize, deserialize } from "borsh";
+import { Schema, serialize, deserialize } from "borsh";
 
 export const SCHEMA: Schema = new Map();
 

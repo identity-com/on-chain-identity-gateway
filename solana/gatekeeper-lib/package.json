@@ -9,7 +9,7 @@
   "bugs": "https://github.com/identity-com/ociv/issues",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.12.0",
-    "@identity.com/solana-gateway-ts": "^0.0.5",
+    "@identity.com/solana-gateway-ts": "^0.0.6",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
