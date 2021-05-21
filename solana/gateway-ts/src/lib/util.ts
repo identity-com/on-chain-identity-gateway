@@ -1,18 +1,12 @@
-import {
-  Connection,
-  Keypair,
-  PublicKey,
-  Transaction,
-  TransactionSignature,
-} from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import {
   GATEKEEPER_NONCE_SEED_STRING,
   GATEWAY_TOKEN_ADDRESS_SEED,
   PROGRAM_ID,
   SOLANA_COMMITMENT,
 } from "./constants";
-import { GatewayToken, ProgramAccountResponse } from "../types";
-import { GatewayTokenData } from "./GatewayTokenData";
+import { GatewayToken, ProgramAccountResponse, State } from "../types";
+import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
 
 export const getGatekeeperAccountKeyFromGatekeeperAuthority = async (
   authority: PublicKey
@@ -49,18 +43,27 @@ const GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET = 2;
 // As above, if optional fields are present, this will differ. TODO IDCOM-320 fixes this
 const GATEWAY_TOKEN_ACCOUNT_GATEKEEPER_NETWORK_FIELD_OFFSET = 35;
 
+function fromGatewayTokenState(state: GatewayTokenState): State {
+  if (!!state.active) return State.ACTIVE;
+  if (!!state.revoked) return State.REVOKED;
+  if (!!state.frozen) return State.FROZEN;
+
+  throw new Error("Unrecognised state " + JSON.stringify(state));
+}
+
 const dataToGatewayToken = (
   data: GatewayTokenData,
   publicKey: PublicKey
-): GatewayToken => ({
-  // TODO IDCOM-306
-  owner: data.owner.toPublicKey(),
-  programId: PROGRAM_ID,
-  isValid: !!data.state.active, // TODO IDCOM-306
-  publicKey,
-  issuingGatekeeper: data.issuingGatekeeper.toPublicKey(),
-  gatekeeperNetwork: data.gatekeeperNetwork.toPublicKey(), // Temp TODO IDCOM-306
-});
+): GatewayToken =>
+  new GatewayToken(
+    data.issuingGatekeeper.toPublicKey(),
+    data.gatekeeperNetwork.toPublicKey(),
+    data.owner.toPublicKey(),
+    fromGatewayTokenState(data.state),
+    publicKey,
+    PROGRAM_ID,
+    data.expiry
+  );
 
 export const findGatewayTokens = async (
   connection: Connection,
@@ -95,5 +98,24 @@ export const findGatewayTokens = async (
 
   return accountsResponse
     .map(toGatewayToken)
-    .filter((gatewayToken) => gatewayToken.isValid || showRevoked);
+    .filter(
+      (gatewayToken) => gatewayToken.state !== State.REVOKED || showRevoked
+    );
+};
+
+export const getGatewayToken = async (
+  connection: Connection,
+  gatewayTokenAddress: PublicKey
+): Promise<GatewayToken | null> => {
+  const account = await connection.getAccountInfo(
+    gatewayTokenAddress,
+    SOLANA_COMMITMENT
+  );
+
+  if (!account) return null;
+
+  return dataToGatewayToken(
+    GatewayTokenData.fromAccount(account.data),
+    gatewayTokenAddress
+  );
 };

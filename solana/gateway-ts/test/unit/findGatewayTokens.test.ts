@@ -2,11 +2,11 @@ import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import { clusterApiUrl, Connection, PublicKey, Keypair } from "@solana/web3.js";
-import { findGatewayTokens } from "../../src";
+import { findGatewayTokens, State } from "../../src";
 import { PROGRAM_ID } from "../../src/lib/constants";
 import {
   Active,
-  Frozen,
+  Revoked,
   GatewayTokenData,
   GatewayTokenState,
 } from "../../src/lib/GatewayTokenData";
@@ -28,9 +28,9 @@ const getAccountWithState = (
     issuingGatekeeper: AssignablePublicKey.fromPublicKey(gatekeeperKey),
     gatekeeperNetwork: AssignablePublicKey.fromPublicKey(gatekeeperNetworkKey),
     features: [0],
-    parentGatewayToken: [0],
-    ownerIdentity: [0],
-    expiry: [0],
+    parentGatewayToken: undefined,
+    ownerIdentity: undefined,
+    expiry: undefined,
   });
   return { pubkey, account: { data: gtData.encode() } };
 };
@@ -41,7 +41,7 @@ describe("findGatewayTokens", () => {
   let gatekeeperKey: PublicKey;
   let gatekeeperNetworkKey: PublicKey;
   let getProgramAccountsStub: sinon.SinonStub;
-  afterEach(sandbox.restore);
+
   beforeEach(() => {
     connection = new Connection(clusterApiUrl("devnet"));
     owner = Keypair.generate().publicKey;
@@ -51,6 +51,8 @@ describe("findGatewayTokens", () => {
       .stub(connection, "getProgramAccounts")
       .withArgs(PROGRAM_ID);
   });
+  afterEach(sandbox.restore);
+
   context("with no token accounts found", () => {
     it("with no value in connection call response should return an empty array", async () => {
       getProgramAccountsStub.resolves([]);
@@ -59,7 +61,7 @@ describe("findGatewayTokens", () => {
         owner,
         gatekeeperNetworkKey
       );
-      expect(findGatewayTokensResponse).to.deep.eq([]);
+      expect(findGatewayTokensResponse).to.deep.equal([]);
     });
 
     it("with an empty array returned in connection call response should return an empty array", async () => {
@@ -69,17 +71,17 @@ describe("findGatewayTokens", () => {
         owner,
         gatekeeperNetworkKey
       );
-      expect(findGatewayTokensResponse).to.deep.eq([]);
+      expect(findGatewayTokensResponse).to.deep.equal([]);
     });
   });
 
   context("with token accounts found", () => {
     context("with showRevoked false", () => {
-      context("with a frozen account", () => {
+      context("with a revoked account", () => {
         it("should return an empty array", async () => {
           getProgramAccountsStub.resolves([
             getAccountWithState(
-              new GatewayTokenState({ frozen: new Frozen({}) }),
+              new GatewayTokenState({ revoked: new Revoked({}) }),
               owner,
               owner,
               gatekeeperNetworkKey,
@@ -91,7 +93,7 @@ describe("findGatewayTokens", () => {
             owner,
             gatekeeperNetworkKey
           );
-          expect(findGatewayTokensResponse).to.deep.eq([]);
+          expect(findGatewayTokensResponse).to.deep.equal([]);
         });
       });
 
@@ -112,26 +114,27 @@ describe("findGatewayTokens", () => {
             owner,
             gatekeeperNetworkKey
           );
-          expect(findGatewayTokensResponse.length).to.deep.eq(1);
-          expect(findGatewayTokensResponse[0]).to.deep.eq({
+          expect(findGatewayTokensResponse.length).to.equal(1);
+          expect(findGatewayTokensResponse[0]).to.deep.equal({
             issuingGatekeeper: gatekeeperKey,
             gatekeeperNetwork: gatekeeperNetworkKey,
             owner,
-            isValid: true,
+            state: State.ACTIVE,
             programId: new PublicKey(PROGRAM_ID.toBase58()), // Key has to be re-constructed here for deep.eq to work.
             publicKey: testPubKey,
+            expiryTime: undefined,
           });
         });
       });
     });
 
     context("with showRevoked true", () => {
-      context("with a frozen account", () => {
+      context("with a revoked account", () => {
         it("should return an array with the revoked account marked as isValid false", async () => {
           const testPubKey = Keypair.generate().publicKey;
           getProgramAccountsStub.resolves([
             getAccountWithState(
-              new GatewayTokenState({ frozen: new Frozen({}) }),
+              new GatewayTokenState({ revoked: new Revoked({}) }),
               testPubKey,
               owner,
               gatekeeperNetworkKey,
@@ -148,7 +151,7 @@ describe("findGatewayTokens", () => {
             {
               gatekeeperNetwork: gatekeeperNetworkKey,
               owner,
-              isValid: false,
+              state: State.REVOKED,
               publicKey: testPubKey,
               programId: PROGRAM_ID,
             },
@@ -169,7 +172,7 @@ describe("findGatewayTokens", () => {
               gatekeeperKey
             ),
             getAccountWithState(
-              new GatewayTokenState({ frozen: new Frozen({}) }),
+              new GatewayTokenState({ revoked: new Revoked({}) }),
               revokedPubKey,
               owner,
               gatekeeperNetworkKey,
@@ -188,7 +191,7 @@ describe("findGatewayTokens", () => {
               gatekeeperNetwork: gatekeeperNetworkKey,
               issuingGatekeeper: gatekeeperKey,
               owner,
-              isValid: true,
+              state: State.ACTIVE,
               publicKey: testPubKey,
               programId: PROGRAM_ID,
             },
@@ -196,7 +199,7 @@ describe("findGatewayTokens", () => {
               gatekeeperNetwork: gatekeeperNetworkKey,
               issuingGatekeeper: gatekeeperKey,
               owner,
-              isValid: false,
+              state: State.REVOKED,
               publicKey: revokedPubKey,
               programId: PROGRAM_ID,
             },
