@@ -1,6 +1,6 @@
 name: Main
 on:
-  push:
+  pull_request:
 jobs:
   solana-gateway-ts-build:
     name: Build, lint the solana-gateway-ts library on ${{ matrix.os }}

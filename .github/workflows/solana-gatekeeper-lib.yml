@@ -1,6 +1,6 @@
 name: Main
 on:
-  push:
+  pull_request:
 jobs:
   solana-gatekeeper-build:
     name: Build, lint the solana gatekeeper library on ${{ matrix.os }}
