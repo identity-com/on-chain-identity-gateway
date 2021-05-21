@@ -123,7 +123,7 @@ pub fn set_state(
         id(),
         &GatewayInstruction::SetState { state: gateway_token_state },
         vec![
-            AccountMeta::new_readonly(*gateway_account, false),
+            AccountMeta::new(*gateway_account, false),
 
             AccountMeta::new_readonly(*gatekeeper_authority, true),
             AccountMeta::new_readonly(*gatekeeper_account, false),
