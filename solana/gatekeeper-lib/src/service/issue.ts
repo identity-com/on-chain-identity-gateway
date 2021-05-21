@@ -6,7 +6,8 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { AccountLayout, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { GatewayTokenStatus, Recorder, RecorderFS } from "../util/record";
+import { Recorder, RecorderFS } from "../util/record";
+import { State } from "@identity.com/solana-gateway-ts";
 
 export type PII = {
   name?: string;
@@ -40,7 +41,7 @@ export class IssueService {
       ipAddress: pii.ipDetails?.ipAddress || "-",
       country: pii.ipDetails?.country || "-",
       selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || "-",
-      status: GatewayTokenStatus.ACTIVE,
+      state: State.ACTIVE,
     };
 
     const storeRecordPromise = this.recorder.store(record);

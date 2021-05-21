@@ -230,7 +230,7 @@ SCHEMA.set(IssueVanilla, {
   kind: "struct",
   fields: [
     ["seed", { kind: "option", type: [8] }],
-    ["expireTime", { kind: "option", type: "number" }],
+    ["expireTime", { kind: "option", type: "u64" }],
   ],
 });
 SCHEMA.set(SetState, {
@@ -239,5 +239,5 @@ SCHEMA.set(SetState, {
 });
 SCHEMA.set(UpdateExpiry, {
   kind: "struct",
-  fields: [["expireTime", "number"]],
+  fields: [["expireTime", "u64"]],
 });

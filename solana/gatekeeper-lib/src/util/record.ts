@@ -13,7 +13,7 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import ReadableStream = NodeJS.ReadableStream;
-import { GatewayToken } from "@identity.com/solana-gateway-ts";
+import { State } from "@identity.com/solana-gateway-ts";
 
 export type PII = {
   name?: string;
@@ -21,18 +21,14 @@ export type PII = {
   selfDeclarationTextAgreedTo?: string;
 } & Record<string, any>;
 
-export enum GatewayTokenStatus {
-  ACTIVE = "ACTIVE",
-  REVOKED = "REVOKED",
-  FROZEN = "FROZEN",
-}
 export type AuditRecord = {
   timestamp: string;
-  gatewayToken: GatewayToken;
+  token: string;
   name: string;
   ipAddress: string;
   country: string;
   selfDeclarationTextAgreedTo: string;
+  state: State;
 };
 
 const readRegister = () =>
@@ -68,7 +64,7 @@ export class RecorderFS implements Recorder {
         record.ipAddress,
         record.country,
         record.selfDeclarationTextAgreedTo,
-        record.status,
+        record.state,
       ].join(",") + "\n";
     await fs.promises.appendFile(REGISTER, row);
   }
@@ -82,6 +78,9 @@ export class RecorderFS implements Recorder {
 
     if (!entry) return null;
 
+    const typedStateString = entry[6] as keyof typeof State;
+    const state = State[typedStateString] || "-";
+
     return {
       timestamp: entry[0] || "-",
       token: entry[1] || "-",
@@ -89,7 +88,7 @@ export class RecorderFS implements Recorder {
       ipAddress: entry[3] || "-",
       country: entry[4] || "-",
       selfDeclarationTextAgreedTo: entry[5] || "-",
-      status: entry[6] || "-",
+      state,
     };
   }
 }
