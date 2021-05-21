@@ -17,6 +17,7 @@ export class GatewayTokenData extends Assignable {
   issuingGatekeeper!: AssignablePublicKey;
   gatekeeperNetwork!: AssignablePublicKey;
   state!: GatewayTokenState;
+  expiry?: number;
 
   static fromAccount(accountData: Buffer): GatewayTokenData {
     return GatewayTokenData.decode<GatewayTokenData>(accountData);
@@ -51,13 +52,13 @@ SCHEMA.set(GatewayTokenData, {
   kind: "struct",
   fields: [
     ["features", [1]],
-    ["parentGatewayToken", [1]], // TODO Option<>
+    ["parentGatewayToken", { kind: "option", type: AssignablePublicKey }],
     ["owner", AssignablePublicKey],
-    ["ownerIdentity", [1]], // TODO Option<>
+    ["ownerIdentity", { kind: "option", type: AssignablePublicKey }],
     ["gatekeeperNetwork", AssignablePublicKey],
     ["issuingGatekeeper", AssignablePublicKey],
     ["state", GatewayTokenState],
-    ["expiry", [1]], // TODO Option<>
+    ["expiry", { kind: "option", type: "number" }],
   ],
 });
 SCHEMA.set(GatewayTokenState, {

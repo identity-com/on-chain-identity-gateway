@@ -36,13 +36,6 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
   );
 
   console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
-  /**
-   * private connection: Connection,
-      private payer: Keypair,
-      private gatekeeperNetwork: Keypair,
-      private gatekeeperAccount: PublicKey,
-      private gatekeeperAuthority: PublicKey
-  */
   const gatekeeperService = new GatekeeperService(
     connection,
     payer,

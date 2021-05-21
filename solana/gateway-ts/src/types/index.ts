@@ -1,14 +1,31 @@
 import { AccountInfo, PublicKey } from "@solana/web3.js";
 
-export type GatewayToken = {
-  //  the key used to reference the issuing gatekeeper
-  issuingGatekeeper: PublicKey;
-  gatekeeperNetwork: PublicKey;
-  owner: PublicKey;
-  isValid: boolean;
-  publicKey: PublicKey;
-  programId: PublicKey;
-};
+export enum State {
+  ACTIVE = "ACTIVE",
+  REVOKED = "REVOKED",
+  FROZEN = "FROZEN",
+}
+export class GatewayToken {
+  constructor(
+    //  the key used to reference the issuing gatekeeper
+    readonly issuingGatekeeper: PublicKey,
+    readonly gatekeeperNetwork: PublicKey,
+    readonly owner: PublicKey,
+    readonly state: State,
+    readonly publicKey: PublicKey,
+    readonly programId: PublicKey,
+    readonly expiryTime?: number
+  ) {}
+
+  isValid() {
+    return state === State.ACTIVE && !this.hasExpired();
+  }
+
+  private hasExpired() {
+    const now = Math.floor(Date.now() / 1000);
+    return this.expiryTime && now > this.expiryTime;
+  }
+}
 
 export type ProgramAccountResponse = {
   pubkey: PublicKey;
