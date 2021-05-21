@@ -112,6 +112,28 @@ pub fn issue_vanilla(
     )
 }
 
+/// Create a `GatewayInstruction::SetState` instruction
+pub fn set_state(
+    gateway_account: &Pubkey,               // the gateway account
+    gatekeeper_authority: &Pubkey,          // the authority that owns the gatekeeper account
+    gatekeeper_account: &Pubkey,            // the account containing details of the gatekeeper issuing the gateway token
+    gateway_token_state: GatewayTokenState  // the state of the token to transition to
+) -> Instruction {
+    Instruction::new_with_borsh(
+        id(),
+        &GatewayInstruction::SetState { state: gateway_token_state },
+        vec![
+            AccountMeta::new(*gateway_account, false),
+
+            AccountMeta::new_readonly(*gatekeeper_authority, true),
+            AccountMeta::new_readonly(*gatekeeper_account, false),
+
+            AccountMeta::new_readonly(sysvar::rent::id(), false),
+            AccountMeta::new_readonly(system_program::id(), false),
+        ],
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
