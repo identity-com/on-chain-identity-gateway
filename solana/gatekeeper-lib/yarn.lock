@@ -904,10 +904,10 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@identity.com/solana-gateway-ts@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.0.3.tgz#123cde4589167c599902907cd651f7f803424173"
-  integrity sha512-XiIPkTt5KcQvUqZgykzIpW5v7zlrHcY2K7iRnzPHk4h8XhUCS2vhWHeX+xmshUR5f2lNzG598NtVlC9ShvZOZQ==
+"@identity.com/solana-gateway-ts@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.0.5.tgz#1572ebcba8f2e55254cfdab147d91e5f1957bd5b"
+  integrity sha512-r2ZVjzA0gAShOXj+AjCuGIfwootcrL3mE3qzX8xyeVSqrB1NmrJ7vJ+z4QZb236g0myV06DmNzVKHz68MkcYeQ==
   dependencies:
     "@solana/web3.js" "^1.11.0"
     borsh "^0.4.0"
