@@ -3,20 +3,9 @@ import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import { clusterApiUrl, Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { findGatewayTokens } from "../../src";
-<<<<<<< HEAD:solana/gateway-ts/test/unit/findGatewayTokens.test.ts
 import { PROGRAM_ID } from "../../src/lib/constants";
 import { Active, Frozen, GatewayTokenData, GatewayTokenState } from "../../src/lib/GatewayTokenData";
 import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
-=======
-import { PROGRAM_ID } from "../../src/constants";
-import {
-  Frozen,
-  Active,
-  GatewayTokenData,
-  GatewayTokenState,
-} from "../../src/solana/GatewayTokenData";
-import { AssignablePublicKey } from "../../src/solana/AssignablePublicKey";
->>>>>>> develop:solana/client/test/unit/findGatewayTokens.test.ts
 
 chai.use(chaiSubset);
 const { expect } = chai;
@@ -40,10 +29,7 @@ const getAccountWithState = (
   });
   return { pubkey, account: { data: gtData.encode() } };
 };
-<<<<<<< HEAD:solana/gateway-ts/test/unit/findGatewayTokens.test.ts
-=======
 
->>>>>>> develop:solana/client/test/unit/findGatewayTokens.test.ts
 describe("findGatewayTokens", () => {
   let connection: Connection;
   let owner: PublicKey;
