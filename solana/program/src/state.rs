@@ -34,17 +34,23 @@ impl Transitionable<GatewayTokenState> for GatewayToken {
                 match self.state {
                     GatewayTokenState::Active => false,
                     GatewayTokenState::Frozen => true,
-                    GatewayTokenState::Revoked => true
+                    GatewayTokenState::Revoked => false
                 }
             }
             GatewayTokenState::Frozen => {
                 match self.state {
                     GatewayTokenState::Active => true,
                     GatewayTokenState::Frozen => false,
-                    GatewayTokenState::Revoked => true
+                    GatewayTokenState::Revoked => false
                 }
             }
-            GatewayTokenState::Revoked => false
+            GatewayTokenState::Revoked => {
+                match self.state {
+                    GatewayTokenState::Active => true,
+                    GatewayTokenState::Frozen => true,
+                    GatewayTokenState::Revoked => false
+                }
+            }
         }
     }
 }
