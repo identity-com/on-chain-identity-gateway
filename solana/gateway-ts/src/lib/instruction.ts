@@ -115,8 +115,8 @@ export function revoke(
 ): TransactionInstruction {
   const keys: AccountMeta[] = [
     { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
-    { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
     { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
+    { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
     { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
     { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   ];

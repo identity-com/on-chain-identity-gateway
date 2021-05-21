@@ -76,6 +76,7 @@ export class GatekeeperService {
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
       );
+    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
     const transaction = new Transaction().add(
       revoke(
         gatewayTokenKey,
@@ -87,18 +88,23 @@ export class GatekeeperService {
     await send(this.connection, transaction, this.gatekeeperAuthority);
 
     const record = await this.recorder.lookup(gatewayTokenKey);
+    console.log("existing record", record);
     if (!record)
       throw new Error(`No Audit record found for token ${gatewayTokenKey}`);
 
     const updatedRecord = {
-      ...record,
-      status: GatewayTokenStatus.REVOKED,
       timestamp: new Date().toISOString(),
+      token: record.token,
+      name: record.name,
+      ipAddress: record.ipAddress,
+      country: record.country,
+      selfDeclarationTextAgreedTo: record.selfDeclarationTextAgreedTo,
+      status: GatewayTokenStatus.REVOKED,
     };
     const storeRecordPromise = await this.recorder.store(updatedRecord);
 
     await storeRecordPromise;
 
-    return record;
+    return updatedRecord;
   }
 }

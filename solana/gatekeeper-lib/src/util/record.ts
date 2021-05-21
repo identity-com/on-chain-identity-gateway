@@ -88,8 +88,8 @@ export class RecorderFS implements Recorder {
       name: entry[2] || "-",
       ipAddress: entry[3] || "-",
       country: entry[4] || "-",
-      selfDeclarationTextAgreedTo: entry[6] || "-",
-      status: entry[7] || "-",
+      selfDeclarationTextAgreedTo: entry[5] || "-",
+      status: entry[6] || "-",
     };
   }
 }
