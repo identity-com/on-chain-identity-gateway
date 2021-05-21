@@ -3,6 +3,14 @@ import * as path from "path";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { findGatewayTokens, GatewayToken } from "../src";
 
+/**
+ * Find gateway tokens for a particular wallet
+ *
+ * usage:
+ *
+ * yarn ts-node scripts/findGatewayTokens <PUBKEY>
+ */
+
 const mySecretKey = require(path.join(
   homedir(),
   ".config",
@@ -18,7 +26,7 @@ const endpoint =
 
 const connection = new Connection(endpoint, "processed");
 
-// Gatekeeper Network
+// Default Gatekeeper Network
 const gatekeeperNetworkKey = new PublicKey(
   "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv"
 );
@@ -31,10 +39,13 @@ const prettyPrint = (gatewayToken: GatewayToken) => ({
 });
 
 (async function () {
-  console.log("My pubkey as a byte array: ", myKeypair.publicKey.toBuffer());
+  const owner = new PublicKey("5fSLGjW8FCHpJPG1N93Af6QZew9HUb25pyn9Gas2sxyL");
+  console.log(
+    `Gateway tokens for: ${owner.toBase58()} under gatekeeper network ${gatekeeperNetworkKey.toBase58()}`
+  );
   const accounts = await findGatewayTokens(
     connection,
-    myKeypair.publicKey,
+    owner,
     gatekeeperNetworkKey
   );
   console.log("Found Accounts");

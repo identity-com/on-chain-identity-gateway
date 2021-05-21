@@ -41,7 +41,7 @@ export class GatewayTokenData extends Assignable {
 export class Active extends Assignable {}
 export class Frozen extends Assignable {}
 export class Revoked extends Assignable {}
-class GatewayTokenState extends Enum {
+export class GatewayTokenState extends Enum {
   active?: Active;
   frozen?: Frozen;
   revoked?: Revoked;
