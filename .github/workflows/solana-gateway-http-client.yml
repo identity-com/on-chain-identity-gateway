@@ -2,8 +2,8 @@ name: Main
 on:
   push:
 jobs:
-  solana-gatekeeper-http-client-build:
-    name: Build, lint the solana client library on ${{ matrix.os }}
+  solana-gateway-http-client-build:
+    name: Build, lint the solana gateway-http-client library on ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -29,7 +29,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-solana-gatekeeper-http-client-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-gateway-http-client-${{ hashFiles('yarn.lock') }}
 
       - name: Install
         run: yarn install
@@ -40,8 +40,8 @@ jobs:
       - name: Build
         run: yarn build
 
-  solana-gatekeeper-http-client-unit_tests:
-    name: Test the solana client with dependencies stubbed out
+  solana-gateway-http-client-unit_tests:
+    name: Test the solana gateway http client with dependencies stubbed out
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -67,7 +67,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-solana-gatekeeper-http-client-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-gateway-http-client-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
         run: yarn install
@@ -75,8 +75,8 @@ jobs:
       - name: Unit tests
         run: yarn test:unit
 
-  solana-gatekeeper-http-client-integration_tests:
-    name: Test the solana client against real chain/gatekeeper test environments
+  solana-gateway-http-client-integration_tests:
+    name: Test the solana gateway http client against real chain/gatekeeper test environments
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -102,7 +102,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-solana-gatekeeper-http-client-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-gateway-http-client-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
         run: yarn install
