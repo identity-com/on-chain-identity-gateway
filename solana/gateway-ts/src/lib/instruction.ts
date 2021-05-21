@@ -36,19 +36,25 @@ class GatewayInstruction extends Enum {
 
   static revoke(): GatewayInstruction {
     return new GatewayInstruction({
-      setState: new SetState({ revoked: Revoked }),
+      setState: new SetState({
+        state: new GatewayTokenState({ revoked: new Revoked({}) }),
+      }),
     });
   }
 
   static freeze(): GatewayInstruction {
     return new GatewayInstruction({
-      setState: new SetState({ frozen: Frozen }),
+      setState: new SetState({
+        state: new GatewayTokenState({ frozen: new Frozen({}) }),
+      }),
     });
   }
 
   static unfreeze(): GatewayInstruction {
     return new GatewayInstruction({
-      setState: new SetState({ active: Active }),
+      setState: new SetState({
+        state: new GatewayTokenState({ active: new Active({}) }),
+      }),
     });
   }
 }
