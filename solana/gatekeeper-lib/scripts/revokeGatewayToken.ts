@@ -54,7 +54,7 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
 
   console.log("owner", owner.toBase58());
   const issuedRecord = await gatekeeperService.issue(owner, {});
-  console.log("issuedRecord", issuedRecord.token);
+  console.log("issuedRecord", issuedRecord);
   console.log(`revoking ${issuedRecord.token}...`);
   const revokedTokenRecord = await gatekeeperService.revoke(
     new PublicKey(issuedRecord.token)
