@@ -44,9 +44,9 @@ async fn issue_gateway_token_should_succeed() {
     let owner = Pubkey::new_unique();
     let authority = Pubkey::new_unique();
     let network = Keypair::new();
-    let gatekeeper = context.add_gatekeeper(&authority, &network).await;
-    let gatewayToken = context.issue_token(&owner, &authority, &gatekeeper.authority, &network).await;
+    context.add_gatekeeper(&authority, &network).await;
+    let gateway_token = context.issue_token(&owner, &authority, &network).await;
 
-    assert_eq!(gatewayToken.owner_wallet, owner);
-    assert_eq!(gatewayToken.issuing_gatekeeper, gatekeeper.authority);
+    assert_eq!(gateway_token.owner_wallet, owner);
+    assert_eq!(gateway_token.issuing_gatekeeper, authority);
 }
