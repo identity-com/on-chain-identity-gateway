@@ -29,7 +29,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-solana-gateway-ts-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-gateway-ts-${{ hashFiles('solana/gateway-ts/yarn.lock') }}
 
       - name: Install
         run: yarn install
