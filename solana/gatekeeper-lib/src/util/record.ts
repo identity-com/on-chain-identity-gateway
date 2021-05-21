@@ -2,6 +2,7 @@ import * as fs from "fs";
 import { REGISTER, REGISTER_BUCKET_S3 } from "./constants";
 import { PublicKey } from "@solana/web3.js";
 import * as streamToString from "stream-to-string";
+
 import {
   S3Client,
   CreateBucketCommand,
@@ -19,6 +20,11 @@ export type PII = {
   selfDeclarationTextAgreedTo?: string;
 } & Record<string, any>;
 
+export enum GatewayTokenStatus {
+  ACTIVE = "ACTIVE",
+  REVOKED = "REVOKED",
+  FROZEN = "FROZEN",
+}
 export type AuditRecord = {
   timestamp: string;
   token: string;
@@ -26,6 +32,7 @@ export type AuditRecord = {
   ipAddress: string;
   country: string;
   selfDeclarationTextAgreedTo: string;
+  status: GatewayTokenStatus | string;
 };
 
 const readRegister = () =>
@@ -61,6 +68,7 @@ export class RecorderFS implements Recorder {
         record.ipAddress,
         record.country,
         record.selfDeclarationTextAgreedTo,
+        record.status,
       ].join(",") + "\n";
     await fs.promises.appendFile(REGISTER, row);
   }
@@ -81,6 +89,7 @@ export class RecorderFS implements Recorder {
       ipAddress: entry[3] || "-",
       country: entry[4] || "-",
       selfDeclarationTextAgreedTo: entry[6] || "-",
+      status: entry[7] || "-",
     };
   }
 }
