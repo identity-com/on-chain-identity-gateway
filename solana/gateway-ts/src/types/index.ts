@@ -18,7 +18,7 @@ export class GatewayToken {
   ) {}
 
   isValid() {
-    return state === State.ACTIVE && !this.hasExpired();
+    return this.state === State.ACTIVE && !this.hasExpired();
   }
 
   private hasExpired() {

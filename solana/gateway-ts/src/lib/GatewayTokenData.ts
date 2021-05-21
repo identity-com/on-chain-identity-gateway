@@ -58,7 +58,7 @@ SCHEMA.set(GatewayTokenData, {
     ["gatekeeperNetwork", AssignablePublicKey],
     ["issuingGatekeeper", AssignablePublicKey],
     ["state", GatewayTokenState],
-    ["expiry", { kind: "option", type: "number" }],
+    ["expiry", { kind: "option", type: "u64" }],
   ],
 });
 SCHEMA.set(GatewayTokenState, {

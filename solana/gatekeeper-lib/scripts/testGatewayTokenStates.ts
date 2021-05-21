@@ -47,25 +47,22 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
     : Keypair.generate().publicKey;
 
   console.log("owner", owner.toBase58());
-  let auditRecord: AuditRecord;
-  auditRecord = await gatekeeperService.issue(owner, {});
-  console.log("issuedRecord", auditRecord);
+  let gatewayToken = await gatekeeperService.issue(owner, {});
+  console.log("issued token", gatewayToken);
 
-  console.log(`freezing ${auditRecord.token}...`);
-  auditRecord = await gatekeeperService.freeze(
-    new PublicKey(auditRecord.token)
-  );
-  console.log("frozenTokenRecord", auditRecord);
+  console.log(`freezing ${gatewayToken.publicKey}...`);
+  gatewayToken = await gatekeeperService.freeze(gatewayToken.publicKey);
+  console.log("frozen token", gatewayToken);
 
-  console.log(`unfreezing ${auditRecord.token}...`);
-  auditRecord = await gatekeeperService.unfreeze(
-    new PublicKey(auditRecord.token)
+  console.log(`unfreezing ${gatewayToken.publicKey.toBase58()}...`);
+  gatewayToken = await gatekeeperService.unfreeze(
+    new PublicKey(gatewayToken.publicKey.toBase58())
   );
-  console.log("unfrozenTokenRecord", auditRecord);
+  console.log("unfrozen token", gatewayToken);
 
-  console.log(`revoking ${auditRecord.token}...`);
-  auditRecord = await gatekeeperService.revoke(
-    new PublicKey(auditRecord.token)
+  console.log(`revoking ${gatewayToken.publicKey.toBase58()}...`);
+  gatewayToken = await gatekeeperService.revoke(
+    new PublicKey(gatewayToken.publicKey.toBase58())
   );
-  console.log("revokedTokenRecord", auditRecord);
+  console.log("revoked token", gatewayToken);
 })().catch((error) => console.error(error));
