@@ -7,6 +7,7 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from "@solana/web3.js";
+import { GatewayTokenState } from "./GatewayTokenData";
 
 /**
  * Creates instructions to send to the gateway program.
@@ -16,6 +17,7 @@ import {
 
 class AddGatekeeper extends Assignable {}
 class IssueVanilla extends Assignable {}
+class SetState extends Assignable {}
 
 class GatewayInstruction extends Enum {
   addGatekeeper?: AddGatekeeper;
@@ -29,6 +31,24 @@ class GatewayInstruction extends Enum {
   static issueVanilla(seed: Uint8Array): GatewayInstruction {
     return new GatewayInstruction({
       issueVanilla: new IssueVanilla({ seed }),
+    });
+  }
+
+  static revoke(): GatewayInstruction {
+    return new GatewayInstruction({
+      setState: new SetState({ state: "revoked" }),
+    });
+  }
+
+  static freeze(): GatewayInstruction {
+    return new GatewayInstruction({
+      setState: new SetState({ state: "frozen" }),
+    });
+  }
+
+  static unfreeze(): GatewayInstruction {
+    return new GatewayInstruction({
+      setState: new SetState({ state: "active" }),
     });
   }
 }
@@ -82,12 +102,73 @@ export function issueVanilla(
   });
 }
 
+export function revoke(
+  gatewayTokenAccount: PublicKey,
+  gatekeeperAuthority: PublicKey,
+  gatekeeperAccount: PublicKey
+): TransactionInstruction {
+  const keys: AccountMeta[] = [
+    { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
+    { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
+    { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
+    { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  ];
+  const data = GatewayInstruction.revoke().encode();
+  return new TransactionInstruction({
+    keys,
+    programId: PROGRAM_ID,
+    data,
+  });
+}
+
+export function freeze(
+  gatewayTokenAccount: PublicKey,
+  gatekeeperAuthority: PublicKey,
+  gatekeeperAccount: PublicKey
+): TransactionInstruction {
+  const keys: AccountMeta[] = [
+    { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
+    { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
+    { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
+    { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  ];
+  const data = GatewayInstruction.freeze().encode();
+  return new TransactionInstruction({
+    keys,
+    programId: PROGRAM_ID,
+    data,
+  });
+}
+
+export function unfreeze(
+  gatewayTokenAccount: PublicKey,
+  gatekeeperAuthority: PublicKey,
+  gatekeeperAccount: PublicKey
+): TransactionInstruction {
+  const keys: AccountMeta[] = [
+    { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
+    { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
+    { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
+    { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  ];
+  const data = GatewayInstruction.unfreeze().encode();
+  return new TransactionInstruction({
+    keys,
+    programId: PROGRAM_ID,
+    data,
+  });
+}
+
 SCHEMA.set(GatewayInstruction, {
   kind: "enum",
   field: "enum",
   values: [
     ["addGatekeeper", AddGatekeeper],
     ["issueVanilla", IssueVanilla],
+    ["setState", SetState],
   ],
 });
 SCHEMA.set(AddGatekeeper, {
@@ -97,4 +178,8 @@ SCHEMA.set(AddGatekeeper, {
 SCHEMA.set(IssueVanilla, {
   kind: "struct",
   fields: [["seed", [1]]],
+});
+SCHEMA.set(SetState, {
+  kind: "struct",
+  fields: [["state", GatewayTokenState]],
 });
