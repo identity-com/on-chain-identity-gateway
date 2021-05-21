@@ -35,6 +35,7 @@ pub enum GatewayError {
     #[error("The gateway token was expected to be revoked, but was not")]
     ExpectedRevokedToken,
 
+    /// The gatway token could not be changed into the requested state
     #[error("Invalid state change")]
     InvalidStateChange
 }

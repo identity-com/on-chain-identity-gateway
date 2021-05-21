@@ -23,9 +23,10 @@ use {
         borsh::{try_from_slice_incomplete, get_instance_packed_len}
     }
 };
-use crate::state::{get_gatekeeper_address_with_seed, GATEKEEPER_ADDRESS_SEED, Transitionable};
+use crate::state::{get_gatekeeper_address_with_seed, GATEKEEPER_ADDRESS_SEED, Transitionable, AddressSeed};
 use solana_gateway::state::GatewayTokenState;
 use solana_gateway::error::GatewayError;
+use solana_program::clock::UnixTimestamp;
 
 /// Instruction processor
 pub fn process_instruction(
@@ -37,8 +38,9 @@ pub fn process_instruction(
 
     match instruction {
         GatewayInstruction::AddGatekeeper { } => add_gatekeeper(accounts),
-        GatewayInstruction::IssueVanilla { seed  } => issue_vanilla(accounts, &seed),
-        GatewayInstruction::SetState { state  } => set_state(accounts, state)
+        GatewayInstruction::IssueVanilla { seed, expire_time  } => issue_vanilla(accounts, &seed, &expire_time),
+        GatewayInstruction::SetState { state  } => set_state(accounts, state),
+        GatewayInstruction::UpdateExpiry { expire_time  } => update_expiry(accounts, expire_time)
     }
 }
 
@@ -105,7 +107,7 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         .map_err(|e| e.into()) as ProgramResult
 }
 
-fn issue_vanilla(accounts: &[AccountInfo], seed: &Option<[u8; 8]>) -> ProgramResult {
+fn issue_vanilla(accounts: &[AccountInfo], seed: &Option<AddressSeed>, expire_time: &Option<UnixTimestamp>) -> ProgramResult {
     msg!("GatewayInstruction::IssueVanilla");
     let account_info_iter = &mut accounts.iter();
     let funder_info = next_account_info(account_info_iter)?;
@@ -153,7 +155,8 @@ fn issue_vanilla(accounts: &[AccountInfo], seed: &Option<[u8; 8]>) -> ProgramRes
     let gateway_token = GatewayToken::new_vanilla(
         owner_info.key,
         gatekeeper_network_info.key,
-        gatekeeper_authority_info.key);
+        gatekeeper_authority_info.key,
+        expire_time);
     let size = get_instance_packed_len(&gateway_token).unwrap() as u64;
 
     invoke_signed(
@@ -200,7 +203,7 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
     
     // check that the required state change is allowed
     if !gateway_token.is_valid_state_change(&state) {
-        msg!("Error: incorrect gatekeeper network");
+        msg!("Error: invalid state change from {:?} to {:?}", gateway_token.state, state);
         return Err(GatewayError::InvalidStateChange.into());
     }
 
@@ -215,6 +218,34 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
 
     gateway_token.state = state;
     
+    gateway_token.serialize(&mut *gateway_token_info.data.borrow_mut())
+        .map_err(|e| e.into()) as ProgramResult
+}
+
+fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> ProgramResult {
+    msg!("GatewayInstruction::UpdateExpiry");
+    let account_info_iter = &mut accounts.iter();
+    let gateway_token_info = next_account_info(account_info_iter)?;
+    let gatekeeper_authority_info = next_account_info(account_info_iter)?;
+    let gatekeeper_account_info = next_account_info(account_info_iter)?;
+
+    let mut gateway_token = try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
+    let gatekeeper_account = try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
+
+    // check the gatekeeper account matches the passed-in gatekeeper key
+    if gatekeeper_account.authority != *gatekeeper_authority_info.key {
+        msg!("Error: incorrect gatekeeper authority");
+        return Err(ProgramError::InvalidArgument);
+    }
+
+    // check the gatekeeper account network matches the network on the gateway token
+    if gatekeeper_account.network != gateway_token.gatekeeper_network {
+        msg!("Error: incorrect gatekeeper network");
+        return Err(ProgramError::InvalidArgument);
+    }
+    
+    gateway_token.set_expire_time(expire_time);
+
     gateway_token.serialize(&mut *gateway_token_info.data.borrow_mut())
         .map_err(|e| e.into()) as ProgramResult
 }
