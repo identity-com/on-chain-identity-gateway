@@ -5,7 +5,7 @@
     "dist"
   ],
   "include": [
-    "**/*.ts", "../gateway-ts/test/unit/findGatewayTokens.test.ts", "../gateway-ts/test/integration/findGatewayTokens.test.ts",
+    "**/*.ts"
   ],
   "compilerOptions": {
     "esModuleInterop": true,
