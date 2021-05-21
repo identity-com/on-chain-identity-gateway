@@ -19,7 +19,7 @@ use solana_gateway::{
 use solana_sdk::signature::Signer;
 use solana_sdk::instruction::{AccountMeta, Instruction};
 use solana_gateway_program::instruction::GatewayInstruction;
-use solana_gateway::state::GatewayToken;
+use solana_gateway::state::{GatewayToken, GatewayTokenState};
 use solana_gateway_program::state::get_gateway_token_address_with_seed;
 
 fn program_test() -> ProgramTest {
@@ -70,6 +70,27 @@ impl GatewayContext {
                 &gatekeeper_authority.pubkey(),
                 &network,
                 None
+            )],
+            Some(&self.context.payer.pubkey()),
+            &[&self.context.payer, &gatekeeper_authority],
+            self.context.last_blockhash,
+        );
+        self.context.banks_client.process_transaction(transaction).await
+    }
+
+    async fn set_gateway_token_state_transaction(
+        &mut self,
+        gateway_account: &Pubkey,
+        gatekeeper_authority: &Keypair,
+        gatekeeper_account: &Pubkey,
+        gateway_token_state: GatewayTokenState
+    ) -> transport::Result<()> {
+        let transaction = Transaction::new_signed_with_payer(
+            &[instruction::set_state(
+                gateway_account,
+                &gatekeeper_authority.pubkey(),
+                gatekeeper_account,
+                gateway_token_state
             )],
             Some(&self.context.payer.pubkey()),
             &[&self.context.payer, &gatekeeper_authority],
@@ -146,6 +167,31 @@ impl GatewayContext {
             .await
             .unwrap()
             .unwrap();
+        let account_data: GatewayToken =
+            program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data).unwrap();
+
+        account_data
+    }
+
+    pub async fn set_gateway_token_state(
+        &mut self,
+        owner: &Pubkey,
+        gatekeeper_authority: &Keypair,
+        gateway_token_state: GatewayTokenState
+    ) -> GatewayToken {
+        let (gatekeeper_address, _) = get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
+        let (gateway_account, _) = get_gateway_token_address_with_seed(&owner, &None);
+        self.set_gateway_token_state_transaction(&gateway_account, gatekeeper_authority, &gatekeeper_address, gateway_token_state)
+            .await
+            .unwrap();
+
+        let account_info = self.context
+            .banks_client
+            .get_account(gatekeeper_address)
+            .await
+            .unwrap()
+            .unwrap();
+
         let account_data: GatewayToken =
             program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data).unwrap();
 
