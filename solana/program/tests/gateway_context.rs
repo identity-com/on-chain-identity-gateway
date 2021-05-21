@@ -1,14 +1,7 @@
+use std::{
+    time::{SystemTime, UNIX_EPOCH}
+};
 use solana_program_test::{ProgramTestContext, ProgramTest, processor};
-use solana_gateway_program::{
-    state::{get_gatekeeper_address_with_seed, Gatekeeper},
-    id, instruction,
-    processor::process_instruction
-};
-use solana_sdk::{
-    transport,
-    transaction::Transaction,
-    signature::Keypair
-};
 use solana_program::{
     pubkey::Pubkey,
     sysvar,system_program
@@ -16,25 +9,66 @@ use solana_program::{
 use solana_gateway::{
     borsh as program_borsh,
 };
-use solana_sdk::signature::Signer;
-use solana_sdk::instruction::{AccountMeta, Instruction};
-use solana_gateway_program::instruction::GatewayInstruction;
+use solana_sdk::{
+    signature::Signer,
+    transport,
+    transaction::Transaction,
+    signature::Keypair,
+    instruction::{AccountMeta, Instruction},
+    clock::UnixTimestamp
+};
+use solana_gateway_program::{
+    instruction::GatewayInstruction,
+    state::{get_gatekeeper_address_with_seed, Gatekeeper},
+    id,
+    instruction,
+    processor::process_instruction,
+    state::get_gateway_token_address_with_seed
+};
 use solana_gateway::state::GatewayToken;
-use solana_gateway_program::state::get_gateway_token_address_with_seed;
 
 fn program_test() -> ProgramTest {
     ProgramTest::new("solana_gateway_program", id(), processor!(process_instruction))
 }
 
 pub struct GatewayContext {
-    pub context: ProgramTestContext
+    pub context: ProgramTestContext,
+    pub gatekeeper_authority: Option<Keypair>,
+    pub gatekeeper_network: Option<Keypair>
 }
 impl GatewayContext {
+    // Get the current unix timestamp from SystemTime
+    pub fn now() -> UnixTimestamp {
+        let start = SystemTime::now();
+        let now = start
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+
+        now.as_secs() as UnixTimestamp
+    }
+    
     pub async fn new() -> Self {
         let context = program_test().start_with_context().await;
         Self {
-            context
+            context,
+            gatekeeper_network: None,
+            gatekeeper_authority: None
         }
+    }
+    
+    pub fn create_gatekeeper_keys(&mut self) {
+        let gatekeeper_authority = Keypair::new();
+        let gatekeeper_network = Keypair::new();
+        
+        self.gatekeeper_authority = Some(gatekeeper_authority);
+        self.gatekeeper_network = Some(gatekeeper_network);
+    }
+
+    pub async fn create_gatekeeper(&mut self) {
+        self.create_gatekeeper_keys();
+
+        // first add the gatekeeper to the network
+        self.add_gatekeeper().await;
     }
 
     async fn add_gatekeeper_transaction(
@@ -55,12 +89,13 @@ impl GatewayContext {
         self.context.banks_client.process_transaction(transaction).await
     }
 
-    async fn issue_gateway_transaction(
+    async fn issue_gateway_token_transaction(
         &mut self,
         owner: &Pubkey,
         gatekeeper_authority: &Keypair,
         gatekeeper_account: &Pubkey,
         network: &Pubkey,
+        expire_time: Option<UnixTimestamp>
     ) -> transport::Result<()> {
         let transaction = Transaction::new_signed_with_payer(
             &[instruction::issue_vanilla(
@@ -69,7 +104,30 @@ impl GatewayContext {
                 gatekeeper_account,
                 &gatekeeper_authority.pubkey(),
                 &network,
-                None
+                None,
+                expire_time
+            )],
+            Some(&self.context.payer.pubkey()),
+            &[&self.context.payer, &gatekeeper_authority],
+            self.context.last_blockhash,
+        );
+        self.context.banks_client.process_transaction(transaction).await
+    }
+
+    async fn update_gateway_token_expiry_transaction(
+        &mut self,
+        owner: &Pubkey,
+        gatekeeper_authority: &Keypair,
+        gatekeeper_account: &Pubkey,
+        expire_time: UnixTimestamp
+    ) -> transport::Result<()> {
+        let (gateway_token, _) = get_gateway_token_address_with_seed(&owner, &None);
+        let transaction = Transaction::new_signed_with_payer(
+            &[instruction::update_expiry(
+                &gateway_token,
+                &gatekeeper_authority.pubkey(),
+                &gatekeeper_account,
+                expire_time
             )],
             Some(&self.context.payer.pubkey()),
             &[&self.context.payer, &gatekeeper_authority],
@@ -108,17 +166,19 @@ impl GatewayContext {
     }
 
     pub async fn add_gatekeeper(
-        &mut self,
-        authority: &Pubkey,
-        network: &Keypair,
+        &mut self
     ) -> Gatekeeper {
-        let (gatekeeper_address, _) = get_gatekeeper_address_with_seed(&authority);
-        self.add_gatekeeper_transaction(&authority, &network)
+        // TODO find nicer way to clone a Keypair to fix borrowing issues
+        let gatekeeper_network = Keypair::from_base58_string(self.gatekeeper_network.as_ref().unwrap().to_base58_string().as_str());
+        let gatekeeper_authority = Keypair::from_base58_string(self.gatekeeper_authority.as_ref().unwrap().to_base58_string().as_str());
+
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
+        self.add_gatekeeper_transaction(&gatekeeper_authority.pubkey(), &gatekeeper_network)
             .await
             .unwrap();
         let account_info = self.context
             .banks_client
-            .get_account(gatekeeper_address)
+            .get_account(gatekeeper_account)
             .await
             .unwrap()
             .unwrap();
@@ -128,27 +188,57 @@ impl GatewayContext {
         account_data
     }
 
+    async fn get_gateway_token(&mut self, owner: &Pubkey) -> Option<GatewayToken> {
+        let (gateway_token, _) = get_gateway_token_address_with_seed(&owner, &None);
+        self.context
+            .banks_client
+            .get_account(gateway_token)
+            .await
+            .unwrap()
+            .map(|account_info| program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data).unwrap())
+    }
+
     pub async fn issue_gateway_token(
         &mut self,
         owner: &Pubkey,
-        gatekeeper_authority: &Keypair,
-        network: &Pubkey,
+        expire_time: Option<UnixTimestamp>
     ) -> GatewayToken {
-        let (gatekeeper_address, _) = get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
-        let (gateway_account, _) = get_gateway_token_address_with_seed(&owner, &None);
-        self.issue_gateway_transaction(&owner, gatekeeper_authority, &gatekeeper_address, network)
-            .await
-            .unwrap();
+        // TODO find nicer way to clone a Keypair to fix borrowing issues
+        let gatekeeper_network = Keypair::from_base58_string(self.gatekeeper_network.as_ref().unwrap().to_base58_string().as_str());
+        let gatekeeper_authority = Keypair::from_base58_string(self.gatekeeper_authority.as_ref().unwrap().to_base58_string().as_str());
+        
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
+        self.issue_gateway_token_transaction(
+            &owner,
+            &gatekeeper_authority,
+            &gatekeeper_account,
+            &gatekeeper_network.pubkey(),
+            expire_time
+        ).await.unwrap();
 
-        let account_info = self.context
-            .banks_client
-            .get_account(gateway_account)
-            .await
-            .unwrap()
-            .unwrap();
-        let account_data: GatewayToken =
-            program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data).unwrap();
+        let account_data = self.get_gateway_token(owner).await;
 
-        account_data
+        account_data.unwrap()
+    }
+
+    pub async fn update_gateway_token_expiry(
+        &mut self,
+        owner: &Pubkey,
+        expire_time: UnixTimestamp
+    ) -> GatewayToken {
+        // TODO find nicer way to clone a Keypair to fix borrowing issues
+        let gatekeeper_authority = Keypair::from_base58_string(self.gatekeeper_authority.as_ref().unwrap().to_base58_string().as_str());
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
+        
+        self.update_gateway_token_expiry_transaction(
+            &owner,
+            &gatekeeper_authority,
+            &gatekeeper_account,
+            expire_time
+        ).await.unwrap();
+
+        let account_data = self.get_gateway_token(owner).await;
+
+        account_data.unwrap()
     }
 }

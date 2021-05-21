@@ -35,14 +35,16 @@ pub struct GatewayToken {
     pub issuing_gatekeeper: Pubkey,
     /// The current token state
     pub state: GatewayTokenState,
+    
     /// The expiry time of the token (unix timestamp) (expirable tokens only)
-    pub expiry: Option<UnixTimestamp>,
+    pub expire_time: Option<UnixTimestamp>,
+    
     // /// Details about the transaction that this token has been issued for (session tokens only)
     // pub transaction_details: Option<dyn CompatibleTransactionDetails>
 }
 impl GatewayToken {
-    pub fn new_vanilla(owner_wallet: &Pubkey, gatekeeper_network: &Pubkey, issuing_gatekeeper: &Pubkey) -> Self {
-        Self {
+    pub fn new_vanilla(owner_wallet: &Pubkey, gatekeeper_network: &Pubkey, issuing_gatekeeper: &Pubkey, expire_time: &Option<UnixTimestamp>) -> Self {
+        let mut result = Self {
             features: 0,
             parent_gateway_token: None,
             owner_wallet: *owner_wallet,
@@ -51,14 +53,18 @@ impl GatewayToken {
             gatekeeper_network: *gatekeeper_network,
             issuing_gatekeeper: *issuing_gatekeeper,
             state: Default::default(),
-            expiry: None
-        }
+            expire_time: *expire_time
+        };
+        
+        if expire_time.is_some() { result.set_feature(Feature::Expirable) };
+        
+        result
     }
     
     // TODO should probably do away with the feature bitmap and just infer
     // the features from the properties. This is currently not typesafe as
     // you can set a feature (eg Expirable) without giving the gateway token
-    // the appropriate properites (e.g. expiry). It was added to help
+    // the appropriate properites (e.g. expire_time). It was added to help
     // serialisation but this is not necessary unless we use traits for different
     // features.
     /// Set a feature flag on a gateway token
@@ -95,8 +101,13 @@ impl GatewayToken {
         self.is_vanilla() && self.is_valid_state() && !self.has_expired()
     }
 
-    pub fn has_expired(&self)-> bool {
-        self.has_feature(Feature::Expirable) && before_now(self.expiry.unwrap())
+    pub fn has_expired(&self) -> bool {
+        self.has_feature(Feature::Expirable) && before_now(self.expire_time.unwrap())
+    }
+    
+    pub fn set_expire_time(&mut self, expire_time: UnixTimestamp) {
+        self.set_feature(Feature::Expirable);
+        self.expire_time = Some(expire_time);
     }
 
     /// Checks if the exotic gateway token is in a valid state (not inactive or expired)
@@ -141,7 +152,7 @@ impl GatewayToken {
 /// Enum representing the states that a gateway token can be in.
 #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, BorshSchema)]
 pub enum GatewayTokenState {
-    /// Valid, non-frozen token. Note - a token may be active but have passed its expiry.
+    /// Valid, non-frozen token. Note - a token may be active but have passed its expire_time.
     Active,
     /// Temporarily paused token.
     Frozen,
@@ -159,7 +170,7 @@ impl Default for GatewayTokenState {
 pub enum Feature {
     /// The token is valid for the current transaction only. Must have its lamport balance set to 0.
     Session,
-    /// The expiry field must be set and the expiry slot & epoch must not be in the past.
+    /// The expire_time field must be set and the expire time must not be in the past.
     Expirable,
     /// Expect a transaction-details struct, and check the contents against the details of
     /// the transaction that the token is being used for.
@@ -259,7 +270,7 @@ pub mod tests {
             gatekeeper_network: Default::default(),
             issuing_gatekeeper: Default::default(),
             state: Default::default(),
-            expiry: None
+            expire_time: None
         }
     }
 
@@ -313,8 +324,7 @@ pub mod tests {
         init();
         let mut token = stub_vanilla_gateway_token();
 
-        token.set_feature(Feature::Expirable);
-        token.expiry = Some(now() - 1000);
+        token.set_expire_time(now() - 1000);
 
         assert!(token.has_expired());
         assert!(!token.is_valid());
