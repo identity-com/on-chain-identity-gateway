@@ -179,15 +179,15 @@ impl GatewayContext {
         gatekeeper_authority: &Keypair,
         gateway_token_state: GatewayTokenState
     ) -> GatewayToken {
-        let (gatekeeper_address, _) = get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
         let (gateway_account, _) = get_gateway_token_address_with_seed(&owner, &None);
-        self.set_gateway_token_state_transaction(&gateway_account, gatekeeper_authority, &gatekeeper_address, gateway_token_state)
+        self.set_gateway_token_state_transaction(&gateway_account, gatekeeper_authority, &gatekeeper_account, gateway_token_state)
             .await
             .unwrap();
 
         let account_info = self.context
             .banks_client
-            .get_account(gatekeeper_address)
+            .get_account(gateway_account)
             .await
             .unwrap()
             .unwrap();
