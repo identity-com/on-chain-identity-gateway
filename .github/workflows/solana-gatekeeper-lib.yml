@@ -32,7 +32,7 @@ jobs:
           key: yarn-solana-gatekeeper-lib-${{ hashFiles('yarn.lock') }}
 
       - name: NPM login
-        run: echo "//registry.npmjs.org/:_authToken=${{NPM_TOKEN}}" > ~/project/.npmrc
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/project/.npmrc
 
       - name: Install
         run: yarn install
