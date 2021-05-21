@@ -2,6 +2,16 @@ use std::{
     time::{SystemTime, UNIX_EPOCH}
 };
 use solana_program_test::{ProgramTestContext, ProgramTest, processor};
+use solana_gateway_program::{
+    state::{get_gatekeeper_address_with_seed, Gatekeeper},
+    id, instruction,
+    processor::process_instruction
+};
+use solana_sdk::{
+    transport,
+    transaction::Transaction,
+    signature::Keypair
+};
 use solana_program::{
     pubkey::Pubkey,
     sysvar,system_program
@@ -136,6 +146,27 @@ impl GatewayContext {
         self.context.banks_client.process_transaction(transaction).await
     }
 
+    async fn set_gateway_token_state_transaction(
+        &mut self,
+        gateway_account: &Pubkey,
+        gatekeeper_authority: &Keypair,
+        gatekeeper_account: &Pubkey,
+        gateway_token_state: GatewayTokenState
+    ) -> transport::Result<()> {
+        let transaction = Transaction::new_signed_with_payer(
+            &[instruction::set_state(
+                gateway_account,
+                &gatekeeper_authority.pubkey(),
+                gatekeeper_account,
+                gateway_token_state
+            )],
+            Some(&self.context.payer.pubkey()),
+            &[&self.context.payer, &gatekeeper_authority],
+            self.context.last_blockhash,
+        );
+        self.context.banks_client.process_transaction(transaction).await
+    }
+
     pub async fn attempt_add_gatekeeper_without_network_signature(
         &mut self,
         authority: &Pubkey,
@@ -240,5 +271,31 @@ impl GatewayContext {
         let account_data = self.get_gateway_token(owner).await;
 
         account_data.unwrap()
+    }
+
+
+    pub async fn set_gateway_token_state(
+        &mut self,
+        owner: &Pubkey,
+        gatekeeper_authority: &Keypair,
+        gateway_token_state: GatewayTokenState
+    ) -> GatewayToken {
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
+        let (gateway_account, _) = get_gateway_token_address_with_seed(&owner, &None);
+        self.set_gateway_token_state_transaction(&gateway_account, gatekeeper_authority, &gatekeeper_account, gateway_token_state)
+            .await
+            .unwrap();
+
+        let account_info = self.context
+            .banks_client
+            .get_account(gateway_account)
+            .await
+            .unwrap()
+            .unwrap();
+
+        let account_data: GatewayToken =
+            program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data).unwrap();
+
+        account_data
     }
 }

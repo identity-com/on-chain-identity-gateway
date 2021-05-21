@@ -11,7 +11,7 @@ use {
     },
     crate::gateway_context::GatewayContext
 };
-use solana_gateway::state::Feature;
+use solana_gateway::state::GatewayTokenState;
 
 mod gateway_context;
 
@@ -64,6 +64,28 @@ async fn issue_an_expired_gateway_token_should_be_invalid() {
     let gateway_token = context.issue_gateway_token(&owner, Some(past)).await;
 
     assert!(!gateway_token.is_valid());
+}
+
+#[tokio::test]
+async fn set_gateway_token_revoked_should_succeed() {
+    let mut context = GatewayContext::new().await;
+
+    let owner = Pubkey::new_unique();
+    let authority = Keypair::new();
+    let network = Keypair::new();
+
+    // first add the gatekeeper to the network
+    context.add_gatekeeper(&authority.pubkey(), &network).await;
+
+    // now issue a gateway token as that gatekeeper
+    context.issue_gateway_token(&owner, &authority, &network.pubkey()).await;
+
+    // finally revoke the token
+    let revoked_gateway_token = context.set_gateway_token_state(&owner,
+                                                                &authority,
+                                                                GatewayTokenState::Revoked).await;
+
+    assert_eq!(revoked_gateway_token.state, GatewayTokenState::Revoked);
 }
 
 #[tokio::test]
