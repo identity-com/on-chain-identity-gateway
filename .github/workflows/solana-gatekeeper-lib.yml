@@ -31,10 +31,11 @@ jobs:
             ./node_modules
           key: yarn-solana-gatekeeper-lib-${{ hashFiles('yarn.lock') }}
 
+      - name: NPM login
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/project/.npmrc
+
       - name: Install
         run: yarn install
-        env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 # TODO waiting for lint
 #      - name: Lint
