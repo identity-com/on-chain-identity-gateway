@@ -2,16 +2,6 @@ use std::{
     time::{SystemTime, UNIX_EPOCH}
 };
 use solana_program_test::{ProgramTestContext, ProgramTest, processor};
-use solana_gateway_program::{
-    state::{get_gatekeeper_address_with_seed, Gatekeeper},
-    id, instruction,
-    processor::process_instruction
-};
-use solana_sdk::{
-    transport,
-    transaction::Transaction,
-    signature::Keypair
-};
 use solana_program::{
     pubkey::Pubkey,
     sysvar,system_program
@@ -35,7 +25,7 @@ use solana_gateway_program::{
     processor::process_instruction,
     state::get_gateway_token_address_with_seed
 };
-use solana_gateway::state::GatewayToken;
+use solana_gateway::state::{GatewayToken, GatewayTokenState};
 
 fn program_test() -> ProgramTest {
     ProgramTest::new("solana_gateway_program", id(), processor!(process_instruction))
@@ -277,25 +267,18 @@ impl GatewayContext {
     pub async fn set_gateway_token_state(
         &mut self,
         owner: &Pubkey,
-        gatekeeper_authority: &Keypair,
         gateway_token_state: GatewayTokenState
     ) -> GatewayToken {
+        // TODO find nicer way to clone a Keypair to fix borrowing issues
+        let gatekeeper_authority = Keypair::from_base58_string(self.gatekeeper_authority.as_ref().unwrap().to_base58_string().as_str());
         let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
         let (gateway_account, _) = get_gateway_token_address_with_seed(&owner, &None);
-        self.set_gateway_token_state_transaction(&gateway_account, gatekeeper_authority, &gatekeeper_account, gateway_token_state)
+        self.set_gateway_token_state_transaction(&gateway_account, &gatekeeper_authority, &gatekeeper_account, gateway_token_state)
             .await
             .unwrap();
 
-        let account_info = self.context
-            .banks_client
-            .get_account(gateway_account)
-            .await
-            .unwrap()
-            .unwrap();
+        let account_data = self.get_gateway_token(owner).await;
 
-        let account_data: GatewayToken =
-            program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data).unwrap();
-
-        account_data
+        account_data.unwrap()
     }
 }

@@ -86,7 +86,7 @@ impl GatewayToken {
     /// Checks if this is a "vanilla" token,
     /// ie one that needs no additional account inputs to validate it
     pub fn is_vanilla(&self) -> bool {
-        !self.has_feature(Feature::IdentityLinked) && !self.has_feature(Feature::Expirable)
+        !self.has_feature(Feature::IdentityLinked)
     }
 
     /// Checks if the gateway token is in a valid state
