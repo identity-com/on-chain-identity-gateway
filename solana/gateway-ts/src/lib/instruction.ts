@@ -108,18 +108,27 @@ export function issueVanilla(
   });
 }
 
+const getStateChangeAccountMeta = (
+  gatewayTokenAccount: PublicKey,
+  gatekeeperAuthority: PublicKey,
+  gatekeeperAccount: PublicKey
+): AccountMeta[] => [
+  { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
+  { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
+  { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
+  { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+  { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+];
 export function revoke(
   gatewayTokenAccount: PublicKey,
   gatekeeperAuthority: PublicKey,
   gatekeeperAccount: PublicKey
 ): TransactionInstruction {
-  const keys: AccountMeta[] = [
-    { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
-    { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
-    { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
-    { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-  ];
+  const keys: AccountMeta[] = getStateChangeAccountMeta(
+    gatewayTokenAccount,
+    gatekeeperAuthority,
+    gatekeeperAccount
+  );
   const data = GatewayInstruction.revoke().encode();
   return new TransactionInstruction({
     keys,
@@ -133,13 +142,11 @@ export function freeze(
   gatekeeperAuthority: PublicKey,
   gatekeeperAccount: PublicKey
 ): TransactionInstruction {
-  const keys: AccountMeta[] = [
-    { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
-    { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
-    { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
-    { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-  ];
+  const keys: AccountMeta[] = getStateChangeAccountMeta(
+    gatewayTokenAccount,
+    gatekeeperAuthority,
+    gatekeeperAccount
+  );
   const data = GatewayInstruction.freeze().encode();
   return new TransactionInstruction({
     keys,
@@ -153,13 +160,11 @@ export function unfreeze(
   gatekeeperAuthority: PublicKey,
   gatekeeperAccount: PublicKey
 ): TransactionInstruction {
-  const keys: AccountMeta[] = [
-    { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
-    { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
-    { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
-    { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-  ];
+  const keys: AccountMeta[] = getStateChangeAccountMeta(
+    gatewayTokenAccount,
+    gatekeeperAuthority,
+    gatekeeperAccount
+  );
   const data = GatewayInstruction.unfreeze().encode();
   return new TransactionInstruction({
     keys,

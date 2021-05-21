@@ -1,9 +1,11 @@
 import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import {
+  freeze,
   getGatekeeperAccountKeyFromGatekeeperAuthority,
   getGatewayTokenKeyForOwner,
   issueVanilla,
   revoke,
+  unfreeze,
 } from "@identity.com/solana-gateway-ts";
 import {
   AuditRecord,
@@ -14,6 +16,28 @@ import {
 } from "../util/record";
 import { send } from "../util/connection";
 
+const updateRecordStatus = async (
+  recorder: Recorder,
+  gatewayTokenKey: PublicKey,
+  status: GatewayTokenStatus
+): Promise<AuditRecord> => {
+  const record = await recorder.lookup(gatewayTokenKey);
+  console.log("existing record", record);
+  if (!record)
+    throw new Error(`No Audit record found for token ${gatewayTokenKey}`);
+
+  const updatedRecord = {
+    timestamp: new Date().toISOString(),
+    token: record.token,
+    name: record.name,
+    ipAddress: record.ipAddress,
+    country: record.country,
+    selfDeclarationTextAgreedTo: record.selfDeclarationTextAgreedTo,
+    status,
+  };
+  await recorder.store(updatedRecord);
+  return updatedRecord;
+};
 export class GatekeeperService {
   constructor(
     private connection: Connection,
@@ -87,23 +111,61 @@ export class GatekeeperService {
 
     await send(this.connection, transaction, this.gatekeeperAuthority);
 
-    const record = await this.recorder.lookup(gatewayTokenKey);
-    console.log("existing record", record);
-    if (!record)
-      throw new Error(`No Audit record found for token ${gatewayTokenKey}`);
+    const updatedRecord = await updateRecordStatus(
+      this.recorder,
+      gatewayTokenKey,
+      GatewayTokenStatus.REVOKED
+    );
 
-    const updatedRecord = {
-      timestamp: new Date().toISOString(),
-      token: record.token,
-      name: record.name,
-      ipAddress: record.ipAddress,
-      country: record.country,
-      selfDeclarationTextAgreedTo: record.selfDeclarationTextAgreedTo,
-      status: GatewayTokenStatus.REVOKED,
-    };
-    const storeRecordPromise = await this.recorder.store(updatedRecord);
+    return updatedRecord;
+  }
 
-    await storeRecordPromise;
+  async freeze(gatewayTokenKey: PublicKey): Promise<AuditRecord> {
+    const gatekeeperAccount =
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(
+        this.gatekeeperAuthority.publicKey
+      );
+    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
+    const transaction = new Transaction().add(
+      freeze(
+        gatewayTokenKey,
+        this.gatekeeperAuthority.publicKey,
+        gatekeeperAccount
+      )
+    );
+
+    await send(this.connection, transaction, this.gatekeeperAuthority);
+
+    const updatedRecord = await updateRecordStatus(
+      this.recorder,
+      gatewayTokenKey,
+      GatewayTokenStatus.FROZEN
+    );
+
+    return updatedRecord;
+  }
+
+  async unfreeze(gatewayTokenKey: PublicKey): Promise<AuditRecord> {
+    const gatekeeperAccount =
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(
+        this.gatekeeperAuthority.publicKey
+      );
+    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
+    const transaction = new Transaction().add(
+      unfreeze(
+        gatewayTokenKey,
+        this.gatekeeperAuthority.publicKey,
+        gatekeeperAccount
+      )
+    );
+
+    await send(this.connection, transaction, this.gatekeeperAuthority);
+
+    const updatedRecord = await updateRecordStatus(
+      this.recorder,
+      gatewayTokenKey,
+      GatewayTokenStatus.ACTIVE
+    );
 
     return updatedRecord;
   }
