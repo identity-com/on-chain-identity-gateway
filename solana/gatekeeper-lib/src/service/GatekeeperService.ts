@@ -1,4 +1,4 @@
-import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import {
   freeze,
   getGatekeeperAccountKeyFromGatekeeperAuthority,
@@ -6,6 +6,7 @@ import {
   issueVanilla,
   revoke,
   unfreeze,
+  updateExpiry,
 } from "@identity.com/solana-gateway-ts";
 import {
   AuditRecord,
@@ -38,30 +39,46 @@ const updateRecordStatus = async (
   await recorder.store(updatedRecord);
   return updatedRecord;
 };
+
+type GatekeeperConfig = {
+  defaultExpirySeconds?: number;
+};
+
 export class GatekeeperService {
   constructor(
     private connection: Connection,
     private payer: Keypair,
     private gatekeeperNetwork: PublicKey,
     private gatekeeperAuthority: Keypair,
-    private recorder: Recorder = new RecorderFS()
+    private recorder: Recorder = new RecorderFS(),
+    private config: GatekeeperConfig = {}
   ) {}
 
-  async issueVanilla(owner: PublicKey, seed: Uint8Array = Buffer.from([0])) {
+  private getDefaultExpireTime(): number | undefined {
+    if (!this.config.defaultExpirySeconds) return undefined;
+    const now = Math.floor(Date.now() / 1000);
+    return now + this.config.defaultExpirySeconds;
+  }
+
+  private async issueVanilla(owner: PublicKey, seed?: Uint8Array) {
     const gatewayTokenKey = await getGatewayTokenKeyForOwner(owner);
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
       );
+
+    const expireTime = this.getDefaultExpireTime();
+
     const transaction = new Transaction().add(
       issueVanilla(
-        seed,
         gatewayTokenKey,
         this.payer.publicKey,
         gatekeeperAccount,
         owner,
         this.gatekeeperAuthority.publicKey,
-        this.gatekeeperNetwork
+        this.gatekeeperNetwork,
+        seed,
+        expireTime
       )
     );
 
@@ -168,5 +185,31 @@ export class GatekeeperService {
     );
 
     return updatedRecord;
+  }
+
+  async updateExpiry(
+    gatewayTokenKey: PublicKey,
+    expireTime: number
+  ): Promise<AuditRecord> {
+    const gatekeeperAccount =
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(
+        this.gatekeeperAuthority.publicKey
+      );
+    const transaction = new Transaction().add(
+      updateExpiry(
+        gatewayTokenKey,
+        this.gatekeeperAuthority.publicKey,
+        gatekeeperAccount,
+        expireTime
+      )
+    );
+
+    await send(this.connection, transaction, this.gatekeeperAuthority);
+
+    return updateRecordStatus(
+      this.recorder,
+      gatewayTokenKey,
+      GatewayTokenStatus.ACTIVE
+    );
   }
 }

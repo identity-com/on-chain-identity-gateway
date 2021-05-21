@@ -16,11 +16,21 @@ import { Active, Frozen, GatewayTokenState, Revoked } from "./GatewayTokenData";
  */
 
 class AddGatekeeper extends Assignable {}
-class IssueVanilla extends Assignable {}
-class SetState extends Assignable {}
+class IssueVanilla extends Assignable {
+  seed?: Uint8Array;
+}
+class SetState extends Assignable {
+  state!: GatewayTokenState;
+}
+class UpdateExpiry extends Assignable {
+  expireTime!: number;
+}
 
 class GatewayInstruction extends Enum {
   addGatekeeper?: AddGatekeeper;
+  issueVanilla?: IssueVanilla;
+  setState?: SetState;
+  updateExpiry?: UpdateExpiry;
 
   static addGatekeeper(): GatewayInstruction {
     return new GatewayInstruction({
@@ -28,9 +38,12 @@ class GatewayInstruction extends Enum {
     });
   }
 
-  static issueVanilla(seed: Uint8Array): GatewayInstruction {
+  static issueVanilla(
+    seed?: Uint8Array,
+    expireTime?: number
+  ): GatewayInstruction {
     return new GatewayInstruction({
-      issueVanilla: new IssueVanilla({ seed }),
+      issueVanilla: new IssueVanilla({ seed, expireTime }),
     });
   }
 
@@ -54,6 +67,14 @@ class GatewayInstruction extends Enum {
     return new GatewayInstruction({
       setState: new SetState({
         state: new GatewayTokenState({ active: new Active({}) }),
+      }),
+    });
+  }
+
+  static updateExpiry(expireTime: number): GatewayInstruction {
+    return new GatewayInstruction({
+      updateExpiry: new UpdateExpiry({
+        expireTime,
       }),
     });
   }
@@ -82,13 +103,14 @@ export function addGatekeeper(
 }
 
 export function issueVanilla(
-  seed: Uint8Array,
   gatewayTokenAccount: PublicKey,
   payer: PublicKey,
   gatekeeperAccount: PublicKey,
   owner: PublicKey,
   gatekeeperAuthority: PublicKey,
-  gatekeeperNetwork: PublicKey
+  gatekeeperNetwork: PublicKey,
+  seed?: Uint8Array,
+  expireTime?: number
 ): TransactionInstruction {
   const keys: AccountMeta[] = [
     { pubkey: payer, isSigner: true, isWritable: true },
@@ -100,7 +122,7 @@ export function issueVanilla(
     { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
     { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   ];
-  const data = GatewayInstruction.issueVanilla(seed).encode();
+  const data = GatewayInstruction.issueVanilla(seed, expireTime).encode();
   return new TransactionInstruction({
     keys,
     programId: PROGRAM_ID,
@@ -116,8 +138,6 @@ const getStateChangeAccountMeta = (
   { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
   { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
   { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
-  { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-  { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
 ];
 export function revoke(
   gatewayTokenAccount: PublicKey,
@@ -173,6 +193,25 @@ export function unfreeze(
   });
 }
 
+export function updateExpiry(
+  gatewayTokenAccount: PublicKey,
+  gatekeeperAuthority: PublicKey,
+  gatekeeperAccount: PublicKey,
+  expireTime: number
+): TransactionInstruction {
+  const keys: AccountMeta[] = [
+    { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
+    { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
+    { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
+  ];
+  const data = GatewayInstruction.updateExpiry(expireTime).encode();
+  return new TransactionInstruction({
+    keys,
+    programId: PROGRAM_ID,
+    data,
+  });
+}
+
 SCHEMA.set(GatewayInstruction, {
   kind: "enum",
   field: "enum",
@@ -180,6 +219,7 @@ SCHEMA.set(GatewayInstruction, {
     ["addGatekeeper", AddGatekeeper],
     ["issueVanilla", IssueVanilla],
     ["setState", SetState],
+    ["updateExpiry", UpdateExpiry],
   ],
 });
 SCHEMA.set(AddGatekeeper, {
@@ -188,9 +228,16 @@ SCHEMA.set(AddGatekeeper, {
 });
 SCHEMA.set(IssueVanilla, {
   kind: "struct",
-  fields: [["seed", [1]]],
+  fields: [
+    ["seed", { kind: "option", type: [8] }],
+    ["expireTime", { kind: "option", type: "number" }],
+  ],
 });
 SCHEMA.set(SetState, {
   kind: "struct",
   fields: [["state", GatewayTokenState]],
+});
+SCHEMA.set(UpdateExpiry, {
+  kind: "struct",
+  fields: [["expireTime", "number"]],
 });
