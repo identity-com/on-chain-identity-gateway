@@ -1,6 +1,5 @@
 name: Main
 on:
-  push:
   pull_request:
 jobs:
   solana-gatekeeper-build:
@@ -30,7 +29,10 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-solana-gatekeeper-lib-${{ hashFiles('yarn.lock') }}
+          key: yarn-solana-gatekeeper-lib-${{ hashFiles('solana/gatekeeper-lib/yarn.lock') }}
+
+      - name: NPM login
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
 
       - name: Install
         run: yarn install

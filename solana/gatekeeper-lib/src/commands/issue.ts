@@ -1,12 +1,11 @@
 import { Command, flags } from "@oclif/command";
 import { PublicKey } from "@solana/web3.js";
-import * as geoip from "geoip-country";
 
 import { getGatekeeper } from "../util/account";
 import { getConnection } from "../util/connection";
 import * as fs from "fs";
 import { IssueService } from "../service/issue";
-import { COUNTRY_BLACKLIST, REGISTER } from "../util/constants";
+import { REGISTER } from "../util/constants";
 
 type Record = {
   timestamp: string;

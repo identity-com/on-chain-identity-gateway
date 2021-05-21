@@ -1,0 +1,111 @@
+name: Main
+on:
+  pull_request:
+jobs:
+  solana-gateway-http-client-build:
+    name: Build, lint the solana gateway-http-client library on ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ['15.x']
+        os: [ubuntu-latest]
+
+    defaults:
+      run:
+        working-directory: ./solana/gateway-http-client
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./node_modules
+          key: yarn-solana-gateway-http-client-${{ hashFiles('solana/gateway-http-client/yarn.lock') }}
+
+      - name: Install
+        run: yarn install
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+  solana-gateway-http-client-unit_tests:
+    name: Test the solana gateway http client with dependencies stubbed out
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ['15.x']
+        os: [ubuntu-latest]
+
+    defaults:
+      run:
+        working-directory: ./solana/gateway-http-client
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./node_modules
+          key: yarn-solana-gateway-http-client-${{ hashFiles('yarn.lock') }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Unit tests
+        run: yarn test:unit
+
+  solana-gateway-http-client-integration_tests:
+    name: Test the solana gateway http client against real chain/gatekeeper test environments
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ['15.x']
+        os: [ubuntu-latest]
+
+    defaults:
+      run:
+        working-directory: ./solana/gateway-http-client
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./node_modules
+          key: yarn-solana-gateway-http-client-${{ hashFiles('yarn.lock') }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Integration tests
+        run: yarn test:integration
