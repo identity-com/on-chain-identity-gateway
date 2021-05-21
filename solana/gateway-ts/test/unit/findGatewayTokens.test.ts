@@ -4,7 +4,12 @@ import sinon from "sinon";
 import { clusterApiUrl, Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { findGatewayTokens } from "../../src";
 import { PROGRAM_ID } from "../../src/lib/constants";
-import { Active, Frozen, GatewayTokenData, GatewayTokenState } from "../../src/lib/GatewayTokenData";
+import {
+  Active,
+  Frozen,
+  GatewayTokenData,
+  GatewayTokenState,
+} from "../../src/lib/GatewayTokenData";
 import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
 
 chai.use(chaiSubset);

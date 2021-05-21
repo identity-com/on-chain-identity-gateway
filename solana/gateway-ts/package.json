@@ -15,7 +15,7 @@
     "test:unit": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'test/unit/**/*.ts'",
     "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs ../program/target/deploy/solana_gateway_program.so --reset",
     "test": "yarn test:unit",
-    "lint": "eslint src/ test/ scripts/ --ext .ts"
+    "lint": "eslint src/ test/ --ext .ts"
   },
   "dependencies": {
     "@solana/web3.js": "^1.11.0",
