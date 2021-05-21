@@ -132,13 +132,21 @@ impl GatewayContext {
         &mut self,
         owner: &Pubkey,
         authority: &Pubkey,
-        gatekeeper: &Pubkey,
         network: &Keypair,
     ) -> GatewayToken {
+        let (gatekeeper_address, _) = get_gatekeeper_address_with_seed(&authority);
+        let gatekeeper_address_account_info = self.context
+            .banks_client
+            .get_account(gatekeeper_address)
+            .await
+            .unwrap()
+            .unwrap();
+
         let (gateway_account, _) = get_gateway_token_address_with_seed(&owner, &None);
-        self.issue_gateway_transaction(&owner, &authority, &gatekeeper, network)
+        self.issue_gateway_transaction(&owner, &authority, &gatekeeper_address_account_info.owner, network)
             .await
             .unwrap();
+
         let account_info = self.context
             .banks_client
             .get_account(gateway_account)
