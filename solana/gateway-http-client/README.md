@@ -1,15 +1,14 @@
-# On-chain Identity Gateway - Client library
+# Solana Gateway Http Client library
 
-This library provides a client and utility methods for helping 
+This library provides a client for allowing 
 decentralized Apps (dApps) to make use of on-chain identity methods
-like gateway token retrieval, lookup, and revocation.
+like gateway token creation, lookup, and revocation.
 
-- [on-chain-identity-client](#on-chain-identity-client)
+- [Solana Gateway Http Client library](#solana-gateway-http-client-library)
   - [Usage](#usage)
     - [Installation](#installation)
     - [Import](#import)
   - [Functions/Classes](#functionsclasses)
-    - [findGatewayTokens](#findgatewaytokens)
     - [GatekeeperClient](#gatekeeperclient)
       - [initialisation](#initialisation)
       - [createGatewayToken](#creategatewaytoken)
@@ -19,20 +18,14 @@ like gateway token retrieval, lookup, and revocation.
 ## Usage
 ### Installation
 ```
-yarn add @identity.com/on-chain-identity-client
+yarn add @identity.com/solana-gateway-http-client
 ```
 ### Import
 ```
-import { GatekeeperClient, GatekeeperClientConfig, GatekeeperRecord, findGatewayToken } from 'on-chain-identity-client';
+import { GatekeeperClient, GatekeeperClientConfig, GatekeeperRecord } from '@identity.com/solana-gateway-http-client';
 ```
 
 ## Functions/Classes
-### findGatewayTokens
-Utility method for finding gateway token created for a given public key. This method does the lookup against the Solana blockchain. Returns an empty array if gateway tokens doesn't exist for the given public key.
-```
-const gatewayToken: PublicKey = await findGatewayToken(connection, owner, gatekeeperKey);
-```
-Optionally, a 'revoked' flag can be passed to allow retrieval of all, even revoked, tokens.
 
 ### GatekeeperClient
 The GatekeeperClient is a class with helper methods to enable communication with a Gatekeeper server.

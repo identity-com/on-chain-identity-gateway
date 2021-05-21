@@ -2,7 +2,6 @@ import {
   Connection,
   Keypair,
   PublicKey,
-  sendAndConfirmTransaction,
   Transaction,
   TransactionSignature,
 } from "@solana/web3.js";
@@ -41,17 +40,6 @@ export const getGatewayTokenKeyForOwner = async (
   const publicKeyNonce = await PublicKey.findProgramAddress(seeds, PROGRAM_ID);
   return publicKeyNonce[0];
 };
-
-export const send = (
-  connection: Connection,
-  transaction: Transaction,
-  ...signers: Keypair[]
-): Promise<TransactionSignature> =>
-  sendAndConfirmTransaction(connection, transaction, signers, {
-    skipPreflight: false,
-    commitment: SOLANA_COMMITMENT,
-    preflightCommitment: "recent",
-  });
 
 // Based on solana/integration-lib/src/state.rs
 // If the optional the parent-gateway-token field is populated, this value will be

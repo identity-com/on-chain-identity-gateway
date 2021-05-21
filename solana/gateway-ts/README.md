@@ -1,32 +1,39 @@
-# On-chain Identity Gateway - Client library
+# Gateway-ts - library
 
-This library provides a client and utility methods for helping 
+This library provides a utility methods for helping 
 decentralized Apps (dApps) to make use of on-chain identity methods
 like gateway token retrieval, lookup, and revocation.
 
-- [on-chain-identity-client](#on-chain-identity-client)
+- [Gateway-ts - library](#gateway-ts---library)
   - [Usage](#usage)
     - [Installation](#installation)
     - [Import](#import)
-  - [Functions/Classes](#functionsclasses)
+  - [Functions](#functions)
     - [findGatewayTokens](#findgatewaytokens)
-    - [GatekeeperClient](#gatekeeperclient)
-      - [initialisation](#initialisation)
-      - [createGatewayToken](#creategatewaytoken)
-      - [auditGatewayToken](#auditgatewaytoken)
-      - [requestAirdrop](#requestairdrop)
+    - [addGatekeeper](#addgatekeeper)
+    - [getGatekeeperAccountKeyFromGatekeeperAuthority](#getgatekeeperaccountkeyfromgatekeeperauthority)
+    - [getGatewayTokenKeyForOwner](#getgatewaytokenkeyforowner)
+    - [issueVanilla](#issuevanilla)
+    - [findGatewayTokens](#findgatewaytokens-1)
 
 ## Usage
 ### Installation
 ```
-yarn add @identity.com/on-chain-identity-client
+yarn add @identity.com/solana-gateway-ts
 ```
 ### Import
 ```
-import { GatekeeperClient, GatekeeperClientConfig, GatekeeperRecord, findGatewayToken } from 'on-chain-identity-client';
+import {
+  addGatekeeper,
+  getGatekeeperAccountKeyFromGatekeeperAuthority,
+  getGatewayTokenKeyForOwner,
+  issueVanilla,
+  findGatewayTokens,
+} from "@identity.com/solana-gateway-ts";
 ```
 
-## Functions/Classes
+## Functions
+
 ### findGatewayTokens
 Utility method for finding gateway token created for a given public key. This method does the lookup against the Solana blockchain. Returns an empty array if gateway tokens doesn't exist for the given public key.
 ```
@@ -34,41 +41,89 @@ const gatewayToken: PublicKey = await findGatewayToken(connection, owner, gateke
 ```
 Optionally, a 'revoked' flag can be passed to allow retrieval of all, even revoked, tokens.
 
-### GatekeeperClient
-The GatekeeperClient is a class with helper methods to enable communication with a Gatekeeper server.
+### addGatekeeper
+Creates the instruction for adding a gatekeeper to the gatekeeper network
+Usage:
+```
+const payer: Keypair;
+const gatekeeperNetwork: Keypair;
+const gatekeeperAccount: PublicKey;
+const gatekeeperAuthority: PublicKey;
+const transaction = new Transaction().add(
+      addGatekeeper(
+        payer.publicKey,
+        gatekeeperAccount,
+        gatekeeperAuthority,
+        gatekeeperNetwork.publicKey
+      )
+    );
 
-#### initialisation
-The baseUrl of the gatekeeper server must be provided when creating a client instance. Additional headers can be passed in config
-that will be added to HTTP requests to the gatekeeper-api:
-```
-const baseUrl: string = 'http://<gateway url>';
-const clientInst = new GatekeeperClient({ baseUrl });
-```
-
-#### createGatewayToken
-Requests that a gateway token be created for the given Solana public key. Returns the newly created gateway token as a string.
-```
-const gatewayToken = await gatekeeperClientInst.createGatewayToken(walletPublicKey);
-```
-An optional parameter 'selfDeclarationTextAgreedTo' can be provided indicating that the requester has read and agreed to the passed text.
-```
-const selfDeclarationTextAgreedTo = 'I declare I am not resident in <not-allowed-territory>'
-...<UI for user to agree to text>
-const gatewayToken = await gatekeeperClientInst.createGatewayToken({ walletPublicKey, selfDeclarationTextAgreedTo });
-```
-A gateway token can be requested by providing a Civic presentationRequestId. The gatekeeper server validates that the presentation provided by the user is successful and a token is generated. The presentationRequest created by the DAPP should contain the publicKey address to create the gateway token for.
-```
-const gatewayToken = await gatekeeperClientInst.createGatewayToken({ presentationRequestId });
+    await send(
+      connection,
+      transaction,
+      payer,
+      gatekeeperNetwork
+    );
 ```
 
-#### auditGatewayToken
-Requests a GatekeeperRecord for the given gateway token. The requester must have sufficient privileges to access the GatekeeperRecord.
+### getGatekeeperAccountKeyFromGatekeeperAuthority
+Retrieves the gatekeeperAccount for a gatekeeper authority key, so the caller doens't need to keep a record of the gatekeeper account.
 ```
-const auditGatewayTokenResponse: GatekeeperRecord = await gatekeeperClientInst.auditGatewayToken(token);
+const gatekeeperAccount =
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(
+        this.gatekeeperAuthority.publicKey
+      );
 ```
 
-#### requestAirdrop
-Requests an airdrop of test tokens for predefined test market token accounts (defined in the gatekeeper server). Only available in test environments.
+### getGatewayTokenKeyForOwner
+Derives a gateway token key for an owner using the gateway program, additionally accepting a seed parameter
 ```
-await gatekeeperClientInst.requestAirdrop(walletPublicKey);
+const gatewayTokenKey = await getGatewayTokenKeyForOwner(owner);
+```
+
+### issueVanilla
+Issue a vanilla gatewayToken for an account
+```
+const owner: PublicKey;
+const payer: Keypair;
+const gatekeeperNetwork: Keypair;
+const gatekeeperAccount: PublicKey;
+const gatekeeperAuthority: PublicKey;
+
+const gatewayTokenKey = await getGatewayTokenKeyForOwner(owner);
+const gatekeeperAccount =
+  await getGatekeeperAccountKeyFromGatekeeperAuthority(
+    gatekeeperAuthority.publicKey
+  );
+
+const transaction = new Transaction().add(
+  issueVanilla(
+    seed,
+    gatewayTokenKey,
+    payer.publicKey,
+    gatekeeperAccount,
+    owner,
+    gatekeeperAuthority.publicKey,
+    gatekeeperNetwork
+  )
+);
+
+await send(
+  connection,
+  transaction,
+  payer,
+  gatekeeperAuthority
+);
+```
+
+### findGatewayTokens
+Find gatewayTokens that have been created on a network for an account
+```
+const owner: PublicKey;
+const gatekeeperNetwork: Keypair;
+const accounts = await findGatewayTokens(
+    connection,
+    owner.publicKey,
+    gatekeeperNetworkKey
+  );
 ```

@@ -17,7 +17,7 @@
     "borsh": "^0.4.0",
     "stream-to-string": "^1.2.0",
     "tslib": "^1",
-    "@identity.com/solana-gateway-ts": "^0.0.2"
+    "@identity.com/solana-gateway-ts": "^0.0.3"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1",

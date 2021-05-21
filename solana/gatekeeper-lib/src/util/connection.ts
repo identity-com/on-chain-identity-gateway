@@ -1,4 +1,13 @@
-import { Cluster, clusterApiUrl, Connection } from "@solana/web3.js";
+import {
+  Cluster,
+  clusterApiUrl,
+  Connection,
+  Keypair,
+  sendAndConfirmTransaction,
+  Transaction,
+  TransactionSignature,
+} from "@solana/web3.js";
+import { SOLANA_COMMITMENT } from "./constants";
 
 export type ExtendedCluster = Cluster | "localnet";
 
@@ -10,3 +19,14 @@ export const VALIDATOR_URL =
 
 export const getConnection = async (): Promise<Connection> =>
   new Connection(VALIDATOR_URL, "confirmed");
+
+export const send = (
+  connection: Connection,
+  transaction: Transaction,
+  ...signers: Keypair[]
+): Promise<TransactionSignature> =>
+  sendAndConfirmTransaction(connection, transaction, signers, {
+    skipPreflight: false,
+    commitment: SOLANA_COMMITMENT,
+    preflightCommitment: "recent",
+  });

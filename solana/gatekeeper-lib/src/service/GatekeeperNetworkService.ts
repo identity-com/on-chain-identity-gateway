@@ -2,8 +2,8 @@ import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import {
   addGatekeeper,
   getGatekeeperAccountKeyFromGatekeeperAuthority,
-  send,
 } from "@identity.com/solana-gateway-ts";
+import { send } from "../util/connection";
 
 export class GatekeeperNetworkService {
   constructor(

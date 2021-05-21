@@ -904,13 +904,12 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@identity.com/solana-gateway-ts@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.0.2.tgz#1248b4ddebd4f99fa9e8116f7cca51e059a406c4"
-  integrity sha512-A/HDdr3Wcnx9LaD6HA8CEz+dUaSzHF3DDc8IoQp6fVTp3cV+pjlgJRqyjt2HPUxvfdYdXZTtOkl3YxKJwLS3pA==
+"@identity.com/solana-gateway-ts@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.0.3.tgz#123cde4589167c599902907cd651f7f803424173"
+  integrity sha512-XiIPkTt5KcQvUqZgykzIpW5v7zlrHcY2K7iRnzPHk4h8XhUCS2vhWHeX+xmshUR5f2lNzG598NtVlC9ShvZOZQ==
   dependencies:
     "@solana/web3.js" "^1.11.0"
-    axios "^0.21.1"
     borsh "^0.4.0"
 
 "@mrmlnc/readdir-enhanced@^2.2.1":
