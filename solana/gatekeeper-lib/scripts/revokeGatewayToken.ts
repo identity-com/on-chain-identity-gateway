@@ -1,5 +1,6 @@
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { SOLANA_COMMITMENT } from "../src/util/constants";
+import { airdropTo } from "../src/util";
 import { GatekeeperNetworkService } from "../src/service/GatekeeperNetworkService";
 import { GatekeeperService } from "../src/service/GatekeeperService";
 import { homedir } from "os";
@@ -28,6 +29,7 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
 
 (async function () {
   const gatekeeperAuthority = Keypair.generate();
+  await airdropTo(connection, gatekeeperAuthority);
   const gatekeeperAccount = await gatekeeperNetworkService.addGatekeeper(
     gatekeeperAuthority.publicKey
   );

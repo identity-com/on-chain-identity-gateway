@@ -84,12 +84,7 @@ export class GatekeeperService {
       )
     );
 
-    await send(
-      this.connection,
-      transaction,
-      this.payer,
-      this.gatekeeperAuthority
-    );
+    await send(this.connection, transaction, this.gatekeeperAuthority);
 
     const record = await this.recorder.lookup(gatewayTokenKey);
     if (!record)
