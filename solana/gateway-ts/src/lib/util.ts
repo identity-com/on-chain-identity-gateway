@@ -3,6 +3,7 @@ import {
   GATEKEEPER_NONCE_SEED_STRING,
   GATEWAY_TOKEN_ADDRESS_SEED,
   PROGRAM_ID,
+  SOLANA_COMMITMENT,
 } from "./constants";
 import { GatewayToken, ProgramAccountResponse, State } from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
@@ -97,5 +98,24 @@ export const findGatewayTokens = async (
 
   return accountsResponse
     .map(toGatewayToken)
-    .filter((gatewayToken) => gatewayToken.isValid || showRevoked);
+    .filter(
+      (gatewayToken) => gatewayToken.state !== State.REVOKED || showRevoked
+    );
+};
+
+export const getGatewayToken = async (
+  connection: Connection,
+  gatewayTokenAddress: PublicKey
+): Promise<GatewayToken | null> => {
+  const account = await connection.getAccountInfo(
+    gatewayTokenAddress,
+    SOLANA_COMMITMENT
+  );
+
+  if (!account) return null;
+
+  return dataToGatewayToken(
+    GatewayTokenData.fromAccount(account.data),
+    gatewayTokenAddress
+  );
 };
