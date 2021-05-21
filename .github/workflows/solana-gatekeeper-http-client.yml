@@ -1,7 +1,6 @@
 name: Main
 on:
   push:
-  pull_request:
 jobs:
   solana-gatekeeper-http-client-build:
     name: Build, lint the solana client library on ${{ matrix.os }}
