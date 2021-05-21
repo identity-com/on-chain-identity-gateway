@@ -13,6 +13,7 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import ReadableStream = NodeJS.ReadableStream;
+import { GatewayToken } from "@identity.com/solana-gateway-ts";
 
 export type PII = {
   name?: string;
@@ -27,12 +28,11 @@ export enum GatewayTokenStatus {
 }
 export type AuditRecord = {
   timestamp: string;
-  token: string;
+  gatewayToken: GatewayToken;
   name: string;
   ipAddress: string;
   country: string;
   selfDeclarationTextAgreedTo: string;
-  status: GatewayTokenStatus | string;
 };
 
 const readRegister = () =>
