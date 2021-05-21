@@ -130,7 +130,7 @@ pub fn issue_vanilla(
 
 /// Create a `GatewayInstruction::SetState` instruction
 pub fn set_state(
-    gateway_account: &Pubkey,               // the gateway account
+    gateway_token: &Pubkey,                 // the gateway token account
     gatekeeper_authority: &Pubkey,          // the authority that owns the gatekeeper account
     gatekeeper_account: &Pubkey,            // the account containing details of the gatekeeper issuing the gateway token
     gateway_token_state: GatewayTokenState  // the state of the token to transition to
@@ -139,7 +139,7 @@ pub fn set_state(
         id(),
         &GatewayInstruction::SetState { state: gateway_token_state },
         vec![
-            AccountMeta::new(*gateway_account, false),
+            AccountMeta::new(*gateway_token, false),
 
             AccountMeta::new_readonly(*gatekeeper_authority, true),
             AccountMeta::new_readonly(*gatekeeper_account, false),
@@ -154,8 +154,8 @@ pub fn set_state(
 /// Create a `GatewayInstruction::UpdateExpiry` instruction
 pub fn update_expiry(
     gateway_token: &Pubkey,         // the gateway token account
-    gatekeeper_account: &Pubkey,    // the account containing details of the gatekeeper that issued the gateway token
     gatekeeper_authority: &Pubkey,  // the authority that owns the gatekeeper account
+    gatekeeper_account: &Pubkey,    // the account containing details of the gatekeeper that issued the gateway token
     expire_time: UnixTimestamp      // new expiry time for the accountn
 ) -> Instruction {
     Instruction::new_with_borsh(
@@ -163,8 +163,8 @@ pub fn update_expiry(
         &GatewayInstruction::UpdateExpiry { expire_time },
         vec![
             AccountMeta::new(*gateway_token, false),
-            AccountMeta::new_readonly(*gatekeeper_account, false),
             AccountMeta::new_readonly(*gatekeeper_authority, true),
+            AccountMeta::new_readonly(*gatekeeper_account, false),
         ],
     )
 }
