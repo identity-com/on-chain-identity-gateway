@@ -13,7 +13,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./solana/gatekeeper-ts
+        working-directory: ./solana/gateway-ts
 
     steps:
       - name: Checkout repo
@@ -51,7 +51,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./solana/gatekeeper-ts
+        working-directory: ./solana/gateway-ts
 
     steps:
       - name: Checkout repo
