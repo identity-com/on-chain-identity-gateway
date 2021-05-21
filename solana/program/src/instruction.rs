@@ -114,7 +114,7 @@ pub fn issue_vanilla(
 
 /// Create a `GatewayInstruction::SetState` instruction
 pub fn set_state(
-    gateway_account: &Pubkey,               // the wallet that the gateway token is issued for
+    gateway_account: &Pubkey,               // the gateway account
     gatekeeper_authority: &Pubkey,          // the authority that owns the gatekeeper account
     gatekeeper_account: &Pubkey,            // the account containing details of the gatekeeper issuing the gateway token
     gateway_token_state: GatewayTokenState  // the state of the token to transition to
