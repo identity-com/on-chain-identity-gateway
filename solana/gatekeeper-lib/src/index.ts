@@ -1,3 +1,3 @@
 export { run } from "@oclif/command";
 export * from "./service";
-export { getConnection, airdropTo, Recorder } from "./util";
+export { getConnection, airdropTo, Recorder, AuditRecord } from "./util";
