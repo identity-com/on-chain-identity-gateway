@@ -1,4 +1,10 @@
-import { AccountInfo, PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
+
+export enum State {
+  ACTIVE = "ACTIVE",
+  REVOKED = "REVOKED",
+  FROZEN = "FROZEN",
+}
 
 export type GatekeeperRecord = {
   timestamp: string;
@@ -6,7 +12,7 @@ export type GatekeeperRecord = {
   name: string;
   ipAddress: string;
   country: string;
-  approved: boolean;
+  state: State;
   selfDeclarationTextAgreedTo: string;
   document?: {
     nationality: string;
@@ -20,6 +26,7 @@ export type GatekeeperRecord = {
       year: number;
     };
   };
+  expiry?: number;
 };
 
 export type GatekeeperClientConfig = {

@@ -14,15 +14,16 @@ import {
 import { AuditRecord, PII, Recorder, RecorderFS } from "../util/record";
 import { send } from "../util/connection";
 
-const updateRecordState = async (
+const updateRecordWithToken = async (
   recorder: Recorder,
-  gatewayTokenKey: PublicKey,
-  state: State
+  gatewayToken: GatewayToken
 ): Promise<AuditRecord> => {
-  const record = await recorder.lookup(gatewayTokenKey);
+  const record = await recorder.lookup(gatewayToken.publicKey);
   console.log("existing record", record);
   if (!record)
-    throw new Error(`No Audit record found for token ${gatewayTokenKey}`);
+    throw new Error(
+      `No Audit record found for token ${gatewayToken.publicKey}`
+    );
 
   const updatedRecord = {
     timestamp: new Date().toISOString(),
@@ -31,7 +32,8 @@ const updateRecordState = async (
     ipAddress: record.ipAddress,
     country: record.country,
     selfDeclarationTextAgreedTo: record.selfDeclarationTextAgreedTo,
-    state,
+    state: gatewayToken.state,
+    expiry: gatewayToken.expiryTime,
   };
   await recorder.store(updatedRecord);
   return updatedRecord;
@@ -117,6 +119,7 @@ export class GatekeeperService {
       country: pii.ipDetails?.country || "-",
       selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || "-",
       state: gatewayToken.state,
+      expiry: gatewayToken.expiryTime,
     };
 
     await this.recorder.store(record);
@@ -142,7 +145,7 @@ export class GatekeeperService {
 
     const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+    await updateRecordWithToken(this.recorder, gatewayToken);
 
     return gatewayToken;
   }
@@ -165,7 +168,7 @@ export class GatekeeperService {
 
     const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+    await updateRecordWithToken(this.recorder, gatewayToken);
 
     return gatewayToken;
   }
@@ -188,7 +191,7 @@ export class GatekeeperService {
 
     const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+    await updateRecordWithToken(this.recorder, gatewayToken);
 
     return gatewayToken;
   }
@@ -214,7 +217,7 @@ export class GatekeeperService {
 
     const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    await updateRecordState(this.recorder, gatewayTokenKey, gatewayToken.state);
+    await updateRecordWithToken(this.recorder, gatewayToken);
 
     return gatewayToken;
   }
