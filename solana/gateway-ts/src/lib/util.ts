@@ -121,7 +121,7 @@ export const getGatewayToken = async (
   );
 };
 
-export const getGatekeeperAccout = async (
+export const getGatekeeperAccount = async (
   connection: Connection,
   gatekeeperAuthority: PublicKey
 ): Promise<GatekeeperData | null> => {
