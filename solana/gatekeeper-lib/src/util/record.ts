@@ -17,6 +17,7 @@ export type AuditRecord = {
   country: string;
   selfDeclarationTextAgreedTo: string;
   state: State;
+  expiry?: number;
 };
 
 const readRegister = () =>
