@@ -1,7 +1,7 @@
 import { homedir } from "os";
 import * as path from "path";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { GatewayToken, getGatekeeperAccout } from "../src";
+import { getGatekeeperAccount } from "../src";
 import { GatekeeperData } from "../dist/lib/GatekeeperData";
 
 const mySecretKey = require(path.join(
@@ -27,7 +27,7 @@ const prettyPrint = (gatekeeperAccount: GatekeeperData) => ({
 });
 
 (async function () {
-  const gatekeeperAccount = await getGatekeeperAccout(
+  const gatekeeperAccount = await getGatekeeperAccount(
     connection,
     gatekeeperKey
   );
