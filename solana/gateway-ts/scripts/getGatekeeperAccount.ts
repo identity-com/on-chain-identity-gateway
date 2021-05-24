@@ -1,15 +1,7 @@
-import { homedir } from "os";
-import * as path from "path";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getGatekeeperAccount } from "../src";
 import { GatekeeperData } from "../dist/lib/GatekeeperData";
 
-const mySecretKey = require(path.join(
-  homedir(),
-  ".config",
-  "solana",
-  "id.json"
-));
 // default to the civic cluster
 const endpoint =
   process.env.CLUSTER_ENDPOINT ||
