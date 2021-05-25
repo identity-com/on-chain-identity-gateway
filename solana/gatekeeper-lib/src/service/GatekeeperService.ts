@@ -16,7 +16,8 @@ import { send } from "../util/connection";
 
 const updateRecordWithToken = async (
   recorder: Recorder,
-  gatewayToken: GatewayToken
+  gatewayToken: GatewayToken,
+  additionalAuditInformation: Partial<AuditRecord> = {}
 ): Promise<AuditRecord> => {
   const record = await recorder.lookup(gatewayToken.publicKey);
   console.log("existing record", record);
@@ -34,6 +35,7 @@ const updateRecordWithToken = async (
     selfDeclarationTextAgreedTo: record.selfDeclarationTextAgreedTo,
     state: gatewayToken.state,
     expiry: gatewayToken.expiryTime,
+    ...additionalAuditInformation,
   };
   await recorder.store(updatedRecord);
   return updatedRecord;
@@ -127,7 +129,10 @@ export class GatekeeperService {
     return gatewayToken;
   }
 
-  async revoke(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
+  async revoke(
+    gatewayTokenKey: PublicKey,
+    additionalAuditInformation: Partial<AuditRecord> = {}
+  ): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
@@ -145,12 +150,19 @@ export class GatekeeperService {
 
     const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    await updateRecordWithToken(this.recorder, gatewayToken);
+    await updateRecordWithToken(
+      this.recorder,
+      gatewayToken,
+      additionalAuditInformation
+    );
 
     return gatewayToken;
   }
 
-  async freeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
+  async freeze(
+    gatewayTokenKey: PublicKey,
+    additionalAuditInformation: Partial<AuditRecord> = {}
+  ): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
@@ -168,12 +180,19 @@ export class GatekeeperService {
 
     const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    await updateRecordWithToken(this.recorder, gatewayToken);
+    await updateRecordWithToken(
+      this.recorder,
+      gatewayToken,
+      additionalAuditInformation
+    );
 
     return gatewayToken;
   }
 
-  async unfreeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
+  async unfreeze(
+    gatewayTokenKey: PublicKey,
+    additionalAuditInformation: Partial<AuditRecord> = {}
+  ): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
@@ -191,14 +210,19 @@ export class GatekeeperService {
 
     const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    await updateRecordWithToken(this.recorder, gatewayToken);
+    await updateRecordWithToken(
+      this.recorder,
+      gatewayToken,
+      additionalAuditInformation
+    );
 
     return gatewayToken;
   }
 
   async updateExpiry(
     gatewayTokenKey: PublicKey,
-    expireTime: number
+    expireTime: number,
+    additionalAuditInformation: Partial<AuditRecord> = {}
   ): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
@@ -217,7 +241,11 @@ export class GatekeeperService {
 
     const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
 
-    await updateRecordWithToken(this.recorder, gatewayToken);
+    await updateRecordWithToken(
+      this.recorder,
+      gatewayToken,
+      additionalAuditInformation
+    );
 
     return gatewayToken;
   }
