@@ -63,7 +63,7 @@ const dataToGatewayToken = (
     fromGatewayTokenState(data.state),
     publicKey,
     PROGRAM_ID,
-    data.expiry === undefined ? undefined : data.expiry.toNumber()
+    data.expiry?.toNumber()
   );
 
 export const findGatewayTokens = async (
