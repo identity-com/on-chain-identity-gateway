@@ -1,6 +1,7 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { Assignable, Enum, SCHEMA } from "./solanaBorsh";
 import { AssignablePublicKey } from "./AssignablePublicKey";
+import BN from "bn.js";
 
 /**
  * The on-chain structure of a gateway token.
@@ -17,7 +18,7 @@ export class GatewayTokenData extends Assignable {
   issuingGatekeeper!: AssignablePublicKey;
   gatekeeperNetwork!: AssignablePublicKey;
   state!: GatewayTokenState;
-  expiry?: number;
+  expiry?: BN; // u64 mapped as a hex string by Borsh
 
   static fromAccount(accountData: Buffer): GatewayTokenData {
     return GatewayTokenData.decode<GatewayTokenData>(accountData);
