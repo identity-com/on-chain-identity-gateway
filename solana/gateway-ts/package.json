@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/solana-gateway-ts",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Typescript adapters for interacting with Solana gateway program",
   "main": "dist/index",
   "types": "dist/index",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.11.0",
+    "bn.js": "^5.2.0",
     "borsh": "^0.4.0"
   },
   "devDependencies": {
