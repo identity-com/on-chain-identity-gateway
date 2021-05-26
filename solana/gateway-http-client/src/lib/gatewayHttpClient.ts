@@ -1,15 +1,23 @@
-import { PublicKey } from "@solana/web3.js";
-import axios, { AxiosResponse } from "axios";
+import { prove } from "@identity.com/prove-solana-wallet";
+import { PublicKey, Transaction } from "@solana/web3.js";
+import axios, { AxiosResponse, Method } from "axios";
 import {
-  AirdropRequest,
   GatekeeperClientConfig,
   GatekeeperClientInterface,
   GatekeeperRecord,
-  GatekeeperRequest,
   GatekeeperResponse,
-  ServerTokenRequest,
-  TokenCreationRequest,
+  RefreshTokenRequest,
+  CreateTokenRequest,
+  CreateTokenRequestBody,
+  AirdropRequestBody,
+  RefreshTokenRequestBody,
+  GatekeeperRequestBody,
 } from "../types";
+
+export type SignCallback = (transaction: Transaction) => Promise<Transaction>;
+
+const proveWalletOwnership = (key: PublicKey, signCallback: SignCallback) =>
+  prove(key, signCallback).then((buffer) => buffer.toString("base64"));
 
 const errorMessageFromResponse = (
   response: AxiosResponse
@@ -31,21 +39,22 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     return this.config.baseUrl;
   }
 
-  get headers(): Record<string, string> {
-    return this.config.headers || {};
+  get headers(): Record<string, string> | undefined {
+    return this.config.headers;
   }
 
-  async postGatekeeperServer<
-    T extends GatekeeperRequest,
+  async callGatekeeper<
+    T extends GatekeeperRequestBody,
     U extends GatekeeperResponse
-  >(body: T, path = ""): Promise<U> {
+  >(method: Method, body: T, path = ""): Promise<U> {
     try {
-      const postResponse = await axios.post(
-        `${this.baseUrl}${path}`,
-        body,
-        this.headers ? { headers: this.headers } : {}
-      );
-      return postResponse.data;
+      const respose = await axios.request({
+        method,
+        url: `${this.baseUrl}${path}`,
+        data: body,
+        ...(this.headers ? { headers: this.headers } : {}),
+      });
+      return respose.data;
     } catch (error) {
       if (error.response)
         throw new Error(errorMessageFromResponse(error.response));
@@ -60,29 +69,33 @@ export class GatekeeperClient implements GatekeeperClientInterface {
    * @param {PublicKey} walletPublicKey
    * @param {string} [selfDeclarationTextAgreedTo] - the text that a user had to agree to in order to call createGatewayToken
    * @param {string} [presentationRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
+   * @param {SignCallback} signer A signer callback, used to prove ownership of the wallet public key
    */
   async createGatewayToken({
     walletPublicKey,
     selfDeclarationTextAgreedTo,
     presentationRequestId,
-  }: TokenCreationRequest): Promise<GatekeeperRecord> {
-    if (!walletPublicKey && !presentationRequestId)
-      throw new Error(
-        "walletPublicKey or a presentationRequestId must be provided in the token creation request"
-      );
+    signer,
+  }: CreateTokenRequest): Promise<GatekeeperRecord> {
+    // produce a signature that proves ownership of a wallet
+    const proof = await proveWalletOwnership(walletPublicKey, signer);
 
+    // We only pass the wallet public key as part of the request if
+    // it was not passed as part of the presentation.
     const body = presentationRequestId
       ? { presentationRequestId }
-      : { address: walletPublicKey?.toBase58() };
+      : { address: walletPublicKey.toBase58() };
     const gatewayTokenCreationRequest = {
       ...body,
+      proof,
       ...(selfDeclarationTextAgreedTo ? { selfDeclarationTextAgreedTo } : {}),
     };
     console.log(
       "Requesting a new gatekeeper token...",
       gatewayTokenCreationRequest
     );
-    return this.postGatekeeperServer<ServerTokenRequest, GatekeeperRecord>(
+    return this.callGatekeeper<CreateTokenRequestBody, GatekeeperRecord>(
+      "POST",
       gatewayTokenCreationRequest
     );
   }
@@ -90,12 +103,18 @@ export class GatekeeperClient implements GatekeeperClientInterface {
   /**
    * This function refreshes the token by extending the expiration of the token
    *
-   * @param {string} token
+   * @param request
    */
-  async refreshGatewayToken(token: string): Promise<void> {
+  async refreshGatewayToken(request: RefreshTokenRequest): Promise<void> {
     try {
-      console.log(`${this.baseUrl}/${token}/refresh`);
-      await axios.patch(`${this.baseUrl}/${token}/refresh`);
+      // produce a signature that proves ownership of a wallet
+      const proof = await proveWalletOwnership(request.wallet, request.signer);
+
+      await this.callGatekeeper<RefreshTokenRequestBody, GatekeeperResponse>(
+        "PATCH",
+        { proof },
+        `/${request.token.toBase58()}/refresh`
+      );
     } catch (error) {
       if (error.response)
         throw new Error(errorMessageFromResponse(error.response));
@@ -116,7 +135,8 @@ export class GatekeeperClient implements GatekeeperClientInterface {
 
   async requestAirdrop(walletPublicKey: PublicKey): Promise<void> {
     console.log(`Requesting airdrop to key ${walletPublicKey.toBase58()}...`);
-    await this.postGatekeeperServer<AirdropRequest, null>(
+    await this.callGatekeeper<AirdropRequestBody, null>(
+      "POST",
       { address: walletPublicKey.toBase58() },
       "/airdrop"
     );

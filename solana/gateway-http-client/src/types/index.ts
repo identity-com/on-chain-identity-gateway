@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import { SignCallback } from "../lib/gatewayHttpClient";
 
 export enum State {
   ACTIVE = "ACTIVE",
@@ -34,31 +35,43 @@ export type GatekeeperClientConfig = {
   headers?: Record<string, string>;
 };
 
-export type TokenCreationRequest = {
-  walletPublicKey?: PublicKey;
+export type CreateTokenRequest = {
+  walletPublicKey: PublicKey;
   selfDeclarationTextAgreedTo?: string;
   presentationRequestId?: string;
+  signer: SignCallback;
 };
 
-export type ServerTokenRequest = {
-  scopeRequest?: string;
-  address?: string;
-  selfDeclarationTextAgreedTo?: string;
+export type RefreshTokenRequest = {
+  token: PublicKey;
+  wallet: PublicKey;
+  signer: SignCallback;
 };
 
 export interface GatekeeperClientInterface {
-  createGatewayToken(
-    tokenCreationRequest: ServerTokenRequest
-  ): Promise<GatekeeperRecord>;
+  createGatewayToken(request: CreateTokenRequest): Promise<GatekeeperRecord>;
   auditGatewayToken(token: string): Promise<GatekeeperRecord | null>;
-  refreshGatewayToken(token: string): Promise<void>;
+  refreshGatewayToken(request: RefreshTokenRequest): Promise<void>;
   requestAirdrop(walletPublicKey: PublicKey): Promise<void>;
 }
 
-export type AirdropRequest = {
+// Gatekeeper I/O objects
+export type AirdropRequestBody = {
   address: string;
 };
-export type GatekeeperRequest = ServerTokenRequest | AirdropRequest;
+export type RefreshTokenRequestBody = {
+  proof: string;
+};
+export type CreateTokenRequestBody = {
+  scopeRequest?: string;
+  address?: string;
+  selfDeclarationTextAgreedTo?: string;
+  proof: string;
+};
+export type GatekeeperRequestBody =
+  | CreateTokenRequestBody
+  | AirdropRequestBody
+  | RefreshTokenRequestBody;
 export type GatekeeperResponse =
   | GatekeeperRecord
   | null

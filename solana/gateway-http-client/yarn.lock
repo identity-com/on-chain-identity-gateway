@@ -231,6 +231,13 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
+"@identity.com/prove-solana-wallet@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@identity.com/prove-solana-wallet/-/prove-solana-wallet-0.1.4.tgz#e42139855a75367f5750d2fc5a078a7f211fbad6"
+  integrity sha512-XQd/j6Qy/+cpdE/D8MwSAx50Dk/A1AfaEOkiSa0vtfz0XWKqI9ml46VlbmrAddIGlxIbWc8eWTXJyLP+Uw42vQ==
+  dependencies:
+    "@solana/web3.js" "^1.14.0"
+
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"
@@ -318,6 +325,26 @@
   version "1.12.0"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.12.0.tgz#c2ecf4b1c677a8881c698871537ae7bfc7cae7b6"
   integrity sha512-0jb7EDeocFKQOumScE9Rj4Lry5oVpBap4oGPG2yE3n7Dz4nhFUoEjDbhwEliN75M/4wJV69aPHIm2ZPeJ9rUsQ==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+    bn.js "^5.0.0"
+    borsh "^0.4.0"
+    bs58 "^4.0.1"
+    buffer "6.0.1"
+    buffer-layout "^1.2.0"
+    crypto-hash "^1.2.2"
+    jayson "^3.4.4"
+    js-sha3 "^0.8.0"
+    node-fetch "^2.6.1"
+    rpc-websockets "^7.4.2"
+    secp256k1 "^4.0.2"
+    superstruct "^0.14.2"
+    tweetnacl "^1.0.0"
+
+"@solana/web3.js@^1.14.0":
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.14.0.tgz#6bda2a4ab4fc1dd825769d910c8c303243d998ed"
+  integrity sha512-CtGvJQbhUR6mNOGUYX3f0XJCgW2c5UM7pL8MZbv7Pc6vflh+hiKBd1vzi8HvBr9dKhyNDvq7jHgZ6zezz0y9Cw==
   dependencies:
     "@babel/runtime" "^7.12.5"
     bn.js "^5.0.0"
