@@ -88,8 +88,7 @@ export class GatekeeperClient implements GatekeeperClientInterface {
   }
 
   /**
-   * This function refreshes the token by extends the expiration of the token if the token is soon to expire
-   * If called and a gateway token already exists for this wallet, it will throw an exception
+   * This function refreshes the token by extending the expiration of the token
    *
    * @param {string} token
    */
