@@ -323,18 +323,6 @@ describe("GatekeeperClient", () => {
       expectation.verify();
     });
 
-    it("should return a successful response", async () => {
-      const token = "test_token";
-      const expectedResponse = { status: "ok" };
-      sandbox
-        .stub(axios, "patch")
-        .withArgs(`${baseUrl}/${token}/refresh`)
-        .resolves({ status: 200, data: expectedResponse });
-
-      const refreshTokenResponse = await gatekeeperClientInst.refreshGatewayToken(token);
-      expect(refreshTokenResponse).to.deep.eq(expectedResponse);
-    });
-
     it("should throw an error with statusText if present", () => {
       const statusText = "server error";
       const token = "test_token";

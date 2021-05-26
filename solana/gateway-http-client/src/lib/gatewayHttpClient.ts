@@ -95,10 +95,7 @@ export class GatekeeperClient implements GatekeeperClientInterface {
   async refreshGatewayToken(token: string): Promise<void> {
     try {
       console.log(`${this.baseUrl}/${token}/refresh`);
-      const patchResponse = await axios.patch(
-        `${this.baseUrl}/${token}/refresh`
-      );
-      return patchResponse.data;
+      await axios.patch(`${this.baseUrl}/${token}/refresh`);
     } catch (error) {
       if (error.response)
         throw new Error(errorMessageFromResponse(error.response));
