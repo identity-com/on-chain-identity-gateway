@@ -51,6 +51,7 @@ export interface GatekeeperClientInterface {
     tokenCreationRequest: ServerTokenRequest
   ): Promise<GatekeeperRecord>;
   auditGatewayToken(token: string): Promise<GatekeeperRecord | null>;
+  refreshGatewayToken(token: string): Promise<void>;
   requestAirdrop(walletPublicKey: PublicKey): Promise<void>;
 }
 
