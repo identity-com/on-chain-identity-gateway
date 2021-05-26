@@ -87,6 +87,26 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     );
   }
 
+  /**
+   * This function refreshes the token by extends the expiration of the token if the token is soon to expire
+   * If called and a gateway token already exists for this wallet, it will throw an exception
+   *
+   * @param {string} token
+   */
+  async refreshGatewayToken(token: string): Promise<void> {
+    try {
+      console.log(`${this.baseUrl}/${token}/refresh`);
+      const patchResponse = await axios.patch(
+        `${this.baseUrl}/${token}/refresh`
+      );
+      return patchResponse.data;
+    } catch (error) {
+      if (error.response)
+        throw new Error(errorMessageFromResponse(error.response));
+      throw error;
+    }
+  }
+
   async auditGatewayToken(token: string): Promise<GatekeeperRecord | null> {
     try {
       const getResponse = await axios.get(`${this.baseUrl}/${token}`);
