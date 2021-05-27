@@ -1,50 +1,48 @@
-import {Account, Connection, PublicKey, SystemProgram, Transaction} from '@solana/web3.js'
-import {AccountLayout, Token, TOKEN_PROGRAM_ID} from '@solana/spl-token'
-import * as geoip from 'geoip-country'
-import {Recorder, RecorderFS} from '../util/record'
-
-const COUNTRY_BLACKLIST = ['US']
-
-const ipLookup = (ip: string) => geoip.lookup(ip)
-const validIp = (ip: string) => {
-  const ipDetails = ipLookup(ip)
-  return (ipDetails && !COUNTRY_BLACKLIST.includes(ipDetails.country))
-}
+import {
+  Keypair,
+  Connection,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
+import { AccountLayout, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Recorder, RecorderFS } from "../util/record";
+import { State } from "@identity.com/solana-gateway-ts";
 
 export type PII = {
   name?: string;
   ipAddress?: string;
   selfDeclarationTextAgreedTo?: string;
-} & Record<string, any>
+} & Record<string, any>;
 
+// TODO remove deprecated service
 export class IssueService {
-  constructor(private connection: Connection, private gatekeeper: Account, private mintAccountPublicKey: PublicKey, private recorder: Recorder = new RecorderFS())  {}
+  constructor(
+    private connection: Connection,
+    private gatekeeper: Keypair,
+    private mintAccountPublicKey: PublicKey,
+    private recorder: Recorder = new RecorderFS()
+  ) {}
 
-  async issue(recipient: PublicKey, pii: PII, checkIp: boolean = false) {
+  async issue(recipient: PublicKey, pii: PII, checkIp = false) {
     console.log("Getting min balance for new account");
-    const accountBalanceNeeded = await Token.getMinBalanceRentForExemptAccount(this.connection)
+    const accountBalanceNeeded = await Token.getMinBalanceRentForExemptAccount(
+      this.connection
+    );
 
-    console.log('this.mintAccountPublicKey', this.mintAccountPublicKey)
-    const recipientTokenAccount = new Account()
-
-    const ipDetails = pii.ipAddress ? ipLookup(pii.ipAddress) : null
-    const approved = (pii.ipAddress && (!checkIp || validIp(pii.ipAddress))) || false;
+    console.log("this.mintAccountPublicKey", this.mintAccountPublicKey);
+    const recipientTokenAccount = Keypair.generate();
 
     const record = {
       timestamp: new Date().toISOString(),
       token: recipientTokenAccount.publicKey.toBase58(),
       ...pii,
-      name: pii.name || '-',
-      ipAddress: pii.ipAddress || '-',
-      country: ipDetails?.country || '-',
-      approved,
-      selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || '-',
-    }
-
-    if (!record.approved) {
-      console.log(record)
-      throw new Error('Blocked IP ' + pii.ipAddress)
-    }
+      name: pii.name || "-",
+      ipAddress: pii.ipDetails?.ipAddress || "-",
+      country: pii.ipDetails?.country || "-",
+      selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || "-",
+      state: State.ACTIVE,
+    };
 
     const storeRecordPromise = this.recorder.store(record);
 
@@ -54,24 +52,39 @@ export class IssueService {
       lamports: accountBalanceNeeded,
       space: AccountLayout.span,
       programId: TOKEN_PROGRAM_ID,
-    })
+    });
 
-    const initAccount = Token.createInitAccountInstruction(TOKEN_PROGRAM_ID, this.mintAccountPublicKey, recipientTokenAccount.publicKey, recipient)
-    const mintTo = Token.createMintToInstruction(TOKEN_PROGRAM_ID, this.mintAccountPublicKey, recipientTokenAccount.publicKey, this.gatekeeper.publicKey, [], 1)
+    const initAccount = Token.createInitAccountInstruction(
+      TOKEN_PROGRAM_ID,
+      this.mintAccountPublicKey,
+      recipientTokenAccount.publicKey,
+      recipient
+    );
+    const mintTo = Token.createMintToInstruction(
+      TOKEN_PROGRAM_ID,
+      this.mintAccountPublicKey,
+      recipientTokenAccount.publicKey,
+      this.gatekeeper.publicKey,
+      [],
+      1
+    );
     const transaction = new Transaction().add(
       createTokenAccount,
       initAccount,
       mintTo
-    )
+    );
 
     console.log("Sending tx");
-    const txSignature = await this.connection.sendTransaction(transaction, [this.gatekeeper, recipientTokenAccount])
+    const txSignature = await this.connection.sendTransaction(transaction, [
+      this.gatekeeper,
+      recipientTokenAccount,
+    ]);
     console.log("Waiting for tx to confirm");
-    await this.connection.confirmTransaction(txSignature)
+    await this.connection.confirmTransaction(txSignature);
     console.log("TX confirmed");
 
-    await storeRecordPromise
+    await storeRecordPromise;
 
-    return record
+    return record;
   }
 }
