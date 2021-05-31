@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ ociv COMMAND
 running command...
 $ ociv (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.0.5 darwin-x64 node-v16.0.0
+@identity.com/solana-gatekeeper-lib/1.0.12 darwin-x64 node-v16.0.0
 $ ociv --help [COMMAND]
 USAGE
   $ ociv COMMAND
@@ -60,7 +60,7 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/audit.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.5/dist/commands/audit.ts)_
+_See code: [dist/commands/audit.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.12/dist/commands/audit.ts)_
 
 ## `ociv help [COMMAND]`
 
@@ -100,7 +100,7 @@ EXAMPLE
   2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.5/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.12/dist/commands/issue.ts)_
 
 ## `ociv revoke GATEWAYTOKEN`
 
@@ -121,7 +121,7 @@ EXAMPLE
   Revoked
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.5/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.12/dist/commands/revoke.ts)_
 
 ## `ociv verify GATEWAYTOKEN`
 
@@ -146,5 +146,5 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.5/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.12/dist/commands/verify.ts)_
 <!-- commandsstop -->
