@@ -7,6 +7,7 @@ import {
 } from "./constants";
 import { GatewayToken, ProgramAccountResponse, State } from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
+import { GatekeeperData } from "./GatekeeperData";
 
 export const getGatekeeperAccountKeyFromGatekeeperAuthority = async (
   authority: PublicKey
@@ -62,7 +63,7 @@ const dataToGatewayToken = (
     fromGatewayTokenState(data.state),
     publicKey,
     PROGRAM_ID,
-    data.expiry
+    data.expiry?.toNumber()
   );
 
 export const findGatewayTokens = async (
@@ -118,4 +119,20 @@ export const getGatewayToken = async (
     GatewayTokenData.fromAccount(account.data),
     gatewayTokenAddress
   );
+};
+
+export const getGatekeeperAccount = async (
+  connection: Connection,
+  gatekeeperAuthority: PublicKey
+): Promise<GatekeeperData | null> => {
+  const gatekeeperAccount =
+    await getGatekeeperAccountKeyFromGatekeeperAuthority(gatekeeperAuthority);
+  const account = await connection.getAccountInfo(
+    gatekeeperAccount,
+    SOLANA_COMMITMENT
+  );
+
+  if (!account) return null;
+
+  return GatekeeperData.fromAccount(account.data);
 };

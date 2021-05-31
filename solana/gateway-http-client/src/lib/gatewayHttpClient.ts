@@ -87,6 +87,22 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     );
   }
 
+  /**
+   * This function refreshes the token by extending the expiration of the token
+   *
+   * @param {string} token
+   */
+  async refreshGatewayToken(token: string): Promise<void> {
+    try {
+      console.log(`${this.baseUrl}/${token}/refresh`);
+      await axios.patch(`${this.baseUrl}/${token}/refresh`);
+    } catch (error) {
+      if (error.response)
+        throw new Error(errorMessageFromResponse(error.response));
+      throw error;
+    }
+  }
+
   async auditGatewayToken(token: string): Promise<GatekeeperRecord | null> {
     try {
       const getResponse = await axios.get(`${this.baseUrl}/${token}`);

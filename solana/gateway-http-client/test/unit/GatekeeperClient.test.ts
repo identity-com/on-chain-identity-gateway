@@ -5,7 +5,7 @@ import chaiAsPromised from "chai-as-promised";
 import sinonChai from "sinon-chai";
 import axios from "axios";
 import { GatekeeperClient } from "../../src";
-import { GatekeeperRecord } from "../../src/types";
+import { GatekeeperRecord, State } from "../../src/types";
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -217,13 +217,13 @@ describe("GatekeeperClient", () => {
     let gatekeeperRecord: GatekeeperRecord;
     beforeEach(() => {
       gatekeeperRecord = {
-        approved: true,
         country: "IE",
         ipAddress: "123",
         name: "test",
         timestamp: new Date().toISOString(),
         token: "test_token",
         selfDeclarationTextAgreedTo: "",
+        state: State.ACTIVE,
       };
       baseUrl = "test_baseUrl";
       gatekeeperClientInst = new GatekeeperClient({ baseUrl });
@@ -299,6 +299,75 @@ describe("GatekeeperClient", () => {
           ).rejectedWith(error.message);
         });
       });
+    });
+  });
+
+  context("refreshGatewayToken", () => {
+    let gatekeeperClientInst: GatekeeperClient;
+    let baseUrl: string;
+
+    beforeEach(() => {
+      baseUrl = "test_baseUrl";
+      gatekeeperClientInst = new GatekeeperClient({ baseUrl });
+    });
+
+    it("should do a server lookup using the token in the path", async () => {
+      const token = "test_token";
+      const expectation = sandbox
+        .mock(axios)
+        .expects("patch")
+        .withArgs(`${baseUrl}/${token}/refresh`);
+
+      expectation.resolves({ status: 200 });
+      await gatekeeperClientInst.refreshGatewayToken(token);
+      expectation.verify();
+    });
+
+    it("should throw an error with statusText if present", () => {
+      const statusText = "server error";
+      const token = "test_token";
+      const serverResponse = {
+        response: { status: 500, statusText, data: {} },
+      };
+      sandbox
+        .stub(axios, "patch")
+        .withArgs(`${baseUrl}/${token}/refresh`)
+        .rejects(serverResponse);
+      return expect(
+        gatekeeperClientInst.refreshGatewayToken(token)
+      ).rejectedWith(statusText);
+    });
+
+    it("data error message should take precedence over statusText if both are present", () => {
+      const statusText = "server error";
+      const token = "test_token";
+      const dataErrorMessage = "refresh error";
+      const serverResponse = {
+        response: {
+          status: 500,
+          statusText,
+          data: { message: dataErrorMessage },
+        },
+      };
+      sandbox
+        .stub(axios, "patch")
+        .withArgs(`${baseUrl}/${token}/refresh`)
+        .rejects(serverResponse);
+      return expect(
+        gatekeeperClientInst.refreshGatewayToken(token)
+      ).rejectedWith(dataErrorMessage);
+    });
+
+    it("should return a normal error if no data or response are present", () => {
+      const error = new Error("server error");
+      const token = "test_token";
+      sandbox
+        .stub(axios, "patch")
+        .withArgs(`${baseUrl}/${token}/refresh`)
+        .rejects(error);
+      return expect(
+        gatekeeperClientInst.refreshGatewayToken(token)
+      ).rejectedWith(error.message);
     });
   });
 
