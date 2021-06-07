@@ -1,11 +1,11 @@
 import chai from "chai";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import * as sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import sinonChai from "sinon-chai";
 import axios from "axios";
-import { GatekeeperClient } from "../../src";
-import { GatekeeperRecord, State } from "../../src/types";
+import { GatekeeperClient, GatekeeperRecord, State } from "../../src";
+import { SignCallback } from "@identity.com/prove-solana-wallet";
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -13,8 +13,22 @@ const { expect } = chai;
 const selfDeclarationTextAgreedTo = "test_selfDeclarationTextAgreedTo";
 const sandbox = sinon.createSandbox();
 const presentationRequestId = "test_presentationRequestId";
+
 describe("GatekeeperClient", () => {
+  let walletPublicKey: PublicKey;
+  let signer: SignCallback;
+
+  beforeEach(() => {
+    const wallet = Keypair.generate();
+    walletPublicKey = wallet.publicKey;
+    signer = async (transaction: Transaction) => {
+      transaction.sign(wallet);
+      return transaction;
+    };
+  });
+
   afterEach(sandbox.restore);
+
   context("constructor", () => {
     it("should add config as an instance variable", () => {
       const baseUrl = "test_baseUrl";
@@ -43,44 +57,43 @@ describe("GatekeeperClient", () => {
   context("createGatewayToken", () => {
     let gatekeeperClientInst: GatekeeperClient;
     let baseUrl: string;
-    let walletPublicKey: PublicKey;
 
     beforeEach(() => {
-      walletPublicKey = Keypair.generate().publicKey;
       baseUrl = "test_baseUrl";
       gatekeeperClientInst = new GatekeeperClient({ baseUrl });
-    });
-
-    context("with bad parameters passed", () => {
-      it("should throw an error if neither a walletPublicKey or a presentationRequestId are passed", () => {
-        return expect(
-          gatekeeperClientInst.createGatewayToken({
-            selfDeclarationTextAgreedTo,
-          })
-        ).to.rejectedWith(
-          "walletPublicKey or a presentationRequestId must be provided in the token creation request"
-        );
-      });
     });
 
     context("with only the walletPublicKey passed", () => {
       it("should call post with an address param", async () => {
         const expectation = sandbox
           .mock(axios)
-          .expects("post")
-          .withArgs(`${baseUrl}`, { address: walletPublicKey.toBase58() });
+          .expects("request")
+          .withArgs({
+            method: "POST",
+            url: `${baseUrl}`,
+            data: {
+              address: walletPublicKey.toBase58(),
+              proof: sinon.match.string,
+            },
+          });
 
         expectation.resolves({ status: 200 });
-        await gatekeeperClientInst.createGatewayToken({ walletPublicKey });
+        await gatekeeperClientInst.createGatewayToken({
+          walletPublicKey,
+          signer,
+        });
         expectation.verify();
       });
 
       it("should return response from server", async () => {
         const data = { test: "test" };
         const serverResponse = { status: 200, data };
-        sandbox.stub(axios, "post").resolves(serverResponse);
+        sandbox.stub(axios, "request").resolves(serverResponse);
         const createGatewayTokenResponse =
-          await gatekeeperClientInst.createGatewayToken({ walletPublicKey });
+          await gatekeeperClientInst.createGatewayToken({
+            walletPublicKey,
+            signer,
+          });
         expect(createGatewayTokenResponse).deep.eq(data);
       });
     });
@@ -89,16 +102,22 @@ describe("GatekeeperClient", () => {
       it("should call post with an address param", async () => {
         const expectation = sandbox
           .mock(axios)
-          .expects("post")
-          .withArgs(`${baseUrl}`, {
-            selfDeclarationTextAgreedTo,
-            address: walletPublicKey.toBase58(),
+          .expects("request")
+          .withArgs({
+            method: "POST",
+            url: `${baseUrl}`,
+            data: {
+              selfDeclarationTextAgreedTo,
+              address: walletPublicKey.toBase58(),
+              proof: sinon.match.string,
+            },
           });
 
         expectation.resolves({ status: 200 });
         await gatekeeperClientInst.createGatewayToken({
           walletPublicKey,
           selfDeclarationTextAgreedTo,
+          signer,
         });
         expectation.verify();
       });
@@ -107,16 +126,22 @@ describe("GatekeeperClient", () => {
         const data = { test: "test" };
         const serverResponse = { status: 200, data };
         sandbox
-          .stub(axios, "post")
-          .withArgs(`${baseUrl}`, {
-            selfDeclarationTextAgreedTo,
-            address: walletPublicKey.toBase58(),
+          .stub(axios, "request")
+          .withArgs({
+            method: "POST",
+            url: `${baseUrl}`,
+            data: {
+              selfDeclarationTextAgreedTo,
+              address: walletPublicKey.toBase58(),
+              proof: sinon.match.string,
+            },
           })
           .resolves(serverResponse);
         const createGatewayTokenResponse =
           await gatekeeperClientInst.createGatewayToken({
             walletPublicKey,
             selfDeclarationTextAgreedTo,
+            signer,
           });
         expect(createGatewayTokenResponse).deep.eq(data);
       });
@@ -126,13 +151,21 @@ describe("GatekeeperClient", () => {
       it("should call post with a presentationRequestId param", async () => {
         const expectation = sandbox
           .mock(axios)
-          .expects("post")
-          .withArgs(`${baseUrl}`, { presentationRequestId });
+          .expects("request")
+          .withArgs({
+            method: "POST",
+            url: `${baseUrl}`,
+            data: {
+              presentationRequestId,
+              proof: sinon.match.string,
+            },
+          });
 
         expectation.resolves({ status: 200 });
         await gatekeeperClientInst.createGatewayToken({
           walletPublicKey,
           presentationRequestId,
+          signer,
         });
         expectation.verify();
       });
@@ -141,13 +174,21 @@ describe("GatekeeperClient", () => {
         const data = { test: "test" };
         const serverResponse = { status: 200, data };
         sandbox
-          .stub(axios, "post")
-          .withArgs(`${baseUrl}`, { presentationRequestId })
+          .stub(axios, "request")
+          .withArgs({
+            method: "POST",
+            url: `${baseUrl}`,
+            data: {
+              presentationRequestId,
+              proof: sinon.match.string,
+            },
+          })
           .resolves(serverResponse);
         const createGatewayTokenResponse =
           await gatekeeperClientInst.createGatewayToken({
             walletPublicKey,
             presentationRequestId,
+            signer,
           });
         expect(createGatewayTokenResponse).deep.eq(data);
       });
@@ -161,13 +202,21 @@ describe("GatekeeperClient", () => {
             response: { status: 500, statusText, data: {} },
           };
           sandbox
-            .stub(axios, "post")
-            .withArgs(`${baseUrl}`, { presentationRequestId })
+            .stub(axios, "request")
+            .withArgs({
+              method: "POST",
+              url: `${baseUrl}`,
+              data: {
+                presentationRequestId,
+                proof: sinon.match.string,
+              },
+            })
             .rejects(serverResponse);
           return expect(
             gatekeeperClientInst.createGatewayToken({
               walletPublicKey,
               presentationRequestId,
+              signer,
             })
           ).rejectedWith(statusText);
         });
@@ -183,13 +232,21 @@ describe("GatekeeperClient", () => {
             },
           };
           sandbox
-            .stub(axios, "post")
-            .withArgs(`${baseUrl}`, { presentationRequestId })
+            .stub(axios, "request")
+            .withArgs({
+              method: "POST",
+              url: `${baseUrl}`,
+              data: {
+                presentationRequestId,
+                proof: sinon.match.string,
+              },
+            })
             .rejects(serverResponse);
           return expect(
             gatekeeperClientInst.createGatewayToken({
               walletPublicKey,
               presentationRequestId,
+              signer,
             })
           ).rejectedWith(dataErrorMessage);
         });
@@ -197,13 +254,21 @@ describe("GatekeeperClient", () => {
         it("should return a normal error if no data or response are present", () => {
           const error = new Error("server error");
           sandbox
-            .stub(axios, "post")
-            .withArgs(`${baseUrl}`, { presentationRequestId })
+            .stub(axios, "request")
+            .withArgs({
+              method: "POST",
+              url: `${baseUrl}`,
+              data: {
+                presentationRequestId,
+                proof: sinon.match.string,
+              },
+            })
             .rejects(error);
           return expect(
             gatekeeperClientInst.createGatewayToken({
               walletPublicKey,
               presentationRequestId,
+              signer,
             })
           ).rejectedWith(error.message);
         });
@@ -304,43 +369,61 @@ describe("GatekeeperClient", () => {
 
   context("refreshGatewayToken", () => {
     let gatekeeperClientInst: GatekeeperClient;
-    let baseUrl: string;
+    const baseUrl = "test_baseUrl";
+    const token = Keypair.generate().publicKey;
+    const refreshUrl = `${baseUrl}/${token.toBase58()}/refresh`;
 
     beforeEach(() => {
-      baseUrl = "test_baseUrl";
       gatekeeperClientInst = new GatekeeperClient({ baseUrl });
     });
 
-    it("should do a server lookup using the token in the path", async () => {
-      const token = "test_token";
+    it("should call the refresh endpoint with the token in the path", async () => {
       const expectation = sandbox
         .mock(axios)
-        .expects("patch")
-        .withArgs(`${baseUrl}/${token}/refresh`);
+        .expects("request")
+        .withArgs({
+          method: "PATCH",
+          url: refreshUrl,
+          data: {
+            proof: sinon.match.string,
+          },
+        });
 
       expectation.resolves({ status: 200 });
-      await gatekeeperClientInst.refreshGatewayToken(token);
+      await gatekeeperClientInst.refreshGatewayToken({
+        token,
+        wallet: walletPublicKey,
+        signer,
+      });
       expectation.verify();
     });
 
     it("should throw an error with statusText if present", () => {
       const statusText = "server error";
-      const token = "test_token";
       const serverResponse = {
         response: { status: 500, statusText, data: {} },
       };
       sandbox
-        .stub(axios, "patch")
-        .withArgs(`${baseUrl}/${token}/refresh`)
+        .stub(axios, "request")
+        .withArgs({
+          method: "PATCH",
+          url: refreshUrl,
+          data: {
+            proof: sinon.match.string,
+          },
+        })
         .rejects(serverResponse);
       return expect(
-        gatekeeperClientInst.refreshGatewayToken(token)
+        gatekeeperClientInst.refreshGatewayToken({
+          token,
+          wallet: walletPublicKey,
+          signer,
+        })
       ).rejectedWith(statusText);
     });
 
     it("data error message should take precedence over statusText if both are present", () => {
       const statusText = "server error";
-      const token = "test_token";
       const dataErrorMessage = "refresh error";
       const serverResponse = {
         response: {
@@ -350,23 +433,42 @@ describe("GatekeeperClient", () => {
         },
       };
       sandbox
-        .stub(axios, "patch")
-        .withArgs(`${baseUrl}/${token}/refresh`)
+        .stub(axios, "request")
+        .withArgs({
+          method: "PATCH",
+          url: refreshUrl,
+          data: {
+            proof: sinon.match.string,
+          },
+        })
         .rejects(serverResponse);
       return expect(
-        gatekeeperClientInst.refreshGatewayToken(token)
+        gatekeeperClientInst.refreshGatewayToken({
+          token,
+          wallet: walletPublicKey,
+          signer,
+        })
       ).rejectedWith(dataErrorMessage);
     });
 
     it("should return a normal error if no data or response are present", () => {
       const error = new Error("server error");
-      const token = "test_token";
       sandbox
-        .stub(axios, "patch")
-        .withArgs(`${baseUrl}/${token}/refresh`)
+        .stub(axios, "request")
+        .withArgs({
+          method: "PATCH",
+          url: refreshUrl,
+          data: {
+            proof: sinon.match.string,
+          },
+        })
         .rejects(error);
       return expect(
-        gatekeeperClientInst.refreshGatewayToken(token)
+        gatekeeperClientInst.refreshGatewayToken({
+          token,
+          wallet: walletPublicKey,
+          signer,
+        })
       ).rejectedWith(error.message);
     });
   });
@@ -385,9 +487,13 @@ describe("GatekeeperClient", () => {
     it("should make a server POST request using the wallet public key", async () => {
       const expectation = sandbox
         .mock(axios)
-        .expects("post")
-        .withArgs(`${baseUrl}/airdrop`, {
-          address: walletPublicKey.toBase58(),
+        .expects("request")
+        .withArgs({
+          method: "POST",
+          url: `${baseUrl}/airdrop`,
+          data: {
+            address: walletPublicKey.toBase58(),
+          },
         });
 
       expectation.resolves({ status: 200 });
@@ -398,8 +504,14 @@ describe("GatekeeperClient", () => {
     it("should return undefined", async () => {
       const serverResponse = { status: 200 };
       sandbox
-        .stub(axios, "post")
-        .withArgs(`${baseUrl}/airdrop`, { address: walletPublicKey.toBase58() })
+        .stub(axios, "request")
+        .withArgs({
+          method: "POST",
+          url: `${baseUrl}/airdrop`,
+          data: {
+            address: walletPublicKey.toBase58(),
+          },
+        })
         .resolves(serverResponse);
 
       const requestAirdropResponse = await gatekeeperClientInst.requestAirdrop(

@@ -28,11 +28,14 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`ociv audit GATEWAYTOKEN`](#ociv-audit-gatewaytoken)
-* [`ociv help [COMMAND]`](#ociv-help-command)
-* [`ociv issue ADDRESS`](#ociv-issue-address)
-* [`ociv revoke GATEWAYTOKEN`](#ociv-revoke-gatewaytoken)
-* [`ociv verify GATEWAYTOKEN`](#ociv-verify-gatewaytoken)
+- [gatekeeper-lib](#gatekeeper-lib)
+- [Usage](#usage)
+- [Commands](#commands)
+  - [`ociv audit GATEWAYTOKEN`](#ociv-audit-gatewaytoken)
+  - [`ociv help [COMMAND]`](#ociv-help-command)
+  - [`ociv issue ADDRESS`](#ociv-issue-address)
+  - [`ociv revoke GATEWAYTOKEN`](#ociv-revoke-gatewaytoken)
+  - [`ociv verify GATEWAYTOKEN`](#ociv-verify-gatewaytoken)
 
 ## `ociv audit GATEWAYTOKEN`
 
