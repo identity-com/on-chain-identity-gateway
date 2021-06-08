@@ -14,6 +14,12 @@ import {
   GatekeeperRequestBody,
 } from "../types";
 
+export declare enum State {
+  ACTIVE = "ACTIVE",
+  REVOKED = "REVOKED",
+  FROZEN = "FROZEN",
+}
+
 export type SignCallback = (transaction: Transaction) => Promise<Transaction>;
 
 const proveWalletOwnership = (key: PublicKey, signCallback: SignCallback) =>
@@ -126,6 +132,39 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     try {
       const getResponse = await axios.get(`${this.baseUrl}/${token}`);
       return getResponse.data;
+    } catch (error) {
+      if (error.response)
+        throw new Error(errorMessageFromResponse(error.response));
+      throw error;
+    }
+  }
+
+  async patchTokenState(token: String, state: State): Promise<boolean> {
+    console.log(`Patching token state to ${state} : ${token}`);
+    try {
+      const patchResponse = await axios.patch(`${this.baseUrl}/${token}`, {
+        state,
+      });
+      return patchResponse.status == 200;
+    } catch (error) {
+      if (error.response)
+        throw new Error(errorMessageFromResponse(error.response));
+      throw error;
+    }
+  }
+
+  async freezeGatewayToken(token: string): Promise<boolean> {
+    return this.patchTokenState(token, State.FROZEN);
+  }
+
+  async unfreezeGatewayToken(token: string): Promise<boolean> {
+    return this.patchTokenState(token, State.ACTIVE);
+  }
+
+  async revokeGatewayToken(token: string): Promise<boolean> {
+    try {
+      const deleteResponse = await axios.delete(`${this.baseUrl}/${token}`);
+      return deleteResponse.status == 200;
     } catch (error) {
       if (error.response)
         throw new Error(errorMessageFromResponse(error.response));
