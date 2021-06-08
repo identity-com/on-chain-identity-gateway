@@ -36,12 +36,16 @@ pub fn process_instruction(
 ) -> ProgramResult {
     let instruction = GatewayInstruction::try_from_slice(input)?;
 
-    match instruction {
+    let result = match instruction {
         GatewayInstruction::AddGatekeeper { } => add_gatekeeper(accounts),
         GatewayInstruction::IssueVanilla { seed, expire_time  } => issue_vanilla(accounts, &seed, &expire_time),
         GatewayInstruction::SetState { state  } => set_state(accounts, state),
         GatewayInstruction::UpdateExpiry { expire_time  } => update_expiry(accounts, expire_time)
-    }
+    };
+
+    result.clone().err().map(|e| msg!("Gateway Program Error {}", e));
+
+    result
 }
 
 fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
