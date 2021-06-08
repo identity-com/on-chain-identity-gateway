@@ -367,6 +367,118 @@ describe("GatekeeperClient", () => {
     });
   });
 
+  context("revokeGatewayToken", () => {
+    let gatekeeperClientInst: GatekeeperClient;
+    const baseUrl = "test_baseUrl";
+    const token = Keypair.generate().publicKey;
+    const tokenUrl = `${baseUrl}/${token.toBase58()}`;
+
+    beforeEach(() => {
+      gatekeeperClientInst = new GatekeeperClient({ baseUrl });
+    });
+
+    it("should call the token endpoint with DELETE verb", async () => {
+      const expectation = sandbox.mock(axios).expects("request").withArgs({
+        method: "DELETE",
+        url: tokenUrl,
+        data: {},
+      });
+
+      expectation.resolves({ status: 200 });
+      const revokeResponse = await gatekeeperClientInst.revokeGatewayToken(
+        token.toBase58()
+      );
+      expectation.verify();
+    });
+
+    it("should return delete response from server as boolean", async () => {
+      const data = { status: "ok" };
+      const serverResponse = { status: 200, data };
+      sandbox.stub(axios, "request").resolves(serverResponse);
+      const revokeResponse = await gatekeeperClientInst.revokeGatewayToken(
+        token.toBase58()
+      );
+      expect(revokeResponse).to.be.true;
+    });
+  });
+
+  const expectPatchWithState = (
+    token: PublicKey,
+    state: string
+  ): sinon.SinonExpectation => {
+    const baseUrl = "test_baseUrl";
+    const tokenUrl = `${baseUrl}/${token.toBase58()}`;
+    return sandbox
+      .mock(axios)
+      .expects("request")
+      .withArgs({
+        method: "PATCH",
+        url: `${tokenUrl}`,
+        data: {
+          state,
+        },
+      });
+  };
+
+  context("freezeGatewayToken", () => {
+    let gatekeeperClientInst: GatekeeperClient;
+    const baseUrl = "test_baseUrl";
+    const token = Keypair.generate().publicKey;
+
+    beforeEach(() => {
+      gatekeeperClientInst = new GatekeeperClient({ baseUrl });
+    });
+
+    it("should call the token endpoint with PATCH verb and state: 'FROZEN'", async () => {
+      const expectation = expectPatchWithState(token, "FROZEN");
+      expectation.resolves({ status: 200 });
+      const response = await gatekeeperClientInst.freezeGatewayToken(
+        token.toBase58()
+      );
+      expectation.verify();
+    });
+
+    it("should return PATCH response from server as boolean", async () => {
+      const data = { status: "ok" };
+      const serverResponse = { status: 200, data };
+      sandbox.stub(axios, "request").resolves(serverResponse);
+      const freezeResponse = await gatekeeperClientInst.freezeGatewayToken(
+        token.toBase58()
+      );
+      expect(freezeResponse).to.be.true;
+    });
+  });
+
+  context("unfreezeGatewayToken", () => {
+    const baseUrl = "test_baseUrl";
+    let gatekeeperClientInst: GatekeeperClient;
+
+    const token = Keypair.generate().publicKey;
+
+    beforeEach(() => {
+      gatekeeperClientInst = new GatekeeperClient({ baseUrl });
+    });
+
+    it("should call the token endpoint with PATCH verb and state: 'ACTIVE'", async () => {
+      const expectation = expectPatchWithState(token, "ACTIVE");
+      expectation.resolves({ status: 200 });
+      const response = await gatekeeperClientInst.unfreezeGatewayToken(
+        token.toBase58()
+      );
+      expectation.verify();
+    });
+
+    it("should return PATCH response from server as boolean", async () => {
+      const data = { status: "ok" };
+      const serverResponse = { status: 200, data };
+      sandbox.stub(axios, "request").resolves(serverResponse);
+      const unfreezeResponse = await gatekeeperClientInst.unfreezeGatewayToken(
+        token.toBase58()
+      );
+      expect(unfreezeResponse).to.be.true;
+    });
+  });
+
   context("refreshGatewayToken", () => {
     let gatekeeperClientInst: GatekeeperClient;
     const baseUrl = "test_baseUrl";

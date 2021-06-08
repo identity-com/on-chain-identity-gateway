@@ -68,9 +68,13 @@ export type CreateTokenRequestBody = {
   selfDeclarationTextAgreedTo?: string;
   proof: string;
 };
+export type RevokeTokenRequestBody = {};
+export type PatchTokenStateRequestBody = { state: State };
 export type GatekeeperRequestBody =
   | CreateTokenRequestBody
   | AirdropRequestBody
+  | RevokeTokenRequestBody
+  | PatchTokenStateRequestBody
   | RefreshTokenRequestBody;
 export type GatekeeperResponse =
   | GatekeeperRecord

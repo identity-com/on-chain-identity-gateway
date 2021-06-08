@@ -11,14 +11,11 @@ import {
   CreateTokenRequestBody,
   AirdropRequestBody,
   RefreshTokenRequestBody,
+  RevokeTokenRequestBody,
+  PatchTokenStateRequestBody,
   GatekeeperRequestBody,
+  State,
 } from "../types";
-
-export declare enum State {
-  ACTIVE = "ACTIVE",
-  REVOKED = "REVOKED",
-  FROZEN = "FROZEN",
-}
 
 export type SignCallback = (transaction: Transaction) => Promise<Transaction>;
 
@@ -140,12 +137,13 @@ export class GatekeeperClient implements GatekeeperClientInterface {
   }
 
   async patchTokenState(token: String, state: State): Promise<boolean> {
-    console.log(`Patching token state to ${state} : ${token}`);
     try {
-      const patchResponse = await axios.patch(`${this.baseUrl}/${token}`, {
-        state,
-      });
-      return patchResponse.status == 200;
+      const patchResponse = await this.callGatekeeper<
+        PatchTokenStateRequestBody,
+        Record<string, unknown>
+      >("PATCH", { state }, `/${token}`);
+
+      return !!patchResponse && patchResponse.status == "ok";
     } catch (error) {
       if (error.response)
         throw new Error(errorMessageFromResponse(error.response));
@@ -163,8 +161,12 @@ export class GatekeeperClient implements GatekeeperClientInterface {
 
   async revokeGatewayToken(token: string): Promise<boolean> {
     try {
-      const deleteResponse = await axios.delete(`${this.baseUrl}/${token}`);
-      return deleteResponse.status == 200;
+      const deleteResponse = await this.callGatekeeper<
+        RevokeTokenRequestBody,
+        Record<string, unknown>
+      >("DELETE", {}, `/${token}`);
+
+      return !!deleteResponse && deleteResponse.status == "ok";
     } catch (error) {
       if (error.response)
         throw new Error(errorMessageFromResponse(error.response));
