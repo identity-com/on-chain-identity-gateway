@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ ociv COMMAND
 running command...
 $ ociv (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.0.12 darwin-x64 node-v16.0.0
+@identity.com/solana-gatekeeper-lib/1.0.13 darwin-x64 node-v14.17.0
 $ ociv --help [COMMAND]
 USAGE
   $ ociv COMMAND
@@ -28,14 +28,11 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-- [gatekeeper-lib](#gatekeeper-lib)
-- [Usage](#usage)
-- [Commands](#commands)
-  - [`ociv audit GATEWAYTOKEN`](#ociv-audit-gatewaytoken)
-  - [`ociv help [COMMAND]`](#ociv-help-command)
-  - [`ociv issue ADDRESS`](#ociv-issue-address)
-  - [`ociv revoke GATEWAYTOKEN`](#ociv-revoke-gatewaytoken)
-  - [`ociv verify GATEWAYTOKEN`](#ociv-verify-gatewaytoken)
+* [`ociv audit GATEWAYTOKEN`](#ociv-audit-gatewaytoken)
+* [`ociv help [COMMAND]`](#ociv-help-command)
+* [`ociv issue ADDRESS`](#ociv-issue-address)
+* [`ociv revoke GATEWAYTOKEN`](#ociv-revoke-gatewaytoken)
+* [`ociv verify GATEWAYTOKEN`](#ociv-verify-gatewaytoken)
 
 ## `ociv audit GATEWAYTOKEN`
 
@@ -60,7 +57,7 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/audit.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.12/dist/commands/audit.ts)_
+_See code: [dist/commands/audit.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/audit.ts)_
 
 ## `ociv help [COMMAND]`
 
@@ -100,7 +97,7 @@ EXAMPLE
   2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.12/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/issue.ts)_
 
 ## `ociv revoke GATEWAYTOKEN`
 
@@ -121,7 +118,7 @@ EXAMPLE
   Revoked
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.12/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/revoke.ts)_
 
 ## `ociv verify GATEWAYTOKEN`
 
@@ -146,5 +143,5 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.12/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/verify.ts)_
 <!-- commandsstop -->
