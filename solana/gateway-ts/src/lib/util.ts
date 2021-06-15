@@ -66,11 +66,19 @@ const dataToGatewayToken = (
     data.expiry?.toNumber()
   );
 
+/**
+ * Find all gateway tokens for a user on a gatekeeper network, optionally filtering out revoked tokens
+ * @param {Connection} connection
+ * @param {PublicKey} owner
+ * @param {PublicKey} gatekeeperNetwork
+ * @param {boolean=false} includeRevoked
+ * @returns {Promise<GatewayToken[]>}
+ */
 export const findGatewayTokens = async (
   connection: Connection,
   owner: PublicKey,
   gatekeeperNetwork: PublicKey,
-  showRevoked = false
+  includeRevoked = false
 ): Promise<GatewayToken[]> => {
   const ownerFilter = {
     memcmp: {
@@ -100,8 +108,29 @@ export const findGatewayTokens = async (
   return accountsResponse
     .map(toGatewayToken)
     .filter(
-      (gatewayToken) => gatewayToken.state !== State.REVOKED || showRevoked
+      (gatewayToken) => gatewayToken.state !== State.REVOKED || includeRevoked
     );
+};
+
+/**
+ * Find any unrevoked token for a user on a gatekeeper network
+ * @param {Connection} connection
+ * @param {PublicKey} owner
+ * @param {PublicKey} gatekeeperNetwork
+ * @returns {Promise<GatewayToken | undefined>}
+ */
+export const findGatewayToken = async (
+  connection: Connection,
+  owner: PublicKey,
+  gatekeeperNetwork: PublicKey
+): Promise<GatewayToken | null> => {
+  const [token] = await findGatewayTokens(
+    connection,
+    owner,
+    gatekeeperNetwork,
+    false
+  );
+  return token;
 };
 
 export const getGatewayToken = async (
