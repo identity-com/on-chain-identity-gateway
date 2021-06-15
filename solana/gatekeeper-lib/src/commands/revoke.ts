@@ -1,8 +1,10 @@
 import { Command, flags } from "@oclif/command";
-import { PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import { getConnection } from "../util/connection";
-import { getGatekeeper } from "../util/account";
-import { RevokeService } from "../service/revoke";
+import { GatekeeperService } from "../service/GatekeeperService";
+import { RecorderFS } from "../util/record";
+import * as os from "os";
+import * as fs from "fs";
 
 export default class Revoke extends Command {
   static description = "Revoke a gateway token";
@@ -24,6 +26,16 @@ Revoked
       description: "The gateway token to revoke",
       parse: (input: string) => new PublicKey(input),
     },
+    {
+      name: "gatekeeperAuthorityKeyFilepath",
+      default: `${os.homedir()}/.config/solana/id.json`,
+      required: false,
+      description: "The private key file for the gatekeeper network authority",
+      parse: (input: string) =>
+        Keypair.fromSecretKey(
+          new Uint8Array(JSON.parse(fs.readFileSync(input).toString("utf-8")))
+        ),
+    },
   ];
 
   async run() {
@@ -32,12 +44,32 @@ Revoked
     const gatewayToken: PublicKey = args.gatewayToken;
     this.log(`Revoking ${gatewayToken.toBase58()}`);
 
+    const address: PublicKey = args.address;
+    this.log(`Issuing to ${address.toBase58()}`);
+
+    const gatekeeperNetwork = new PublicKey(
+      process.env.GATEKEEPER_NETWORK as string
+    );
+    this.log(`Issuing from network ${gatekeeperNetwork.toBase58()}`);
+
+    const gatekeeperAuthority: Keypair = args.gatekeeperAuthorityKeyFilepath;
+
+    this.log(
+      `Issuing from authority ${gatekeeperAuthority.publicKey.toBase58()}`
+    );
     const connection = await getConnection();
-    const { gatekeeper } = await getGatekeeper(connection);
+    const service = new GatekeeperService(
+      connection,
+      gatekeeperAuthority,
+      gatekeeperNetwork,
+      gatekeeperAuthority,
+      new RecorderFS(),
+      {
+        defaultExpirySeconds: 15 * 60 * 60, // 15 minutes
+      }
+    );
+    const token = await service.revoke(gatewayToken);
 
-    const service = new RevokeService(connection, gatekeeper);
-    await service.revoke(gatewayToken);
-
-    console.log("Revoked");
+    console.log("Revoked token", token);
   }
 }

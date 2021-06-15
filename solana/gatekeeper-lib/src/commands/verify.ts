@@ -1,7 +1,7 @@
+import { findGatewayToken } from "@identity.com/solana-gateway-ts";
 import { Command, flags } from "@oclif/command";
 import { PublicKey } from "@solana/web3.js";
 import { getConnection } from "../util/connection";
-import { VerifyService } from "../service/verify";
 
 export default class Verify extends Command {
   static description = "Verify a gateway token";
@@ -27,18 +27,27 @@ export default class Verify extends Command {
       description: "The gateway token account to verify",
       parse: (input: string) => new PublicKey(input),
     },
+    {
+      name: "owner",
+      required: true,
+      description: "The expected gateway token owner",
+      parse: (input: string) => new PublicKey(input),
+    },
   ];
 
   async run() {
     const { args } = this.parse(Verify);
 
     const gatewayToken: PublicKey = args.gatewayToken;
-    this.log(`Verifying ${gatewayToken.toBase58()}`);
-
+    const owner: PublicKey = args.owner;
+    const gatekeeperNetwork = new PublicKey(
+      process.env.GATEKEEPER_NETWORK as string
+    );
+    this.log(`Issuing from network ${gatekeeperNetwork.toBase58()}`);
     const connection = await getConnection();
-    const service = new VerifyService(connection);
-    const result = await service.verify(gatewayToken);
+    const token = await findGatewayToken(connection, owner, gatekeeperNetwork);
 
+    const result = token?.publicKey.toBase58() === gatewayToken.toBase58();
     console.log(result);
   }
 }

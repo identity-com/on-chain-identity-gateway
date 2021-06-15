@@ -144,10 +144,10 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@identity.com/solana-gateway-ts@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.0.9.tgz#830f594738c53370a3590d5692e087732bdb8a54"
-  integrity sha512-UiJnWNQGprwUYNBj+WTB3sENTnypzQQs2WDIbrKpSN/W7hIlgKkByzD7keq5e6NCsC1H7oI6t8MMjJ4zle6Q7w==
+"@identity.com/solana-gateway-ts@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.1.0.tgz#33a4e0f4fe80fdb6bb8b72b50ebfbb996ac397a4"
+  integrity sha512-0qwUo9a716r+mCtHLzccUviz34nfnLx1s4XSwW+Q0undsMaAH+bZC7BaikT+K0JV0c2dh1cSneDT1nDzr15ofQ==
   dependencies:
     "@solana/web3.js" "^1.11.0"
     bn.js "^5.2.0"
@@ -375,6 +375,13 @@
   integrity sha512-QSSVYj7pYFN49kW77o2s9xTCwZ8F2xLbjLLSEVh8D2F4JUhZtPAGOFLTD+ffqksBx/u4cE/KImFjyhqCjn/LIA==
   dependencies:
     "@types/node" "*"
+
+"@types/bs58@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@types/bs58/-/bs58-4.0.1.tgz#3d51222aab067786d3bc3740a84a7f5a0effaa37"
+  integrity sha512-yfAgiWgVLjFCmRv8zAcOIHywYATEwiTVccTLnRp6UxTNavT55M9d/uhK3T03St/+8/z/wW+CRjGKUNmEqoHHCA==
+  dependencies:
+    base-x "^3.0.6"
 
 "@types/chai@*", "@types/chai@^4":
   version "4.2.15"
@@ -803,7 +810,7 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
 
-base-x@^3.0.2:
+base-x@^3.0.2, base-x@^3.0.6:
   version "3.0.8"
   resolved "https://registry.yarnpkg.com/base-x/-/base-x-3.0.8.tgz#1e1106c2537f0162e8b52474a557ebb09000018d"
   integrity sha512-Rl/1AWP4J/zRrk54hhlxH4drNxPJXYUaKffODVI53/dAsV4t9fBxyxYKAVPU1XBHxYwOWP9h9H0hM2MVw4YfJA==
@@ -4533,10 +4540,8 @@ rpc-websockets@^7.4.2:
   dependencies:
     "@babel/runtime" "^7.11.2"
     assert-args "^1.2.1"
-    bufferutil "^4.0.1"
     circular-json "^0.5.9"
     eventemitter3 "^4.0.7"
-    utf-8-validate "^5.0.2"
     uuid "^8.3.0"
     ws "^7.3.1"
   optionalDependencies:
