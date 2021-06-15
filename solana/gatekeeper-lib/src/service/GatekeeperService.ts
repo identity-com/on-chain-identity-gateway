@@ -7,7 +7,6 @@ import {
   getGatewayTokenKeyForOwner,
   issueVanilla,
   revoke,
-  State,
   unfreeze,
   updateExpiry,
 } from "@identity.com/solana-gateway-ts";
@@ -248,5 +247,9 @@ export class GatekeeperService {
     );
 
     return gatewayToken;
+  }
+
+  async audit(gatewayToken: PublicKey): Promise<AuditRecord | null> {
+    return this.recorder.lookup(gatewayToken);
   }
 }
