@@ -1,40 +1,17 @@
 import { Command, flags } from "@oclif/command";
-import { PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 
-import { getGatekeeper } from "../util/account";
 import { getConnection } from "../util/connection";
 import * as fs from "fs";
-import { IssueService } from "../service/issue";
-import { REGISTER } from "../util/constants";
-
-type Record = {
-  timestamp: string;
-  token: string;
-  name: string;
-  ipAddress: string;
-  country: string;
-  approved: boolean;
-};
-
-const store = (record: Record) => {
-  const row =
-    [
-      record.timestamp,
-      record.token,
-      record.name,
-      record.ipAddress,
-      record.country,
-      record.approved,
-    ].join(",") + "\n";
-  fs.appendFileSync(REGISTER, row);
-};
+import { GatekeeperService } from "../service/GatekeeperService";
+import { PII, RecorderFS } from "../util/record";
+import * as os from "os";
 
 export default class Issue extends Command {
   static description = "Issue a gateway token";
 
   static examples = [
-    `$ ociv issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
-2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
+    `$ ociv issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 `,
   ];
 
@@ -51,6 +28,16 @@ export default class Issue extends Command {
       description: "The address to issue the token to",
       parse: (input: string) => new PublicKey(input),
     },
+    {
+      name: "gatekeeperAuthorityKeyFilepath",
+      default: `${os.homedir()}/.config/solana/id.json`,
+      required: false,
+      description: "The private key file for the gatekeeper network authority",
+      parse: (input: string) =>
+        Keypair.fromSecretKey(
+          new Uint8Array(JSON.parse(fs.readFileSync(input).toString("utf-8")))
+        ),
+    },
   ];
 
   async run() {
@@ -59,18 +46,31 @@ export default class Issue extends Command {
     const address: PublicKey = args.address;
     this.log(`Issuing to ${address.toBase58()}`);
 
+    const gatekeeperNetwork = new PublicKey(
+      process.env.GATEKEEPER_NETWORK as string
+    );
+    this.log(`Issuing from network ${gatekeeperNetwork.toBase58()}`);
+
+    const gatekeeperAuthority: Keypair = args.gatekeeperAuthorityKeyFilepath;
+
+    this.log(
+      `Issuing from authority ${gatekeeperAuthority.publicKey.toBase58()}`
+    );
+
     const connection = await getConnection();
-    const { gatekeeper, mintAccountPublicKey } = await getGatekeeper(
-      connection
-    );
-
-    const service = new IssueService(
+    const service = new GatekeeperService(
       connection,
-      gatekeeper,
-      mintAccountPublicKey
+      gatekeeperAuthority,
+      gatekeeperNetwork,
+      gatekeeperAuthority,
+      new RecorderFS(),
+      {
+        defaultExpirySeconds: 15 * 60 * 60, // 15 minutes
+      }
     );
-    const record = await service.issue(address, flags);
 
-    console.log(record.token);
+    const token = await service.issue(address, {} as PII);
+
+    console.log(token);
   }
 }
