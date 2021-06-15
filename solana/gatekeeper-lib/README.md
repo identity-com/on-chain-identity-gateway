@@ -37,7 +37,7 @@ USAGE
 
 ## `ociv add-gatekeeper [GATEKEEPERAUTHORITYKEYFILEPATH] [GATEKEEPERNETWORKKEYFILEPATH]`
 
-Issue a gateway token
+Add a gatekeeper to a network
 
 ```
 USAGE

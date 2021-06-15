@@ -4,9 +4,7 @@ import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { getConnection } from "../util/connection";
 import * as fs from "fs";
 import { GatekeeperNetworkService } from "../service/GatekeeperNetworkService";
-import { PII, RecorderFS } from "../util/record";
 import * as os from "os";
-import bs58 = require("bs58");
 import { airdropTo, MIN_AIRDROP_BALANCE } from "../util/account";
 
 export const airdropSolIfRequired = async (
@@ -28,8 +26,8 @@ export const airdropSolIfRequired = async (
     );
   }
 };
-export default class Issue extends Command {
-  static description = "Issue a gateway token";
+export default class AddGatekeeper extends Command {
+  static description = "Add a gatekeeper to a network";
 
   static examples = [
     `$ ociv add-gatekeeper
@@ -68,7 +66,7 @@ export default class Issue extends Command {
   ];
 
   async run() {
-    const { args, flags } = this.parse(Issue);
+    const { args, flags } = this.parse(AddGatekeeper);
 
     const gatekeeperAuthority: Keypair = args.gatekeeperAuthorityKeyFilepath;
     const gatekeeperNetwork: Keypair = args.gatekeeperNetworkKeyFilepath;
