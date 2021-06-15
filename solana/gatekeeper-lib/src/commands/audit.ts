@@ -46,21 +46,16 @@ export default class Audit extends Command {
     const { args } = this.parse(Audit);
 
     const gatewayToken: PublicKey = args.gatewayToken;
-    this.log(`Revoking ${gatewayToken.toBase58()}`);
-
-    const address: PublicKey = args.address;
-    this.log(`Issuing to ${address.toBase58()}`);
+    this.log(`Auditing ${gatewayToken.toBase58()}`);
 
     const gatekeeperNetwork = new PublicKey(
       process.env.GATEKEEPER_NETWORK as string
     );
-    this.log(`Issuing from network ${gatekeeperNetwork.toBase58()}`);
+    this.log(`Using network ${gatekeeperNetwork.toBase58()}`);
 
     const gatekeeperAuthority: Keypair = args.gatekeeperAuthorityKeyFilepath;
 
-    this.log(
-      `Issuing from authority ${gatekeeperAuthority.publicKey.toBase58()}`
-    );
+    this.log(`Using authority ${gatekeeperAuthority.publicKey.toBase58()}`);
     const connection = await getConnection();
     const service = new GatekeeperService(
       connection,

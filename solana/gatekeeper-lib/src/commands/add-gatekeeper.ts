@@ -80,13 +80,11 @@ export default class AddGatekeeper extends Command {
       gatekeeperNetwork
     );
     await networkService.addGatekeeper(gatekeeperAuthority.publicKey);
-    console.log("Added gatekeeper to network");
+    this.log("Added gatekeeper to network");
+    this.log(`Using authority ${gatekeeperAuthority.publicKey.toBase58()}`);
     this.log(
-      `Issuing from authority ${gatekeeperAuthority.publicKey.toBase58()}`
-    );
-    console.log(
       `Remember to run 'export GATEKEEPER_NETWORK=${gatekeeperNetwork.publicKey.toBase58()}`
     );
-    console.log("Added gatekeeper", gatekeeperAuthority.publicKey.toBase58());
+    this.log("Added gatekeeper", gatekeeperAuthority.publicKey.toBase58());
   }
 }

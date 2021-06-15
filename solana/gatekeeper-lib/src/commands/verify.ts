@@ -43,11 +43,14 @@ export default class Verify extends Command {
     const gatekeeperNetwork = new PublicKey(
       process.env.GATEKEEPER_NETWORK as string
     );
-    this.log(`Issuing from network ${gatekeeperNetwork.toBase58()}`);
+    this.log(`Using network ${gatekeeperNetwork.toBase58()}`);
+    this.log(
+      `Verifying ${gatewayToken.toBase58()} is valid and belongs to ${owner.toBase58()}`
+    );
     const connection = await getConnection();
     const token = await findGatewayToken(connection, owner, gatekeeperNetwork);
 
     const result = token?.publicKey.toBase58() === gatewayToken.toBase58();
-    console.log(result);
+    this.log(`Verify result: ${result}`);
   }
 }
