@@ -1,7 +1,7 @@
 {
   "name": "@identity.com/solana-gatekeeper-lib",
   "description": "Library and CLI to manage OCIV Gateway Tokens",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "author": "dankelleher @dankelleher",
   "bin": {
     "ociv": "./bin/run"
@@ -18,7 +18,7 @@
     "tslib": "^1"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1",
+    "@oclif/dev-cli": "^1.26.0",
     "@oclif/test": "^1",
     "@types/bn.js": "^5.1.0",
     "@types/bs58": "^4.0.1",
