@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ ociv COMMAND
 running command...
 $ ociv (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.0.13 linux-x64 node-v12.14.0
+@identity.com/solana-gatekeeper-lib/1.0.14 linux-x64 node-v12.14.0
 $ ociv --help [COMMAND]
 USAGE
   $ ociv COMMAND
@@ -59,8 +59,6 @@ EXAMPLE
   $ ociv add-gatekeeper
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/add-gatekeeper.ts)_
-
 ## `ociv audit GATEWAYTOKEN [GATEKEEPERAUTHORITYKEYFILEPATH]`
 
 Auditing a gateway token
@@ -86,8 +84,6 @@ EXAMPLE
      revoked: false
   }
 ```
-
-_See code: [dist/commands/audit.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/audit.ts)_
 
 ## `ociv help [COMMAND]`
 
@@ -129,8 +125,6 @@ EXAMPLE
   $ ociv issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/issue.ts)_
-
 ## `ociv revoke GATEWAYTOKEN [GATEKEEPERAUTHORITYKEYFILEPATH]`
 
 Revoke a gateway token
@@ -152,8 +146,6 @@ EXAMPLE
   $ ociv revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
   Revoked
 ```
-
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/revoke.ts)_
 
 ## `ociv verify GATEWAYTOKEN OWNER`
 
@@ -178,6 +170,4 @@ EXAMPLE
      revoked: false
   }
 ```
-
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/verify.ts)_
 <!-- commandsstop -->
