@@ -78,6 +78,7 @@ export class GatekeeperService {
     owner: PublicKey,
     seed?: Uint8Array
   ): Promise<GatewayToken> {
+    // TODO Move all this into gateway-ts issueVanilla
     const gatewayTokenKey = await getGatewayTokenKeyForOwner(owner);
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(

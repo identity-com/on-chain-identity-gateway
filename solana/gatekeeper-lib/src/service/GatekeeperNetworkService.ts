@@ -13,6 +13,7 @@ export class GatekeeperNetworkService {
   ) {}
 
   async addGatekeeper(gatekeeperAuthority: PublicKey): Promise<PublicKey> {
+    // TODO Move this into gateway-ts addGatekeeper
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(gatekeeperAuthority);
 
