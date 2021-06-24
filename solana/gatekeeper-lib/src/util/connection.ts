@@ -18,7 +18,7 @@ export const VALIDATOR_URL =
   (CLUSTER === "localnet" ? "http://localhost:8899" : clusterApiUrl(CLUSTER));
 
 export const getConnection = async (): Promise<Connection> =>
-  new Connection(VALIDATOR_URL, "confirmed");
+  new Connection(VALIDATOR_URL, SOLANA_COMMITMENT);
 
 export const send = (
   connection: Connection,
