@@ -2,9 +2,7 @@
 
 use {
     num_derive::FromPrimitive,
-    solana_program::{
-        decode_error::DecodeError, program_error::ProgramError
-    },
+    solana_program::{decode_error::DecodeError, program_error::ProgramError},
     thiserror::Error,
 };
 
@@ -37,7 +35,7 @@ pub enum GatewayError {
 
     /// The gatway token could not be changed into the requested state
     #[error("Invalid state change")]
-    InvalidStateChange
+    InvalidStateChange,
 }
 impl From<GatewayError> for ProgramError {
     fn from(e: GatewayError) -> Self {
