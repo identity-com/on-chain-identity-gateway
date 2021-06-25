@@ -9,6 +9,7 @@ import {
   revoke,
   unfreeze,
   updateExpiry,
+  findGatewayToken,
 } from "@identity.com/solana-gateway-ts";
 import { AuditRecord, PII, Recorder, RecorderFS } from "../util/record";
 import { send } from "../util/connection";
@@ -217,6 +218,12 @@ export class GatekeeperService {
     );
 
     return gatewayToken;
+  }
+
+  async findGatewayTokenForOwner(
+    owner: PublicKey
+  ): Promise<GatewayToken | null> {
+    return findGatewayToken(this.connection, owner, this.gatekeeperNetwork);
   }
 
   async updateExpiry(
