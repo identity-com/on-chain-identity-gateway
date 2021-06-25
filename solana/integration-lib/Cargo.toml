@@ -25,6 +25,7 @@ thiserror = "1.0.20"
 crate-type = ["cdylib", "lib"]
 
 [dev-dependencies]
+assert_matches = "1.5.0"
 solana-sdk = "1.6.8"
 
 [profile.release]

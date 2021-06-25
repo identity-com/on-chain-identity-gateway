@@ -3,13 +3,11 @@ use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
     sol_did::validate_owner,
     solana_program::{
+        account_info::AccountInfo,
+        clock::UnixTimestamp,
         pubkey::Pubkey,
-        clock::{UnixTimestamp},
-        sysvar::{
-            clock::{Clock}, Sysvar
-        },
-        account_info::AccountInfo
-    }
+        sysvar::{clock::Clock, Sysvar},
+    },
 };
 
 fn before_now(timestamp: UnixTimestamp) -> bool {
@@ -27,7 +25,7 @@ pub struct GatewayToken {
     pub parent_gateway_token: Option<Pubkey>,
     /// The public key of the wallet to which this token was assigned  
     pub owner_wallet: Pubkey,
-    /// The DID (must be on Solana) of the identity to which the token was assigned 
+    /// The DID (must be on Solana) of the identity to which the token was assigned
     pub owner_identity: Option<Pubkey>,
     /// The gateway network that issued the token
     pub gatekeeper_network: Pubkey,
@@ -35,15 +33,19 @@ pub struct GatewayToken {
     pub issuing_gatekeeper: Pubkey,
     /// The current token state
     pub state: GatewayTokenState,
-    
+
     /// The expiry time of the token (unix timestamp) (expirable tokens only)
     pub expire_time: Option<UnixTimestamp>,
-    
     // /// Details about the transaction that this token has been issued for (session tokens only)
     // pub transaction_details: Option<dyn CompatibleTransactionDetails>
 }
 impl GatewayToken {
-    pub fn new_vanilla(owner_wallet: &Pubkey, gatekeeper_network: &Pubkey, issuing_gatekeeper: &Pubkey, expire_time: &Option<UnixTimestamp>) -> Self {
+    pub fn new_vanilla(
+        owner_wallet: &Pubkey,
+        gatekeeper_network: &Pubkey,
+        issuing_gatekeeper: &Pubkey,
+        expire_time: &Option<UnixTimestamp>,
+    ) -> Self {
         let mut result = Self {
             features: 0,
             parent_gateway_token: None,
@@ -53,14 +55,16 @@ impl GatewayToken {
             gatekeeper_network: *gatekeeper_network,
             issuing_gatekeeper: *issuing_gatekeeper,
             state: Default::default(),
-            expire_time: *expire_time
+            expire_time: *expire_time,
         };
-        
-        if expire_time.is_some() { result.set_feature(Feature::Expirable) };
-        
+
+        if expire_time.is_some() {
+            result.set_feature(Feature::Expirable)
+        };
+
         result
     }
-    
+
     // TODO should probably do away with the feature bitmap and just infer
     // the features from the properties. This is currently not typesafe as
     // you can set a feature (eg Expirable) without giving the gateway token
@@ -76,7 +80,8 @@ impl GatewayToken {
     /// Tests if the gateway token has the required feature
     pub fn has_feature(&self, feature: Feature) -> bool {
         let ordinal = feature as u8;
-        if ordinal < 8 {    // If this fails, the features enum must have grown to >8 elements
+        if ordinal < 8 {
+            // If this fails, the features enum must have grown to >8 elements
             self.features & (1 << ordinal) != 0
         } else {
             false
@@ -104,7 +109,7 @@ impl GatewayToken {
     pub fn has_expired(&self) -> bool {
         self.has_feature(Feature::Expirable) && before_now(self.expire_time.unwrap())
     }
-    
+
     pub fn set_expire_time(&mut self, expire_time: UnixTimestamp) {
         self.set_feature(Feature::Expirable);
         self.expire_time = Some(expire_time);
@@ -114,37 +119,47 @@ impl GatewayToken {
     /// Note, this does not check association to any wallet.
     pub fn is_valid_exotic(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
         // Check the token is active
-        if !self.is_valid_state() { return false }
+        if !self.is_valid_state() {
+            return false;
+        }
 
         // Check the token has not expired
-        if self.has_expired() { return false }
+        if self.has_expired() {
+            return false;
+        }
 
         // Check that the token is owned by did (if identity-linked)
-        if self.has_feature(Feature::IdentityLinked) && !self.owned_by_did(did, signers) { return false }
+        if self.has_feature(Feature::IdentityLinked) && !self.owned_by_did(did, signers) {
+            return false;
+        }
 
         true
     }
 
-    /// Checks if the gateway token is owned by the identity, 
+    /// Checks if the gateway token is owned by the identity,
     /// and that the identity has signed the transaction
     pub fn owned_by_did(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
         // check if this gateway token is linked to an identity
-        if !self.has_feature(Feature::IdentityLinked) { return false }
+        if !self.has_feature(Feature::IdentityLinked) {
+            return false;
+        }
 
-        // check if the passed-in did is the owner of this gateway token 
-        if *did.key != self.owner_identity.unwrap() { return false }
+        // check if the passed-in did is the owner of this gateway token
+        if *did.key != self.owner_identity.unwrap() {
+            return false;
+        }
 
         // check that one of the transaction signers is an authority on the DID
         validate_owner(did, signers).is_ok()
     }
-    
+
     pub fn is_session_token(&self) -> bool {
         self.parent_gateway_token.is_some()
     }
 
     // pub fn matches_transaction_details(&self, transaction_details: &dyn CompatibleTransactionDetails) -> bool {
     //     if !self.has_feature(Feature::TransactionLinked) { return false }
-    //     
+    //
     //     self.transaction_details.unwrap().compatible_with(transaction_details)
     // }
 }
@@ -157,7 +172,7 @@ pub enum GatewayTokenState {
     /// Temporarily paused token.
     Frozen,
     /// A token that has been revoked by the gatekeeper network.
-    Revoked
+    Revoked,
 }
 impl Default for GatewayTokenState {
     fn default() -> Self {
@@ -196,7 +211,7 @@ pub struct SimpleTransactionDetails {
     /// The transaction size (in units based on the token. Assume SOL if no token is provided)
     pub amount: u64,
     /// The spl-token that denominates the transaction (if any)
-    pub token: Option<Pubkey>
+    pub token: Option<Pubkey>,
 }
 impl CompatibleTransactionDetails for SimpleTransactionDetails {
     /// The amount and the token must match for these transaction details to be considered compatible
@@ -208,18 +223,16 @@ impl CompatibleTransactionDetails for SimpleTransactionDetails {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use sol_did::state::{SolData, VerificationMethod};
     use solana_program::program_stubs;
+    use solana_sdk::signature::{Keypair, Signer};
     use std::{
+        cell::RefCell,
+        rc::Rc,
         sync::Once,
         time::{SystemTime, UNIX_EPOCH},
-        rc::Rc,
-        cell::RefCell
     };
-    use sol_did::state::{SolData, VerificationMethod};
-    use solana_sdk::{
-        signature::{Keypair, Signer}
-    };
-    
+
     static INIT_TESTS: Once = Once::new();
 
     // Get the current unix timestamp from SystemTime
@@ -243,7 +256,7 @@ pub mod tests {
                 epoch_start_timestamp: 0,
                 epoch: 0,
                 leader_schedule_epoch: 0,
-                unix_timestamp: now()
+                unix_timestamp: now(),
             };
 
             // rust magic
@@ -270,7 +283,7 @@ pub mod tests {
             gatekeeper_network: Default::default(),
             issuing_gatekeeper: Default::default(),
             state: Default::default(),
-            expire_time: None
+            expire_time: None,
         }
     }
 
@@ -282,14 +295,14 @@ pub mod tests {
             verification_method: vec![VerificationMethod {
                 id: key_id.to_string(),
                 verification_type: "".to_string(),
-                pubkey: identity_owner.pubkey()
+                pubkey: identity_owner.pubkey(),
             }],
             authentication: vec![],
             capability_invocation: vec![key_id.to_string()],
             capability_delegation: vec![],
             key_agreement: vec![],
             assertion_method: vec![],
-            service: vec![]
+            service: vec![],
         }
     }
 
@@ -331,7 +344,7 @@ pub mod tests {
     }
 
     // Tests that a gateway token that is owned by a DID can be checked.
-    // This test is verbose, mainly because of the AccountInfo object which uses a lot of references. 
+    // This test is verbose, mainly because of the AccountInfo object which uses a lot of references.
     #[test]
     fn owned_by_identity() {
         // the address of the DID on-chain
@@ -353,7 +366,7 @@ pub mod tests {
             data: Rc::new(RefCell::new(&mut serialized_identity)),
             owner: &sol_did::id(),
             executable: false,
-            rent_epoch: 0
+            rent_epoch: 0,
         };
 
         // create an AccountInfo object referencing the identity owner
@@ -366,7 +379,7 @@ pub mod tests {
             data: Rc::new(RefCell::new(&mut [])),
             owner: &Default::default(),
             executable: false,
-            rent_epoch: 0
+            rent_epoch: 0,
         };
 
         // create a gateway token linked to the DID
@@ -377,7 +390,7 @@ pub mod tests {
         // verify that the token is owned by the DID and that the signer account is a valid
         // signer of the DID
         assert!(token.owned_by_did(&did_account_info, &[&signer_account_info]));
-        
+
         // verify that the token can be used in this transaction, as a signature from
         // a valid signer of the linked identity has been provided.
         assert!(token.is_valid_exotic(&did_account_info, &[&signer_account_info]))
