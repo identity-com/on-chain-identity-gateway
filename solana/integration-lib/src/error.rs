@@ -36,6 +36,10 @@ pub enum GatewayError {
     /// The gatway token could not be changed into the requested state
     #[error("Invalid state change")]
     InvalidStateChange,
+
+    /// The account is not owned by the gateway program
+    #[error("The account is not owned by the gateway program")]
+    IncorrectProgramId,
 }
 impl From<GatewayError> for ProgramError {
     fn from(e: GatewayError) -> Self {
