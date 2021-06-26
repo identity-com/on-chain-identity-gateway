@@ -119,14 +119,20 @@ fn issue_vanilla(accounts: &[AccountInfo], seed: &Option<AddressSeed>, expire_ti
 
     let owner_info = next_account_info(account_info_iter)?;
     let gatekeeper_account_info = next_account_info(account_info_iter)?;
-    let gatekeeper_account = try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
-
+    
     let gatekeeper_authority_info = next_account_info(account_info_iter)?;
     let gatekeeper_network_info = next_account_info(account_info_iter)?;
 
     let rent_info = next_account_info(account_info_iter)?;
     let system_program_info = next_account_info(account_info_iter)?;
     let rent = &Rent::from_account_info(rent_info)?;
+
+    if gatekeeper_account_info.owner.ne(&id()) {
+        msg!("Incorrect program Id for gatekeeper account");
+        return Err(ProgramError::IncorrectProgramId);
+    }
+
+    let gatekeeper_account = try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
 
     let (gateway_token_address, gateway_token_bump_seed) = get_gateway_token_address_with_seed(
         owner_info.key,
@@ -190,6 +196,16 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
     let gatekeeper_authority_info = next_account_info(account_info_iter)?;
     let gatekeeper_account_info = next_account_info(account_info_iter)?;
 
+    if gateway_token_info.owner.ne(&id()) {
+        msg!("Incorrect program Id for gateway token account");
+        return Err(ProgramError::IncorrectProgramId);
+    }
+
+    if gatekeeper_account_info.owner.ne(&id()) {
+        msg!("Incorrect program Id for gatekeeper account");
+        return Err(ProgramError::IncorrectProgramId);
+    }
+
     let mut gateway_token = try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
     let gatekeeper_account = try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
 
@@ -232,10 +248,20 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
     let gateway_token_info = next_account_info(account_info_iter)?;
     let gatekeeper_authority_info = next_account_info(account_info_iter)?;
     let gatekeeper_account_info = next_account_info(account_info_iter)?;
+    
+    if gateway_token_info.owner.ne(&id()) {
+        msg!("Incorrect program Id for gateway token account");
+        return Err(ProgramError::IncorrectProgramId);
+    }
+
+    if gatekeeper_account_info.owner.ne(&id()) {
+        msg!("Incorrect program Id for gatekeeper account");
+        return Err(ProgramError::IncorrectProgramId);
+    }
 
     let mut gateway_token = try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
     let gatekeeper_account = try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
-
+    
     // check the gatekeeper account matches the passed-in gatekeeper key
     if gatekeeper_account.authority != *gatekeeper_authority_info.key {
         msg!("Error: incorrect gatekeeper authority");
@@ -252,4 +278,49 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
 
     gateway_token.serialize(&mut *gateway_token_info.data.borrow_mut())
         .map_err(|e| e.into()) as ProgramResult
+}
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    
+    struct AccountDetailInfo {
+        
+    }
+
+    #[test]
+    fn set_state_should_fail_with_invalid_program_owner_on_gateway_token() {
+        let invalid_owner = Default::default();
+        let instruction = GatewayInstruction::SetState { state: GatewayTokenState::Frozen };
+        
+        // create all the accounts.
+        // due to the nature of the AccountInfo struct (borrowing most properties),
+        // this code has to remain in-line and have unnecesssary extra variables
+        // (e.g. the lamports variables)
+        let gatekeeper_token_address = Default::default();
+        let mut gateway_token_lamports = 0;
+        let mut gatekeeper_authority_lamports = 0;
+        let mut gatekeeper_account_lamports = 0;
+        let rent_epoch = 0;
+        let owner = id();
+        let gatekeeper_authority = Default::default();
+        let gatekeeper_account = Default::default();
+        let gateway_token = AccountInfo::new(&gatekeeper_token_address, false, false, &mut gateway_token_lamports, &mut [], &invalid_owner, false, rent_epoch);
+        let gatekeeper_authority = AccountInfo::new(&gatekeeper_authority, false, false, &mut gatekeeper_authority_lamports, &mut [], &owner, false, rent_epoch);
+        let gatekeeper_account = AccountInfo::new(&gatekeeper_account, false, false, &mut gatekeeper_account_lamports, &mut [], &owner, false, rent_epoch);
+        let accounts = vec!(
+            gateway_token,
+            gatekeeper_authority,
+            gatekeeper_account
+        );
+        
+        // create the transaction
+        let process_result = process_instruction(
+            &owner,
+            accounts.as_slice(),
+            &instruction.try_to_vec().unwrap()
+        );
+        
+        assert!(matches!(process_result, Err(ProgramError::IncorrectProgramId)))
+    }
 }
