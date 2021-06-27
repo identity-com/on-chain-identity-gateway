@@ -1,10 +1,9 @@
 import { Command, flags } from "@oclif/command";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
-import { getConnection } from "../util/connection";
+import { getConnection } from "../util";
 import * as fs from "fs";
-import { GatekeeperService } from "../service/GatekeeperService";
-import { PII, RecorderFS } from "../util/record";
+import { GatekeeperService } from "../service";
 import * as os from "os";
 
 export default class Issue extends Command {
@@ -63,13 +62,12 @@ export default class Issue extends Command {
       gatekeeperAuthority,
       gatekeeperNetwork,
       gatekeeperAuthority,
-      new RecorderFS(),
       {
         defaultExpirySeconds: 15 * 60 * 60, // 15 minutes
       }
     );
 
-    const token = await service.issue(address, {} as PII);
+    const token = await service.issue(address);
 
     console.log(token);
   }

@@ -1,8 +1,7 @@
 import { Command, flags } from "@oclif/command";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { getConnection } from "../util/connection";
-import { GatekeeperService } from "../service/GatekeeperService";
-import { RecorderFS } from "../util/record";
+import { getConnection } from "../util";
+import { GatekeeperService } from "../service";
 import * as os from "os";
 import * as fs from "fs";
 
@@ -58,7 +57,6 @@ Revoked
       gatekeeperAuthority,
       gatekeeperNetwork,
       gatekeeperAuthority,
-      new RecorderFS(),
       {
         defaultExpirySeconds: 15 * 60 * 60, // 15 minutes
       }

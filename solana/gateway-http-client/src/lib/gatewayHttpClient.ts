@@ -122,17 +122,6 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     }
   }
 
-  async auditGatewayToken(token: string): Promise<GatekeeperRecord | null> {
-    try {
-      const getResponse = await axios.get(`${this.baseUrl}/${token}`);
-      return getResponse.data;
-    } catch (error) {
-      if (error.response)
-        throw new Error(errorMessageFromResponse(error.response));
-      throw error;
-    }
-  }
-
   async requestAirdrop(walletPublicKey: PublicKey): Promise<void> {
     console.log(`Requesting airdrop to key ${walletPublicKey.toBase58()}...`);
     await this.callGatekeeper<AirdropRequestBody, null>(
