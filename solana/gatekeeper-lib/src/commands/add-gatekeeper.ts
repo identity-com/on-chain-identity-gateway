@@ -1,7 +1,7 @@
 import { Command, flags } from "@oclif/command";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 
-import { getConnection } from "../util/connection";
+import { getConnection } from "../util";
 import * as fs from "fs";
 import { GatekeeperNetworkService } from "../service/GatekeeperNetworkService";
 import * as os from "os";
