@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ ociv COMMAND
 running command...
 $ ociv (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.0.13 darwin-x64 node-v16.0.0
+@identity.com/solana-gatekeeper-lib/1.0.15 darwin-x64 node-v14.15.0
 $ ociv --help [COMMAND]
 USAGE
   $ ociv COMMAND
@@ -43,11 +43,11 @@ USAGE
   $ ociv add-gatekeeper [GATEKEEPERAUTHORITYKEYFILEPATH] [GATEKEEPERNETWORKKEYFILEPATH]
 
 ARGUMENTS
-  GATEKEEPERAUTHORITYKEYFILEPATH  [default: /Users/daniel/.config/solana/id.json] The private key file for the
-                                  gatekeeper network authority, defaults to user .config/solana/id.json
+  GATEKEEPERAUTHORITYKEYFILEPATH  [default: /Users/lucas/.config/solana/id.json] The private key file for the gatekeeper
+                                  network authority, defaults to user .config/solana/id.json
 
-  GATEKEEPERNETWORKKEYFILEPATH    [default: /Users/daniel/.config/solana/id.json] The private key file for the
-                                  gatekeeper network, defaults to user .config/solana/id.json
+  GATEKEEPERNETWORKKEYFILEPATH    [default: /Users/lucas/.config/solana/id.json] The private key file for the gatekeeper
+                                  network, defaults to user .config/solana/id.json
 
 OPTIONS
   -h, --help       show CLI help
@@ -58,7 +58,7 @@ EXAMPLE
   $ ociv add-gatekeeper
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.15/dist/commands/add-gatekeeper.ts)_
 
 ## `ociv help [COMMAND]`
 
@@ -88,8 +88,8 @@ USAGE
 ARGUMENTS
   ADDRESS                         The address to issue the token to
 
-  GATEKEEPERAUTHORITYKEYFILEPATH  [default: /Users/daniel/.config/solana/id.json] The private key file for the
-                                  gatekeeper network authority
+  GATEKEEPERAUTHORITYKEYFILEPATH  [default: /Users/lucas/.config/solana/id.json] The private key file for the gatekeeper
+                                  network authority
 
 OPTIONS
   -h, --help       show CLI help
@@ -100,7 +100,7 @@ EXAMPLE
   $ ociv issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.15/dist/commands/issue.ts)_
 
 ## `ociv revoke GATEWAYTOKEN [GATEKEEPERAUTHORITYKEYFILEPATH]`
 
@@ -113,8 +113,8 @@ USAGE
 ARGUMENTS
   GATEWAYTOKEN                    The gateway token to revoke
 
-  GATEKEEPERAUTHORITYKEYFILEPATH  [default: /Users/daniel/.config/solana/id.json] The private key file for the
-                                  gatekeeper network authority
+  GATEKEEPERAUTHORITYKEYFILEPATH  [default: /Users/lucas/.config/solana/id.json] The private key file for the gatekeeper
+                                  network authority
 
 OPTIONS
   -h, --help  show CLI help
@@ -124,7 +124,7 @@ EXAMPLE
   Revoked
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.15/dist/commands/revoke.ts)_
 
 ## `ociv verify GATEWAYTOKEN OWNER`
 
@@ -150,5 +150,5 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.13/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.15/dist/commands/verify.ts)_
 <!-- commandsstop -->
