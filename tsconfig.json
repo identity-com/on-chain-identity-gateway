@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+      "module": "commonjs",
+      "declaration": true,
+      "removeComments": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "target": "es2017",
+      "sourceMap": true,
+      "outDir": "./dist",
+      "skipLibCheck": true,
+      "resolveJsonModule": true
+    },
+    "exclude": ["node_modules", "dist"],
+    "typeAcquisition": {
+      "include": [
+        "jest"
+      ]
+    },
+    "include": [
+      "src/**/*.ts",
+      "mongo/seed/**/*.ts"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
+    ]
+}
