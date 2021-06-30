@@ -3,15 +3,16 @@ on:
   push:
     paths:
       - 'solana/program/**'
+      - '.github/**'
   pull_request:
 jobs:
   solana-gateway-program-build-test:
-    name: Build, lint and test the solana gateway program on ${{ matrix.os }}
+    name: Build, lint and test the solana gateway program on ${{ matrix.rust }} and ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: ['15.x']
+        rust: ['nightly-2021-02-18']
         os: [ubuntu-latest]
 
     defaults:

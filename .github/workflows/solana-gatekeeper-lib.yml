@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'solana/gatekeeper-lib/**'
+      - '.github/**'
   pull_request:
 jobs:
   solana-gatekeeper-build:
