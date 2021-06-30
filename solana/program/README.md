@@ -1,21 +1,35 @@
 # Solana On-Chain Gateway Program
 
 This program defines the operations that gatekeepers can perform on the Solana blockchain,
-such as issuing and revoking gateway tokens.
+such as issuing and revoking gateway tokens, as well as operations to add/remove gatekeepers,
+performed by gatekeeper network authorities.
 
 ## Instructions
 
 The program provides the following instructions:
 
-### 1. Issue Gateway Token
+### 1. Add Gatekeeper
+
+Callable by: Gatekeeper network authority
+
+Input accounts:
+- [Writeable, Signer] Payer
+- [Writeable] Uninitialized gatekeeper account
+- [] Gatekeeper authority
+- [Signer] Gatekeeper network authority
+
+
+### 2. Issue Gateway Token
 
 Callable by: Gatekeeper
 
 Input accounts:
+- [Writeable, Signer] Payer
 - [Writeable] Uninitialized gateway token account
-- [Signer] Gatekeeper account
 - [] Owner wallet (TODO or DID)
-- [Signer] Payer
+- [] Gatekeeper account
+- [Signer] Gatekeeper authority
+- [] Gatekeeper network
 
 Data:
 - Expiry (TODO clock time, block, slot or epoch)
@@ -24,13 +38,13 @@ Data:
 
 Generates a new gateway token for a trader
 
-### 2. Set Gateway Token state
+### 3. Set Gateway Token state
 
 Callable by: Gatekeeper
 Input accounts:
 - [Writeable] Gateway token account
-- [Signer] Gatekeeper account
-- [Signer] Payer
+- [Signer] Gatekeeper authority
+- [] Gatekeeper account
 
 Data:
 - New state (Frozen, Revoked, Active)
@@ -41,15 +55,16 @@ For details on the states, please see [Account Structures](#account-structures) 
 Frozen gateway tokens can be unfrozen by setting them to Active
 Revoked tokens cannot be unrevoked.
 
-### 3. Create Session   
+### 4. Create Session   
 
 Callable by: Gateway Token owner
 Input accounts:
+- [Signer] Payer
 - [] Gateway token account
 - [Signer] Owner wallet (TODO or DID)
 - [Writeable] Uninitialised session token account
 - [Writeable] Delegated CVC account
-- [Signer] Payer
+
 
 Data:
 - Transaction Details (see [below](#transaction-details-structure))
