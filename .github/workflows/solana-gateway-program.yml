@@ -6,8 +6,8 @@ on:
       - '.github/**'
   pull_request:
 jobs:
-  solana-gateway-program-build-test:
-    name: Build, lint and test the solana gateway program on ${{ matrix.rust }} and ${{ matrix.os }}
+  solana-gateway-program-lint:
+    name: Lint the solana gateway program on ${{ matrix.rust }} and ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -15,14 +15,55 @@ jobs:
         rust: ['nightly-2021-02-18']
         os: [ubuntu-latest]
 
-    defaults:
-      run:
-        working-directory: ./solana/program
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
         
+      - name: Use Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+          components: rustfmt, clippy
+
+      - name: Cache build dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./solana/program/target
+          key: cargo-lint-${{ hashFiles('Cargo.lock') }}
+
+# TODO
+#      - name: Run fmt
+#        uses: actions-rs/cargo@v1
+#        with:
+#          command: fmt
+#          args: --manifest-path solana/program/Cargo.toml --all -- --check
+
+# TODO
+#      - name: Run linter
+#        uses: actions-rs/cargo@v1
+#        with:
+#          command: clippy
+#          args: --manifest-path solana/program/Cargo.toml -Zunstable-options --workspace --all-targets -- --deny=warnings
+
+  solana-gateway-program-build:
+    name: Build and test the solana gateway program on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        rust: ['1.50']
+        solana: ['v1.7.3']
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
       - name: Use Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
@@ -36,26 +77,29 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            ./program/target
-          key: cargo-test-${{ hashFiles('Cargo.lock') }}
+            ./solana/program/target
+          key: cargo-build-${{ hashFiles('Cargo.lock') }}
+
+      - name: Cache Solana version
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache
+          key: solana-${{ matrix.solana }}
+          
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/${{ matrix.solana }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
       - name: Run unit tests
         uses: actions-rs/cargo@v1
         with:
           command: test
-          
-      - name: Run functional tests
+          args: --manifest-path solana/program/Cargo.toml
+
+      - name: Build the program and run functional tests
         uses: actions-rs/cargo@v1
         with:
           command: test-bpf
-
-# TODO
-#      - name: Run linter
-#        uses: actions-rs/cargo@v1
-#        with:
-#          command: clippy
-        
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build-bpf
+          args: --manifest-path solana/program/Cargo.toml
