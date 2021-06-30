@@ -113,7 +113,7 @@ export class GatekeeperClient implements GatekeeperClientInterface {
       await this.callGatekeeper<RefreshTokenRequestBody, GatekeeperResponse>(
         "PATCH",
         { proof },
-        `/${request.token.toBase58()}/refresh`
+        `/${request.wallet.toBase58()}/refresh`
       );
     } catch (error) {
       if (error.response)

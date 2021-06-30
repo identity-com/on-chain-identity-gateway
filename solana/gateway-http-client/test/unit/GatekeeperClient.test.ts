@@ -280,9 +280,10 @@ describe("GatekeeperClient", () => {
     let gatekeeperClientInst: GatekeeperClient;
     const baseUrl = "test_baseUrl";
     const token = Keypair.generate().publicKey;
-    const refreshUrl = `${baseUrl}/${token.toBase58()}/refresh`;
+    let refreshUrl: string;
 
     beforeEach(() => {
+      refreshUrl = `${baseUrl}/${walletPublicKey.toBase58()}/refresh`;
       gatekeeperClientInst = new GatekeeperClient({ baseUrl });
     });
 
