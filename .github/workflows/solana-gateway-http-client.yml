@@ -1,5 +1,8 @@
-name: Main
+name: Solana Gateway HTTP Client Build
 on:
+  push:
+    paths:
+      - 'solana/gateway-http-client/**'
   pull_request:
 jobs:
   solana-gateway-http-client-build:
