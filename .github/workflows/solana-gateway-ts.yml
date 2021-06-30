@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'solana/gateway-ts/**'
+      - '.github/**'
   pull_request:
 jobs:
   solana-gateway-ts-build:
