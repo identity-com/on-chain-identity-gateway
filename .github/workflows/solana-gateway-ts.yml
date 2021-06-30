@@ -1,5 +1,8 @@
-name: Main
+name: Solana Gateway-TS Build
 on:
+  push:
+    paths:
+      - 'solana/gateway-ts/**'
   pull_request:
 jobs:
   solana-gateway-ts-build:
