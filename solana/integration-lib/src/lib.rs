@@ -20,8 +20,10 @@ const MAX_SESSION_TOKEN_BALANCE: u64 = 0;
 
 pub struct Gateway {}
 impl Gateway {
-    fn program_id() -> Pubkey { Pubkey::from_str("gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs").unwrap() }
-    
+    fn program_id() -> Pubkey {
+        Pubkey::from_str("gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs").unwrap()
+    }
+
     /// Unpacks an account into a gateway token object
     fn parse_gateway_token(account_info: &AccountInfo) -> Result<GatewayToken, GatewayError> {
         program_borsh::try_from_slice_incomplete::<GatewayToken>(*account_info.data.borrow())
@@ -117,8 +119,10 @@ impl Gateway {
         expected_owner: &Pubkey,
         expected_gatekeeper_key: &Pubkey,
     ) -> Result<(), GatewayError> {
-        if gateway_token_info.owner.ne(&Gateway::program_id()) { return Err(GatewayError::IncorrectProgramId) }
-        
+        if gateway_token_info.owner.ne(&Gateway::program_id()) {
+            return Err(GatewayError::IncorrectProgramId);
+        }
+
         let gateway_token_result = Gateway::parse_gateway_token(gateway_token_info);
 
         match gateway_token_result {
@@ -157,6 +161,9 @@ pub mod tests {
             &Default::default(),
         );
 
-        assert!(matches!(verify_result, Err(GatewayError::IncorrectProgramId)))
+        assert!(matches!(
+            verify_result,
+            Err(GatewayError::IncorrectProgramId)
+        ))
     }
 }

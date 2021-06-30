@@ -36,19 +36,17 @@ jobs:
             ./solana/program/target
           key: cargo-lint-${{ hashFiles('Cargo.lock') }}
 
-# TODO
-#      - name: Run fmt
-#        uses: actions-rs/cargo@v1
-#        with:
-#          command: fmt
-#          args: --manifest-path solana/program/Cargo.toml --all -- --check
+      - name: Run fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path solana/program/Cargo.toml --all -- --check
 
-# TODO
-#      - name: Run linter
-#        uses: actions-rs/cargo@v1
-#        with:
-#          command: clippy
-#          args: --manifest-path solana/program/Cargo.toml -Zunstable-options --workspace --all-targets -- --deny=warnings
+      - name: Run clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --manifest-path solana/program/Cargo.toml -Zunstable-options --workspace --all-targets -- --deny=warnings
 
   solana-gateway-program-build:
     name: Build and test the solana gateway program on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
