@@ -1,5 +1,8 @@
-name: Main
+name: Solana Gatekeeper Lib Build
 on:
+  push:
+    paths:
+      - 'solana/gatekeeper-lib/**'
   pull_request:
 jobs:
   solana-gatekeeper-build:

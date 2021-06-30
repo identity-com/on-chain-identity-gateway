@@ -1,0 +1,62 @@
+name: Solana Gateway Integration Lib Build
+on:
+  push:
+    paths:
+      - 'solana/integration-lib/**'
+  pull_request:
+jobs:
+  solana-gateway-integration-lib-build-test:
+    name: Build, lint and test the solana gateway integration-lib on ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ['15.x']
+        os: [ubuntu-latest]
+
+    defaults:
+      run:
+        working-directory: ./solana/integration-lib
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        
+      - name: Use Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+
+      - name: Cache build dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./integration-lib/target
+          key: cargo-test-${{ hashFiles('Cargo.lock') }}
+
+      - name: Run unit tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          
+      - name: Run functional tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test-bpf
+
+# TODO
+#      - name: Run linter
+#        uses: actions-rs/cargo@v1
+#        with:
+#          command: clippy
+        
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          
+
