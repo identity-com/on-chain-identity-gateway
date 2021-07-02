@@ -35,7 +35,7 @@ export type GatekeeperClientConfig = {
   headers?: Record<string, string>;
 };
 
-export type CreateTokenRequest = {
+export type RequestTokenRequest = {
   walletPublicKey: PublicKey;
   selfDeclarationTextAgreedTo?: string;
   presentationRequestId?: string;
@@ -49,7 +49,7 @@ export type RefreshTokenRequest = {
 };
 
 export interface GatekeeperClientInterface {
-  requestGatewayToken(request: CreateTokenRequest): Promise<GatekeeperRecord>;
+  requestGatewayToken(request: RequestTokenRequest): Promise<GatekeeperRecord>;
   refreshGatewayToken(request: RefreshTokenRequest): Promise<void>;
   requestAirdrop(walletPublicKey: PublicKey): Promise<void>;
 }
@@ -61,14 +61,14 @@ export type AirdropRequestBody = {
 export type RefreshTokenRequestBody = {
   proof: string;
 };
-export type CreateTokenRequestBody = {
+export type RequestTokenRequestBody = {
   scopeRequest?: string;
   address?: string;
   selfDeclarationTextAgreedTo?: string;
   proof: string;
 };
 export type GatekeeperRequestBody =
-  | CreateTokenRequestBody
+  | RequestTokenRequestBody
   | AirdropRequestBody
   | RefreshTokenRequestBody;
 export type GatekeeperResponse =

@@ -7,8 +7,8 @@ import {
   GatekeeperRecord,
   GatekeeperResponse,
   RefreshTokenRequest,
-  CreateTokenRequest,
-  CreateTokenRequestBody,
+  RequestTokenRequest,
+  RequestTokenRequestBody,
   AirdropRequestBody,
   RefreshTokenRequestBody,
   GatekeeperRequestBody,
@@ -76,7 +76,7 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     selfDeclarationTextAgreedTo,
     presentationRequestId,
     signer,
-  }: CreateTokenRequest): Promise<GatekeeperRecord> {
+  }: RequestTokenRequest): Promise<GatekeeperRecord> {
     // produce a signature that proves ownership of a wallet
     const proof = await proveWalletOwnership(walletPublicKey, signer);
 
@@ -94,7 +94,7 @@ export class GatekeeperClient implements GatekeeperClientInterface {
       "Requesting a new gatekeeper token...",
       gatewayTokenCreationRequest
     );
-    return this.callGatekeeper<CreateTokenRequestBody, GatekeeperRecord>(
+    return this.callGatekeeper<RequestTokenRequestBody, GatekeeperRecord>(
       "POST",
       gatewayTokenCreationRequest
     );
