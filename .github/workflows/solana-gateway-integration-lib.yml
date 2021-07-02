@@ -48,7 +48,6 @@ jobs:
           command: clippy
           args: --manifest-path solana/integration-lib/Cargo.toml -Zunstable-options --workspace --all-targets -- --deny=warnings
 
-
   solana-gateway-integration-lib-build:
     name: Build and test the solana gateway integration-lib on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
 
