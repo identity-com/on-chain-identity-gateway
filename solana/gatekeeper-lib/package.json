@@ -1,7 +1,7 @@
 {
   "name": "@identity.com/solana-gatekeeper-lib",
   "description": "Library and CLI to manage Gateway Tokens",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "author": "dankelleher @dankelleher",
   "bin": {
     "gateway": "./bin/run"
@@ -67,7 +67,7 @@
   },
   "repository": "identity-com/gatekeeper-lib",
   "scripts": {
-    "build": "rm -rf dist && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "build": "rm -rf dist && tsc -b && oclif-dev manifest && oclif-dev readme && cp src/util/oclif/*.json dist/util/oclif/",
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "yarn lint",
     "prepack": "yarn build",
