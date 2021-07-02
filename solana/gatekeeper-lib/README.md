@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.0.16 darwin-x64 node-v16.0.0
+@identity.com/solana-gatekeeper-lib/1.0.17 darwin-x64 node-v16.0.0
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -48,9 +48,9 @@ ARGUMENTS
   ADDRESS  The address of the gatekeeper to add to the network
 
 OPTIONS
-  -c, --cluster=cluster                            [default: http://localhost:8899] The cluster to target: mainnet-beta,
-                                                   testnet, devnet, civicnet, localnet. Alternatively, set the
-                                                   environment variable SOLANA_CLUSTER
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
 
   -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
                                                    authority
@@ -64,7 +64,7 @@ EXAMPLE
   $ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.16/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.17/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway freeze GATEWAYTOKEN`
 
@@ -78,9 +78,9 @@ ARGUMENTS
   GATEWAYTOKEN  The gateway token to freeze
 
 OPTIONS
-  -c, --cluster=cluster                            [default: http://localhost:8899] The cluster to target: mainnet-beta,
-                                                   testnet, devnet, civicnet, localnet. Alternatively, set the
-                                                   environment variable SOLANA_CLUSTER
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
 
   -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
                                                    authority
@@ -95,7 +95,7 @@ EXAMPLE
   Frozen
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.16/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.17/dist/commands/freeze.ts)_
 
 ## `gateway help [COMMAND]`
 
@@ -126,9 +126,9 @@ ARGUMENTS
   ADDRESS  The address to issue the token to
 
 OPTIONS
-  -c, --cluster=cluster                            [default: http://localhost:8899] The cluster to target: mainnet-beta,
-                                                   testnet, devnet, civicnet, localnet. Alternatively, set the
-                                                   environment variable SOLANA_CLUSTER
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
 
   -e, --expiry=expiry                              [default: 54000] The expiry time in seconds for the gateway token
                                                    (default 15 minutes)
@@ -145,7 +145,7 @@ EXAMPLE
   $ gateway issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.16/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.17/dist/commands/issue.ts)_
 
 ## `gateway revoke GATEWAYTOKEN`
 
@@ -159,9 +159,9 @@ ARGUMENTS
   GATEWAYTOKEN  The gateway token to revoke
 
 OPTIONS
-  -c, --cluster=cluster                            [default: http://localhost:8899] The cluster to target: mainnet-beta,
-                                                   testnet, devnet, civicnet, localnet. Alternatively, set the
-                                                   environment variable SOLANA_CLUSTER
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
 
   -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
                                                    authority
@@ -176,7 +176,7 @@ EXAMPLE
   Revoked
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.16/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.17/dist/commands/revoke.ts)_
 
 ## `gateway unfreeze GATEWAYTOKEN`
 
@@ -190,9 +190,9 @@ ARGUMENTS
   GATEWAYTOKEN  The gateway token to unfreeze
 
 OPTIONS
-  -c, --cluster=cluster                            [default: http://localhost:8899] The cluster to target: mainnet-beta,
-                                                   testnet, devnet, civicnet, localnet. Alternatively, set the
-                                                   environment variable SOLANA_CLUSTER
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
 
   -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
                                                    authority
@@ -207,7 +207,7 @@ EXAMPLE
   Unfrozen
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.16/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.17/dist/commands/unfreeze.ts)_
 
 ## `gateway verify OWNER`
 
@@ -221,9 +221,9 @@ ARGUMENTS
   OWNER  The gateway token to revoke
 
 OPTIONS
-  -c, --cluster=cluster                            [default: http://localhost:8899] The cluster to target: mainnet-beta,
-                                                   testnet, devnet, civicnet, localnet. Alternatively, set the
-                                                   environment variable SOLANA_CLUSTER
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
 
   -h, --help                                       show CLI help
 
@@ -242,5 +242,5 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.16/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.17/dist/commands/verify.ts)_
 <!-- commandsstop -->
