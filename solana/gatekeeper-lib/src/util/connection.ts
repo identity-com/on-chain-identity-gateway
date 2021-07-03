@@ -9,16 +9,25 @@ import {
 } from "@solana/web3.js";
 import { SOLANA_COMMITMENT } from "./constants";
 
-export type ExtendedCluster = Cluster | "localnet";
+export type ExtendedCluster = Cluster | "localnet" | "civicnet";
+export const CIVICNET_URL =
+  "http://ec2-34-238-243-215.compute-1.amazonaws.com:8899";
 
-export const CLUSTER: ExtendedCluster = (process.env.CLUSTER ||
-  "localnet") as ExtendedCluster;
-export const VALIDATOR_URL =
-  process.env.CLUSTER_URL ||
-  (CLUSTER === "localnet" ? "http://localhost:8899" : clusterApiUrl(CLUSTER));
+export const getClusterUrl = (cluster: ExtendedCluster) => {
+  switch (cluster) {
+    case "localnet":
+      return "http://localhost:8899";
+    case "civicnet":
+      return CIVICNET_URL;
+    default:
+      return clusterApiUrl(cluster);
+  }
+};
 
-export const getConnection = async (): Promise<Connection> =>
-  new Connection(VALIDATOR_URL, SOLANA_COMMITMENT);
+export const getConnection = (
+  clusterUrl: string = process.env.CLUSTER_URL ||
+    getClusterUrl(process.env.CLUSTER as ExtendedCluster)
+): Connection => new Connection(clusterUrl, SOLANA_COMMITMENT);
 
 export const send = (
   connection: Connection,

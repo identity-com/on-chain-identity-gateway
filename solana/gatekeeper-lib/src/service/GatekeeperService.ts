@@ -1,4 +1,4 @@
-import {Connection, Keypair, PublicKey, Transaction} from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import {
   freeze,
   GatewayToken,
@@ -11,7 +11,7 @@ import {
   updateExpiry,
   findGatewayToken,
 } from "@identity.com/solana-gateway-ts";
-import {send} from "../util/connection";
+import { send } from "../util/connection";
 
 type GatekeeperConfig = {
   defaultExpirySeconds?: number;
@@ -90,7 +90,6 @@ export class GatekeeperService {
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
       );
-    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
     const transaction = new Transaction().add(
       revoke(
         gatewayTokenKey,
@@ -99,7 +98,12 @@ export class GatekeeperService {
       )
     );
 
-    await send(this.connection, transaction, this.gatekeeperAuthority);
+    await send(
+      this.connection,
+      transaction,
+      this.payer,
+      this.gatekeeperAuthority
+    );
 
     return this.getGatewayTokenOrError(gatewayTokenKey);
   }
@@ -118,7 +122,12 @@ export class GatekeeperService {
       )
     );
 
-    await send(this.connection, transaction, this.gatekeeperAuthority);
+    await send(
+      this.connection,
+      transaction,
+      this.payer,
+      this.gatekeeperAuthority
+    );
 
     return this.getGatewayTokenOrError(gatewayTokenKey);
   }
@@ -137,7 +146,12 @@ export class GatekeeperService {
       )
     );
 
-    await send(this.connection, transaction, this.gatekeeperAuthority);
+    await send(
+      this.connection,
+      transaction,
+      this.payer,
+      this.gatekeeperAuthority
+    );
 
     return this.getGatewayTokenOrError(gatewayTokenKey);
   }
@@ -165,7 +179,12 @@ export class GatekeeperService {
       )
     );
 
-    await send(this.connection, transaction, this.gatekeeperAuthority);
+    await send(
+      this.connection,
+      transaction,
+      this.payer,
+      this.gatekeeperAuthority
+    );
 
     return this.getGatewayTokenOrError(gatewayTokenKey);
   }

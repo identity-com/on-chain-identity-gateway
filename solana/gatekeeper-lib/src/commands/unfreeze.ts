@@ -1,14 +1,18 @@
-import {Command, flags} from "@oclif/command";
-import {PublicKey} from "@solana/web3.js";
-import {clusterFlag, gatekeeperKeyFlag, gatekeeperNetworkKeyFlag,} from "../util/oclif/flags";
-import {getTokenUpdateProperties} from "../util/oclif/utils";
+import { Command, flags } from "@oclif/command";
+import { PublicKey } from "@solana/web3.js";
+import {
+  clusterFlag,
+  gatekeeperKeyFlag,
+  gatekeeperNetworkKeyFlag,
+} from "../util/oclif/flags";
+import { getTokenUpdateProperties } from "../util/oclif/utils";
 
-export default class Freeze extends Command {
-  static description = "Freeze a gateway token";
+export default class Unfreeze extends Command {
+  static description = "Unfreeze a gateway token";
 
   static examples = [
-    `$ gateway revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
-Revoked
+    `$ gateway unfreeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
+Unfrozen
 `,
   ];
 
@@ -23,23 +27,23 @@ Revoked
     {
       name: "gatewayToken",
       required: true,
-      description: "The gateway token to freeze",
+      description: "The gateway token to unfreeze",
       parse: (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(Freeze);
+    const { args, flags } = this.parse(Unfreeze);
 
     const { gatewayToken, gatekeeper, service } =
       await getTokenUpdateProperties(args, flags);
 
-    this.log(`Freezing:
+    this.log(`Unfreezing:
      ${gatewayToken.toBase58()}
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
-    const token = await service.freeze(gatewayToken);
+    const token = await service.unfreeze(gatewayToken);
 
-    this.log("Frozen token", token.publicKey.toBase58());
+    this.log("Unfrozen");
   }
 }

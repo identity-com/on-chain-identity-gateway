@@ -11,8 +11,8 @@ export default class Freeze extends Command {
   static description = "Freeze a gateway token";
 
   static examples = [
-    `$ gateway freeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
-Frozen
+    `$ gateway refresh EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv 54000
+Refreshed
 `,
   ];
 
@@ -30,6 +30,13 @@ Frozen
       description: "The gateway token to freeze",
       parse: (input: string) => new PublicKey(input),
     },
+    {
+      name: "expiry",
+      description:
+        "The new expiry time in seconds for the gateway token (default 15 minutes)",
+      default: 15 * 60 * 60, // 15 minutes
+      parse: (input: string) => Number(input),
+    },
   ];
 
   async run() {
@@ -38,12 +45,15 @@ Frozen
     const { gatewayToken, gatekeeper, service } =
       await getTokenUpdateProperties(args, flags);
 
-    this.log(`Freezing:
+    this.log(`Refreshing:
      ${gatewayToken.toBase58()}
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
-    const token = await service.freeze(gatewayToken);
+    const token = await service.updateExpiry(
+      gatewayToken,
+      args.expiry + Math.floor(Date.now() / 1000)
+    );
 
-    this.log("Frozen token", token.publicKey.toBase58());
+    this.log("Refreshed");
   }
 }
