@@ -36,19 +36,17 @@ jobs:
             ./solana/integration-lib/target
           key: cargo-lint-${{ hashFiles('Cargo.lock') }}
 
-  # TODO
-  #      - name: Run fmt
-  #        uses: actions-rs/cargo@v1
-  #        with:
-  #          command: fmt
-  #          args: --manifest-path solana/integration-lib/Cargo.toml --all -- --check
+      - name: Run fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path solana/integration-lib/Cargo.toml --all -- --check
 
-  # TODO
-  #      - name: Run linter
-  #        uses: actions-rs/cargo@v1
-  #        with:
-  #          command: clippy
-  #          args: --manifest-path solana/integration-lib/Cargo.toml -Zunstable-options --workspace --all-targets -- --deny=warnings
+      - name: Run clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --manifest-path solana/integration-lib/Cargo.toml -Zunstable-options --workspace --all-targets -- --deny=warnings
 
   solana-gateway-integration-lib-build:
     name: Build and test the solana gateway integration-lib on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
