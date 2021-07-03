@@ -232,6 +232,7 @@ pub mod tests {
         sync::Once,
         time::{SystemTime, UNIX_EPOCH},
     };
+    use std::time::Instant;
 
     static INIT_TESTS: Once = Once::new();
 

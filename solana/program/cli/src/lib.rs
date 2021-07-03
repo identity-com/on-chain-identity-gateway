@@ -2,18 +2,16 @@ use clap::Clap;
 use debug_print::debug_println;
 use rand::rngs::OsRng;
 use solana_client::{
-    rpc_client::RpcClient,
-    rpc_config::RpcSendTransactionConfig,
-    client_error::ClientError
+    client_error::ClientError, rpc_client::RpcClient, rpc_config::RpcSendTransactionConfig,
 };
-use solana_gateway_program::solana_program::program_error::ProgramError;
 use solana_gateway_program::instruction;
+use solana_gateway_program::solana_program::program_error::ProgramError;
 use solana_sdk::{
-    transaction::Transaction,
-    signature::Signature,
+    commitment_config::CommitmentConfig,
     pubkey::Pubkey,
-    signature::{Keypair, Signer, read_keypair_file},
-    commitment_config::CommitmentConfig
+    signature::Signature,
+    signature::{read_keypair_file, Keypair, Signer},
+    transaction::Transaction,
 };
 
 #[derive(Clap, Debug)]
@@ -64,7 +62,11 @@ pub fn send_txn(client: &RpcClient, txn: &Transaction) -> Result<Signature, Clie
     )?)
 }
 
-fn whole_shebang(client: &RpcClient, program_id: &Pubkey, payer: &Keypair) -> Result<(), ClientError> {
+fn whole_shebang(
+    client: &RpcClient,
+    program_id: &Pubkey,
+    payer: &Keypair,
+) -> Result<(), ClientError> {
     let gatekeeper = Keypair::generate(&mut OsRng);
     let gatekeeper_network = Keypair::generate(&mut OsRng);
 
@@ -87,6 +89,6 @@ fn whole_shebang(client: &RpcClient, program_id: &Pubkey, payer: &Keypair) -> Re
     debug_println!("Sending the ol' transaction");
     send_txn(client, &txn)?;
     debug_println!("The ol' transaction was sent");
-    
+
     Ok(())
 }

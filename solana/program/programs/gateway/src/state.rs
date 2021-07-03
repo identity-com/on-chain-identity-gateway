@@ -1,12 +1,10 @@
 //! Program state
+use solana_gateway::state::{GatewayToken, GatewayTokenState};
 use {
     crate::id,
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
-    solana_program::{
-        pubkey::Pubkey
-    }
+    solana_program::pubkey::Pubkey,
 };
-use solana_gateway::state::{ GatewayTokenState, GatewayToken };
 
 /// A Gatekeeper account
 #[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq)]
@@ -30,51 +28,51 @@ impl Transitionable<GatewayTokenState> for GatewayToken {
     /// Revoked GTs cannot be transitioned
     fn is_valid_state_change(&self, new_state: &GatewayTokenState) -> bool {
         match new_state {
-            GatewayTokenState::Active => {
-                match self.state {
-                    GatewayTokenState::Active => false,
-                    GatewayTokenState::Frozen => true,
-                    GatewayTokenState::Revoked => false
-                }
-            }
-            GatewayTokenState::Frozen => {
-                match self.state {
-                    GatewayTokenState::Active => true,
-                    GatewayTokenState::Frozen => false,
-                    GatewayTokenState::Revoked => false
-                }
-            }
-            GatewayTokenState::Revoked => {
-                match self.state {
-                    GatewayTokenState::Active => true,
-                    GatewayTokenState::Frozen => true,
-                    GatewayTokenState::Revoked => false
-                }
-            }
+            GatewayTokenState::Active => match self.state {
+                GatewayTokenState::Active => false,
+                GatewayTokenState::Frozen => true,
+                GatewayTokenState::Revoked => false,
+            },
+            GatewayTokenState::Frozen => match self.state {
+                GatewayTokenState::Active => true,
+                GatewayTokenState::Frozen => false,
+                GatewayTokenState::Revoked => false,
+            },
+            GatewayTokenState::Revoked => match self.state {
+                GatewayTokenState::Active => true,
+                GatewayTokenState::Frozen => true,
+                GatewayTokenState::Revoked => false,
+            },
         }
     }
 }
 
 /// The seed string used to derive a program address for a gateway token from an owner account
-pub const GATEWAY_TOKEN_ADDRESS_SEED: & [u8; 7] = br"gateway";
+pub const GATEWAY_TOKEN_ADDRESS_SEED: &[u8; 7] = br"gateway";
 
 /// The seed string used to derive a program address for a gateway token from an owner account
-pub const GATEKEEPER_ADDRESS_SEED: & [u8; 10] = br"gatekeeper";
+pub const GATEKEEPER_ADDRESS_SEED: &[u8; 10] = br"gatekeeper";
 
 /// An optional seed to use when generating a gateway token,
 /// allowing multiple gateway tokens per wallet
-pub type AddressSeed = [u8;8];
+pub type AddressSeed = [u8; 8];
 
 /// Get program-derived gateway token address for the authority
-pub fn get_gateway_token_address_with_seed(authority: &Pubkey, additional_seed: &Option<AddressSeed>) -> (Pubkey, u8) {
+pub fn get_gateway_token_address_with_seed(
+    authority: &Pubkey,
+    additional_seed: &Option<AddressSeed>,
+) -> (Pubkey, u8) {
     Pubkey::find_program_address(
-        &[&authority.to_bytes(), GATEWAY_TOKEN_ADDRESS_SEED, &additional_seed.unwrap_or_default()], 
-        &id())
+        &[
+            &authority.to_bytes(),
+            GATEWAY_TOKEN_ADDRESS_SEED,
+            &additional_seed.unwrap_or_default(),
+        ],
+        &id(),
+    )
 }
 
 /// Get program-derived gatekeeper address for the authority
 pub fn get_gatekeeper_address_with_seed(authority: &Pubkey) -> (Pubkey, u8) {
-    Pubkey::find_program_address(
-        &[&authority.to_bytes(), GATEKEEPER_ADDRESS_SEED],
-        &id())
+    Pubkey::find_program_address(&[&authority.to_bytes(), GATEKEEPER_ADDRESS_SEED], &id())
 }
