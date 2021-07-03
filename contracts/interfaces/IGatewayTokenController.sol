@@ -12,32 +12,27 @@ interface IGatewayTokenController {
     * @dev Emitted when new GatewayToken contract deployed with 
     * associated `name` and `symbol` to specific `address`.
     */
-    event GatewayTokenCreated(address indexed tokenAddress, string name, string symbol);
+    event GatewayTokenCreated(address indexed tokenAddress, string name, string symbol, address deployer);
 
     /**
-    * @dev Emitted when GatewayTokens allowed to transfer for token owners.
+    * @dev Emitted when GatewayTokens allowed to transfer for token owners by `account`.
     */
-    event TransfersAcceptedBatch(address[] indexed tokens);
+    event TransfersAcceptedBatch(address[] tokens, address account);
 
     /**
-    * @dev Emitted when GatewayTokens restricted to transfer for token owners.
+    * @dev Emitted when GatewayTokens restricted to transfer for token owners by `account`.
     */
-    event TransfersRestrictedBatch(address[] indexed tokens);
+    event TransfersRestrictedBatch(address[] tokens, address account);
 
     /**
-    * @dev Emitted when `blacklisted` address is blocked to own tokens in any GatewayToken contract.
+    * @dev Emitted when `user` address is blocked to own tokens in any GatewayToken contract.
     */
-    event Blacklisted(address indexed blacklisted);
+    event Blacklisted(address indexed user);
 
     /**
-    * @dev Emitted when Network Authorities added to Gateway Token at `token` address.
+    * @dev Emitted when multiple `users` addresses is blocked to own tokens in any GatewayToken contract.
     */
-    event NetworkAuthoritiesAdded(address indexed token, address[] indexed networkAuthorities);
-
-    /**
-    * @dev Emitted when Network Authorities removed to Gateway Token at `token` address.
-    */
-    event NetworkAuthoritiesRemoved(address indexed token, address[] indexed networkAuthorities);
+    event BlacklistedBatch(address[] users);
 
     /**
     * @dev Triggers to get Civic System Admin
@@ -69,6 +64,14 @@ interface IGatewayTokenController {
     * @notice Once user is blacklisted there is no way to whitelist, please use this function carefully.
     */
     function blacklist(address user) external;
+
+    /**
+    * @dev Blacklist multiple `users`, user can't get KYC verification on any gateway token networks.
+    * @param users User addresses to blacklist.
+    *
+    * @notice Once user is blacklisted there is no way to whitelist, please use this function carefully.
+    */
+    function blacklistBatch(address[] memory users) external;
 
     /**
     * @dev Checks if specified `user` blacklisted completely. 

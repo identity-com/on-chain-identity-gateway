@@ -32,7 +32,7 @@ module.exports = {
   },
   gasReporter: {
     currency: 'USD',
-    gasPrice: 125
+    gasPrice: 15
   },
   mocha: {
     timeout: 100000,

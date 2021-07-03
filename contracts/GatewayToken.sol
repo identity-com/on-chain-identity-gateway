@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./interfaces/IERC721Freezeble.sol";
 import "./interfaces/IGatewayToken.sol";
 import "./interfaces/IGatewayTokenController.sol";
+import "./interfaces/IERC721Expirable.sol";
 
 /**
  * @dev Gateway Token contract is responsible for managing Civic KYC gateway tokens 
@@ -21,7 +22,7 @@ import "./interfaces/IGatewayTokenController.sol";
  * Gatekeepers (Civic network parties who can mint/burn/freeze gateway tokens) and overall system Admin who can add
  * new Gatekeepers and Network Authorities
  */
-contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC721Freezeble, IGatewayToken {
+contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC721Freezeble, IERC721Expirable, IGatewayToken {
     using Address for address;
     using Strings for uint256;
 
@@ -33,12 +34,13 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
 
     // Gateway Token controller contract address
     address public controller;
+    address public deployer;
 
     // Gateway token transfer restrictions
     bool public isTransfersRestricted;
 
     // Access control roles
-    bytes32 public constant CIVIC_SYSTEM_ADMIN = keccak256("CIVIC_SYSTEM_ADMIN");
+    bytes32 public constant GATEWAY_TOKEN_CONTROLLER = keccak256("GATEWAY_TOKEN_CONTROLLER");
     bytes32 public constant GATEKEEPER_ROLE = keccak256("GATEKEEPER_ROLE");
     bytes32 public constant NETWORK_AUTHORITY_ROLE = keccak256("NETWORK_AUTHORITY_ROLE");
 
@@ -73,6 +75,12 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
         _;
     }
 
+    // @dev Modifier to prevent calls from anyone except Civic Admin
+    modifier onlyNonBlacklistedUser(address user) {
+        require(!_isBlacklisted(user), "BLACKLISTED USER");
+        _;
+    }
+
     // @dev Modifier to make a function callable only when the contract is not paused.
     modifier whenTransfersNotRestricted() {
         require(!transfersRestricted(), "TRANSFERS RESTRICTED");
@@ -89,22 +97,23 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
      * @dev Gateway Token constructor initializes the contract by 
      * setting a `name` and a `symbol` to the gateway token.
      *
-     * Initiates gateway token roles with main system admin `CIVIC_SYSTEM_ADMIN`,
+     * Initiates gateway token roles with main system admin `GATEWAY_TOKEN_CONTROLLER`,
      * `NETWORK_AUTHORITY_ROLE` responsible for adding/removing Gatekeepers and 
      * `GATEKEEPER_ROLE` responsible for minting/burning/transfering tokens
      */
-    constructor(string memory _name, string memory _symbol) public {
+    constructor(string memory _name, string memory _symbol, address _deployer) public {
         name = _name;
         symbol = _symbol;
         controller = _msgSender();
         isTransfersRestricted = true;
+        deployer = _deployer;
 
-        _setupRole(CIVIC_SYSTEM_ADMIN, _msgSender());
+        _setupRole(GATEWAY_TOKEN_CONTROLLER, _msgSender());
 
-        _setupRole(NETWORK_AUTHORITY_ROLE, _msgSender());
-        _setRoleAdmin(NETWORK_AUTHORITY_ROLE, CIVIC_SYSTEM_ADMIN);
+        _setupRole(NETWORK_AUTHORITY_ROLE, deployer);
+        _setRoleAdmin(NETWORK_AUTHORITY_ROLE, GATEWAY_TOKEN_CONTROLLER);
 
-        _setupRole(GATEKEEPER_ROLE, _msgSender());
+        _setupRole(GATEKEEPER_ROLE, deployer);
         _setRoleAdmin(GATEKEEPER_ROLE, NETWORK_AUTHORITY_ROLE);
     }
 
@@ -157,7 +166,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * @param tokenId Gateway token id
     */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_existsAndActive(tokenId), "TOKEN DOESN'T EXIST OR FREEZED");
+        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FREEZED");
         string memory _tokenURI = _tokenURIs[tokenId];
 
         return _tokenURI;
@@ -173,6 +182,9 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     function setTokenURI(uint256 tokenId, string memory tokenURI) public virtual {
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
         require(_existsAndActive(tokenId), "TOKEN DOESN'T EXIST OR FREEZED");
+        address tokenOwner = ownerOf(tokenId);
+        require(!_isBlacklisted(tokenOwner), "BLACKLISTED USER");
+
         _tokenURIs[tokenId] = tokenURI;
     }
 
@@ -183,11 +195,13 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * Performs additional checks to verify that `owner` is not blacklisted globally.
     */
     function verifyToken(uint256 tokenId, address owner) external view virtual returns (bool) {
-        require(_existsActiveNotExpired(tokenId), "INVALID TOKEN");
+        if(!_existsAndActive(tokenId)) return false;
         address tokenOwner = ownerOf(tokenId);
-        require(tokenOwner == owner);
+        if (tokenOwner != owner) return false;
+        bool _blacklisted = _isBlacklisted(owner);
+        if(_blacklisted) return false;
 
-        return !IGatewayTokenController(controller).isBlacklisted(owner);
+        return true;
     }
 
     /**
@@ -205,14 +219,11 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * @dev Returns whether `tokenId` exists and not freezed.
     */
     function _existsAndActive(uint256 tokenId) internal view virtual returns (bool) {
-        return _owners[tokenId] != address(0) && _isFreezed[tokenId];
-    }
-
-    /**
-    * @dev Returns whether `tokenId` exists, not freezed and not expired.
-    */
-    function _existsActiveNotExpired(uint256 tokenId) internal view virtual returns (bool) {
-        return _owners[tokenId] != address(0) && _isFreezed[tokenId] && block.timestamp <= _expirations[tokenId];
+        if (_expirations[tokenId] != 0) {
+            return _owners[tokenId] != address(0) && !_isFreezed[tokenId] && block.timestamp <= _expirations[tokenId];
+        } else {
+            return _owners[tokenId] != address(0) && !_isFreezed[tokenId];
+        }
     }
 
     /**
@@ -222,10 +233,14 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
      *
      * - `tokenId` must exist.
      */
-    function _isApprovedOrGatekeeper(address spender, uint256 tokenId) internal view virtual returns (bool) {
-        require(_exists(tokenId), "TOKEN DOESN'T EXIST");
+    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
+        require(_exists(tokenId), "ERC721: operator query for nonexistent token");
         address owner = ownerOf(tokenId);
-        return (spender == owner && !isTransfersRestricted || hasRole(GATEKEEPER_ROLE, spender));
+        if (spender == owner) {
+            return !transfersRestricted();
+        } else {
+            return (getApproved(tokenId) == spender || isApprovedForAll(owner, spender) || hasRole(GATEKEEPER_ROLE, spender));
+        }
     }
 
     /**
@@ -239,6 +254,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
         address owner = GatewayToken.ownerOf(tokenId);
         require(to != owner, "INCORRECT APPROVE DESTINATION");
         require(_msgSender() == owner, "INCORRECT OWNER");
+        require(!_isBlacklisted(owner), "BLACKLISTED USER");
 
         _approve(to, tokenId);
     }
@@ -278,7 +294,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
         uint256 tokenId
     ) public virtual override {
         //solhint-disable-next-line max-line-length
-        require(_isApprovedOrGatekeeper(_msgSender(), tokenId), "MSG.SENDER NOT OWNER NOR GATEKEEPER");
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "MSG.SENDER NOT OWNER NOR GATEKEEPER");
 
         _transfer(from, to, tokenId);
     }
@@ -303,7 +319,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
         uint256 tokenId,
         bytes memory _data
     ) public virtual override {
-        require(_isApprovedOrGatekeeper(_msgSender(), tokenId), "MSG.SENDER NOT OWNER NOR GATEKEEPER");
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "MSG.SENDER NOT OWNER NOR GATEKEEPER");
         _safeTransfer(from, to, tokenId, _data);
     }
 
@@ -350,7 +366,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * @dev Triggers to mint gateway token
     * @param tokenId Gateway token id
     */
-    function mint(address to, uint256 tokenId) public virtual {
+    function mint(address to, uint256 tokenId) public virtual onlyNonBlacklistedUser(to) {
         //solhint-disable-next-line max-line-length
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
 
@@ -364,6 +380,8 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     function freeze(uint256 tokenId) public virtual override {
         //solhint-disable-next-line max-line-length
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
+        address tokenOwner = ownerOf(tokenId);
+        require(!_isBlacklisted(tokenOwner), "BLACKLISTED USER");
 
         _freeze(tokenId);
     }
@@ -375,17 +393,33 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     function unfreeze(uint256 tokenId) public virtual override {
         //solhint-disable-next-line max-line-length
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
+        address tokenOwner = ownerOf(tokenId);
+        require(!_isBlacklisted(tokenOwner), "BLACKLISTED USER");
 
         _unfreeze(tokenId);
+    }
+
+
+    /**
+    * @dev Triggers to get specificied `tokenId` expiration timestamp
+    * @param tokenId Gateway token id
+    */
+    function expiration(uint256 tokenId) public view virtual override returns (uint256) {
+        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FREEZED");
+        uint256 _expiration = _expirations[tokenId];
+
+        return _expiration;
     }
 
     /**
     * @dev Triggers to set expiration for tokenId
     * @param tokenId Gateway token id
     */
-    function expiration(uint256 tokenId, uint256 timestamp) public virtual {
+    function setExpiration(uint256 tokenId, uint256 timestamp) public virtual override {
         //solhint-disable-next-line max-line-length
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
+        address tokenOwner = ownerOf(tokenId);
+        require(!_isBlacklisted(tokenOwner), "BLACKLISTED USER");
 
         _setExpiration(tokenId, timestamp);
     }
@@ -445,7 +479,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * Emits a {Freeze} event.
     */
     function _freeze(uint256 tokenId) internal virtual {
-        require(!_existsAndActive(tokenId), "TOKEN DOESN'T EXISTS OR NOT ACTIVE");
+        require(_existsAndActive(tokenId), "TOKEN DOESN'T EXISTS OR NOT ACTIVE");
 
         _isFreezed[tokenId] = true;
 
@@ -458,7 +492,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * Emits a {Unfreeze} event.
     */
     function _unfreeze(uint256 tokenId) internal virtual {
-        require(!_exists(tokenId), "TOKEN DOESN'T EXISTS");
+        require(_exists(tokenId), "TOKEN DOESN'T EXISTS");
         require(_isFreezed[tokenId], "TOKEN NOT FREEZED");
 
         _isFreezed[tokenId] = false;
@@ -470,9 +504,10 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * @dev Sets expiration time for `tokenId`.
     */
     function _setExpiration(uint256 tokenId, uint256 timestamp) internal virtual {
-        require(!_existsAndActive(tokenId), "TOKEN DOESN'T EXISTS OR ACTIVE");
+        require(_existsAndActive(tokenId), "TOKEN DOESN'T EXISTS OR ACTIVE");
 
         _expirations[tokenId] = timestamp;
+        emit Expiration(tokenId, timestamp);
     }
 
     /**
@@ -549,6 +584,10 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
         }
     }
 
+    function _isBlacklisted(address user) private view returns (bool) {
+        return IGatewayTokenController(controller).isBlacklisted(user);
+    }
+
     /**
      * @dev Hook that is called before any token transfer. This includes minting
      * and burning.
@@ -595,7 +634,6 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     */
     function addNetworkAuthority(address authority) external virtual override returns (bool) {
         grantRole(NETWORK_AUTHORITY_ROLE, authority);
-        return true;
     }
 
     /**
@@ -606,7 +644,6 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     */
     function removeNetworkAuthority(address authority) external virtual override returns (bool) {
         revokeRole(NETWORK_AUTHORITY_ROLE, authority);
-        return true;
     }
 
     // ===========  ACCESS CONTROLL SECTION ============
@@ -617,7 +654,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * @notice Only triggered by Civic Admin
     */
     function allowTransfers() external virtual override whenTransfersRestricted returns (bool) {
-        require(hasRole(CIVIC_SYSTEM_ADMIN, _msgSender()), "MUST BE CIVIC ADMIN");
+        require(hasRole(GATEWAY_TOKEN_CONTROLLER, _msgSender()), "MUST BE GATEWAY TOKEN CONTROLLER");
         isTransfersRestricted = false;
         emit TransfersAccepted(_msgSender());
 
@@ -630,7 +667,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * @notice Only triggered by Civic Admin
     */
     function stopTransfers() external virtual override whenTransfersNotRestricted returns (bool) {
-        require(hasRole(CIVIC_SYSTEM_ADMIN, _msgSender()), "MUST BE CIVIC ADMIN");
+        require(hasRole(GATEWAY_TOKEN_CONTROLLER, _msgSender()), "MUST BE GATEWAY TOKEN CONTROLLER");
         isTransfersRestricted = true;
         emit TransfersRestricted(_msgSender());
 

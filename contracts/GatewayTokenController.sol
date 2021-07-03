@@ -63,7 +63,7 @@ contract GatewayTokenController is IGatewayTokenController {
             require(gt.allowTransfers(), "TRANSFERS NOT ALLOWED");
         }
 
-        emit TransfersAcceptedBatch(tokens);
+        emit TransfersAcceptedBatch(tokens, msg.sender);
     }
 
     /**
@@ -79,7 +79,7 @@ contract GatewayTokenController is IGatewayTokenController {
             require(gt.stopTransfers(), "TRANSFERS NOT ALLOWED");
         }
 
-        emit TransfersRestrictedBatch(tokens);
+        emit TransfersRestrictedBatch(tokens, msg.sender);
     }
 
     // ===========  USER RESTRICTIONS SECTION ============
@@ -91,9 +91,27 @@ contract GatewayTokenController is IGatewayTokenController {
     * @notice Once user is blacklisted there is no way to whitelist, please use this function carefully.
     */
     function blacklist(address user) public onlyAdmin override {
+        require(user != address(0), "ZERO ADDRESS");
         _isBlacklisted[user] = true;
 
         emit Blacklisted(user);
+    }
+
+    /**
+    * @dev Blacklist multiple `users`, user can't get KYC verification on any gateway token networks.
+    * @param users User addresses to blacklist.
+    *
+    * @notice Once user is blacklisted there is no way to whitelist, please use this function carefully.
+    */
+    function blacklistBatch(address[] memory users) public onlyAdmin override {
+        for (uint256 i = 0; i < users.length; ++i) {
+            address _user = users[i];
+    
+            require(_user != address(0), "ZERO ADDRESS");
+            _isBlacklisted[_user] = true;
+        }
+
+        emit BlacklistedBatch(users);
     }
 
     /**
@@ -115,10 +133,10 @@ contract GatewayTokenController is IGatewayTokenController {
     * @param _symbol Gateway Token symbol
     */
     function deployGatewayToken(string memory _name, string memory _symbol) public onlyAdmin override returns (address tokenAddress) {
-        tokenAddress = address(new GatewayToken(_name, _symbol));
+        tokenAddress = address(new GatewayToken(_name, _symbol, msg.sender));
         gatewayTokens.add(tokenAddress);
 
-        emit GatewayTokenCreated(tokenAddress, _name, _symbol);
+        emit GatewayTokenCreated(tokenAddress, _name, _symbol, msg.sender);
         return tokenAddress;
     }
 
@@ -138,10 +156,8 @@ contract GatewayTokenController is IGatewayTokenController {
         for (uint256 i = 0; i < authorities.length; ++i) {
             address authority = authorities[i];
 
-            require(gt.addNetworkAuthority(authority), "AUTHORITY NOT ADDED");
+            gt.addNetworkAuthority(authority);
         }
-
-        emit NetworkAuthoritiesAdded(token, authorities);
     }
 
     /**
@@ -158,9 +174,7 @@ contract GatewayTokenController is IGatewayTokenController {
         for (uint256 i = 0; i < authorities.length; ++i) {
             address authority = authorities[i];
 
-            require(gt.removeNetworkAuthority(authority), "AUTHORITY NOT REMOVED");
+            gt.removeNetworkAuthority(authority);
         }
-
-        emit NetworkAuthoritiesRemoved(token, authorities);
     }
 }
