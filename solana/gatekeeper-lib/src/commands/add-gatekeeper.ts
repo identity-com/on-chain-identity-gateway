@@ -1,90 +1,63 @@
 import { Command, flags } from "@oclif/command";
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 
-import { getConnection } from "../util";
-import * as fs from "fs";
+import { airdropTo, getConnection } from "../util";
 import { GatekeeperNetworkService } from "../service/GatekeeperNetworkService";
-import * as os from "os";
-import { airdropTo, MIN_AIRDROP_BALANCE } from "../util/account";
+import {
+  clusterFlag,
+  gatekeeperKeyFlag,
+  gatekeeperNetworkKeyFlag,
+} from "../util/oclif/flags";
 
-export const airdropSolIfRequired = async (
-  connection: Connection,
-  userPublicKey: PublicKey,
-  minBalance = MIN_AIRDROP_BALANCE
-): Promise<void> => {
-  const balance = await connection.getBalance(userPublicKey);
-  console.log("balance", {
-    userPublicKey: userPublicKey.toBase58(),
-    balance,
-    minBalance,
-  });
-  if (balance < minBalance) {
-    await airdropTo(
-      connection,
-      { publicKey: userPublicKey },
-      minBalance - balance
-    );
-  }
-};
 export default class AddGatekeeper extends Command {
   static description = "Add a gatekeeper to a network";
 
   static examples = [
-    `$ ociv add-gatekeeper
+    `$ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 `,
   ];
 
   static flags = {
     help: flags.help({ char: "h" }),
-    name: flags.string({ char: "n" }),
-    ip: flags.string({ char: "i" }),
+    gatekeeperKey: gatekeeperKeyFlag(),
+    gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
+    cluster: clusterFlag(),
   };
 
   static args = [
     {
-      name: "gatekeeperAuthorityKeyFilepath",
-      default: `${os.homedir()}/.config/solana/id.json`,
-      required: false,
-      description:
-        "The private key file for the gatekeeper network authority, defaults to user .config/solana/id.json",
-      parse: (input: string) =>
-        Keypair.fromSecretKey(
-          new Uint8Array(JSON.parse(fs.readFileSync(input).toString("utf-8")))
-        ),
-    },
-    {
-      name: "gatekeeperNetworkKeyFilepath",
-      default: `${os.homedir()}/.config/solana/id.json`,
-      required: false,
-      description:
-        "The private key file for the gatekeeper network, defaults to user .config/solana/id.json",
-      parse: (input: string) =>
-        Keypair.fromSecretKey(
-          new Uint8Array(JSON.parse(fs.readFileSync(input).toString("utf-8")))
-        ),
+      name: "address",
+      required: true,
+      description: "The address of the gatekeeper to add to the network",
+      parse: (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
     const { args, flags } = this.parse(AddGatekeeper);
 
-    const gatekeeperAuthority: Keypair = args.gatekeeperAuthorityKeyFilepath;
-    const gatekeeperNetwork: Keypair = args.gatekeeperNetworkKeyFilepath;
+    const gatekeeper: PublicKey = args.address;
+    const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
+    this.log(`Adding:
+      gatekeeper ${gatekeeper.toBase58()} 
+      to network ${gatekeeperNetwork.publicKey.toBase58()}`);
 
-    const connection = await getConnection();
-    await airdropSolIfRequired(connection, gatekeeperAuthority.publicKey);
+    const connection = getConnection(flags.cluster);
+
+    await airdropTo(
+      connection,
+      gatekeeperNetwork.publicKey,
+      flags.cluster as string
+    );
 
     const networkService = new GatekeeperNetworkService(
       connection,
-      gatekeeperAuthority, // as payer only
+      gatekeeperNetwork,
       gatekeeperNetwork
     );
-    await networkService.addGatekeeper(gatekeeperAuthority.publicKey);
-    this.log("Added gatekeeper to network");
-    this.log(`Using authority ${gatekeeperAuthority.publicKey.toBase58()}`);
+    const gatekeeperAccount = await networkService.addGatekeeper(gatekeeper);
     this.log(
-      `Remember to run 'export GATEKEEPER_NETWORK=${gatekeeperNetwork.publicKey.toBase58()}`
+      `Added gatekeeper to network. Gatekeeper account: ${gatekeeperAccount.toBase58()}`
     );
-    this.log("Added gatekeeper", gatekeeperAuthority.publicKey.toBase58());
   }
 }

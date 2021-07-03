@@ -1,21 +1,26 @@
 import { Command, flags } from "@oclif/command";
-import { Keypair, PublicKey } from "@solana/web3.js";
-import { getConnection } from "../util";
-import { GatekeeperService } from "../service";
-import * as os from "os";
-import * as fs from "fs";
+import { PublicKey } from "@solana/web3.js";
+import {
+  clusterFlag,
+  gatekeeperKeyFlag,
+  gatekeeperNetworkKeyFlag,
+} from "../util/oclif/flags";
+import { getTokenUpdateProperties } from "../util/oclif/utils";
 
 export default class Revoke extends Command {
   static description = "Revoke a gateway token";
 
   static examples = [
-    `$ ociv revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
+    `$ gateway revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
 Revoked
 `,
   ];
 
   static flags = {
     help: flags.help({ char: "h" }),
+    gatekeeperKey: gatekeeperKeyFlag(),
+    gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
+    cluster: clusterFlag(),
   };
 
   static args = [
@@ -25,44 +30,20 @@ Revoked
       description: "The gateway token to revoke",
       parse: (input: string) => new PublicKey(input),
     },
-    {
-      name: "gatekeeperAuthorityKeyFilepath",
-      default: `${os.homedir()}/.config/solana/id.json`,
-      required: false,
-      description: "The private key file for the gatekeeper network authority",
-      parse: (input: string) =>
-        Keypair.fromSecretKey(
-          new Uint8Array(JSON.parse(fs.readFileSync(input).toString("utf-8")))
-        ),
-    },
   ];
 
   async run() {
-    const { args } = this.parse(Revoke);
+    const { args, flags } = this.parse(Revoke);
 
-    const gatewayToken: PublicKey = args.gatewayToken;
-    this.log(`Revoking ${gatewayToken.toBase58()}`);
+    const { gatewayToken, gatekeeper, service } =
+      await getTokenUpdateProperties(args, flags);
 
-    const gatekeeperNetwork = new PublicKey(
-      process.env.GATEKEEPER_NETWORK as string
-    );
-    this.log(`Using network ${gatekeeperNetwork.toBase58()}`);
+    this.log(`Revoking:
+     ${gatewayToken.toBase58()}
+     by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
-    const gatekeeperAuthority: Keypair = args.gatekeeperAuthorityKeyFilepath;
-
-    this.log(`Using authority ${gatekeeperAuthority.publicKey.toBase58()}`);
-    const connection = await getConnection();
-    const service = new GatekeeperService(
-      connection,
-      gatekeeperAuthority,
-      gatekeeperNetwork,
-      gatekeeperAuthority,
-      {
-        defaultExpirySeconds: 15 * 60 * 60, // 15 minutes
-      }
-    );
     const token = await service.revoke(gatewayToken);
 
-    this.log("Revoked token", token);
+    this.log("Revoked");
   }
 }
