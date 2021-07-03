@@ -48,13 +48,13 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     U extends GatekeeperResponse
   >(method: Method, body: T, path = ""): Promise<U> {
     try {
-      const respose = await axios.request({
+      const response = await axios.request({
         method,
         url: `${this.baseUrl}${path}`,
         data: body,
         ...(this.headers ? { headers: this.headers } : {}),
       });
-      return respose.data;
+      return response.data;
     } catch (error) {
       if (error.response)
         throw new Error(errorMessageFromResponse(error.response));
