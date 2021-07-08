@@ -10,7 +10,6 @@ import { SignCallback } from "@identity.com/prove-solana-wallet";
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
 const { expect } = chai;
-const selfDeclarationTextAgreedTo = "test_selfDeclarationTextAgreedTo";
 const sandbox = sinon.createSandbox();
 const presentationRequestId = "test_presentationRequestId";
 
@@ -92,55 +91,6 @@ describe("GatekeeperClient", () => {
         const requestGatewayTokenResponse =
           await gatekeeperClientInst.requestGatewayToken({
             walletPublicKey,
-            signer,
-          });
-        expect(requestGatewayTokenResponse).deep.eq(data);
-      });
-    });
-
-    context("with selfDeclarationTextAgreedTo passed", () => {
-      it("should call post with an address param", async () => {
-        const expectation = sandbox
-          .mock(axios)
-          .expects("request")
-          .withArgs({
-            method: "POST",
-            url: `${baseUrl}`,
-            data: {
-              selfDeclarationTextAgreedTo,
-              address: walletPublicKey.toBase58(),
-              proof: sinon.match.string,
-            },
-          });
-
-        expectation.resolves({ status: 200 });
-        await gatekeeperClientInst.requestGatewayToken({
-          walletPublicKey,
-          selfDeclarationTextAgreedTo,
-          signer,
-        });
-        expectation.verify();
-      });
-
-      it("should return response from server", async () => {
-        const data = { test: "test" };
-        const serverResponse = { status: 200, data };
-        sandbox
-          .stub(axios, "request")
-          .withArgs({
-            method: "POST",
-            url: `${baseUrl}`,
-            data: {
-              selfDeclarationTextAgreedTo,
-              address: walletPublicKey.toBase58(),
-              proof: sinon.match.string,
-            },
-          })
-          .resolves(serverResponse);
-        const requestGatewayTokenResponse =
-          await gatekeeperClientInst.requestGatewayToken({
-            walletPublicKey,
-            selfDeclarationTextAgreedTo,
             signer,
           });
         expect(requestGatewayTokenResponse).deep.eq(data);

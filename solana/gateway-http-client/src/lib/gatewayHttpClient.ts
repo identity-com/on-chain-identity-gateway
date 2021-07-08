@@ -67,13 +67,11 @@ export class GatekeeperClient implements GatekeeperClientInterface {
    * If called and a gateway token already exists for this wallet, it will throw an exception
    *
    * @param {PublicKey} walletPublicKey
-   * @param {string} [selfDeclarationTextAgreedTo] - the text that a user had to agree to in order to call requestGatewayToken
    * @param {string} [presentationRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
    * @param {SignCallback} signer A signer callback, used to prove ownership of the wallet public key
    */
   async requestGatewayToken({
     walletPublicKey,
-    selfDeclarationTextAgreedTo,
     presentationRequestId,
     signer,
   }: CreateTokenRequest): Promise<GatekeeperRecord> {
@@ -88,7 +86,6 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     const gatewayTokenCreationRequest = {
       ...body,
       proof,
-      ...(selfDeclarationTextAgreedTo ? { selfDeclarationTextAgreedTo } : {}),
     };
     console.log(
       "Requesting a new gatekeeper token...",
