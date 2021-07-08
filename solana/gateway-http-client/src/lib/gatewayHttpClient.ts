@@ -48,13 +48,13 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     U extends GatekeeperResponse
   >(method: Method, body: T, path = ""): Promise<U> {
     try {
-      const respose = await axios.request({
+      const response = await axios.request({
         method,
         url: `${this.baseUrl}${path}`,
         data: body,
         ...(this.headers ? { headers: this.headers } : {}),
       });
-      return respose.data;
+      return response.data;
     } catch (error) {
       if (error.response)
         throw new Error(errorMessageFromResponse(error.response));
@@ -67,11 +67,11 @@ export class GatekeeperClient implements GatekeeperClientInterface {
    * If called and a gateway token already exists for this wallet, it will throw an exception
    *
    * @param {PublicKey} walletPublicKey
-   * @param {string} [selfDeclarationTextAgreedTo] - the text that a user had to agree to in order to call createGatewayToken
+   * @param {string} [selfDeclarationTextAgreedTo] - the text that a user had to agree to in order to call requestGatewayToken
    * @param {string} [presentationRequestId] If a Civic scope request was used to verify the identity of the trader, pass it here.
    * @param {SignCallback} signer A signer callback, used to prove ownership of the wallet public key
    */
-  async createGatewayToken({
+  async requestGatewayToken({
     walletPublicKey,
     selfDeclarationTextAgreedTo,
     presentationRequestId,
@@ -113,19 +113,8 @@ export class GatekeeperClient implements GatekeeperClientInterface {
       await this.callGatekeeper<RefreshTokenRequestBody, GatekeeperResponse>(
         "PATCH",
         { proof },
-        `/${request.token.toBase58()}/refresh`
+        `/${request.wallet.toBase58()}/refresh`
       );
-    } catch (error) {
-      if (error.response)
-        throw new Error(errorMessageFromResponse(error.response));
-      throw error;
-    }
-  }
-
-  async auditGatewayToken(token: string): Promise<GatekeeperRecord | null> {
-    try {
-      const getResponse = await axios.get(`${this.baseUrl}/${token}`);
-      return getResponse.data;
     } catch (error) {
       if (error.response)
         throw new Error(errorMessageFromResponse(error.response));

@@ -2,9 +2,7 @@
 
 use {
     num_derive::FromPrimitive,
-    solana_program::{
-        decode_error::DecodeError, program_error::ProgramError,
-    },
+    solana_program::{decode_error::DecodeError, program_error::ProgramError},
     thiserror::Error,
 };
 
@@ -13,7 +11,7 @@ use {
 pub enum GatewayError {
     /// Incorrect authority provided
     #[error("Incorrect authority provided")]
-    IncorrectAuthority
+    IncorrectAuthority,
 }
 impl From<GatewayError> for ProgramError {
     fn from(e: GatewayError) -> Self {

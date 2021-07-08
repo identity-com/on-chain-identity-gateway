@@ -7,12 +7,12 @@ import {
 } from "../util/oclif/flags";
 import { getTokenUpdateProperties } from "../util/oclif/utils";
 
-export default class Revoke extends Command {
-  static description = "Revoke a gateway token";
+export default class Freeze extends Command {
+  static description = "Freeze a gateway token";
 
   static examples = [
-    `$ gateway revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
-Revoked
+    `$ gateway refresh EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv 54000
+Refreshed
 `,
   ];
 
@@ -27,23 +27,33 @@ Revoked
     {
       name: "gatewayToken",
       required: true,
-      description: "The gateway token to revoke",
+      description: "The gateway token to freeze",
       parse: (input: string) => new PublicKey(input),
+    },
+    {
+      name: "expiry",
+      description:
+        "The new expiry time in seconds for the gateway token (default 15 minutes)",
+      default: 15 * 60 * 60, // 15 minutes
+      parse: (input: string) => Number(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(Revoke);
+    const { args, flags } = this.parse(Freeze);
 
     const { gatewayToken, gatekeeper, service } =
       await getTokenUpdateProperties(args, flags);
 
-    this.log(`Revoking:
+    this.log(`Refreshing:
      ${gatewayToken.toBase58()}
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
-    const token = await service.revoke(gatewayToken);
+    const token = await service.updateExpiry(
+      gatewayToken,
+      args.expiry + Math.floor(Date.now() / 1000)
+    );
 
-    this.log("Revoked");
+    this.log("Refreshed");
   }
 }
