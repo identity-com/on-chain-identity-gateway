@@ -11,12 +11,12 @@ This library then validates that gateway tokens are issued by gatekeepers in thi
 
 ## Usage
 
-in Cargo.toml
+In Cargo.toml
 ```toml
 solana-gateway = "<LATEST VERSION>"
 ```
 
-in the instruction processor (typically processor.rs)
+In the instruction processor (typically processor.rs)
 
 ```rust
 use solana_gateway::Gateway;

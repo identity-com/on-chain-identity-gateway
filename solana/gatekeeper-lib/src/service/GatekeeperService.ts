@@ -9,36 +9,9 @@ import {
   revoke,
   unfreeze,
   updateExpiry,
+  findGatewayToken,
 } from "@identity.com/solana-gateway-ts";
-import { AuditRecord, PII, Recorder, RecorderFS } from "../util/record";
 import { send } from "../util/connection";
-
-const updateRecordWithToken = async (
-  recorder: Recorder,
-  gatewayToken: GatewayToken,
-  additionalAuditInformation: Partial<AuditRecord> = {}
-): Promise<AuditRecord> => {
-  const record = await recorder.lookup(gatewayToken.publicKey);
-  console.log("existing record", record);
-  if (!record)
-    throw new Error(
-      `No Audit record found for token ${gatewayToken.publicKey}`
-    );
-
-  const updatedRecord = {
-    timestamp: new Date().toISOString(),
-    token: record.token,
-    name: record.name,
-    ipAddress: record.ipAddress,
-    country: record.country,
-    selfDeclarationTextAgreedTo: record.selfDeclarationTextAgreedTo,
-    state: gatewayToken.state,
-    expiry: gatewayToken.expiryTime,
-    ...additionalAuditInformation,
-  };
-  await recorder.store(updatedRecord);
-  return updatedRecord;
-};
 
 type GatekeeperConfig = {
   defaultExpirySeconds?: number;
@@ -50,7 +23,6 @@ export class GatekeeperService {
     private payer: Keypair,
     private gatekeeperNetwork: PublicKey,
     private gatekeeperAuthority: Keypair,
-    private recorder: Recorder = new RecorderFS(),
     private config: GatekeeperConfig = {}
   ) {}
 
@@ -109,34 +81,15 @@ export class GatekeeperService {
     return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 
-  async issue(recipient: PublicKey, pii: PII): Promise<GatewayToken> {
-    const gatewayToken = await this.issueVanilla(recipient);
-    const record: AuditRecord = {
-      timestamp: new Date().toISOString(),
-      token: gatewayToken.publicKey.toBase58(),
-      ...pii,
-      name: pii.name || "-",
-      ipAddress: pii.ipDetails?.ipAddress || "-",
-      country: pii.ipDetails?.country || "-",
-      selfDeclarationTextAgreedTo: pii.selfDeclarationTextAgreedTo || "-",
-      state: gatewayToken.state,
-      expiry: gatewayToken.expiryTime,
-    };
-
-    await this.recorder.store(record);
-
-    return gatewayToken;
+  issue(recipient: PublicKey): Promise<GatewayToken> {
+    return this.issueVanilla(recipient);
   }
 
-  async revoke(
-    gatewayTokenKey: PublicKey,
-    additionalAuditInformation: Partial<AuditRecord> = {}
-  ): Promise<GatewayToken> {
+  async revoke(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
       );
-    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
     const transaction = new Transaction().add(
       revoke(
         gatewayTokenKey,
@@ -145,23 +98,17 @@ export class GatekeeperService {
       )
     );
 
-    await send(this.connection, transaction, this.gatekeeperAuthority);
-
-    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
-
-    await updateRecordWithToken(
-      this.recorder,
-      gatewayToken,
-      additionalAuditInformation
+    await send(
+      this.connection,
+      transaction,
+      this.payer,
+      this.gatekeeperAuthority
     );
 
-    return gatewayToken;
+    return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 
-  async freeze(
-    gatewayTokenKey: PublicKey,
-    additionalAuditInformation: Partial<AuditRecord> = {}
-  ): Promise<GatewayToken> {
+  async freeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
@@ -175,23 +122,17 @@ export class GatekeeperService {
       )
     );
 
-    await send(this.connection, transaction, this.gatekeeperAuthority);
-
-    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
-
-    await updateRecordWithToken(
-      this.recorder,
-      gatewayToken,
-      additionalAuditInformation
+    await send(
+      this.connection,
+      transaction,
+      this.payer,
+      this.gatekeeperAuthority
     );
 
-    return gatewayToken;
+    return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 
-  async unfreeze(
-    gatewayTokenKey: PublicKey,
-    additionalAuditInformation: Partial<AuditRecord> = {}
-  ): Promise<GatewayToken> {
+  async unfreeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey
@@ -205,23 +146,25 @@ export class GatekeeperService {
       )
     );
 
-    await send(this.connection, transaction, this.gatekeeperAuthority);
-
-    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
-
-    await updateRecordWithToken(
-      this.recorder,
-      gatewayToken,
-      additionalAuditInformation
+    await send(
+      this.connection,
+      transaction,
+      this.payer,
+      this.gatekeeperAuthority
     );
 
-    return gatewayToken;
+    return this.getGatewayTokenOrError(gatewayTokenKey);
+  }
+
+  async findGatewayTokenForOwner(
+    owner: PublicKey
+  ): Promise<GatewayToken | null> {
+    return findGatewayToken(this.connection, owner, this.gatekeeperNetwork);
   }
 
   async updateExpiry(
     gatewayTokenKey: PublicKey,
-    expireTime: number,
-    additionalAuditInformation: Partial<AuditRecord> = {}
+    expireTime: number
   ): Promise<GatewayToken> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
@@ -236,20 +179,13 @@ export class GatekeeperService {
       )
     );
 
-    await send(this.connection, transaction, this.gatekeeperAuthority);
-
-    const gatewayToken = await this.getGatewayTokenOrError(gatewayTokenKey);
-
-    await updateRecordWithToken(
-      this.recorder,
-      gatewayToken,
-      additionalAuditInformation
+    await send(
+      this.connection,
+      transaction,
+      this.payer,
+      this.gatekeeperAuthority
     );
 
-    return gatewayToken;
-  }
-
-  async audit(gatewayToken: PublicKey): Promise<AuditRecord | null> {
-    return this.recorder.lookup(gatewayToken);
+    return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 }

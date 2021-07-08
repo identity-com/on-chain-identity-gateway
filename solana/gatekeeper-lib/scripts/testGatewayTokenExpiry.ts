@@ -6,7 +6,6 @@ import { GatekeeperService } from "../src/service/GatekeeperService";
 import { homedir } from "os";
 import * as path from "path";
 import { argv } from "yargs";
-import { AuditRecord, RecorderFS } from "../src/util/record";
 /**
  * Usage: ts-node ./scripts/testGatewayTokenStates.ts
  */
@@ -18,7 +17,8 @@ const mySecretKey = require(path.join(
 ));
 const myKeypair = Keypair.fromSecretKey(Buffer.from(mySecretKey));
 
-const connection = new Connection("http://localhost:8899", SOLANA_COMMITMENT);
+const clusterUrl = "http://localhost:8899";
+const connection = new Connection(clusterUrl, SOLANA_COMMITMENT);
 
 const gatekeeperNetwork = myKeypair;
 const payer = myKeypair;
@@ -30,7 +30,7 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
 
 (async function () {
   const gatekeeperAuthority = Keypair.generate();
-  await airdropTo(connection, gatekeeperAuthority);
+  await airdropTo(connection, gatekeeperAuthority.publicKey, clusterUrl);
   const gatekeeperAccount = await gatekeeperNetworkService.addGatekeeper(
     gatekeeperAuthority.publicKey
   );
@@ -41,7 +41,6 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
     payer,
     gatekeeperNetwork.publicKey,
     gatekeeperAuthority,
-    new RecorderFS(),
     {
       // create gateway tokens that expire in the past
       defaultExpirySeconds: -1000,
@@ -52,7 +51,7 @@ const gatekeeperNetworkService = new GatekeeperNetworkService(
     : Keypair.generate().publicKey;
 
   console.log("owner", owner.toBase58());
-  let gatewayToken = await gatekeeperService.issue(owner, {});
+  let gatewayToken = await gatekeeperService.issue(owner);
   console.log("issued token in the past", gatewayToken);
   console.log("token is valid", gatewayToken.isValid());
 

@@ -2,15 +2,11 @@
 #![cfg(feature = "test-bpf")]
 
 use {
-    solana_program::{
-        pubkey::Pubkey,
-    },
-    solana_program_test::{tokio},
-    solana_sdk::{
-        signature::{Keypair, Signer},
-    },
+    crate::gateway_context::GatewayContext,
     solana_gateway::state::GatewayTokenState,
-    crate::gateway_context::GatewayContext
+    solana_program::pubkey::Pubkey,
+    solana_program_test::tokio,
+    solana_sdk::signature::{Keypair, Signer},
 };
 
 mod gateway_context;
@@ -21,9 +17,15 @@ async fn add_gatekeeper_should_succeed() {
 
     context.create_gatekeeper_keys();
     let gatekeeper = context.add_gatekeeper().await;
-    
-    assert_eq!(gatekeeper.authority, context.gatekeeper_authority.unwrap().pubkey());
-    assert_eq!(gatekeeper.network, context.gatekeeper_network.unwrap().pubkey());
+
+    assert_eq!(
+        gatekeeper.authority,
+        context.gatekeeper_authority.unwrap().pubkey()
+    );
+    assert_eq!(
+        gatekeeper.network,
+        context.gatekeeper_network.unwrap().pubkey()
+    );
 }
 
 #[tokio::test]
@@ -32,8 +34,10 @@ async fn add_gatekeeper_should_fail_without_gatekeeper_network_signature() {
 
     let authority = Pubkey::new_unique();
     let network = Keypair::new();
-    let result = context.attempt_add_gatekeeper_without_network_signature(&authority, &network.pubkey()).await;
-    
+    let result = context
+        .attempt_add_gatekeeper_without_network_signature(&authority, &network.pubkey())
+        .await;
+
     assert!(result.is_err());
 }
 
@@ -41,14 +45,17 @@ async fn add_gatekeeper_should_fail_without_gatekeeper_network_signature() {
 async fn issue_gateway_token_should_succeed() {
     let mut context = GatewayContext::new().await;
     context.create_gatekeeper().await;
-    
+
     let owner = Pubkey::new_unique();
-    
+
     // now issue a gateway token as that gatekeeper
     let gateway_token = context.issue_gateway_token(&owner, None).await;
 
     assert_eq!(gateway_token.owner_wallet, owner);
-    assert_eq!(gateway_token.issuing_gatekeeper, context.gatekeeper_authority.unwrap().pubkey());
+    assert_eq!(
+        gateway_token.issuing_gatekeeper,
+        context.gatekeeper_authority.unwrap().pubkey()
+    );
 }
 
 #[tokio::test]
@@ -62,10 +69,9 @@ async fn set_gateway_token_revoked_should_succeed() {
     context.issue_gateway_token(&owner, None).await;
 
     // revoke the token
-    let revoked_gateway_token = context.set_gateway_token_state(
-        &owner,
-        GatewayTokenState::Revoked
-    ).await;
+    let revoked_gateway_token = context
+        .set_gateway_token_state(&owner, GatewayTokenState::Revoked)
+        .await;
 
     assert_eq!(revoked_gateway_token.state, GatewayTokenState::Revoked);
 }
@@ -76,7 +82,7 @@ async fn issue_an_expired_gateway_token_should_be_invalid() {
     context.create_gatekeeper().await;
 
     let owner = Pubkey::new_unique();
-    
+
     let past = GatewayContext::now() - 100_000;
 
     // issue an expired gateway token
@@ -98,7 +104,7 @@ async fn update_the_expiry_of_a_gateway_token() {
 
     // issue an expired gateway token
     context.issue_gateway_token(&owner, Some(past)).await;
-    
+
     // update its expire time
     let updated_gateway_token = context.update_gateway_token_expiry(&owner, future).await;
 

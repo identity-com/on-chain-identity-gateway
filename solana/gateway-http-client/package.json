@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/solana-gateway-http-client",
-  "version": "1.0.11",
+  "version": "1.1.1",
   "description": "Client for interacting with OCIV gatekeepers",
   "main": "dist/index",
   "types": "dist/index",

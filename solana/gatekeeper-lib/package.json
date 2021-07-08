@@ -1,17 +1,17 @@
 {
   "name": "@identity.com/solana-gatekeeper-lib",
-  "description": "Library and CLI to manage OCIV Gateway Tokens",
-  "version": "1.0.14",
+  "description": "Library and CLI to manage Gateway Tokens",
+  "version": "1.0.21",
   "author": "dankelleher @dankelleher",
   "bin": {
-    "ociv": "./bin/run"
+    "gateway": "./bin/run"
   },
   "bugs": "https://github.com/identity-com/ociv/issues",
   "dependencies": {
-    "@identity.com/solana-gateway-ts": "^0.1.0",
-    "@oclif/command": "^1",
-    "@oclif/config": "^1",
-    "@oclif/plugin-help": "^3",
+    "@identity.com/solana-gateway-ts": "^0.1.1",
+    "@oclif/command": "^1.8.0",
+    "@oclif/config": "^1.17.0",
+    "@oclif/plugin-help": "^3.2.2",
     "@solana/spl-token": "^0.1.4",
     "@solana/web3.js": "^1.11.0",
     "borsh": "^0.4.0",
@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
-    "@oclif/test": "^1",
+    "@oclif/test": "^1.2.8",
     "@types/bn.js": "^5.1.0",
     "@types/bs58": "^4.0.1",
     "@types/chai": "^4",
@@ -60,14 +60,14 @@
   "main": "dist/index.js",
   "oclif": {
     "commands": "./dist/commands",
-    "bin": "ociv",
+    "bin": "gateway",
     "plugins": [
       "@oclif/plugin-help"
     ]
   },
   "repository": "identity-com/gatekeeper-lib",
   "scripts": {
-    "build": "rm -rf dist && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "build": "rm -rf dist && tsc -b && oclif-dev manifest && oclif-dev readme && cp src/util/oclif/*.json dist/util/oclif/",
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "yarn lint",
     "prepack": "yarn build",

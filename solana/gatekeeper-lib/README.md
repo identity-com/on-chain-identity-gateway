@@ -16,82 +16,98 @@ Library and CLI to manage OCIV Gateway Tokens
 <!-- usage -->
 ```sh-session
 $ npm install -g @identity.com/solana-gatekeeper-lib
-$ ociv COMMAND
+$ gateway COMMAND
 running command...
-$ ociv (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.0.14 linux-x64 node-v12.14.0
-$ ociv --help [COMMAND]
+$ gateway (-v|--version|version)
+@identity.com/solana-gatekeeper-lib/1.0.21 darwin-x64 node-v16.0.0
+$ gateway --help [COMMAND]
 USAGE
-  $ ociv COMMAND
+  $ gateway COMMAND
 ...
 ```
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`ociv add-gatekeeper [GATEKEEPERAUTHORITYKEYFILEPATH] [GATEKEEPERNETWORKKEYFILEPATH]`](#ociv-add-gatekeeper-gatekeeperauthoritykeyfilepath-gatekeepernetworkkeyfilepath)
-* [`ociv audit GATEWAYTOKEN [GATEKEEPERAUTHORITYKEYFILEPATH]`](#ociv-audit-gatewaytoken-gatekeeperauthoritykeyfilepath)
-* [`ociv help [COMMAND]`](#ociv-help-command)
-* [`ociv issue ADDRESS [GATEKEEPERAUTHORITYKEYFILEPATH]`](#ociv-issue-address-gatekeeperauthoritykeyfilepath)
-* [`ociv revoke GATEWAYTOKEN [GATEKEEPERAUTHORITYKEYFILEPATH]`](#ociv-revoke-gatewaytoken-gatekeeperauthoritykeyfilepath)
-* [`ociv verify GATEWAYTOKEN OWNER`](#ociv-verify-gatewaytoken-owner)
+- [gatekeeper-lib](#gatekeeper-lib)
+- [Usage](#usage)
+- [Commands](#commands)
+  - [`gateway add-gatekeeper ADDRESS`](#gateway-add-gatekeeper-address)
+  - [`gateway freeze GATEWAYTOKEN`](#gateway-freeze-gatewaytoken)
+  - [`gateway help [COMMAND]`](#gateway-help-command)
+  - [`gateway issue ADDRESS`](#gateway-issue-address)
+  - [`gateway refresh GATEWAYTOKEN [EXPIRY]`](#gateway-refresh-gatewaytoken-expiry)
+  - [`gateway revoke GATEWAYTOKEN`](#gateway-revoke-gatewaytoken)
+  - [`gateway unfreeze GATEWAYTOKEN`](#gateway-unfreeze-gatewaytoken)
+  - [`gateway verify OWNER`](#gateway-verify-owner)
 
-## `ociv add-gatekeeper [GATEKEEPERAUTHORITYKEYFILEPATH] [GATEKEEPERNETWORKKEYFILEPATH]`
+## `gateway add-gatekeeper ADDRESS`
 
 Add a gatekeeper to a network
 
 ```
 USAGE
-  $ ociv add-gatekeeper [GATEKEEPERAUTHORITYKEYFILEPATH] [GATEKEEPERNETWORKKEYFILEPATH]
+  $ gateway add-gatekeeper ADDRESS
 
 ARGUMENTS
-  GATEKEEPERAUTHORITYKEYFILEPATH  [default: /home/kevin/.config/solana/id.json] The private key file for the gatekeeper
-                                  network authority, defaults to user .config/solana/id.json
-
-  GATEKEEPERNETWORKKEYFILEPATH    [default: /home/kevin/.config/solana/id.json] The private key file for the gatekeeper
-                                  network, defaults to user .config/solana/id.json
+  ADDRESS  The address of the gatekeeper to add to the network
 
 OPTIONS
-  -h, --help       show CLI help
-  -i, --ip=ip
-  -n, --name=name
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
+
+  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
+
+  -h, --help                                       show CLI help
+
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
 
 EXAMPLE
-  $ ociv add-gatekeeper
+  $ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-## `ociv audit GATEWAYTOKEN [GATEKEEPERAUTHORITYKEYFILEPATH]`
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.21/dist/commands/add-gatekeeper.ts)_
 
-Auditing a gateway token
+## `gateway freeze GATEWAYTOKEN`
+
+Freeze a gateway token
 
 ```
 USAGE
-  $ ociv audit GATEWAYTOKEN [GATEKEEPERAUTHORITYKEYFILEPATH]
+  $ gateway freeze GATEWAYTOKEN
 
 ARGUMENTS
-  GATEWAYTOKEN                    The gateway token account to verify
-
-  GATEKEEPERAUTHORITYKEYFILEPATH  [default: /home/kevin/.config/solana/id.json] The private key file for the gatekeeper
-                                  network authority
+  GATEWAYTOKEN  The gateway token to freeze
 
 OPTIONS
-  -h, --help  show CLI help
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
+
+  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
+
+  -h, --help                                       show CLI help
+
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
 
 EXAMPLE
-  $ ociv audit EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
-  {
-     gatekeeper: 'CKuXF96Bv2tuzAzs6FSbzmjnvNdbAu1LWXjsCxifGGEm',
-     owner: 'Ek6vxQJSwkfBadVRaxstsB8i2vjyRLHwHVWaqA4KgYTB',
-     revoked: false
-  }
+  $ gateway freeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
+  Frozen
 ```
 
-## `ociv help [COMMAND]`
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.21/dist/commands/freeze.ts)_
 
-display help for ociv
+## `gateway help [COMMAND]`
+
+display help for gateway
 
 ```
 USAGE
-  $ ociv help [COMMAND]
+  $ gateway help [COMMAND]
 
 ARGUMENTS
   COMMAND  command to show help for
@@ -102,72 +118,164 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
 
-## `ociv issue ADDRESS [GATEKEEPERAUTHORITYKEYFILEPATH]`
+## `gateway issue ADDRESS`
 
-Issue a gateway token
+Issue a gateway token to a wallet
 
 ```
 USAGE
-  $ ociv issue ADDRESS [GATEKEEPERAUTHORITYKEYFILEPATH]
+  $ gateway issue ADDRESS
 
 ARGUMENTS
-  ADDRESS                         The address to issue the token to
-
-  GATEKEEPERAUTHORITYKEYFILEPATH  [default: /home/kevin/.config/solana/id.json] The private key file for the gatekeeper
-                                  network authority
+  ADDRESS  The address to issue the token to
 
 OPTIONS
-  -h, --help       show CLI help
-  -i, --ip=ip
-  -n, --name=name
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
+
+  -e, --expiry=expiry                              The expiry time in seconds for the gateway token (default none)
+
+  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
+
+  -h, --help                                       show CLI help
+
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
 
 EXAMPLE
-  $ ociv issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
+  $ gateway issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-## `ociv revoke GATEWAYTOKEN [GATEKEEPERAUTHORITYKEYFILEPATH]`
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.21/dist/commands/issue.ts)_
+
+## `gateway refresh GATEWAYTOKEN [EXPIRY]`
+
+Freeze a gateway token
+
+```
+USAGE
+  $ gateway refresh GATEWAYTOKEN [EXPIRY]
+
+ARGUMENTS
+  GATEWAYTOKEN  The gateway token to freeze
+  EXPIRY        [default: 54000] The new expiry time in seconds for the gateway token (default 15 minutes)
+
+OPTIONS
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
+
+  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
+
+  -h, --help                                       show CLI help
+
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
+
+EXAMPLE
+  $ gateway refresh EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv 54000
+  Refreshed
+```
+
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.21/dist/commands/refresh.ts)_
+
+## `gateway revoke GATEWAYTOKEN`
 
 Revoke a gateway token
 
 ```
 USAGE
-  $ ociv revoke GATEWAYTOKEN [GATEKEEPERAUTHORITYKEYFILEPATH]
+  $ gateway revoke GATEWAYTOKEN
 
 ARGUMENTS
-  GATEWAYTOKEN                    The gateway token to revoke
-
-  GATEKEEPERAUTHORITYKEYFILEPATH  [default: /home/kevin/.config/solana/id.json] The private key file for the gatekeeper
-                                  network authority
+  GATEWAYTOKEN  The gateway token to revoke
 
 OPTIONS
-  -h, --help  show CLI help
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
+
+  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
+
+  -h, --help                                       show CLI help
+
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
 
 EXAMPLE
-  $ ociv revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
+  $ gateway revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
   Revoked
 ```
 
-## `ociv verify GATEWAYTOKEN OWNER`
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.21/dist/commands/revoke.ts)_
+
+## `gateway unfreeze GATEWAYTOKEN`
+
+Unfreeze a gateway token
+
+```
+USAGE
+  $ gateway unfreeze GATEWAYTOKEN
+
+ARGUMENTS
+  GATEWAYTOKEN  The gateway token to unfreeze
+
+OPTIONS
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
+
+  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
+
+  -h, --help                                       show CLI help
+
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
+
+EXAMPLE
+  $ gateway unfreeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
+  Unfrozen
+```
+
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.21/dist/commands/unfreeze.ts)_
+
+## `gateway verify OWNER`
 
 Verify a gateway token
 
 ```
 USAGE
-  $ ociv verify GATEWAYTOKEN OWNER
+  $ gateway verify OWNER
 
 ARGUMENTS
-  GATEWAYTOKEN  The gateway token account to verify
-  OWNER         The expected gateway token owner
+  OWNER  The gateway token to revoke
 
 OPTIONS
-  -h, --help  show CLI help
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
+
+  -h, --help                                       show CLI help
+
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
 
 EXAMPLE
-  $ ociv verify EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
+  $ gateway verify EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
   {
-     gatekeeper: 'CKuXF96Bv2tuzAzs6FSbzmjnvNdbAu1LWXjsCxifGGEm',
-     owner: 'Ek6vxQJSwkfBadVRaxstsB8i2vjyRLHwHVWaqA4KgYTB',
-     revoked: false
+    "issuingGatekeeper": "tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp",
+    "gatekeeperNetwork": "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv",
+    "owner": "EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv",
+    "state": "ACTIVE",
+    "publicKey": "3rNZ6RzH6jLCzFeySVDc8Z82sJkeQ4xi7BCUzjpZBvZr",
+    "programId": "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
   }
 ```
+
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.0.21/dist/commands/verify.ts)_
 <!-- commandsstop -->
