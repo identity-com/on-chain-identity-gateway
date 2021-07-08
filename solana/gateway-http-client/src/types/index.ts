@@ -14,7 +14,6 @@ export type GatekeeperRecord = {
   ipAddress: string;
   country: string;
   state: State;
-  selfDeclarationTextAgreedTo: string;
   document?: {
     nationality: string;
     name: {
@@ -37,7 +36,6 @@ export type GatekeeperClientConfig = {
 
 export type CreateTokenRequest = {
   walletPublicKey: PublicKey;
-  selfDeclarationTextAgreedTo?: string;
   presentationRequestId?: string;
   signer: SignCallback;
 };
@@ -64,7 +62,6 @@ export type RefreshTokenRequestBody = {
 export type CreateTokenRequestBody = {
   scopeRequest?: string;
   address?: string;
-  selfDeclarationTextAgreedTo?: string;
   proof: string;
 };
 export type GatekeeperRequestBody =
