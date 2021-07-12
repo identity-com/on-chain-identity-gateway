@@ -1,4 +1,10 @@
-import { Connection, PublicKey } from "@solana/web3.js";
+import {
+  AccountInfo,
+  Commitment,
+  Connection,
+  Context,
+  PublicKey,
+} from "@solana/web3.js";
 import {
   GATEKEEPER_NONCE_SEED_STRING,
   GATEWAY_TOKEN_ADDRESS_SEED,
@@ -124,13 +130,41 @@ export const findGatewayToken = async (
   owner: PublicKey,
   gatekeeperNetwork: PublicKey
 ): Promise<GatewayToken | null> => {
-  const [token] = await findGatewayTokens(
+  const tokens = await findGatewayTokens(
     connection,
     owner,
     gatekeeperNetwork,
     false
   );
-  return token;
+
+  if (tokens.length === 0) return null;
+
+  // if any are valid, return the first one
+  const validTokens = tokens.filter((token) => token.isValid());
+  if (validTokens.length > 0) return validTokens[0];
+
+  // if none is valid, return the first non-revoked one
+  const nonRevokedTokens = tokens.filter(
+    (token) => token.state !== State.REVOKED
+  );
+
+  return nonRevokedTokens.length === 0 ? null : nonRevokedTokens[0];
+};
+
+export const onGatewayTokenChange = (
+  connection: Connection,
+  gatewayTokenKey: PublicKey,
+  callback: (gatewayToken: GatewayToken) => void,
+  commitment: Commitment = SOLANA_COMMITMENT
+) => {
+  const accountCallback = (accountInfo: AccountInfo<Buffer>) => {
+    const gatewayToken = dataToGatewayToken(
+      GatewayTokenData.fromAccount(accountInfo.data),
+      gatewayTokenKey
+    );
+    callback(gatewayToken);
+  };
+  connection.onAccountChange(gatewayTokenKey, accountCallback, commitment);
 };
 
 export const getGatewayToken = async (
