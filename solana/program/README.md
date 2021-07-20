@@ -13,10 +13,10 @@ The program provides the following instructions:
 Callable by: Gatekeeper network authority
 
 Input accounts:
-- [Writeable, Signer] Payer
-- [Writeable] Uninitialized gatekeeper account
-- [] Gatekeeper authority
-- [Signer] Gatekeeper network authority
+- `[Writeable, Signer]` Payer
+- `[Writeable]` Uninitialized gatekeeper account
+- `[]` Gatekeeper authority
+- `[Signer]` Gatekeeper network authority
 
 
 ### 2. Issue Gateway Token
@@ -24,12 +24,12 @@ Input accounts:
 Callable by: Gatekeeper
 
 Input accounts:
-- [Writeable, Signer] Payer
-- [Writeable] Uninitialized gateway token account
-- [] Owner wallet (TODO or DID)
-- [] Gatekeeper account
-- [Signer] Gatekeeper authority
-- [] Gatekeeper network
+- `[Writeable, Signer]` Payer
+- `[Writeable]` Uninitialized gateway token account
+- `[]` Owner wallet (TODO or DID)
+- `[]` Gatekeeper account
+- `[Signer]` Gatekeeper authority
+- `[]` Gatekeeper network
 
 Data:
 - Expiry (TODO clock time, block, slot or epoch)
@@ -42,9 +42,9 @@ Generates a new gateway token for a trader
 
 Callable by: Gatekeeper
 Input accounts:
-- [Writeable] Gateway token account
-- [Signer] Gatekeeper authority
-- [] Gatekeeper account
+- `[Writeable]` Gateway token account
+- `[Signer]` Gatekeeper authority
+- `[]` Gatekeeper account
 
 Data:
 - New state (Frozen, Revoked, Active)
@@ -59,11 +59,11 @@ Revoked tokens cannot be unrevoked.
 
 Callable by: Gateway Token owner
 Input accounts:
-- [Signer] Payer
-- [] Gateway token account
-- [Signer] Owner wallet (TODO or DID)
-- [Writeable] Uninitialised session token account
-- [Writeable] Delegated CVC account
+- `[Signer]` Payer
+- `[]` Gateway token account
+- `[Signer]` Owner wallet (TODO or DID)
+- `[Writeable]` Uninitialised session token account
+- `[Writeable]` Delegated CVC account
 
 
 Data:
@@ -119,11 +119,11 @@ open positions, orders etc that were issued with tokens that were later revoked
 
 Revoked tokens cannot be reactivated but must be reissued.
 
-Tokens that are frozen are "paused" and new transactions should not accept them.
-They may be frozen for a number of reasons, for example if a user attempts to use a token
-while in a restricted jurisdiction, the gatekeeper may freeze the token temporarily. Frozen
-tokens can be unfrozen by any gatekeeper in the gatekeeper network (not necessarily the
-issuing gatekeeper)
+Tokens that are frozen are "paused" and new transactions should not
+accept them. They may be frozen for a number of reasons, for example if
+a user attempts to use a token while in a restricted jurisdiction, the
+gatekeeper may freeze the token temporarily. Frozen/Unfrozen tokens can
+be unfrozen by the issuing gatekeeper.
 
 While not represented by a state on-chain, tokens may also have 'expired', in which
 case, they are treated as frozen.

@@ -6,6 +6,7 @@ use crate::state::{
 use solana_gateway::error::GatewayError;
 use solana_gateway::state::GatewayTokenState;
 use solana_program::clock::UnixTimestamp;
+use std::mem::size_of;
 use {
     crate::{
         id,
@@ -29,6 +30,8 @@ use {
         sysvar::Sysvar,
     },
 };
+
+const GATEKEEPER_ACCOUNT_LEN: usize = size_of::<Gatekeeper>();
 
 /// Instruction processor
 pub fn process_instruction(
@@ -100,6 +103,7 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         network: *gatekeeper_network_info.key,
     };
     let size = get_instance_packed_len(&gatekeeper_account).unwrap() as u64;
+    assert_eq!(size as usize, GATEKEEPER_ACCOUNT_LEN);
 
     msg!("Creating gatekeeper account");
     invoke_signed(
@@ -160,6 +164,17 @@ fn issue_vanilla(
         return Err(ProgramError::IncorrectProgramId);
     }
 
+    if gatekeeper_account_info.data_len() != GATEKEEPER_ACCOUNT_LEN
+        || gatekeeper_account_info
+            .data
+            .borrow()
+            .iter()
+            .all(|&d| d == 0)
+    {
+        msg!("Incorrect account type for gatekeeper account");
+        return Err(ProgramError::InvalidAccountData);
+    }
+
     let gatekeeper_account =
         try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
 
@@ -200,6 +215,7 @@ fn issue_vanilla(
         expire_time,
     );
     let size = get_instance_packed_len(&gateway_token).unwrap() as u64;
+    assert_ne!(size as usize, GATEKEEPER_ACCOUNT_LEN);
 
     invoke_signed(
         &system_instruction::create_account(
@@ -239,9 +255,27 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
         return Err(ProgramError::IncorrectProgramId);
     }
 
+    if gateway_token_info.data_len() == GATEKEEPER_ACCOUNT_LEN
+        || gateway_token_info.data.borrow().iter().all(|&d| d == 0)
+    {
+        msg!("Incorrect account type for gateway token account");
+        return Err(ProgramError::InvalidAccountData);
+    }
+
     if gatekeeper_account_info.owner.ne(&id()) {
         msg!("Incorrect program Id for gatekeeper account");
         return Err(ProgramError::IncorrectProgramId);
+    }
+
+    if gatekeeper_account_info.data_len() != GATEKEEPER_ACCOUNT_LEN
+        || gatekeeper_account_info
+            .data
+            .borrow()
+            .iter()
+            .all(|&d| d == 0)
+    {
+        msg!("Incorrect account type for gatekeeper account");
+        return Err(ProgramError::InvalidAccountData);
     }
 
     let mut gateway_token =
@@ -304,9 +338,27 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
         return Err(ProgramError::IncorrectProgramId);
     }
 
+    if gateway_token_info.data_len() == GATEKEEPER_ACCOUNT_LEN
+        || gateway_token_info.data.borrow().iter().all(|&d| d == 0)
+    {
+        msg!("Incorrect account type for gateway token account");
+        return Err(ProgramError::InvalidAccountData);
+    }
+
     if gatekeeper_account_info.owner.ne(&id()) {
         msg!("Incorrect program Id for gatekeeper account");
         return Err(ProgramError::IncorrectProgramId);
+    }
+
+    if gatekeeper_account_info.data_len() != GATEKEEPER_ACCOUNT_LEN
+        || gatekeeper_account_info
+            .data
+            .borrow()
+            .iter()
+            .all(|&d| d == 0)
+    {
+        msg!("Incorrect account type for gatekeeper account");
+        return Err(ProgramError::InvalidAccountData);
     }
 
     let mut gateway_token =
