@@ -118,7 +118,7 @@ async fn update_the_expiry_of_a_gateway_token() {
 }
 
 #[tokio::test]
-async fn wrong_account_should_fail() {
+async fn issue_vanilla_wrong_account_should_fail() {
     let mut context = GatewayContext::new().await;
     context.create_gatekeeper().await;
 
@@ -128,6 +128,33 @@ async fn wrong_account_should_fail() {
 
     let authority =
         Keypair::from_bytes(&context.gatekeeper_authority.as_ref().unwrap().to_bytes()).unwrap();
+    let (token, _) = get_gateway_token_address_with_seed(&owner, &None);
+
+    let result = context
+        .issue_gateway_token_transaction(
+            &owner,
+            &authority,
+            &token,
+            &context.gatekeeper_network.as_ref().unwrap().pubkey(),
+            None,
+        )
+        .await;
+
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn set_state_wrong_account_type_should_fail() {
+    let mut context = GatewayContext::new().await;
+    context.create_gatekeeper().await;
+
+    let owner = Pubkey::new_unique();
+
+    context.issue_gateway_token(&owner, None).await;
+
+    let authority =
+        Keypair::from_bytes(&context.gatekeeper_authority.as_ref().unwrap().to_bytes()).unwrap();
+    let (token, _) = get_gateway_token_address_with_seed(&owner, &None);
     let (gatekeeper_account, _) =
         get_gatekeeper_address_with_seed(&context.gatekeeper_authority.as_ref().unwrap().pubkey());
 
@@ -142,12 +169,56 @@ async fn wrong_account_should_fail() {
 
     assert!(result.is_err());
 
+    let result = context
+        .set_gateway_token_state_transaction(&token, &authority, &token, GatewayTokenState::Revoked)
+        .await;
+
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn update_expiry_wrong_account_should_fail() {
+    let mut context = GatewayContext::new().await;
+    context.create_gatekeeper().await;
+
+    let owner = Pubkey::new_unique();
+
+    context.issue_gateway_token(&owner, None).await;
+
+    let authority =
+        Keypair::from_bytes(&context.gatekeeper_authority.as_ref().unwrap().to_bytes()).unwrap();
+    let (token, _) = get_gateway_token_address_with_seed(&owner, &None);
+    let (gatekeeper_account, _) =
+        get_gatekeeper_address_with_seed(&context.gatekeeper_authority.as_ref().unwrap().pubkey());
+
     let result = {
         let transaction = Transaction::new_signed_with_payer(
             &[instruction::update_expiry(
                 &gatekeeper_account,
                 &authority.pubkey(),
                 &gatekeeper_account,
+                10,
+            )],
+            Some(&context.context.payer.pubkey()),
+            &[&context.context.payer, &authority],
+            context.context.last_blockhash,
+        );
+
+        context
+            .context
+            .banks_client
+            .process_transaction(transaction)
+            .await
+    };
+
+    assert!(result.is_err());
+
+    let result = {
+        let transaction = Transaction::new_signed_with_payer(
+            &[instruction::update_expiry(
+                &token,
+                &authority.pubkey(),
+                &token,
                 10,
             )],
             Some(&context.context.payer.pubkey()),
