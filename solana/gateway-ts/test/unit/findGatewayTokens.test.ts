@@ -43,7 +43,7 @@ describe("findGatewayTokens", () => {
   let getProgramAccountsStub: sinon.SinonStub;
 
   beforeEach(() => {
-    connection = new Connection(clusterApiUrl("devnet"));
+    connection = new Connection("http://localhost:8899");
     owner = Keypair.generate().publicKey;
     gatekeeperKey = Keypair.generate().publicKey;
     gatekeeperNetworkKey = Keypair.generate().publicKey;
