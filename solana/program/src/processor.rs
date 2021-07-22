@@ -115,7 +115,7 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
             gatekeeper_account_info.clone(),
             system_program_info.clone(),
         ],
-        &[&gatekeeper_signer_seeds],
+        &[gatekeeper_signer_seeds],
     )?;
 
     msg!("Gatekeeper account created");
@@ -164,7 +164,7 @@ fn issue_vanilla(
         try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
 
     let (gateway_token_address, gateway_token_bump_seed) =
-        get_gateway_token_address_with_seed(owner_info.key, &seed);
+        get_gateway_token_address_with_seed(owner_info.key, seed);
     if gateway_token_address != *gateway_token_info.key {
         msg!("Error: gateway_token address derivation mismatch");
         return Err(ProgramError::InvalidArgument);
@@ -214,7 +214,7 @@ fn issue_vanilla(
             gateway_token_info.clone(),
             system_program_info.clone(),
         ],
-        &[&gateway_token_signer_seeds],
+        &[gateway_token_signer_seeds],
     )?;
 
     gateway_token
