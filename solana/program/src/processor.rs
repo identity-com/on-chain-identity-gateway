@@ -364,26 +364,25 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
         .map_err(|e| e.into()) as ProgramResult
 }
 
-fn verify_gatekeeper_length(gatekeeper_account_info: &AccountInfo) -> ProgramResult{
+fn verify_gatekeeper_length(gatekeeper_account_info: &AccountInfo) -> ProgramResult {
     // Length must be same as `GATEKEEPER_ACCOUNT_LENGTH` and have at least one non-zero byte.
     // Must have one non-zero as being assigned an account with the proper length requires all bytes be zero
     // Pubkey guarantees one non-zero byte with proper data
     if gatekeeper_account_info.data_len() != GATEKEEPER_ACCOUNT_LENGTH
         || gatekeeper_account_info
-        .data
-        .borrow()
-        .iter()
-        .all(|&d| d == 0)
+            .data
+            .borrow()
+            .iter()
+            .all(|&d| d == 0)
     {
         msg!("Incorrect account type for gatekeeper account");
         Err(ProgramError::InvalidAccountData)
-    }
-    else{
+    } else {
         Ok(())
     }
 }
 
-fn verify_token_length(gateway_token_info: &AccountInfo) -> ProgramResult{
+fn verify_token_length(gateway_token_info: &AccountInfo) -> ProgramResult {
     // Length must not be same as `GATEKEEPER_ACCOUNT_LENGTH` and have at least one non-zero byte.
     // Must have one non-zero as being assigned an account with the proper length requires all bytes be zero
     // Pubkey guarantees one non-zero byte with proper data
@@ -392,8 +391,7 @@ fn verify_token_length(gateway_token_info: &AccountInfo) -> ProgramResult{
     {
         msg!("Incorrect account type for gateway token account");
         Err(ProgramError::InvalidAccountData)
-    }
-    else{
+    } else {
         Ok(())
     }
 }
