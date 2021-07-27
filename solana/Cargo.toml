@@ -3,6 +3,3 @@ members = [
     "integration-lib",
     "program",
 ]
-
-[patch.crates-io]
-sol-did = { git = "https://github.com/identity-com/sol-did", branch = "update-solana" }
