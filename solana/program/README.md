@@ -1,21 +1,35 @@
 # Solana On-Chain Gateway Program
 
 This program defines the operations that gatekeepers can perform on the Solana blockchain,
-such as issuing and revoking gateway tokens.
+such as issuing and revoking gateway tokens, as well as operations to add/remove gatekeepers,
+performed by gatekeeper network authorities.
 
 ## Instructions
 
 The program provides the following instructions:
 
-### 1. Issue Gateway Token
+### 1. Add Gatekeeper
+
+Callable by: Gatekeeper network authority
+
+Input accounts:
+- `[Writeable, Signer]` Payer
+- `[Writeable]` Uninitialized gatekeeper account
+- `[]` Gatekeeper authority
+- `[Signer]` Gatekeeper network authority
+
+
+### 2. Issue Gateway Token
 
 Callable by: Gatekeeper
 
 Input accounts:
-- [Writeable] Uninitialized gateway token account
-- [Signer] Gatekeeper account
-- [] Owner wallet (TODO or DID)
-- [Signer] Payer
+- `[Writeable, Signer]` Payer
+- `[Writeable]` Uninitialized gateway token account
+- `[]` Owner wallet (TODO or DID)
+- `[]` Gatekeeper account
+- `[Signer]` Gatekeeper authority
+- `[]` Gatekeeper network
 
 Data:
 - Expiry (TODO clock time, block, slot or epoch)
@@ -24,13 +38,13 @@ Data:
 
 Generates a new gateway token for a trader
 
-### 2. Set Gateway Token state
+### 3. Set Gateway Token state
 
 Callable by: Gatekeeper
 Input accounts:
-- [Writeable] Gateway token account
-- [Signer] Gatekeeper account
-- [Signer] Payer
+- `[Writeable]` Gateway token account
+- `[Signer]` Gatekeeper authority
+- `[]` Gatekeeper account
 
 Data:
 - New state (Frozen, Revoked, Active)
@@ -41,15 +55,16 @@ For details on the states, please see [Account Structures](#account-structures) 
 Frozen gateway tokens can be unfrozen by setting them to Active
 Revoked tokens cannot be unrevoked.
 
-### 3. Create Session   
+### 4. Create Session   
 
 Callable by: Gateway Token owner
 Input accounts:
-- [] Gateway token account
-- [Signer] Owner wallet (TODO or DID)
-- [Writeable] Uninitialised session token account
-- [Writeable] Delegated CVC account
-- [Signer] Payer
+- `[Signer]` Payer
+- `[]` Gateway token account
+- `[Signer]` Owner wallet (TODO or DID)
+- `[Writeable]` Uninitialised session token account
+- `[Writeable]` Delegated CVC account
+
 
 Data:
 - Transaction Details (see [below](#transaction-details-structure))
@@ -104,11 +119,11 @@ open positions, orders etc that were issued with tokens that were later revoked
 
 Revoked tokens cannot be reactivated but must be reissued.
 
-Tokens that are frozen are "paused" and new transactions should not accept them.
-They may be frozen for a number of reasons, for example if a user attempts to use a token
-while in a restricted jurisdiction, the gatekeeper may freeze the token temporarily. Frozen
-tokens can be unfrozen by any gatekeeper in the gatekeeper network (not necessarily the
-issuing gatekeeper)
+Tokens that are frozen are "paused" and new transactions should not
+accept them. They may be frozen for a number of reasons, for example if
+a user attempts to use a token while in a restricted jurisdiction, the
+gatekeeper may freeze the token temporarily. Frozen/Unfrozen tokens can
+be unfrozen by the issuing gatekeeper.
 
 While not represented by a state on-chain, tokens may also have 'expired', in which
 case, they are treated as frozen.

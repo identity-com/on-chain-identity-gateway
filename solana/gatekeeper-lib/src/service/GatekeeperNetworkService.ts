@@ -34,4 +34,18 @@ export class GatekeeperNetworkService {
 
     return gatekeeperAccount;
   }
+
+  /**
+   * Check if the gatekeeper already belongs to the network
+   * @param gatekeeperAuthority
+   */
+  async hasGatekeeper(gatekeeperAuthority: PublicKey): Promise<boolean> {
+    const gatekeeperAccount =
+      await getGatekeeperAccountKeyFromGatekeeperAuthority(gatekeeperAuthority);
+    const gatekeeperAccountInfo = await this.connection.getAccountInfo(
+      gatekeeperAccount
+    );
+
+    return !!gatekeeperAccountInfo;
+  }
 }

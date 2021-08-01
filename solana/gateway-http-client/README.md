@@ -11,7 +11,7 @@ like gateway token creation, lookup, and revocation.
   - [Functions/Classes](#functionsclasses)
     - [GatekeeperClient](#gatekeeperclient)
       - [initialisation](#initialisation)
-      - [createGatewayToken](#creategatewaytoken)
+      - [requestGatewayToken](#requestgatewaytoken)
       - [auditGatewayToken](#auditgatewaytoken)
       - [requestAirdrop](#requestairdrop)
 
@@ -38,20 +38,16 @@ const baseUrl: string = 'http://<gateway url>';
 const clientInst = new GatekeeperClient({ baseUrl });
 ```
 
-#### createGatewayToken
+#### requestGatewayToken
 Requests that a gateway token be created for the given Solana public key. Returns the newly created gateway token as a string.
 ```
-const gatewayToken = await gatekeeperClientInst.createGatewayToken(walletPublicKey);
-```
-An optional parameter 'selfDeclarationTextAgreedTo' can be provided indicating that the requester has read and agreed to the passed text.
-```
-const selfDeclarationTextAgreedTo = 'I declare I am not resident in <not-allowed-territory>'
-...<UI for user to agree to text>
-const gatewayToken = await gatekeeperClientInst.createGatewayToken({ walletPublicKey, selfDeclarationTextAgreedTo });
+const gatewayToken = await gatekeeperClientInst.requestGatewayToken(walletPublicKey);
+
+const gatewayToken = await gatekeeperClientInst.requestGatewayToken({ walletPublicKey });
 ```
 A gateway token can be requested by providing a Civic presentationRequestId. The gatekeeper server validates that the presentation provided by the user is successful and a token is generated. The presentationRequest created by the DAPP should contain the publicKey address to create the gateway token for.
 ```
-const gatewayToken = await gatekeeperClientInst.createGatewayToken({ presentationRequestId });
+const gatewayToken = await gatekeeperClientInst.requestGatewayToken({ presentationRequestId });
 ```
 
 #### auditGatewayToken

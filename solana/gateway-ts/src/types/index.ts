@@ -17,13 +17,13 @@ export class GatewayToken {
     readonly expiryTime?: number
   ) {}
 
-  isValid() {
+  isValid(): boolean {
     return this.state === State.ACTIVE && !this.hasExpired();
   }
 
-  private hasExpired() {
+  private hasExpired(): boolean {
     const now = Math.floor(Date.now() / 1000);
-    return this.expiryTime && now > this.expiryTime;
+    return !!this.expiryTime && now > this.expiryTime;
   }
 }
 

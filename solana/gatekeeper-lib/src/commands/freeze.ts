@@ -7,12 +7,12 @@ import {
 } from "../util/oclif/flags";
 import { getTokenUpdateProperties } from "../util/oclif/utils";
 
-export default class Revoke extends Command {
-  static description = "Revoke a gateway token";
+export default class Freeze extends Command {
+  static description = "Freeze a gateway token";
 
   static examples = [
-    `$ gateway revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
-Revoked
+    `$ gateway freeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
+Frozen
 `,
   ];
 
@@ -27,23 +27,23 @@ Revoked
     {
       name: "gatewayToken",
       required: true,
-      description: "The gateway token to revoke",
+      description: "The gateway token to freeze",
       parse: (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(Revoke);
+    const { args, flags } = this.parse(Freeze);
 
     const { gatewayToken, gatekeeper, service } =
       await getTokenUpdateProperties(args, flags);
 
-    this.log(`Revoking:
+    this.log(`Freezing:
      ${gatewayToken.toBase58()}
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
-    const token = await service.revoke(gatewayToken);
+    const token = await service.freeze(gatewayToken);
 
-    this.log("Revoked");
+    this.log("Frozen token", token.publicKey.toBase58());
   }
 }
