@@ -40,6 +40,7 @@
     "postinstall-prepare": "^2.0.0",
     "prettier": "^2.3.0",
     "ts-node": "^8",
+    "typedoc": "^0.21.5",
     "typescript": "^4.2.3",
     "yargs": "^17.0.1"
   },
@@ -67,14 +68,15 @@
   },
   "repository": "identity-com/gatekeeper-lib",
   "scripts": {
-    "build": "rm -rf dist && tsc -b && oclif-dev manifest && oclif-dev readme && cp src/util/oclif/*.json dist/util/oclif/",
+    "build": "rm -rf dist && tsc -b && oclif-dev manifest && oclif-dev readme && cp src/util/oclif/*.json dist/util/oclif/ && yarn doc",
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "yarn lint",
     "prepack": "yarn build",
     "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs ../program/target/deploy/solana_gateway_program.so --reset",
     "lint": "eslint src/ --ext .ts",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
-    "version": "oclif-dev readme && git add README.md"
+    "version": "oclif-dev readme && git add README.md",
+    "doc": "yarn typedoc src/index.ts --readme none --excludeNotDocumented"
   },
   "types": "dist/index.d.ts"
 }
