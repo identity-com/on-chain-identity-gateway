@@ -8,14 +8,15 @@
   "author": "Kevin Colgan <kevin@civic.com>",
   "license": "MIT",
   "scripts": {
-    "build": "yarn run clean && yarn run compile",
+    "build": "yarn clean && yarn compile && yarn doc",
     "clean": "rimraf -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "prepare": "yarn build",
     "test:unit": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'test/unit/**/*.ts'",
     "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs ../program/target/deploy/solana_gateway_program.so --reset",
     "test": "yarn test:unit",
-    "lint": "eslint src/ test/ scripts/ --ext .ts"
+    "lint": "eslint src/ test/ scripts/ --ext .ts",
+    "doc": "yarn typedoc src/index.ts --readme none"
   },
   "dependencies": {
     "@solana/web3.js": "^1.11.0",
@@ -54,6 +55,7 @@
     "sinon-chai": "^3.5.0",
     "ts-mocha": "^8.0.0",
     "ts-node": "^9.0.0",
+    "typedoc": "^0.21.5",
     "typescript": "^4.2.4"
   }
 }
