@@ -80,16 +80,25 @@ class GatewayInstruction extends Enum {
   }
 }
 
+/**
+ * Add a gatekeeper to a gatekeeper network.
+ * Returns a Solana instruction that must be signed by the gatekeeper network authority.
+ *
+ * @param payer The payer of the transaction (used to pay rent into the gatekeeper account)
+ * @param gatekeeperAccount An uninitialised gatekeeper account PDA. The address must be derived via getGatekeeperAccountKeyFromGatekeeperAuthority()
+ * @param gatekeeperAuthority The gatekeeper to add to the network
+ * @param network The gatekeeper network that the account is being added to.
+ */
 export function addGatekeeper(
   payer: PublicKey,
   gatekeeperAccount: PublicKey,
-  authority: PublicKey,
+  gatekeeperAuthority: PublicKey,
   network: PublicKey
 ): TransactionInstruction {
   const keys: AccountMeta[] = [
     { pubkey: payer, isSigner: true, isWritable: true },
     { pubkey: gatekeeperAccount, isSigner: false, isWritable: true },
-    { pubkey: authority, isSigner: false, isWritable: false },
+    { pubkey: gatekeeperAuthority, isSigner: false, isWritable: false },
     { pubkey: network, isSigner: true, isWritable: false },
     { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
     { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -102,6 +111,19 @@ export function addGatekeeper(
   });
 }
 
+/**
+ * Issue a gateway token to the owner publicKey. This is a 'vanilla' token, in that it does not
+ * rely on any other accounts (e.g. identity accounts) to validate.
+ * Returns a Solana instruction that must be signed by the gatekeeper authority.
+ * @param gatewayTokenAccount An uninitialised gateway token account PDA. The address must be derived via getGatewayTokenKeyForOwner
+ * @param payer The payer of the transaction (used to pay rent into the gatekeeper account).
+ * @param gatekeeperAccount The account in the gatekeeper network of the gatekeeper issuing the token
+ * @param owner The recipient of the token
+ * @param gatekeeperAuthority The gatekeeper issuing the token
+ * @param gatekeeperNetwork The network that the gatekeeper belongs to
+ * @param seed An 8-byte seed array, used to add multiple tokens to the same owner. Must be unique to each token, if present
+ * @param expireTime The unix timestamp at which the token is no longer valid
+ */
 export function issueVanilla(
   gatewayTokenAccount: PublicKey,
   payer: PublicKey,
@@ -139,6 +161,14 @@ const getStateChangeAccountMeta = (
   { pubkey: gatekeeperAuthority, isSigner: true, isWritable: false },
   { pubkey: gatekeeperAccount, isSigner: false, isWritable: false },
 ];
+
+/**
+ * Revoke a gateway token.
+ * Returns a Solana instruction that must be signed by the gatekeeper authority.
+ * @param gatewayTokenAccount The gateway token to revoke
+ * @param gatekeeperAuthority The gatekeeper revoking the token (must be in the same network as the issuing gatekeeper)
+ * @param gatekeeperAccount The account in the gatekeeper network of the gatekeeper revoking the token
+ */
 export function revoke(
   gatewayTokenAccount: PublicKey,
   gatekeeperAuthority: PublicKey,
@@ -157,6 +187,13 @@ export function revoke(
   });
 }
 
+/**
+ * Freeze a gateway token.
+ * Returns a Solana instruction that must be signed by the gatekeeper authority.
+ * @param gatewayTokenAccount The gateway token to freeze
+ * @param gatekeeperAuthority The gatekeeper freezing the token (must be equal to the issuing gatekeeper)
+ * @param gatekeeperAccount The account in the gatekeeper network of the gatekeeper freezing the token
+ */
 export function freeze(
   gatewayTokenAccount: PublicKey,
   gatekeeperAuthority: PublicKey,
@@ -175,6 +212,13 @@ export function freeze(
   });
 }
 
+/**
+ * Unfreeze a gateway token.
+ * Returns a Solana instruction that must be signed by the gatekeeper authority.
+ * @param gatewayTokenAccount The gateway token to unfreeze
+ * @param gatekeeperAuthority The gatekeeper unfreezing the token (must be equal to the issuing gatekeeper)
+ * @param gatekeeperAccount The account in the gatekeeper network of the gatekeeper unfreezing the token
+ */
 export function unfreeze(
   gatewayTokenAccount: PublicKey,
   gatekeeperAuthority: PublicKey,
@@ -193,6 +237,14 @@ export function unfreeze(
   });
 }
 
+/**
+ * Update the expiry time of a gateway token.
+ * Returns a Solana instruction that must be signed by the gatekeeper authority.
+ * @param gatewayTokenAccount The gateway token to be updated (must have an expiry time)
+ * @param gatekeeperAuthority The gatekeeper (must be equal to the issuing gatekeeper)
+ * @param gatekeeperAccount The account in the gatekeeper network of the gatekeeper
+ * @param expireTime The new expiry time
+ */
 export function updateExpiry(
   gatewayTokenAccount: PublicKey,
   gatekeeperAuthority: PublicKey,

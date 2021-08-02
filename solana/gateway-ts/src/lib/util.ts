@@ -2,7 +2,6 @@ import {
   AccountInfo,
   Commitment,
   Connection,
-  Context,
   PublicKey,
 } from "@solana/web3.js";
 import {
@@ -15,6 +14,10 @@ import { GatewayToken, ProgramAccountResponse, State } from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
 import { GatekeeperData } from "./GatekeeperData";
 
+/**
+ * Derive the address of the gatekeeper PDA for this gatekeeper
+ * @param authority The gatekeeper
+ */
 export const getGatekeeperAccountKeyFromGatekeeperAuthority = async (
   authority: PublicKey
 ): Promise<PublicKey> => {
@@ -25,6 +28,11 @@ export const getGatekeeperAccountKeyFromGatekeeperAuthority = async (
   return publicKeyNonce[0];
 };
 
+/**
+ * Derive the address of the gateway token PDA for this owner address and optional seed.
+ * @param owner The owner of the gateway token
+ * @param seed An 8-byte seed array, used to add multiple tokens to the same owner. Must be unique to each token, if present
+ */
 export const getGatewayTokenKeyForOwner = async (
   owner: PublicKey,
   seed?: Uint8Array
@@ -74,11 +82,11 @@ const dataToGatewayToken = (
 
 /**
  * Find all gateway tokens for a user on a gatekeeper network, optionally filtering out revoked tokens
- * @param {Connection} connection
- * @param {PublicKey} owner
- * @param {PublicKey} gatekeeperNetwork
- * @param {boolean=false} includeRevoked
- * @returns {Promise<GatewayToken[]>}
+ * @param connection A solana connection object
+ * @param owner The token owner
+ * @param gatekeeperNetwork The network to find a token for
+ * @param {boolean=false} includeRevoked If false (default), filter out revoked tokens
+ * @returns {Promise<GatewayToken[]>} All tokens for the owner
  */
 export const findGatewayTokens = async (
   connection: Connection,
@@ -120,10 +128,10 @@ export const findGatewayTokens = async (
 
 /**
  * Find any unrevoked token for a user on a gatekeeper network
- * @param {Connection} connection
- * @param {PublicKey} owner
- * @param {PublicKey} gatekeeperNetwork
- * @returns {Promise<GatewayToken | undefined>}
+ * @param connection A solana connection object
+ * @param owner The token owner
+ * @param gatekeeperNetwork The network to find a token for
+ * @returns Promise<GatewayToken | null> An unrevoked token, if one exists for the owner
  */
 export const findGatewayToken = async (
   connection: Connection,
@@ -151,22 +159,34 @@ export const findGatewayToken = async (
   return nonRevokedTokens.length === 0 ? null : nonRevokedTokens[0];
 };
 
+/**
+ * Register a callback to be called whenever a gateway token changes state
+ * @param connection A solana connection object
+ * @param gatewayTokenAddress The address of the gateway token
+ * @param callback The callback to register
+ * @param commitment The solana commitment level at which to register gateway token changes. Defaults to 'confirmed'
+ */
 export const onGatewayTokenChange = (
   connection: Connection,
-  gatewayTokenKey: PublicKey,
+  gatewayTokenAddress: PublicKey,
   callback: (gatewayToken: GatewayToken) => void,
   commitment: Commitment = SOLANA_COMMITMENT
 ) => {
   const accountCallback = (accountInfo: AccountInfo<Buffer>) => {
     const gatewayToken = dataToGatewayToken(
       GatewayTokenData.fromAccount(accountInfo.data),
-      gatewayTokenKey
+      gatewayTokenAddress
     );
     callback(gatewayToken);
   };
-  connection.onAccountChange(gatewayTokenKey, accountCallback, commitment);
+  connection.onAccountChange(gatewayTokenAddress, accountCallback, commitment);
 };
 
+/**
+ * Lookup the gateway token at a given address
+ * @param connection A solana connection object
+ * @param gatewayTokenAddress The address of the gateway token
+ */
 export const getGatewayToken = async (
   connection: Connection,
   gatewayTokenAddress: PublicKey
@@ -184,6 +204,11 @@ export const getGatewayToken = async (
   );
 };
 
+/**
+ * Returns the gatekeeper account for a given gatekeeper
+ * @param connection A solana connection object
+ * @param gatekeeperAuthority The gatekeeper authority key
+ */
 export const getGatekeeperAccount = async (
   connection: Connection,
   gatekeeperAuthority: PublicKey
