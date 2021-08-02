@@ -23,6 +23,12 @@ and is non-transferable.
 ![Component View](docs/components.png)
 [Source](https://lucid.app/lucidchart/4f890182-deae-46a0-bd2d-9abd3da803d3/view)
 
+## API Documentation
+
+### Solana
+- [Gatekeeper Lib API](solana/gatekeeper-lib/docs)
+- [Gateway-TS API](solana/gateway-ts/docs)
+
 ## Repo structure
 
 This repository contains a number of libraries,
