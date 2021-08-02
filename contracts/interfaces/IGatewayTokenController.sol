@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 
 interface IGatewayTokenController {
     /**
-    * @dev Emitted when Civic Admin transfered from `previousAdmin` to `admin`.
+    * @dev Emitted when Identity.com Admin transfered from `previousAdmin` to `admin`.
     */
     event AdminTransfered(address indexed previousAdmin, address indexed admin);
 
@@ -12,7 +12,7 @@ interface IGatewayTokenController {
     * @dev Emitted when new GatewayToken contract deployed with 
     * associated `name` and `symbol` to specific `address`.
     */
-    event GatewayTokenCreated(address indexed tokenAddress, string name, string symbol, address deployer);
+    event GatekeeperNetworkCreated(address indexed tokenAddress, string name, string symbol, address deployer);
 
     /**
     * @dev Emitted when GatewayTokens allowed to transfer for token owners by `account`.
@@ -35,12 +35,12 @@ interface IGatewayTokenController {
     event BlacklistedBatch(address[] users);
 
     /**
-    * @dev Triggers to get Civic System Admin
+    * @dev Triggers to get Identity.com System Admin
     */
-    function civicAdmin() external view returns (address);
+    function identityAdmin() external view returns (address);
 
     /**
-    * @dev Transfers Gateway Token system admin access in case Civic changes the main management address
+    * @dev Transfers Gateway Token system admin access in case Identity.com changes the main management address
     * @param newAdmin Address to transfer admin role for.
     */
     function transferAdmin(address newAdmin) external;
@@ -87,14 +87,14 @@ interface IGatewayTokenController {
     * @param _name Gateway Token name
     * @param _symbol Gateway Token symbol
     */
-    function deployGatewayToken(string memory _name, string memory _symbol) external returns (address tokenAddress);
+    function createGatekeeperNetwork(string memory _name, string memory _symbol, bool _isDAOGoverned, address _daoExecutor) external returns (address tokenAddress);
 
     /**
     * @dev Triggers to add multiple network authorities in gateway token contract. 
     * @param token Gateway Token contract address
     * @param authorities Network Authorities array
     *
-    * @notice Only triggered by civicAdmin
+    * @notice Only triggered by identityAdmin
     */
     function addNetworkAuthorities(address token, address[] memory authorities) external;
 
@@ -103,7 +103,7 @@ interface IGatewayTokenController {
     * @param token Gateway Token contract address
     * @param authorities Network Authorities array
     *
-    * @notice Only triggered by civicAdmin
+    * @notice Only triggered by identityAdmin
     */
     function removeNetworkAuthorities(address token, address[] memory authorities) external;
 }

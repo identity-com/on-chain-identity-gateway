@@ -7,24 +7,24 @@ import "./interfaces/IGatewayToken.sol";
 import "./interfaces/IGatewayTokenController.sol";
 
 /**
- * @dev Gateway Token Controller contract is responsible for managing Civic KYC gateway token set of smart contracts
+ * @dev Gateway Token Controller contract is responsible for managing Identity.com KYC gateway token set of smart contracts
  *
  * Contract handles multiple levels of access such as Network Authority (may represent a specific regulator body) 
- * Gatekeepers (Civic network parties who can mint/burn/freeze gateway tokens) and overall system Admin who can add
+ * Gatekeepers (Identity.com network parties who can mint/burn/freeze gateway tokens) and overall system Admin who can add
  * new Network Authorities
  */
 contract GatewayTokenController is IGatewayTokenController {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     EnumerableSet.AddressSet private gatewayTokens;
-    address public override civicAdmin;
+    address public override identityAdmin;
 
     // Mapping from user address to blacklisted boolean
     mapping(address => bool) private _isBlacklisted;
 
-    // @dev Modifier to prevent calls from anyone except Civic Admin
+    // @dev Modifier to prevent calls from anyone except Identity.com Admin
     modifier onlyAdmin() {
-        require(civicAdmin == msg.sender, "NOT CIVIC_ADMIN");
+        require(identityAdmin == msg.sender, "NOT IDENTITY_COM_ADMIN");
         _;
     }
 
@@ -33,17 +33,17 @@ contract GatewayTokenController is IGatewayTokenController {
     * Grants admin role to contract deployer
     */
     constructor() public {
-        civicAdmin = msg.sender;
+        identityAdmin = msg.sender;
     }
 
     // ===========  ADMIN CONTROLL SECTION ============
 
     /**
-    * @dev Transfers Gateway Token system admin access in case Civic changes the main management address
+    * @dev Transfers Gateway Token system admin access in case Identity.com changes the main management address
     * @param newAdmin Address to transfer admin role for.
     */
     function transferAdmin(address newAdmin) public onlyAdmin override {
-        civicAdmin = newAdmin;
+        identityAdmin = newAdmin;
 
         emit AdminTransfered(msg.sender, newAdmin);
     }
@@ -132,11 +132,11 @@ contract GatewayTokenController is IGatewayTokenController {
     * @param _name Gateway Token name
     * @param _symbol Gateway Token symbol
     */
-    function deployGatewayToken(string memory _name, string memory _symbol) public onlyAdmin override returns (address tokenAddress) {
-        tokenAddress = address(new GatewayToken(_name, _symbol, msg.sender));
+    function createGatekeeperNetwork(string memory _name, string memory _symbol, bool _isDAOGoverned, address _daoExecutor) public override returns (address tokenAddress) {
+        tokenAddress = address(new GatewayToken(_name, _symbol, msg.sender, _isDAOGoverned, _daoExecutor));
         gatewayTokens.add(tokenAddress);
 
-        emit GatewayTokenCreated(tokenAddress, _name, _symbol, msg.sender);
+        emit GatekeeperNetworkCreated(tokenAddress, _name, _symbol, msg.sender);
         return tokenAddress;
     }
 
@@ -147,14 +147,21 @@ contract GatewayTokenController is IGatewayTokenController {
     * @param token Gateway Token contract address
     * @param authorities Network Authorities array
     *
-    * @notice Only triggered by civicAdmin
+    * @notice Only triggered by identityAdmin
     */
-    function addNetworkAuthorities(address token, address[] memory authorities) public onlyAdmin virtual override {
+    function addNetworkAuthorities(address token, address[] memory authorities) public virtual override {
         require(gatewayTokens.contains(token), "NOT GATEWAY TOKEN");
         IGatewayToken gt = IGatewayToken(token);
 
         for (uint256 i = 0; i < authorities.length; ++i) {
             address authority = authorities[i];
+
+            if (gt.isDAOGoverned()) {
+                address daoManager = gt.daoManager();
+                require(msg.sender == daoManager, "INCORRECT ACCESS");
+            } else {
+                require(gt.isNetworkAuthority(msg.sender), "INCORRECT ACCESS");
+            }
 
             gt.addNetworkAuthority(authority);
         }
@@ -165,14 +172,21 @@ contract GatewayTokenController is IGatewayTokenController {
     * @param token Gateway Token contract address
     * @param authorities Network Authorities array
     *
-    * @notice Only triggered by civicAdmin
+    * @notice Only triggered by identityAdmin
     */
-    function removeNetworkAuthorities(address token, address[] memory authorities) public onlyAdmin virtual override {
+    function removeNetworkAuthorities(address token, address[] memory authorities) public virtual override {
         require(gatewayTokens.contains(token), "NOT GATEWAY TOKEN");
         IGatewayToken gt = IGatewayToken(token);
 
         for (uint256 i = 0; i < authorities.length; ++i) {
             address authority = authorities[i];
+
+            if (gt.isDAOGoverned()) {
+                address daoManager = gt.daoManager();
+                require(msg.sender == daoManager, "INCORRECT ACCESS");
+            } else {
+                require(gt.isNetworkAuthority(msg.sender), "INCORRECT ACCESS");
+            }
 
             gt.removeNetworkAuthority(authority);
         }
