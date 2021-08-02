@@ -11,15 +11,16 @@
       "skipLibCheck": true,
       "resolveJsonModule": true
     },
-    "exclude": ["node_modules", "dist"],
+    "exclude": ["node_modules"],
     "typeAcquisition": {
       "include": [
         "jest"
       ]
     },
     "include": [
-      "src/**/*.ts",
-      "mongo/seed/**/*.ts"
+      "./scripts",
+      "./deploy",
+      "./test"
     ],
     "typeRoots": [
       "node_modules/@types"

@@ -14,12 +14,12 @@ import "./interfaces/IGatewayTokenController.sol";
 import "./interfaces/IERC721Expirable.sol";
 
 /**
- * @dev Gateway Token contract is responsible for managing Civic KYC gateway tokens 
+ * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens 
  * those tokens represent completed KYC with attached identity. 
  * Gateway tokens using ERC721 standard with custom extentions.
  *
  * Contract handles multiple levels of access such as Network Authority (may represent a specific regulator body) 
- * Gatekeepers (Civic network parties who can mint/burn/freeze gateway tokens) and overall system Admin who can add
+ * Gatekeepers (Identity.com network parties who can mint/burn/freeze gateway tokens) and overall system Admin who can add
  * new Gatekeepers and Network Authorities
  */
 contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC721Freezeble, IERC721Expirable, IGatewayToken {
@@ -39,8 +39,12 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     // Gateway token transfer restrictions
     bool public isTransfersRestricted;
 
+    // Off-chain DAO governance access control
+    bool public override isDAOGoverned;
+    address public override daoManager;
+
     // Access control roles
-    bytes32 public constant GATEWAY_TOKEN_CONTROLLER = keccak256("GATEWAY_TOKEN_CONTROLLER");
+    bytes32 public constant DAO_MANAGER_ROLE = keccak256("DAO_MANAGER_ROLE");
     bytes32 public constant GATEKEEPER_ROLE = keccak256("GATEKEEPER_ROLE");
     bytes32 public constant NETWORK_AUTHORITY_ROLE = keccak256("NETWORK_AUTHORITY_ROLE");
 
@@ -65,29 +69,28 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     // Optional Mapping from token ID to expiration date
     mapping(uint256 => uint256) private _expirations;
 
-    // Optional Mapping from token ID to token types in bitmasks 
-    // TODO: Add functionality to change bitmask and define gateway token types rules
-    mapping(uint256 => uint256) private _tokenTypes;
+    // Optional Mapping from address to tokenID
+    mapping(address => uint256) private _defaultTokens;
 
-    // @dev Modifier to prevent calls from anyone except Civic Admin
-    modifier onlyCivicAdmin() {
-        require(msg.sender == IGatewayTokenController(controller).civicAdmin());
+    // @dev Modifier to prevent calls from anyone except Identity.com Admin
+    modifier onlyIdentityAdmin() {
+        require(msg.sender == IGatewayTokenController(controller).identityAdmin() || msg.sender == controller, "NOT IDENTITY.COM ADMIN NOR TOKEN CONTROLLER");
         _;
     }
 
-    // @dev Modifier to prevent calls from anyone except Civic Admin
+    // @dev Modifier to prevent calls for blacklisted users
     modifier onlyNonBlacklistedUser(address user) {
         require(!_isBlacklisted(user), "BLACKLISTED USER");
         _;
     }
 
-    // @dev Modifier to make a function callable only when the contract is not paused.
+    // @dev Modifier to make a function callable only when token transfers not restricted.
     modifier whenTransfersNotRestricted() {
         require(!transfersRestricted(), "TRANSFERS RESTRICTED");
         _;
     }
 
-    // @dev Modifier to make a function callable only when the contract is not paused.
+    // @dev Modifier to make a function callable only when token transfers restricted.
     modifier whenTransfersRestricted() {
         require(transfersRestricted(), "TRANSFERS NOT RESTRICTED");
         _;
@@ -101,20 +104,34 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
      * `NETWORK_AUTHORITY_ROLE` responsible for adding/removing Gatekeepers and 
      * `GATEKEEPER_ROLE` responsible for minting/burning/transfering tokens
      */
-    constructor(string memory _name, string memory _symbol, address _deployer) public {
+    constructor(string memory _name, string memory _symbol, address _deployer, bool _isDAOGoverned, address _daoManager) public {
         name = _name;
         symbol = _symbol;
         controller = _msgSender();
         isTransfersRestricted = true;
         deployer = _deployer;
 
-        _setupRole(GATEWAY_TOKEN_CONTROLLER, _msgSender());
-
+        _setupRole(NETWORK_AUTHORITY_ROLE, _msgSender());
         _setupRole(NETWORK_AUTHORITY_ROLE, deployer);
-        _setRoleAdmin(NETWORK_AUTHORITY_ROLE, GATEWAY_TOKEN_CONTROLLER);
-
         _setupRole(GATEKEEPER_ROLE, deployer);
-        _setRoleAdmin(GATEKEEPER_ROLE, NETWORK_AUTHORITY_ROLE);
+
+        if (_isDAOGoverned) {
+            isDAOGoverned = _isDAOGoverned;
+
+            require(_daoManager != address(0), "INCORRECT ADDRESS");
+            // require(_daoManager.isContract(), "NON CONTRACT EXECUTOR"); uncomment while testing with Gnosis Multisig
+            daoManager = _daoManager;
+
+            _setupRole(DAO_MANAGER_ROLE, _daoManager);
+            _setupRole(DAO_MANAGER_ROLE, _msgSender());
+            _setupRole(NETWORK_AUTHORITY_ROLE, _daoManager);
+            _setupRole(GATEKEEPER_ROLE, _daoManager);
+            _setRoleAdmin(NETWORK_AUTHORITY_ROLE, DAO_MANAGER_ROLE);
+            _setRoleAdmin(GATEKEEPER_ROLE, DAO_MANAGER_ROLE);
+        } else {
+            _setRoleAdmin(NETWORK_AUTHORITY_ROLE, NETWORK_AUTHORITY_ROLE);
+            _setRoleAdmin(GATEKEEPER_ROLE, NETWORK_AUTHORITY_ROLE);
+        }
     }
 
     /**
@@ -194,7 +211,24 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * Checks if token exists in gateway token contract, `tokenId` still active, and not expired.
     * Performs additional checks to verify that `owner` is not blacklisted globally.
     */
-    function verifyToken(uint256 tokenId, address owner) external view virtual returns (bool) {
+    function verifyToken(address owner, uint256 tokenId) external view virtual returns (bool) {
+        if(!_existsAndActive(tokenId)) return false;
+        address tokenOwner = ownerOf(tokenId);
+        if (tokenOwner != owner) return false;
+        bool _blacklisted = _isBlacklisted(owner);
+        if(_blacklisted) return false;
+
+        return true;
+    }
+
+    /**
+    * @dev Triggered by external contract to verify the validity of the default token for `owner`.
+    *
+    * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
+    * Performs additional checks to verify that `owner` is not blacklisted globally.
+    */
+    function verifyToken(address owner) external view virtual returns (bool) {
+        uint256 tokenId = getTokenId(owner);
         if(!_existsAndActive(tokenId)) return false;
         address tokenOwner = ownerOf(tokenId);
         if (tokenOwner != owner) return false;
@@ -425,6 +459,30 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     }
 
     /**
+    * @dev Triggers to get default gateway token ID for `owner`
+    * @param owner Token owner address
+    */
+    function getTokenId(address owner) public view virtual override returns (uint256) {
+        require(owner != address(0), "ZERO ADDRESS");
+        return _defaultTokens[owner];
+    }
+
+    /**
+    * @dev Triggers to set token with specified `tokenId` as default for `owner`
+    * @param owner  Token owner address
+    * @param tokenId Gateway token id
+    */
+    function setDefaultTokenId(address owner, uint256 tokenId) public virtual override {
+        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FREEZED");
+        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
+
+        address actualOwner = ownerOf(tokenId);
+        require(actualOwner == owner, "INCORRECT OWNER");
+
+        _defaultTokens[owner] = tokenId;
+    }
+
+    /**
      * @dev Mints `tokenId` and transfers it to `to`.
      *
      * WARNING: Usage of this method is discouraged, use {_safeMint} whenever possible
@@ -442,6 +500,9 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
 
         _balances[to] += 1;
         _owners[tokenId] = to;
+        if (_defaultTokens[to] == 0) {
+            _defaultTokens[to] = tokenId;
+        }
 
         emit Transfer(address(0), to, tokenId);
     }
@@ -465,6 +526,10 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
         delete _expirations[tokenId];
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             delete _tokenURIs[tokenId];
+        }
+
+        if (_defaultTokens[owner] == tokenId) {
+            delete _defaultTokens[owner];
         }
 
         _balances[owner] -= 1;
@@ -533,6 +598,11 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
 
         // Clear approvals from the previous owner
         _approve(address(0), tokenId);
+
+        if (_defaultTokens[from] == tokenId) {
+            delete _defaultTokens[from];
+            _defaultTokens[to] = tokenId;
+        }
 
         _balances[from] -= 1;
         _balances[to] += 1;
@@ -630,7 +700,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * @dev Triggers to add new network authority into the system. 
     * @param authority Network Authority address
     *
-    * @notice Only triggered by Civic Admin
+    * @notice Can be triggered by Gateway Token Controller or any Network Authority
     */
     function addNetworkAuthority(address authority) external virtual override returns (bool) {
         grantRole(NETWORK_AUTHORITY_ROLE, authority);
@@ -640,10 +710,18 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     * @dev Triggers to remove existing network authority from gateway token. 
     * @param authority Network Authority address
     *
-    * @notice Only triggered by Civic Admin
+    * @notice Can be triggered by Gateway Token Controller or any Network Authority
     */
     function removeNetworkAuthority(address authority) external virtual override returns (bool) {
         revokeRole(NETWORK_AUTHORITY_ROLE, authority);
+    }
+
+    /**
+    * @dev Triggers to verify if authority has a NETWORK_AUTHORITY_ROLE role. 
+    * @param authority Network Authority address
+    */
+    function isNetworkAuthority(address authority) external virtual override returns (bool) {
+        return hasRole(NETWORK_AUTHORITY_ROLE, authority);
     }
 
     // ===========  ACCESS CONTROLL SECTION ============
@@ -651,10 +729,9 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     /**
     * @dev Triggers to allow token transfers by token owners. 
     *
-    * @notice Only triggered by Civic Admin
+    * @notice Only triggered by Identity.com Admin
     */
-    function allowTransfers() external virtual override whenTransfersRestricted returns (bool) {
-        require(hasRole(GATEWAY_TOKEN_CONTROLLER, _msgSender()), "MUST BE GATEWAY TOKEN CONTROLLER");
+    function allowTransfers() external virtual override whenTransfersRestricted onlyIdentityAdmin returns (bool) {
         isTransfersRestricted = false;
         emit TransfersAccepted(_msgSender());
 
@@ -664,13 +741,33 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     /**
     * @dev Triggers to stop token transfers by token owners. 
     *
-    * @notice Only triggered by Civic Admin
+    * @notice Only triggered by Identity.com Admin
     */
-    function stopTransfers() external virtual override whenTransfersNotRestricted returns (bool) {
-        require(hasRole(GATEWAY_TOKEN_CONTROLLER, _msgSender()), "MUST BE GATEWAY TOKEN CONTROLLER");
+    function stopTransfers() external virtual override whenTransfersNotRestricted onlyIdentityAdmin returns (bool) {
         isTransfersRestricted = true;
         emit TransfersRestricted(_msgSender());
 
         return true;
+    }
+
+    /**
+    * @dev Transfers Gateway Token DAO Manager access from daoManager to `newManager`
+    * @param newManager Address to transfer DAO Manager role for.
+    */
+    function transferDAOManager(address newManager) public override {
+        require(msg.sender == daoManager, "NOT DAO MANAGER");
+        require(newManager != address(0), "ZERO ADDRESS");
+
+        grantRole(DAO_MANAGER_ROLE, newManager);
+        grantRole(NETWORK_AUTHORITY_ROLE, newManager);
+        grantRole(GATEKEEPER_ROLE, newManager);
+
+        revokeRole(GATEKEEPER_ROLE, daoManager);
+        revokeRole(NETWORK_AUTHORITY_ROLE, daoManager);
+        revokeRole(DAO_MANAGER_ROLE, daoManager);
+
+        daoManager = newManager;
+
+        emit DAOManagerTransfered(msg.sender, newManager);
     }
 }

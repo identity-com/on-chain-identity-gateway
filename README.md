@@ -1,4 +1,4 @@
-## Civic Gateway Tokens on Ethereum blockchain
+## Identity.com Gateway Tokens on Ethereum blockchain
 
 This repository contains set of Ethereum smart contracts for Identity.com On-chain Identity Gateway token system. 
 
@@ -28,7 +28,15 @@ interface IGatewayTokenVerifier {
     * Checks if token exists in gateway token contract, `tokenId` still active, and not expired.
     * Performs additional checks to verify that `owner` is not blacklisted globally.
     */
-    function verifyToken(uint256 tokenId, address owner) external view returns (bool);
+    function verifyToken(address owner, uint256 tokenId) external view returns (bool);
+
+    /**
+    * @dev Triggered by external contract to verify the validity of the default token for `owner`.
+    *
+    * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
+    * Performs additional checks to verify that `owner` is not blacklisted globally.
+    */
+    function verifyToken(address owner) external view returns (bool);
 }
 ```
 
@@ -36,7 +44,35 @@ By sending user's tokenId and address as parameters system will validate if exis
 
 ## Integration example 
 
-TODO
+In order to validate your user's gateway tokens validation smart contract first has to import a validation interface:
+
+```import "./interfaces/IGatewayTokenVerifier.sol";```
+
+After importing an interface a validation smart contract has to either specify a GatewayToken contract address for which type of tokens contract needs to validate for, or pass a token address during into the validation function. Typically there is two ways to validate user's tokens such as:
+
+1) Validate specific token by tokenID
+
+```
+address gatekeeperNetwork;
+
+function borrow(uint256 amount, uint256 tokenId) {
+	IGatewayToken gt = IGatewayToken(gatekeeperNetwork);
+	require(gt.verify(msg.sender, tokenid), "INVALID OR MISSING GATEWAY TOKEN");
+	// transfer funds to msg.sender
+}
+```
+
+2) Or validate a default token for user
+
+```
+address gatekeeperNetwork;
+
+function borrow(uint256 amount) {
+	IGatewayToken gt = IGatewayToken(gatekeeperNetwork);
+	require(gt.verify(msg.sender), "INVALID OR MISSING GATEWAY TOKEN");
+	// transfer funds to msg.sender
+}
+```
 
 
 ## Licence
