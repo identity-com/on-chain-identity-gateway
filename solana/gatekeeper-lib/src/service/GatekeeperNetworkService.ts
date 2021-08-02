@@ -5,13 +5,26 @@ import {
 } from "@identity.com/solana-gateway-ts";
 import { send } from "../util/connection";
 
+/**
+ * Encapsulates the actions performed by a gatekeeper network authority
+ */
 export class GatekeeperNetworkService {
+  /**
+   * Construct a new gatekeeper network service
+   * @param connection A solana connection object
+   * @param payer The payer for any transactions performed by the network authority
+   * @param gatekeeperNetwork The network authority's key
+   */
   constructor(
     private connection: Connection,
     private payer: Keypair,
     private gatekeeperNetwork: Keypair
   ) {}
 
+  /**
+   * Add a gatekeeper to the network
+   * @param gatekeeperAuthority
+   */
   async addGatekeeper(gatekeeperAuthority: PublicKey): Promise<PublicKey> {
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(gatekeeperAuthority);

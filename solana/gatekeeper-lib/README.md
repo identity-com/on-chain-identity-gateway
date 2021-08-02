@@ -28,17 +28,14 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-- [gatekeeper-lib](#gatekeeper-lib)
-- [Usage](#usage)
-- [Commands](#commands)
-  - [`gateway add-gatekeeper ADDRESS`](#gateway-add-gatekeeper-address)
-  - [`gateway freeze GATEWAYTOKEN`](#gateway-freeze-gatewaytoken)
-  - [`gateway help [COMMAND]`](#gateway-help-command)
-  - [`gateway issue ADDRESS`](#gateway-issue-address)
-  - [`gateway refresh GATEWAYTOKEN [EXPIRY]`](#gateway-refresh-gatewaytoken-expiry)
-  - [`gateway revoke GATEWAYTOKEN`](#gateway-revoke-gatewaytoken)
-  - [`gateway unfreeze GATEWAYTOKEN`](#gateway-unfreeze-gatewaytoken)
-  - [`gateway verify OWNER`](#gateway-verify-owner)
+* [`gateway add-gatekeeper ADDRESS`](#gateway-add-gatekeeper-address)
+* [`gateway freeze GATEWAYTOKEN`](#gateway-freeze-gatewaytoken)
+* [`gateway help [COMMAND]`](#gateway-help-command)
+* [`gateway issue ADDRESS`](#gateway-issue-address)
+* [`gateway refresh GATEWAYTOKEN [EXPIRY]`](#gateway-refresh-gatewaytoken-expiry)
+* [`gateway revoke GATEWAYTOKEN`](#gateway-revoke-gatewaytoken)
+* [`gateway unfreeze GATEWAYTOKEN`](#gateway-unfreeze-gatewaytoken)
+* [`gateway verify OWNER`](#gateway-verify-owner)
 
 ## `gateway add-gatekeeper ADDRESS`
 
