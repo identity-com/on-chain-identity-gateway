@@ -128,7 +128,7 @@ async fn issue_vanilla_wrong_account_should_fail() {
 
     let authority =
         Keypair::from_bytes(&context.gatekeeper_authority.as_ref().unwrap().to_bytes()).unwrap();
-    let (token, _) = get_gateway_token_address_with_seed(&owner, &None);
+    let (token, _) = get_gateway_token_address_with_seed(&owner, &None, &context.gatekeeper_network.as_ref().unwrap().pubkey());
 
     let result = context
         .issue_gateway_token_transaction(
@@ -154,7 +154,7 @@ async fn set_state_wrong_account_type_should_fail() {
 
     let authority =
         Keypair::from_bytes(&context.gatekeeper_authority.as_ref().unwrap().to_bytes()).unwrap();
-    let (token, _) = get_gateway_token_address_with_seed(&owner, &None);
+    let (token, _) = get_gateway_token_address_with_seed(&owner, &None, &context.gatekeeper_network.as_ref().unwrap().pubkey());
     let (gatekeeper_account, _) =
         get_gatekeeper_address_with_seed(&context.gatekeeper_authority.as_ref().unwrap().pubkey());
 
@@ -187,7 +187,7 @@ async fn update_expiry_wrong_account_should_fail() {
 
     let authority =
         Keypair::from_bytes(&context.gatekeeper_authority.as_ref().unwrap().to_bytes()).unwrap();
-    let (token, _) = get_gateway_token_address_with_seed(&owner, &None);
+    let (token, _) = get_gateway_token_address_with_seed(&owner, &None, &context.gatekeeper_network.as_ref().unwrap().pubkey());
     let (gatekeeper_account, _) =
         get_gatekeeper_address_with_seed(&context.gatekeeper_authority.as_ref().unwrap().pubkey());
 
