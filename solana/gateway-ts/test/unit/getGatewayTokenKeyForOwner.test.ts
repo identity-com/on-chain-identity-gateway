@@ -51,7 +51,7 @@ describe("getGatewayTokenKeyForOwner", function () {
   let payer: Keypair;
 
   before(async () => {
-    connection = new Connection("http://localhost:8899");
+    connection = new Connection(clusterApiUrl("devnet"));
     payer = Keypair.generate();
     await connection.confirmTransaction(
       await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL),
