@@ -61,12 +61,14 @@ pub type AddressSeed = [u8; 8];
 pub fn get_gateway_token_address_with_seed(
     authority: &Pubkey,
     additional_seed: &Option<AddressSeed>,
+    network: &Pubkey,
 ) -> (Pubkey, u8) {
     Pubkey::find_program_address(
         &[
             &authority.to_bytes(),
             GATEWAY_TOKEN_ADDRESS_SEED,
             &additional_seed.unwrap_or_default(),
+            &network.to_bytes(),
         ],
         &id(),
     )

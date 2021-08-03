@@ -79,7 +79,7 @@ impl GatewayContext {
                 &network.pubkey(),
             )],
             Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, &network],
+            &[&self.context.payer, network],
             self.context.last_blockhash,
         );
         self.context
@@ -102,12 +102,12 @@ impl GatewayContext {
                 owner,
                 gatekeeper_account,
                 &gatekeeper_authority.pubkey(),
-                &network,
+                network,
                 None,
                 expire_time,
             )],
             Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, &gatekeeper_authority],
+            &[&self.context.payer, gatekeeper_authority],
             self.context.last_blockhash,
         );
         self.context
@@ -123,16 +123,16 @@ impl GatewayContext {
         gatekeeper_account: &Pubkey,
         expire_time: UnixTimestamp,
     ) -> transport::Result<()> {
-        let (gateway_token, _) = get_gateway_token_address_with_seed(&owner, &None);
+        let (gateway_token, _) = get_gateway_token_address_with_seed(owner, &None, &self.gatekeeper_network.as_ref().unwrap().pubkey());
         let transaction = Transaction::new_signed_with_payer(
             &[instruction::update_expiry(
                 &gateway_token,
                 &gatekeeper_authority.pubkey(),
-                &gatekeeper_account,
+                gatekeeper_account,
                 expire_time,
             )],
             Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, &gatekeeper_authority],
+            &[&self.context.payer, gatekeeper_authority],
             self.context.last_blockhash,
         );
         self.context
@@ -156,7 +156,7 @@ impl GatewayContext {
                 gateway_token_state,
             )],
             Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, &gatekeeper_authority],
+            &[&self.context.payer, gatekeeper_authority],
             self.context.last_blockhash,
         );
         self.context
@@ -233,7 +233,7 @@ impl GatewayContext {
     }
 
     async fn get_gateway_token(&mut self, owner: &Pubkey) -> Option<GatewayToken> {
-        let (gateway_token, _) = get_gateway_token_address_with_seed(&owner, &None);
+        let (gateway_token, _) = get_gateway_token_address_with_seed(owner, &None, &self.gatekeeper_network.as_ref().unwrap().pubkey());
         self.context
             .banks_client
             .get_account(gateway_token)
@@ -269,7 +269,7 @@ impl GatewayContext {
         let (gatekeeper_account, _) =
             get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
         self.issue_gateway_token_transaction(
-            &owner,
+            owner,
             &gatekeeper_authority,
             &gatekeeper_account,
             &gatekeeper_network.pubkey(),
@@ -300,7 +300,7 @@ impl GatewayContext {
             get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
 
         self.update_gateway_token_expiry_transaction(
-            &owner,
+            owner,
             &gatekeeper_authority,
             &gatekeeper_account,
             expire_time,
@@ -328,7 +328,7 @@ impl GatewayContext {
         );
         let (gatekeeper_account, _) =
             get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
-        let (gateway_account, _) = get_gateway_token_address_with_seed(&owner, &None);
+        let (gateway_account, _) = get_gateway_token_address_with_seed(owner, &None, &self.gatekeeper_network.as_ref().unwrap().pubkey());
         self.set_gateway_token_state_transaction(
             &gateway_account,
             &gatekeeper_authority,

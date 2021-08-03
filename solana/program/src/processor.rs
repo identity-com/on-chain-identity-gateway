@@ -171,7 +171,7 @@ fn issue_vanilla(
         try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
 
     let (gateway_token_address, gateway_token_bump_seed) =
-        get_gateway_token_address_with_seed(owner_info.key, seed);
+        get_gateway_token_address_with_seed(owner_info.key, seed, gatekeeper_network_info.key);
     if gateway_token_address != *gateway_token_info.key {
         msg!("Error: gateway_token address derivation mismatch");
         return Err(ProgramError::InvalidArgument);
@@ -197,6 +197,7 @@ fn issue_vanilla(
         &owner_info.key.to_bytes(),
         GATEWAY_TOKEN_ADDRESS_SEED,
         &seed.unwrap_or_default(),
+        &gatekeeper_network_info.key.to_bytes(),
         &[gateway_token_bump_seed],
     ];
 
