@@ -1,4 +1,4 @@
-name: Solana Gatekeeper Lib Build
+name: Solana Typescript
 on:
   push:
     paths:
