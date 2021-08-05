@@ -1,4 +1,4 @@
-name: Solana Gateway Program Build
+name: Solana Rust
 on:
   push:
     paths:
