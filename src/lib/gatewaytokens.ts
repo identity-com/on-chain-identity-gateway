@@ -1,7 +1,11 @@
+import { Contract } from "ethers";
+import { GatewayToken } from "../contracts";
+
 export interface GatewayTokenItem {
   name: string;
   symbol: string;
   address: string;
+  tokenInstance?: GatewayToken;
 }
 
 const MAINNET_GATEWAY_TOKENS: GatewayTokenItem[] = [

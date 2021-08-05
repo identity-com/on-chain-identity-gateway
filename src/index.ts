@@ -1,6 +1,7 @@
 import { GatewayTs } from './GatewayTs';
-import { utils } from 'ethers';
+import { utils, Wallet } from 'ethers';
 export { run } from "@oclif/command";
+import { BaseProvider } from '@ethersproject/providers';
 
 export class GatewayETH extends GatewayTs {
   utils: any;
@@ -14,8 +15,8 @@ export class GatewayETH extends GatewayTs {
    * @param networkId {Network ID}
    * @notice utils {Ethers utils}
    */
-  constructor(provider: any, networkId: number, options: { defaultGas: number; defaultGasPrice: any; }) {
-    super(provider, networkId, options);
+  constructor(provider: BaseProvider, networkId: number, signer?: Wallet, options?: { defaultGas?: number; defaultGasPrice?: any; }) {
+    super(provider, networkId, signer, options);
     this.utils = utils;
   }
 }

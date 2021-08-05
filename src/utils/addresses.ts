@@ -1,6 +1,10 @@
 import { addresses } from '../lib/addresses';
 import { gatewayTokenAddresses, GatewayTokenItem } from '../lib/gatewaytokens';
 
+export interface GatewayTokenItems {
+    [address: string]: GatewayTokenItem
+}
+
 export const getGatewayControllerByNetworkID = (networkID: number = 1) => {
     return addresses[networkID].gatewayTokenController
 }

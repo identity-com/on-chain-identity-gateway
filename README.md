@@ -29,12 +29,15 @@ USAGE
 # Commands
 <!-- commands -->
 * [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
+* [`gateway-eth-ts add-network-authority ADDRESS`](#gateway-eth-ts-add-network-authority-address)
+* [`gateway-eth-ts blacklist ADDRESS`](#gateway-eth-ts-blacklist-address)
 * [`gateway-eth-ts burn TOKENID`](#gateway-eth-ts-burn-tokenid)
 * [`gateway-eth-ts freeze TOKENID`](#gateway-eth-ts-freeze-tokenid)
 * [`gateway-eth-ts help [COMMAND]`](#gateway-eth-ts-help-command)
 * [`gateway-eth-ts issue TOKENID ADDRESS`](#gateway-eth-ts-issue-tokenid-address)
 * [`gateway-eth-ts refresh TOKENID [EXPIRY]`](#gateway-eth-ts-refresh-tokenid-expiry)
 * [`gateway-eth-ts remove-gatekeeper ADDRESS`](#gateway-eth-ts-remove-gatekeeper-address)
+* [`gateway-eth-ts remove-network-authority ADDRESS`](#gateway-eth-ts-remove-network-authority-address)
 * [`gateway-eth-ts unfreeze TOKENID`](#gateway-eth-ts-unfreeze-tokenid)
 * [`gateway-eth-ts verify ADDRESS [TOKENID]`](#gateway-eth-ts-verify-address-tokenid)
 
@@ -50,24 +53,86 @@ ARGUMENTS
   ADDRESS  Gatekeeper address to add to the GatewayToken contract
 
 OPTIONS
-  -g, --gasPriceKey=gasPriceKey                        [default: [object Object]] Gas Price level to execute transaction
-                                                       with. For example: instant, fast, standard, slow
+  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
-  -h, --help                                           show CLI help
+  -h, --help                                     show CLI help
 
-  -n, --networkKey=networkKey                          [default: [object Object]] Specify target network to work with
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                          [default: [object Object]] The ethereum address private key for
-                                                       signing messages
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddressKey=gatewayTokenAddressKey  [default: 0xa16E02E87b7454126E5E10d957A927A7F5B5d2be]
-                                                       GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
 _See code: [dist/commands/add-gatekeeper.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/add-gatekeeper.js)_
+
+## `gateway-eth-ts add-network-authority ADDRESS`
+
+Add a network authority to a GatewayToken contract
+
+```
+USAGE
+  $ gateway-eth-ts add-network-authority ADDRESS
+
+ARGUMENTS
+  ADDRESS  Network authority address to add to the GatewayToken contract
+
+OPTIONS
+  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
+
+  -h, --help                                     show CLI help
+
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
+
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
+
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+                                                 address to target
+
+EXAMPLE
+  $ gateway add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
+```
+
+_See code: [dist/commands/add-network-authority.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/add-network-authority.js)_
+
+## `gateway-eth-ts blacklist ADDRESS`
+
+Blacklist user globaly in the gateway token system
+
+```
+USAGE
+  $ gateway-eth-ts blacklist ADDRESS
+
+ARGUMENTS
+  ADDRESS  User ETH address to blacklist
+
+OPTIONS
+  -c, --gatewayTokenController=gatewayTokenController  [default: 0xD66f3fEaEEB42F230E0E555C1c04632eD1798037]
+                                                       GatewayTokenController address to target
+
+  -g, --gasPrice=gasPrice                              [default: [object Object]] Gas Price level to execute transaction
+                                                       with. For example: instant, fast, standard, slow
+
+  -h, --help                                           show CLI help
+
+  -n, --network=network                                [default: [object Object]] Specify target network to work with
+
+  -p, --privateKey=privateKey                          [default: test test test test test test test test test test test
+                                                       junk] The ethereum address private key for signing messages
+
+EXAMPLE
+  $ gateway blacklist 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
+```
+
+_See code: [dist/commands/blacklist.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/blacklist.js)_
 
 ## `gateway-eth-ts burn TOKENID`
 
@@ -81,18 +146,18 @@ ARGUMENTS
   TOKENID  Token ID number to burn
 
 OPTIONS
-  -g, --gasPriceKey=gasPriceKey                        [default: [object Object]] Gas Price level to execute transaction
-                                                       with. For example: instant, fast, standard, slow
+  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
-  -h, --help                                           show CLI help
+  -h, --help                                     show CLI help
 
-  -n, --networkKey=networkKey                          [default: [object Object]] Specify target network to work with
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                          [default: [object Object]] The ethereum address private key for
-                                                       signing messages
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddressKey=gatewayTokenAddressKey  [default: 0xa16E02E87b7454126E5E10d957A927A7F5B5d2be]
-                                                       GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway burn 10
@@ -112,18 +177,18 @@ ARGUMENTS
   TOKENID  Token ID number to freeze
 
 OPTIONS
-  -g, --gasPriceKey=gasPriceKey                        [default: [object Object]] Gas Price level to execute transaction
-                                                       with. For example: instant, fast, standard, slow
+  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
-  -h, --help                                           show CLI help
+  -h, --help                                     show CLI help
 
-  -n, --networkKey=networkKey                          [default: [object Object]] Specify target network to work with
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                          [default: [object Object]] The ethereum address private key for
-                                                       signing messages
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddressKey=gatewayTokenAddressKey  [default: 0xa16E02E87b7454126E5E10d957A927A7F5B5d2be]
-                                                       GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway freeze 10
@@ -161,18 +226,18 @@ ARGUMENTS
   ADDRESS  Owner ethereum address to tokenID for
 
 OPTIONS
-  -g, --gasPriceKey=gasPriceKey                        [default: [object Object]] Gas Price level to execute transaction
-                                                       with. For example: instant, fast, standard, slow
+  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
-  -h, --help                                           show CLI help
+  -h, --help                                     show CLI help
 
-  -n, --networkKey=networkKey                          [default: [object Object]] Specify target network to work with
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                          [default: [object Object]] The ethereum address private key for
-                                                       signing messages
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddressKey=gatewayTokenAddressKey  [default: 0xa16E02E87b7454126E5E10d957A927A7F5B5d2be]
-                                                       GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway issue 10 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -193,18 +258,18 @@ ARGUMENTS
   EXPIRY   [default: 1209600] The new expiry time in seconds for the gateway token (default 14 days)
 
 OPTIONS
-  -g, --gasPriceKey=gasPriceKey                        [default: [object Object]] Gas Price level to execute transaction
-                                                       with. For example: instant, fast, standard, slow
+  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
-  -h, --help                                           show CLI help
+  -h, --help                                     show CLI help
 
-  -n, --networkKey=networkKey                          [default: [object Object]] Specify target network to work with
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                          [default: [object Object]] The ethereum address private key for
-                                                       signing messages
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddressKey=gatewayTokenAddressKey  [default: 0xa16E02E87b7454126E5E10d957A927A7F5B5d2be]
-                                                       GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway refresh 10 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -224,24 +289,55 @@ ARGUMENTS
   ADDRESS  Gatekeeper address to remove to the GatewayToken contract
 
 OPTIONS
-  -g, --gasPriceKey=gasPriceKey                        [default: [object Object]] Gas Price level to execute transaction
-                                                       with. For example: instant, fast, standard, slow
+  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
-  -h, --help                                           show CLI help
+  -h, --help                                     show CLI help
 
-  -n, --networkKey=networkKey                          [default: [object Object]] Specify target network to work with
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                          [default: [object Object]] The ethereum address private key for
-                                                       signing messages
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddressKey=gatewayTokenAddressKey  [default: 0xa16E02E87b7454126E5E10d957A927A7F5B5d2be]
-                                                       GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
 _See code: [dist/commands/remove-gatekeeper.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/remove-gatekeeper.js)_
+
+## `gateway-eth-ts remove-network-authority ADDRESS`
+
+Remove network authority to a GatewayToken contract
+
+```
+USAGE
+  $ gateway-eth-ts remove-network-authority ADDRESS
+
+ARGUMENTS
+  ADDRESS  Network authority address to remove to the GatewayToken contract
+
+OPTIONS
+  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
+
+  -h, --help                                     show CLI help
+
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
+
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
+
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+                                                 address to target
+
+EXAMPLE
+  $ gateway remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
+```
+
+_See code: [dist/commands/remove-network-authority.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/remove-network-authority.js)_
 
 ## `gateway-eth-ts unfreeze TOKENID`
 
@@ -255,18 +351,18 @@ ARGUMENTS
   TOKENID  Token ID number to unfreeze
 
 OPTIONS
-  -g, --gasPriceKey=gasPriceKey                        [default: [object Object]] Gas Price level to execute transaction
-                                                       with. For example: instant, fast, standard, slow
+  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
-  -h, --help                                           show CLI help
+  -h, --help                                     show CLI help
 
-  -n, --networkKey=networkKey                          [default: [object Object]] Specify target network to work with
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                          [default: [object Object]] The ethereum address private key for
-                                                       signing messages
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddressKey=gatewayTokenAddressKey  [default: 0xa16E02E87b7454126E5E10d957A927A7F5B5d2be]
-                                                       GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway unfreeze 10
@@ -287,14 +383,14 @@ ARGUMENTS
   TOKENID  Token ID to verify identity for
 
 OPTIONS
-  -h, --help                                           show CLI help
-  -n, --networkKey=networkKey                          [default: [object Object]] Specify target network to work with
+  -h, --help                                     show CLI help
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                          [default: [object Object]] The ethereum address private key for
-                                                       signing messages
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddressKey=gatewayTokenAddressKey  [default: 0xa16E02E87b7454126E5E10d957A927A7F5B5d2be]
-                                                       GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway verify 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94

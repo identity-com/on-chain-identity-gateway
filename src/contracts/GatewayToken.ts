@@ -1,15 +1,16 @@
-import { Contract, Wallet } from 'ethers';
+import { Contract, Signer, Wallet } from 'ethers';
+import { BaseProvider } from '@ethersproject/providers';
 import abis from "../lib/abis";
 import { TxBase } from '../utils/tx';
 
 export class GatewayToken {
     contract: Contract;
 
-    constructor(signer: Wallet, addressOrName: string, provider: any = {}) {
+    constructor(signerOrProvider: Signer | BaseProvider, addressOrName: string) {
         this.contract = new Contract(
             addressOrName,
             abis.GatewayToken,
-            signer || provider
+            signerOrProvider,
           );      
     }
 
