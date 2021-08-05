@@ -9,7 +9,10 @@ require('hardhat-deploy');
 require('@nomiclabs/hardhat-ethers');
 
 const accounts = {
-  mnemonic: process.env.MNEMONIC || process.env.PRIVATE_KEY || "test test test test test test test test test test test junk",
+  mnemonic: process.env.MNEMONIC || "test test test test test test test test test test test junk",
+  path: process.env.MNEMONIC_PATH,
+  initialIndex: 0,
+  count: 20,
 }
 
 module.exports = {
@@ -26,13 +29,13 @@ module.exports = {
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts,
+      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
       chainId: 1,
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts,
+      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
       chainId: 3,
     },
   },
