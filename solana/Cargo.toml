@@ -3,3 +3,9 @@ members = [
     "integration-lib",
     "program",
 ]
+
+[profile.release]
+lto = true
+
+[profile.test]
+opt-level = 2
