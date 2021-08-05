@@ -8,7 +8,8 @@ import {
 		gasPriceFlag,
 } from "../utils/flags";
 import { TxBase } from "../utils/tx";
-import { BigNumber, utils } from "ethers";
+import { BigNumber, utils, Wallet } from "ethers";
+import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 
 export default class RefreshToken extends Command {
 	static description = "Refresh existing identity token with TokenID for Ethereum address";
@@ -21,9 +22,9 @@ export default class RefreshToken extends Command {
 	static flags = {
 		help: flags.help({ char: "h" }),
 		privateKey: privateKeyFlag(),
-		gatewayTokenAddressKey: gatewayTokenAddressFlag(),
-		networkKey: networkFlag(),
-		gasPriceKey: gasPriceFlag(),
+		gatewayTokenAddress: gatewayTokenAddressFlag(),
+		network: networkFlag(),
+		gasPrice: gasPriceFlag(),
 	};
 
 	static args = [
@@ -34,24 +35,31 @@ export default class RefreshToken extends Command {
 			parse: (input: any) => Number(input),
 		},
 		{
-				name: "expiry",
-				required: false,
-				description: "The new expiry time in seconds for the gateway token (default 14 days)",
-				default: 86400 * 14, // 14 days
-				parse: (input: string) => Number(input),
+			name: "expiry",
+			required: false,
+			description: "The new expiry time in seconds for the gateway token (default 14 days)",
+			default: 86400 * 14, // 14 days
+			parse: (input: string) => Number(input),
 		},
 	];
 
 	async run() {
 		const { args, flags } = this.parse(RefreshToken);
 
-		let signer = flags.privateKey;
-		const provider:BaseProvider = flags.networkKey;
-		signer = signer.connect(provider);
+		let pk = flags.privateKey;
+		const provider:BaseProvider = flags.network;
+		let signer: Wallet
+
+		if (utils.isValidMnemonic(pk)) {
+			signer = mnemonicSigner(pk, provider)
+		} else {
+			signer = privateKeySigner(pk, provider)
+		}
+
 		const tokenID: number = args.tokenID;
 		const expiry: number = args.expiry;
 		var days = Math.floor(expiry / 86400);
-		const gatewayTokenAddress: string = flags.gatewayTokenAddressKey;
+		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
 		this.log(`Refreshing existing token with TokenID:
 			${tokenID} 
@@ -60,7 +68,7 @@ export default class RefreshToken extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let gasPrice = await flags.gasPriceKey;
+		let gasPrice = await flags.gasPrice;
 		let gasLimit = await gatewayToken.contract.estimateGas.setExpiration(tokenID, expiry);
 
 		let txParams: TxBase = {
@@ -68,9 +76,9 @@ export default class RefreshToken extends Command {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await gatewayToken.setExpiration(tokenID, expiry, txParams);
+		const tx = await(await gatewayToken.setExpiration(tokenID, expiry, txParams)).wait();
 		this.log(
-			`Refreshed token with: ${tokenID} tokenID for ${days} days. TxHash: ${tx.hash}`
+			`Refreshed token with: ${tokenID} tokenID for ${days} days. TxHash: ${tx.transactionHash}`
 		);
 	}
 }

@@ -1,5 +1,5 @@
 import { Command, flags } from "@oclif/command";
-import { BigNumber, utils } from "ethers";
+import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from '@ethersproject/providers';
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
@@ -9,6 +9,7 @@ import {
 		gasPriceFlag,
 } from "../utils/flags";
 import { TxBase } from "../utils/tx";
+import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 
 export default class RemoveGatekeeper extends Command {
 	static description = "Remove gatekeeper to a GatewayToken contract";
@@ -21,9 +22,9 @@ export default class RemoveGatekeeper extends Command {
 	static flags = {
 		help: flags.help({ char: "h" }),
 		privateKey: privateKeyFlag(),
-		gatewayTokenAddressKey: gatewayTokenAddressFlag(),
-		networkKey: networkFlag(),
-		gasPriceKey: gasPriceFlag(),
+		gatewayTokenAddress: gatewayTokenAddressFlag(),
+		network: networkFlag(),
+		gasPrice: gasPriceFlag(),
 	};
 
 	static args = [
@@ -38,21 +39,28 @@ export default class RemoveGatekeeper extends Command {
 	async run() {
 		const { args, flags } = this.parse(RemoveGatekeeper);
 
-		let signer = flags.privateKey;
+		let pk = flags.privateKey;
+		const provider:BaseProvider = flags.network;
+		let signer: Wallet
+
+		if (utils.isValidMnemonic(pk)) {
+			signer = mnemonicSigner(pk, provider)
+		} else {
+			signer = privateKeySigner(pk, provider)
+		}
 		const gatekeeper: string = args.address;
-		const provider:BaseProvider = flags.networkKey;
 
 		signer = signer.connect(provider);
 
-		const gatewayTokenAddress: string = flags.gatewayTokenAddressKey;
+		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
-		this.log(`Adding:
+		this.log(`Removing:
 			gatekeeper ${gatekeeper} 
 			to GatewayToken ${gatewayTokenAddress}`);
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let gasPrice = await flags.gasPriceKey;
+		let gasPrice = await flags.gasPrice;
 		let gasLimit = await gatewayToken.contract.estimateGas.removeGatekeeper(gatekeeper);
 
 		let txParams: TxBase = {
@@ -60,10 +68,10 @@ export default class RemoveGatekeeper extends Command {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await gatewayToken.removeGatekeeper(gatekeeper, txParams);
+		const tx = await(await gatewayToken.removeGatekeeper(gatekeeper, txParams)).wait();
 
 		this.log(
-			`Removed gatekeeper on Gateway Token contract. TxHash: ${tx.hash}`
+			`Removed gatekeeper on Gateway Token contract. TxHash: ${tx.transactionHash}`
 		);
 	}
 }

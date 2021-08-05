@@ -1,5 +1,5 @@
 import { Command, flags } from "@oclif/command";
-import { utils } from "ethers";
+import { utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from '@ethersproject/providers';
 import {
@@ -7,6 +7,7 @@ import {
 	gatewayTokenAddressFlag,
 	networkFlag,
 } from "../utils/flags";
+import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 
 export default class VerifyToken extends Command {
 	static description = "Verify existing identity using token owner address";
@@ -19,8 +20,8 @@ export default class VerifyToken extends Command {
 	static flags = {
 		help: flags.help({ char: "h" }),
 		privateKey: privateKeyFlag(),
-		gatewayTokenAddressKey: gatewayTokenAddressFlag(),
-		networkKey: networkFlag(),
+		gatewayTokenAddress: gatewayTokenAddressFlag(),
+		network: networkFlag(),
 	};
 
 	static args = [
@@ -41,12 +42,18 @@ export default class VerifyToken extends Command {
 	async run() {
 		const { args, flags } = this.parse(VerifyToken);
 
-		let signer = flags.privateKey;
-		const provider:BaseProvider = flags.networkKey;
-		signer = signer.connect(provider);
+		let pk = flags.privateKey;
+		const provider:BaseProvider = flags.network;
+		let signer: Wallet
+
+		if (utils.isValidMnemonic(pk)) {
+			signer = mnemonicSigner(pk, provider)
+		} else {
+			signer = privateKeySigner(pk, provider)
+		}
 
 		const ownerAddress: string = args.address;
-		const gatewayTokenAddress: string = flags.gatewayTokenAddressKey;
+		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
 		this.log(`Verifying existing identity token using owner address:
 			${ownerAddress} 
@@ -57,9 +64,9 @@ export default class VerifyToken extends Command {
 		let tx: any;
 
 		if (args.tokenId) {
-			tx = await gatewayToken.verifyTokenByTokenID(ownerAddress, args.tokenId);
+			tx = await (await gatewayToken.verifyTokenByTokenID(ownerAddress, args.tokenId)).wait();
 		} else  {
-			tx = await gatewayToken.verifyToken(ownerAddress);
+			tx = await (await gatewayToken.verifyToken(ownerAddress)).wait();
 		}
 
 		this.log(

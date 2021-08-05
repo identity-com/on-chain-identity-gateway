@@ -1,5 +1,5 @@
 import { Command, flags } from "@oclif/command";
-import { BigNumber, utils } from "ethers";
+import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from '@ethersproject/providers';
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
@@ -9,6 +9,7 @@ import {
 		gasPriceFlag,
 } from "../utils/flags";
 import { TxBase } from "../utils/tx";
+import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 
 export default class BurnToken extends Command {
 	static description = "Burn existing identity token using TokenID";
@@ -21,9 +22,9 @@ export default class BurnToken extends Command {
 	static flags = {
 		help: flags.help({ char: "h" }),
 		privateKey: privateKeyFlag(),
-		gatewayTokenAddressKey: gatewayTokenAddressFlag(),
-		networkKey: networkFlag(),
-		gasPriceKey: gasPriceFlag(),
+		gatewayTokenAddress: gatewayTokenAddressFlag(),
+		network: networkFlag(),
+		gasPrice: gasPriceFlag(),
 	};
 
 	static args = [
@@ -38,13 +39,18 @@ export default class BurnToken extends Command {
 	async run() {
 		const { args, flags } = this.parse(BurnToken);
 
-		let signer = flags.privateKey;
 		const tokenID: number = args.tokenID;
-		const provider:BaseProvider = flags.networkKey;
+		let pk = flags.privateKey;
+		const provider:BaseProvider = flags.network;
+		let signer: Wallet
 
-		signer = signer.connect(provider);
+		if (utils.isValidMnemonic(pk)) {
+			signer = mnemonicSigner(pk, provider)
+		} else {
+			signer = privateKeySigner(pk, provider)
+		}
 
-		const gatewayTokenAddress: string = flags.gatewayTokenAddressKey;
+		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 		const owner = await gatewayToken.getTokenOwner(tokenID);
@@ -54,7 +60,7 @@ export default class BurnToken extends Command {
 			for owner ${owner}
 			on GatewayToken ${gatewayTokenAddress} contract`);
 
-		let gasPrice = await flags.gasPriceKey;
+		let gasPrice = await flags.gasPrice;
 		let gasLimit = await gatewayToken.contract.estimateGas.burn(tokenID);
 
 		let txParams: TxBase = {
@@ -62,10 +68,10 @@ export default class BurnToken extends Command {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await gatewayToken.burn(tokenID, txParams);
+		const tx = await(await gatewayToken.burn(tokenID, txParams)).wait();
 
 		this.log(
-			`Burned existing token with TokenID: ${tokenID} TxHash: ${tx.hash}`
+			`Burned existing token with TokenID: ${tokenID} TxHash: ${tx.transactionHash}`
 		);
 	}
 }

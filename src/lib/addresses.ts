@@ -3,11 +3,11 @@ export interface ContractAddresses {
 }
 
 const MAINNET_ADDRESSES: ContractAddresses = {
-    gatewayTokenController: '0xbCC817f057950b0df41206C5D7125E6225Cae18e',
+    gatewayTokenController: '0x0',
 };
 
 const ROPSTEN_ADDRESSES: ContractAddresses = {
-    gatewayTokenController: '0xbCC817f057950b0df41206C5D7125E6225Cae18e',
+    gatewayTokenController: '0xD66f3fEaEEB42F230E0E555C1c04632eD1798037',
 };
 
 const LOCALHOST_ADDRESSES: ContractAddresses = {

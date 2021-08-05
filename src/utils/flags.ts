@@ -7,11 +7,11 @@ import { getProvider, getLocalhostProvider } from "./providers";
 import { privateKeySigner, mnemonicSigner } from "./signer";
 import { estimateGasPrice, GasPriceKey } from "./gas";
 
-export const privateKeyFlag = flags.build<Wallet>({
+export const privateKeyFlag = flags.build<string>({
   char: "p",
   env: "PRIVATE_KEY",
-  parse: privateKeySigner,
-  default: () => mnemonicSigner(DEFAULT_MNEMONIC),
+  parse: (input: string) => input,
+  default: () => DEFAULT_MNEMONIC,
   description: "The ethereum address private key for signing messages",
 });
 

@@ -8,7 +8,8 @@ import {
 		gasPriceFlag,
 } from "../utils/flags";
 import { TxBase } from "../utils/tx";
-import { BigNumber, utils } from "ethers";
+import { BigNumber, utils, Wallet } from "ethers";
+import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 
 export default class UnfreezeToken extends Command {
 	static description = "Unfreeze existing identity token using TokenID";
@@ -21,9 +22,9 @@ export default class UnfreezeToken extends Command {
 	static flags = {
 		help: flags.help({ char: "h" }),
 		privateKey: privateKeyFlag(),
-		gatewayTokenAddressKey: gatewayTokenAddressFlag(),
-		networkKey: networkFlag(),
-		gasPriceKey: gasPriceFlag(),
+		gatewayTokenAddress: gatewayTokenAddressFlag(),
+		network: networkFlag(),
+		gasPrice: gasPriceFlag(),
 	};
 
 	static args = [
@@ -38,11 +39,18 @@ export default class UnfreezeToken extends Command {
 	async run() {
 		const { args, flags } = this.parse(UnfreezeToken);
 
-		let signer = flags.privateKey;
-		const provider:BaseProvider = flags.networkKey;
-		signer = signer.connect(provider);
+		let pk = flags.privateKey;
+		const provider:BaseProvider = flags.network;
+		let signer: Wallet
+
+		if (utils.isValidMnemonic(pk)) {
+			signer = mnemonicSigner(pk, provider)
+		} else {
+			signer = privateKeySigner(pk, provider)
+		}
+		
 		const tokenID: number = args.tokenID;
-		const gatewayTokenAddress: string = flags.gatewayTokenAddressKey;
+		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
 		this.log(`Unfreezing existing token with TokenID:
 			${tokenID} 
@@ -50,7 +58,7 @@ export default class UnfreezeToken extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let gasPrice = await flags.gasPriceKey;
+		let gasPrice = await flags.gasPrice;
 		let gasLimit = await gatewayToken.contract.estimateGas.unfreeze(tokenID);
 
 		let txParams: TxBase = {
@@ -58,9 +66,9 @@ export default class UnfreezeToken extends Command {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await gatewayToken.unfreeze(tokenID, txParams);
+		const tx = await(await gatewayToken.unfreeze(tokenID, txParams)).wait();
 		this.log(
-			`Unfreezed existing token with TokenID: ${tokenID} TxHash: ${tx.hash}`
+			`Unfreezed existing token with TokenID: ${tokenID} TxHash: ${tx.transactionHash}`
 		);
 	}
 }
