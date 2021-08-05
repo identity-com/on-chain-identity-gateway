@@ -1,13 +1,17 @@
-name: Solana Gateway integration-lib Build
+name: Solana Gateway Program Build
 on:
   push:
     paths:
+      - 'solana/program/**'
       - 'solana/integration-lib/**'
+      - 'solana/Cargo.toml'
+      - 'solana/Cargo.lock'
+      - 'solana/Xargo.toml'
       - '.github/**'
   pull_request:
 jobs:
-  solana-gateway-integration-lib-lint:
-    name: Lint the solana gateway integration-lib on ${{ matrix.rust }} and ${{ matrix.os }}
+  solana-gateway-program-lint:
+    name: Lint the solana rust code on ${{ matrix.rust }} and ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -18,7 +22,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-
+        
       - name: Use Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
@@ -33,23 +37,23 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            ./solana/integration-lib/target
+            ./solana/target
           key: cargo-lint-${{ hashFiles('Cargo.lock') }}
 
       - name: Run fmt
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path solana/integration-lib/Cargo.toml --all -- --check
+          args: --manifest-path solana/Cargo.toml --all -- --check
 
       - name: Run clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --tests --manifest-path solana/integration-lib/Cargo.toml -Zunstable-options --workspace --all-targets -- --deny=warnings
+          args: --manifest-path solana/argo.toml -Zunstable-options --workspace --all-targets -- --deny=warnings
 
-  solana-gateway-integration-lib-build:
-    name: Build and test the solana gateway integration-lib on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
+  solana-gateway-program-build:
+    name: Build and test the solana rust code on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -75,7 +79,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            ./solana/integration-lib/target
+            ./solana/target
           key: cargo-build-${{ hashFiles('Cargo.lock') }}
 
       - name: Cache Solana version
@@ -84,14 +88,20 @@ jobs:
           path: |
             ~/.cache
           key: solana-${{ matrix.solana }}
-
+          
       - name: Install Solana
         run: |
           sh -c "$(curl -sSfL https://release.solana.com/${{ matrix.solana }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: Build the lib and run unit tests
+      - name: Run unit tests
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path solana/integration-lib/Cargo.toml
+          args: --manifest-path solana/Cargo.toml
+
+      - name: Build the program and run functional tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test-bpf
+          args: --manifest-path solana/Cargo.toml

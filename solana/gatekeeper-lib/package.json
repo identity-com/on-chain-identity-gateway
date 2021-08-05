@@ -75,6 +75,8 @@
     "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs ../program/target/deploy/solana_gateway_program.so --reset",
     "lint": "eslint src/ --ext .ts",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "test:unit": "nyc --extension .ts mocha --forbid-only \"test/unit/**/*.test.ts\"",
+    "test:integration": "nyc --extension .ts mocha --forbid-only \"test/integration/**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md",
     "doc": "yarn typedoc src/index.ts --readme none --excludeNotDocumented"
   },
