@@ -272,15 +272,6 @@
   dependencies:
     "@solana/web3.js" "^1.14.0"
 
-"@identity.com/solana-gateway-ts@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.1.1.tgz#829b6306ee29232939e64f36ee8c3b18cad6e7e7"
-  integrity sha512-jiGFlsk4OSBeL141aZnUHVN66NEASXTFSn5UX4qMtt30HPM1I61xjX+a8NVmH7TvR7KB4z/ugOj9vOqCO534LA==
-  dependencies:
-    "@solana/web3.js" "^1.11.0"
-    bn.js "^5.2.0"
-    borsh "^0.4.0"
-
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"
