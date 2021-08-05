@@ -11,6 +11,8 @@ import {
   GatewayTokenState,
 } from "../../src/lib/GatewayTokenData";
 import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
+import { VALIDATOR_URL } from "../constatnts";
+import { describe } from "mocha";
 
 chai.use(chaiSubset);
 const { expect } = chai;
@@ -43,7 +45,7 @@ describe("findGatewayTokens", () => {
   let getProgramAccountsStub: sinon.SinonStub;
 
   beforeEach(() => {
-    connection = new Connection(clusterApiUrl("devnet"));
+    connection = new Connection(VALIDATOR_URL);
     owner = Keypair.generate().publicKey;
     gatekeeperKey = Keypair.generate().publicKey;
     gatekeeperNetworkKey = Keypair.generate().publicKey;

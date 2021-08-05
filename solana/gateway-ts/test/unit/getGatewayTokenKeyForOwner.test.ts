@@ -19,6 +19,7 @@ import {
   getGatewayTokenKeyForOwner,
   issueVanilla,
 } from "../../src";
+import { VALIDATOR_URL } from "../constatnts";
 
 chai.use(chaiSubset);
 const { expect } = chai;
@@ -51,7 +52,7 @@ describe("getGatewayTokenKeyForOwner", function () {
   let payer: Keypair;
 
   before(async () => {
-    connection = new Connection(clusterApiUrl("devnet"));
+    connection = new Connection(VALIDATOR_URL);
     payer = Keypair.generate();
     await connection.confirmTransaction(
       await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL),
