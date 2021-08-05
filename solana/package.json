@@ -1,9 +1,10 @@
 {
   "private": true,
+  "__workspaces_comment": "Order is build order, parent must come first",
   "workspaces": [
+    "gateway-ts",
     "gatekeeper-lib",
-    "gateway-http-client",
-    "gateway-ts"
+    "gateway-http-client"
   ],
   "scripts": {
     "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs target/deploy/solana_gateway_program.so --reset",
