@@ -64,7 +64,10 @@ export class GatekeeperService {
     owner: PublicKey,
     seed?: Uint8Array
   ): Promise<GatewayToken> {
-    const gatewayTokenKey = await getGatewayTokenKeyForOwner(owner);
+    const gatewayTokenKey = await getGatewayTokenKeyForOwner(
+      owner,
+      this.gatekeeperNetwork
+    );
     const gatekeeperAccount =
       await getGatekeeperAccountKeyFromGatekeeperAuthority(
         this.gatekeeperAuthority.publicKey

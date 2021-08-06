@@ -6,6 +6,7 @@ import sinonChai from "sinon-chai";
 import axios from "axios";
 import { GatekeeperClient } from "../../src";
 import { SignCallback } from "@identity.com/prove-solana-wallet";
+import { describe } from "mocha";
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
