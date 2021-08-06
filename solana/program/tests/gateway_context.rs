@@ -88,7 +88,7 @@ impl GatewayContext {
             .await
     }
 
-    async fn issue_gateway_token_transaction(
+    pub async fn issue_gateway_token_transaction(
         &mut self,
         owner: &Pubkey,
         gatekeeper_authority: &Keypair,
@@ -116,7 +116,7 @@ impl GatewayContext {
             .await
     }
 
-    async fn update_gateway_token_expiry_transaction(
+    pub async fn update_gateway_token_expiry_transaction(
         &mut self,
         owner: &Pubkey,
         gatekeeper_authority: &Keypair,
@@ -141,7 +141,7 @@ impl GatewayContext {
             .await
     }
 
-    async fn set_gateway_token_state_transaction(
+    pub async fn set_gateway_token_state_transaction(
         &mut self,
         gateway_account: &Pubkey,
         gatekeeper_authority: &Keypair,
