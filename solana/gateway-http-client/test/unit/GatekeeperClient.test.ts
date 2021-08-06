@@ -106,6 +106,7 @@ describe("GatekeeperClient", () => {
             method: "POST",
             url: `${baseUrl}`,
             data: {
+              address: walletPublicKey.toBase58(),
               presentationRequestId,
               proof: sinon.match.string,
             },
@@ -129,6 +130,7 @@ describe("GatekeeperClient", () => {
             method: "POST",
             url: `${baseUrl}`,
             data: {
+              address: walletPublicKey.toBase58(),
               presentationRequestId,
               proof: sinon.match.string,
             },
@@ -157,6 +159,7 @@ describe("GatekeeperClient", () => {
               method: "POST",
               url: `${baseUrl}`,
               data: {
+                address: walletPublicKey.toBase58(),
                 presentationRequestId,
                 proof: sinon.match.string,
               },
@@ -187,6 +190,7 @@ describe("GatekeeperClient", () => {
               method: "POST",
               url: `${baseUrl}`,
               data: {
+                address: walletPublicKey.toBase58(),
                 presentationRequestId,
                 proof: sinon.match.string,
               },
@@ -209,6 +213,7 @@ describe("GatekeeperClient", () => {
               method: "POST",
               url: `${baseUrl}`,
               data: {
+                address: walletPublicKey.toBase58(),
                 presentationRequestId,
                 proof: sinon.match.string,
               },
