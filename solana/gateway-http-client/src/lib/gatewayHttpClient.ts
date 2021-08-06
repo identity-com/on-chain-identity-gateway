@@ -81,7 +81,7 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     const gatewayTokenCreationRequest = {
       proof,
       address: walletPublicKey.toBase58(),
-      ...(presentationRequestId ? { presentationRequestId } : {})
+      ...(presentationRequestId ? { presentationRequestId } : {}),
     };
     console.log(
       "Requesting a new gatekeeper token...",
