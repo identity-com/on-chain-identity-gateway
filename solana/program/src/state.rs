@@ -48,10 +48,10 @@ impl Transitionable<GatewayTokenState> for GatewayToken {
 }
 
 /// The seed string used to derive a program address for a gateway token from an owner account
-pub const GATEWAY_TOKEN_ADDRESS_SEED: &[u8; 7] = br"gateway";
+pub const GATEWAY_TOKEN_ADDRESS_SEED: &[u8] = br"gateway";
 
 /// The seed string used to derive a program address for a gateway token from an owner account
-pub const GATEKEEPER_ADDRESS_SEED: &[u8; 10] = br"gatekeeper";
+pub const GATEKEEPER_ADDRESS_SEED: &[u8] = br"gatekeeper";
 
 /// An optional seed to use when generating a gateway token,
 /// allowing multiple gateway tokens per wallet
@@ -61,12 +61,14 @@ pub type AddressSeed = [u8; 8];
 pub fn get_gateway_token_address_with_seed(
     authority: &Pubkey,
     additional_seed: &Option<AddressSeed>,
+    network: &Pubkey,
 ) -> (Pubkey, u8) {
     Pubkey::find_program_address(
         &[
             &authority.to_bytes(),
             GATEWAY_TOKEN_ADDRESS_SEED,
             &additional_seed.unwrap_or_default(),
+            &network.to_bytes(),
         ],
         &id(),
     )

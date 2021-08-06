@@ -31,19 +31,29 @@ export const getGatekeeperAccountKeyFromGatekeeperAuthority = async (
 /**
  * Derive the address of the gateway token PDA for this owner address and optional seed.
  * @param owner The owner of the gateway token
+ * @param gatekeeperNetwork The network of the gateway token
  * @param seed An 8-byte seed array, used to add multiple tokens to the same owner. Must be unique to each token, if present
  */
 export const getGatewayTokenKeyForOwner = async (
   owner: PublicKey,
+  gatekeeperNetwork: PublicKey,
   seed?: Uint8Array
 ): Promise<PublicKey> => {
   const additionalSeed = seed
     ? Buffer.from(seed)
     : Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);
+  if (additionalSeed.length != 8) {
+    throw new Error(
+      "Additional Seed has length " +
+        additionalSeed.length +
+        " instead of 8 when calling getGatewayTokenKeyForOwner."
+    );
+  }
   const seeds = [
     owner.toBuffer(),
     Buffer.from(GATEWAY_TOKEN_ADDRESS_SEED, "utf8"),
     additionalSeed,
+    gatekeeperNetwork.toBuffer(),
   ];
 
   const publicKeyNonce = await PublicKey.findProgramAddress(seeds, PROGRAM_ID);

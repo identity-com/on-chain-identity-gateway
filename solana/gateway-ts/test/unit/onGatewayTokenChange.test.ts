@@ -3,7 +3,6 @@ import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import {
   AccountChangeCallback,
-  clusterApiUrl,
   Connection,
   Keypair,
   PublicKey,
@@ -15,8 +14,9 @@ import {
   GatewayTokenData,
   GatewayTokenState,
   Revoked,
-} from "../../dist/lib/GatewayTokenData";
-import { AssignablePublicKey } from "../../dist/lib/AssignablePublicKey";
+} from "../../src/lib/GatewayTokenData";
+import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
+import { VALIDATOR_URL } from "../constatnts";
 
 chai.use(chaiSubset);
 const { expect } = chai;
@@ -41,7 +41,7 @@ describe("onGatewayTokenChange", () => {
   let gatewayTokenData: GatewayTokenData;
 
   beforeEach(() => {
-    connection = new Connection(clusterApiUrl("devnet"));
+    connection = new Connection(VALIDATOR_URL);
     owner = Keypair.generate().publicKey;
     gatekeeperKey = Keypair.generate().publicKey;
     gatewayTokenKey = Keypair.generate().publicKey;

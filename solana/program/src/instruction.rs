@@ -109,7 +109,7 @@ pub fn issue_vanilla(
     seed: Option<AddressSeed>,   // optional seed to use when generating a gateway token
     expire_time: Option<UnixTimestamp>, // optional unix timestamp at which point the issued token is no longer valid
 ) -> Instruction {
-    let (gateway_token, _) = get_gateway_token_address_with_seed(owner, &seed);
+    let (gateway_token, _) = get_gateway_token_address_with_seed(owner, &seed, gatekeeper_network);
     Instruction::new_with_borsh(
         id(),
         &GatewayInstruction::IssueVanilla { seed, expire_time },

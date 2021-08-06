@@ -1,0 +1,119 @@
+name: Solana Typescript
+on:
+  push:
+    paths:
+      - 'solana/**'
+      - '.github/**'
+  pull_request:
+jobs:
+  solana-build:
+    name: Build, lint the solana libraries on ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ['15.x']
+        os: [ubuntu-latest]
+
+    defaults:
+      run:
+        working-directory: ./solana
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./node_modules
+          key: yarn-solana-${{ hashFiles('solana/yarn.lock') }}
+
+      - name: NPM login
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+
+      - name: Install
+        run: yarn install
+
+      - name: Lint
+        run: yarn workspaces run lint
+
+      - name: Build
+        run: yarn workspaces run build
+
+  solana-ts-tests:
+    name: Test the solana typescript
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        rust: [ '1.50' ]
+        solana: [ 'v1.7.3' ]
+        node: ['15.x']
+        os: [ubuntu-latest]
+
+    defaults:
+      run:
+        working-directory: ./solana
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+
+      - name: Cache build dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./solana/target
+          key: cargo-build-${{ hashFiles('solana/Cargo.lock') }}
+
+      - name: Cache Solana version
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache
+          key: solana-${{ matrix.solana }}
+
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/${{ matrix.solana }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Build Solana program
+        uses: actions-rs/cargo@v1
+        with:
+          command: build-bpf
+          args: --manifest-path solana/Cargo.toml
+
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./node_modules
+          key: yarn-solana-${{ hashFiles('solana/yarn.lock') }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Unit tests
+        run: yarn test
