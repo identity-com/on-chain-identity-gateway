@@ -7,7 +7,7 @@ export abstract class Assignable {
   constructor(properties: { [key: string]: any }) {
     Object.keys(properties).forEach((key: string) => {
       // this is probably possible in Typescript,
-      // but requires (keyof this) which is not possible in the the cosntructor
+      // but requires (keyof this) which is not possible in the the constructor
       // @ts-ignore
       this[key] = properties[key];
     });
