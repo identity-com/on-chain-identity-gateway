@@ -100,16 +100,13 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         &[gatekeeper_bump_seed],
     ];
 
-    #[allow()]
-    const SIZE: u64 = 0;
-
     msg!("Creating gatekeeper account");
     invoke_signed(
         &system_instruction::create_account(
             funder_info.key,
             gatekeeper_account_info.key,
-            1.max(rent.minimum_balance(SIZE as usize)),
-            SIZE,
+            1.max(rent.minimum_balance(0)),
+            0,
             &id(),
         ),
         &[
