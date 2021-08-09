@@ -1,20 +1,6 @@
 //! Program state
 use solana_gateway::state::{GatewayToken, GatewayTokenState};
-use {
-    crate::id,
-    borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
-    solana_program::pubkey::Pubkey,
-};
-
-/// A Gatekeeper account
-#[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq)]
-pub struct Gatekeeper {
-    /// The public key of the owner of the gatekeeper account  
-    pub authority: Pubkey,
-
-    /// The public key of the network to which this gatekeeper belongs  
-    pub network: Pubkey,
-}
+use {crate::id, solana_program::pubkey::Pubkey};
 
 /// Defines an object that has a state, that can be transitioned
 pub trait Transitionable<State> {
@@ -75,6 +61,13 @@ pub fn get_gateway_token_address_with_seed(
 }
 
 /// Get program-derived gatekeeper address for the authority
-pub fn get_gatekeeper_address_with_seed(authority: &Pubkey) -> (Pubkey, u8) {
-    Pubkey::find_program_address(&[&authority.to_bytes(), GATEKEEPER_ADDRESS_SEED], &id())
+pub fn get_gatekeeper_address_with_seed(authority: &Pubkey, network: &Pubkey) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[
+            &authority.to_bytes(),
+            &network.to_bytes(),
+            GATEKEEPER_ADDRESS_SEED,
+        ],
+        &id(),
+    )
 }
