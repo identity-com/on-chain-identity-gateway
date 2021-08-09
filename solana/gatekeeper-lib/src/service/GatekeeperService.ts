@@ -2,7 +2,6 @@ import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import {
   freeze,
   GatewayToken,
-  getGatekeeperAccountKeyFromGatekeeperAuthority,
   getGatewayToken,
   getGatewayTokenKeyForOwner,
   issueVanilla,
@@ -10,6 +9,7 @@ import {
   unfreeze,
   updateExpiry,
   findGatewayToken,
+  getGatekeeperAccountKey,
 } from "@identity.com/solana-gateway-ts";
 import { send } from "../util/connection";
 
@@ -68,10 +68,10 @@ export class GatekeeperService {
       owner,
       this.gatekeeperNetwork
     );
-    const gatekeeperAccount =
-      await getGatekeeperAccountKeyFromGatekeeperAuthority(
-        this.gatekeeperAuthority.publicKey
-      );
+    const gatekeeperAccount = await getGatekeeperAccountKey(
+      this.gatekeeperAuthority.publicKey,
+      this.gatekeeperNetwork
+    );
 
     const expireTime = this.getDefaultExpireTime();
 
@@ -111,10 +111,10 @@ export class GatekeeperService {
    * @param gatewayTokenKey
    */
   async revoke(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
-    const gatekeeperAccount =
-      await getGatekeeperAccountKeyFromGatekeeperAuthority(
-        this.gatekeeperAuthority.publicKey
-      );
+    const gatekeeperAccount = await getGatekeeperAccountKey(
+      this.gatekeeperAuthority.publicKey,
+      this.gatekeeperNetwork
+    );
     const transaction = new Transaction().add(
       revoke(
         gatewayTokenKey,
@@ -138,10 +138,10 @@ export class GatekeeperService {
    * @param gatewayTokenKey
    */
   async freeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
-    const gatekeeperAccount =
-      await getGatekeeperAccountKeyFromGatekeeperAuthority(
-        this.gatekeeperAuthority.publicKey
-      );
+    const gatekeeperAccount = await getGatekeeperAccountKey(
+      this.gatekeeperAuthority.publicKey,
+      this.gatekeeperNetwork
+    );
     console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
     const transaction = new Transaction().add(
       freeze(
@@ -166,10 +166,10 @@ export class GatekeeperService {
    * @param gatewayTokenKey
    */
   async unfreeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
-    const gatekeeperAccount =
-      await getGatekeeperAccountKeyFromGatekeeperAuthority(
-        this.gatekeeperAuthority.publicKey
-      );
+    const gatekeeperAccount = await getGatekeeperAccountKey(
+      this.gatekeeperAuthority.publicKey,
+      this.gatekeeperNetwork
+    );
     console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
     const transaction = new Transaction().add(
       unfreeze(
@@ -208,10 +208,10 @@ export class GatekeeperService {
     gatewayTokenKey: PublicKey,
     expireTime: number
   ): Promise<GatewayToken> {
-    const gatekeeperAccount =
-      await getGatekeeperAccountKeyFromGatekeeperAuthority(
-        this.gatekeeperAuthority.publicKey
-      );
+    const gatekeeperAccount = await getGatekeeperAccountKey(
+      this.gatekeeperAuthority.publicKey,
+      this.gatekeeperNetwork
+    );
     const transaction = new Transaction().add(
       updateExpiry(
         gatewayTokenKey,

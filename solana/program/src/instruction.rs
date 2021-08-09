@@ -84,7 +84,8 @@ pub fn add_gatekeeper(
     gatekeeper_authority: &Pubkey, // the authority that owns the gatekeeper account
     gatekeeper_network: &Pubkey,   // the gatekeeper network to which the gatekeeper belongs
 ) -> Instruction {
-    let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(gatekeeper_authority);
+    let (gatekeeper_account, _) =
+        get_gatekeeper_address_with_seed(gatekeeper_authority, gatekeeper_network);
     Instruction::new_with_borsh(
         id(),
         &GatewayInstruction::AddGatekeeper {},

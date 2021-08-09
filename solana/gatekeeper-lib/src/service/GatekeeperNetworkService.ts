@@ -1,7 +1,7 @@
 import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import {
   addGatekeeper,
-  getGatekeeperAccountKeyFromGatekeeperAuthority,
+  getGatekeeperAccountKey,
 } from "@identity.com/solana-gateway-ts";
 import { send } from "../util/connection";
 
@@ -26,8 +26,10 @@ export class GatekeeperNetworkService {
    * @param gatekeeperAuthority
    */
   async addGatekeeper(gatekeeperAuthority: PublicKey): Promise<PublicKey> {
-    const gatekeeperAccount =
-      await getGatekeeperAccountKeyFromGatekeeperAuthority(gatekeeperAuthority);
+    const gatekeeperAccount = await getGatekeeperAccountKey(
+      gatekeeperAuthority,
+      this.gatekeeperNetwork.publicKey
+    );
 
     const transaction = new Transaction().add(
       addGatekeeper(
@@ -53,8 +55,10 @@ export class GatekeeperNetworkService {
    * @param gatekeeperAuthority
    */
   async hasGatekeeper(gatekeeperAuthority: PublicKey): Promise<boolean> {
-    const gatekeeperAccount =
-      await getGatekeeperAccountKeyFromGatekeeperAuthority(gatekeeperAuthority);
+    const gatekeeperAccount = await getGatekeeperAccountKey(
+      gatekeeperAuthority,
+      this.gatekeeperNetwork.publicKey
+    );
     const gatekeeperAccountInfo = await this.connection.getAccountInfo(
       gatekeeperAccount
     );

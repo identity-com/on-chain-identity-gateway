@@ -6,12 +6,11 @@ use crate::state::{
 use solana_gateway::error::GatewayError;
 use solana_gateway::state::GatewayTokenState;
 use solana_program::clock::UnixTimestamp;
-use std::mem::size_of;
 use {
     crate::{
         id,
         instruction::GatewayInstruction,
-        state::{get_gateway_token_address_with_seed, Gatekeeper, GATEWAY_TOKEN_ADDRESS_SEED},
+        state::{get_gateway_token_address_with_seed, GATEWAY_TOKEN_ADDRESS_SEED},
     },
     borsh::{BorshDeserialize, BorshSerialize},
     solana_gateway::{
@@ -31,7 +30,7 @@ use {
     },
 };
 
-const GATEKEEPER_ACCOUNT_LENGTH: usize = size_of::<Gatekeeper>();
+const GATEKEEPER_ACCOUNT_LENGTH: usize = 0;
 
 /// Instruction processor
 pub fn process_instruction(
@@ -79,8 +78,10 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    let (gatekeeper_address, gatekeeper_bump_seed) =
-        get_gatekeeper_address_with_seed(gatekeeper_authority_info.key);
+    let (gatekeeper_address, gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
+        gatekeeper_authority_info.key,
+        gatekeeper_network_info.key,
+    );
     if gatekeeper_address != *gatekeeper_account_info.key {
         msg!("Error: gatekeeper account address derivation mismatch");
         return Err(ProgramError::InvalidArgument);
@@ -94,25 +95,21 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
 
     let gatekeeper_signer_seeds: &[&[_]] = &[
         &gatekeeper_authority_info.key.to_bytes(),
+        &gatekeeper_network_info.key.to_bytes(),
         GATEKEEPER_ADDRESS_SEED,
         &[gatekeeper_bump_seed],
     ];
 
-    let gatekeeper_account = Gatekeeper {
-        authority: *gatekeeper_authority_info.key,
-        network: *gatekeeper_network_info.key,
-    };
-    let size = get_instance_packed_len(&gatekeeper_account).unwrap() as u64;
-    // Shouldn't fail but if the size is unexpected then many more obscure problems will occur later.
-    assert_eq!(size as usize, GATEKEEPER_ACCOUNT_LENGTH);
+    #[allow()]
+    const SIZE: u64 = 0;
 
     msg!("Creating gatekeeper account");
     invoke_signed(
         &system_instruction::create_account(
             funder_info.key,
             gatekeeper_account_info.key,
-            1.max(rent.minimum_balance(size as usize)),
-            size,
+            1.max(rent.minimum_balance(SIZE as usize)),
+            SIZE,
             &id(),
         ),
         &[
@@ -125,9 +122,7 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
 
     msg!("Gatekeeper account created");
 
-    gatekeeper_account
-        .serialize(&mut *gatekeeper_account_info.data.borrow_mut())
-        .map_err(|e| e.into()) as ProgramResult
+    Ok(())
 }
 
 fn issue_vanilla(
@@ -167,9 +162,6 @@ fn issue_vanilla(
 
     verify_gatekeeper_length(gatekeeper_account_info)?;
 
-    let gatekeeper_account =
-        try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
-
     let (gateway_token_address, gateway_token_bump_seed) =
         get_gateway_token_address_with_seed(owner_info.key, seed, gatekeeper_network_info.key);
     if gateway_token_address != *gateway_token_info.key {
@@ -177,20 +169,19 @@ fn issue_vanilla(
         return Err(ProgramError::InvalidArgument);
     }
 
+    let (gatekeeper_address, _gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
+        gatekeeper_authority_info.key,
+        gatekeeper_network_info.key,
+    );
+    if gatekeeper_address != *gatekeeper_account_info.key {
+        msg!("Error: gatekeeper_account address derivation mismatch");
+        return Err(ProgramError::InvalidArgument);
+    }
+
     let data_len = gateway_token_info.data.borrow().len();
     if data_len > 0 {
         msg!("Error: Gateway_token account already initialized");
         return Err(ProgramError::AccountAlreadyInitialized);
-    }
-
-    if gatekeeper_account.authority != *gatekeeper_authority_info.key {
-        msg!("Error: incorrect gatekeeper authority");
-        return Err(ProgramError::InvalidArgument);
-    }
-
-    if gatekeeper_account.network != *gatekeeper_network_info.key {
-        msg!("Error: incorrect gatekeeper network");
-        return Err(ProgramError::InvalidArgument);
     }
 
     let gateway_token_signer_seeds: &[&[_]] = &[
@@ -269,18 +260,13 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
 
     let mut gateway_token =
         try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
-    let gatekeeper_account =
-        try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
 
-    // check the gatekeeper account matches the passed-in gatekeeper key
-    if gatekeeper_account.authority != *gatekeeper_authority_info.key {
-        msg!("Error: incorrect gatekeeper authority");
-        return Err(ProgramError::InvalidArgument);
-    }
-
-    // check the gatekeeper account network matches the network on the gateway token
-    if gatekeeper_account.network != gateway_token.gatekeeper_network {
-        msg!("Error: incorrect gatekeeper network");
+    let (gatekeeper_address, _gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
+        gatekeeper_authority_info.key,
+        &gateway_token.gatekeeper_network,
+    );
+    if gatekeeper_address != *gatekeeper_account_info.key {
+        msg!("Error: gatekeeper_account address derivation mismatch");
         return Err(ProgramError::InvalidArgument);
     }
 
@@ -343,18 +329,13 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
 
     let mut gateway_token =
         try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
-    let gatekeeper_account =
-        try_from_slice_incomplete::<Gatekeeper>(*gatekeeper_account_info.data.borrow())?;
 
-    // check the gatekeeper account matches the passed-in gatekeeper key
-    if gatekeeper_account.authority != *gatekeeper_authority_info.key {
-        msg!("Error: incorrect gatekeeper authority");
-        return Err(ProgramError::InvalidArgument);
-    }
-
-    // check the gatekeeper account network matches the network on the gateway token
-    if gatekeeper_account.network != gateway_token.gatekeeper_network {
-        msg!("Error: incorrect gatekeeper network");
+    let (gatekeeper_address, _gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
+        gatekeeper_authority_info.key,
+        &gateway_token.gatekeeper_network,
+    );
+    if gatekeeper_address != *gatekeeper_account_info.key {
+        msg!("Error: gatekeeper_account address derivation mismatch");
         return Err(ProgramError::InvalidArgument);
     }
 
@@ -369,13 +350,7 @@ fn verify_gatekeeper_length(gatekeeper_account_info: &AccountInfo) -> ProgramRes
     // Length must be same as `GATEKEEPER_ACCOUNT_LENGTH` and have at least one non-zero byte.
     // Must have one non-zero as being assigned an account with the proper length requires all bytes be zero
     // Pubkey guarantees one non-zero byte with proper data
-    if gatekeeper_account_info.data_len() != GATEKEEPER_ACCOUNT_LENGTH
-        || gatekeeper_account_info
-            .data
-            .borrow()
-            .iter()
-            .all(|&d| d == 0)
-    {
+    if gatekeeper_account_info.data_len() != GATEKEEPER_ACCOUNT_LENGTH {
         msg!("Incorrect account type for gatekeeper account");
         Err(ProgramError::InvalidAccountData)
     } else {
