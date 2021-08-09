@@ -247,16 +247,7 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
         return Err(ProgramError::IncorrectProgramId);
     }
 
-    if gatekeeper_account_info.data_len() != GATEKEEPER_ACCOUNT_LENGTH
-        || gatekeeper_account_info
-            .data
-            .borrow()
-            .iter()
-            .all(|&d| d == 0)
-    {
-        msg!("Incorrect account type for gatekeeper account");
-        return Err(ProgramError::InvalidAccountData);
-    }
+    verify_gatekeeper_length(gatekeeper_account_info)?;
 
     let mut gateway_token =
         try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
