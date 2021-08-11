@@ -64,6 +64,41 @@ impl GatewayContext {
         self.add_gatekeeper().await;
     }
 
+    /// Returns funds_to
+    pub async fn close_gatekeeper(&mut self) -> Pubkey {
+        let funds_to = Keypair::new().pubkey();
+        assert!(self
+            .context
+            .banks_client
+            .get_account(funds_to)
+            .await
+            .unwrap()
+            .map(|account| account.lamports == 0)
+            .unwrap_or(true));
+
+        let transaction = Transaction::new_signed_with_payer(
+            &[instruction::close_gatekeeper(
+                &funds_to,
+                &self.gatekeeper_authority.as_ref().unwrap().pubkey(),
+                &self.gatekeeper_network.as_ref().unwrap().pubkey(),
+            )],
+            Some(&self.context.payer.pubkey()),
+            &[
+                &self.context.payer,
+                self.gatekeeper_network.as_ref().unwrap(),
+            ],
+            self.context.last_blockhash,
+        );
+
+        self.context
+            .banks_client
+            .process_transaction(transaction)
+            .await
+            .unwrap();
+
+        funds_to
+    }
+
     async fn add_gatekeeper_transaction(
         &mut self,
         authority: &Pubkey,
