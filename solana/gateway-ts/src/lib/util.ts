@@ -12,17 +12,22 @@ import {
 } from "./constants";
 import { GatewayToken, ProgramAccountResponse, State } from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
-import { GatekeeperData } from "./GatekeeperData";
 
 /**
  * Derive the address of the gatekeeper PDA for this gatekeeper
  * @param authority The gatekeeper
+ * @param network The network
  */
-export const getGatekeeperAccountKeyFromGatekeeperAuthority = async (
-  authority: PublicKey
+export const getGatekeeperAccountKey = async (
+  authority: PublicKey,
+  network: PublicKey
 ): Promise<PublicKey> => {
   const publicKeyNonce = await PublicKey.findProgramAddress(
-    [authority.toBuffer(), Buffer.from(GATEKEEPER_NONCE_SEED_STRING, "utf8")],
+    [
+      authority.toBuffer(),
+      network.toBuffer(),
+      Buffer.from(GATEKEEPER_NONCE_SEED_STRING, "utf8"),
+    ],
     PROGRAM_ID
   );
   return publicKeyNonce[0];
@@ -215,22 +220,24 @@ export const getGatewayToken = async (
 };
 
 /**
- * Returns the gatekeeper account for a given gatekeeper
- * @param connection A solana connection object
- * @param gatekeeperAuthority The gatekeeper authority key
+ * Returns whether or not a gatekeeper exists from a network and authority
+ * @param connection A solana connection
+ * @param gatekeeperAuthority The authority of the gatekeeper
+ * @param gatekeeperNetwork The network of the gatekeeper
  */
-export const getGatekeeperAccount = async (
+export const gatekeeperExists = async (
   connection: Connection,
-  gatekeeperAuthority: PublicKey
-): Promise<GatekeeperData | null> => {
-  const gatekeeperAccount =
-    await getGatekeeperAccountKeyFromGatekeeperAuthority(gatekeeperAuthority);
+  gatekeeperAuthority: PublicKey,
+  gatekeeperNetwork: PublicKey
+): Promise<boolean> => {
+  const gatekeeperAccount = await getGatekeeperAccountKey(
+    gatekeeperAuthority,
+    gatekeeperNetwork
+  );
   const account = await connection.getAccountInfo(
     gatekeeperAccount,
     SOLANA_COMMITMENT
   );
 
-  if (!account) return null;
-
-  return GatekeeperData.fromAccount(account.data);
+  return account != null && account.owner == PROGRAM_ID;
 };
