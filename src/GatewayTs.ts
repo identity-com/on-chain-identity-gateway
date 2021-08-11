@@ -1,6 +1,6 @@
 import { addresses, ContractAddresses } from './lib/addresses';
 import { gatewayTokenAddresses, GatewayTokenItem } from './lib/gatewaytokens';
-import { BigNumber, getDefaultProvider, Signer, utils, Wallet } from 'ethers';
+import { BigNumber, BytesLike, getDefaultProvider, Signer, utils, Wallet } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 
 import { SUBTRACT_GAS_LIMIT, NETWORKS, } from './utils'
@@ -8,6 +8,7 @@ import { GatewayTokenItems } from "./utils/addresses";
 import { TxBase } from "./utils/tx";
 import { estimateGasPrice, GasPriceKey } from "./utils/gas";
 import { GatewayToken, GatewayTokenController } from "./contracts";
+import { generateTokenId } from './utils/tokenId';
 
 export class GatewayTs {
     provider: BaseProvider;
@@ -21,20 +22,23 @@ export class GatewayTs {
     contractAddresses: ContractAddresses;
     gatewayTokenController: GatewayTokenController;
     gatewayTokens: GatewayTokenItems = {};
+    defaultGatewayToken: string;
 
-    constructor(provider: BaseProvider, networkId: number, signer?: Wallet, options?: { defaultGas?: number; defaultGasPrice?: any; }) {
+    constructor(provider: BaseProvider, signer?: Wallet, options?: { defaultGas?: number; defaultGasPrice?: any; }) {
         this.defaultGas = options?.defaultGas || 6000000;
         this.defaultGasPrice = options?.defaultGasPrice || 1000000000000;
-        this.networkId = networkId || 1;
-        this.network = NETWORKS[this.networkId];
-        this.contractAddresses = addresses[this.networkId];
         this.signer = signer;
 
         this.provider = provider || getDefaultProvider();
-        if (!provider && networkId) {
-          this.provider = getDefaultProvider(this.network);
-        }
-    
+    }
+
+    init = async (defaultGatewayToken?: string) => {
+        let network = await this.provider.getNetwork();
+
+        this.networkId = network.chainId;
+        this.network = NETWORKS[this.networkId];
+        this.contractAddresses = addresses[this.networkId];
+
         this.gatewayTokenController = new GatewayTokenController(this.signer || this.provider, addresses[this.networkId].gatewayTokenController);
         gatewayTokenAddresses[this.networkId].map((gatewayToken: GatewayTokenItem) => {
             let tokenAddress = gatewayToken.address
@@ -52,7 +56,7 @@ export class GatewayTs {
         this.blockGasLimit = block.gasLimit.sub(BigNumber.from(SUBTRACT_GAS_LIMIT));
     }
 
-    addGatekeeper = async (gatekeeper: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> => {
+    addGatekeeper = async (gatekeeper: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
         let gasPrice: number | BigNumber;
@@ -75,12 +79,17 @@ export class GatewayTs {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.addGatekeeper(gatekeeper, txParams)).wait();
+        let tx: any;
+		if (options?.confirmations != null && options?.confirmations > 0) {
+			tx = await(await gatewayToken.addGatekeeper(gatekeeper, txParams)).wait(options.confirmations);
+		} else {
+			tx = await gatewayToken.addGatekeeper(gatekeeper, txParams);
+		}
 
-        return tx.transactionHash;
+        return (options?.confirmations != null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
     }
 
-    removeGatekeeper = async (gatekeeper: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> => {
+    removeGatekeeper = async (gatekeeper: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
         let gasPrice: number | BigNumber;
@@ -103,12 +112,17 @@ export class GatewayTs {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.removeGatekeeper(gatekeeper, txParams)).wait();
+        let tx: any;
+		if (options?.confirmations != null && options?.confirmations > 0) {
+			tx = await(await gatewayToken.removeGatekeeper(gatekeeper, txParams)).wait(options.confirmations);
+		} else {
+			tx = await gatewayToken.removeGatekeeper(gatekeeper, txParams);
+		}
 
-        return tx.transactionHash;
+        return (options?.confirmations != null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
     }
-
-    addNetworkAuthority = async (authority: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> => {
+    
+    addNetworkAuthority = async (authority: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
         let gasPrice: number | BigNumber;
@@ -131,13 +145,19 @@ export class GatewayTs {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.addNetworkAuthority(authority, txParams)).wait();
+        let tx: any;
 
-        return tx.transactionHash;
+		if (options?.confirmations != null && options?.confirmations > 0) {
+			tx = await(await gatewayToken.addNetworkAuthority(authority, txParams)).wait(options.confirmations);
+		} else {
+			tx = await gatewayToken.addNetworkAuthority(authority, txParams);
+		}
+
+        return (options?.confirmations != null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
     }
 
-    removeNerworkAuthority = async (authority: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> => {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    removeNerworkAuthority = async (authority: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
+        const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
         let gasPrice: number | BigNumber;
         let gasLimit: number | BigNumber;
@@ -159,16 +179,25 @@ export class GatewayTs {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.removeNetworkAuthority(authority, txParams)).wait();
+        let tx: any;
+		if (options?.confirmations != null && options?.confirmations > 0) {
+			tx = await(await gatewayToken.removeNetworkAuthority(authority, txParams)).wait(options.confirmations);
+		} else {
+			tx = await gatewayToken.removeNetworkAuthority(authority, txParams);
+		}
 
-        return tx.transactionHash;
+        return (options?.confirmations != null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
     }
 
-    issue = async (tokenId: number, owner: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> => {
+    issue = async (owner: string, tokenId: number | BigNumber = null, expiration?: number, bitmask: Uint8Array = Uint8Array.from([0]), gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
         let gasPrice: number | BigNumber;
         let gasLimit: number | BigNumber;
+
+		if (tokenId == null) {
+			tokenId = generateTokenId(owner, bitmask);
+		}
 
         if (options?.gasPrice == null) {
             gasPrice = await estimateGasPrice();
@@ -187,12 +216,17 @@ export class GatewayTs {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.mint(owner, tokenId, txParams)).wait();
+        let tx: any;
+		if (options?.confirmations != null && options?.confirmations > 0) {
+            tx = await(await gatewayToken.mint(owner, tokenId, expiration, txParams)).wait(options.confirmations);
+		} else {
+			tx = await gatewayToken.mint(owner, tokenId, expiration, txParams);
+		}
 
-        return tx.transactionHash;
+        return (options?.confirmations != null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
     }
 
-    burn = async (tokenId: number, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> => {
+    burn = async (tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
         let gasPrice: number | BigNumber;
@@ -215,12 +249,18 @@ export class GatewayTs {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.burn(tokenId, txParams)).wait();
+        let tx: any;
 
-        return tx.transactionHash;
+		if (options?.confirmations != null && options?.confirmations > 0) {
+			tx = await(await gatewayToken.burn(tokenId, txParams)).wait(options.confirmations);
+		} else {
+			tx = await gatewayToken.burn(tokenId, txParams);
+		}
+
+        return (options?.confirmations != null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
     }
 
-    freeze = async (tokenId: number, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> => {
+    freeze = async (tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
         let gasPrice: number | BigNumber;
@@ -243,12 +283,18 @@ export class GatewayTs {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.freeze(tokenId, txParams)).wait();
+        let tx: any;
 
-        return tx.transactionHash;
+		if (options?.confirmations != null && options?.confirmations > 0) {
+			tx = await(await gatewayToken.freeze(tokenId, txParams)).wait(options.confirmations);
+		} else {
+			tx = await gatewayToken.freeze(tokenId, txParams);
+		}
+
+        return (options?.confirmations != null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
     }
 
-    unfreeze = async (tokenId: number, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> => {
+    unfreeze = async (tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
         let gasPrice: number | BigNumber;
@@ -271,12 +317,18 @@ export class GatewayTs {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.unfreeze(tokenId, txParams)).wait();
+        let tx: any;
 
-        return tx.transactionHash;
+		if (options?.confirmations != null && options?.confirmations > 0) {
+			tx = await(await gatewayToken.unfreeze(tokenId, txParams)).wait(options.confirmations);
+		} else {
+			tx = await gatewayToken.unfreeze(tokenId, txParams);
+		}
+
+        return (options?.confirmations != null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
     }
 
-    refresh = async (tokenId: number, expiry: number = 86400 * 14, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> => {
+    refresh = async (tokenId: number | BigNumber, expiry: number = 86400 * 14, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
         let gasPrice: number | BigNumber;
@@ -299,9 +351,15 @@ export class GatewayTs {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.setExpiration(tokenId, expiry, txParams)).wait();
+        let tx: any;
 
-        return tx.transactionHash;
+		if (options?.confirmations != null && options?.confirmations > 0) {
+			tx = await(await gatewayToken.setExpiration(tokenId, expiry, txParams)).wait(options.confirmations);
+		} else {
+			tx = await gatewayToken.setExpiration(tokenId, expiry, txParams);
+		}
+
+        return (options?.confirmations != null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
     }
 
     verify = async (owner: string, tokenId?: number, gatewayTokenAddress?: string):Promise<boolean> => {
@@ -309,15 +367,37 @@ export class GatewayTs {
         let tx: any;
 
 		if (tokenId) {
-			tx = await (await gatewayToken.verifyTokenByTokenID(owner, tokenId)).wait();
+			tx = await gatewayToken.verifyTokenByTokenID(owner, tokenId);
 		} else  {
-			tx = await (await gatewayToken.verifyToken(owner)).wait();
+			tx = await gatewayToken.verifyToken(owner);
 		}
 
         return tx[0];
     }
 
-    blacklist = async (user: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> => {
+    generateTokenId = (address: string, constrains: BytesLike): BigNumber => {
+        return generateTokenId(address, constrains);
+    }
+
+    getDefaultTokenId = async (owner: string, gatewayTokenAddress?: string):Promise<number | BigNumber> => {
+        const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+        let tokenId: number | BigNumber;
+
+        tokenId = await gatewayToken.getTokenId(owner);
+
+        return tokenId;
+    }
+
+    getTokenState = async (tokenId?: number, gatewayTokenAddress?: string):Promise<boolean> => {
+        const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+        let tx: any;
+
+        tx = await gatewayToken.getToken(tokenId);
+
+        return tx;
+    }
+
+    blacklist = async (user: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
         let controller = this.gatewayTokenController;
 
         let gasPrice: number | BigNumber;
@@ -340,9 +420,15 @@ export class GatewayTs {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await controller.blacklist(user, txParams)).wait();
+        let tx: any;
 
-        return tx.transactionHash;
+		if (options?.confirmations != null && options?.confirmations > 0) {
+			tx = await(await controller.blacklist(user, txParams)).wait(options.confirmations);
+		} else {
+			tx = await controller.blacklist(user, txParams);
+		}
+
+        return (options?.confirmations != null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
     }
 
     getGatewayTokenContract = (gatewayTokenAddress?: string):GatewayToken => {
@@ -362,6 +448,10 @@ export class GatewayTs {
     }
 
     defaultGatewayTokenContract = ():GatewayToken => {
+        if (this.defaultGatewayToken != null) {
+            return this.gatewayTokens[this.defaultGatewayToken].tokenInstance
+        }
+
         let addr = gatewayTokenAddresses[this.networkId][0].address;
         return this.gatewayTokens[addr].tokenInstance
     }

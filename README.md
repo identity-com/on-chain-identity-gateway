@@ -33,8 +33,10 @@ USAGE
 * [`gateway-eth-ts blacklist ADDRESS`](#gateway-eth-ts-blacklist-address)
 * [`gateway-eth-ts burn TOKENID`](#gateway-eth-ts-burn-tokenid)
 * [`gateway-eth-ts freeze TOKENID`](#gateway-eth-ts-freeze-tokenid)
+* [`gateway-eth-ts get-token TOKENID`](#gateway-eth-ts-get-token-tokenid)
+* [`gateway-eth-ts get-token-id ADDRESS`](#gateway-eth-ts-get-token-id-address)
 * [`gateway-eth-ts help [COMMAND]`](#gateway-eth-ts-help-command)
-* [`gateway-eth-ts issue TOKENID ADDRESS`](#gateway-eth-ts-issue-tokenid-address)
+* [`gateway-eth-ts issue ADDRESS [EXPIRATION]`](#gateway-eth-ts-issue-address-expiration)
 * [`gateway-eth-ts refresh TOKENID [EXPIRY]`](#gateway-eth-ts-refresh-tokenid-expiry)
 * [`gateway-eth-ts remove-gatekeeper ADDRESS`](#gateway-eth-ts-remove-gatekeeper-address)
 * [`gateway-eth-ts remove-network-authority ADDRESS`](#gateway-eth-ts-remove-network-authority-address)
@@ -53,7 +55,9 @@ ARGUMENTS
   ADDRESS  Gatekeeper address to add to the GatewayToken contract
 
 OPTIONS
-  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
@@ -63,7 +67,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -84,7 +88,9 @@ ARGUMENTS
   ADDRESS  Network authority address to add to the GatewayToken contract
 
 OPTIONS
-  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
@@ -94,7 +100,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -115,18 +121,17 @@ ARGUMENTS
   ADDRESS  User ETH address to blacklist
 
 OPTIONS
-  -c, --gatewayTokenController=gatewayTokenController  [default: 0xD66f3fEaEEB42F230E0E555C1c04632eD1798037]
-                                                       GatewayTokenController address to target
+  -c, --confirmations=confirmations  The amount of blocks to wait mined transaction
 
-  -g, --gasPrice=gasPrice                              [default: [object Object]] Gas Price level to execute transaction
-                                                       with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee      [default: [object Object]] Gas Price level to execute transaction with. For
+                                     example: instant, fast, standard, slow
 
-  -h, --help                                           show CLI help
+  -h, --help                         show CLI help
 
-  -n, --network=network                                [default: [object Object]] Specify target network to work with
+  -n, --network=network              [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                          [default: test test test test test test test test test test test
-                                                       junk] The ethereum address private key for signing messages
+  -p, --privateKey=privateKey        [default: test test test test test test test test test test test junk] The ethereum
+                                     address private key for signing messages
 
 EXAMPLE
   $ gateway blacklist 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -146,7 +151,9 @@ ARGUMENTS
   TOKENID  Token ID number to burn
 
 OPTIONS
-  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
@@ -156,7 +163,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -177,7 +184,9 @@ ARGUMENTS
   TOKENID  Token ID number to freeze
 
 OPTIONS
-  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
@@ -187,7 +196,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -195,6 +204,60 @@ EXAMPLE
 ```
 
 _See code: [dist/commands/freeze.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/freeze.js)_
+
+## `gateway-eth-ts get-token TOKENID`
+
+Get information related to gateway token by tokenID
+
+```
+USAGE
+  $ gateway-eth-ts get-token TOKENID
+
+ARGUMENTS
+  TOKENID  Owner address to verify identity token for
+
+OPTIONS
+  -h, --help                                     show CLI help
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
+
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
+
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
+                                                 address to target
+
+EXAMPLE
+  $ gateway get-token 10
+```
+
+_See code: [dist/commands/get-token.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/get-token.js)_
+
+## `gateway-eth-ts get-token-id ADDRESS`
+
+Get default gateway token ID by owner's address
+
+```
+USAGE
+  $ gateway-eth-ts get-token-id ADDRESS
+
+ARGUMENTS
+  ADDRESS  Owner address to verify identity token for
+
+OPTIONS
+  -h, --help                                     show CLI help
+  -n, --network=network                          [default: [object Object]] Specify target network to work with
+
+  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
+                                                 The ethereum address private key for signing messages
+
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
+                                                 address to target
+
+EXAMPLE
+  $ gateway get-token-id 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
+```
+
+_See code: [dist/commands/get-token-id.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/get-token-id.js)_
 
 ## `gateway-eth-ts help [COMMAND]`
 
@@ -213,34 +276,43 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
 
-## `gateway-eth-ts issue TOKENID ADDRESS`
+## `gateway-eth-ts issue ADDRESS [EXPIRATION]`
 
 Issue new identity token with TokenID for Ethereum address
 
 ```
 USAGE
-  $ gateway-eth-ts issue TOKENID ADDRESS
+  $ gateway-eth-ts issue ADDRESS [EXPIRATION]
 
 ARGUMENTS
-  TOKENID  Token ID number to issue
-  ADDRESS  Owner ethereum address to tokenID for
+  ADDRESS     Owner ethereum address to tokenID for
+  EXPIRATION  Expiration timestamp for newly issued token
 
 OPTIONS
-  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+  -b, --bitmask=bitmask                          [default: [object Object]] Bitmask constrains to link with newly
+                                                 minting tokenID
+
+  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
+  -g, --[no-]generateTokenId                     Identifier used to determine wether tokenId has to be generated
+
   -h, --help                                     show CLI help
+
+  -i, --tokenID=tokenID                          Token ID number to issue
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
                                                  address to target
 
 EXAMPLE
-  $ gateway issue 10 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
+  $ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -i <TokenID>
 ```
 
 _See code: [dist/commands/issue.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/issue.js)_
@@ -258,7 +330,9 @@ ARGUMENTS
   EXPIRY   [default: 1209600] The new expiry time in seconds for the gateway token (default 14 days)
 
 OPTIONS
-  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
@@ -268,7 +342,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -289,7 +363,9 @@ ARGUMENTS
   ADDRESS  Gatekeeper address to remove to the GatewayToken contract
 
 OPTIONS
-  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
@@ -299,7 +375,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -320,7 +396,9 @@ ARGUMENTS
   ADDRESS  Network authority address to remove to the GatewayToken contract
 
 OPTIONS
-  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
@@ -330,7 +408,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -351,7 +429,9 @@ ARGUMENTS
   TOKENID  Token ID number to unfreeze
 
 OPTIONS
-  -g, --gasPrice=gasPrice                        [default: [object Object]] Gas Price level to execute transaction with.
+  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
@@ -361,7 +441,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -389,7 +469,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa] GatewayToken
                                                  address to target
 
 EXAMPLE

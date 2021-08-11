@@ -15,5 +15,9 @@ require("dotenv/config");
 
     const testUser = '0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28';
 
-    let tx = await gtLib.addGatekeeper(testUser);
+    let constrains = 110001110001000;
+    let constrainsBytes = utils.arrayify(constrains)
+
+    let tokenId = gtLib.generateTokenId(testUser, constrainsBytes);
+    let tx = await gtLib.issue(testUser);
 })();

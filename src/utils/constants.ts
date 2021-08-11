@@ -7,6 +7,6 @@ export const NETWORKS: {[key: number]: string} = {
 export const DEFAULT_CHAIN_ID = 3;
 export const DEFAULT_NETWORK = 'ropsten';
 
-export const DEFAULT_GATEWAY_TOKEN:string = "0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348";
+export const DEFAULT_GATEWAY_TOKEN:string = "0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa";
 export const DEFAULT_MNEMONIC:string = "test test test test test test test test test test test junk";
-export const DEFAULT_GATEWAY_TOKEN_CONTROLLER:string = "0xD66f3fEaEEB42F230E0E555C1c04632eD1798037";
+export const DEFAULT_GATEWAY_TOKEN_CONTROLLER:string = "0x7b97B03C3232a6560d6C9daAaE49f33037D9131C";

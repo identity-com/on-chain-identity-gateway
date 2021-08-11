@@ -5,7 +5,8 @@ import {
 		privateKeyFlag,
 		gatewayTokenAddressFlag,
 		networkFlag,
-		gasPriceFlag,
+		gasPriceFeeFlag,
+		confirmationsFlag,
 } from "../utils/flags";
 import { TxBase } from "../utils/tx";
 import { BigNumber, utils, Wallet } from "ethers";
@@ -24,7 +25,8 @@ export default class UnfreezeToken extends Command {
 		privateKey: privateKeyFlag(),
 		gatewayTokenAddress: gatewayTokenAddressFlag(),
 		network: networkFlag(),
-		gasPrice: gasPriceFlag(),
+		gasPriceFee: gasPriceFeeFlag(),
+		confirmations: confirmationsFlag(),
 	};
 
 	static args = [
@@ -42,6 +44,7 @@ export default class UnfreezeToken extends Command {
 		let pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
+		const confirmations = flags.confirmations;
 
 		if (utils.isValidMnemonic(pk)) {
 			signer = mnemonicSigner(pk, provider)
@@ -58,7 +61,7 @@ export default class UnfreezeToken extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let gasPrice = await flags.gasPrice;
+		let gasPrice = await flags.gasPriceFee;
 		let gasLimit = await gatewayToken.contract.estimateGas.unfreeze(tokenID);
 
 		let txParams: TxBase = {
@@ -66,9 +69,15 @@ export default class UnfreezeToken extends Command {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.unfreeze(tokenID, txParams)).wait();
+		let tx: any;
+		if (confirmations > 0) {
+			tx = await(await gatewayToken.unfreeze(tokenID, txParams)).wait(confirmations);
+		} else {
+			tx = await gatewayToken.unfreeze(tokenID, txParams);
+		}
+
 		this.log(
-			`Unfreezed existing token with TokenID: ${tokenID} TxHash: ${tx.transactionHash}`
+			`Unfreezed existing token with TokenID: ${tokenID} TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
 		);
 	}
 }

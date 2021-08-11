@@ -5,7 +5,8 @@ import {
 		privateKeyFlag,
 		gatewayTokenAddressFlag,
 		networkFlag,
-		gasPriceFlag,
+		gasPriceFeeFlag,
+		confirmationsFlag,
 } from "../utils/flags";
 import { TxBase } from "../utils/tx";
 import { BigNumber, utils, Wallet } from "ethers";
@@ -24,7 +25,8 @@ export default class RefreshToken extends Command {
 		privateKey: privateKeyFlag(),
 		gatewayTokenAddress: gatewayTokenAddressFlag(),
 		network: networkFlag(),
-		gasPrice: gasPriceFlag(),
+		gasPriceFee: gasPriceFeeFlag(),
+		confirmations: confirmationsFlag(),
 	};
 
 	static args = [
@@ -49,6 +51,8 @@ export default class RefreshToken extends Command {
 		let pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
+		const confirmations = flags.confirmations;
+		let tx:any;
 
 		if (utils.isValidMnemonic(pk)) {
 			signer = mnemonicSigner(pk, provider)
@@ -68,7 +72,7 @@ export default class RefreshToken extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let gasPrice = await flags.gasPrice;
+		let gasPrice = await flags.gasPriceFee;
 		let gasLimit = await gatewayToken.contract.estimateGas.setExpiration(tokenID, expiry);
 
 		let txParams: TxBase = {
@@ -76,9 +80,14 @@ export default class RefreshToken extends Command {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.setExpiration(tokenID, expiry, txParams)).wait();
+		if (confirmations > 0) {
+			tx = await(await gatewayToken.setExpiration(tokenID, expiry, txParams)).wait(confirmations);
+		} else {
+			tx = await gatewayToken.setExpiration(tokenID, expiry, txParams);
+		}
+
 		this.log(
-			`Refreshed token with: ${tokenID} tokenID for ${days} days. TxHash: ${tx.transactionHash}`
+			`Refreshed token with: ${tokenID} tokenID for ${days} days. TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
 		);
 	}
 }

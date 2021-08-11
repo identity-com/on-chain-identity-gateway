@@ -5,8 +5,9 @@ import { GatewayTokenController } from "../contracts";
 import {
 		privateKeyFlag,
 		networkFlag,
-		gasPriceFlag,
+		gasPriceFeeFlag,
         gatewayTokenControllerFlag,
+		confirmationsFlag,
 } from "../utils/flags";
 import { TxBase } from "../utils/tx";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
@@ -24,7 +25,8 @@ export default class Blacklist extends Command {
 		privateKey: privateKeyFlag(),
 		gatewayTokenController: gatewayTokenControllerFlag(),
 		network: networkFlag(),
-		gasPrice: gasPriceFlag(),
+		gasPriceFee: gasPriceFeeFlag(),
+		confirmations: confirmationsFlag(),
 	};
 
 	static args = [
@@ -42,6 +44,7 @@ export default class Blacklist extends Command {
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
 		const user: string = args.address;
+		const confirmations = flags.confirmations;
 
 		if (utils.isValidMnemonic(pk)) {
 			signer = mnemonicSigner(pk, provider)
@@ -54,7 +57,7 @@ export default class Blacklist extends Command {
 
 		this.log(`Blacklisting user: ${user}`);
 
-		let gasPrice = await flags.gasPrice;
+		let gasPrice = await flags.gasPriceFee;
 		let gasLimit = await controller.contract.estimateGas.blacklist(user);
 
 		let txParams: TxBase = {
@@ -62,10 +65,16 @@ export default class Blacklist extends Command {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await controller.blacklist(user, txParams)).wait();
+		let tx: any;
+
+		if (confirmations > 0) {
+			tx = await(await controller.blacklist(user, txParams)).wait(confirmations);
+		} else {
+			tx = await controller.blacklist(user, txParams);
+		}
 
 		this.log(
-			`Blacklisted user with ${user} address. TxHash: ${tx.transactionHash}`
+			`Blacklisted user with ${user} address. TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
 		);
 	}
 }
