@@ -15,7 +15,7 @@ import {
 import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
 import {
   addGatekeeper,
-  getGatekeeperAccountKeyFromGatekeeperAuthority,
+  getGatekeeperAccountKey,
   getGatewayTokenKeyForOwner,
   issueVanilla,
 } from "../../src";
@@ -63,10 +63,11 @@ describe("getGatewayTokenKeyForOwner", function () {
   beforeEach(async () => {
     owner = Keypair.generate().publicKey;
     gatekeeperAuthority = Keypair.generate();
-    gatekeeperAccount = await getGatekeeperAccountKeyFromGatekeeperAuthority(
-      gatekeeperAuthority.publicKey
-    );
     gatekeeperNetwork = Keypair.generate();
+    gatekeeperAccount = await getGatekeeperAccountKey(
+      gatekeeperAuthority.publicKey,
+      gatekeeperNetwork.publicKey
+    );
   });
 
   it("should add gateway token", async () => {

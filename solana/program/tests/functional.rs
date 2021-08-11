@@ -1,10 +1,10 @@
 // Mark this test as BPF-only due to current `ProgramTest` limitations when CPIing into the system program
 #![cfg(feature = "test-bpf")]
 
-use solana_gateway_program::instruction;
 use solana_gateway_program::state::{
     get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
 };
+use solana_gateway_program::{id, instruction};
 use solana_sdk::transaction::Transaction;
 use {
     crate::gateway_context::GatewayContext,
@@ -21,16 +21,7 @@ async fn add_gatekeeper_should_succeed() {
     let mut context = GatewayContext::new().await;
 
     context.create_gatekeeper_keys();
-    let gatekeeper = context.add_gatekeeper().await;
-
-    assert_eq!(
-        gatekeeper.authority,
-        context.gatekeeper_authority.unwrap().pubkey()
-    );
-    assert_eq!(
-        gatekeeper.network,
-        context.gatekeeper_network.unwrap().pubkey()
-    );
+    let _gatekeeper = context.add_gatekeeper().await;
 }
 
 #[tokio::test]
@@ -163,8 +154,10 @@ async fn set_state_wrong_account_type_should_fail() {
         &None,
         &context.gatekeeper_network.as_ref().unwrap().pubkey(),
     );
-    let (gatekeeper_account, _) =
-        get_gatekeeper_address_with_seed(&context.gatekeeper_authority.as_ref().unwrap().pubkey());
+    let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
+        &context.gatekeeper_authority.as_ref().unwrap().pubkey(),
+        &context.gatekeeper_network.as_ref().unwrap().pubkey(),
+    );
 
     let result = context
         .set_gateway_token_state_transaction(
@@ -185,6 +178,49 @@ async fn set_state_wrong_account_type_should_fail() {
 }
 
 #[tokio::test]
+async fn close_account_should_succeed() {
+    let mut context = GatewayContext::new().await;
+    context.create_gatekeeper().await;
+
+    let (gatekeeper_address, _) = get_gatekeeper_address_with_seed(
+        &context.gatekeeper_authority.as_ref().unwrap().pubkey(),
+        &context.gatekeeper_network.as_ref().unwrap().pubkey(),
+    );
+    let account = context
+        .context
+        .banks_client
+        .get_account(gatekeeper_address)
+        .await
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(account.owner, id());
+
+    let funds_to = context.close_gatekeeper().await;
+
+    assert_eq!(
+        context
+            .context
+            .banks_client
+            .get_account(gatekeeper_address)
+            .await
+            .unwrap(),
+        None
+    );
+    assert_eq!(
+        context
+            .context
+            .banks_client
+            .get_account(funds_to)
+            .await
+            .unwrap()
+            .unwrap()
+            .lamports,
+        account.lamports
+    );
+}
+
+#[tokio::test]
 async fn update_expiry_wrong_account_should_fail() {
     let mut context = GatewayContext::new().await;
     context.create_gatekeeper().await;
@@ -200,8 +236,10 @@ async fn update_expiry_wrong_account_should_fail() {
         &None,
         &context.gatekeeper_network.as_ref().unwrap().pubkey(),
     );
-    let (gatekeeper_account, _) =
-        get_gatekeeper_address_with_seed(&context.gatekeeper_authority.as_ref().unwrap().pubkey());
+    let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
+        &context.gatekeeper_authority.as_ref().unwrap().pubkey(),
+        &context.gatekeeper_network.as_ref().unwrap().pubkey(),
+    );
 
     let result = {
         let transaction = Transaction::new_signed_with_payer(
