@@ -2,7 +2,7 @@
 
 This repository contains set of Ethereum smart contracts for Identity.com On-chain Identity Gateway token system. 
 
-Gateway tokens allows Ethereum DeFi projects validate their users who succesfully compleded KYC on Civic Wallet with regulations and guidances from FATF, US OFAC, US OCC BSA and others.
+Gateway tokens allows Ethereum DeFi projects validate their users who succesfully completed KYC with regulations and guidances from FATF, US OFAC, US OCC BSA and others.
 
 ## Gateway Token system architecture
 
