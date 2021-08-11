@@ -8,7 +8,7 @@ use solana_gateway::state::GatewayTokenState;
 use solana_program::clock::UnixTimestamp;
 use {
     crate::{
-        check_id, id,
+        id,
         instruction::GatewayInstruction,
         state::{get_gateway_token_address_with_seed, GATEWAY_TOKEN_ADDRESS_SEED},
     },
