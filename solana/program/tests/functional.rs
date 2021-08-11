@@ -1,7 +1,7 @@
 // Mark this test as BPF-only due to current `ProgramTest` limitations when CPIing into the system program
 #![cfg(feature = "test-bpf")]
 
-use solana_gateway_program::instruction;
+use solana_gateway_program::{instruction, id};
 use solana_gateway_program::state::{
     get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
 };
@@ -175,6 +175,49 @@ async fn set_state_wrong_account_type_should_fail() {
         .await;
 
     assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn close_account_should_succeed() {
+    let mut context = GatewayContext::new().await;
+    context.create_gatekeeper().await;
+
+    let (gatekeeper_address, _) = get_gatekeeper_address_with_seed(
+        &context.gatekeeper_authority.as_ref().unwrap().pubkey(),
+        &context.gatekeeper_network.as_ref().unwrap().pubkey(),
+    );
+    let account = context
+        .context
+        .banks_client
+        .get_account(gatekeeper_address)
+        .await
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(account.owner, id());
+
+    let funds_to = context.close_gatekeeper().await;
+
+    assert_eq!(
+        context
+            .context
+            .banks_client
+            .get_account(gatekeeper_address)
+            .await
+            .unwrap(),
+        None
+    );
+    assert_eq!(
+        context
+            .context
+            .banks_client
+            .get_account(funds_to)
+            .await
+            .unwrap()
+            .unwrap()
+            .lamports,
+        account.lamports
+    );
 }
 
 #[tokio::test]

@@ -8,7 +8,7 @@ use solana_gateway::state::GatewayTokenState;
 use solana_program::clock::UnixTimestamp;
 use {
     crate::{
-        id,
+        check_id, id,
         instruction::GatewayInstruction,
         state::{get_gateway_token_address_with_seed, GATEWAY_TOKEN_ADDRESS_SEED},
     },
@@ -47,6 +47,7 @@ pub fn process_instruction(
         }
         GatewayInstruction::SetState { state } => set_state(accounts, state),
         GatewayInstruction::UpdateExpiry { expire_time } => update_expiry(accounts, expire_time),
+        GatewayInstruction::CloseGatekeeper => close_gatekeeper(accounts),
     };
 
     if let Some(e) = result.clone().err() {
@@ -332,6 +333,37 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
     gateway_token
         .serialize(&mut *gateway_token_info.data.borrow_mut())
         .map_err(|e| e.into()) as ProgramResult
+}
+
+fn close_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
+    let account_info_iter = &mut accounts.iter();
+    let funds_to_info = next_account_info(account_info_iter)?;
+    let gatekeeper_account_info = next_account_info(account_info_iter)?;
+    let gatekeeper_authority_info = next_account_info(account_info_iter)?;
+    let gatekeeper_network_info = next_account_info(account_info_iter)?;
+
+    if !gatekeeper_network_info.is_signer {
+        msg!("Gatekeeper network signature missing");
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+
+    let (gatekeeper_address, _gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
+        gatekeeper_authority_info.key,
+        gatekeeper_network_info.key,
+    );
+    if gatekeeper_address != *gatekeeper_account_info.key {
+        msg!("Error: gatekeeper account address derivation mismatch");
+        return Err(ProgramError::InvalidArgument);
+    }
+
+    verify_gatekeeper_length(gatekeeper_account_info)?;
+
+    let mut gatekeeper_lamports = gatekeeper_account_info.lamports.borrow_mut();
+
+    **funds_to_info.lamports.borrow_mut() += **gatekeeper_lamports;
+    **gatekeeper_lamports = 0;
+
+    Ok(())
 }
 
 fn verify_gatekeeper_length(gatekeeper_account_info: &AccountInfo) -> ProgramResult {

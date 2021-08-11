@@ -12,9 +12,7 @@ const gatekeeperKey = new PublicKey(
   "G1y4BUXnbSMsdcXbCTMEdRWW9Th9tU9WfAmgbPDX7rRG"
 );
 
-const networkKey = new PublicKey(
-  "?" // TODO: Replace with correct network
-);
+const networkKey = new PublicKey(process.argv[2]);
 
 (async function () {
   const gatekeeperAccount = await gatekeeperExists(
