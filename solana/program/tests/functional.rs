@@ -1,10 +1,10 @@
 // Mark this test as BPF-only due to current `ProgramTest` limitations when CPIing into the system program
 #![cfg(feature = "test-bpf")]
 
-use solana_gateway_program::{instruction, id};
 use solana_gateway_program::state::{
     get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
 };
+use solana_gateway_program::{id, instruction};
 use solana_sdk::transaction::Transaction;
 use {
     crate::gateway_context::GatewayContext,
