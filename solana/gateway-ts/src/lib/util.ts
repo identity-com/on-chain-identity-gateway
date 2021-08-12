@@ -12,17 +12,22 @@ import {
 } from "./constants";
 import { GatewayToken, ProgramAccountResponse, State } from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
-import { GatekeeperData } from "./GatekeeperData";
 
 /**
  * Derive the address of the gatekeeper PDA for this gatekeeper
  * @param authority The gatekeeper
+ * @param network The network
  */
-export const getGatekeeperAccountKeyFromGatekeeperAuthority = async (
-  authority: PublicKey
+export const getGatekeeperAccountKey = async (
+  authority: PublicKey,
+  network: PublicKey
 ): Promise<PublicKey> => {
   const publicKeyNonce = await PublicKey.findProgramAddress(
-    [authority.toBuffer(), Buffer.from(GATEKEEPER_NONCE_SEED_STRING, "utf8")],
+    [
+      authority.toBuffer(),
+      network.toBuffer(),
+      Buffer.from(GATEKEEPER_NONCE_SEED_STRING, "utf8"),
+    ],
     PROGRAM_ID
   );
   return publicKeyNonce[0];
@@ -31,19 +36,29 @@ export const getGatekeeperAccountKeyFromGatekeeperAuthority = async (
 /**
  * Derive the address of the gateway token PDA for this owner address and optional seed.
  * @param owner The owner of the gateway token
+ * @param gatekeeperNetwork The network of the gateway token
  * @param seed An 8-byte seed array, used to add multiple tokens to the same owner. Must be unique to each token, if present
  */
 export const getGatewayTokenKeyForOwner = async (
   owner: PublicKey,
+  gatekeeperNetwork: PublicKey,
   seed?: Uint8Array
 ): Promise<PublicKey> => {
   const additionalSeed = seed
     ? Buffer.from(seed)
     : Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);
+  if (additionalSeed.length != 8) {
+    throw new Error(
+      "Additional Seed has length " +
+        additionalSeed.length +
+        " instead of 8 when calling getGatewayTokenKeyForOwner."
+    );
+  }
   const seeds = [
     owner.toBuffer(),
     Buffer.from(GATEWAY_TOKEN_ADDRESS_SEED, "utf8"),
     additionalSeed,
+    gatekeeperNetwork.toBuffer(),
   ];
 
   const publicKeyNonce = await PublicKey.findProgramAddress(seeds, PROGRAM_ID);
@@ -205,22 +220,24 @@ export const getGatewayToken = async (
 };
 
 /**
- * Returns the gatekeeper account for a given gatekeeper
- * @param connection A solana connection object
- * @param gatekeeperAuthority The gatekeeper authority key
+ * Returns whether or not a gatekeeper exists from a network and authority
+ * @param connection A solana connection
+ * @param gatekeeperAuthority The authority of the gatekeeper
+ * @param gatekeeperNetwork The network of the gatekeeper
  */
-export const getGatekeeperAccount = async (
+export const gatekeeperExists = async (
   connection: Connection,
-  gatekeeperAuthority: PublicKey
-): Promise<GatekeeperData | null> => {
-  const gatekeeperAccount =
-    await getGatekeeperAccountKeyFromGatekeeperAuthority(gatekeeperAuthority);
+  gatekeeperAuthority: PublicKey,
+  gatekeeperNetwork: PublicKey
+): Promise<boolean> => {
+  const gatekeeperAccount = await getGatekeeperAccountKey(
+    gatekeeperAuthority,
+    gatekeeperNetwork
+  );
   const account = await connection.getAccountInfo(
     gatekeeperAccount,
     SOLANA_COMMITMENT
   );
 
-  if (!account) return null;
-
-  return GatekeeperData.fromAccount(account.data);
+  return account != null && account.owner == PROGRAM_ID;
 };

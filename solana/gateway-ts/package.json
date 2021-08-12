@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/solana-gateway-ts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Typescript adapters for interacting with Solana gateway program",
   "main": "dist/index",
   "types": "dist/index",
@@ -12,9 +12,7 @@
     "clean": "rimraf -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "prepare": "yarn build",
-    "test:unit": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'test/unit/**/*.ts'",
-    "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs ../program/target/deploy/solana_gateway_program.so --reset",
-    "test": "yarn test:unit",
+    "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'test/**/*.ts'",
     "lint": "eslint src/ test/ scripts/ --ext .ts",
     "doc": "yarn typedoc src/index.ts --readme none"
   },

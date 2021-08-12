@@ -78,14 +78,10 @@ export class GatekeeperClient implements GatekeeperClientInterface {
     // produce a signature that proves ownership of a wallet
     const proof = await proveWalletOwnership(walletPublicKey, signer);
 
-    // We only pass the wallet public key as part of the request if
-    // it was not passed as part of the presentation.
-    const body = presentationRequestId
-      ? { presentationRequestId }
-      : { address: walletPublicKey.toBase58() };
     const gatewayTokenCreationRequest = {
-      ...body,
       proof,
+      address: walletPublicKey.toBase58(),
+      ...(presentationRequestId ? { presentationRequestId } : {}),
     };
     console.log(
       "Requesting a new gatekeeper token...",

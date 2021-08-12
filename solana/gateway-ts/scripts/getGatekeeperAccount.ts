@@ -1,6 +1,5 @@
 import { Connection, PublicKey } from "@solana/web3.js";
-import { getGatekeeperAccount } from "../src";
-import { GatekeeperData } from "../dist/lib/GatekeeperData";
+import { gatekeeperExists } from "../src";
 
 // default to the civic cluster
 const endpoint =
@@ -13,16 +12,14 @@ const gatekeeperKey = new PublicKey(
   "G1y4BUXnbSMsdcXbCTMEdRWW9Th9tU9WfAmgbPDX7rRG"
 );
 
-const prettyPrint = (gatekeeperAccount: GatekeeperData) => ({
-  authority: gatekeeperAccount.authority.toPublicKey().toBase58(),
-  network: gatekeeperAccount.network.toPublicKey().toBase58(),
-});
+const networkKey = new PublicKey(process.argv[2]);
 
 (async function () {
-  const gatekeeperAccount = await getGatekeeperAccount(
+  const gatekeeperAccount = await gatekeeperExists(
     connection,
-    gatekeeperKey
+    gatekeeperKey,
+    networkKey
   );
   if (!gatekeeperAccount) throw new Error("No account found");
-  console.log(prettyPrint(gatekeeperAccount));
+  console.log("account exists");
 })().catch((error) => console.error(error));

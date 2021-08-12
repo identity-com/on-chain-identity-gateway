@@ -3,7 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 import {
   clusterFlag,
   gatekeeperKeyFlag,
-  gatekeeperNetworkKeyFlag,
+  gatekeeperNetworkPubkeyFlag,
 } from "../util/oclif/flags";
 import { getTokenUpdateProperties } from "../util/oclif/utils";
 
@@ -19,7 +19,7 @@ Unfrozen
   static flags = {
     help: flags.help({ char: "h" }),
     gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
+    gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
     cluster: clusterFlag(),
   };
 
