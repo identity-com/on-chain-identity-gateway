@@ -387,7 +387,7 @@ export class GatewayTs {
     return result[0];
   }
 
-  async generateTokenId(address: string, constrains: BytesLike): BigNumber {
+  async generateTokenId(address: string, constrains: BytesLike): Promise<BigNumber> {
     return generateTokenId(address, constrains);
   }
 
@@ -409,7 +409,7 @@ export class GatewayTs {
     return tx;
   }
 
-  async blacklist(user: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber}):Promise<string> {
+  async blacklist(user: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> {
     const controller = this.gatewayTokenController;
 
     let gasPrice: number | BigNumber;
