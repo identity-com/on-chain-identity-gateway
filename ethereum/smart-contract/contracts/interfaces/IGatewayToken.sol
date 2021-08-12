@@ -18,6 +18,20 @@ interface IGatewayToken {
     event DAOManagerTransfered(address previousDAOManager, address newDAOManager);
 
     /**
+    * @dev Triggers to get all information relating to gateway `tokenId`
+    * @param tokenId Gateway token id
+    */
+    function getToken(uint256 tokenId) 
+        external 
+        view  
+        returns (
+            address owner,
+            bool isFreezed,
+            string memory identity,
+            uint256 expiration
+        );
+
+    /**
     * @dev Triggers to get default gateway token ID for `owner`
     * @param owner Token owner address
     */
@@ -36,7 +50,7 @@ interface IGatewayToken {
     *
     * @notice Only triggered by Identity.com Admin
     */
-    function addNetworkAuthority(address authority) external returns (bool);
+    function addNetworkAuthority(address authority) external;
 
     /**
     * @dev Triggers to remove existing network authority from gateway token. 
@@ -44,7 +58,7 @@ interface IGatewayToken {
     *
     * @notice Only triggered by Identity.com Admin
     */
-    function removeNetworkAuthority(address authority) external returns (bool);
+    function removeNetworkAuthority(address authority) external;
 
     /**
     * @dev Triggers to verify if authority has a NETWORK_AUTHORITY_ROLE role. 
