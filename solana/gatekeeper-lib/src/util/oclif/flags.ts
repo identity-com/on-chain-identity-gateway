@@ -1,4 +1,4 @@
-import { Keypair } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import { flags } from "@oclif/command";
 import { readKey } from "../account";
 import { getClusterUrl } from "../connection";
@@ -14,6 +14,13 @@ export const gatekeeperNetworkKeyFlag = flags.build<Keypair>({
   parse: readKey,
   default: () => readKey(`${__dirname}/test-gatekeeper-network.json`),
   description: "The private key file for the gatekeeper authority",
+});
+export const gatekeeperNetworkPubkeyFlag = flags.build<PublicKey>({
+  char: "n",
+  parse: (pubkey: string) => new PublicKey(pubkey),
+  default: () => readKey(`${__dirname}/test-gatekeeper-network.json`).publicKey,
+  description:
+    "The public key (in base 58) of the gatekeeper network that the gatekeeper belongs to.",
 });
 export const clusterFlag = flags.build<string>({
   char: "c",

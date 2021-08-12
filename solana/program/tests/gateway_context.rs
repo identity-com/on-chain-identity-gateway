@@ -1,11 +1,8 @@
 use solana_gateway::borsh as program_borsh;
 use solana_gateway::state::{GatewayToken, GatewayTokenState};
 use solana_gateway_program::{
-    id, instruction,
-    instruction::GatewayInstruction,
-    processor::process_instruction,
-    state::get_gateway_token_address_with_seed,
-    state::{get_gatekeeper_address_with_seed, Gatekeeper},
+    id, instruction, instruction::GatewayInstruction, processor::process_instruction,
+    state::get_gatekeeper_address_with_seed, state::get_gateway_token_address_with_seed,
 };
 use solana_program::{pubkey::Pubkey, system_program, sysvar};
 use solana_program_test::{processor, ProgramTest, ProgramTestContext};
@@ -67,6 +64,41 @@ impl GatewayContext {
         self.add_gatekeeper().await;
     }
 
+    /// Returns funds_to
+    pub async fn close_gatekeeper(&mut self) -> Pubkey {
+        let funds_to = Keypair::new().pubkey();
+        assert!(self
+            .context
+            .banks_client
+            .get_account(funds_to)
+            .await
+            .unwrap()
+            .map(|account| account.lamports == 0)
+            .unwrap_or(true));
+
+        let transaction = Transaction::new_signed_with_payer(
+            &[instruction::close_gatekeeper(
+                &funds_to,
+                &self.gatekeeper_authority.as_ref().unwrap().pubkey(),
+                &self.gatekeeper_network.as_ref().unwrap().pubkey(),
+            )],
+            Some(&self.context.payer.pubkey()),
+            &[
+                &self.context.payer,
+                self.gatekeeper_network.as_ref().unwrap(),
+            ],
+            self.context.last_blockhash,
+        );
+
+        self.context
+            .banks_client
+            .process_transaction(transaction)
+            .await
+            .unwrap();
+
+        funds_to
+    }
+
     async fn add_gatekeeper_transaction(
         &mut self,
         authority: &Pubkey,
@@ -79,7 +111,7 @@ impl GatewayContext {
                 &network.pubkey(),
             )],
             Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, &network],
+            &[&self.context.payer, network],
             self.context.last_blockhash,
         );
         self.context
@@ -102,12 +134,12 @@ impl GatewayContext {
                 owner,
                 gatekeeper_account,
                 &gatekeeper_authority.pubkey(),
-                &network,
+                network,
                 None,
                 expire_time,
             )],
             Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, &gatekeeper_authority],
+            &[&self.context.payer, gatekeeper_authority],
             self.context.last_blockhash,
         );
         self.context
@@ -123,16 +155,20 @@ impl GatewayContext {
         gatekeeper_account: &Pubkey,
         expire_time: UnixTimestamp,
     ) -> transport::Result<()> {
-        let (gateway_token, _) = get_gateway_token_address_with_seed(&owner, &None);
+        let (gateway_token, _) = get_gateway_token_address_with_seed(
+            owner,
+            &None,
+            &self.gatekeeper_network.as_ref().unwrap().pubkey(),
+        );
         let transaction = Transaction::new_signed_with_payer(
             &[instruction::update_expiry(
                 &gateway_token,
                 &gatekeeper_authority.pubkey(),
-                &gatekeeper_account,
+                gatekeeper_account,
                 expire_time,
             )],
             Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, &gatekeeper_authority],
+            &[&self.context.payer, gatekeeper_authority],
             self.context.last_blockhash,
         );
         self.context
@@ -156,7 +192,7 @@ impl GatewayContext {
                 gateway_token_state,
             )],
             Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, &gatekeeper_authority],
+            &[&self.context.payer, gatekeeper_authority],
             self.context.last_blockhash,
         );
         self.context
@@ -170,7 +206,7 @@ impl GatewayContext {
         authority: &Pubkey,
         network: &Pubkey,
     ) -> transport::Result<()> {
-        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(authority);
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(authority, network);
         // create an instruction that doesn't require the network signature.
         let instruction = Instruction::new_with_borsh(
             id(),
@@ -197,7 +233,7 @@ impl GatewayContext {
             .await
     }
 
-    pub async fn add_gatekeeper(&mut self) -> Gatekeeper {
+    pub async fn add_gatekeeper(&mut self) -> Pubkey {
         // TODO find nicer way to clone a Keypair to fix borrowing issues
         let gatekeeper_network = Keypair::from_base58_string(
             self.gatekeeper_network
@@ -214,26 +250,23 @@ impl GatewayContext {
                 .as_str(),
         );
 
-        let (gatekeeper_account, _) =
-            get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
+            &gatekeeper_authority.pubkey(),
+            &gatekeeper_network.pubkey(),
+        );
         self.add_gatekeeper_transaction(&gatekeeper_authority.pubkey(), &gatekeeper_network)
             .await
             .unwrap();
-        let account_info = self
-            .context
-            .banks_client
-            .get_account(gatekeeper_account)
-            .await
-            .unwrap()
-            .unwrap();
-        let account_data: Gatekeeper =
-            program_borsh::try_from_slice_incomplete::<Gatekeeper>(&account_info.data).unwrap();
 
-        account_data
+        gatekeeper_account
     }
 
     async fn get_gateway_token(&mut self, owner: &Pubkey) -> Option<GatewayToken> {
-        let (gateway_token, _) = get_gateway_token_address_with_seed(&owner, &None);
+        let (gateway_token, _) = get_gateway_token_address_with_seed(
+            owner,
+            &None,
+            &self.gatekeeper_network.as_ref().unwrap().pubkey(),
+        );
         self.context
             .banks_client
             .get_account(gateway_token)
@@ -266,10 +299,12 @@ impl GatewayContext {
                 .as_str(),
         );
 
-        let (gatekeeper_account, _) =
-            get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
+            &gatekeeper_authority.pubkey(),
+            &gatekeeper_network.pubkey(),
+        );
         self.issue_gateway_token_transaction(
-            &owner,
+            owner,
             &gatekeeper_authority,
             &gatekeeper_account,
             &gatekeeper_network.pubkey(),
@@ -296,11 +331,13 @@ impl GatewayContext {
                 .to_base58_string()
                 .as_str(),
         );
-        let (gatekeeper_account, _) =
-            get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
+            &gatekeeper_authority.pubkey(),
+            &self.gatekeeper_network.as_ref().unwrap().pubkey(),
+        );
 
         self.update_gateway_token_expiry_transaction(
-            &owner,
+            owner,
             &gatekeeper_authority,
             &gatekeeper_account,
             expire_time,
@@ -326,9 +363,15 @@ impl GatewayContext {
                 .to_base58_string()
                 .as_str(),
         );
-        let (gatekeeper_account, _) =
-            get_gatekeeper_address_with_seed(&gatekeeper_authority.pubkey());
-        let (gateway_account, _) = get_gateway_token_address_with_seed(&owner, &None);
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
+            &gatekeeper_authority.pubkey(),
+            &self.gatekeeper_network.as_ref().unwrap().pubkey(),
+        );
+        let (gateway_account, _) = get_gateway_token_address_with_seed(
+            owner,
+            &None,
+            &self.gatekeeper_network.as_ref().unwrap().pubkey(),
+        );
         self.set_gateway_token_state_transaction(
             &gateway_account,
             &gatekeeper_authority,

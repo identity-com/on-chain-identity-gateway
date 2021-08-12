@@ -25,9 +25,3 @@ crate-type = ["cdylib", "lib"]
 
 [dev-dependencies]
 solana-sdk = "1.6.8"
-
-[profile.release]
-lto = true
-
-[profile.test]
-opt-level = 2

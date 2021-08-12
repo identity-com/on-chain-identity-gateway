@@ -86,8 +86,8 @@
 								<li class="tsd-kind-function"><a href="index.html#findGatewayToken" class="tsd-kind-icon">find<wbr>Gateway<wbr>Token</a></li>
 								<li class="tsd-kind-function"><a href="index.html#findGatewayTokens" class="tsd-kind-icon">find<wbr>Gateway<wbr>Tokens</a></li>
 								<li class="tsd-kind-function"><a href="index.html#freeze" class="tsd-kind-icon">freeze</a></li>
-								<li class="tsd-kind-function"><a href="index.html#getGatekeeperAccount" class="tsd-kind-icon">get<wbr>Gatekeeper<wbr>Account</a></li>
-								<li class="tsd-kind-function"><a href="index.html#getGatekeeperAccountKeyFromGatekeeperAuthority" class="tsd-kind-icon">get<wbr>Gatekeeper<wbr>Account<wbr>Key<wbr>From<wbr>Gatekeeper<wbr>Authority</a></li>
+								<li class="tsd-kind-function"><a href="index.html#gatekeeperExists" class="tsd-kind-icon">gatekeeper<wbr>Exists</a></li>
+								<li class="tsd-kind-function"><a href="index.html#getGatekeeperAccountKey" class="tsd-kind-icon">get<wbr>Gatekeeper<wbr>Account<wbr>Key</a></li>
 								<li class="tsd-kind-function"><a href="index.html#getGatewayToken" class="tsd-kind-icon">get<wbr>Gateway<wbr>Token</a></li>
 								<li class="tsd-kind-function"><a href="index.html#getGatewayTokenKeyForOwner" class="tsd-kind-icon">get<wbr>Gateway<wbr>Token<wbr>Key<wbr>For<wbr>Owner</a></li>
 								<li class="tsd-kind-function"><a href="index.html#issueVanilla" class="tsd-kind-icon">issue<wbr>Vanilla</a></li>
@@ -108,7 +108,7 @@
 					<div class="tsd-signature tsd-kind-icon">Program<wbr>Account<wbr>Response<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AccountInfo</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>pubkey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/types/index.ts#L30">types/index.ts:30</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/types/index.ts#L30">types/index.ts:30</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -136,7 +136,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/instruction.ts#L92">lib/instruction.ts:92</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/instruction.ts#L92">lib/instruction.ts:92</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -186,7 +186,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/util.ts#L136">lib/util.ts:136</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/util.ts#L151">lib/util.ts:151</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -230,7 +230,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/util.ts#L91">lib/util.ts:91</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/util.ts#L106">lib/util.ts:106</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -280,7 +280,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/instruction.ts#L197">lib/instruction.ts:197</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/instruction.ts#L197">lib/instruction.ts:197</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -315,21 +315,21 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="getGatekeeperAccount" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> get<wbr>Gatekeeper<wbr>Account</h3>
+					<a name="gatekeeperExists" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> gatekeeper<wbr>Exists</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Gatekeeper<wbr>Account<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">GatekeeperData</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">gatekeeper<wbr>Exists<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/util.ts#L212">lib/util.ts:212</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/util.ts#L228">lib/util.ts:228</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Returns the gatekeeper account for a given gatekeeper</p>
+									<p>Returns whether or not a gatekeeper exists from a network and authority</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -337,31 +337,37 @@
 								<li>
 									<h5>connection: <span class="tsd-signature-type">Connection</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>A solana connection object</p>
+										<p>A solana connection</p>
 									</div>
 								</li>
 								<li>
 									<h5>gatekeeperAuthority: <span class="tsd-signature-type">PublicKey</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>The gatekeeper authority key</p>
+										<p>The authority of the gatekeeper</p>
+									</div>
+								</li>
+								<li>
+									<h5>gatekeeperNetwork: <span class="tsd-signature-type">PublicKey</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The network of the gatekeeper</p>
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">GatekeeperData</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="getGatekeeperAccountKeyFromGatekeeperAuthority" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> get<wbr>Gatekeeper<wbr>Account<wbr>Key<wbr>From<wbr>Gatekeeper<wbr>Authority</h3>
+					<a name="getGatekeeperAccountKey" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> get<wbr>Gatekeeper<wbr>Account<wbr>Key</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Gatekeeper<wbr>Account<wbr>Key<wbr>From<wbr>Gatekeeper<wbr>Authority<span class="tsd-signature-symbol">(</span>authority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Gatekeeper<wbr>Account<wbr>Key<span class="tsd-signature-symbol">(</span>authority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, network<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/util.ts#L21">lib/util.ts:21</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/util.ts#L21">lib/util.ts:21</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -375,6 +381,12 @@
 									<h5>authority: <span class="tsd-signature-type">PublicKey</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>The gatekeeper</p>
+									</div>
+								</li>
+								<li>
+									<h5>network: <span class="tsd-signature-type">PublicKey</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The network</p>
 									</div>
 								</li>
 							</ul>
@@ -392,7 +404,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/util.ts#L190">lib/util.ts:190</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/util.ts#L205">lib/util.ts:205</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -423,13 +435,13 @@
 					<a name="getGatewayTokenKeyForOwner" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagConst">Const</span> get<wbr>Gateway<wbr>Token<wbr>Key<wbr>For<wbr>Owner</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Gateway<wbr>Token<wbr>Key<wbr>For<wbr>Owner<span class="tsd-signature-symbol">(</span>owner<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, seed<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Gateway<wbr>Token<wbr>Key<wbr>For<wbr>Owner<span class="tsd-signature-symbol">(</span>owner<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, seed<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/util.ts#L36">lib/util.ts:36</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/util.ts#L42">lib/util.ts:42</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -443,6 +455,12 @@
 									<h5>owner: <span class="tsd-signature-type">PublicKey</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>The owner of the gateway token</p>
+									</div>
+								</li>
+								<li>
+									<h5>gatekeeperNetwork: <span class="tsd-signature-type">PublicKey</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The network of the gateway token</p>
 									</div>
 								</li>
 								<li>
@@ -466,7 +484,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/instruction.ts#L127">lib/instruction.ts:127</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/instruction.ts#L127">lib/instruction.ts:127</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -541,7 +559,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/util.ts#L169">lib/util.ts:169</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/util.ts#L184">lib/util.ts:184</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -608,7 +626,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/instruction.ts#L172">lib/instruction.ts:172</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/instruction.ts#L172">lib/instruction.ts:172</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -652,7 +670,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/instruction.ts#L222">lib/instruction.ts:222</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/instruction.ts#L222">lib/instruction.ts:222</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -696,7 +714,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a81d1ed/solana/gateway-ts/src/lib/instruction.ts#L248">lib/instruction.ts:248</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/dba4fc0/solana/gateway-ts/src/lib/instruction.ts#L248">lib/instruction.ts:248</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -770,10 +788,10 @@
 						<a href="index.html#freeze" class="tsd-kind-icon">freeze</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="index.html#getGatekeeperAccount" class="tsd-kind-icon">get<wbr>Gatekeeper<wbr>Account</a>
+						<a href="index.html#gatekeeperExists" class="tsd-kind-icon">gatekeeper<wbr>Exists</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="index.html#getGatekeeperAccountKeyFromGatekeeperAuthority" class="tsd-kind-icon">get<wbr>Gatekeeper<wbr>Account<wbr>Key<wbr>From<wbr>Gatekeeper<wbr>Authority</a>
+						<a href="index.html#getGatekeeperAccountKey" class="tsd-kind-icon">get<wbr>Gatekeeper<wbr>Account<wbr>Key</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="index.html#getGatewayToken" class="tsd-kind-icon">get<wbr>Gateway<wbr>Token</a>
