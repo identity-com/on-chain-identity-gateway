@@ -34,7 +34,7 @@ export default class FreezeToken extends Command {
 			name: "tokenID",
 			required: true,
 			description: "Token ID number to freeze",
-			parse: (input: any) => Number(input),
+			parse: (input: string) => BigNumber.from(input),
 		},
 	];
 
@@ -52,11 +52,11 @@ export default class FreezeToken extends Command {
 			signer = privateKeySigner(pk, provider)
 		}
 		
-		const tokenID: number = args.tokenID;
+		const tokenID: BigNumber = args.tokenID;
 		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
 		this.log(`Freezing existing token with TokenID:
-			${tokenID} 
+			${tokenID.toString()} 
 			on GatewayToken ${gatewayTokenAddress} contract`);
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
@@ -78,7 +78,7 @@ export default class FreezeToken extends Command {
 		}
 
 		this.log(
-				`Freezed existing token with TokenID: ${tokenID} TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
+				`Freezed existing token with TokenID: ${tokenID.toString()} TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
 			);
 	}
 }

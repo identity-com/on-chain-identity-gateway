@@ -1,5 +1,5 @@
 import { Command, flags } from "@oclif/command";
-import { utils, Wallet } from "ethers";
+import { BigNumber, utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from '@ethersproject/providers';
 import {
@@ -36,6 +36,7 @@ export default class VerifyToken extends Command {
 			name: "tokenId",
 			required: false,
 			description: "Token ID to verify identity for",
+			parse: (input: string) => BigNumber.from(input),
 		},
 	];
 
@@ -54,6 +55,7 @@ export default class VerifyToken extends Command {
 
 		const ownerAddress: string = args.address;
 		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+		const tokenId: BigNumber = args.tokenId;
 
 		this.log(`Verifying existing identity token using owner address:
 			${ownerAddress} 
@@ -63,8 +65,8 @@ export default class VerifyToken extends Command {
 
 		let tx: any;
 
-		if (args.tokenId) {
-			tx = await gatewayToken.verifyTokenByTokenID(ownerAddress, args.tokenId);
+		if (tokenId) {
+			tx = await gatewayToken.verifyTokenByTokenID(ownerAddress, tokenId);
 		} else  {
 			tx = await gatewayToken.verifyToken(ownerAddress);
 		}

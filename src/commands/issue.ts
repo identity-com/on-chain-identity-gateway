@@ -15,6 +15,7 @@ import {
 import { TxBase } from "../utils/tx";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 import { generateTokenId } from "../utils/tokenId";
+import { getExpirationTime } from "../utils/time";
 
 export default class IssueToken extends Command {
 	static description = "Issue new identity token with TokenID for Ethereum address";
@@ -66,7 +67,7 @@ export default class IssueToken extends Command {
 			signer = privateKeySigner(pk, provider)
 		}
 
-		let tokenID: BigNumber | number = flags.tokenID;
+		let tokenID: BigNumber = flags.tokenID;
 		const generateId: boolean = flags.generateTokenId;
 		const bitmask: Uint8Array = flags.bitmask;
 		const ownerAddress: string = args.address;
@@ -81,9 +82,9 @@ export default class IssueToken extends Command {
 
 		let gasPrice = await flags.gasPriceFee;
 		let gasLimit: BigNumber 
-
 		if (expiration != null) {
-			gasLimit = await gatewayToken.contract.estimateGas.mintWithExpiration(ownerAddress, tokenID, expiration);
+			let expirationDate = getExpirationTime(expiration);
+			gasLimit = await gatewayToken.contract.estimateGas.mintWithExpiration(ownerAddress, tokenID, expirationDate);
 		} else {
 			gasLimit = await gatewayToken.contract.estimateGas.mint(ownerAddress, tokenID);
 		}

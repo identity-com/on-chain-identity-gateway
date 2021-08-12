@@ -34,7 +34,7 @@ export default class UnfreezeToken extends Command {
 			name: "tokenID",
 			required: true,
 			description: "Token ID number to unfreeze",
-			parse: (input: any) => Number(input),
+			parse: (input: string) => BigNumber.from(input),
 		},
 	];
 
@@ -52,11 +52,11 @@ export default class UnfreezeToken extends Command {
 			signer = privateKeySigner(pk, provider)
 		}
 		
-		const tokenID: number = args.tokenID;
+		const tokenID: BigNumber = args.tokenID;
 		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
 		this.log(`Unfreezing existing token with TokenID:
-			${tokenID} 
+			${tokenID.toString()} 
 			on GatewayToken ${gatewayTokenAddress} contract`);
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
@@ -77,7 +77,7 @@ export default class UnfreezeToken extends Command {
 		}
 
 		this.log(
-			`Unfreezed existing token with TokenID: ${tokenID} TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
+			`Unfreezed existing token with TokenID: ${tokenID.toString()} TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
 		);
 	}
 }

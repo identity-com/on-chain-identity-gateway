@@ -1,5 +1,5 @@
 import { flags } from "@oclif/command";
-import { utils } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { BaseProvider } from '@ethersproject/providers';
 
 import { DEFAULT_GATEWAY_TOKEN, DEFAULT_GATEWAY_TOKEN_CONTROLLER, DEFAULT_MNEMONIC } from "./constants";
@@ -68,19 +68,19 @@ export const bitmaskFlag = flags.build<Uint8Array>({
   char: "b",
   name: "Bitmask",
   required: false,
-  parse: (input: string) => utils.arrayify(input),
+  parse: (input: string) => utils.arrayify(Number(input)),
   default: Uint8Array.from([0]),
   description:"Bitmask constrains to link with newly minting tokenID",
   // dependsOn: ['generateTokenIdFlag'],
   exclusive: ['tokenIdFlag'],
 });
 
-export const tokenIdFlag = flags.build<number>({
+export const tokenIdFlag = flags.build<BigNumber>({
   char: "i",
   name: "tokenID",
   required: false,
   description: "Token ID number to issue",
-  parse: (input: any) => Number(input),
+  parse: (input: string) => BigNumber.from(input),
   default: null,
   exclusive: ['generateTokenIdFlag', 'bitmaskFlag'],
 })

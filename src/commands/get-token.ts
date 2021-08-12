@@ -47,7 +47,6 @@ export default class GetToken extends Command {
 			signer = privateKeySigner(pk, provider)
 		}
 
-		const ownerAddress: string = args.address;
 		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);

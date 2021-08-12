@@ -3,7 +3,7 @@ const { getDefaultProvider, Wallet } = require('ethers');
 require("dotenv/config");
 
 (async function() {
-    const provider = getDefaultProvider('ropsten');
+    const provider = getDefaultProvider('ropsten', {infura: process.env.INFURA_KEY});
     let wallet = new Wallet(`0x${process.env.PRIVATE_KEY}`);
     wallet = wallet.connect(provider);
 

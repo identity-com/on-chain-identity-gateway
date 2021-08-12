@@ -19,7 +19,7 @@ $ npm install -g @identity.com/gateway-eth-ts
 $ gateway-eth-ts COMMAND
 running command...
 $ gateway-eth-ts (-v|--version|version)
-@identity.com/gateway-eth-ts/0.0.2 darwin-x64 node-v16.0.0
+@identity.com/gateway-eth-ts/0.0.2 darwin-x64 node-v12.18.4
 $ gateway-eth-ts --help [COMMAND]
 USAGE
   $ gateway-eth-ts COMMAND
@@ -230,7 +230,7 @@ EXAMPLE
   $ gateway get-token 10
 ```
 
-_See code: [dist/commands/get-token.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/get-token.js)_
+_See code: [dist/commands/get-token.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/get-token.js)_
 
 ## `gateway-eth-ts get-token-id ADDRESS`
 
@@ -257,7 +257,7 @@ EXAMPLE
   $ gateway get-token-id 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/get-token-id.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.1/dist/commands/get-token-id.js)_
+_See code: [dist/commands/get-token-id.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/get-token-id.js)_
 
 ## `gateway-eth-ts help [COMMAND]`
 
@@ -327,7 +327,7 @@ USAGE
 
 ARGUMENTS
   TOKENID  Token ID number to refresh
-  EXPIRY   [default: 1209600] The new expiry time in seconds for the gateway token (default 14 days)
+  EXPIRY   The new expiry time in seconds for the gateway token (default 14 days)
 
 OPTIONS
   -c, --confirmations=confirmations              The amount of blocks to wait mined transaction

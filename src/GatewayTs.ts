@@ -9,6 +9,8 @@ import { TxBase } from "./utils/tx";
 import { estimateGasPrice, GasPriceKey } from "./utils/gas";
 import { GatewayToken, GatewayTokenController } from "./contracts";
 import { generateTokenId } from './utils/tokenId';
+import { getExpirationTime } from './utils/time';
+import { TokenState } from './utils/types';
 
 export class GatewayTs {
   provider: BaseProvider;
@@ -74,13 +76,13 @@ export class GatewayTs {
     let gasPrice: number | BigNumber;
     let gasLimit: number | BigNumber;
 
-    if (options?.gasPrice === null) {
+    if (options?.gasPrice === undefined) {
       gasPrice = await estimateGasPrice();
     } else if (typeof(options?.gasPrice) === "string") {
       gasPrice = await estimateGasPrice(options?.gasPrice);
     }
 
-    if (options?.gasPrice === null) {
+    if (options?.gasLimit === undefined) {
       gasLimit = await gatewayToken.contract.estimateGas.addGatekeeper(gatekeeper);
     } else {
       gasLimit = options?.gasLimit;
@@ -92,13 +94,13 @@ export class GatewayTs {
     };
 
     let tx: any;
-    if (options?.confirmations !== null && options?.confirmations > 0) {
+    if (options?.confirmations !== undefined && options?.confirmations > 0) {
       tx = await(await gatewayToken.addGatekeeper(gatekeeper, txParams)).wait(options.confirmations);
     } else {
       tx = await gatewayToken.addGatekeeper(gatekeeper, txParams);
     }
 
-    return (options?.confirmations !== null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
+    return (options?.confirmations !== undefined && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
   }
 
   removeGatekeeper = async (gatekeeper: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> => {
@@ -107,13 +109,13 @@ export class GatewayTs {
     let gasPrice: number | BigNumber;
     let gasLimit: number | BigNumber;
 
-    if (options?.gasPrice === null) {
+    if (options?.gasPrice === undefined) {
       gasPrice = await estimateGasPrice();
     } else if (typeof(options?.gasPrice) === "string") {
       gasPrice = await estimateGasPrice(options?.gasPrice);
     }
 
-    if (options?.gasPrice === null) {
+    if (options?.gasLimit === undefined) {
       gasLimit = await gatewayToken.contract.estimateGas.removeGatekeeper(gatekeeper);
     } else {
       gasLimit = options?.gasLimit;
@@ -125,13 +127,13 @@ export class GatewayTs {
     };
 
     let tx: any;
-    if (options?.confirmations !== null && options?.confirmations > 0) {
+    if (options?.confirmations !== undefined && options?.confirmations > 0) {
       tx = await(await gatewayToken.removeGatekeeper(gatekeeper, txParams)).wait(options.confirmations);
     } else {
       tx = await gatewayToken.removeGatekeeper(gatekeeper, txParams);
     }
 
-    return (options?.confirmations !== null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
+    return (options?.confirmations !== undefined && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
   }
 
   async addNetworkAuthority(authority: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> {
@@ -146,7 +148,7 @@ export class GatewayTs {
       gasPrice = await estimateGasPrice(options?.gasPrice);
     }
 
-    if (options?.gasPrice === null) {
+    if (options?.gasLimit === undefined) {
       gasLimit = await gatewayToken.contract.estimateGas.addNetworkAuthority(authority);
     } else {
       gasLimit = options?.gasLimit;
@@ -159,13 +161,13 @@ export class GatewayTs {
 
     let tx: any;
 
-    if (options?.confirmations !== null && options?.confirmations > 0) {
+    if (options?.confirmations !== undefined && options?.confirmations > 0) {
       tx = await(await gatewayToken.addNetworkAuthority(authority, txParams)).wait(options.confirmations);
     } else {
       tx = await gatewayToken.addNetworkAuthority(authority, txParams);
     }
 
-    return (options?.confirmations !== null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
+    return (options?.confirmations !== undefined && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
   }
 
   async removeNetworkAuthority (authority: string, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> {
@@ -174,13 +176,13 @@ export class GatewayTs {
     let gasPrice: number | BigNumber;
     let gasLimit: number | BigNumber;
 
-    if (options?.gasPrice === null) {
+    if (options?.gasPrice === undefined) {
       gasPrice = await estimateGasPrice();
     } else if (typeof(options?.gasPrice) === "string") {
       gasPrice = await estimateGasPrice(options?.gasPrice);
     }
 
-    if (options?.gasPrice === null) {
+    if (options?.gasLimit === undefined) {
       gasLimit = await gatewayToken.contract.estimateGas.removeNerworkAuthority(authority);
     } else {
       gasLimit = options?.gasLimit;
@@ -192,13 +194,13 @@ export class GatewayTs {
     };
 
     let tx: any;
-    if (options?.confirmations !== null && options?.confirmations > 0) {
+    if (options?.confirmations !== undefined && options?.confirmations > 0) {
       tx = await(await gatewayToken.removeNetworkAuthority(authority, txParams)).wait(options.confirmations);
     } else {
       tx = await gatewayToken.removeNetworkAuthority(authority, txParams);
     }
 
-    return (options?.confirmations !== null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
+    return (options?.confirmations !== undefined && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
   }
 
   async issue(owner: string, tokenId: number | BigNumber = null, expiration?: number, bitmask: Uint8Array = Uint8Array.from([0]), gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> {
@@ -211,14 +213,15 @@ export class GatewayTs {
       tokenId = generateTokenId(owner, bitmask);
     }
 
-    if (options?.gasPrice === null) {
+    if (options?.gasPrice === undefined) {
       gasPrice = await estimateGasPrice();
     } else if (typeof(options?.gasPrice) === "string") {
       gasPrice = await estimateGasPrice(options?.gasPrice);
     }
+    let expirationDate = getExpirationTime(expiration);
 
-    if (options?.gasPrice === null) {
-      gasLimit = await gatewayToken.contract.estimateGas.mint(owner, tokenId);
+    if (options?.gasLimit == undefined) {
+      gasLimit = await gatewayToken.contract.estimateGas.mintWithExpiration(owner, tokenId, expirationDate);
     } else {
       gasLimit = options?.gasLimit;
     }
@@ -230,12 +233,12 @@ export class GatewayTs {
 
     let tx: any;
     if (options?.confirmations !== null && options?.confirmations > 0) {
-      tx = await(await gatewayToken.mint(owner, tokenId, expiration, txParams)).wait(options.confirmations);
+      tx = await(await gatewayToken.mint(owner, tokenId, expirationDate, txParams)).wait(options.confirmations);
     } else {
-      tx = await gatewayToken.mint(owner, tokenId, expiration, txParams);
+      tx = await gatewayToken.mint(owner, tokenId, expirationDate, txParams);
     }
 
-    return (options?.confirmations !== null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
+    return (options?.confirmations !== undefined && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
   }
 
   async burn(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> {
@@ -244,13 +247,13 @@ export class GatewayTs {
     let gasPrice: number | BigNumber;
     let gasLimit: number | BigNumber;
 
-    if (options?.gasPrice === null) {
+    if (options?.gasPrice === undefined) {
       gasPrice = await estimateGasPrice();
     } else if (typeof(options?.gasPrice) === "string") {
       gasPrice = await estimateGasPrice(options?.gasPrice);
     }
 
-    if (options?.gasPrice === null) {
+    if (options?.gasLimit === undefined) {
       gasLimit = await gatewayToken.contract.estimateGas.burn(tokenId);
     } else {
       gasLimit = options?.gasLimit;
@@ -263,13 +266,13 @@ export class GatewayTs {
 
     let tx: any;
 
-    if (options?.confirmations !== null && options?.confirmations > 0) {
+    if (options?.confirmations !== undefined && options?.confirmations > 0) {
       tx = await(await gatewayToken.burn(tokenId, txParams)).wait(options.confirmations);
     } else {
       tx = await gatewayToken.burn(tokenId, txParams);
     }
 
-    return (options?.confirmations !== null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
+    return (options?.confirmations !== undefined && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
   }
 
   async freeze(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> {
@@ -278,13 +281,13 @@ export class GatewayTs {
     let gasPrice: number | BigNumber;
     let gasLimit: number | BigNumber;
 
-    if (options?.gasPrice === null) {
+    if (options?.gasPrice === undefined) {
       gasPrice = await estimateGasPrice();
     } else if (typeof(options?.gasPrice) === "string") {
       gasPrice = await estimateGasPrice(options?.gasPrice);
     }
 
-    if (options?.gasPrice === null) {
+    if (options?.gasLimit === undefined) {
       gasLimit = await gatewayToken.contract.estimateGas.freeze(tokenId);
     } else {
       gasLimit = options?.gasLimit;
@@ -297,13 +300,13 @@ export class GatewayTs {
 
     let tx: any;
 
-    if (options?.confirmations !== null && options?.confirmations > 0) {
+    if (options?.confirmations !== undefined && options?.confirmations > 0) {
       tx = await(await gatewayToken.freeze(tokenId, txParams)).wait(options.confirmations);
     } else {
       tx = await gatewayToken.freeze(tokenId, txParams);
     }
 
-    return (options?.confirmations !== null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
+    return (options?.confirmations !== undefined && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
   }
 
   async unfreeze(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> {
@@ -312,13 +315,13 @@ export class GatewayTs {
     let gasPrice: number | BigNumber;
     let gasLimit: number | BigNumber;
 
-    if (options?.gasPrice === null) {
+    if (options?.gasPrice === undefined) {
       gasPrice = await estimateGasPrice();
     } else if (typeof(options?.gasPrice) === "string") {
       gasPrice = await estimateGasPrice(options?.gasPrice);
     }
 
-    if (options?.gasPrice === null) {
+    if (options?.gasLimit === undefined) {
       gasLimit = await gatewayToken.contract.estimateGas.unfreeze(tokenId);
     } else {
       gasLimit = options?.gasLimit;
@@ -331,29 +334,31 @@ export class GatewayTs {
 
     let tx: any;
 
-    if (options?.confirmations !== null && options?.confirmations > 0) {
+    if (options?.confirmations !== undefined && options?.confirmations > 0) {
       tx = await(await gatewayToken.unfreeze(tokenId, txParams)).wait(options.confirmations);
     } else {
       tx = await gatewayToken.unfreeze(tokenId, txParams);
     }
 
-    return (options?.confirmations !== null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
+    return (options?.confirmations !== undefined && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
   }
 
-  async refresh(tokenId: number | BigNumber, expiry: number = 86400 * 14, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> {
+  async refresh(tokenId: number | BigNumber, expiry?: number, gatewayTokenAddress?: string, options?: {gasPrice: number | BigNumber | GasPriceKey, gasLimit: number | BigNumber, confirmations: number}):Promise<string> {
     const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
     let gasPrice: number | BigNumber;
     let gasLimit: number | BigNumber;
 
-    if (options?.gasPrice === null) {
+    if (options?.gasPrice === undefined) {
       gasPrice = await estimateGasPrice();
     } else if (typeof(options?.gasPrice) === "string") {
       gasPrice = await estimateGasPrice(options?.gasPrice);
     }
 
-    if (options?.gasPrice === null) {
-      gasLimit = await gatewayToken.contract.estimateGas.setExpiration(tokenId, expiry);
+    let expirationDate = getExpirationTime(expiry);
+
+    if (options?.gasLimit === undefined) {
+      gasLimit = await gatewayToken.contract.estimateGas.setExpiration(tokenId, expirationDate);
     } else {
       gasLimit = options?.gasLimit;
     }
@@ -365,13 +370,13 @@ export class GatewayTs {
 
     let tx: any;
 
-    if (options?.confirmations !== null && options?.confirmations > 0) {
-      tx = await(await gatewayToken.setExpiration(tokenId, expiry, txParams)).wait(options.confirmations);
+    if (options?.confirmations !== undefined && options?.confirmations > 0) {
+      tx = await(await gatewayToken.setExpiration(tokenId, expirationDate, txParams)).wait(options.confirmations);
     } else {
-      tx = await gatewayToken.setExpiration(tokenId, expiry, txParams);
+      tx = await gatewayToken.setExpiration(tokenId, expirationDate, txParams);
     }
 
-    return (options?.confirmations !== null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
+    return (options?.confirmations !== undefined && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
   }
 
   async verify(owner: string, tokenId?: number, gatewayTokenAddress?: string):Promise<boolean> {
@@ -400,7 +405,7 @@ export class GatewayTs {
     return tokenId;
   }
 
-  async getTokenState(tokenId?: number, gatewayTokenAddress?: string):Promise<boolean> {
+  async getTokenState(tokenId?: number, gatewayTokenAddress?: string):Promise<TokenState> {
     const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
     let tx: any;
 
@@ -415,13 +420,13 @@ export class GatewayTs {
     let gasPrice: number | BigNumber;
     let gasLimit: number | BigNumber;
 
-    if (options?.gasPrice === null) {
+    if (options?.gasPrice === undefined) {
       gasPrice = await estimateGasPrice();
     } else if (typeof(options?.gasPrice) === "string") {
       gasPrice = await estimateGasPrice(options?.gasPrice);
     }
 
-    if (options?.gasPrice === null) {
+    if (options?.gasLimit === undefined) {
       gasLimit = await controller.contract.estimateGas.blacklist(user);
     } else {
       gasLimit = options?.gasLimit;
@@ -434,13 +439,13 @@ export class GatewayTs {
 
     let tx: any;
 
-    if (options?.confirmations !== null && options?.confirmations > 0) {
+    if (options?.confirmations !== undefined && options?.confirmations > 0) {
       tx = await(await controller.blacklist(user, txParams)).wait(options.confirmations);
     } else {
       tx = await controller.blacklist(user, txParams);
     }
 
-    return (options?.confirmations !== null && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
+    return (options?.confirmations !== undefined && options?.confirmations > 0) ? tx.transactionHash : tx.hash;
   }
 
   getGatewayTokenContract(gatewayTokenAddress?: string):GatewayToken {

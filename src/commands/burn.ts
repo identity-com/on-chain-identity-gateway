@@ -34,14 +34,14 @@ export default class BurnToken extends Command {
 			name: "tokenID",
 			required: true,
 			description: "Token ID number to burn",
-			parse: (input: any) => Number(input),
+			parse: (input: string) => BigNumber.from(input),
 		},
 	];
 
 	async run() {
 		const { args, flags } = this.parse(BurnToken);
 
-		const tokenID: number = args.tokenID;
+		const tokenID: BigNumber = args.tokenID;
 		let pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
@@ -59,7 +59,7 @@ export default class BurnToken extends Command {
 		const owner = await gatewayToken.getTokenOwner(tokenID);
 
 		this.log(`Burning existing token with TokenID:
-			${tokenID} 
+			${tokenID.toString()} 
 			for owner ${owner}
 			on GatewayToken ${gatewayTokenAddress} contract`);
 
@@ -80,7 +80,7 @@ export default class BurnToken extends Command {
 		}
 
 		this.log(
-			`Burned existing token with TokenID: ${tokenID} TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
+			`Burned existing token with TokenID: ${tokenID.toString()} TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
 		);
 	}
 }

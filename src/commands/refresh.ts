@@ -11,6 +11,7 @@ import {
 import { TxBase } from "../utils/tx";
 import { BigNumber, utils, Wallet } from "ethers";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
+import { getExpirationTime } from "../utils/time";
 
 export default class RefreshToken extends Command {
 	static description = "Refresh existing identity token with TokenID for Ethereum address";
@@ -34,13 +35,12 @@ export default class RefreshToken extends Command {
 			name: "tokenID",
 			required: true,
 			description: "Token ID number to refresh",
-			parse: (input: any) => Number(input),
+			parse: (input: string) => BigNumber.from(input),
 		},
 		{
 			name: "expiry",
 			required: false,
 			description: "The new expiry time in seconds for the gateway token (default 14 days)",
-			default: 86400 * 14, // 14 days
 			parse: (input: string) => Number(input),
 		},
 	];
@@ -60,20 +60,24 @@ export default class RefreshToken extends Command {
 			signer = privateKeySigner(pk, provider)
 		}
 
-		const tokenID: number = args.tokenID;
+		const tokenID: BigNumber = args.tokenID;
+		const now = Math.floor(Date.now() / 1000);
 		const expiry: number = args.expiry;
-		var days = Math.floor(expiry / 86400);
+
+		let expirationDate = getExpirationTime(expiry);
+		var days = Math.floor((expirationDate - now) / 86400);
+
 		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
 		this.log(`Refreshing existing token with TokenID:
-			${tokenID} 
+			${tokenID.toString()} 
 			for ${days} days
 			on GatewayToken ${gatewayTokenAddress} contract`);
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
 		let gasPrice = await flags.gasPriceFee;
-		let gasLimit = await gatewayToken.contract.estimateGas.setExpiration(tokenID, expiry);
+		let gasLimit = await gatewayToken.contract.estimateGas.setExpiration(tokenID, expirationDate);
 
 		let txParams: TxBase = {
 			gasLimit: gasLimit,
@@ -81,13 +85,13 @@ export default class RefreshToken extends Command {
 		};
 
 		if (confirmations > 0) {
-			tx = await(await gatewayToken.setExpiration(tokenID, expiry, txParams)).wait(confirmations);
+			tx = await(await gatewayToken.setExpiration(tokenID, expirationDate, txParams)).wait(confirmations);
 		} else {
-			tx = await gatewayToken.setExpiration(tokenID, expiry, txParams);
+			tx = await gatewayToken.setExpiration(tokenID, expirationDate, txParams);
 		}
 
 		this.log(
-			`Refreshed token with: ${tokenID} tokenID for ${days} days. TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
+			`Refreshed token with: ${tokenID.toString()} tokenID for ${days} days. TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
 		);
 	}
 }
