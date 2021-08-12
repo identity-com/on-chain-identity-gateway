@@ -50,7 +50,7 @@ export class GatekeeperService {
     gatewayTokenKey: PublicKey
   ): Promise<GatewayToken> {
     return getGatewayToken(this.connection, gatewayTokenKey).then(
-      (gatewayToken) => {
+      (gatewayToken: GatewayToken | null) => {
         if (!gatewayToken)
           throw new Error(
             "Error retrieving gateway token at address " + gatewayTokenKey
@@ -229,5 +229,18 @@ export class GatekeeperService {
     );
 
     return this.getGatewayTokenOrError(gatewayTokenKey);
+  }
+
+  // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key
+  async isRegistered(): Promise<boolean> {
+    const gatekeeperAccount = await getGatekeeperAccountKey(
+      this.gatekeeperAuthority.publicKey,
+      this.gatekeeperNetwork
+    );
+    const gatekeeperAccountInfo = await this.connection.getAccountInfo(
+      gatekeeperAccount
+    );
+
+    return !!gatekeeperAccountInfo;
   }
 }
