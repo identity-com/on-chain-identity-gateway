@@ -20,7 +20,7 @@ const ROPSTEN_GATEWAY_TOKENS: GatewayTokenItem[] = [
     {
       name: 'Test Gateway Token',
       symbol: 'tKYC',
-      address: '0xF1FEEeAC97aE1C23c3D9e11885Af440FCB39C348',
+      address: '0x0f278E6535BE8Ed168a3902c91219FE2C244F8Aa',
     }
 ];
 

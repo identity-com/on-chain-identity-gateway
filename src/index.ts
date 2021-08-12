@@ -12,11 +12,11 @@ export class GatewayETH extends GatewayTs {
    * const gatewayTs = new GatewayETH();
    * @constructor
    * @param provider {Ethers provider, default on mainnet}
-   * @param networkId {Network ID}
+   * @param signer {Ethers wallet instance}
    * @notice utils {Ethers utils}
    */
-  constructor(provider: BaseProvider, networkId: number, signer?: Wallet, options?: { defaultGas?: number; defaultGasPrice?: any; }) {
-    super(provider, networkId, signer, options);
+  constructor(provider: BaseProvider, signer?: Wallet, options?: { defaultGas?: number; defaultGasPrice?: any; }) {
+    super(provider, signer, options);
     this.utils = utils;
   }
 }

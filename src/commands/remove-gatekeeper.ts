@@ -6,7 +6,8 @@ import {
 		privateKeyFlag,
 		gatewayTokenAddressFlag,
 		networkFlag,
-		gasPriceFlag,
+		gasPriceFeeFlag,
+		confirmationsFlag,
 } from "../utils/flags";
 import { TxBase } from "../utils/tx";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
@@ -24,7 +25,8 @@ export default class RemoveGatekeeper extends Command {
 		privateKey: privateKeyFlag(),
 		gatewayTokenAddress: gatewayTokenAddressFlag(),
 		network: networkFlag(),
-		gasPrice: gasPriceFlag(),
+		gasPriceFee: gasPriceFeeFlag(),
+		confirmations: confirmationsFlag(),
 	};
 
 	static args = [
@@ -42,6 +44,7 @@ export default class RemoveGatekeeper extends Command {
 		let pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
+		const confirmations = flags.confirmations;
 
 		if (utils.isValidMnemonic(pk)) {
 			signer = mnemonicSigner(pk, provider)
@@ -60,7 +63,7 @@ export default class RemoveGatekeeper extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let gasPrice = await flags.gasPrice;
+		let gasPrice = await flags.gasPriceFee;
 		let gasLimit = await gatewayToken.contract.estimateGas.removeGatekeeper(gatekeeper);
 
 		let txParams: TxBase = {
@@ -68,10 +71,15 @@ export default class RemoveGatekeeper extends Command {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
-		const tx = await(await gatewayToken.removeGatekeeper(gatekeeper, txParams)).wait();
+		let tx: any;
+		if (confirmations > 0) {
+			tx = await(await gatewayToken.removeGatekeeper(gatekeeper, txParams)).wait(confirmations);
+		} else {
+			tx = await gatewayToken.removeGatekeeper(gatekeeper, txParams);
+		}
 
 		this.log(
-			`Removed gatekeeper on Gateway Token contract. TxHash: ${tx.transactionHash}`
+			`Removed gatekeeper on Gateway Token contract. TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
 		);
 	}
 }

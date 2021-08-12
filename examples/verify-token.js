@@ -1,5 +1,5 @@
 const { GatewayETH } = require('../dist/index.js');
-const { getDefaultProvider, Wallet, utils } = require('ethers');
+const { getDefaultProvider, Wallet } = require('ethers');
 require("dotenv/config");
 
 (async function() {
@@ -14,6 +14,5 @@ require("dotenv/config");
     await gtLib.init()
 
     const testUser = '0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28';
-
-    let tx = await gtLib.addGatekeeper(testUser);
+    let tx = await gtLib.verify(testUser);
 })();

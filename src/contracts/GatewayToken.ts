@@ -1,4 +1,4 @@
-import { Contract, Signer, Wallet } from 'ethers';
+import { BigNumber, Contract, Signer, Wallet } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 import abis from "../lib/abis";
 import { TxBase } from '../utils/tx';
@@ -38,36 +38,40 @@ export class GatewayToken {
         return await this.contract.balanceOf(account)
     }
 
-    getTokenOwner = async (tokenId: number) => {
-        return await this.contract.ownerOf(tokenId)
+    getTokenOwner = async (tokenID: number | BigNumber) => {
+        return await this.contract.ownerOf(tokenID)
     }
 
-    getIdentity = async (tokenId: number) => {
-        return await this.contract.getIdentity(tokenId)
+    getIdentity = async (tokenID: number | BigNumber) => {
+        return await this.contract.getIdentity(tokenID)
     }
 
-    getTokenURI = async (tokenId: number) => {
-        return await this.contract.tokenURI(tokenId)
+    getToken = async (tokenID: number | BigNumber) => {
+        return await this.contract.getToken(tokenID);
     }
 
-    setTokenURI = async (tokenId: number, tokenURI: string, txParams?: TxBase) => {
-        return await this.contract.setTokenURI(tokenId, tokenURI, txParams)
+    getTokenURI = async (tokenID: number | BigNumber) => {
+        return await this.contract.tokenURI(tokenID)
     }
 
-    verifyTokenByTokenID = async (address: string, tokenId: number) => {
-        return await this.contract.functions['verifyToken(address,uint256)'](address, tokenId)
+    setTokenURI = async (tokenID: number | BigNumber, tokenURI: string, txParams?: TxBase) => {
+        return await this.contract.setTokenURI(tokenID, tokenURI, txParams)
+    }
+
+    verifyTokenByTokenID = async (address: string, tokenID: number | BigNumber) => {
+        return await this.contract.functions['verifyToken(address,uint256)'](address, tokenID)
     }
 
     verifyToken = async (address: string) => {
         return await this.contract.functions["verifyToken(address)"](address)
     }
 
-    approve = async (tokenId: number, addressTo: string, txParams?: TxBase) => {
-        return await this.contract.approve(addressTo, tokenId, txParams)
+    approve = async (tokenID: number | BigNumber, addressTo: string, txParams?: TxBase) => {
+        return await this.contract.approve(addressTo, tokenID, txParams)
     }
 
-    getApprovedAddress = async (tokenId: number):Promise<string> => {
-        return await this.contract.getApproved(tokenId)
+    getApprovedAddress = async (tokenID: number | BigNumber):Promise<string> => {
+        return await this.contract.getApproved(tokenID)
     }
 
     setApprovalForAll = async (operator: string, approved: boolean, txParams?: TxBase) => {
@@ -78,36 +82,48 @@ export class GatewayToken {
         return await this.contract.isApprovedForAll(owner, operator)
     }
 
-    transferFrom = async (from: string, to: string, tokenID: number, txParams?: TxBase) => {
+    transferFrom = async (from: string, to: string, tokenID: number | BigNumber, txParams?: TxBase) => {
         return await this.contract.transferFrom(from, to, tokenID, txParams)
     }
 
-    safeTransferFrom = async (from: string, to: string, tokenID: number, txParams?: TxBase) => {
+    safeTransferFrom = async (from: string, to: string, tokenID: number | BigNumber, txParams?: TxBase) => {
         return await this.contract.safeTransferFrom(from, to, tokenID, txParams)
     }
 
-    burn = async (tokenID: number, txParams?: TxBase) => {
+    burn = async (tokenID: number | BigNumber, txParams?: TxBase) => {
         return await this.contract.burn(tokenID, txParams)
     }
 
-    mint = async (to: string, tokenID: number, txParams?: TxBase) => {
-        return await this.contract.mint(to, tokenID, txParams)
+    mint = async (to: string, tokenID: number | BigNumber | BigNumber, expiration?: number, txParams?: TxBase) => {
+        if (expiration != null && expiration > 0) {
+            return await this.contract.mintWithExpiration(to, tokenID, expiration, txParams)
+        } else {
+            return await this.contract.mint(to, tokenID, txParams)            
+        }
     }
 
-    freeze = async (tokenID: number, txParams?: TxBase) => {
+    freeze = async (tokenID: number | BigNumber, txParams?: TxBase) => {
         return await this.contract.freeze(tokenID, txParams)
     }
 
-    unfreeze = async (tokenID: number, txParams?: TxBase) => {
+    unfreeze = async (tokenID: number | BigNumber, txParams?: TxBase) => {
         return await this.contract.unfreeze(tokenID, txParams)
     }
 
-    getExpiration = async (tokenID: number) => {
+    getExpiration = async (tokenID: number | BigNumber) => {
         return await this.contract.expiration(tokenID)
     }
 
-    setExpiration = async (tokenID: number, time: number, txParams?: TxBase) => {
+    setExpiration = async (tokenID: number | BigNumber, time: number, txParams?: TxBase) => {
         return await this.contract.setExpiration(tokenID, time, txParams)
+    }
+
+    getTokenId = async (owner: string) => {
+        return await this.contract.getTokenId(owner)
+    }
+
+    setDefaultTokenId = async (owner: string, tokenID: number | BigNumber, txParams?: TxBase) => {
+        return await this.contract.setDefaultTokenId(owner, tokenID, txParams)
     }
 
     addGatekeeper = async (gatekeeper: string, txParams?: TxBase) => {

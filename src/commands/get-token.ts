@@ -1,5 +1,5 @@
 import { Command, flags } from "@oclif/command";
-import { utils, Wallet } from "ethers";
+import { BigNumber, utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from '@ethersproject/providers';
 import {
@@ -9,11 +9,11 @@ import {
 } from "../utils/flags";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 
-export default class VerifyToken extends Command {
-	static description = "Verify existing identity using token owner address";
+export default class GetToken extends Command {
+	static description = "Get information related to gateway token by tokenID";
 
 	static examples = [
-		`$ gateway verify 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
+		`$ gateway get-token 10
 		`,
 	];
 
@@ -26,25 +26,20 @@ export default class VerifyToken extends Command {
 
 	static args = [
 		{
-			name: "address",
+			name: "tokenID",
 			required: true,
 			description: "Owner address to verify identity token for",
-			parse: (input: string) => utils.isAddress(input) ? input : null,
-		},
-
-		{
-			name: "tokenId",
-			required: false,
-			description: "Token ID to verify identity for",
+			parse: (input: string) => BigNumber.from(input),
 		},
 	];
 
 	async run() {
-		const { args, flags } = this.parse(VerifyToken);
+		const { args, flags } = this.parse(GetToken);
 
 		let pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
+		const tokenID: BigNumber = args.tokenID;
 
 		if (utils.isValidMnemonic(pk)) {
 			signer = mnemonicSigner(pk, provider)
@@ -54,27 +49,20 @@ export default class VerifyToken extends Command {
 
 		const ownerAddress: string = args.address;
 		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
-
-		this.log(`Verifying existing identity token using owner address:
-			${ownerAddress} 
-			on GatewayToken ${gatewayTokenAddress} contract`);
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let tx: any;
-
-		if (args.tokenId) {
-			tx = await gatewayToken.verifyTokenByTokenID(ownerAddress, args.tokenId);
-		} else  {
-			tx = await gatewayToken.verifyToken(ownerAddress);
-		}
+        let token:any = await gatewayToken.getToken(tokenID);
 
 		this.log(
-			tx[0] ? 
-			`Verified existing token for owner address: ${ownerAddress}
-			`
-			:
-			`Unable to verify identity token for owner address: ${ownerAddress}
+			`Gateway token information:
+
+            Gateway TokenID: ${tokenID}
+            Owner: ${token?.owner} 
+            Freezed: ${token?.isFreezed} 
+            Identity: ${token?.identity} 
+            Expiration: ${token?.expiration.toString()} 
+            on GatewayToken ${gatewayTokenAddress} contract
 			`
 		);
 	}

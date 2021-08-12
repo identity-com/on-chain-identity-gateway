@@ -7,7 +7,7 @@ const MAINNET_ADDRESSES: ContractAddresses = {
 };
 
 const ROPSTEN_ADDRESSES: ContractAddresses = {
-    gatewayTokenController: '0xD66f3fEaEEB42F230E0E555C1c04632eD1798037',
+    gatewayTokenController: '0x7b97B03C3232a6560d6C9daAaE49f33037D9131C',
 };
 
 const LOCALHOST_ADDRESSES: ContractAddresses = {
