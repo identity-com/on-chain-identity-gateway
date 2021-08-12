@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.1.0 darwin-x64 node-v16.4.1
+@identity.com/solana-gatekeeper-lib/1.1.0 darwin-x64 node-v16.0.0
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -88,8 +88,8 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
-                                                   authority
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway freeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
@@ -138,8 +138,8 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
-                                                   authority
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
@@ -169,8 +169,8 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
-                                                   authority
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway refresh EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv 54000
@@ -200,8 +200,8 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
-                                                   authority
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
@@ -231,8 +231,8 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
-                                                   authority
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway unfreeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
@@ -259,8 +259,8 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
-                                                   authority
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway verify EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv

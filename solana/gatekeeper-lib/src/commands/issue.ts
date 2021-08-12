@@ -3,11 +3,10 @@ import { Keypair, PublicKey } from "@solana/web3.js";
 
 import { airdropTo, getConnection } from "../util";
 import { GatekeeperService } from "../service";
-import { GatekeeperNetworkService } from "../service/GatekeeperNetworkService";
 import {
   clusterFlag,
   gatekeeperKeyFlag,
-  gatekeeperNetworkKeyFlag,
+  gatekeeperNetworkPubkeyFlag,
 } from "../util/oclif/flags";
 import { prettyPrint } from "../util/token";
 
@@ -28,7 +27,7 @@ export default class Issue extends Command {
       parse: (input: string) => Number(input),
     }),
     gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
+    gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
     cluster: clusterFlag(),
   };
 
@@ -46,30 +45,20 @@ export default class Issue extends Command {
 
     const address: PublicKey = args.address;
     const gatekeeper = flags.gatekeeperKey as Keypair;
-    const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
+    const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
     this.log(`Issuing:
       to ${address.toBase58()} 
       from gatekeeper ${gatekeeper.publicKey.toBase58()}
-      in network ${gatekeeperNetwork.publicKey.toBase58()}`);
+      in network ${gatekeeperNetwork.toBase58()}`);
 
     const connection = getConnection(flags.cluster);
 
-    await airdropTo(
-      connection,
-      gatekeeperNetwork.publicKey,
-      flags.cluster as string
-    );
-
-    const networkService = new GatekeeperNetworkService(
-      connection,
-      gatekeeperNetwork,
-      gatekeeperNetwork
-    );
+    await airdropTo(connection, gatekeeper.publicKey, flags.cluster as string);
 
     const service = new GatekeeperService(
       connection,
+      gatekeeper,
       gatekeeperNetwork,
-      gatekeeperNetwork.publicKey,
       gatekeeper,
       flags.expiry
         ? {
@@ -78,15 +67,11 @@ export default class Issue extends Command {
         : {}
     );
 
-    const gatekeeperAccountExists = await networkService.hasGatekeeper(
-      gatekeeper.publicKey
-    );
+    const gatekeeperAccountExists = await service.isRegistered();
     if (!gatekeeperAccountExists) {
       this.log(
-        `Gatekeeper ${gatekeeper.publicKey.toBase58()} not present in network ${gatekeeperNetwork.publicKey.toBase58()}. Adding...`
+        `Gatekeeper ${gatekeeper.publicKey.toBase58()} not present in network ${gatekeeperNetwork.toBase58()}. Use "gateway add-gatekeeper" to add it.`
       );
-      await networkService.addGatekeeper(gatekeeper.publicKey);
-      this.log("Gatekeeper added");
     }
 
     const token = await service.issue(address);
