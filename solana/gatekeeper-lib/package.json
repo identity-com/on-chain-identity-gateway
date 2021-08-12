@@ -13,7 +13,7 @@
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
     "@solana/spl-token": "^0.1.4",
-    "@solana/web3.js": "^1.11.0",
+    "@solana/web3.js": "^1.22.0",
     "borsh": "^0.4.0",
     "tslib": "^1"
   },
