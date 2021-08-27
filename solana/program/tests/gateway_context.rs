@@ -65,7 +65,7 @@ impl GatewayContext {
     }
 
     /// Returns funds_to
-    pub async fn close_gatekeeper(&mut self) -> Pubkey {
+    pub async fn remove_gatekeeper(&mut self) -> Pubkey {
         let funds_to = Keypair::new().pubkey();
         assert!(self
             .context
@@ -77,7 +77,7 @@ impl GatewayContext {
             .unwrap_or(true));
 
         let transaction = Transaction::new_signed_with_payer(
-            &[instruction::close_gatekeeper(
+            &[instruction::remove_gatekeeper(
                 &funds_to,
                 &self.gatekeeper_authority.as_ref().unwrap().pubkey(),
                 &self.gatekeeper_network.as_ref().unwrap().pubkey(),

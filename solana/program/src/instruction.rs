@@ -77,7 +77,7 @@ pub enum GatewayInstruction {
         expire_time: UnixTimestamp,
     },
 
-    /// Closes a gatekeeper funding the rent back to an address and invalidating their addresses
+    /// Removes a gatekeeper funding the rent back to an address and invalidating their addresses
     ///
     /// Accounts expected by this instruction:
     ///
@@ -85,7 +85,7 @@ pub enum GatewayInstruction {
     /// 1. `[writable]`            gatekeeper_account: the gatekeeper account to close
     /// 2. `[]`                    gatekeeper_authority: the authority that owns the gatekeeper account
     /// 3. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belong
-    CloseGatekeeper,
+    RemoveGatekeeper,
 }
 
 /// Create a `GatewayInstruction::AddGatekeeper` instruction
@@ -177,8 +177,8 @@ pub fn update_expiry(
     )
 }
 
-/// Create a `GatewayInstruction::CloseGatekeeper` instruction
-pub fn close_gatekeeper(
+/// Create a `GatewayInstruction::RemoveGatekeeper` instruction
+pub fn remove_gatekeeper(
     funds_to_account: &Pubkey,
     gatekeeper_authority: &Pubkey,
     gatekeeper_network: &Pubkey,
@@ -187,7 +187,7 @@ pub fn close_gatekeeper(
         get_gatekeeper_address_with_seed(gatekeeper_authority, gatekeeper_network);
     Instruction::new_with_borsh(
         id(),
-        &GatewayInstruction::CloseGatekeeper,
+        &GatewayInstruction::RemoveGatekeeper,
         vec![
             AccountMeta::new(*funds_to_account, false),
             AccountMeta::new(gatekeeper_address, false),
