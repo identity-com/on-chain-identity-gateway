@@ -178,7 +178,7 @@ async fn set_state_wrong_account_type_should_fail() {
 }
 
 #[tokio::test]
-async fn close_account_should_succeed() {
+async fn remove_gatekeeper_account_should_succeed() {
     let mut context = GatewayContext::new().await;
     context.create_gatekeeper().await;
 
@@ -196,7 +196,7 @@ async fn close_account_should_succeed() {
 
     assert_eq!(account.owner, id());
 
-    let funds_to = context.close_gatekeeper().await;
+    let funds_to = context.remove_gatekeeper().await;
 
     assert_eq!(
         context
