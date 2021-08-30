@@ -2,6 +2,7 @@ import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import {
   addGatekeeper,
   getGatekeeperAccountKey,
+  revokeGatekeeper,
 } from "@identity.com/solana-gateway-ts";
 import { send } from "../util/connection";
 
@@ -33,6 +34,31 @@ export class GatekeeperNetworkService {
 
     const transaction = new Transaction().add(
       addGatekeeper(
+        this.payer.publicKey,
+        gatekeeperAccount,
+        gatekeeperAuthority,
+        this.gatekeeperNetwork.publicKey
+      )
+    );
+
+    await send(
+      this.connection,
+      transaction,
+      this.payer,
+      this.gatekeeperNetwork
+    );
+
+    return gatekeeperAccount;
+  }
+
+  async revokeGatekeeper(gatekeeperAuthority: PublicKey): Promise<PublicKey> {
+    const gatekeeperAccount = await getGatekeeperAccountKey(
+      gatekeeperAuthority,
+      this.gatekeeperNetwork.publicKey
+    );
+
+    const transaction = new Transaction().add(
+      revokeGatekeeper(
         this.payer.publicKey,
         gatekeeperAccount,
         gatekeeperAuthority,
