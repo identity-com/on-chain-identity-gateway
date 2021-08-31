@@ -47,7 +47,7 @@ pub fn process_instruction(
         }
         GatewayInstruction::SetState { state } => set_state(accounts, state),
         GatewayInstruction::UpdateExpiry { expire_time } => update_expiry(accounts, expire_time),
-        GatewayInstruction::CloseGatekeeper => close_gatekeeper(accounts),
+        GatewayInstruction::RemoveGatekeeper => remove_gatekeeper(accounts),
     };
 
     if let Some(e) = result.clone().err() {
@@ -335,7 +335,7 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
         .map_err(|e| e.into()) as ProgramResult
 }
 
-fn close_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
+fn remove_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
     let funds_to_info = next_account_info(account_info_iter)?;
     let gatekeeper_account_info = next_account_info(account_info_iter)?;
