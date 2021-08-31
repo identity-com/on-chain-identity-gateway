@@ -1,4 +1,7 @@
 import { AccountInfo, PublicKey } from "@solana/web3.js";
+import { GatewayTokenData } from "../lib/GatewayTokenData";
+import { PROGRAM_ID } from "../lib/constants";
+import { dataToGatewayToken } from "../lib/util";
 
 export enum State {
   ACTIVE = "ACTIVE",
@@ -24,6 +27,14 @@ export class GatewayToken {
   private hasExpired(): boolean {
     const now = Math.floor(Date.now() / 1000);
     return !!this.expiryTime && now > this.expiryTime;
+  }
+
+  static fromAccount(
+    accountInfo: AccountInfo<Buffer>,
+    key: PublicKey
+  ): GatewayToken {
+    const parsedData = GatewayTokenData.fromAccount(accountInfo.data);
+    return dataToGatewayToken(parsedData, key);
   }
 }
 
