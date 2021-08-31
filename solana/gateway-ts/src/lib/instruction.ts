@@ -26,12 +26,14 @@ class SetState extends Assignable {
 class UpdateExpiry extends Assignable {
   expireTime!: number;
 }
+class RevokeGatekeeper extends Assignable {}
 
 export class GatewayInstruction extends Enum {
   addGatekeeper?: AddGatekeeper;
   issueVanilla?: IssueVanilla;
   setState?: SetState;
   updateExpiry?: UpdateExpiry;
+  revokeGatekeeper?: RevokeGatekeeper;
 
   static addGatekeeper(): GatewayInstruction {
     return new GatewayInstruction({
@@ -79,6 +81,12 @@ export class GatewayInstruction extends Enum {
       }),
     });
   }
+
+  static revokeGatekeeper(): GatewayInstruction {
+    return new GatewayInstruction({
+      revokeGatekeeper: new RevokeGatekeeper({}),
+    });
+  }
 }
 
 /**
@@ -105,6 +113,35 @@ export function addGatekeeper(
     { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   ];
   const data = GatewayInstruction.addGatekeeper().encode();
+  return new TransactionInstruction({
+    keys,
+    programId: PROGRAM_ID,
+    data,
+  });
+}
+
+/**
+ * Removes a gatekeeper from a gatekeeper network.
+ * Returns a Solana instruction that must be signed by the gatekeeper network authority.
+ *
+ * @param funds_to The account the gatekeeper account's rent goes to
+ * @param gatekeeperAccount The gatekeeper account PDA. The address must be derived via getGatekeeperAccountKeyFromGatekeeperAuthority()
+ * @param gatekeeperAuthority The gatekeeper to remove from the network
+ * @param network The gatekeeper network that the account is being removed from.
+ */
+export function revokeGatekeeper(
+  funds_to: PublicKey,
+  gatekeeperAccount: PublicKey,
+  gatekeeperAuthority: PublicKey,
+  network: PublicKey
+): TransactionInstruction {
+  const keys: AccountMeta[] = [
+    { pubkey: funds_to, isSigner: false, isWritable: true },
+    { pubkey: gatekeeperAccount, isSigner: false, isWritable: true },
+    { pubkey: gatekeeperAuthority, isSigner: false, isWritable: false },
+    { pubkey: network, isSigner: true, isWritable: false },
+  ];
+  const data = GatewayInstruction.revokeGatekeeper().encode();
   return new TransactionInstruction({
     keys,
     programId: PROGRAM_ID,
@@ -273,6 +310,7 @@ SCHEMA.set(GatewayInstruction, {
     ["issueVanilla", IssueVanilla],
     ["setState", SetState],
     ["updateExpiry", UpdateExpiry],
+    ["revokeGatekeeper", RevokeGatekeeper],
   ],
 });
 SCHEMA.set(AddGatekeeper, {
@@ -293,4 +331,8 @@ SCHEMA.set(SetState, {
 SCHEMA.set(UpdateExpiry, {
   kind: "struct",
   fields: [["expireTime", "u64"]],
+});
+SCHEMA.set(RevokeGatekeeper, {
+  kind: "struct",
+  fields: [],
 });
