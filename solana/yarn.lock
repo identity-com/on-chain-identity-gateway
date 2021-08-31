@@ -265,12 +265,13 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.0.tgz#87de7af9c231826fdd68ac7258f77c429e0e5fcf"
   integrity sha512-wdppn25U8z/2yiaT6YGquE6X8sSv7hNMWSXYSSU1jGv/yd6XqjXgTDJ8KP4NgjTXfJ3GbRjeeb8RTV7a/VpM+w==
 
-"@identity.com/prove-solana-wallet@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@identity.com/prove-solana-wallet/-/prove-solana-wallet-0.1.4.tgz#e42139855a75367f5750d2fc5a078a7f211fbad6"
-  integrity sha512-XQd/j6Qy/+cpdE/D8MwSAx50Dk/A1AfaEOkiSa0vtfz0XWKqI9ml46VlbmrAddIGlxIbWc8eWTXJyLP+Uw42vQ==
+"@identity.com/prove-solana-wallet@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@identity.com/prove-solana-wallet/-/prove-solana-wallet-0.2.2.tgz#922c874f5a59be54a6a564a9dd0feb51290f29e2"
+  integrity sha512-+4BYv0cHdiPSL0jhY6ImAuvbFZZ6LQnE3Q8GPnSWXvfsWi3E7brxrUPQ9702CPqdIi0F4fn3VWvq/8pwIGrnaw==
   dependencies:
-    "@solana/web3.js" "^1.14.0"
+    "@solana/web3.js" "^1.22.0"
+    bs58 "^4.0.1"
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
@@ -548,7 +549,7 @@
     buffer-layout "^1.2.0"
     dotenv "10.0.0"
 
-"@solana/web3.js@^1.12.0", "@solana/web3.js@^1.14.0":
+"@solana/web3.js@^1.12.0":
   version "1.22.0"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.22.0.tgz#ded439eb903aff4269a16a7fdfacc6866c6f0c13"
   integrity sha512-7BQUiR1AIj2L8KJ8LYsI31iPRLytgF8T4hz7xLlvvBfalpUK7qD2om7frlNpXl8ROUpvruNf83QaectJdZJW1w==
