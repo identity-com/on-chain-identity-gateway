@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.1.0 darwin-x64 node-v16.0.0
+@identity.com/solana-gatekeeper-lib/1.1.0 darwin-x64 node-v14.17.5
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -34,6 +34,7 @@ USAGE
 * [`gateway issue ADDRESS`](#gateway-issue-address)
 * [`gateway refresh GATEWAYTOKEN [EXPIRY]`](#gateway-refresh-gatewaytoken-expiry)
 * [`gateway revoke GATEWAYTOKEN`](#gateway-revoke-gatewaytoken)
+* [`gateway revoke-gatekeeper ADDRESS`](#gateway-revoke-gatekeeper-address)
 * [`gateway unfreeze GATEWAYTOKEN`](#gateway-unfreeze-gatewaytoken)
 * [`gateway verify OWNER`](#gateway-verify-owner)
 
@@ -209,6 +210,36 @@ EXAMPLE
 ```
 
 _See code: [dist/commands/revoke.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.1.0/dist/commands/revoke.ts)_
+
+## `gateway revoke-gatekeeper ADDRESS`
+
+Revoke a gatekeeper from a network
+
+```
+USAGE
+  $ gateway revoke-gatekeeper ADDRESS
+
+ARGUMENTS
+  ADDRESS  The address of the gatekeeper to revoke from the network
+
+OPTIONS
+  -c, --cluster=cluster                            [default: http://ec2-34-238-243-215.compute-1.amazonaws.com:8899] The
+                                                   cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
+                                                   Alternatively, set the environment variable SOLANA_CLUSTER
+
+  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
+
+  -h, --help                                       show CLI help
+
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
+                                                   authority
+
+EXAMPLE
+  $ gateway revoke-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+```
+
+_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/gatekeeper-lib/blob/v1.1.0/dist/commands/revoke-gatekeeper.ts)_
 
 ## `gateway unfreeze GATEWAYTOKEN`
 
