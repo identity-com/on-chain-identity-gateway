@@ -7,8 +7,8 @@ import {
 } from "../util/oclif/flags";
 import { getTokenUpdateProperties } from "../util/oclif/utils";
 
-export default class Freeze extends Command {
-  static description = "Freeze a gateway token";
+export default class Refresh extends Command {
+  static description = "Refresh a gateway token";
 
   static examples = [
     `$ gateway refresh EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv 54000
@@ -40,7 +40,7 @@ Refreshed
   ];
 
   async run() {
-    const { args, flags } = this.parse(Freeze);
+    const { args, flags } = this.parse(Refresh);
 
     const { gatewayToken, gatekeeper, service } =
       await getTokenUpdateProperties(args, flags);
