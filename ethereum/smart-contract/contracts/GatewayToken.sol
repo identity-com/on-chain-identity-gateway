@@ -239,6 +239,26 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     }
 
     /**
+    * @dev Triggers to get all information gateway token related to specified `tokenId`
+    * @param tokenId Gateway token id
+    */
+    function getToken(uint256 tokenId) public view virtual override
+        returns (
+            address owner,
+            bool isFreezed,
+            string memory identity,
+            uint256 expiration
+        ) 
+    {
+        owner = ownerOf(tokenId);
+        isFreezed = _isFreezed[tokenId];
+        identity = _tokenURIs[tokenId];
+        expiration = _expirations[tokenId];
+
+        return (owner, isFreezed, identity, expiration);
+    }
+
+    /**
     * @dev Returns whether `tokenId` exists.
     *
     * Tokens start existing when they are minted (`_mint`),
@@ -398,6 +418,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
 
     /**
     * @dev Triggers to mint gateway token
+    * @param to Gateway token owner
     * @param tokenId Gateway token id
     */
     function mint(address to, uint256 tokenId) public virtual onlyNonBlacklistedUser(to) {
@@ -405,6 +426,20 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
 
         _mint(to, tokenId);
+    }
+
+    /**
+    * @dev Triggers to mint gateway token with specified expiration `timestamp`
+    * @param to Gateway token owner
+    * @param tokenId Gateway token id
+    * @param timestamp Expiration timestamp
+    */
+    function mintWithExpiration(address to, uint256 tokenId, uint256 timestamp) public virtual override onlyNonBlacklistedUser(to) {
+        //solhint-disable-next-line max-line-length
+        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
+
+        _mint(to, tokenId);
+        _expirations[tokenId] = timestamp;
     }
 
     /**
@@ -702,7 +737,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     *
     * @notice Can be triggered by Gateway Token Controller or any Network Authority
     */
-    function addNetworkAuthority(address authority) external virtual override returns (bool) {
+    function addNetworkAuthority(address authority) external virtual override {
         grantRole(NETWORK_AUTHORITY_ROLE, authority);
     }
 
@@ -712,7 +747,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
     *
     * @notice Can be triggered by Gateway Token Controller or any Network Authority
     */
-    function removeNetworkAuthority(address authority) external virtual override returns (bool) {
+    function removeNetworkAuthority(address authority) external virtual override {
         revokeRole(NETWORK_AUTHORITY_ROLE, authority);
     }
 
