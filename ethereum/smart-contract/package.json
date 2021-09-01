@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "npx hardhat test",
+    "deploy": "npx hardhat deploy",
     "build": "truffle compile && typechain --target truffle-v5 --out-dir types/truffle-contracts './build/contracts/*.json'"
   },
   "author": "Secured Finance",
