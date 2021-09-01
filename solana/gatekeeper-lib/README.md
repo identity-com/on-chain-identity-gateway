@@ -150,7 +150,7 @@ _See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-l
 
 ## `gateway refresh GATEWAYTOKEN [EXPIRY]`
 
-Freeze a gateway token
+Refresh a gateway token
 
 ```
 USAGE
