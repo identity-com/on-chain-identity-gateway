@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.1.0 darwin-x64 node-v14.17.5
+@identity.com/solana-gatekeeper-lib/1.1.0 darwin-x64 node-v16.0.0
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -150,7 +150,7 @@ _See code: [dist/commands/issue.ts](https://github.com/identity-com/gatekeeper-l
 
 ## `gateway refresh GATEWAYTOKEN [EXPIRY]`
 
-Freeze a gateway token
+Refresh a gateway token
 
 ```
 USAGE
