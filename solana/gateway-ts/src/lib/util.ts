@@ -81,7 +81,7 @@ function fromGatewayTokenState(state: GatewayTokenState): State {
   throw new Error("Unrecognised state " + JSON.stringify(state));
 }
 
-const dataToGatewayToken = (
+export const dataToGatewayToken = (
   data: GatewayTokenData,
   publicKey: PublicKey
 ): GatewayToken =>
