@@ -49,7 +49,7 @@ contract('GatewayTokenController', async (accounts) => {
             let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
 
             await expectRevert(
-                gatewayToken.mint(bob, 1, {from: bob}), "MUST BE GATEKEEPER"
+                gatewayToken.mint(bob, 1, { from: bob }), "MUST BE GATEKEEPER"
             );
         });
 
@@ -400,9 +400,15 @@ contract('GatewayTokenController', async (accounts) => {
             await equal(tokenOwner, alice);
 
             let tokenExpiration = await getTimestampPlusDays(1);
-            console.log(tokenExpiration)
+
             tx = await gatewayToken.setExpiration(10, tokenExpiration, {from: identityCom});
             await emitted(tx, "Expiration");
+
+            const tokenState = await gatewayToken.getToken(10, {from: alice});
+            tokenState.owner.should.be.equal(alice);
+            tokenState.isFreezed.should.be.equal(false);
+            tokenState.identity.should.be.equal('');
+            tokenState.expiration.toString().should.be.equal(String(tokenExpiration));
         });
     });
 });
