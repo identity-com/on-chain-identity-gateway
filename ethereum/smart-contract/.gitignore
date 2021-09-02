@@ -16,5 +16,4 @@ cache/
 build/
 coverage/
 coverage.json
-yarn.lock
 abi/
