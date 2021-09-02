@@ -20,6 +20,7 @@
     "abi-to-sol": "^0.2.1",
     "chai": "^4.3.4",
     "solidity-coverage": "^0.7.16",
+    "truffle": "^5.4.8",
     "typechain": "^5.1.2",
     "typescript": "^4.3.4"
   },
