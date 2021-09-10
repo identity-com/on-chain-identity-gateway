@@ -195,7 +195,11 @@ export const onGatewayTokenChange = (
     );
     callback(gatewayToken);
   };
-  return connection.onAccountChange(gatewayTokenAddress, accountCallback, commitment);
+  return connection.onAccountChange(
+    gatewayTokenAddress,
+    accountCallback,
+    commitment
+  );
 };
 
 /**
@@ -203,7 +207,10 @@ export const onGatewayTokenChange = (
  * @param connection A solana connection object
  * @param id The subscription id to deregister
  */
-export const removeAccountChangeListener = (connection: Connection, id: number): Promise<void> => {
+export const removeAccountChangeListener = (
+  connection: Connection,
+  id: number
+): Promise<void> => {
   return connection.removeAccountChangeListener(id);
 };
 

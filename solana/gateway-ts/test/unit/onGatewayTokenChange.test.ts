@@ -7,7 +7,12 @@ import {
   Keypair,
   PublicKey,
 } from "@solana/web3.js";
-import { GatewayToken, onGatewayTokenChange, removeAccountChangeListener, State } from "../../src";
+import {
+  GatewayToken,
+  onGatewayTokenChange,
+  removeAccountChangeListener,
+  State,
+} from "../../src";
 import { PROGRAM_ID } from "../../src/lib/constants";
 import {
   Active,
@@ -80,7 +85,11 @@ describe("onGatewayTokenChange", () => {
         });
 
       // register the gateway token change event listener
-      let onGatewayTokenChangeId = onGatewayTokenChange(connection, gatewayTokenKey, callback);
+      let onGatewayTokenChangeId = onGatewayTokenChange(
+        connection,
+        gatewayTokenKey,
+        callback
+      );
 
       // trigger a gateway token change event
       accountChangeCallback(toAccountInfo(gatewayTokenData), { slot: 0 });
@@ -106,16 +115,18 @@ describe("onGatewayTokenChange", () => {
 
       // Add subscription and return subscription id
       // Stop listening to the subscription by providing the subscription id
-      sandbox
-        .stub(connection, "onAccountChange")
-        .returns(subscriptionId);
-      
+      sandbox.stub(connection, "onAccountChange").returns(subscriptionId);
+
       const removeAccountChangeStub = sandbox
         .stub(connection, "removeAccountChangeListener")
         .resolves();
 
       // register the gateway token change event listener
-      let onGatewayTokenChangeId = onGatewayTokenChange(connection, gatewayTokenKey, () => {});
+      let onGatewayTokenChangeId = onGatewayTokenChange(
+        connection,
+        gatewayTokenKey,
+        () => {}
+      );
 
       // remove the token event listener
       removeAccountChangeListener(connection, onGatewayTokenChangeId);
