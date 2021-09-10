@@ -1,4 +1,4 @@
-import chai from "chai";
+import chai, { assert } from "chai";
 import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import {
@@ -7,7 +7,7 @@ import {
   Keypair,
   PublicKey,
 } from "@solana/web3.js";
-import { GatewayToken, onGatewayTokenChange, State } from "../../src";
+import { GatewayToken, onGatewayTokenChange, removeAccountChangeListener, State } from "../../src";
 import { PROGRAM_ID } from "../../src/lib/constants";
 import {
   Active,
@@ -62,6 +62,7 @@ describe("onGatewayTokenChange", () => {
     it("should call the callback with the new state", async () => {
       // we are going to store the results of the callback in here
       const gatewayTokenHistory: GatewayToken[] = [];
+      const subscriptionId = 1234;
 
       // every time the callback is called, push the gateway token into the history array
       const callback = (gatewayToken: GatewayToken) => {
@@ -75,11 +76,11 @@ describe("onGatewayTokenChange", () => {
         .stub(connection, "onAccountChange")
         .callsFake((publicKey: PublicKey, callback: AccountChangeCallback) => {
           accountChangeCallback = callback;
-          return 0;
+          return subscriptionId;
         });
 
       // register the gateway token change event listener
-      onGatewayTokenChange(connection, gatewayTokenKey, callback);
+      let onGatewayTokenChangeId = onGatewayTokenChange(connection, gatewayTokenKey, callback);
 
       // trigger a gateway token change event
       accountChangeCallback(toAccountInfo(gatewayTokenData), { slot: 0 });
@@ -94,6 +95,33 @@ describe("onGatewayTokenChange", () => {
       expect(gatewayTokenHistory.length).to.equal(2);
       expect(gatewayTokenHistory[0].state).to.equal(State.ACTIVE);
       expect(gatewayTokenHistory[1].state).to.equal(State.REVOKED);
+      expect(onGatewayTokenChangeId).to.equal(subscriptionId);
+    });
+  });
+
+  context("when subscribing to gateway token state changes", () => {
+    it("should stop listening to gateway state changes", async () => {
+      const gatewayTokenHistory: GatewayToken[] = [];
+      const subscriptionId = 1234;
+
+      // Add subscription and return subscription id
+      // Stop listening to the subscription by providing the subscription id
+      sandbox
+        .stub(connection, "onAccountChange")
+        .returns(subscriptionId);
+      
+      const removeAccountChangeStub = sandbox
+        .stub(connection, "removeAccountChangeListener")
+        .resolves();
+
+      // register the gateway token change event listener
+      let onGatewayTokenChangeId = onGatewayTokenChange(connection, gatewayTokenKey, () => {});
+
+      // remove the token event listener
+      removeAccountChangeListener(connection, onGatewayTokenChangeId);
+
+      // expect removeAccountChangeListener to have been called
+      assert(removeAccountChangeStub.called);
     });
   });
 });
