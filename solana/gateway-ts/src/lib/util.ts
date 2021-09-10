@@ -210,9 +210,7 @@ export const onGatewayTokenChange = (
 export const removeAccountChangeListener = (
   connection: Connection,
   id: number
-): Promise<void> => {
-  return connection.removeAccountChangeListener(id);
-};
+): Promise<void> => connection.removeAccountChangeListener(id);
 
 /**
  * Lookup the gateway token at a given address

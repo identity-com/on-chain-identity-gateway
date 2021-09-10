@@ -1,4 +1,4 @@
-import chai, { assert } from "chai";
+import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import {
@@ -85,7 +85,7 @@ describe("onGatewayTokenChange", () => {
         });
 
       // register the gateway token change event listener
-      let onGatewayTokenChangeId = onGatewayTokenChange(
+      const onGatewayTokenChangeId = onGatewayTokenChange(
         connection,
         gatewayTokenKey,
         callback
@@ -122,7 +122,7 @@ describe("onGatewayTokenChange", () => {
         .resolves();
 
       // register the gateway token change event listener
-      let onGatewayTokenChangeId = onGatewayTokenChange(
+      const onGatewayTokenChangeId = onGatewayTokenChange(
         connection,
         gatewayTokenKey,
         () => {}
@@ -132,7 +132,7 @@ describe("onGatewayTokenChange", () => {
       removeAccountChangeListener(connection, onGatewayTokenChangeId);
 
       // expect removeAccountChangeListener to have been called
-      assert(removeAccountChangeStub.called);
+      expect(removeAccountChangeStub.called).to.be.true;
     });
   });
 });
