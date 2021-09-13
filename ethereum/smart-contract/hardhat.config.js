@@ -10,7 +10,7 @@ require('@nomiclabs/hardhat-ethers');
 
 const accounts = {
   mnemonic: process.env.MNEMONIC || "test test test test test test test test test test test junk",
-  path: process.env.MNEMONIC_PATH,
+  path: process.env.MNEMONIC_PATH || "m/44'/60'/0'/0/",
   initialIndex: 0,
   count: 20,
 }
@@ -20,7 +20,7 @@ module.exports = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
-      accounts,
+      accounts, 
     },
     localhost: {
       saveDeployments: true,
