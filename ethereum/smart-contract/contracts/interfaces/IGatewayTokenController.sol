@@ -9,6 +9,11 @@ interface IGatewayTokenController {
     event AdminTransfered(address indexed previousAdmin, address indexed admin);
 
     /**
+    * @dev Emitted when Identity.com Admin updated FlagsStorage contract address from `previousFlagsStorage` to `flagsStorage`.
+    */
+    event FlagsStorageUpdated(address indexed previousFlagsStorage, address indexed flagsStorage);
+
+    /**
     * @dev Emitted when new GatewayToken contract deployed with 
     * associated `name` and `symbol` to specific `address`.
     */
