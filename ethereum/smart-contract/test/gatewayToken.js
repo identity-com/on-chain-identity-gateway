@@ -1,7 +1,11 @@
 const GatewayTokenController = artifacts.require('GatewayTokenController');
 const GatewayToken = artifacts.require('GatewayToken');
+const FlagsStorage = artifacts.require('FlagsStorage');
+const Forwarder = artifacts.require('Forwarder');
+
 const {web3} = require("@openzeppelin/test-environment");
 const { emitted, reverted, equal, notEqual, } = require('./utils').assert;
+const {toBytes32} = require('./utils').strings;
 const { ONE_MINUTE, ONE_DAY, ONE_YEAR, advanceTimeAndBlock, takeSnapshot, revertToSnapshot, getLatestTimestamp, getTimestampPlusDays } = require('./utils').time;
 const { should } = require('chai');
 should();
@@ -22,11 +26,22 @@ contract('GatewayTokenController', async (accounts) => {
     const [owner, alice, bob, carol] = accounts;
     let identityCom = owner;
 
+    let forwarder;
     let tokenController;
+    let flagsStorage;
     let gatewayTokens = [];
+    let gatewayToken;
+
+    let hexRetailFlag = toBytes32("Retail");
+    let hexInstitutionFlag = toBytes32("Institution");
+    let hexAccreditedInvestorFlag = toBytes32("AccreditedInvestor");
+    let hexUnsupportedFlag = toBytes32("hexUnsupportedFlag");
+    let hexUnsupportedFlag2 = toBytes32("hexUnsupportedFlag2");
 
     before('deploy contracts', async () => {
-        tokenController = await GatewayTokenController.new({from: identityCom});
+        forwarder = await Forwarder.new({from: identityCom});
+        flagsStorage = await FlagsStorage.new(identityCom, {from: identityCom});
+        tokenController = await GatewayTokenController.new(flagsStorage.address, {from: identityCom});
     });
 
     describe('Test executing functions only for Identity.com admin by third-party address', async () => {
@@ -37,40 +52,90 @@ contract('GatewayTokenController', async (accounts) => {
         });
     });
 
+    describe('Test FlagsStorage smart contract', async () => {
+        it('Try to add new flag by Bob, expect revert due to invalid access', async () => {
+            await expectRevert(
+                tokenController.transferAdmin(bob, {from: bob}), "NOT IDENTITY_COM_ADMIN"
+            );
+        });
+
+        it('Successfully add flag by daoController, expect success', async () => {
+            let tx = await flagsStorage.addFlag(hexRetailFlag, 0, {from: identityCom});
+            await emitted(tx, "FlagAdded");
+
+            tx = await flagsStorage.supportedFlagsMask({from: identityCom});
+            tx.toString(2).should.be.equal('1');
+        });
+
+        it('Successfully add several flags by daoController, expect success', async () => {
+            let flagCodes = [hexInstitutionFlag, hexAccreditedInvestorFlag];
+            let indexArray = [1, 2];
+
+            let tx = await flagsStorage.addFlags(flagCodes, indexArray, {from: identityCom});
+            await emitted(tx, "FlagAdded");
+
+            tx = await flagsStorage.supportedFlagsMask({from: identityCom});
+            tx.toString(2).should.be.equal('111');
+        });
+
+        it('Try to add new flag at already used index, expect revert', async () => {
+            await expectRevert(
+                flagsStorage.addFlag(hexUnsupportedFlag, 2, {from: identityCom}), "Index already used"
+            );
+        });
+
+        it('Try to add new flag by Bob, expect revert due to invalid access', async () => {
+            await expectRevert(
+                flagsStorage.addFlag(hexUnsupportedFlag, 3, {from: bob}), "NOT DAO ADDRESS"
+            );
+
+            await expectRevert(
+                flagsStorage.addFlags([hexUnsupportedFlag, hexAccreditedInvestorFlag], [3, 4], {from: bob}), "NOT DAO ADDRESS"
+            );
+        });
+
+        it('Add new flag and remove support of this flag, expect this index to be at unsupportedFlagsMask', async () => {
+            let tx = await flagsStorage.addFlag(hexUnsupportedFlag, 3, {from: identityCom});
+            await emitted(tx, "FlagAdded");
+
+            tx = await flagsStorage.supportedFlagsMask({from: identityCom});
+            tx.toString(2).should.be.equal('1111');
+
+            tx = await flagsStorage.removeFlag(hexUnsupportedFlag, {from: identityCom});
+            await emitted(tx, "FlagRemoved");
+
+            tx = await flagsStorage.unsupportedFlagsMask({from: identityCom});
+            tx.toString(2).should.be.equal('1000');
+        });
+    });
+
     describe('Test GatewayToken deployment functions', async () => {
         it('Deploy test GatewayToken contract with tKYC symbol', async () => {
-            let gatewayToken = await tokenController.createGatekeeperNetwork("Test-KYC", "tKYC", false, "0x0000000000000000000000000000000000000000", {from: identityCom});
-            await emitted(gatewayToken, 'GatekeeperNetworkCreated');
+            let deployment = await tokenController.createGatekeeperNetwork("Test-KYC", "tKYC", false, "0x0000000000000000000000000000000000000000", forwarder.address, {from: identityCom});
+            await emitted(deployment, 'GatekeeperNetworkCreated');
 
-            gatewayTokens.push(gatewayToken.logs[0].args.tokenAddress);
+            await gatewayTokens.push(deployment.logs[0].args.tokenAddress);
+            gatewayToken = await GatewayToken.at(gatewayTokens[0]);
         });
 
         it('Try to mint GatewayToken by Bob, expect revert', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             await expectRevert(
                 gatewayToken.mint(bob, 1, { from: bob }), "MUST BE GATEKEEPER"
             );
         });
 
         it('Successfully add alice as gatekeeper to gateway token contract', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let tx = await gatewayToken.addGatekeeper(alice, {from: identityCom});
             await emitted(tx, "RoleGranted");
         });
 
         it('Expect revert on adding new gatekeeper by Bob', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             await expectRevert(
                 gatewayToken.addGatekeeper(bob, {from: bob}), ""
             );
         });
 
         it('Successfully mint Gateway Token for Bob by Alice', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let tx = await gatewayToken.mint(bob, 1, {from: alice});
             await emitted(tx, "Transfer");
 
@@ -85,8 +150,6 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it('Expect revert on adding Carol as a gatekeeper and removing gateway token deployer by Alice', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             await expectRevert(
                 gatewayToken.addGatekeeper(carol, {from: alice}), ""
             );
@@ -96,14 +159,19 @@ contract('GatewayTokenController', async (accounts) => {
             );
         });
 
-        it("Successfully burn Bob's Gateway Token by Alice", async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
+        it("Successfully revoke Bob's Gateway Token by Alice", async () => {
+            let tx = await gatewayToken.revoke(1, {from: alice});
+            await emitted(tx, "Revoke");
 
-            let tx = await gatewayToken.burn(1, {from: alice});
+            // verify Bob's balance after revoking his gateway token
+            let bobBalance = await gatewayToken.balanceOf(bob, {from: alice});
+            await equal(bobBalance.toString(), '1');
+
+            tx = await gatewayToken.burn(1, {from: identityCom});
             await emitted(tx, "Transfer");
 
-            // verify Bob's balance after burning his gateway token
-            let bobBalance = await gatewayToken.balanceOf(bob, {from: alice});
+            // verify Bob's balance after revoking his gateway token
+            bobBalance = await gatewayToken.balanceOf(bob, {from: alice});
             await equal(bobBalance.toString(), '0');
         });
     });
@@ -120,8 +188,6 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it('Successfully add Bob as a gatekeeper by Alice after becoming network authority', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let tx = await gatewayToken.addGatekeeper(bob, {from: alice});
             await emitted(tx, "RoleGranted");
         });
@@ -158,8 +224,6 @@ contract('GatewayTokenController', async (accounts) => {
 
     describe('Test gateway token transfers with restricted and accepted transfers for token owners', async () => {
         it('Successfully mint Gateway Token for Alice by admin with tokenID = 1', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let tx = await gatewayToken.mint(alice, 1, {from: identityCom});
             await emitted(tx, "Transfer");
 
@@ -174,8 +238,6 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it('Successfully mint Gateway Token for Bob by Alice with tokenID = 2', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let tx = await gatewayToken.mint(bob, 2, {from: alice});
             await emitted(tx, "Transfer");
 
@@ -184,14 +246,11 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it("Successfully transfer Alice's gateway token to Carol account because Bob is a gatekeeper", async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let tx = await gatewayToken.safeTransferFrom(alice, carol, 1, {from: bob});
             await emitted(tx, "Transfer");
         });
 
         it("Remove Bob from gatekeepers list, try to transfer 1st tokenId on behalf of Carol, expect revert", async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
             let removal = await gatewayToken.removeGatekeeper(bob, {from: alice});
             await emitted(removal, "RoleRevoked");
 
@@ -201,8 +260,6 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it("Try to transfer 1st tokenId by Carol while transfers still restricted", async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             await expectRevert(
                 gatewayToken.transferFrom(carol, alice, 1, {from: carol}), "MSG.SENDER NOT OWNER NOR GATEKEEPER"
             );
@@ -212,14 +269,11 @@ contract('GatewayTokenController', async (accounts) => {
             let tx = await tokenController.acceptTransfersBatch([gatewayTokens[0]], {from: identityCom});
             await emitted(tx, "TransfersAcceptedBatch");
 
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
             tx = await gatewayToken.transferFrom(carol, alice, 1, {from: carol});
             await emitted(tx, "Transfer");
         });
 
         it('Verify default token held by Alice after receiving from Carol', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let validity = await gatewayToken.verifyToken(alice, 1, {from: alice});
             await equal(validity, true);
 
@@ -234,8 +288,6 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it("Freeze Bob's Gateway Token by Alice. expect revert on setting identity", async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let tx = await gatewayToken.freeze(2, {from: alice});
             await emitted(tx, "Freeze");
 
@@ -246,8 +298,6 @@ contract('GatewayTokenController', async (accounts) => {
 
         it("Unfreeze Bob's Gateway Token by Alice. set identity, restrict transfers by Carol and don't expect revert on Bob's transfer to Alice because Bob is a Gatekeeper", async () => {
             const identityURI = "0xSimpleIdenitity";
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             await expectRevert(
                 gatewayToken.unfreeze(2, {from: bob}), "MUST BE GATEKEEPER"
             );
@@ -273,9 +323,9 @@ contract('GatewayTokenController', async (accounts) => {
     });
 
     describe('Test gateway token verification with freezed, active, expired tokens and blacklisted users', async () => {
-        it('Verify existing tokens held by Alice with tokenId 1 and 2', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
+        const carolIdentity = "0xSimpleIdenitity";
 
+        it('Verify existing tokens held by Alice with tokenId 1 and 2', async () => {
             let validity = await gatewayToken.verifyToken(alice, 1, {from: carol});
             await equal(validity, true);
 
@@ -293,8 +343,6 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it('Freeze 1st token and set expiration for second token', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let tx = await gatewayToken.freeze(1, {from: alice});
             await emitted(tx, "Freeze");
             
@@ -331,10 +379,6 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it('Mint token for Carol, verify first time and blacklist Carol globally', async () => {
-            const carolIdentity = "0xSimpleIdenitity";
-
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let tx = await gatewayToken.mint(carol, 3, {from: alice});
             await emitted(tx, 'Transfer');
 
@@ -368,9 +412,7 @@ contract('GatewayTokenController', async (accounts) => {
             await equal(validity, false);
         });
 
-        it('Expect revert on minting additional tokens for Carol, freezing and setting expiration. Finally burn token', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
+        it('Expect revert on minting additional tokens for Carol, freezing and setting expiration. Finally revoke and burn token', async () => {
             await expectRevert(
                 gatewayToken.mint(carol, 4, {from: alice}), "BLACKLISTED USER"
             );
@@ -383,16 +425,22 @@ contract('GatewayTokenController', async (accounts) => {
                 gatewayToken.setExpiration(3, 1000, {from: alice}), "BLACKLISTED USER"
             );
 
-            // Burn Carol's token
-            tx = await gatewayToken.burn(3, {from: identityCom});
-            await emitted(tx, "Transfer");
+            // Revoke Carol's token
+            tx = await gatewayToken.revoke(3, {from: identityCom});
+            await emitted(tx, "Revoke");
+
+            // check 3rd gateway token data
+            const tokenState = await gatewayToken.getToken(3, {from: alice});
+            tokenState.owner.should.be.equal(carol);
+            tokenState.state.toString().should.be.equal('2');
+            tokenState.identity.should.be.equal(carolIdentity);
+            tokenState.expiration.toString().should.be.equal('0');
+            tokenState.bitmask.toString().should.be.equal('0');
         });
     });
 
     describe('Test gateway token expiry date updates', async () => {
         it('Successfully mint Gateway Token for Alice by admin with tokenID = 10 and set the expiration for 1 day', async () => {
-            let gatewayToken = await GatewayToken.at(gatewayTokens[0]);
-
             let tx = await gatewayToken.mint(alice, 10, {from: identityCom});
             await emitted(tx, "Transfer");
 
@@ -406,9 +454,105 @@ contract('GatewayTokenController', async (accounts) => {
 
             const tokenState = await gatewayToken.getToken(10, {from: alice});
             tokenState.owner.should.be.equal(alice);
-            tokenState.isFreezed.should.be.equal(false);
+            tokenState.state.toString().should.be.equal('0');
             tokenState.identity.should.be.equal('');
             tokenState.expiration.toString().should.be.equal(String(tokenExpiration));
+            tokenState.bitmask.toString().should.be.equal('0');
+        });
+
+        it('Test bitmask operations for Alice token with tokenID 10', async () => {
+            let tx = await gatewayToken.setBitmask(10, 3, {from: alice});
+            await emitted(tx, "BitMaskUpdated");
+
+            let bitmask = await gatewayToken.getTokenBitmask(10, {from: alice});
+            bitmask.toString(2).should.be.equal("11");
+
+            tx = await gatewayToken.addBitmask(10, 4, {from: alice});
+            await emitted(tx, "BitMaskUpdated");
+
+            bitmask = await gatewayToken.getTokenBitmask(10, {from: alice});
+            bitmask.toString(2).should.be.equal("111");
+
+            const tokenState = await gatewayToken.getToken(10, {from: alice});
+            tokenState.owner.should.be.equal(alice);
+            tokenState.state.toString().should.be.equal('0');
+            tokenState.identity.should.be.equal('');
+            tokenState.bitmask.toString(2).should.be.equal('111');
+
+            let isHighRisk = await gatewayToken.anyHighRiskBits(10, 5, {from: alice});
+            isHighRisk.should.be.equal(true);
+
+            await expectRevert(
+                gatewayToken.addBitmask(10, 8, {from: alice}), "UNSUPPORTED BITS"
+            );
+
+            await expectRevert(
+                gatewayToken.addBit(10, 3, {from: alice}), "UNSUPPORTED BITS"
+            );
+
+            tx = await gatewayToken.removeBit(10, 1, {from: alice});
+            await emitted(tx, "BitMaskUpdated");
+
+            bitmask = await gatewayToken.getTokenBitmask(10, {from: alice});
+            bitmask.toString(2).should.be.equal("101");
+
+            tx = await gatewayToken.removeBitmask(10, 5, {from: alice});
+            await emitted(tx, "BitMaskUpdated");
+
+            bitmask = await gatewayToken.getTokenBitmask(10, {from: alice});
+            bitmask.toString(2).should.be.equal("0");
+
+            tx = await gatewayToken.addBit(10, 2, {from: alice});
+            await emitted(tx, "BitMaskUpdated");
+
+            bitmask = await gatewayToken.getTokenBitmask(10, {from: alice});
+            bitmask.toString(2).should.be.equal("100");
+
+            tx = await gatewayToken.clearBitmask(10, {from: alice});
+            await emitted(tx, "BitMaskUpdated");
+
+            bitmask = await gatewayToken.getTokenBitmask(10, {from: alice});
+            bitmask.toString(2).should.be.equal("0");
+        });
+
+        it('Add new flags into FlagsStorage contract and add new bits into gateway token', async () => {
+            let tx = await flagsStorage.addFlag(hexUnsupportedFlag, 3, {from: identityCom});
+            await emitted(tx, "FlagAdded");
+
+            let mask = await flagsStorage.unsupportedFlagsMask({from: identityCom});
+            mask.toString(2).should.be.equal('0');
+
+            await expectRevert(
+                flagsStorage.addFlag(hexUnsupportedFlag, 4, {from: identityCom}), "Flag already exist"
+            );
+
+            tx = await flagsStorage.addFlag(hexUnsupportedFlag2, 4, {from: identityCom});
+            await emitted(tx, "FlagAdded");
+
+            mask = await flagsStorage.supportedFlagsMask({from: identityCom});
+            mask.toString(2).should.be.equal('11111');
+
+            tx = await gatewayToken.addBitmask(10, 24, {from: alice});
+            await emitted(tx, "BitMaskUpdated");
+
+            bitmask = await gatewayToken.getTokenBitmask(10, {from: alice});
+            bitmask.toString(2).should.be.equal("11000");
+
+            tx = await flagsStorage.removeFlags([hexUnsupportedFlag, hexUnsupportedFlag2], {from: identityCom});
+            await emitted(tx, "FlagRemoved");
+
+            mask = await flagsStorage.unsupportedFlagsMask({from: identityCom});
+            mask.toString(2).should.be.equal('11000');
+
+            tx = await gatewayToken.removeUnsupportedBits(10, {from: alice});
+            await emitted(tx, "BitMaskUpdated");
+
+            bitmask = await gatewayToken.getTokenBitmask(10, {from: alice});
+            bitmask.toString(2).should.be.equal("0");
+
+            await expectRevert(
+                gatewayToken.addBit(10, 4, {from: alice}), "UNSUPPORTED BITS"
+            );
         });
     });
 });

@@ -26,10 +26,17 @@ interface IGatewayToken {
         view  
         returns (
             address owner,
-            bool isFreezed,
+            uint8 state,
             string memory identity,
-            uint256 expiration
+            uint256 expiration,
+            uint256 bitmask
         );
+
+    /**
+    * @dev Triggers to get gateway token state with specified `tokenId`
+    * @param tokenId Gateway token id
+    */
+    function getTokenState(uint256 tokenId) external view virtual returns (uint8 state);
 
     /**
     * @dev Triggers to get default gateway token ID for `owner`
@@ -43,6 +50,12 @@ interface IGatewayToken {
     * @param tokenId Gateway token id
     */
     function setDefaultTokenId(address owner, uint256 tokenId) external;
+
+    /**
+    * @dev Triggers to verify if address has a GATEKEEPER role. 
+    * @param gatekeeper Gatekeeper address
+    */
+    function isGatekeeper(address gatekeeper) external returns (bool);
 
     /**
     * @dev Triggers to add new network authority into the system. 
