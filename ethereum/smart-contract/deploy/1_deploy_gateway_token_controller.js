@@ -14,8 +14,9 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts, getUnn
   })
 
   const tokenController = await ethers.getContract("GatewayTokenController")
-
-  let gatewayToken = await (await tokenController.createGatekeeperNetwork("Test-KYC", "tKYC", false, "0x0000000000000000000000000000000000000000", {from: deployer})).wait()
+  const trustedForwarder = await ethers.getContract("Forwarder")
+  
+  let gatewayToken = await (await tokenController.createGatekeeperNetwork("Test-KYC", "tKYC", false, "0x0000000000000000000000000000000000000000", trustedForwarder.address, {from: deployer})).wait()
 
   let gatewayTokenAddress = gatewayToken.events[gatewayToken.events.length - 1].args.tokenAddress;
 
@@ -33,4 +34,4 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts, getUnn
 }
 
 module.exports.tags = ["GatewayTokenController"]
-module.exports.dependencies = ["GatewayToken"]
+module.exports.dependencies = ["GatewayToken, Forwarder"]
