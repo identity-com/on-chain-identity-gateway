@@ -8,10 +8,12 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./interfaces/IERC721Freezeble.sol";
 import "./interfaces/IGatewayToken.sol";
 import "./interfaces/IGatewayTokenController.sol";
 import "./interfaces/IERC721Expirable.sol";
+
 
 /**
  * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens 
@@ -22,7 +24,7 @@ import "./interfaces/IERC721Expirable.sol";
  * Gatekeepers (Identity.com network parties who can mint/burn/freeze gateway tokens) and overall system Admin who can add
  * new Gatekeepers and Network Authorities
  */
-contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC721Freezeble, IERC721Expirable, IGatewayToken {
+contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721Metadata, IERC721Freezeble, IERC721Expirable, IGatewayToken {
     using Address for address;
     using Strings for uint256;
 
@@ -104,7 +106,7 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
      * `NETWORK_AUTHORITY_ROLE` responsible for adding/removing Gatekeepers and 
      * `GATEKEEPER_ROLE` responsible for minting/burning/transfering tokens
      */
-    constructor(string memory _name, string memory _symbol, address _deployer, bool _isDAOGoverned, address _daoManager) public {
+    constructor(string memory _name, string memory _symbol, address _deployer, bool _isDAOGoverned, address _daoManager, address trustedForwarder) ERC2771Context(trustedForwarder) public {
         name = _name;
         symbol = _symbol;
         controller = _msgSender();
@@ -132,6 +134,14 @@ contract GatewayToken is ERC165, AccessControl, IERC721, IERC721Metadata, IERC72
             _setRoleAdmin(NETWORK_AUTHORITY_ROLE, NETWORK_AUTHORITY_ROLE);
             _setRoleAdmin(GATEKEEPER_ROLE, NETWORK_AUTHORITY_ROLE);
         }
+    }
+
+    function _msgSender() internal view virtual override(ERC2771Context, Context) returns (address sender) {
+        return ERC2771Context._msgSender();
+    }
+
+    function _msgData() internal view virtual override(ERC2771Context, Context) returns (bytes calldata) {
+        return ERC2771Context._msgData();
     }
 
     /**

@@ -87,7 +87,7 @@ interface IGatewayTokenController {
     * @param _name Gateway Token name
     * @param _symbol Gateway Token symbol
     */
-    function createGatekeeperNetwork(string memory _name, string memory _symbol, bool _isDAOGoverned, address _daoExecutor) external returns (address tokenAddress);
+    function createGatekeeperNetwork(string memory _name, string memory _symbol, bool _isDAOGoverned, address _daoExecutor, address trustedForwarder) external returns (address tokenAddress);
 
     /**
     * @dev Triggers to add multiple network authorities in gateway token contract. 
