@@ -40,7 +40,7 @@ export const networkFlag = flags.build<BaseProvider>({
   description: "Specify target network to work with",
 });
 
-export const gasPriceFeeFlag = flags.build<Promise<number>>({
+export const gasPriceFeeFlag = flags.build<Promise<number | BigNumber>>({
   char: "f",
   parse: (input: GasPriceKey) => estimateGasPrice(input),
   default: () => estimateGasPrice('fast'),

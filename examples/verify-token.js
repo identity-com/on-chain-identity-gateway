@@ -15,4 +15,5 @@ require("dotenv/config");
 
     const testUser = '0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28';
     let tx = await gtLib.verify(testUser);
+    console.log(tx);
 })();

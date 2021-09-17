@@ -1,6 +1,6 @@
 import { GatewayTs } from './GatewayTs';
 import { utils, Wallet } from 'ethers';
-export { run } from "@oclif/command";
+// export { run } from "@oclif/command";
 import { BaseProvider } from '@ethersproject/providers';
 
 export class GatewayETH extends GatewayTs {

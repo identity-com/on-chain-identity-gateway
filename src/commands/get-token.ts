@@ -8,6 +8,8 @@ import {
 	networkFlag,
 } from "../utils/flags";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
+import { TokenState } from "../utils/types";
+import { checkTokenState } from "../utils/token-state";
 
 export default class GetToken extends Command {
 	static description = "Get information related to gateway token by tokenID";
@@ -51,16 +53,17 @@ export default class GetToken extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-        let token:any = await gatewayToken.getToken(tokenID);
+        let token:TokenState = await gatewayToken.getToken(tokenID);
 
 		this.log(
 			`Gateway token information:
 
             Gateway TokenID: ${tokenID}
             Owner: ${token?.owner} 
-            Freezed: ${token?.isFreezed} 
+            State: ${checkTokenState(token?.state)}
             Identity: ${token?.identity} 
             Expiration: ${token?.expiration.toString()} 
+            Bitmask: ${token?.bitmask.toString()}
             on GatewayToken ${gatewayTokenAddress} contract
 			`
 		);

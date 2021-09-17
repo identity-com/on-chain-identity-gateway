@@ -50,6 +50,14 @@ export class GatewayToken {
         return await this.contract.getToken(tokenID);
     }
 
+    getTokenState = async (tokenID: number | BigNumber) => {
+        return await this.contract.getTokenState(tokenID);
+    }
+
+    getTokenBitmask = async(tokenId: number | BigNumber) => {
+        return await this.contract.getTokenBitmask(tokenId)
+    }
+
     getTokenURI = async (tokenID: number | BigNumber) => {
         return await this.contract.tokenURI(tokenID)
     }
@@ -94,6 +102,10 @@ export class GatewayToken {
         return await this.contract.burn(tokenID, txParams)
     }
 
+    revoke = async (tokenID: number | BigNumber, txParams?: TxBase) => {
+        return await this.contract.revoke(tokenID, txParams)
+    }
+
     mint = async (to: string, tokenID: number | BigNumber | BigNumber, expiration?: number, txParams?: TxBase) => {
         if (expiration != null && expiration > 0) {
             return await this.contract.mintWithExpiration(to, tokenID, expiration, txParams)
@@ -134,6 +146,10 @@ export class GatewayToken {
         return await this.contract.removeGatekeeper(gatekeeper, txParams)
     }
 
+    isGatekeeper = async (gatekeeper: string, txParams?: TxBase): Promise<boolean> => {
+        return await this.contract.isGatekeeper(gatekeeper, txParams)
+    }
+
     addNetworkAuthority = async (authority: string, txParams?: TxBase) => {
         return await this.contract.addNetworkAuthority(authority, txParams)
     }
@@ -142,12 +158,55 @@ export class GatewayToken {
         return await this.contract.removeNetworkAuthority(authority, txParams)
     }
 
-    allowTransfers = async (txParams?: TxBase) => {
+    isNetworkAuthority = async (authority: string, txParams?: TxBase): Promise<boolean> => {
+        return await this.contract.isNetworkAuthority(authority, txParams)
+    }
+
+    allowTransfers = async (txParams?: TxBase): Promise<boolean> => {
         return await this.contract.allowTransfers(txParams)
     }
 
-    stopTransfers = async (txParams?: TxBase) => {
+    stopTransfers = async (txParams?: TxBase): Promise<boolean> => {
         return await this.contract.stopTransfers(txParams)
     }
 
+    transferDAOManager = async(daoManager: string, txParams?: TxBase) => {
+        return await this.contract.transferDAOManager(daoManager, txParams)
+    }
+
+    updateFlagsStorage = async(flagsStorage: string, txParams?: TxBase) => {
+        return await this.contract.updateFlagsStorage(flagsStorage, txParams)
+    }
+
+    setBitmask = async(tokenId: number | BigNumber, bitmask: number | BigNumber,  txParams?: TxBase) => {
+        return await this.contract.setBitmask(tokenId, bitmask, txParams)
+    }
+
+    addBitmask = async(tokenId: number | BigNumber, bitmask: number | BigNumber,  txParams?: TxBase) => {
+        return await this.contract.addBitmask(tokenId, bitmask, txParams)
+    }
+
+    addBit = async(tokenId: number | BigNumber, index: number | BigNumber,  txParams?: TxBase) => {
+        return await this.contract.addBit(tokenId, index, txParams)
+    }
+
+    removeBitmask = async(tokenId: number | BigNumber, bitmask: number | BigNumber,  txParams?: TxBase) => {
+        return await this.contract.removeBitmask(tokenId, bitmask, txParams)
+    }
+
+    removeBit = async(tokenId: number | BigNumber, index: number | BigNumber,  txParams?: TxBase) => {
+        return await this.contract.removeBit(tokenId, index, txParams)
+    }
+
+    removeUnsupportedBits = async(tokenId: number | BigNumber,  txParams?: TxBase) => {
+        return await this.contract.removeUnsupportedBits(tokenId, txParams)
+    }
+
+    clearBitmask = async(tokenId: number | BigNumber,  txParams?: TxBase) => {
+        return await this.contract.clearBitmask(tokenId, txParams)
+    }
+
+    anyHighRiskBits = async(tokenId: number | BigNumber, highRiskBitmask: number | BigNumber, txParams?: TxBase): Promise<boolean> => {
+        return await this.contract.anyHighRiskBits(tokenId, highRiskBitmask, txParams)
+    }
 }

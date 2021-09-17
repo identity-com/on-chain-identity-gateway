@@ -1,6 +1,12 @@
 export default [
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_flagsStorage",
+        "type": "address"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -47,6 +53,25 @@ export default [
       }
     ],
     "name": "BlacklistedBatch",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousFlagsStorage",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "flagsStorage",
+        "type": "address"
+      }
+    ],
+    "name": "FlagsStorageUpdated",
     "type": "event"
   },
   {
@@ -211,6 +236,19 @@ export default [
   },
   {
     "inputs": [],
+    "name": "flagsStorage",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "identityAdmin",
     "outputs": [
       {
@@ -268,6 +306,19 @@ export default [
       }
     ],
     "name": "restrictTransfersBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_flagsStorage",
+        "type": "address"
+      }
+    ],
+    "name": "setFlagsStorage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

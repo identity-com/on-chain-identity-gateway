@@ -2,7 +2,8 @@ import { BigNumber } from "ethers";
 
 export declare type TokenState = {
     owner: string,
-    isFreezed: boolean, 
+    state: number | string,
     identity: string, 
-    expiration: number | BigNumber
+    expiration: number | BigNumber | string,
+    bitmask: number | BigNumber | string,
 }

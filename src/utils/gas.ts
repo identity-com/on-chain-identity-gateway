@@ -1,4 +1,4 @@
-import { Wallet } from 'ethers';
+import { BigNumber, utils, Wallet } from 'ethers';
 import { GasPriceOracle } from 'gas-price-oracle';
 import { DEFAULT_CHAIN_ID } from './constants';
 import { getProvider } from './providers';
@@ -67,17 +67,19 @@ export const currentGasPrices = async (oracle?: GasPriceOracle, fallbackGasPrice
     });
 }
 
-export const estimateGasPrice = async (priceKey: GasPriceKey = "fast", oracle?: GasPriceOracle, fallbackGasPrices?: GasPrices): Promise<number> => {
+export const estimateGasPrice = async (priceKey: GasPriceKey = "fast", oracle?: GasPriceOracle, fallbackGasPrices?: GasPrices): Promise<number | BigNumber> => {
     var prices = await currentGasPrices(oracle, fallbackGasPrices);
 
     if (prices == null) {
         return DEFAULT_GAS_PRICES[DEFAULT_CHAIN_ID][priceKey];
     }
+    let gweiPrice = prices[priceKey].toString();
+    let weiPrice = utils.parseUnits(gweiPrice, 'gwei');
 
-    return prices[priceKey];
+    return weiPrice;
 }
 
-export const estimateGasLimit = async (toAddress: string, value? :number, data? :any, signer?: Wallet) => {
+export const estimateGasLimit = async (toAddress: string, value? :number, data? :any, signer?: Wallet): Promise<number | BigNumber> => {
     if (!signer) {
         signer = mnemonicSigner();
         let provider = getProvider();
@@ -92,5 +94,5 @@ export const estimateGasLimit = async (toAddress: string, value? :number, data? 
     };
 
     const gasLimit = await signer.estimateGas(tx);
-    return gasLimit.toNumber();
+    return gasLimit;
 }

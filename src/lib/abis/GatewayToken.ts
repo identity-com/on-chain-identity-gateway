@@ -25,6 +25,11 @@ export default [
         "internalType": "address",
         "name": "_daoManager",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_flagsStorage",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -85,6 +90,25 @@ export default [
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "bitmask",
+        "type": "uint256"
+      }
+    ],
+    "name": "BitMaskUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "previousDAOManager",
         "type": "address"
@@ -123,12 +147,38 @@ export default [
     "inputs": [
       {
         "indexed": true,
+        "internalType": "address",
+        "name": "flagsStorage",
+        "type": "address"
+      }
+    ],
+    "name": "FlagsStorageUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
       }
     ],
     "name": "Freeze",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "Revoke",
     "type": "event"
   },
   {
@@ -325,6 +375,42 @@ export default [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_index",
+        "type": "uint8"
+      }
+    ],
+    "name": "addBit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_mask",
+        "type": "uint256"
+      }
+    ],
+    "name": "addBitmask",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "gatekeeper",
         "type": "address"
@@ -359,6 +445,30 @@ export default [
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_highRiskBitMask",
+        "type": "uint256"
+      }
+    ],
+    "name": "anyHighRiskBits",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -407,6 +517,19 @@ export default [
       }
     ],
     "name": "burn",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "clearBitmask",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -464,6 +587,19 @@ export default [
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "flagsStorage",
+    "outputs": [
+      {
+        "internalType": "contract IFlagsStorage",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -555,9 +691,9 @@ export default [
         "type": "address"
       },
       {
-        "internalType": "bool",
-        "name": "isFreezed",
-        "type": "bool"
+        "internalType": "uint8",
+        "name": "state",
+        "type": "uint8"
       },
       {
         "internalType": "string",
@@ -567,6 +703,30 @@ export default [
       {
         "internalType": "uint256",
         "name": "expiration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bitmask",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTokenBitmask",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -587,6 +747,25 @@ export default [
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTokenState",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "state",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -779,6 +958,42 @@ export default [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_index",
+        "type": "uint8"
+      }
+    ],
+    "name": "removeBit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_removingMask",
+        "type": "uint8"
+      }
+    ],
+    "name": "removeBitmask",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "gatekeeper",
         "type": "address"
@@ -805,6 +1020,19 @@ export default [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "removeUnsupportedBits",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "role",
         "type": "bytes32"
@@ -816,6 +1044,19 @@ export default [
       }
     ],
     "name": "renounceRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "revoke",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -903,6 +1144,24 @@ export default [
       }
     ],
     "name": "setApprovalForAll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_mask",
+        "type": "uint256"
+      }
+    ],
+    "name": "setBitmask",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1083,6 +1342,19 @@ export default [
       }
     ],
     "name": "unfreeze",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_flagsStorage",
+        "type": "address"
+      }
+    ],
+    "name": "updateFlagsStorage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

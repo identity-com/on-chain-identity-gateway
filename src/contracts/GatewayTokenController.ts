@@ -18,6 +18,10 @@ export class GatewayTokenController {
         return await this.contract.transferAdmin(newAdmin, txParams)
     }
 
+    setFlagsStorage = async (flagsStorage: string, txParams?: TxBase) => {
+        return await this.contract.setFlagsStorage(flagsStorage, txParams);
+    }
+
     acceptTransfersBatch = async (tokens: string[], txParams?: TxBase) => {
         return await this.contract.acceptTransfersBatch(tokens, txParams)
     }
