@@ -1,0 +1,51 @@
+name: Ethereum Smart Contract
+on:
+  push:
+    paths:
+      - 'ethereum/smart-contract/**'
+      - '.github/**'
+  pull_request:
+jobs:
+  ethereum-gateway-smart-contract-test:
+    name: Build and test the ethereum smart-contract code on ${{ matrix.node }} and ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ['16.x']
+        os: [ubuntu-latest]
+        
+    defaults:
+      run:
+        working-directory: ./ethereum/smart-contract
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./node_modules
+          key: yarn-ethereum-sc-${{ hashFiles('ethereum/smart-contract/yarn.lock') }}
+
+      - name: NPM login
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+
+      - name: Install
+        run: yarn
+
+#      - name: Lint
+#        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+      - name: Test
+        run: yarn test
