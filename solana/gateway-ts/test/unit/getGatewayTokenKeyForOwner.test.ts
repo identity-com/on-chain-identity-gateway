@@ -1,12 +1,12 @@
 import chai from "chai";
 import chaiSubset from "chai-subset";
+import chaiAsPromised from "chai-as-promised";
 import {
   Connection,
   PublicKey,
   Keypair,
   LAMPORTS_PER_SOL,
   Transaction,
-  clusterApiUrl,
 } from "@solana/web3.js";
 import {
   GatewayTokenData,
@@ -19,9 +19,10 @@ import {
   getGatewayTokenKeyForOwner,
   issueVanilla,
 } from "../../src";
-import { VALIDATOR_URL } from "../constatnts";
+import { VALIDATOR_URL } from "../constants";
 
 chai.use(chaiSubset);
+chai.use(chaiAsPromised);
 const { expect } = chai;
 const getAccountWithState = (
   state: GatewayTokenState,
@@ -109,17 +110,12 @@ describe("getGatewayTokenKeyForOwner", function () {
   });
 
   it("get token address with wrong size seed should fail", async () => {
-    try {
-      await getGatewayTokenKeyForOwner(
-        owner,
-        gatekeeperNetwork.publicKey,
-        new Uint8Array([100, 212])
-      );
-      expect.fail("Succeeded when should fail");
-    } catch (e) {
-      expect(e.message).to.deep.equal(
-        "Additional Seed has length 2 instead of 8 when calling getGatewayTokenKeyForOwner."
-      );
-    }
+    const shouldFail = getGatewayTokenKeyForOwner(
+      owner,
+      gatekeeperNetwork.publicKey,
+      new Uint8Array([100, 212])
+    );
+
+    return expect(shouldFail).to.be.rejected;
   });
 });

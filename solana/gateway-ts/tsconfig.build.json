@@ -12,6 +12,7 @@
     "emitDecoratorMetadata": true,
     "noImplicitAny": true,
     "typeRoots": ["types/", "node_modules/@types"],
+    "types": ["node", "mocha"],
     "outDir": "dist",
     "rootDir": "src",
     "esModuleInterop": true,
