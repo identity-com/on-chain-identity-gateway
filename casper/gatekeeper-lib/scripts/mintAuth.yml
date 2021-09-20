@@ -1,0 +1,8 @@
+---
+json_rpc_url: "http://ec2-34-238-243-215.compute-1.amazonaws.com:8899"
+websocket_url: ""
+# Include the private key for the mint authority in this file to use the mint script
+keypair_path: ../keys/mintid.json
+address_labels:
+  "11111111111111111111111111111111": System Program
+commitment: ""

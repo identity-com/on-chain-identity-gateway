@@ -1,0 +1,27 @@
+[package]
+name = "solana-gateway"
+version = "0.0.1"
+description = "Solana on-chain identity gateway"
+repository = "https://github.com/identity-com/on-chain-identity-gateway"
+edition = "2018"
+
+[features]
+program = []
+client = []
+test = []
+default = ["program"]
+no-entrypoint = []
+
+[dependencies]
+borsh = "0.9.1"
+solana-program = "1.6.8"
+sol-did = { version = "0.2.0", features = [ "no-entrypoint" ]}
+num-derive = "0.3"
+num-traits = "0.2.12"
+thiserror = "1.0.20"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dev-dependencies]
+solana-sdk = "1.6.8"
