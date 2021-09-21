@@ -9,8 +9,8 @@ const MAINNET_ADDRESSES: ContractAddresses = {
 };
 
 const ROPSTEN_ADDRESSES: ContractAddresses = {
-    gatewayTokenController: '0xE1f4BF0E576f79edf5376A2cC82396E92157AbDC',
-    flagsStorage: '0xB0D4b6A17E71F19f198859Ff6f04a9883bad2E01',
+    gatewayTokenController: '0x560691424bCEF5ceF4D5076C8ACA7B38B7b1f9A0',
+    flagsStorage: '0xC4ED3F939754f43555932AD2A2Ec1301d0848C07',
 };
 
 const LOCALHOST_ADDRESSES: ContractAddresses = {

@@ -1,17 +1,8 @@
-import { addresses, ContractAddresses } from './lib/addresses';
-import { gatewayTokenAddresses, GatewayTokenItem } from './lib/gatewaytokens';
-import { BigNumber, BytesLike, getDefaultProvider, Signer, utils, Wallet } from 'ethers';
+import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 
-import { SUBTRACT_GAS_LIMIT, NETWORKS, } from './utils'
-import { GatewayTokenItems } from "./utils/addresses";
-import { ethTransaction, TxBase, TxOptions } from "./utils/tx";
-import { estimateGasPrice, GasPriceKey } from "./utils/gas";
-import { FlagsStorage, GatewayToken, GatewayTokenController } from "./contracts";
-import { generateTokenId } from './utils/tokenId';
+import { ethTransaction, TxOptions } from "./utils/tx";
 import { getExpirationTime } from './utils/time';
-import { TokenState } from './utils/types';
-import { checkTokenState } from './utils/token-state';
 import { toBytes32 } from './utils/string';
 import { GatewayTsBase } from './GatewayTsBase';
 
@@ -54,22 +45,19 @@ export class GatewayTs extends GatewayTsBase {
     return ethTransaction(contract, 'removeNetworkAuthority', args, options);
   }
 
-  async issue(owner: string, tokenId: number | BigNumber = null, expiration?: number, bitmask: Uint8Array = Uint8Array.from([0]), gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+  async issue(owner: string, tokenId: number | BigNumber = null, expiration: number | BigNumber = 0, bitmask: BigNumber = BigNumber.from('0'), constrains: BigNumber = BigNumber.from('0'), gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
+    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+
     if (tokenId === null) {
-      tokenId = generateTokenId(owner, bitmask);
+      tokenId = await this.generateTokenId(owner, constrains, gatewayToken);
     }
 
-    if (expiration != null) {
-      let expirationDate = getExpirationTime(expiration);
-      let args: any[] = [owner, tokenId, expirationDate];
-    
-      return ethTransaction(contract, 'mintWithExpiration', args, options);
-    } else {
-      let args: any[] = [owner, tokenId];
-    
-      return ethTransaction(contract, 'mint', args, options);
+    if (expiration > 0) {
+      expiration = getExpirationTime(expiration);
     }
+
+    let args: any[] = [owner, tokenId, expiration, bitmask];
+    return ethTransaction(gatewayToken.contract, 'mint', args, options);
   }
 
   async revoke(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {

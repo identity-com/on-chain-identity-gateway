@@ -106,12 +106,8 @@ export class GatewayToken {
         return await this.contract.revoke(tokenID, txParams)
     }
 
-    mint = async (to: string, tokenID: number | BigNumber | BigNumber, expiration?: number, txParams?: TxBase) => {
-        if (expiration != null && expiration > 0) {
-            return await this.contract.mintWithExpiration(to, tokenID, expiration, txParams)
-        } else {
-            return await this.contract.mint(to, tokenID, txParams)            
-        }
+    mint = async (to: string, tokenID: number | BigNumber | BigNumber, expiration: number | BigNumber = 0, bitmask: number | BigNumber = 0, txParams?: TxBase) => {
+        return await this.contract.mint(to, tokenID, expiration, bitmask, txParams)
     }
 
     freeze = async (tokenID: number | BigNumber, txParams?: TxBase) => {
@@ -126,7 +122,7 @@ export class GatewayToken {
         return await this.contract.expiration(tokenID)
     }
 
-    setExpiration = async (tokenID: number | BigNumber, time: number, txParams?: TxBase) => {
+    setExpiration = async (tokenID: number | BigNumber, time: number | BigNumber, txParams?: TxBase) => {
         return await this.contract.setExpiration(tokenID, time, txParams)
     }
 

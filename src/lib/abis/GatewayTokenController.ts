@@ -221,6 +221,11 @@ export default [
         "internalType": "address",
         "name": "_daoExecutor",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "trustedForwarder",
+        "type": "address"
       }
     ],
     "name": "createGatekeeperNetwork",
@@ -306,19 +311,6 @@ export default [
       }
     ],
     "name": "restrictTransfersBatch",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_flagsStorage",
-        "type": "address"
-      }
-    ],
-    "name": "setFlagsStorage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

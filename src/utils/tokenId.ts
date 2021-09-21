@@ -1,8 +1,8 @@
 import { utils, BigNumber, BytesLike } from 'ethers';
 
-export const generateTokenId = (address: string, constrains: BytesLike):BigNumber => {
+export const generateId = (address: string, constrains: BigNumber):BigNumber => {
     if (utils.isAddress(address)) {
-        let hexConstrains = utils.hexlify(constrains);
+        let hexConstrains = constrains.toHexString();
         let combinedHex = utils.hexConcat([hexConstrains, address]);
         let bytes32 = utils.hexZeroPad(combinedHex, 32);
 

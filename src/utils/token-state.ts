@@ -1,11 +1,11 @@
-import { TokenState } from "./types"
+import { TokenData } from "./types"
 
 export const checkTokenState = (state: number | string):string => {
     switch(state) {
         case 0:
             return "ACTIVE"
         case 1:
-            return "FREEZED"
+            return "FROZEN"
         case 2:
             return "REVOKED"
         default:
@@ -13,8 +13,8 @@ export const checkTokenState = (state: number | string):string => {
     }
 }
 
-export const parseTokenState = (tokenData: TokenState):TokenState => {
-    let parsedData: TokenState = {
+export const parseTokenState = (tokenData: TokenData):TokenData => {
+    let parsedData: TokenData = {
         owner: tokenData.owner,
         state: checkTokenState(tokenData.state),
         identity: tokenData.identity,

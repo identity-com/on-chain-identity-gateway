@@ -1,3 +1,5 @@
+import { BigNumber } from "@ethersproject/bignumber";
+
 export const NETWORKS: {[key: number]: string} = {
     1: 'mainnet',
     3: 'ropsten',
@@ -13,3 +15,4 @@ export const DEFAULT_GATEWAY_TOKEN_CONTROLLER:string = "0xE1f4BF0E576f79edf5376A
 export const DEFAULT_FLAGS_STORAGE:string = "0xB0D4b6A17E71F19f198859Ff6f04a9883bad2E01";
 
 export const DEFAULT_EXPIRATION = 86400 * 14;
+export const DEFAULT_EXPIRATION_BN = BigNumber.from(86400).mul(BigNumber.from(14));

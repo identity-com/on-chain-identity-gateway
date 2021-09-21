@@ -65,7 +65,7 @@ export default class RefreshToken extends Command {
 		const expiry: number = args.expiry;
 
 		let expirationDate = getExpirationTime(expiry);
-		var days = Math.floor((expirationDate - now) / 86400);
+		var days = Math.floor((expirationDate.sub(now).div(86400).toNumber()));
 
 		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 

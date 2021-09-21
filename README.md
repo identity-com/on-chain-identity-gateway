@@ -36,7 +36,7 @@ USAGE
 * [`gateway-eth-ts get-token TOKENID`](#gateway-eth-ts-get-token-tokenid)
 * [`gateway-eth-ts get-token-id ADDRESS`](#gateway-eth-ts-get-token-id-address)
 * [`gateway-eth-ts help [COMMAND]`](#gateway-eth-ts-help-command)
-* [`gateway-eth-ts issue ADDRESS [EXPIRATION]`](#gateway-eth-ts-issue-address-expiration)
+* [`gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]`](#gateway-eth-ts-issue-address-expiration-constrains)
 * [`gateway-eth-ts refresh TOKENID [EXPIRY]`](#gateway-eth-ts-refresh-tokenid-expiry)
 * [`gateway-eth-ts remove-gatekeeper ADDRESS`](#gateway-eth-ts-remove-gatekeeper-address)
 * [`gateway-eth-ts remove-network-authority ADDRESS`](#gateway-eth-ts-remove-network-authority-address)
@@ -277,17 +277,18 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
 
-## `gateway-eth-ts issue ADDRESS [EXPIRATION]`
+## `gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]`
 
 Issue new identity token with TokenID for Ethereum address
 
 ```
 USAGE
-  $ gateway-eth-ts issue ADDRESS [EXPIRATION]
+  $ gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]
 
 ARGUMENTS
   ADDRESS     Owner ethereum address to tokenID for
   EXPIRATION  Expiration timestamp for newly issued token
+  CONSTRAINS  [default: [object Object]] Constrains to generate tokenId
 
 OPTIONS
   -b, --bitmask=bitmask                          [default: [object Object]] Bitmask constrains to link with newly

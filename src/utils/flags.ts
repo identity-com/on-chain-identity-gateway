@@ -64,12 +64,12 @@ export const generateTokenIdFlag = flags.boolean<boolean>({
   exclusive: ['tokenIdFlag'],
 })
 
-export const bitmaskFlag = flags.build<Uint8Array>({
+export const bitmaskFlag = flags.build<BigNumber>({
   char: "b",
   name: "Bitmask",
   required: false,
-  parse: (input: string) => utils.arrayify(Number(input)),
-  default: Uint8Array.from([0]),
+  parse: (input: string) => BigNumber.from(input),
+  default: BigNumber.from('0'),
   description:"Bitmask constrains to link with newly minting tokenID",
   // dependsOn: ['generateTokenIdFlag'],
   exclusive: ['tokenIdFlag'],

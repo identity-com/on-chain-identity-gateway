@@ -30,6 +30,11 @@ export default [
         "internalType": "address",
         "name": "_flagsStorage",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "trustedForwarder",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -854,6 +859,25 @@ export default [
     "inputs": [
       {
         "internalType": "address",
+        "name": "gatekeeper",
+        "type": "address"
+      }
+    ],
+    "name": "isGatekeeper",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "authority",
         "type": "address"
       }
@@ -886,18 +910,19 @@ export default [
     "inputs": [
       {
         "internalType": "address",
-        "name": "to",
+        "name": "forwarder",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
       }
     ],
-    "name": "mint",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "isTrustedForwarder",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -914,11 +939,16 @@ export default [
       },
       {
         "internalType": "uint256",
-        "name": "timestamp",
+        "name": "expiration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "mask",
         "type": "uint256"
       }
     ],
-    "name": "mintWithExpiration",
+    "name": "mint",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

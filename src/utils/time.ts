@@ -1,12 +1,13 @@
-import { DEFAULT_EXPIRATION } from "./constants";
+import { BigNumber } from "@ethersproject/bignumber";
+import { DEFAULT_EXPIRATION, DEFAULT_EXPIRATION_BN } from "./constants";
 
-export const getExpirationTime = (expiration?: number): number | undefined => {
+export const getExpirationTime = (expiration?: number | BigNumber): BigNumber => {
     const now = Math.floor(Date.now() / 1000);
+    const bnTime = BigNumber.from(now);
 
     if (expiration != null) {
-        return now + expiration;    
+        return bnTime.add(expiration);    
     } else {
-        if (!DEFAULT_EXPIRATION) return undefined;
-        return now + DEFAULT_EXPIRATION;    
+        return bnTime.add(DEFAULT_EXPIRATION_BN);
     } 
   }

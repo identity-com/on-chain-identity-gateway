@@ -14,7 +14,7 @@ import {
 } from "../utils/flags";
 import { TxBase } from "../utils/tx";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
-import { generateTokenId } from "../utils/tokenId";
+import { generateId } from "../utils/tokenId";
 import { getExpirationTime } from "../utils/time";
 
 export default class IssueToken extends Command {
@@ -48,8 +48,16 @@ export default class IssueToken extends Command {
 			name: "expiration",
 			required: false,
 			description: "Expiration timestamp for newly issued token",
-			parse: (input: any) => Number(input),
+			parse: (input: any) => BigNumber.from(input),
+			default: 0,
 		},
+		{
+			name: "constrains",
+			required: false,
+			description: "Constrains to generate tokenId",
+			parse: (input: any) => BigNumber.from(input),
+			default: BigNumber.from("0"),
+		}
 	];
 
 	async run() {
@@ -68,26 +76,27 @@ export default class IssueToken extends Command {
 		}
 
 		let tokenID: BigNumber = flags.tokenID;
-		const generateId: boolean = flags.generateTokenId;
-		const bitmask: Uint8Array = flags.bitmask;
+		const generateTokenId: boolean = flags.generateTokenId;
+		const bitmask: BigNumber = flags.bitmask;
 		const ownerAddress: string = args.address;
-		const expiration: number = args.expiration;
+		let expiration: BigNumber = args.expiration;
+		let constrains: BigNumber = args.constrains;
 		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		if (generateId && tokenID == null) {
-			tokenID = generateTokenId(ownerAddress, bitmask);
+		if (generateTokenId && tokenID == null) {
+			tokenID = generateId(ownerAddress, constrains);
 		}
 
 		let gasPrice = await flags.gasPriceFee;
 		let gasLimit: BigNumber 
-		if (expiration != null) {
-			let expirationDate = getExpirationTime(expiration);
-			gasLimit = await gatewayToken.contract.estimateGas.mintWithExpiration(ownerAddress, tokenID, expirationDate);
-		} else {
-			gasLimit = await gatewayToken.contract.estimateGas.mint(ownerAddress, tokenID);
+
+		if (expiration.gt(0)) {
+			expiration = getExpirationTime(expiration);
 		}
+
+		gasLimit = await gatewayToken.contract.estimateGas.mint(ownerAddress, tokenID, expiration, bitmask);
 
 		let txParams: TxBase = {
 			gasLimit: gasLimit,
@@ -101,9 +110,9 @@ export default class IssueToken extends Command {
 		);
 
 		if (confirmations > 0) {
-			tx = await(await gatewayToken.mint(ownerAddress, tokenID, expiration, txParams)).wait(confirmations);
+			tx = await(await gatewayToken.mint(ownerAddress, tokenID, expiration, bitmask, txParams)).wait(confirmations);
 		} else {
-			tx = await gatewayToken.mint(ownerAddress, tokenID, expiration, txParams);
+			tx = await gatewayToken.mint(ownerAddress, tokenID, expiration, bitmask, txParams);
 		}
 
 		this.log(

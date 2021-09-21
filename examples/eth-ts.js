@@ -1,5 +1,7 @@
 const { GatewayETH } = require('../dist/index.js');
 const { ethTransaction, signTranaction } = require("../dist/utils/tx.js");
+const { getExpirationTime } = require("../dist/utils/time.js");
+
 const { getDefaultProvider, Wallet, BigNumber, utils } = require('ethers');
 require("dotenv/config");
 
@@ -15,12 +17,14 @@ require("dotenv/config");
     await gtLib.init()
     const testUser = '0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28';
 
-    let contract = await gtLib.gatewayTokens["0xfD745e67635A8c394C5644E676D2B507d60380DF"].tokenInstance.contract;
+    let gatewayToken = await gtLib.gatewayTokens["0xa3894BbA27f4Be571fFA319D02c122E021024cF2"].tokenInstance
+    let contract = gatewayToken.contract;
 
-    let constrains = 1;
-    let constrainsBytes = utils.arrayify(constrains)
-    let tokenId = gtLib.generateTokenId(testUser, constrainsBytes);
-    let parameters = [testUser, tokenId];
+    let tokenId = await gtLib.generateTokenId(testUser, BigNumber.from(2), gatewayToken);
+
+    let expiration = getExpirationTime();
+    let bitmask = BigNumber.from('2');
+    let parameters = [testUser, tokenId, expiration, bitmask];
     
     let tx = await ethTransaction(contract, 'mint', parameters);
     console.log(tx);

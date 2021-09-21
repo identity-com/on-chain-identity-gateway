@@ -1,6 +1,6 @@
 import { BigNumber } from "ethers";
 
-export declare type TokenState = {
+export declare type TokenData = {
     owner: string,
     state: number | string,
     identity: string, 

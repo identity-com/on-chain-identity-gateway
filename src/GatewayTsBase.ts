@@ -7,8 +7,8 @@ import { SUBTRACT_GAS_LIMIT, NETWORKS, } from './utils'
 import { GatewayTokenItems } from "./utils/addresses";
 import { FlagsStorage, GatewayToken, GatewayTokenController } from "./contracts";
 import { checkTokenState, parseTokenState } from './utils/token-state';
-import { TokenState } from './utils/types';
-import { generateTokenId } from './utils/tokenId';
+import { TokenData } from './utils/types';
+import { generateId } from './utils/tokenId';
 import { toBytes32 } from './utils/string';
 
 export class GatewayTsBase {
@@ -115,8 +115,27 @@ export class GatewayTsBase {
         return result[0];
       }
     
-    async generateTokenId(address: string, constrains: BytesLike): Promise<BigNumber> {
-        return generateTokenId(address, constrains);
+    async getTokenBalance(owner: string, gatewayTokenAddress?: string):Promise<number | BigNumber> {
+        const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+        let balance: number | BigNumber;
+    
+        balance = await gatewayToken.getBalance(owner);
+    
+        return balance;
+    }
+
+    async generateTokenId(address: string, constrains: BigNumber = BigNumber.from('0'), gatewayToken?: GatewayToken): Promise<BigNumber> {
+      if (constrains.eq(BigNumber.from('0'))) {
+        let balance: number | BigNumber = await gatewayToken.getBalance(address);
+
+        if (typeof(balance) === "number") {
+            constrains = BigNumber.from(balance.toString()).add(BigNumber.from('1'));
+        } else {
+            constrains = balance.add(BigNumber.from('1'));
+        }
+      }
+
+      return generateId(address, constrains);
     }
     
     async getDefaultTokenId(owner: string, gatewayTokenAddress?: string):Promise<number | BigNumber> {
@@ -135,9 +154,9 @@ export class GatewayTsBase {
         return checkTokenState(state);
     }
     
-    async getTokenData(tokenId?: number, parsed?: boolean, gatewayTokenAddress?: string):Promise<TokenState> {
+    async getTokenData(tokenId?: number, parsed?: boolean, gatewayTokenAddress?: string):Promise<TokenData> {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
-        let tokenData: TokenState = await gatewayToken.getToken(tokenId);
+        let tokenData: TokenData = await gatewayToken.getToken(tokenId);
 
         if (parsed) {
             return parseTokenState(tokenData);

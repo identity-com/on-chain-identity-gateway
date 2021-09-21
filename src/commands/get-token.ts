@@ -8,7 +8,7 @@ import {
 	networkFlag,
 } from "../utils/flags";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
-import { TokenState } from "../utils/types";
+import { TokenData } from "../utils/types";
 import { checkTokenState } from "../utils/token-state";
 
 export default class GetToken extends Command {
@@ -53,7 +53,7 @@ export default class GetToken extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-        let token:TokenState = await gatewayToken.getToken(tokenID);
+        let token:TokenData = await gatewayToken.getToken(tokenID);
 
 		this.log(
 			`Gateway token information:
