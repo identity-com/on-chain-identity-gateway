@@ -8,14 +8,6 @@ interface IERC721Expirable {
     event Expiration(uint256 indexed tokenId, uint256 timestamp);
 
     /**
-    * @dev Triggers to mint gateway token with specified expiration `timestamp`
-    * @param to Gateway token owner
-    * @param tokenId Gateway token id
-    * @param timestamp Expiration timestamp
-    */
-    function mintWithExpiration(address to, uint256 tokenId, uint256 timestamp) external;
-
-    /**
     * @dev Triggers to freeze gateway token
     * @param tokenId Gateway token id
     */

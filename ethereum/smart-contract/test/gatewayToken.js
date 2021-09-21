@@ -120,7 +120,7 @@ contract('GatewayTokenController', async (accounts) => {
 
         it('Try to mint GatewayToken by Bob, expect revert', async () => {
             await expectRevert(
-                gatewayToken.mint(bob, 1, { from: bob }), "MUST BE GATEKEEPER"
+                gatewayToken.mint(bob, 1, 0, 0, { from: bob }), "MUST BE GATEKEEPER"
             );
         });
 
@@ -136,7 +136,7 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it('Successfully mint Gateway Token for Bob by Alice', async () => {
-            let tx = await gatewayToken.mint(bob, 1, {from: alice});
+            let tx = await gatewayToken.mint(bob, 1, 0, 0, {from: alice});
             await emitted(tx, "Transfer");
 
             let tokenOwner = await gatewayToken.ownerOf(1, {from: alice});
@@ -224,7 +224,7 @@ contract('GatewayTokenController', async (accounts) => {
 
     describe('Test gateway token transfers with restricted and accepted transfers for token owners', async () => {
         it('Successfully mint Gateway Token for Alice by admin with tokenID = 1', async () => {
-            let tx = await gatewayToken.mint(alice, 1, {from: identityCom});
+            let tx = await gatewayToken.mint(alice, 1, 0, 0, {from: identityCom});
             await emitted(tx, "Transfer");
 
             let tokenOwner = await gatewayToken.ownerOf(1, {from: alice});
@@ -238,7 +238,7 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it('Successfully mint Gateway Token for Bob by Alice with tokenID = 2', async () => {
-            let tx = await gatewayToken.mint(bob, 2, {from: alice});
+            let tx = await gatewayToken.mint(bob, 2, 0, 0, {from: alice});
             await emitted(tx, "Transfer");
 
             let tokenID = await gatewayToken.getTokenId(bob, {from: bob});
@@ -292,7 +292,7 @@ contract('GatewayTokenController', async (accounts) => {
             await emitted(tx, "Freeze");
 
             await expectRevert(
-                gatewayToken.setTokenURI(2, "0xSimpleIdenitity", {from: alice}), "TOKEN DOESN'T EXIST OR FREEZED"
+                gatewayToken.setTokenURI(2, "0xSimpleIdenitity", {from: alice}), "TOKEN DOESN'T EXIST OR FROZEN"
             );
         });
 
@@ -379,7 +379,7 @@ contract('GatewayTokenController', async (accounts) => {
         });
 
         it('Mint token for Carol, verify first time and blacklist Carol globally', async () => {
-            let tx = await gatewayToken.mint(carol, 3, {from: alice});
+            let tx = await gatewayToken.mint(carol, 3, 0, 0, {from: alice});
             await emitted(tx, 'Transfer');
 
             let tokenOwner = await gatewayToken.ownerOf(3, {from: carol});
@@ -414,7 +414,7 @@ contract('GatewayTokenController', async (accounts) => {
 
         it('Expect revert on minting additional tokens for Carol, freezing and setting expiration. Finally revoke and burn token', async () => {
             await expectRevert(
-                gatewayToken.mint(carol, 4, {from: alice}), "BLACKLISTED USER"
+                gatewayToken.mint(carol, 4, 0, 0, {from: alice}), "BLACKLISTED USER"
             );
 
             await expectRevert(
@@ -441,16 +441,12 @@ contract('GatewayTokenController', async (accounts) => {
 
     describe('Test gateway token expiry date updates', async () => {
         it('Successfully mint Gateway Token for Alice by admin with tokenID = 10 and set the expiration for 1 day', async () => {
-            let tx = await gatewayToken.mint(alice, 10, {from: identityCom});
+            let tokenExpiration = await getTimestampPlusDays(1);
+            let tx = await gatewayToken.mint(alice, 10, tokenExpiration, 0, {from: identityCom});
             await emitted(tx, "Transfer");
 
             let tokenOwner = await gatewayToken.ownerOf(10, {from: alice});
             await equal(tokenOwner, alice);
-
-            let tokenExpiration = await getTimestampPlusDays(1);
-
-            tx = await gatewayToken.setExpiration(10, tokenExpiration, {from: identityCom});
-            await emitted(tx, "Expiration");
 
             const tokenState = await gatewayToken.getToken(10, {from: alice});
             tokenState.owner.should.be.equal(alice);

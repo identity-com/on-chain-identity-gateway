@@ -31,7 +31,7 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     using Strings for uint256;
 
     enum TokenState {
-        ACTIVE, FREEZED, REVOKED
+        ACTIVE, FROZEN, REVOKED
     }
 
     // Gateway Token name
@@ -200,7 +200,7 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     * @param tokenId Gateway token id
     */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FREEZED");
+        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FROZEN");
         string memory _tokenURI = _tokenURIs[tokenId];
 
         return _tokenURI;
@@ -215,7 +215,7 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     */
     function setTokenURI(uint256 tokenId, string memory tokenURI) public virtual {
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        require(_existsAndActive(tokenId), "TOKEN DOESN'T EXIST OR FREEZED");
+        require(_existsAndActive(tokenId), "TOKEN DOESN'T EXIST OR FROZEN");
         address tokenOwner = ownerOf(tokenId);
         require(!_isBlacklisted(tokenOwner), "BLACKLISTED USER");
 
@@ -447,10 +447,10 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     * @param to Gateway token owner
     * @param tokenId Gateway token id
     */
-    function mint(address to, uint256 tokenId) public virtual onlyNonBlacklistedUser(to) {
+    function mint(address to, uint256 tokenId, uint256 expiration, uint256 mask) public virtual onlyNonBlacklistedUser(to) {
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
 
-        _mint(to, tokenId);
+        _mint(to, tokenId, expiration, mask);
     }
 
     function revoke(uint256 tokenId) public virtual override {
@@ -459,19 +459,6 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
         _tokenStates[tokenId] = TokenState.REVOKED;
 
         emit Revoke(tokenId);
-    }
-
-    /**
-    * @dev Triggers to mint gateway token with specified expiration `timestamp`
-    * @param to Gateway token owner
-    * @param tokenId Gateway token id
-    * @param timestamp Expiration timestamp
-    */
-    function mintWithExpiration(address to, uint256 tokenId, uint256 timestamp) public virtual override onlyNonBlacklistedUser(to) {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-
-        _mint(to, tokenId);
-        _expirations[tokenId] = timestamp;
     }
 
     /**
@@ -504,7 +491,7 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     * @param tokenId Gateway token id
     */
     function expiration(uint256 tokenId) public view virtual override returns (uint256) {
-        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FREEZED");
+        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FROZEN");
         uint256 _expiration = _expirations[tokenId];
 
         return _expiration;
@@ -537,7 +524,7 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     * @param tokenId Gateway token id
     */
     function setDefaultTokenId(address owner, uint256 tokenId) public virtual override {
-        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FREEZED");
+        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FROZEN");
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
 
         address actualOwner = ownerOf(tokenId);
@@ -558,7 +545,7 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
      *
      * Emits a {Transfer} event.
      */
-    function _mint(address to, uint256 tokenId) internal virtual {
+    function _mint(address to, uint256 tokenId, uint256 expiration, uint256 mask) internal virtual {
         require(to != address(0), "ZERO ADDRESS");
         require(!_exists(tokenId), "TOKEN ALREADY EXISTS");
 
@@ -566,6 +553,14 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
         _owners[tokenId] = to;
         if (_defaultTokens[to] == 0) {
             _defaultTokens[to] = tokenId;
+        }
+
+        if (expiration > 0) {
+            _expirations[tokenId] = expiration;
+        }
+
+        if (mask > 0) {
+            _setBitMask(tokenId, mask);
         }
 
         emit Transfer(address(0), to, tokenId);
@@ -611,7 +606,7 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     function _freeze(uint256 tokenId) internal virtual {
         require(_existsAndActive(tokenId), "TOKEN DOESN'T EXISTS OR NOT ACTIVE");
 
-        _tokenStates[tokenId] = TokenState.FREEZED;
+        _tokenStates[tokenId] = TokenState.FROZEN;
 
         emit Freeze(tokenId);
     }
@@ -623,7 +618,7 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     */
     function _unfreeze(uint256 tokenId) internal virtual {
         require(_exists(tokenId), "TOKEN DOESN'T EXISTS");
-        require(_tokenStates[tokenId] == TokenState.FREEZED, "TOKEN NOT FREEZED");
+        require(_tokenStates[tokenId] == TokenState.FROZEN, "TOKEN NOT FROZEN");
 
         _tokenStates[tokenId] = TokenState.ACTIVE;
 
