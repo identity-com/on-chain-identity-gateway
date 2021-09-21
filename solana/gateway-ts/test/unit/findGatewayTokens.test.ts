@@ -1,7 +1,7 @@
 import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinon from "sinon";
-import { clusterApiUrl, Connection, PublicKey, Keypair } from "@solana/web3.js";
+import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { findGatewayTokens, State } from "../../src";
 import { PROGRAM_ID } from "../../src/lib/constants";
 import {
@@ -11,8 +11,7 @@ import {
   GatewayTokenState,
 } from "../../src/lib/GatewayTokenData";
 import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
-import { VALIDATOR_URL } from "../constatnts";
-import { describe } from "mocha";
+import { VALIDATOR_URL } from "../constants";
 
 chai.use(chaiSubset);
 const { expect } = chai;

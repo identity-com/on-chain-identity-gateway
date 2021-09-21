@@ -8,7 +8,6 @@ import {
   GatewayTokenState,
 } from "../../src/lib/GatewayTokenData";
 import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
-import { describe } from "mocha";
 import { GatewayToken } from "../../src";
 
 chai.use(chaiSubset);
