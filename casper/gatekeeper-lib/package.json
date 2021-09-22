@@ -13,7 +13,7 @@
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
     "@casper/spl-token": "^0.1.4",
-    "@casper/web3.js": "1.0.0",
+    "@casper/web3.js": "git+ssh://git@github.com/mcask/casper-web3.git#1.0.0",
     "borsh": "^0.4.0",
     "tslib": "^1"
   },

@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@identity.com/prove-solana-wallet": "^0.2.2",
-    "@casper/web3.js": "1.0.0",
+    "@casper/web3.js": "git+ssh://git@github.com/mcask/casper-web3.git#1.0.0",
     "axios": "^0.21.1"
   },
   "devDependencies": {

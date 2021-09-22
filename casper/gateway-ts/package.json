@@ -18,7 +18,7 @@
     "doc": "yarn typedoc src/index.ts --readme none"
   },
   "dependencies": {
-    "@casper/web3.js": "1.0.0",
+    "@casper/web3.js": "git+ssh://git@github.com/mcask/casper-web3.git#1.0.0",
     "bn.js": "^5.2.0",
     "borsh": "^0.4.0"
   },
