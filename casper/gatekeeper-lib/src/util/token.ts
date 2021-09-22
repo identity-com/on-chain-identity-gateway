@@ -1,10 +1,10 @@
 import { Buffer } from "buffer";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey } from "@casper/web3.js";
 import {
   AccountInfo,
   AccountLayout,
   TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+} from "@casper/spl-token";
 import { GatewayToken } from "@identity.com/solana-gateway-ts";
 import { State } from "@identity.com/solana-gateway-ts/src/types/index";
 

@@ -1,6 +1,6 @@
 import { findGatewayTokens } from "@identity.com/solana-gateway-ts";
 import { Command, flags } from "@oclif/command";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@casper/web3.js";
 import { getConnection } from "../util";
 import {
   clusterFlag,

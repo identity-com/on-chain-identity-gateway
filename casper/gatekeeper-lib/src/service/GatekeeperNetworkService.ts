@@ -1,4 +1,4 @@
-import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { Keypair, Connection, PublicKey, Transaction } from "@casper/web3.js";
 import {
   addGatekeeper,
   getGatekeeperAccountKey,

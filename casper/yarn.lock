@@ -270,7 +270,7 @@
   resolved "https://registry.yarnpkg.com/@identity.com/prove-solana-wallet/-/prove-solana-wallet-0.2.2.tgz#922c874f5a59be54a6a564a9dd0feb51290f29e2"
   integrity sha512-+4BYv0cHdiPSL0jhY6ImAuvbFZZ6LQnE3Q8GPnSWXvfsWi3E7brxrUPQ9702CPqdIi0F4fn3VWvq/8pwIGrnaw==
   dependencies:
-    "@solana/web3.js" "^1.22.0"
+    "@casper/web3.js" "1.0.0"
     bs58 "^4.0.1"
 
 "@istanbuljs/load-nyc-config@^1.0.0":
@@ -530,32 +530,32 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@solana/buffer-layout@^3.0.0":
+"@casper/buffer-layout@^3.0.0":
   version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@solana/buffer-layout/-/buffer-layout-3.0.0.tgz#b9353caeb9a1589cb77a1b145bcb1a9a93114326"
+  resolved "https://registry.yarnpkg.com/@casper/buffer-layout/-/buffer-layout-3.0.0.tgz#b9353caeb9a1589cb77a1b145bcb1a9a93114326"
   integrity sha512-MVdgAKKL39tEs0l8je0hKaXLQFb7Rdfb0Xg2LjFZd8Lfdazkg6xiS98uAZrEKvaoF3i4M95ei9RydkGIDMeo3w==
   dependencies:
     buffer "~6.0.3"
 
-"@solana/spl-token@^0.1.4":
+"@casper/spl-token@^0.1.4":
   version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@solana/spl-token/-/spl-token-0.1.6.tgz#fa136b0a3db84f07a99bc0e54cf4e91f2d6da2e8"
+  resolved "https://registry.yarnpkg.com/@casper/spl-token/-/spl-token-0.1.6.tgz#fa136b0a3db84f07a99bc0e54cf4e91f2d6da2e8"
   integrity sha512-fYj+a3w1bqWN6Ibf85XF3h2JkuxevI3Spvqi+mjsNqVUEo2AgxxTZmujNLn/jIzQDNdWkBfF/wYzH5ikcGHmfw==
   dependencies:
     "@babel/runtime" "^7.10.5"
-    "@solana/web3.js" "^1.12.0"
+    "@casper/web3.js" "^1.12.0"
     bn.js "^5.1.0"
     buffer "6.0.3"
     buffer-layout "^1.2.0"
     dotenv "10.0.0"
 
-"@solana/web3.js@^1.12.0":
+"@casper/web3.js@^1.12.0":
   version "1.22.0"
-  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.22.0.tgz#ded439eb903aff4269a16a7fdfacc6866c6f0c13"
+  resolved "https://registry.yarnpkg.com/@casper/web3.js/-/web3.js-1.22.0.tgz#ded439eb903aff4269a16a7fdfacc6866c6f0c13"
   integrity sha512-7BQUiR1AIj2L8KJ8LYsI31iPRLytgF8T4hz7xLlvvBfalpUK7qD2om7frlNpXl8ROUpvruNf83QaectJdZJW1w==
   dependencies:
     "@babel/runtime" "^7.12.5"
-    "@solana/buffer-layout" "^3.0.0"
+    "@casper/buffer-layout" "^3.0.0"
     bn.js "^5.0.0"
     borsh "^0.4.0"
     bs58 "^4.0.1"
@@ -569,13 +569,13 @@
     superstruct "^0.14.2"
     tweetnacl "^1.0.0"
 
-"@solana/web3.js@^1.22.0":
+"@casper/web3.js@1.0.0":
   version "1.23.0"
-  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.23.0.tgz#74f81d074c1b13aeb286990edde6f2e4c7301731"
+  resolved "https://registry.yarnpkg.com/@casper/web3.js/-/web3.js-1.23.0.tgz#74f81d074c1b13aeb286990edde6f2e4c7301731"
   integrity sha512-+bstAFs3qnajHlxW0k4BM/hNZ93tmtSacfVBmdDWkk0kvCpLZUuMop5Qfrf10TPD4yfvdCA9hOT5CXwRnWc87Q==
   dependencies:
     "@babel/runtime" "^7.12.5"
-    "@solana/buffer-layout" "^3.0.0"
+    "@casper/buffer-layout" "^3.0.0"
     bn.js "^5.0.0"
     borsh "^0.4.0"
     bs58 "^4.0.1"

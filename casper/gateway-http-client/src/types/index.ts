@@ -1,4 +1,4 @@
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@casper/web3.js";
 import { SignCallback } from "../lib/gatewayHttpClient";
 
 export enum State {

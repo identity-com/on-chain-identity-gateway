@@ -1,5 +1,5 @@
 import { Assignable, SCHEMA } from "./solanaBorsh";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@casper/web3.js";
 
 /**
  * A Borsh-compatible public key object

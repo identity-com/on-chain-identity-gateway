@@ -1,4 +1,4 @@
-import { Commitment, PublicKey } from "@solana/web3.js";
+import { Commitment, PublicKey } from "@casper/web3.js";
 
 // Should equal the contents of solana/program/program-id.md
 export const PROGRAM_ID: PublicKey = new PublicKey(

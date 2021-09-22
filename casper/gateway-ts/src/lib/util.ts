@@ -3,7 +3,7 @@ import {
   Commitment,
   Connection,
   PublicKey,
-} from "@solana/web3.js";
+} from "@casper/web3.js";
 import {
   GATEKEEPER_NONCE_SEED_STRING,
   GATEWAY_TOKEN_ADDRESS_SEED,

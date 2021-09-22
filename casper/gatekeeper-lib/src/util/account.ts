@@ -1,4 +1,4 @@
-import { Keypair, Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
+import { Keypair, Connection, PublicKey, clusterApiUrl } from "@casper/web3.js";
 import * as fs from "fs";
 
 export const MIN_AIRDROP_BALANCE = 100000000;

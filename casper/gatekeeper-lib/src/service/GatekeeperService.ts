@@ -1,4 +1,4 @@
-import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, Transaction } from "@casper/web3.js";
 import {
   freeze,
   GatewayToken,

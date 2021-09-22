@@ -1,5 +1,5 @@
 import chai from "chai";
-import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction } from "@casper/web3.js";
 import * as sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import sinonChai from "sinon-chai";

@@ -7,7 +7,7 @@ import {
   LAMPORTS_PER_SOL,
   Transaction,
   clusterApiUrl,
-} from "@solana/web3.js";
+} from "@casper/web3.js";
 import {
   GatewayTokenData,
   GatewayTokenState,

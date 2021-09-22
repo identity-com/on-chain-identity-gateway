@@ -1,4 +1,4 @@
-import { Commitment, PublicKey } from "@solana/web3.js";
+import { Commitment, PublicKey } from "@casper/web3.js";
 
 export const REGISTER = "./register.csv";
 

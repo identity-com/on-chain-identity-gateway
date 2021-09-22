@@ -1,5 +1,5 @@
 import { Command, flags } from "@oclif/command";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@casper/web3.js";
 
 import { airdropTo, getConnection } from "../util";
 import { GatekeeperNetworkService } from "../service/GatekeeperNetworkService";

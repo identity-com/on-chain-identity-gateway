@@ -1,6 +1,6 @@
 import { homedir } from "os";
 import * as path from "path";
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey } from "@casper/web3.js";
 import { findGatewayTokens, GatewayToken } from "../src";
 
 const mySecretKey = require(path.join(

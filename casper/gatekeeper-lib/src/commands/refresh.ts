@@ -1,5 +1,5 @@
 import { Command, flags } from "@oclif/command";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@casper/web3.js";
 import {
   clusterFlag,
   gatekeeperKeyFlag,

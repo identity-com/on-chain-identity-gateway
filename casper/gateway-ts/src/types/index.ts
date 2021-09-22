@@ -1,4 +1,4 @@
-import { AccountInfo, PublicKey } from "@solana/web3.js";
+import { AccountInfo, PublicKey } from "@casper/web3.js";
 import { GatewayTokenData } from "../lib/GatewayTokenData";
 import { PROGRAM_ID } from "../lib/constants";
 import { dataToGatewayToken } from "../lib/util";

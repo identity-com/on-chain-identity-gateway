@@ -6,7 +6,7 @@ import {
   sendAndConfirmTransaction,
   Transaction,
   TransactionSignature,
-} from "@solana/web3.js";
+} from "@casper/web3.js";
 import { SOLANA_COMMITMENT } from "./constants";
 
 export type ExtendedCluster = Cluster | "localnet" | "civicnet";

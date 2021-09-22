@@ -244,7 +244,7 @@
   resolved "https://registry.yarnpkg.com/@identity.com/prove-solana-wallet/-/prove-solana-wallet-0.1.4.tgz#e42139855a75367f5750d2fc5a078a7f211fbad6"
   integrity sha512-XQd/j6Qy/+cpdE/D8MwSAx50Dk/A1AfaEOkiSa0vtfz0XWKqI9ml46VlbmrAddIGlxIbWc8eWTXJyLP+Uw42vQ==
   dependencies:
-    "@solana/web3.js" "^1.14.0"
+    "@casper/web3.js" "^1.14.0"
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
@@ -329,9 +329,9 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@solana/web3.js@^1.11.0", "@solana/web3.js@^1.14.0":
+"@casper/web3.js@^1.11.0", "@casper/web3.js@^1.14.0":
   version "1.20.0"
-  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.20.0.tgz#9a1855a239c96c5b946bdbe4cc5e3768ee3b2a77"
+  resolved "https://registry.yarnpkg.com/@casper/web3.js/-/web3.js-1.20.0.tgz#9a1855a239c96c5b946bdbe4cc5e3768ee3b2a77"
   integrity sha512-s/hmbeC7h0QeMKDHl5HTJbY4NSrT3IK1oGerNwdmFfnbs9ygtBbXo1MXaeYVDcNazsthKgiYE+unNd+cpVH8HA==
   dependencies:
     "@babel/runtime" "^7.12.5"

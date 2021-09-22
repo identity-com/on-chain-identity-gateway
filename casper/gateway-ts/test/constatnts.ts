@@ -1,4 +1,4 @@
-import { clusterApiUrl } from "@solana/web3.js";
+import { clusterApiUrl } from "@casper/web3.js";
 
 function get_validator_url(cluster: string | undefined): string {
   if (cluster === undefined) {

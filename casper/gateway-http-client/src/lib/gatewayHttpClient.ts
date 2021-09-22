@@ -1,5 +1,5 @@
 import { prove } from "@identity.com/prove-solana-wallet";
-import { PublicKey, Transaction } from "@solana/web3.js";
+import { PublicKey, Transaction } from "@casper/web3.js";
 import axios, { AxiosResponse, Method } from "axios";
 import {
   GatekeeperClientConfig,

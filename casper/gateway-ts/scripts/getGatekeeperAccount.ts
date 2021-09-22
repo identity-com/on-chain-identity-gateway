@@ -1,4 +1,4 @@
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey } from "@casper/web3.js";
 import { gatekeeperExists } from "../src";
 
 // default to the civic cluster

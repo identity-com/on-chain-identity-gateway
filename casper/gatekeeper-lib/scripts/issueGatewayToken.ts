@@ -1,4 +1,4 @@
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey } from "@casper/web3.js";
 import { SOLANA_COMMITMENT } from "../src/util/constants";
 import { GatekeeperNetworkService } from "../src/service/GatekeeperNetworkService";
 import { GatekeeperService } from "../src/service/GatekeeperService";

@@ -1,6 +1,6 @@
 import chai from "chai";
 import chaiSubset from "chai-subset";
-import { PublicKey, Keypair, AccountInfo } from "@solana/web3.js";
+import { PublicKey, Keypair, AccountInfo } from "@casper/web3.js";
 import { PROGRAM_ID } from "../../src/lib/constants";
 import {
   Active,

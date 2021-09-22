@@ -6,7 +6,7 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-} from "@solana/web3.js";
+} from "@casper/web3.js";
 import { Active, Frozen, GatewayTokenState, Revoked } from "./GatewayTokenData";
 
 /**
