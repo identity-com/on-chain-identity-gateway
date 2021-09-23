@@ -16,3 +16,6 @@ export const DEFAULT_FLAGS_STORAGE:string = "0xB0D4b6A17E71F19f198859Ff6f04a9883
 
 export const DEFAULT_EXPIRATION = 86400 * 14;
 export const DEFAULT_EXPIRATION_BN = BigNumber.from(86400).mul(BigNumber.from(14));
+
+export const ZERO_BN = BigNumber.from('0');
+export const ONE_BN = BigNumber.from('1');
