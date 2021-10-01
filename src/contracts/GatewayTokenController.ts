@@ -1,4 +1,4 @@
-import { Contract, Signer, Wallet } from 'ethers';
+import { Contract, Signer } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 import abis from "../lib/abis";
 import { TxBase } from '../utils/tx';

@@ -41,7 +41,7 @@ export default class UnfreezeToken extends Command {
 	async run() {
 		const { args, flags } = this.parse(UnfreezeToken);
 
-		let pk = flags.privateKey;
+		const pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
 		const confirmations = flags.confirmations;
@@ -61,10 +61,10 @@ export default class UnfreezeToken extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let gasPrice = await flags.gasPriceFee;
-		let gasLimit = await gatewayToken.contract.estimateGas.unfreeze(tokenID);
+		const gasPrice = await flags.gasPriceFee;
+		const gasLimit = await gatewayToken.contract.estimateGas.unfreeze(tokenID);
 
-		let txParams: TxBase = {
+		const txParams: TxBase = {
 			gasLimit: gasLimit,
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};

@@ -1,6 +1,6 @@
 import { addresses, ContractAddresses } from './lib/addresses';
 import { gatewayTokenAddresses, GatewayTokenItem } from './lib/gatewaytokens';
-import { BigNumber, BytesLike, getDefaultProvider, Signer, Wallet } from 'ethers';
+import { BigNumber, getDefaultProvider, Signer, Wallet } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 
 import { SUBTRACT_GAS_LIMIT, NETWORKS, } from './utils'
@@ -47,7 +47,7 @@ export class GatewayTsBase {
       this.provider = provider || getDefaultProvider();
     }
   
-    async init(defaultGatewayToken?: string) {
+    async init(defaultGatewayToken?: string):Promise<void> {
       const network = await this.provider.getNetwork();
   
       this.networkId = network.chainId;
@@ -59,7 +59,7 @@ export class GatewayTsBase {
       gatewayTokenAddresses[this.networkId].forEach((gatewayToken: GatewayTokenItem) => {
         const tokenAddress = gatewayToken.address
 
-        if (defaultGatewayToken != null || undefined && tokenAddress === defaultGatewayToken) {
+        if (defaultGatewayToken !== null && tokenAddress === defaultGatewayToken) {
             this.defaultGatewayToken = defaultGatewayToken
         }
 
@@ -115,18 +115,20 @@ export class GatewayTsBase {
         return result[0];
       }
     
-    async getTokenBalance(owner: string, gatewayTokenAddress?: string):Promise<number | BigNumber> {
+    async getTokenBalance(owner: string, gatewayTokenAddress?: string):Promise<BigNumber> {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
-        let balance: number | BigNumber;
+        const balance: number | BigNumber = await gatewayToken.getBalance(owner);
     
-        balance = await gatewayToken.getBalance(owner);
-    
-        return balance;
+        return BigNumber.from(balance);
     }
 
     async generateTokenId(address: string, constrains: BigNumber = BigNumber.from('0'), gatewayToken?: GatewayToken): Promise<BigNumber> {
       if (constrains.eq(BigNumber.from('0'))) {
-        let balance: number | BigNumber = await gatewayToken.getBalance(address);
+        if (gatewayToken === undefined) {
+          gatewayToken = this.getGatewayTokenContract(this.defaultGatewayToken);
+        }
+
+        const balance: number | BigNumber = await gatewayToken.getBalance(address);
 
         if (typeof(balance) === "number") {
             constrains = BigNumber.from(balance.toString()).add(BigNumber.from('1'));
@@ -140,40 +142,38 @@ export class GatewayTsBase {
     
     async getDefaultTokenId(owner: string, gatewayTokenAddress?: string):Promise<number | BigNumber> {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
-        let tokenId: number | BigNumber;
-    
-        tokenId = await gatewayToken.getTokenId(owner);
+        const tokenId: number | BigNumber = await gatewayToken.getTokenId(owner);
     
         return tokenId;
     }
     
-    async getTokenState(tokenId?: number, gatewayTokenAddress?: string):Promise<string> {
+    async getTokenState(tokenId?: number | BigNumber, gatewayTokenAddress?: string):Promise<string> {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
-        let state: number = await gatewayToken.getTokenState(tokenId);
+        const state: number = await gatewayToken.getTokenState(tokenId);
         
         return checkTokenState(state);
     }
     
-    async getTokenData(tokenId?: number, parsed?: boolean, gatewayTokenAddress?: string):Promise<TokenData> {
+    async getTokenData(tokenId?: number | BigNumber, parsed?: boolean, gatewayTokenAddress?: string):Promise<TokenData> {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
-        let tokenData: TokenData = await gatewayToken.getToken(tokenId);
+        const tokenData: TokenData = await gatewayToken.getToken(tokenId);
 
         if (parsed) {
             return parseTokenState(tokenData);
-        } else {
+        } 
             return tokenData;
-        }
+        
     }
     
-    async getTokenBitmask(tokenId?: number, gatewayTokenAddress?: string):Promise<number | BigNumber> {
+    async getTokenBitmask(tokenId?: number | BigNumber, gatewayTokenAddress?: string):Promise<number | BigNumber> {
         const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
-        return await gatewayToken.getTokenBitmask(tokenId);
+        return gatewayToken.getTokenBitmask(tokenId);
     }
 
     async getFlagIndex(flag: string):Promise<number | BigNumber> {
-        let bytes32 = toBytes32(flag);
+        const bytes32 = toBytes32(flag);
     
-        return await this.flagsStorage.getFlagIndex(bytes32);
+        return this.flagsStorage.getFlagIndex(bytes32);
     }    
         
 }

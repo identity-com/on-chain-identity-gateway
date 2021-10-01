@@ -5,6 +5,7 @@ import { BaseProvider } from '@ethersproject/providers';
 
 export class GatewayETH extends GatewayTs {
   utils: any;
+
   /**
    * Creates an instance for accessing the gateway token system on Ethereum.
    * Usage example:

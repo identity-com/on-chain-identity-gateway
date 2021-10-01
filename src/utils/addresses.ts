@@ -5,24 +5,28 @@ export interface GatewayTokenItems {
     [address: string]: GatewayTokenItem
 }
 
-export const getGatewayControllerByNetworkID = (networkID: number = 1) => {
+export const getGatewayControllerByNetworkID = (networkID = 1) => {
     return addresses[networkID].gatewayTokenController
 }
 
-export const getGatewayTokenByName = (name: string, networkID: number = 1): string => {
-    return gatewayTokenAddresses[networkID].find((gatewayToken: GatewayTokenItem) => {
-        name == gatewayToken.name
-    }).address;
+export const getFlagsStorageByNetworkID = (networkID = 1) => {
+    return addresses[networkID].flagsStorage
 }
 
-export const getGatewayTokenBySymbol = (symbol: string, networkID: number = 1): GatewayTokenItem => {
+export const getGatewayTokenByName = (name: string, networkID = 1): GatewayTokenItem => {
     return gatewayTokenAddresses[networkID].find((gatewayToken: GatewayTokenItem) => {
-        symbol == gatewayToken.symbol
+        return name === gatewayToken.name
     });
 }
 
-export const getGatewayTokenByAddress = (address: string, networkID: number = 1): GatewayTokenItem => {
+export const getGatewayTokenBySymbol = (symbol: string, networkID = 1): GatewayTokenItem => {
     return gatewayTokenAddresses[networkID].find((gatewayToken: GatewayTokenItem) => {
-        address == gatewayToken.address
+        return symbol === gatewayToken.symbol
+    });
+}
+
+export const getGatewayTokenByAddress = (address: string, networkID = 1): GatewayTokenItem => {
+    return gatewayTokenAddresses[networkID].find((gatewayToken: GatewayTokenItem) => {
+        return address === gatewayToken.address
     });
 }

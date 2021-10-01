@@ -41,7 +41,7 @@ export default class AddGatekeeper extends Command {
 	async run() {
 		const { args, flags } = this.parse(AddGatekeeper);
 
-		let pk = flags.privateKey;
+		const pk = flags.privateKey;
 		const gatekeeper: string = args.address;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
@@ -62,10 +62,10 @@ export default class AddGatekeeper extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let gasPrice = await flags.gasPriceFee;
-		let gasLimit = await gatewayToken.contract.estimateGas.addGatekeeper(gatekeeper);
+		const gasPrice = await flags.gasPriceFee;
+		const gasLimit = await gatewayToken.contract.estimateGas.addGatekeeper(gatekeeper);
 
-		let txParams: TxBase = {
+		const txParams: TxBase = {
 			gasLimit: gasLimit,
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};

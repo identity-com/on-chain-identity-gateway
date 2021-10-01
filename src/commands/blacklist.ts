@@ -40,7 +40,7 @@ export default class Blacklist extends Command {
 
 	async run() {
 		const { args, flags } = this.parse(Blacklist);
-		let pk = flags.privateKey;
+		const pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
 		const user: string = args.address;
@@ -57,10 +57,10 @@ export default class Blacklist extends Command {
 
 		this.log(`Blacklisting user: ${user}`);
 
-		let gasPrice = await flags.gasPriceFee;
-		let gasLimit = await controller.contract.estimateGas.blacklist(user);
+		const gasPrice = await flags.gasPriceFee;
+		const gasLimit = await controller.contract.estimateGas.blacklist(user);
 
-		let txParams: TxBase = {
+		const txParams: TxBase = {
 			gasLimit: gasLimit,
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};

@@ -42,7 +42,7 @@ export default class BurnToken extends Command {
 		const { args, flags } = this.parse(BurnToken);
 
 		const tokenID: BigNumber = args.tokenID;
-		let pk = flags.privateKey;
+		const pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
 		const confirmations = flags.confirmations;
@@ -63,10 +63,10 @@ export default class BurnToken extends Command {
 			for owner ${owner}
 			on GatewayToken ${gatewayTokenAddress} contract`);
 
-		let gasPrice = await flags.gasPriceFee;
-		let gasLimit = await gatewayToken.contract.estimateGas.burn(tokenID);
+		const gasPrice = await flags.gasPriceFee;
+		const gasLimit = await gatewayToken.contract.estimateGas.burn(tokenID);
 
-		let txParams: TxBase = {
+		const txParams: TxBase = {
 			gasLimit: gasLimit,
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};

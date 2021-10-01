@@ -14,7 +14,7 @@ export const checkTokenState = (state: number | string):string => {
 }
 
 export const parseTokenState = (tokenData: TokenData):TokenData => {
-    let parsedData: TokenData = {
+    const parsedData: TokenData = {
         owner: tokenData.owner,
         state: checkTokenState(tokenData.state),
         identity: tokenData.identity,

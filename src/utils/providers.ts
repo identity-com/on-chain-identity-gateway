@@ -1,9 +1,13 @@
 import { providers } from 'ethers';
-import { BaseProvider } from '@ethersproject/providers';
+import { BaseProvider, JsonRpcProvider } from '@ethersproject/providers';
 import { DEFAULT_NETWORK } from './constants';
 
+export const getLocalhostProvider = (): JsonRpcProvider => {
+    return new providers.JsonRpcProvider();
+}
+
 export const getProvider = function(network: string = DEFAULT_NETWORK): BaseProvider {
-    var provider: BaseProvider;
+    let provider: BaseProvider;
 
     if (network === "localhost" || network === 'hardhat') {
         provider = getLocalhostProvider();
@@ -13,7 +17,3 @@ export const getProvider = function(network: string = DEFAULT_NETWORK): BaseProv
 
     return provider;
 };
-
-export const getLocalhostProvider = (): BaseProvider => {
-    return new providers.JsonRpcProvider();
-}

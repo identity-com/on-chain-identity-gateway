@@ -36,7 +36,7 @@ export default class GetTokenID extends Command {
 	async run() {
 		const { args, flags } = this.parse(GetTokenID);
 
-		let pk = flags.privateKey;
+		const pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
 
@@ -51,7 +51,7 @@ export default class GetTokenID extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-        let tokenId: number | BigNumber = await gatewayToken.getTokenId(ownerAddress);
+        const tokenId: number | BigNumber = await gatewayToken.getTokenId(ownerAddress);
 
 		this.log(
 			`Default gateway token ID  for owner address: ${ownerAddress} 

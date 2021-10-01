@@ -43,7 +43,7 @@ export default class VerifyToken extends Command {
 	async run() {
 		const { args, flags } = this.parse(VerifyToken);
 
-		let pk = flags.privateKey;
+		const pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
 

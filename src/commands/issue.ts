@@ -63,7 +63,7 @@ export default class IssueToken extends Command {
 	async run() {
 		const { args, flags } = this.parse(IssueToken);
 
-		let pk = flags.privateKey;
+		const pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
 		const confirmations = flags.confirmations;
@@ -80,7 +80,7 @@ export default class IssueToken extends Command {
 		const bitmask: BigNumber = flags.bitmask;
 		const ownerAddress: string = args.address;
 		let expiration: BigNumber = args.expiration;
-		let constrains: BigNumber = args.constrains;
+		const constrains: BigNumber = args.constrains;
 		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
@@ -89,7 +89,7 @@ export default class IssueToken extends Command {
 			tokenID = generateId(ownerAddress, constrains);
 		}
 
-		let gasPrice = await flags.gasPriceFee;
+		const gasPrice = await flags.gasPriceFee;
 		let gasLimit: BigNumber 
 
 		if (expiration.gt(0)) {
@@ -98,7 +98,7 @@ export default class IssueToken extends Command {
 
 		gasLimit = await gatewayToken.contract.estimateGas.mint(ownerAddress, tokenID, expiration, bitmask);
 
-		let txParams: TxBase = {
+		const txParams: TxBase = {
 			gasLimit: gasLimit,
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};

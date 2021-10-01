@@ -51,8 +51,9 @@ const options: GasPriceOracleOptions = {
 
 export const SUBTRACT_GAS_LIMIT = 100000;
 
-export const getDefaultOracle = (chainId: number = 1): GasPriceOracle => {
+export const getDefaultOracle = (chainId = 1): GasPriceOracle => {
     options.defaultFallbackGasPrices = DEFAULT_GAS_PRICES[chainId];
+    options.chainId = chainId
 
     return new GasPriceOracle(options);
 }
@@ -68,13 +69,13 @@ export const currentGasPrices = async (oracle?: GasPriceOracle, fallbackGasPrice
 }
 
 export const estimateGasPrice = async (priceKey: GasPriceKey = "fast", oracle?: GasPriceOracle, fallbackGasPrices?: GasPrices): Promise<number | BigNumber> => {
-    var prices = await currentGasPrices(oracle, fallbackGasPrices);
+    const prices = await currentGasPrices(oracle, fallbackGasPrices);
 
     if (prices == null) {
         return DEFAULT_GAS_PRICES[DEFAULT_CHAIN_ID][priceKey];
     }
-    let gweiPrice = prices[priceKey].toString();
-    let weiPrice = utils.parseUnits(gweiPrice, 'gwei');
+    const gweiPrice = prices[priceKey].toString();
+    const weiPrice = utils.parseUnits(gweiPrice, 'gwei');
 
     return weiPrice;
 }
@@ -82,7 +83,7 @@ export const estimateGasPrice = async (priceKey: GasPriceKey = "fast", oracle?: 
 export const estimateGasLimit = async (toAddress: string, value? :number, data? :any, signer?: Wallet): Promise<number | BigNumber> => {
     if (!signer) {
         signer = mnemonicSigner();
-        let provider = getProvider();
+        const provider = getProvider();
 
         signer = signer.connect(provider);
     }

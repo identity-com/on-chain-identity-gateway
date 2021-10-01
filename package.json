@@ -9,7 +9,7 @@
     "lint": "eslint lib/ src/ test/ --ext .ts",
     "build": "npm run compile && tsc -b && oclif-dev manifest && oclif-dev readme",
     "postbuild": "rm -f oclif.manifest.json",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "test": "ts-mocha src/*.test.ts src/**/*.test.ts",
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "version": "oclif-dev readme"
   },
@@ -45,6 +45,7 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
     "@oclif/test": "^1.2.8",
+    "@types/expect": "^24.3.0",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.4.7",
     "@typescript-eslint/eslint-plugin": "^4.28.5",
@@ -59,11 +60,12 @@
     "nyc": "^15.1.0",
     "oclif": "^1.18.1",
     "prettier": "2.3.2",
+    "ts-mocha": "^8.0.0",
     "ts-node": "^10.1.0",
     "tslib": "^2.3.0"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=10.0.0"
   },
   "oclif": {
     "commands": "./dist/commands",
@@ -73,5 +75,8 @@
       "@oclif/plugin-not-found"
     ]
   },
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "ts-node": {
+    "files": true
+  }
 }

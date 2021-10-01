@@ -38,7 +38,7 @@ export default class GetToken extends Command {
 	async run() {
 		const { args, flags } = this.parse(GetToken);
 
-		let pk = flags.privateKey;
+		const pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
 		const tokenID: BigNumber = args.tokenID;
@@ -53,7 +53,7 @@ export default class GetToken extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-        let token:TokenData = await gatewayToken.getToken(tokenID);
+        const token:TokenData = await gatewayToken.getToken(tokenID);
 
 		this.log(
 			`Gateway token information:

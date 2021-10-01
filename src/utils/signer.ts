@@ -13,8 +13,8 @@ export const privateKeySigner = function(privateKey: string, provider?: BaseProv
 };
 
 export const readPrivateKey = (file: string, networkId: number = DEFAULT_CHAIN_ID): Wallet => {
-    var privateKey = JSON.parse(fs.readFileSync(file).toString("utf-8"));
-    var provider = getDefaultProvider(NETWORKS[networkId]);
+    const privateKey = JSON.parse(fs.readFileSync(file).toString("utf-8"));
+    const provider = getDefaultProvider(NETWORKS[networkId]);
 
     return new Wallet(privateKey, provider);
 }

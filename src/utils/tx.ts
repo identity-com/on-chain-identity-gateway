@@ -1,6 +1,6 @@
-import { TransactionReceipt, TransactionRequest, TransactionResponse } from "@ethersproject/abstract-provider";
+import { TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider";
 import { parse, Transaction } from "@ethersproject/transactions"
-import { BigNumber, BigNumberish, Bytes, BytesLike, Contract, PopulatedTransaction, utils } from "ethers/lib/ethers";
+import { BigNumber, BigNumberish, Bytes, BytesLike, Contract, PopulatedTransaction } from "ethers/lib/ethers";
 import { estimateGasPrice, GasPriceKey } from "./gas";
 
 export declare type TxBase = {
@@ -38,29 +38,29 @@ export const populateTx = async (contract: Contract, method: string, args: any[]
     }
 
     args.push(overrides);
-    let txRequest: PopulatedTransaction = await contract.populateTransaction[method](...args);
+    const txRequest: PopulatedTransaction = await contract.populateTransaction[method](...args);
 
     return txRequest;
 }
 
 export const ethTransaction = async (contract: Contract, method: string, args: any[], options?: TxOptions):Promise<string> => {
-    let txRequest : PopulatedTransaction = await populateTx(contract, method, args, options);
+    const txRequest : PopulatedTransaction = await populateTx(contract, method, args, options);
 
     if (options?.confirmations !== undefined && options?.confirmations > 0) {
-        let tx: TransactionReceipt = await (await contract.signer.sendTransaction(txRequest)).wait(options?.confirmations);
+        const tx: TransactionReceipt = await (await contract.signer.sendTransaction(txRequest)).wait(options?.confirmations);
 
         return tx.transactionHash;
-    } else {
-        let tx: TransactionResponse = await contract.signer.sendTransaction(txRequest);
+    } 
+        const tx: TransactionResponse = await contract.signer.sendTransaction(txRequest);
         
         return tx.hash;
-    }
+    
 }
 
 export const signTranaction = async (contract: Contract, method: string, args: any[], options?: TxOptions):Promise<Transaction> => {
-    let txRequest: PopulatedTransaction = await populateTx(contract, method, args, options);
+    const txRequest: PopulatedTransaction = await populateTx(contract, method, args, options);
 
-    let tx = await contract.signer.signTransaction(txRequest);
+    const tx = await contract.signer.signTransaction(txRequest);
 
     return parse(tx);
 }

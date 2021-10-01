@@ -48,7 +48,7 @@ export default class RefreshToken extends Command {
 	async run() {
 		const { args, flags } = this.parse(RefreshToken);
 
-		let pk = flags.privateKey;
+		const pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
 		let signer: Wallet
 		const confirmations = flags.confirmations;
@@ -64,8 +64,8 @@ export default class RefreshToken extends Command {
 		const now = Math.floor(Date.now() / 1000);
 		const expiry: number = args.expiry;
 
-		let expirationDate = getExpirationTime(expiry);
-		var days = Math.floor((expirationDate.sub(now).div(86400).toNumber()));
+		const expirationDate = getExpirationTime(expiry);
+		const days = Math.floor((expirationDate.sub(now).div(86400).toNumber()));
 
 		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
@@ -76,10 +76,10 @@ export default class RefreshToken extends Command {
 		
 		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let gasPrice = await flags.gasPriceFee;
-		let gasLimit = await gatewayToken.contract.estimateGas.setExpiration(tokenID, expirationDate);
+		const gasPrice = await flags.gasPriceFee;
+		const gasLimit = await gatewayToken.contract.estimateGas.setExpiration(tokenID, expirationDate);
 
-		let txParams: TxBase = {
+		const txParams: TxBase = {
 			gasLimit: gasLimit,
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};

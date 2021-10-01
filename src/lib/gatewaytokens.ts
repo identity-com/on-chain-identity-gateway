@@ -1,4 +1,3 @@
-import { Contract } from "ethers";
 import { GatewayToken } from "../contracts";
 
 export interface GatewayTokenItem {
