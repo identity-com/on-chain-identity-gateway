@@ -56,7 +56,7 @@ ARGUMENTS
   ADDRESS  Gatekeeper address to add to the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
@@ -89,7 +89,7 @@ ARGUMENTS
   ADDRESS  Network authority address to add to the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
@@ -122,7 +122,7 @@ ARGUMENTS
   ADDRESS  User ETH address to blacklist
 
 OPTIONS
-  -c, --confirmations=confirmations  The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations  [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee      [default: [object Object]] Gas Price level to execute transaction with. For
                                      example: instant, fast, standard, slow
@@ -152,7 +152,7 @@ ARGUMENTS
   TOKENID  Token ID number to burn
 
 OPTIONS
-  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
@@ -185,7 +185,7 @@ ARGUMENTS
   TOKENID  Token ID number to freeze
 
 OPTIONS
-  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
@@ -275,7 +275,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3/src/commands/help.ts)_
 
 ## `gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]`
 
@@ -287,14 +287,14 @@ USAGE
 
 ARGUMENTS
   ADDRESS     Owner ethereum address to tokenID for
-  EXPIRATION  Expiration timestamp for newly issued token
+  EXPIRATION  [default: 0] Expiration timestamp for newly issued token
   CONSTRAINS  [default: [object Object]] Constrains to generate tokenId
 
 OPTIONS
   -b, --bitmask=bitmask                          [default: [object Object]] Bitmask constrains to link with newly
                                                  minting tokenID
 
-  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
@@ -332,7 +332,7 @@ ARGUMENTS
   EXPIRY   The new expiry time in seconds for the gateway token (default 14 days)
 
 OPTIONS
-  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
@@ -365,7 +365,7 @@ ARGUMENTS
   ADDRESS  Gatekeeper address to remove to the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
@@ -398,7 +398,7 @@ ARGUMENTS
   ADDRESS  Network authority address to remove to the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
@@ -431,7 +431,7 @@ ARGUMENTS
   TOKENID  Token ID number to revoke
 
 OPTIONS
-  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
@@ -464,7 +464,7 @@ ARGUMENTS
   TOKENID  Token ID number to unfreeze
 
 OPTIONS
-  -c, --confirmations=confirmations              The amount of blocks to wait mined transaction
+  -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
