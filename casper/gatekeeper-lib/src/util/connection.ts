@@ -1,41 +1,29 @@
-import {
-  Cluster,
-  clusterApiUrl,
-  Connection,
-  Keypair,
-  sendAndConfirmTransaction,
-  Transaction,
-  TransactionSignature,
-} from "@casper/web3.js";
-import { SOLANA_COMMITMENT } from "./constants";
+import { CommandConfig } from "./config";
+import { GatekeeperNetworkService, GatekeeperService } from "../service";
+import { KycTokenClient } from "@metacask/kyc-token-client";
 
-export type ExtendedCluster = Cluster | "localnet" | "civicnet";
-export const CIVICNET_URL =
-  "http://ec2-34-238-243-215.compute-1.amazonaws.com:8899";
-
-export const getClusterUrl = (cluster: ExtendedCluster) => {
-  switch (cluster) {
-    case "localnet":
-      return "http://localhost:8899";
-    case "civicnet":
-      return CIVICNET_URL;
-    default:
-      return clusterApiUrl(cluster);
-  }
+export const getNetworkService = (
+  config: CommandConfig
+): GatekeeperNetworkService => {
+  const kycTokenClient = new KycTokenClient(
+    config.nodeAddress,
+    config.chain,
+    config.contractHash,
+    config.masterKey
+  );
+  return new GatekeeperNetworkService(kycTokenClient, config.networkKey);
 };
 
-export const getConnection = (
-  clusterUrl: string = process.env.CLUSTER_URL ||
-    getClusterUrl(process.env.CLUSTER as ExtendedCluster)
-): Connection => new Connection(clusterUrl, SOLANA_COMMITMENT);
-
-export const send = (
-  connection: Connection,
-  transaction: Transaction,
-  ...signers: Keypair[]
-): Promise<TransactionSignature> =>
-  sendAndConfirmTransaction(connection, transaction, signers, {
-    skipPreflight: false,
-    commitment: SOLANA_COMMITMENT,
-    preflightCommitment: "recent",
-  });
+export const getService = (config: CommandConfig): GatekeeperService => {
+  const kycTokenClient = new KycTokenClient(
+    config.nodeAddress,
+    config.chain,
+    config.contractHash,
+    config.masterKey
+  );
+  return new GatekeeperService(
+    kycTokenClient,
+    config.masterKey.publicKey,
+    config.networkKey
+  );
+};

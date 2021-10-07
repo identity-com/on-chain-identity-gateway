@@ -1,12 +1,8 @@
-import { findGatewayTokens } from "@identity.com/solana-gateway-ts";
 import { Command, flags } from "@oclif/command";
-import { Keypair, PublicKey } from "@casper/web3.js";
-import { getConnection } from "../util";
-import {
-  clusterFlag,
-  gatekeeperNetworkKeyFlag,
-  gatekeeperNetworkPubkeyFlag,
-} from "../util/oclif/flags";
+import { configFlag } from "../util/oclif/flags";
+import { CLPublicKey } from "casper-js-sdk";
+import { readConfig } from "../util/config";
+import { getService } from "../util/connection";
 import { prettyPrint } from "../util/token";
 
 export default class Verify extends Command {
@@ -18,50 +14,42 @@ export default class Verify extends Command {
  "issuingGatekeeper": "tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp",
  "gatekeeperNetwork": "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv",
  "owner": "EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv",
- "state": "ACTIVE",
- "publicKey": "3rNZ6RzH6jLCzFeySVDc8Z82sJkeQ4xi7BCUzjpZBvZr",
- "programId": "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
+ "status": "Active",
+ "expiry": 1234567890
 }
 `,
   ];
 
   static flags = {
     help: flags.help({ char: "h" }),
-    gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
-    cluster: clusterFlag(),
+    config: configFlag(),
   };
 
   static args = [
     {
-      name: "owner",
+      name: "account",
       required: true,
-      description: "The gateway token to revoke",
-      parse: (input: string) => new PublicKey(input),
+      description: "The account holding the KYC Token",
+      parse: (input: string) => CLPublicKey.fromHex(input),
     },
   ];
 
   async run() {
     const { args, flags } = this.parse(Verify);
 
-    const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
+    const config = readConfig(flags.config);
+    const account = args.account;
+    this.log(`Verifying:
+      account ${account.toHex()} 
+      on network ${config.networkKey}`);
 
-    const connection = getConnection(flags.cluster);
+    const service = getService(config);
 
-    this.log(
-      `Verifying wallet ${args.owner.toBase58()} has a gateway token in the network ${gatekeeperNetwork.toBase58()}`
-    );
-    const tokens = await findGatewayTokens(
-      connection,
-      args.owner,
-      gatekeeperNetwork,
-      true
-    );
+    const token = await service.findGatewayTokenForOwner(account);
 
-    if (!tokens.length) {
-      this.log("No token found for " + args.owner.toBase58());
-      return;
+    if (token) {
+      this.log(prettyPrint(token));
     }
-
-    tokens.map((t) => this.log(prettyPrint(t)));
+    throw Error(`Account ${account.toHex()} has no KYC Token!`);
   }
 }

@@ -1,15 +1,15 @@
 {
   "name": "@identity.com/casper-gatekeeper-lib",
-  "description": "Library and CLI to manage Gateway Tokens",
-  "version": "1.1.0",
+  "description": "Library and CLI to manage Gateway Tokens on Casper",
+  "version": "1.0.0",
   "author": "dankelleher @dankelleher",
   "bin": {
     "gateway": "./bin/run"
   },
   "bugs": "https://github.com/identity-com/ociv/issues",
   "dependencies": {
-    "casper-js-sdk": "2.5.2",
-    "@metacask/kyc-token-client": "git+ssh://git@github.com/mcask/kyc-token-client.git#0.0.2",
+    "casper-js-sdk": "2.6.0",
+    "@metacask/kyc-token-client": "git+ssh://git@github.com/mcask/kyc-token-client.git#0.0.9",
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",

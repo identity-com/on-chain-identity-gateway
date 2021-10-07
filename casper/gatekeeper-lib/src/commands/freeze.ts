@@ -1,11 +1,8 @@
 import { Command, flags } from "@oclif/command";
-import { PublicKey } from "@casper/web3.js";
-import {
-  clusterFlag,
-  gatekeeperKeyFlag,
-  gatekeeperNetworkPubkeyFlag,
-} from "../util/oclif/flags";
-import { getTokenUpdateProperties } from "../util/oclif/utils";
+import { configFlag } from "../util/oclif/flags";
+import { CLPublicKey } from "casper-js-sdk";
+import { readConfig } from "../util/config";
+import { getService } from "../util/connection";
 
 export default class Freeze extends Command {
   static description = "Freeze a gateway token";
@@ -18,32 +15,34 @@ Frozen
 
   static flags = {
     help: flags.help({ char: "h" }),
-    gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
-    cluster: clusterFlag(),
+    config: configFlag(),
   };
 
   static args = [
     {
-      name: "gatewayToken",
+      name: "account",
       required: true,
-      description: "The gateway token to freeze",
-      parse: (input: string) => new PublicKey(input),
+      description: "The account holding the KYC Token",
+      parse: (input: string) => CLPublicKey.fromHex(input),
     },
   ];
 
   async run() {
     const { args, flags } = this.parse(Freeze);
 
-    const { gatewayToken, gatekeeper, service } =
-      await getTokenUpdateProperties(args, flags);
-
+    const config = readConfig(flags.config);
+    const account = args.account;
     this.log(`Freezing:
-     ${gatewayToken.toBase58()}
-     by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
+      account ${account.toHex()} 
+      on network ${config.networkKey}`);
 
-    const token = await service.freeze(gatewayToken);
+    const service = getService(config);
 
-    this.log("Frozen token", token.publicKey.toBase58());
+    const deployHash = await service.freeze(
+      account,
+      config.updatePaymentAmount
+    );
+
+    this.log(` ... invoked: ${deployHash}`);
   }
 }

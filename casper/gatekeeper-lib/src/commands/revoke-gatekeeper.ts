@@ -1,12 +1,8 @@
 import { Command, flags } from "@oclif/command";
-import {
-  clusterFlag,
-  gatekeeperKeyFlag,
-  gatekeeperNetworkKeyFlag,
-} from "../util/oclif/flags";
-import { Keypair, PublicKey } from "@casper/web3.js";
-import { airdropTo, getConnection } from "../util";
-import { GatekeeperNetworkService } from "../service";
+import { configFlag } from "../util/oclif/flags";
+import { CLPublicKey } from "casper-js-sdk";
+import { readConfig } from "../util/config";
+import { getNetworkService } from "../util/connection";
 
 export default class RevokeGatekeeper extends Command {
   static description = "Revoke a gatekeeper from a network";
@@ -18,45 +14,33 @@ export default class RevokeGatekeeper extends Command {
 
   static flags = {
     help: flags.help({ char: "h" }),
-    gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
-    cluster: clusterFlag(),
+    config: configFlag(),
   };
 
   static args = [
     {
       name: "address",
       required: true,
-      description: "The address of the gatekeeper to revoke from the network",
-      parse: (input: string) => new PublicKey(input),
+      description: "The address of the gatekeeper to remove from the network",
+      parse: (input: string) => CLPublicKey.fromHex(input),
     },
   ];
 
   async run() {
     const { args, flags } = this.parse(RevokeGatekeeper);
 
-    const gatekeeper: PublicKey = args.address;
-    const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
-    this.log(`Revoking: 
-      gatekeeper ${gatekeeper.toBase58()}
-      from network ${gatekeeperNetwork.publicKey.toBase58()}`);
+    const config = readConfig(flags.config);
+    const gatekeeper = args.address;
+    this.log(`Removing:
+      gatekeeper ${gatekeeper.toHex()} 
+      from network ${config.networkKey}`);
 
-    const connection = getConnection(flags.cluster);
-
-    await airdropTo(
-      connection,
-      gatekeeperNetwork.publicKey,
-      flags.cluster as string
+    const networkService = getNetworkService(config);
+    const deployHash = await networkService.revokeGatekeeper(
+      gatekeeper,
+      config.whitelistPaymentAmount
     );
 
-    const networkService = new GatekeeperNetworkService(
-      connection,
-      gatekeeperNetwork,
-      gatekeeperNetwork
-    );
-    const gatekeeperAccount = await networkService.revokeGatekeeper(gatekeeper);
-    this.log(
-      `Revoked gatekeeper from network. Gatekeeper account: ${gatekeeperAccount.toBase58()}`
-    );
+    this.log(` ... invoked: ${deployHash}`);
   }
 }

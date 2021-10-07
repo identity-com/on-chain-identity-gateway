@@ -1,11 +1,8 @@
 import { Command, flags } from "@oclif/command";
-import { PublicKey } from "@casper/web3.js";
-import {
-  clusterFlag,
-  gatekeeperKeyFlag,
-  gatekeeperNetworkPubkeyFlag,
-} from "../util/oclif/flags";
-import { getTokenUpdateProperties } from "../util/oclif/utils";
+import { configFlag } from "../util/oclif/flags";
+import { CLPublicKey } from "casper-js-sdk";
+import { readConfig } from "../util/config";
+import { getService } from "../util/connection";
 
 export default class Refresh extends Command {
   static description = "Refresh a gateway token";
@@ -18,17 +15,15 @@ Refreshed
 
   static flags = {
     help: flags.help({ char: "h" }),
-    gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
-    cluster: clusterFlag(),
+    config: configFlag(),
   };
 
   static args = [
     {
-      name: "gatewayToken",
+      name: "account",
       required: true,
-      description: "The gateway token to freeze",
-      parse: (input: string) => new PublicKey(input),
+      description: "The account to issue the KYC Token to",
+      parse: (input: string) => CLPublicKey.fromHex(input),
     },
     {
       name: "expiry",
@@ -42,18 +37,20 @@ Refreshed
   async run() {
     const { args, flags } = this.parse(Refresh);
 
-    const { gatewayToken, gatekeeper, service } =
-      await getTokenUpdateProperties(args, flags);
-
+    const config = readConfig(flags.config);
+    const account = args.account;
     this.log(`Refreshing:
-     ${gatewayToken.toBase58()}
-     by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
+      account ${account.toHex()} 
+      on network ${config.networkKey}`);
 
-    const token = await service.updateExpiry(
-      gatewayToken,
-      args.expiry + Math.floor(Date.now() / 1000)
+    const service = getService(config);
+    const now = Math.floor(Date.now() / 1000);
+    const deployHash = await service.updateExpiry(
+      account,
+      now + args.expiry,
+      config.updatePaymentAmount
     );
 
-    this.log("Refreshed");
+    this.log(` ... invoked: ${deployHash}`);
   }
 }

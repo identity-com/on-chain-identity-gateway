@@ -1,14 +1,8 @@
 import { Command, flags } from "@oclif/command";
-import { Keypair, PublicKey } from "@casper/web3.js";
-
-import { airdropTo, getConnection } from "../util";
-import { GatekeeperService } from "../service";
-import {
-  clusterFlag,
-  gatekeeperKeyFlag,
-  gatekeeperNetworkPubkeyFlag,
-} from "../util/oclif/flags";
-import { prettyPrint } from "../util/token";
+import { configFlag } from "../util/oclif/flags";
+import { CLPublicKey } from "casper-js-sdk";
+import { readConfig } from "../util/config";
+import { getService } from "../util/connection";
 
 export default class Issue extends Command {
   static description = "Issue a gateway token to a wallet";
@@ -20,62 +14,31 @@ export default class Issue extends Command {
 
   static flags = {
     help: flags.help({ char: "h" }),
-    expiry: flags.integer({
-      char: "e",
-      description:
-        "The expiry time in seconds for the gateway token (default none)",
-      parse: (input: string) => Number(input),
-    }),
-    gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
-    cluster: clusterFlag(),
+    config: configFlag(),
   };
 
   static args = [
     {
-      name: "address",
+      name: "account",
       required: true,
-      description: "The address to issue the token to",
-      parse: (input: string) => new PublicKey(input),
+      description: "The account to issue the KYC Token to",
+      parse: (input: string) => CLPublicKey.fromHex(input),
     },
   ];
 
   async run() {
     const { args, flags } = this.parse(Issue);
 
-    const address: PublicKey = args.address;
-    const gatekeeper = flags.gatekeeperKey as Keypair;
-    const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
+    const config = readConfig(flags.config);
+    const account = args.account;
     this.log(`Issuing:
-      to ${address.toBase58()} 
-      from gatekeeper ${gatekeeper.publicKey.toBase58()}
-      in network ${gatekeeperNetwork.toBase58()}`);
+      account ${account.toHex()} 
+      on network ${config.networkKey}`);
 
-    const connection = getConnection(flags.cluster);
+    const service = getService(config);
 
-    await airdropTo(connection, gatekeeper.publicKey, flags.cluster as string);
+    const deployHash = await service.issue(account, config.updatePaymentAmount);
 
-    const service = new GatekeeperService(
-      connection,
-      gatekeeper,
-      gatekeeperNetwork,
-      gatekeeper,
-      flags.expiry
-        ? {
-            defaultExpirySeconds: flags.expiry,
-          }
-        : {}
-    );
-
-    const gatekeeperAccountExists = await service.isRegistered();
-    if (!gatekeeperAccountExists) {
-      this.log(
-        `Gatekeeper ${gatekeeper.publicKey.toBase58()} not present in network ${gatekeeperNetwork.toBase58()}. Use "gateway add-gatekeeper" to add it.`
-      );
-    }
-
-    const token = await service.issue(address);
-
-    this.log(prettyPrint(token));
+    this.log(` ... invoked: ${deployHash}`);
   }
 }

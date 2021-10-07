@@ -1,36 +1,10 @@
-// import { Connection, Keypair, PublicKey, Transaction } from "@casper/web3.js";
-// import {
-//   freeze,
-//   GatewayToken,
-//   getGatewayToken,
-//   getGatewayTokenKeyForOwner,
-//   issueVanilla,
-//   revoke,
-//   unfreeze,
-//   updateExpiry,
-//   findGatewayToken,
-//   getGatekeeperAccountKey,
-// } from "@identity.com/solana-gateway-ts";
 import {
-  CasperClient,
-  CLPublicKey,
-  CLAccountHash,
-  CLByteArray,
-  CLKey,
-  CLString,
-  CLTypeBuilder,
-  CLValue,
-  CLValueBuilder,
-  CLValueParsers,
-  CLMap,
-  DeployUtil,
-  EventName,
-  EventStream,
-  Keys,
-  RuntimeArgs,
-} from "casper-js-sdk";
-
-import { send } from "../util/connection";
+  GatewayToken,
+  KycTokenClient,
+  State,
+} from "@metacask/kyc-token-client";
+import { CLPublicKey, DeployUtil } from "casper-js-sdk";
+import { MINT_PAYMENT_AMOUNT, UPDATE_PAYMENT_AMOUNT } from "../util/constants";
 
 /**
  * Global default configuration for the gatekeeper
@@ -46,233 +20,140 @@ export class GatekeeperService {
   /**
    * Construct a new GatekeeperService instance
    * @param kycTokenClient Casper KYC Token Client
-   // * @param payer The payer for any transactions performed by the gatekeeper
+   * @param issuingGatekeeper account of the gatekeeper who is allowed to issue KYC tokens
    * @param gatekeeperNetwork The network that the gatekeeper belongs to
-   * @param gatekeeperAuthority The gatekeeper's key
    * @param config Global default configuration for the gatekeeper
    */
   constructor(
-    private kycTokenClient: KycTokenClient,
-    // TODO: confirm who this is?
-    // private payer: Keypair,
-    private gatekeeperNetwork: CLPublicKey,
-    private gatekeeperAuthority: Keys.AsymmetricKey,
-    private config: GatekeeperConfig = {}
+    readonly kycTokenClient: KycTokenClient,
+    // Account of the Gatekeeper that is issuing the KYC Tokens
+    readonly issuingGatekeeper: CLPublicKey,
+    // Contract hash of the KYC Token <-- hardcode based on deployment in whichever network(test/main)
+    readonly gatekeeperNetwork: string,
+    readonly config: GatekeeperConfig = {}
   ) {}
 
-  private getDefaultExpireTime(): number | undefined {
-    if (!this.config.defaultExpirySeconds) return undefined;
-    const now = Math.floor(Date.now() / 1000);
-    return now + this.config.defaultExpirySeconds;
-  }
-
-  private getGatewayTokenOrError(
-    deployResult: DeployUtil.Deploy
-  ): Promise<GatewayToken> {
-    return getGatewayToken(this.connection, gatewayTokenKey).then(
-      (gatewayToken: GatewayToken | null) => {
-        if (!gatewayToken)
-          throw new Error(
-            "Error retrieving gateway token at address " + gatewayTokenKey
-          );
-        return gatewayToken;
-      }
-    );
-  }
-
-  private async issueVanilla(
-    owner: CLPublicKey,
-    seed?: Uint8Array
-  ): Promise<GatewayToken> {
-
-    const metaData = new Map<string, string>();
-
-    const deploy = await this.kycTokenClient.issue(
-        this.masterKey,
-        owner,
-        null,
-        metaData,
-        MIN_PAYMENT_AMOUNT
-    );
-
-    //
-    // const gatewayTokenKey = await getGatewayTokenKeyForOwner(
-    //   owner,
-    //   this.gatekeeperNetwork
-    // );
-    // const gatekeeperAccount = await getGatekeeperAccountKey(
-    //   this.gatekeeperAuthority.publicKey,
-    //   this.gatekeeperNetwork
-    // );
-    //
-    // const expireTime = this.getDefaultExpireTime();
-    //
-    // const transaction = new Transaction().add(
-    //   issueVanilla(
-    //     gatewayTokenKey,
-    //     this.payer.publicKey,
-    //     gatekeeperAccount,
-    //     owner,
-    //     this.gatekeeperAuthority.publicKey,
-    //     this.gatekeeperNetwork,
-    //     seed,
-    //     expireTime
-    //   )
-    // );
-    //
-    // await send(
-    //   this.connection,
-    //   transaction,
-    //   this.payer,
-    //   this.gatekeeperAuthority
-    // );
-
-    return this.getGatewayTokenOrError(deploy);
+  private getDefaultExpireTime(): string | undefined {
+    // If this is not set, then set no expiry on the KYC token
+    if (this.config.defaultExpirySeconds) {
+      const now = Math.floor(Date.now() / 1000);
+      return (now + this.config.defaultExpirySeconds).toString();
+    }
+    return undefined;
   }
 
   /**
-   * Issue a token to this recipient
-   * @param recipient
+   * Issue a KYC Token to this account
+   * @param account
+   * @param paymentAmount
    */
-  issue(recipient: PublicKey): Promise<GatewayToken> {
-    return this.issueVanilla(recipient);
+  async issue(
+    account: CLPublicKey,
+    paymentAmount = MINT_PAYMENT_AMOUNT
+  ): Promise<string> {
+    console.log(`Minting KYC Token for: ${account.toHex()}`);
+    const newToken = new GatewayToken(
+      this.issuingGatekeeper,
+      this.gatekeeperNetwork,
+      account,
+      State.ACTIVE,
+      this.getDefaultExpireTime()
+    );
+
+    return this.kycTokenClient.issue(newToken, paymentAmount);
   }
 
   /**
-   * Revoke the gateway token. The token must have been issued by a gatekeeper in the same network
-   * @param gatewayTokenKey
+   * Revoke the KYC Token belonging to this account
+   * @param account
+   * @param paymentAmount
    */
-  async revoke(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
-    const gatekeeperAccount = await getGatekeeperAccountKey(
-      this.gatekeeperAuthority.publicKey,
-      this.gatekeeperNetwork
-    );
-    const transaction = new Transaction().add(
-      revoke(
-        gatewayTokenKey,
-        this.gatekeeperAuthority.publicKey,
-        gatekeeperAccount
-      )
-    );
+  async revoke(
+    account: CLPublicKey,
+    paymentAmount = UPDATE_PAYMENT_AMOUNT
+  ): Promise<string> {
+    console.log(`Revoking KYC Token for: ${account.toHex()}`);
 
-    await send(
-      this.connection,
-      transaction,
-      this.payer,
-      this.gatekeeperAuthority
-    );
-
-    return this.getGatewayTokenOrError(gatewayTokenKey);
+    return this.kycTokenClient.revoke(account, paymentAmount);
   }
 
   /**
-   * Freeze the gateway token. The token must have been issued by this gatekeeper.
-   * @param gatewayTokenKey
+   * Freeze the KYC Token belonging to this account
+   * @param account
+   * @param paymentAmount
    */
-  async freeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
-    const gatekeeperAccount = await getGatekeeperAccountKey(
-      this.gatekeeperAuthority.publicKey,
-      this.gatekeeperNetwork
-    );
-    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
-    const transaction = new Transaction().add(
-      freeze(
-        gatewayTokenKey,
-        this.gatekeeperAuthority.publicKey,
-        gatekeeperAccount
-      )
-    );
+  async freeze(
+    account: CLPublicKey,
+    paymentAmount = UPDATE_PAYMENT_AMOUNT
+  ): Promise<string> {
+    console.log(`Freezing KYC Token for: ${account.toHex()}`);
 
-    await send(
-      this.connection,
-      transaction,
-      this.payer,
-      this.gatekeeperAuthority
-    );
-
-    return this.getGatewayTokenOrError(gatewayTokenKey);
+    return this.kycTokenClient.freeze(account, paymentAmount);
   }
 
   /**
-   * Unfreeze the gateway token. The token must have been issued by this gatekeeper.
-   * @param gatewayTokenKey
+   * Unfreeze the KYC Token belonging to this account
+   * @param account
+   * @param paymentAmount
    */
-  async unfreeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
-    const gatekeeperAccount = await getGatekeeperAccountKey(
-      this.gatekeeperAuthority.publicKey,
-      this.gatekeeperNetwork
-    );
-    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
-    const transaction = new Transaction().add(
-      unfreeze(
-        gatewayTokenKey,
-        this.gatekeeperAuthority.publicKey,
-        gatekeeperAccount
-      )
-    );
+  async unfreeze(
+    account: CLPublicKey,
+    paymentAmount = UPDATE_PAYMENT_AMOUNT
+  ): Promise<string> {
+    console.log(`Unfreezing KYC Token for: ${account.toHex()}`);
 
-    await send(
-      this.connection,
-      transaction,
-      this.payer,
-      this.gatekeeperAuthority
-    );
-
-    return this.getGatewayTokenOrError(gatewayTokenKey);
+    return this.kycTokenClient.unfreeze(account, paymentAmount);
   }
 
   /**
-   * Returns a gateway token owned by this owner, if it exists
-   * @param owner
+   * Returns a gateway token owned by this account, if it exists
+   * @param account
    */
   async findGatewayTokenForOwner(
-    owner: PublicKey
-  ): Promise<GatewayToken | null> {
-    return findGatewayToken(this.connection, owner, this.gatekeeperNetwork);
+    account: CLPublicKey
+  ): Promise<GatewayToken | undefined> {
+    return this.kycTokenClient.getGatewayToken(account);
   }
 
   /**
-   * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
-   * @param gatewayTokenKey
+   * Update the expiry time of the KYC Token
+   * @param account
    * @param expireTime
+   * @param paymentAmount
    */
   async updateExpiry(
-    gatewayTokenKey: PublicKey,
-    expireTime: number
-  ): Promise<GatewayToken> {
-    const gatekeeperAccount = await getGatekeeperAccountKey(
-      this.gatekeeperAuthority.publicKey,
-      this.gatekeeperNetwork
-    );
-    const transaction = new Transaction().add(
-      updateExpiry(
-        gatewayTokenKey,
-        this.gatekeeperAuthority.publicKey,
-        gatekeeperAccount,
-        expireTime
-      )
-    );
+    account: CLPublicKey,
+    expireTime?: string,
+    paymentAmount = UPDATE_PAYMENT_AMOUNT
+  ): Promise<string> {
+    console.log(`Updating Expiry of KYC Token for: ${account.toHex()}`);
 
-    await send(
-      this.connection,
-      transaction,
-      this.payer,
-      this.gatekeeperAuthority
-    );
+    return this.kycTokenClient.updateExpiry(account, expireTime, paymentAmount);
+  }
 
-    return this.getGatewayTokenOrError(gatewayTokenKey);
+  /**
+   * Use this function to poll the deployment hash to check if it has hit the blockchain, this will throw an exception
+   * if there is an error with the deployment. If the promise is empty, means nothing has hit the blockchain yet!
+   * @param deployHash
+   */
+  async confirmDeploy(
+    deployHash: string
+  ): Promise<DeployUtil.Deploy | undefined> {
+    return this.kycTokenClient.confirmDeploy(deployHash);
   }
 
   // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key
   async isRegistered(): Promise<boolean> {
-    const gatekeeperAccount = await getGatekeeperAccountKey(
-      this.gatekeeperAuthority.publicKey,
-      this.gatekeeperNetwork
-    );
-    const gatekeeperAccountInfo = await this.connection.getAccountInfo(
-      gatekeeperAccount
-    );
-
-    return !!gatekeeperAccountInfo;
+    // TODO:
+    return new Promise((resolve) => resolve(true));
+    // const gatekeeperAccount = await getGatekeeperAccountKey(
+    //   this.gatekeeperAuthority.publicKey,
+    //   this.gatekeeperNetwork
+    // );
+    // const gatekeeperAccountInfo = await this.connection.getAccountInfo(
+    //   gatekeeperAccount
+    // );
+    //
+    // return !!gatekeeperAccountInfo;
   }
 }
