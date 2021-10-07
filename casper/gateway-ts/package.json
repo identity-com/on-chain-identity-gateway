@@ -1,7 +1,7 @@
 {
-  "name": "@identity.com/solana-gateway-ts",
+  "name": "@identity.com/casper-gateway-ts",
   "version": "0.3.3",
-  "description": "Typescript adapters for interacting with Solana gateway program",
+  "description": "Typescript adapters for interacting with Casper gateway program",
   "main": "dist/index",
   "types": "dist/index",
   "repository": "git@github.com:identity-com/on-chain-identity-gateway.git",
@@ -18,7 +18,8 @@
     "doc": "yarn typedoc src/index.ts --readme none"
   },
   "dependencies": {
-    "@casper/web3.js": "git+ssh://git@github.com/mcask/casper-web3.git#1.0.0",
+    "casper-js-sdk": "2.5.2",
+    "@metacask/kyc-token-client": "git+ssh://git@github.com/mcask/kyc-token-client.git#1.0.0",
     "bn.js": "^5.2.0",
     "borsh": "^0.4.0"
   },

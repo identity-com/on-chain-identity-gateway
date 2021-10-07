@@ -1,16 +1,37 @@
-import { Connection, Keypair, PublicKey, Transaction } from "@casper/web3.js";
+// import { Connection, Keypair, PublicKey, Transaction } from "@casper/web3.js";
+// import {
+//   freeze,
+//   GatewayToken,
+//   getGatewayToken,
+//   getGatewayTokenKeyForOwner,
+//   issueVanilla,
+//   revoke,
+//   unfreeze,
+//   updateExpiry,
+//   findGatewayToken,
+//   getGatekeeperAccountKey,
+// } from "@identity.com/solana-gateway-ts";
+import KycTokenClient from "@metacask/kyc-token-client"
+import {AsymmetricKey} from "casper-js-sdk/dist/lib/Keys";
 import {
-  freeze,
-  GatewayToken,
-  getGatewayToken,
-  getGatewayTokenKeyForOwner,
-  issueVanilla,
-  revoke,
-  unfreeze,
-  updateExpiry,
-  findGatewayToken,
-  getGatekeeperAccountKey,
-} from "@identity.com/solana-gateway-ts";
+  CasperClient,
+  CLPublicKey,
+  CLAccountHash,
+  CLByteArray,
+  CLKey,
+  CLString,
+  CLTypeBuilder,
+  CLValue,
+  CLValueBuilder,
+  CLValueParsers,
+  CLMap,
+  DeployUtil,
+  EventName,
+  EventStream,
+  Keys,
+  RuntimeArgs,
+} from "casper-js-sdk";
+
 import { send } from "../util/connection";
 
 /**
@@ -33,10 +54,10 @@ export class GatekeeperService {
    * @param config Global default configuration for the gatekeeper
    */
   constructor(
-    private connection: Connection,
-    private payer: Keypair,
-    private gatekeeperNetwork: PublicKey,
-    private gatekeeperAuthority: Keypair,
+    private kycTokenClient: KycTokenClient,
+    // private payer: Keypair,
+    private gatekeeperNetwork: CLPublicKey,
+    private gatekeeperAuthority: Keys.AsymmetricKey,
     private config: GatekeeperConfig = {}
   ) {}
 
@@ -47,7 +68,7 @@ export class GatekeeperService {
   }
 
   private getGatewayTokenOrError(
-    gatewayTokenKey: PublicKey
+    deployResult: DeployUtil.Deploy
   ): Promise<GatewayToken> {
     return getGatewayToken(this.connection, gatewayTokenKey).then(
       (gatewayToken: GatewayToken | null) => {
@@ -61,41 +82,53 @@ export class GatekeeperService {
   }
 
   private async issueVanilla(
-    owner: PublicKey,
+    owner: CLPublicKey,
     seed?: Uint8Array
   ): Promise<GatewayToken> {
-    const gatewayTokenKey = await getGatewayTokenKeyForOwner(
-      owner,
-      this.gatekeeperNetwork
-    );
-    const gatekeeperAccount = await getGatekeeperAccountKey(
-      this.gatekeeperAuthority.publicKey,
-      this.gatekeeperNetwork
-    );
 
-    const expireTime = this.getDefaultExpireTime();
+    const metaData = new Map<string, string>();
 
-    const transaction = new Transaction().add(
-      issueVanilla(
-        gatewayTokenKey,
-        this.payer.publicKey,
-        gatekeeperAccount,
+    const deploy = await this.kycTokenClient.issue(
+        this.masterKey,
         owner,
-        this.gatekeeperAuthority.publicKey,
-        this.gatekeeperNetwork,
-        seed,
-        expireTime
-      )
+        null,
+        metaData,
+        MIN_PAYMENT_AMOUNT
     );
 
-    await send(
-      this.connection,
-      transaction,
-      this.payer,
-      this.gatekeeperAuthority
-    );
+    //
+    // const gatewayTokenKey = await getGatewayTokenKeyForOwner(
+    //   owner,
+    //   this.gatekeeperNetwork
+    // );
+    // const gatekeeperAccount = await getGatekeeperAccountKey(
+    //   this.gatekeeperAuthority.publicKey,
+    //   this.gatekeeperNetwork
+    // );
+    //
+    // const expireTime = this.getDefaultExpireTime();
+    //
+    // const transaction = new Transaction().add(
+    //   issueVanilla(
+    //     gatewayTokenKey,
+    //     this.payer.publicKey,
+    //     gatekeeperAccount,
+    //     owner,
+    //     this.gatekeeperAuthority.publicKey,
+    //     this.gatekeeperNetwork,
+    //     seed,
+    //     expireTime
+    //   )
+    // );
+    //
+    // await send(
+    //   this.connection,
+    //   transaction,
+    //   this.payer,
+    //   this.gatekeeperAuthority
+    // );
 
-    return this.getGatewayTokenOrError(gatewayTokenKey);
+    return this.getGatewayTokenOrError(deploy);
   }
 
   /**

@@ -1,4 +1,7 @@
-import { AccountInfo, PublicKey } from "@casper/web3.js";
+import {
+  CLPublicKey,
+  CLAccountHash,
+} from "casper-js-sdk";
 import { GatewayTokenData } from "../lib/GatewayTokenData";
 import { PROGRAM_ID } from "../lib/constants";
 import { dataToGatewayToken } from "../lib/util";
@@ -11,12 +14,12 @@ export enum State {
 export class GatewayToken {
   constructor(
     //  the key used to reference the issuing gatekeeper
-    readonly issuingGatekeeper: PublicKey,
-    readonly gatekeeperNetwork: PublicKey,
-    readonly owner: PublicKey,
+    readonly issuingGatekeeper: CLPublicKey,
+    readonly gatekeeperNetwork: CLPublicKey,
+    readonly owner: CLPublicKey,
     readonly state: State,
-    readonly publicKey: PublicKey,
-    readonly programId: PublicKey,
+    readonly publicKey: CLPublicKey,
+    readonly programId: CLPublicKey,
     readonly expiryTime?: number
   ) {}
 
@@ -29,9 +32,10 @@ export class GatewayToken {
     return !!this.expiryTime && now > this.expiryTime;
   }
 
+  // TODO: Check with Civic - what this is
   static fromAccount(
     accountInfo: AccountInfo<Buffer>,
-    key: PublicKey
+    key: CLPublicKey
   ): GatewayToken {
     const parsedData = GatewayTokenData.fromAccount(accountInfo.data);
     return dataToGatewayToken(parsedData, key);
@@ -39,6 +43,6 @@ export class GatewayToken {
 }
 
 export type ProgramAccountResponse = {
-  pubkey: PublicKey;
+  pubkey: CLPublicKey;
   account: AccountInfo<Buffer>;
 };
