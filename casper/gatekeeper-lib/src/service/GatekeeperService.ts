@@ -11,8 +11,6 @@
 //   findGatewayToken,
 //   getGatekeeperAccountKey,
 // } from "@identity.com/solana-gateway-ts";
-import KycTokenClient from "@metacask/kyc-token-client"
-import {AsymmetricKey} from "casper-js-sdk/dist/lib/Keys";
 import {
   CasperClient,
   CLPublicKey,
@@ -47,14 +45,15 @@ export type GatekeeperConfig = {
 export class GatekeeperService {
   /**
    * Construct a new GatekeeperService instance
-   * @param connection A solana connection object
-   * @param payer The payer for any transactions performed by the gatekeeper
+   * @param kycTokenClient Casper KYC Token Client
+   // * @param payer The payer for any transactions performed by the gatekeeper
    * @param gatekeeperNetwork The network that the gatekeeper belongs to
    * @param gatekeeperAuthority The gatekeeper's key
    * @param config Global default configuration for the gatekeeper
    */
   constructor(
     private kycTokenClient: KycTokenClient,
+    // TODO: confirm who this is?
     // private payer: Keypair,
     private gatekeeperNetwork: CLPublicKey,
     private gatekeeperAuthority: Keys.AsymmetricKey,
