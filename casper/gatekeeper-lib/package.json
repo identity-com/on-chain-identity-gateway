@@ -8,9 +8,9 @@
   },
   "bugs": "https://github.com/identity-com/ociv/issues",
   "dependencies": {
-    "@identity.com/casper-gateway-ts": "^0.3.0",
+    "@identity.com/casper-gateway-ts": "../gateway-ts",
     "casper-js-sdk": "2.5.2",
-    "@metacask/kyc-token-client": "git+ssh://git@github.com/mcask/kyc-token-client.git#1.0.0",
+    "@metacask/kyc-token-client": "git+ssh://git@github.com/mcask/kyc-token-client.git#1.0.1",
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
