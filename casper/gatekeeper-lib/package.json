@@ -1,5 +1,5 @@
 {
-  "name": "@identity.com/casper-gatekeeper-lib",
+  "name": "casper-gatekeeper-lib",
   "description": "Library and CLI to manage Gateway Tokens on Casper",
   "version": "1.0.0",
   "author": "dankelleher @dankelleher",
