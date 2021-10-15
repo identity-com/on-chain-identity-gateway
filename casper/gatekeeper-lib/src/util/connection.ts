@@ -8,9 +8,9 @@ export const getNetworkService = (
   const kycTokenClient = new KycTokenClient(
     config.nodeAddress,
     config.chain,
-    config.contractHash,
     config.masterKey
   );
+  kycTokenClient.setContractHash(config.contractHash);
   return new GatekeeperNetworkService(kycTokenClient, config.networkKey);
 };
 
@@ -18,9 +18,9 @@ export const getService = (config: CommandConfig): GatekeeperService => {
   const kycTokenClient = new KycTokenClient(
     config.nodeAddress,
     config.chain,
-    config.contractHash,
     config.masterKey
   );
+  kycTokenClient.setContractHash(config.contractHash);
   return new GatekeeperService(
     kycTokenClient,
     config.masterKey.publicKey,
