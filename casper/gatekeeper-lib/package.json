@@ -1,7 +1,7 @@
 {
   "name": "@identity.com/casper-gatekeeper-lib",
   "description": "Library and CLI to manage Gateway Tokens on Casper",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "dankelleher @dankelleher",
   "bin": {
     "gateway": "./bin/run"
