@@ -43,7 +43,7 @@ export default class Verify extends Command {
       account ${account.toHex()} 
       on network ${config.networkKey}`);
 
-    const service = getService(config);
+    const service = await getService(config);
 
     const token = await service.findGatewayTokenForOwner(account);
 
