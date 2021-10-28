@@ -35,7 +35,7 @@ export default class AddGatekeeper extends Command {
       gatekeeper ${gatekeeper.toHex()} 
       to network ${config.networkKey}`);
 
-    const networkService = getNetworkService(config);
+    const networkService = await getNetworkService(config);
     const deployHash = await networkService.addGatekeeper(
       gatekeeper,
       config.whitelistPaymentAmount
