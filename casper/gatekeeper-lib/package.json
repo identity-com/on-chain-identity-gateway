@@ -8,7 +8,7 @@
   },
   "bugs": "https://github.com/identity-com/ociv/issues",
   "dependencies": {
-    "@metacask/kyc-token-client": "git+ssh://git@github.com/mcask/kyc-token-client.git#0.1.5",
+    "@metacask/kyc-token-client": "git+ssh://git@github.com/mcask/kyc-token-client.git#0.1.8",
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
