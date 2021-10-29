@@ -19,7 +19,7 @@ $ npm install -g @identity.com/casper-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/casper-gatekeeper-lib/0.1.2 darwin-x64 node-v16.0.0
+@identity.com/casper-gatekeeper-lib/0.1.2 darwin-arm64 node-v16.10.0
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -28,15 +28,39 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
+* [`gateway add-admin ADDRESS`](#gateway-add-admin-address)
 * [`gateway add-gatekeeper ADDRESS`](#gateway-add-gatekeeper-address)
 * [`gateway freeze ACCOUNT`](#gateway-freeze-account)
+* [`gateway get-deploy HASH`](#gateway-get-deploy-hash)
 * [`gateway help [COMMAND]`](#gateway-help-command)
 * [`gateway issue ACCOUNT`](#gateway-issue-account)
 * [`gateway refresh ACCOUNT [EXPIRY]`](#gateway-refresh-account-expiry)
 * [`gateway revoke ACCOUNT`](#gateway-revoke-account)
+* [`gateway revoke-admin ADDRESS`](#gateway-revoke-admin-address)
 * [`gateway revoke-gatekeeper ADDRESS`](#gateway-revoke-gatekeeper-address)
 * [`gateway unfreeze ACCOUNT`](#gateway-unfreeze-account)
 * [`gateway verify ACCOUNT`](#gateway-verify-account)
+
+## `gateway add-admin ADDRESS`
+
+Add an admin to a contract
+
+```
+USAGE
+  $ gateway add-admin ADDRESS
+
+ARGUMENTS
+  ADDRESS  The address of the admin to add to the contract
+
+OPTIONS
+  -c, --config=config  [default: ./config.json] Configuration file for commands
+  -h, --help           show CLI help
+
+EXAMPLE
+  $ gateway add-admin tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+```
+
+_See code: [dist/commands/add-admin.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/add-admin.ts)_
 
 ## `gateway add-gatekeeper ADDRESS`
 
@@ -80,6 +104,28 @@ EXAMPLE
 ```
 
 _See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/freeze.ts)_
+
+## `gateway get-deploy HASH`
+
+Check status of deployment
+
+```
+USAGE
+  $ gateway get-deploy HASH
+
+ARGUMENTS
+  HASH  Deployment hash
+
+OPTIONS
+  -c, --config=config  [default: ./config.json] Configuration file for commands
+  -h, --help           show CLI help
+
+EXAMPLE
+  $ gateway get-deploy EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
+  Frozen
+```
+
+_See code: [dist/commands/get-deploy.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/get-deploy.ts)_
 
 ## `gateway help [COMMAND]`
 
@@ -163,6 +209,27 @@ EXAMPLE
 ```
 
 _See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/revoke.ts)_
+
+## `gateway revoke-admin ADDRESS`
+
+Revoke an admin
+
+```
+USAGE
+  $ gateway revoke-admin ADDRESS
+
+ARGUMENTS
+  ADDRESS  The address of the admin to revoke
+
+OPTIONS
+  -c, --config=config  [default: ./config.json] Configuration file for commands
+  -h, --help           show CLI help
+
+EXAMPLE
+  $ gateway add-admin tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+```
+
+_See code: [dist/commands/revoke-admin.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/revoke-admin.ts)_
 
 ## `gateway revoke-gatekeeper ADDRESS`
 

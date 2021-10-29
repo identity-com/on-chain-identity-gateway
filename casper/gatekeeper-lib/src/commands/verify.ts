@@ -2,7 +2,7 @@ import { Command, flags } from "@oclif/command";
 import { configFlag } from "../util/oclif/flags";
 import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
-import { getService } from "../util/connection";
+import { getService } from "../util";
 import { prettyPrint } from "../util/token";
 
 export default class Verify extends Command {
@@ -49,6 +49,7 @@ export default class Verify extends Command {
 
     if (token) {
       this.log(prettyPrint(token));
+      return;
     }
     throw Error(`Account ${account.toHex()} has no KYC Token!`);
   }

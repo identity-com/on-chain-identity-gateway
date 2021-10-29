@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>GatekeeperNetworkService | @identity.com/solana-gatekeeper-lib</title>
-	<meta name="description" content="Documentation for @identity.com/solana-gatekeeper-lib">
+	<title>GatekeeperNetworkService | @identity.com/casper-gatekeeper-lib</title>
+	<meta name="description" content="Documentation for @identity.com/casper-gatekeeper-lib">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 	<script async src="../assets/js/search.js" id="search-script"></script>
@@ -23,7 +23,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">@identity.com/solana-gatekeeper-lib</a>
+					<a href="../index.html" class="title">@identity.com/casper-gatekeeper-lib</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -52,7 +52,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../index.html">@identity.com/solana-gatekeeper-lib</a>
+					<a href="../index.html">@identity.com/casper-gatekeeper-lib</a>
 				</li>
 				<li>
 					<a href="GatekeeperNetworkService.html">GatekeeperNetworkService</a>
@@ -68,7 +68,9 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Encapsulates the actions performed by a gatekeeper network authority</p>
+						<p>Encapsulates the actions performed by a gatekeeper network authority. This is actually not required we think given
+							the &quot;gatekeeper&quot; functionality is handled by the whitelisting feature in the KYC Token contract. The &quot;master&quot; key
+						is the only one allowed to update the minters array. This &quot;master&quot; key needs to be owned by either Civic or Casper!</p>
 					</div>
 				</div>
 			</section>
@@ -91,10 +93,20 @@
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="GatekeeperNetworkService.html#gatekeeperNetwork" class="tsd-kind-icon">gatekeeper<wbr>Network</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="GatekeeperNetworkService.html#kycTokenClient" class="tsd-kind-icon">kyc<wbr>Token<wbr>Client</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperNetworkService.html#addAdmin" class="tsd-kind-icon">add<wbr>Admin</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperNetworkService.html#addGatekeeper" class="tsd-kind-icon">add<wbr>Gatekeeper</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperNetworkService.html#hasGatekeeper" class="tsd-kind-icon">has<wbr>Gatekeeper</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperNetworkService.html#revokeAdmin" class="tsd-kind-icon">revoke<wbr>Admin</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperNetworkService.html#revokeGatekeeper" class="tsd-kind-icon">revoke<wbr>Gatekeeper</a></li>
 							</ul>
 						</section>
 					</div>
@@ -106,13 +118,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Gatekeeper<wbr>Network<wbr>Service<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, payer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatekeeperNetworkService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperNetworkService</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Gatekeeper<wbr>Network<wbr>Service<span class="tsd-signature-symbol">(</span>kycTokenClient<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">KycTokenClient</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatekeeperNetworkService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperNetworkService</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9610307/solana/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L19">service/GatekeeperNetworkService.ts:19</a></li>
+									<li>Defined in <a href="https://github.com/mcask/on-chain-identity-gateway/blob/fb3a73d/casper/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L16">service/GatekeeperNetworkService.ts:16</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -123,23 +135,15 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>connection: <span class="tsd-signature-type">Connection</span></h5>
+									<h5>kycTokenClient: <span class="tsd-signature-type">KycTokenClient</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
-											<p>A solana connection object</p>
+											<p>client wrapper to access the Casper KYC Token</p>
 										</div>
 									</div>
 								</li>
 								<li>
-									<h5>payer: <span class="tsd-signature-type">Keypair</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>The payer for any transactions performed by the network authority</p>
-										</div>
-									</div>
-								</li>
-								<li>
-									<h5>gatekeeperNetwork: <span class="tsd-signature-type">Keypair</span></h5>
+									<h5>gatekeeperNetwork: <span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>The network authority&#39;s key</p>
@@ -153,18 +157,71 @@
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="gatekeeperNetwork" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> gatekeeper<wbr>Network</h3>
+					<div class="tsd-signature tsd-kind-icon">gatekeeper<wbr>Network<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="kycTokenClient" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> kyc<wbr>Token<wbr>Client</h3>
+					<div class="tsd-signature tsd-kind-icon">kyc<wbr>Token<wbr>Client<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">KycTokenClient</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="addGatekeeper" class="tsd-anchor"></a>
-					<h3>add<wbr>Gatekeeper</h3>
+					<a name="addAdmin" class="tsd-anchor"></a>
+					<h3>add<wbr>Admin</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">add<wbr>Gatekeeper<span class="tsd-signature-symbol">(</span>gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Admin<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">CLPublicKey</span>, paymentAmount<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9610307/solana/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L29">service/GatekeeperNetworkService.ts:29</a></li>
+									<li>Defined in <a href="https://github.com/mcask/on-chain-identity-gateway/blob/fb3a73d/casper/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L27">service/GatekeeperNetworkService.ts:27</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Add an admin to the contract</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>account: <span class="tsd-signature-type">CLPublicKey</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>account of the admin</p>
+									</div>
+								</li>
+								<li>
+									<h5>paymentAmount: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = ...</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="addGatekeeper" class="tsd-anchor"></a>
+					<h3>add<wbr>Gatekeeper</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Gatekeeper<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">CLPublicKey</span>, paymentAmount<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/mcask/on-chain-identity-gateway/blob/fb3a73d/casper/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L51">service/GatekeeperNetworkService.ts:51</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -175,12 +232,18 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>gatekeeperAuthority: <span class="tsd-signature-type">PublicKey</span></h5>
+									<h5>account: <span class="tsd-signature-type">CLPublicKey</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>account of the gatekeeper</p>
+									</div>
+								</li>
+								<li>
+									<h5>paymentAmount: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = ...</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -188,29 +251,98 @@
 					<a name="hasGatekeeper" class="tsd-anchor"></a>
 					<h3>has<wbr>Gatekeeper</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">has<wbr>Gatekeeper<span class="tsd-signature-symbol">(</span>gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">has<wbr>Gatekeeper<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">CLPublicKey</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9610307/solana/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L83">service/GatekeeperNetworkService.ts:83</a></li>
+									<li>Defined in <a href="https://github.com/mcask/on-chain-identity-gateway/blob/fb3a73d/casper/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L75">service/GatekeeperNetworkService.ts:75</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Check if the gatekeeper already belongs to the network</p>
 								</div>
+								<dl class="tsd-comment-tags">
+									<dt>deprecated</dt>
+									<dd><p>This is not really needed</p>
+									</dd>
+								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>gatekeeperAuthority: <span class="tsd-signature-type">PublicKey</span></h5>
+									<h5>account: <span class="tsd-signature-type">CLPublicKey</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="revokeAdmin" class="tsd-anchor"></a>
+					<h3>revoke<wbr>Admin</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">revoke<wbr>Admin<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">CLPublicKey</span>, paymentAmount<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/mcask/on-chain-identity-gateway/blob/fb3a73d/casper/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L39">service/GatekeeperNetworkService.ts:39</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Revoke admin from the contract</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>account: <span class="tsd-signature-type">CLPublicKey</span></h5>
+								</li>
+								<li>
+									<h5>paymentAmount: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = ...</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="revokeGatekeeper" class="tsd-anchor"></a>
+					<h3>revoke<wbr>Gatekeeper</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">revoke<wbr>Gatekeeper<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">CLPublicKey</span>, paymentAmount<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/mcask/on-chain-identity-gateway/blob/fb3a73d/casper/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L63">service/GatekeeperNetworkService.ts:63</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Revoke gatekeeper from the network</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>account: <span class="tsd-signature-type">CLPublicKey</span></h5>
+								</li>
+								<li>
+									<h5>paymentAmount: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = ...</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -234,11 +366,26 @@
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
 								<a href="GatekeeperNetworkService.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="GatekeeperNetworkService.html#gatekeeperNetwork" class="tsd-kind-icon">gatekeeper<wbr>Network</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="GatekeeperNetworkService.html#kycTokenClient" class="tsd-kind-icon">kyc<wbr>Token<wbr>Client</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="GatekeeperNetworkService.html#addAdmin" class="tsd-kind-icon">add<wbr>Admin</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="GatekeeperNetworkService.html#addGatekeeper" class="tsd-kind-icon">add<wbr>Gatekeeper</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="GatekeeperNetworkService.html#hasGatekeeper" class="tsd-kind-icon">has<wbr>Gatekeeper</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="GatekeeperNetworkService.html#revokeAdmin" class="tsd-kind-icon">revoke<wbr>Admin</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="GatekeeperNetworkService.html#revokeGatekeeper" class="tsd-kind-icon">revoke<wbr>Gatekeeper</a>
 							</li>
 						</ul>
 					</li>
@@ -258,6 +405,7 @@
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
 				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 		</div>

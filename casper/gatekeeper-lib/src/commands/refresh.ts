@@ -2,7 +2,7 @@ import { Command, flags } from "@oclif/command";
 import { configFlag } from "../util/oclif/flags";
 import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
-import { getService } from "../util/connection";
+import { getService } from "../util";
 
 export default class Refresh extends Command {
   static description = "Refresh a gateway token";
@@ -43,7 +43,7 @@ Refreshed
       account ${account.toHex()} 
       on network ${config.networkKey}`);
 
-    const service = getService(config);
+    const service = await getService(config);
     const now = Math.floor(Date.now() / 1000);
     const deployHash = await service.updateExpiry(
       account,

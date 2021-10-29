@@ -2,13 +2,13 @@ import { Command, flags } from "@oclif/command";
 import { configFlag } from "../util/oclif/flags";
 import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
-import { getNetworkService } from "../util";
+import {getNetworkService, getService} from "../util";
 
-export default class RevokeGatekeeper extends Command {
-  static description = "Revoke a gatekeeper from a network";
+export default class AddAdmin extends Command {
+  static description = "Add an admin to a contract";
 
   static examples = [
-    `$ gateway revoke-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+    `$ gateway add-admin tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 `,
   ];
 
@@ -21,23 +21,22 @@ export default class RevokeGatekeeper extends Command {
     {
       name: "address",
       required: true,
-      description: "The address of the gatekeeper to remove from the network",
+      description: "The address of the admin to add to the contract",
       parse: (input: string) => CLPublicKey.fromHex(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(RevokeGatekeeper);
+    const { args, flags } = this.parse(AddAdmin);
 
     const config = readConfig(flags.config);
-    const gatekeeper = args.address;
-    this.log(`Removing:
-      gatekeeper ${gatekeeper.toHex()} 
-      from network ${config.networkKey}`);
+    const admin = args.address;
+    this.log(`Adding:
+      admin ${admin.toHex()}`);
 
     const networkService = await getNetworkService(config);
-    const deployHash = await networkService.revokeGatekeeper(
-      gatekeeper,
+    const deployHash = await networkService.addAdmin(
+      admin,
       config.whitelistPaymentAmount
     );
 

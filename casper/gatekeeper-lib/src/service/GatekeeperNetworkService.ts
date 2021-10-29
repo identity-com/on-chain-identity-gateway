@@ -20,11 +20,35 @@ export class GatekeeperNetworkService {
   ) {}
 
   /**
+   * Add an admin to the contract
+   * @param account account of the admin
+   * @param paymentAmount
+   */
+  public async addAdmin(
+    account: CLPublicKey,
+    paymentAmount = WHITELIST_PAYMENT_AMOUNT
+  ): Promise<string> {
+    return this.kycTokenClient.addAdmin(account, paymentAmount);
+  }
+
+  /**
+   * Revoke admin from the contract
+   * @param account
+   * @param paymentAmount
+   */
+  public async revokeAdmin(
+    account: CLPublicKey,
+    paymentAmount = WHITELIST_PAYMENT_AMOUNT
+  ): Promise<string> {
+    return this.kycTokenClient.revokeAdmin(account, paymentAmount);
+  }
+
+  /**
    * Add a gatekeeper to the network
    * @param account account of the gatekeeper
    * @param paymentAmount
    */
-  async addGatekeeper(
+  public async addGatekeeper(
     account: CLPublicKey,
     paymentAmount = WHITELIST_PAYMENT_AMOUNT
   ): Promise<string> {
@@ -36,7 +60,7 @@ export class GatekeeperNetworkService {
    * @param account
    * @param paymentAmount
    */
-  async revokeGatekeeper(
+  public async revokeGatekeeper(
     account: CLPublicKey,
     paymentAmount = WHITELIST_PAYMENT_AMOUNT
   ): Promise<string> {

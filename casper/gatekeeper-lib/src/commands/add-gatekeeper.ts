@@ -2,7 +2,7 @@ import { Command, flags } from "@oclif/command";
 import { configFlag } from "../util/oclif/flags";
 import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
-import { getNetworkService } from "../util/connection";
+import { getNetworkService } from "../util";
 
 export default class AddGatekeeper extends Command {
   static description = "Add a gatekeeper to a network";

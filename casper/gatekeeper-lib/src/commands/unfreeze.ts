@@ -2,7 +2,7 @@ import { Command, flags } from "@oclif/command";
 import { configFlag } from "../util/oclif/flags";
 import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
-import { getService } from "../util/connection";
+import { getService } from "../util";
 
 export default class Unfreeze extends Command {
   static description = "Unfreeze a gateway token";
@@ -36,7 +36,7 @@ Unfrozen
       account ${account.toHex()} 
       on network ${config.networkKey}`);
 
-    const service = getService(config);
+    const service = await getService(config);
 
     const deployHash = await service.unfreeze(
       account,
