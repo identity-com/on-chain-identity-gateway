@@ -6,7 +6,7 @@
   "bin": {
     "gateway": "./bin/run"
   },
-  "bugs": "https://github.com/identity-com/ociv/issues",
+  "bugs": "https://github.com/identity-com/on-chain-identity-gateway/issues",
   "dependencies": {
     "@identity.com/solana-gateway-ts": "^0.3.0",
     "@oclif/command": "^1.8.0",
