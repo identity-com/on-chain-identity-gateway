@@ -109,9 +109,13 @@ export class GatekeeperService {
   /**
    * Issue a token to this recipient
    * @param recipient
+   * @param confirmOptions
    */
-  issue(recipient: PublicKey): Promise<GatewayToken> {
-    return this.issueVanilla(recipient);
+  issue(
+    recipient: PublicKey,
+    confirmOptions: ConfirmOptions = {}
+  ): Promise<GatewayToken> {
+    return this.issueVanilla(recipient, undefined, confirmOptions);
   }
 
   /**
