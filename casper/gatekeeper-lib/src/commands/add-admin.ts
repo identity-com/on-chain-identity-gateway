@@ -2,7 +2,7 @@ import { Command, flags } from "@oclif/command";
 import { configFlag } from "../util/oclif/flags";
 import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
-import {getNetworkService, getService} from "../util";
+import { getNetworkService } from "../util";
 
 export default class AddAdmin extends Command {
   static description = "Add an admin to a contract";
