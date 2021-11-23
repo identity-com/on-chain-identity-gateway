@@ -13,25 +13,20 @@
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "version": "oclif-dev readme"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/secured-finance/gateway-eth-ts.git"
-  },
+  "repository": "git@github.com:identity-com/on-chain-identity-gateway.git",
   "author": "Bach Adylbekov <bach@secured-finance.com>",
   "bin": {
     "gateway-eth-ts": "./bin/run"
   },
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/secured-finance/gateway-eth-ts/issues"
-  },
+  "bugs": "https://github.com/identity-com/on-chain-identity-gateway/issues",
   "files": [
     "/bin",
     "/dist",
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/secured-finance/gateway-eth-ts#readme",
+  "homepage": "https://github.com/identity-com/on-chain-identity-gateway",
   "dependencies": {
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
