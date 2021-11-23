@@ -11,7 +11,7 @@ import { send } from "../util/connection";
  */
 export class GatekeeperNetworkService {
   /**
-   * Construct a new gatekeeper network service
+   * Construct a new gatekeeper network unit
    * @param connection A solana connection object
    * @param payer The payer for any transactions performed by the network authority
    * @param gatekeeperNetwork The network authority's key
