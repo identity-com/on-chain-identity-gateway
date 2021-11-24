@@ -19,14 +19,12 @@ const DELEGATE_SEED: &str = "gateway_usage_delegate";
 pub mod usage {
     use super::*;
     use crate::utils::{spl_token_transfer, TokenTransferParams};
-    // use anchor_lang::solana_program::{
-    //     program::invoke, program_option::COption, system_instruction,
-    // };
     
     pub fn register_usage(ctx: Context<RegisterUsage>, amount: u32, epoch: u64, bump: u8) -> ProgramResult {
         let usage = &mut ctx.accounts.usage;
         usage.dapp = *ctx.accounts.dapp.key;
         usage.gatekeeper = *ctx.accounts.gatekeeper.key;
+        usage.oracle = *ctx.accounts.oracle.key;
         usage.amount = amount;
         usage.epoch = epoch;
         usage.bump = bump;
@@ -40,8 +38,6 @@ pub mod usage {
         let destination = ctx.accounts.gatekeeper_token_account.to_account_info();
         let authority = ctx.accounts.delegate_authority.to_account_info();
         
-        msg!("Drawable amount {}", usage.amount);
-
         spl_token_transfer(TokenTransferParams {
             source,
             destination,
@@ -49,6 +45,7 @@ pub mod usage {
             authority_signer_seeds: &[
                 DELEGATE_SEED.as_bytes(),
                 &usage.dapp.to_bytes(),
+                &usage.oracle.to_bytes(),
                 &[delegate_bump]
             ],
             token_program: ctx.accounts.token_program.to_account_info(),
@@ -66,6 +63,7 @@ pub mod usage {
 pub struct Usage {
     pub dapp: Pubkey,
     pub gatekeeper: Pubkey,
+    pub oracle: Pubkey,
     pub amount: u32,
     pub epoch: u64,
     pub bump: u8,
@@ -78,13 +76,19 @@ pub struct RegisterUsage<'info> {
     #[account(
         init,
         // should match deriveUsageAccount in the client
-        seeds=[PREFIX.as_bytes(), dapp.key().as_ref(), gatekeeper.key.as_ref(), &epoch.to_le_bytes()],
+        seeds=[
+            PREFIX.as_bytes(),
+            dapp.key().as_ref(),
+            gatekeeper.key.as_ref(),
+            oracle.key.as_ref(),
+            &epoch.to_le_bytes()
+        ],
         payer = oracle,
         // the msg! is a hack to help debugging. Remove once we are happy with the code
         bump={ msg!("bump = {}, epoch = {:?}", bump, epoch.to_le_bytes()); bump },
         // Space is based on the Usage struct - but for some reason it requires an extra 8 bytes to avoid a 
         // deserialisation error
-        space = 32 + 32 + 4 + 8 + 8 + 1 + 1)
+        space = 32 + 32 + 32 + 4 + 8 + 8 + 1 + 1)
     ]
     usage: ProgramAccount<'info, Usage>,
     #[account(mut)]
@@ -100,7 +104,8 @@ pub struct RegisterUsage<'info> {
 pub struct Draw<'info> {
     #[account(
         mut,
-        has_one = gatekeeper
+        has_one = gatekeeper,
+        constraint= !usage.paid
     )]
     usage: ProgramAccount<'info, Usage>,
     #[account(mut)]
