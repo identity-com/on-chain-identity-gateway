@@ -1,18 +1,14 @@
 mod utils;
 
-use anchor_lang::solana_program::clock::Epoch;
 use {
-    crate::utils::{assert_initialized, assert_owned_by},
     anchor_lang::{
         prelude::*,
-    },
-    spl_token::state::{Account, Mint},
+    }
 };
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 const PREFIX: &str = "gateway_usage";
-// const DELEGATE_SEED: &[u8; 30] = br"gateway_usage_delegate";
 const DELEGATE_SEED: &str = "gateway_usage_delegate";
 
 #[program]

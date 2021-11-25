@@ -1,32 +1,12 @@
 use {
     crate::ErrorCode,
     anchor_lang::{
-        prelude::{AccountInfo, ProgramError, ProgramResult, Pubkey},
+        prelude::{AccountInfo, ProgramResult},
         solana_program::{
-            program::invoke_signed,
-            program_pack::{IsInitialized, Pack},
+            program::invoke_signed
         },
     },
 };
-
-pub fn assert_initialized<T: Pack + IsInitialized>(
-    account_info: &AccountInfo,
-) -> Result<T, ProgramError> {
-    let account: T = T::unpack_unchecked(&account_info.data.borrow())?;
-    if !account.is_initialized() {
-        Err(ErrorCode::Uninitialized.into())
-    } else {
-        Ok(account)
-    }
-}
-
-pub fn assert_owned_by(account: &AccountInfo, owner: &Pubkey) -> ProgramResult {
-    if account.owner != owner {
-        Err(ErrorCode::IncorrectOwner.into())
-    } else {
-        Ok(())
-    }
-}
 
 /// Parameters for an SPL Token transfer CPI
 pub struct TokenTransferParams<'a: 'b, 'b> {

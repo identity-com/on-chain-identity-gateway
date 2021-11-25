@@ -1,9 +1,28 @@
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import * as anchor from '@project-serum/anchor';
-import {BN, Program, web3} from '@project-serum/anchor';
-import {ASSOCIATED_TOKEN_PROGRAM_ID, MintLayout, Token, TOKEN_PROGRAM_ID} from '@solana/spl-token';
-import { Usage } from '../target/types/usage';
+import {
+  Program,
+  Provider,
+  web3,
+  setProvider,
+  workspace,
+} from "@project-serum/anchor";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  MintLayout,
+  Token,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
+import { Usage } from "../target/types/usage";
+import {
+  deriveATA,
+  deriveDelegateAndBumpSeed,
+  deriveUsageAccount,
+  providerFor,
+} from "../src/lib/util";
+import { registerUsage } from "../src/registerUsage";
+import { draw } from "../src/draw";
+import { delegate } from "../src/delegateTokens";
 
 const { Keypair, SystemProgram } = web3;
 
@@ -12,17 +31,21 @@ const { expect } = chai;
 
 const TOKEN_DECIMALS = 2;
 
-describe('usage', () => {
+describe("usage", () => {
   // Configure the client to use the local cluster.
-  const provider = anchor.Provider.local();
-  anchor.setProvider(provider);
-  
+  const provider = Provider.local();
+  setProvider(provider);
+
   const usageAmount = 100;
   const epoch = 1;
 
   const dapp = Keypair.generate();
   const gatekeeper = Keypair.generate();
   const oracle = Keypair.generate();
+
+  const oracleProvider = providerFor(oracle);
+  const gatekeeperProvider = providerFor(gatekeeper);
+  const dappProvider = providerFor(dapp);
 
   // This token is the currency that usage is charged in
   // Gatekeepers draw tokens from the dapp's token account
@@ -31,19 +54,24 @@ describe('usage', () => {
   const tokenMint = Keypair.generate();
   const tokenMintAuthority = Keypair.generate();
   // The payer here can be anything - we do not use it
-  const mint = new Token(provider.connection, tokenMint.publicKey, TOKEN_PROGRAM_ID, gatekeeper);
+  const mint = new Token(
+    provider.connection,
+    tokenMint.publicKey,
+    TOKEN_PROGRAM_ID,
+    gatekeeper
+  );
 
   // Token accounts owned by the gatekeeper (for receiving tokens)
   // and the dapp (for sending tokens)
   let gatekeeperATA: web3.PublicKey;
   let dappATA: web3.PublicKey;
-  // A PDA, owned by the Usage program, which is allowed to draw funds from the 
+  // A PDA, owned by the Usage program, which is allowed to draw funds from the
   // dapp's token account
-  let delegate: web3.PublicKey;
+  let delegateAccount: web3.PublicKey;
 
-  let usageAccount: web3.PublicKey
+  let usageAccount: web3.PublicKey;
 
-  const program = anchor.workspace.Usage as Program<Usage>;
+  const program = workspace.Usage as Program<Usage>;
 
   async function fund(recipient: web3.PublicKey) {
     await provider.send(
@@ -57,63 +85,18 @@ describe('usage', () => {
     );
   }
 
-  const deriveUsageAccount = async (
-    dapp: web3.PublicKey,
-    gatekeeper: web3.PublicKey,
-    oracle: web3.PublicKey,
-    epoch: number,
-  ) => {
-    // the epoch is used to seed the usage account,
-    // so each epoch has its own account
-    // the endianness does not actually matter here, we could choose big-endian
-    // as long as it is mirrored in the `seeds=[...]` macro in the RegisterUsage definition
-    // in the program.
-    const epochBuffer = new BN(epoch).toBuffer('le', 8)
+  before("Fund accounts", () =>
+    Promise.all([
+      fund(oracle.publicKey),
+      fund(gatekeeper.publicKey),
+      fund(dapp.publicKey),
+    ])
+  );
 
-    return web3.PublicKey.findProgramAddress(
-      [
-        Buffer.from("gateway_usage"),
-        dapp.toBuffer(),
-        gatekeeper.toBuffer(),
-        oracle.toBuffer(),
-        epochBuffer,
-      ],
-      program.programId
-    );
-  };
-
-  const deriveDelegateAndBumpSeed = async (
-    owner: anchor.web3.PublicKey,
-    oracle: anchor.web3.PublicKey,
-  ) =>
-    (
-      await anchor.web3.PublicKey.findProgramAddress(
-        [Buffer.from("gateway_usage_delegate"), owner.toBuffer(), oracle.toBuffer()],
-        program.programId
-      )
-    );
-
-  const deriveATA = async (
-    owner: anchor.web3.PublicKey,
-    mint: anchor.web3.PublicKey
-  ) =>
-    (
-      await anchor.web3.PublicKey.findProgramAddress(
-        [owner.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
-        ASSOCIATED_TOKEN_PROGRAM_ID
-      )
-    )[0];
-
-  before('Fund accounts', async () => {
-    // fund the oracle
-    await fund(oracle.publicKey);
-  });
-
-  before('Create token and token accounts', async () => {
+  before("Create token and token accounts", async () => {
     gatekeeperATA = await deriveATA(gatekeeper.publicKey, tokenMint.publicKey);
     dappATA = await deriveATA(dapp.publicKey, tokenMint.publicKey);
-    [delegate] = await deriveDelegateAndBumpSeed(dapp.publicKey, oracle.publicKey);
-    
+
     const createMintAccountInstruction = SystemProgram.createAccount({
       fromPubkey: provider.wallet.publicKey,
       newAccountPubkey: tokenMint.publicKey,
@@ -123,7 +106,6 @@ describe('usage', () => {
       ),
       programId: TOKEN_PROGRAM_ID,
     });
-
     const initMintInstruction = Token.createInitMintInstruction(
       TOKEN_PROGRAM_ID,
       tokenMint.publicKey,
@@ -131,30 +113,24 @@ describe('usage', () => {
       tokenMintAuthority.publicKey,
       tokenMintAuthority.publicKey
     );
-    const createGatekeeperATAInstruction = Token.createAssociatedTokenAccountInstruction(
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-      TOKEN_PROGRAM_ID,
-      tokenMint.publicKey,
-      gatekeeperATA,
-      gatekeeper.publicKey,
-      provider.wallet.publicKey,
-    );
-    const createDappATAInstruction = Token.createAssociatedTokenAccountInstruction(
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-      TOKEN_PROGRAM_ID,
-      tokenMint.publicKey,
-      dappATA,
-      dapp.publicKey,
-      provider.wallet.publicKey,
-    );
-    const setDelegateInstruction = Token.createApproveInstruction(
-      TOKEN_PROGRAM_ID,
-      dappATA,
-      delegate,
-      dapp.publicKey,
-      [],
-      999_999_999_999,  // TODO can we make this infinite?
-    );
+    const createGatekeeperATAInstruction =
+      Token.createAssociatedTokenAccountInstruction(
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        tokenMint.publicKey,
+        gatekeeperATA,
+        gatekeeper.publicKey,
+        provider.wallet.publicKey
+      );
+    const createDappATAInstruction =
+      Token.createAssociatedTokenAccountInstruction(
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        tokenMint.publicKey,
+        dappATA,
+        dapp.publicKey,
+        provider.wallet.publicKey
+      );
     const mintToDappInstruction = Token.createMintToInstruction(
       TOKEN_PROGRAM_ID,
       tokenMint.publicKey,
@@ -162,138 +138,103 @@ describe('usage', () => {
       tokenMintAuthority.publicKey,
       [],
       999_999_999_999
-    )
+    );
 
     await provider.send(
-      new web3.Transaction()
-        .add(
-          createMintAccountInstruction,
-          initMintInstruction,
-          createGatekeeperATAInstruction,
-          createDappATAInstruction,
-          setDelegateInstruction,
-          mintToDappInstruction
-        ),
-      [tokenMint, tokenMintAuthority, dapp]
+      new web3.Transaction().add(
+        createMintAccountInstruction,
+        initMintInstruction,
+        createGatekeeperATAInstruction,
+        createDappATAInstruction,
+        mintToDappInstruction
+      ),
+      [tokenMint, tokenMintAuthority]
     );
-  });
 
-  it('registers usage', async () => {
-    const derivedUsageAccount = await deriveUsageAccount(
-      dapp.publicKey,
-      gatekeeper.publicKey,
-      oracle.publicKey,
-      epoch,
-    )
-
-    usageAccount = derivedUsageAccount[0];
-    const bump = derivedUsageAccount[1];
-    
-    await program.rpc.registerUsage(new BN(usageAmount), new BN(epoch), bump, {
-      accounts: {
-        usage: usageAccount,
-        dapp: dapp.publicKey,
-        gatekeeper: gatekeeper.publicKey,
-        oracle: oracle.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [oracle]
+    delegateAccount = await delegate({
+      dappProvider,
+      oracle: oracle.publicKey,
+      token: tokenMint.publicKey,
     });
   });
 
-  it('draws down', async () => {
-    // TODO Consider storing the delegate bump in the usage
-    // downside would be it would have to be stored in each one
-    const [delegate, delegate_bump] = await deriveDelegateAndBumpSeed(dapp.publicKey, oracle.publicKey);
+  it("registers usage", async () => {
+    usageAccount = await registerUsage({
+      oracleProvider,
+      amount: usageAmount,
+      epoch,
+      dapp: dapp.publicKey,
+      gatekeeper: gatekeeper.publicKey,
+    });
+  });
 
-    await program.rpc.draw(delegate_bump, {
-      accounts: {
-        usage: usageAccount,
-        gatekeeper: gatekeeper.publicKey,
-        gatekeeperTokenAccount: gatekeeperATA,
-        dappTokenAccount: dappATA,
-        delegateAuthority: delegate,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      },
-      signers: [gatekeeper]
-    })
+  it("draws down", async () => {
+    await draw({
+      gatekeeperProvider,
+      epoch,
+      token: tokenMint.publicKey,
+      dapp: dapp.publicKey,
+      oracle: oracle.publicKey,
+    });
 
     // Load the gatekeeper balance - ensure they received the funds
-    const gatekeeperTokenAccountInfo = await mint.getAccountInfo(gatekeeperATA)
+    const gatekeeperTokenAccountInfo = await mint.getAccountInfo(gatekeeperATA);
 
     // gatekeeper has received funds
-    expect(gatekeeperTokenAccountInfo.amount.toNumber()).to.equal(usageAmount)
+    expect(gatekeeperTokenAccountInfo.amount.toNumber()).to.equal(usageAmount);
 
     // usage has been marked as paid
-    const usage = await program.account.usage.fetch(usageAccount)
+    const usage = await program.account.usage.fetch(usageAccount);
     expect(usage.paid).to.equal(true);
   });
 
-  it('fails to draw down usage the same epoch twice', async () => {
-    const [delegate, delegate_bump] = await deriveDelegateAndBumpSeed(dapp.publicKey, oracle.publicKey);
-
-    const shouldFail = program.rpc.draw(delegate_bump, {
-      accounts: {
-        usage: usageAccount,
-        gatekeeper: gatekeeper.publicKey,
-        gatekeeperTokenAccount: gatekeeperATA,
-        dappTokenAccount: dappATA,
-        delegateAuthority: delegate,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      },
-      signers: [gatekeeper]
+  it("fails to draw down usage the same epoch twice", async () => {
+    const shouldFail = draw({
+      gatekeeperProvider,
+      epoch,
+      token: tokenMint.publicKey,
+      dapp: dapp.publicKey,
+      oracle: oracle.publicKey,
     });
 
-    return expect(shouldFail).to.be.rejectedWith(/A raw constraint was violated/);
-  });
-
-  it('fails to register usage for the same account twice', async () => {
-    const [,bump] = await deriveUsageAccount(
-      dapp.publicKey,
-      gatekeeper.publicKey,
-      oracle.publicKey,
-      epoch,
-    )
-
-    const shouldFail = program.rpc.registerUsage(new BN(usageAmount), new BN(epoch), bump, {
-      accounts: {
-        usage: usageAccount,
-        dapp: dapp.publicKey,
-        gatekeeper: gatekeeper.publicKey,
-        oracle: oracle.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [oracle]
-    });
-
-    return expect(shouldFail).to.be.rejectedWith(/failed to send transaction/);
-  });
-
-  it('fails to draw down if the usage was registered by a different oracle', async () => {
-    // create usage for the same epoch from a different oracle (this is allowed)
-    const badOracle = Keypair.generate();
-    // fund the bad oracle
-    const recipient = badOracle.publicKey;
-    await fund(recipient);
-    const [badOracleUsageAccount, bump] = await deriveUsageAccount(
-      dapp.publicKey,
-      gatekeeper.publicKey,
-      badOracle.publicKey,
-      epoch,
+    return expect(shouldFail).to.be.rejectedWith(
+      /A raw constraint was violated/
     );
-    await program.rpc.registerUsage(new BN(usageAmount), new BN(epoch), bump, {
-      accounts: {
-        usage: badOracleUsageAccount,
-        dapp: dapp.publicKey,
-        gatekeeper: gatekeeper.publicKey,
-        oracle: badOracle.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [badOracle]
+  });
+
+  it("fails to register usage for the same account twice", async () => {
+    const shouldFail = registerUsage({
+      oracleProvider,
+      amount: usageAmount,
+      epoch,
+      dapp: dapp.publicKey,
+      gatekeeper: gatekeeper.publicKey,
     });
-    
-    // try to draw with the delegate account derived from the good oracle
-    const [delegate, delegate_bump] = await deriveDelegateAndBumpSeed(dapp.publicKey, oracle.publicKey);
+
+    return expect(shouldFail).to.be.rejectedWith(/failed to send transaction/);
+  });
+
+  it("fails to draw down if the usage was registered by a different oracle", async () => {
+    const badOracle = Keypair.generate();
+    await fund(badOracle.publicKey);
+
+    // create usage for the same epoch from a different oracle (this is allowed)
+    const badOracleUsageAccount = await registerUsage({
+      oracleProvider: providerFor(badOracle),
+      amount: usageAmount,
+      epoch,
+      dapp: dapp.publicKey,
+      gatekeeper: gatekeeper.publicKey,
+    });
+
+    // Try to draw with the delegate account derived from the good oracle
+    const [delegate, delegate_bump] = await deriveDelegateAndBumpSeed(
+      dapp.publicKey,
+      oracle.publicKey
+    );
+    // We cannot use the client function draw() here, as that derives the delegate from the oracle passed in,
+    // in other words - the client cannot misbehave in the way this test is testing.
+    // This tests that the program also cannot.
     const shouldFail = program.rpc.draw(delegate_bump, {
       accounts: {
         usage: badOracleUsageAccount,
@@ -303,46 +244,34 @@ describe('usage', () => {
         delegateAuthority: delegate,
         tokenProgram: TOKEN_PROGRAM_ID,
       },
-      signers: [gatekeeper]
-    })
+      signers: [gatekeeper],
+    });
 
     return expect(shouldFail).to.be.rejectedWith(/failed to send transaction/);
   });
 
-  it('registers usage and draws down for the next epoch', async () => {
+  it("registers usage and draws down for the next epoch", async () => {
     const nextEpoch = epoch + 1;
-    const [usageAccountEpoch2, bumpEpoch2] = await deriveUsageAccount(
-      dapp.publicKey,
-      gatekeeper.publicKey,
-      oracle.publicKey,
-      nextEpoch,
-    )
-    await program.rpc.registerUsage(new BN(usageAmount), new BN(nextEpoch), bumpEpoch2, {
-      accounts: {
-        usage: usageAccountEpoch2,
-        dapp: dapp.publicKey,
-        gatekeeper: gatekeeper.publicKey,
-        oracle: oracle.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [oracle]
+    await registerUsage({
+      oracleProvider,
+      amount: usageAmount,
+      epoch: nextEpoch,
+      dapp: dapp.publicKey,
+      gatekeeper: gatekeeper.publicKey,
     });
 
-    const [delegate, delegate_bump] = await deriveDelegateAndBumpSeed(dapp.publicKey, oracle.publicKey);
-    await program.rpc.draw(delegate_bump, {
-      accounts: {
-        usage: usageAccountEpoch2,
-        gatekeeper: gatekeeper.publicKey,
-        gatekeeperTokenAccount: gatekeeperATA,
-        dappTokenAccount: dappATA,
-        delegateAuthority: delegate,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      },
-      signers: [gatekeeper]
-    })
+    await draw({
+      gatekeeperProvider,
+      epoch: nextEpoch,
+      token: tokenMint.publicKey,
+      dapp: dapp.publicKey,
+      oracle: oracle.publicKey,
+    });
 
     // gatekeeper has received funds twice now
-    const gatekeeperTokenAccountInfo = await mint.getAccountInfo(gatekeeperATA)
-    expect(gatekeeperTokenAccountInfo.amount.toNumber()).to.equal(usageAmount * 2)
+    const gatekeeperTokenAccountInfo = await mint.getAccountInfo(gatekeeperATA);
+    expect(gatekeeperTokenAccountInfo.amount.toNumber()).to.equal(
+      usageAmount * 2
+    );
   });
 });
