@@ -6,6 +6,7 @@ import {
   fetchProgram,
 } from "./lib/util";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Usage } from "./usage";
 
 export type DrawParams = {
   epoch: number;
@@ -16,7 +17,7 @@ export type DrawParams = {
   dappTokenAccount?: web3.PublicKey; // defaults to the ATA derived from the dApp
   gatekeeperTokenAccount?: web3.PublicKey; // defaults to the ATA derived from the gatekeeperProvider
 };
-export const draw = async (params: DrawParams) => {
+export const draw = async (params: DrawParams): Promise<Usage> => {
   const gatekeeperPublicKey = params.gatekeeperProvider.wallet.publicKey;
 
   const dappTokenAccount =
@@ -49,4 +50,13 @@ export const draw = async (params: DrawParams) => {
       tokenProgram: TOKEN_PROGRAM_ID,
     },
   });
+
+  const usage = await program.account.usage.fetch(usageAccount);
+
+  return {
+    ...usage,
+    id: usageAccount,
+    epoch: usage.epoch.toNumber(),
+    paid: usage.paid as boolean,
+  };
 };

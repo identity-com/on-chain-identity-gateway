@@ -17,12 +17,9 @@ import { Usage } from "../target/types/usage";
 import {
   deriveATA,
   deriveDelegateAndBumpSeed,
-  deriveUsageAccount,
   providerFor,
 } from "../src/lib/util";
-import { registerUsage } from "../src/registerUsage";
-import { draw } from "../src/draw";
-import { delegate } from "../src/delegateTokens";
+import { delegate, draw, registerUsage } from "../src";
 
 const { Keypair, SystemProgram } = web3;
 
@@ -151,11 +148,13 @@ describe("usage", () => {
       [tokenMint, tokenMintAuthority]
     );
 
-    delegateAccount = await delegate({
+    const delegateResult = await delegate({
       dappProvider,
       oracle: oracle.publicKey,
       token: tokenMint.publicKey,
     });
+
+    delegateAccount = delegateResult.delegateAccount;
   });
 
   it("registers usage", async () => {

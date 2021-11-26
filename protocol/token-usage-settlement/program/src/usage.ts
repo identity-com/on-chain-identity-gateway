@@ -8,6 +8,17 @@ export type RegisterUsageParams = {
   gatekeeper: web3.PublicKey;
   amount: number;
 };
+
+export type Usage = {
+  id: web3.PublicKey;
+  epoch: number;
+  dapp: web3.PublicKey;
+  gatekeeper: web3.PublicKey;
+  oracle: web3.PublicKey;
+  amount: number;
+  paid: boolean;
+};
+
 export const registerUsage = async (
   params: RegisterUsageParams
 ): Promise<web3.PublicKey> => {
@@ -37,4 +48,28 @@ export const registerUsage = async (
   );
 
   return usageAccount;
+};
+
+export const getUsage = async (
+  params: Omit<RegisterUsageParams, "oracleProvider"> & {
+    oracle: web3.PublicKey;
+    provider: Provider;
+  }
+): Promise<Usage> => {
+  const [usageAccount] = await deriveUsageAccount(
+    params.dapp,
+    params.gatekeeper,
+    params.oracle,
+    params.epoch
+  );
+
+  const program = await fetchProgram(params.provider);
+  const usage = await program.account.usage.fetch(usageAccount);
+
+  return {
+    ...usage,
+    id: usageAccount,
+    epoch: usage.epoch.toNumber(),
+    paid: usage.paid as boolean,
+  };
 };

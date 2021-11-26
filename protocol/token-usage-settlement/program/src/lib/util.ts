@@ -51,13 +51,14 @@ export const fetchProgram = async (
   provider: Provider
 ): Promise<Program<Usage>> => {
   const workspaceProgram = workspace?.Usage as Program<Usage>;
-  if (workspaceProgram)
+
+  if (workspaceProgram) {
     return new Program<Usage>(
       workspaceProgram.idl,
       workspaceProgram.programId,
       provider
     );
-
+  }
   const idl = await Program.fetchIdl(USAGE_PROGRAM_ID, provider);
 
   if (!idl) throw new Error("Usage IDL could not be found");
@@ -74,7 +75,7 @@ export const deriveUsageAccount = async (
   // the epoch is used to seed the usage account,
   // so each epoch has its own account
   // the endianness does not actually matter here, we could choose big-endian
-  // as long as it is mirrored in the `seeds=[...]` macro in the RegisterUsage definition
+  // as long as it is mirrored in the `seeds=[...]` macro in the Register definition
   // in the program.
   const epochBuffer = new BN(epoch).toBuffer("le", 8);
 

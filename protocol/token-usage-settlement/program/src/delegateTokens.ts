@@ -7,11 +7,17 @@ export type DelegateParams = {
   oracle: web3.PublicKey;
   token: web3.PublicKey;
   dappTokenAccount?: web3.PublicKey; // defaults to the ATA derived from the dApp
+  amount?: number;
+};
+
+export type DelegateResult = {
+  delegateAccount: web3.PublicKey;
+  tokenAccount: web3.PublicKey;
 };
 
 export const delegate = async (
   params: DelegateParams
-): Promise<web3.PublicKey> => {
+): Promise<DelegateResult> => {
   const dappPublicKey = params.dappProvider.wallet.publicKey;
 
   const dappTokenAccount =
@@ -22,18 +28,22 @@ export const delegate = async (
     params.oracle
   );
 
+  const amount = params.amount || 999_999_999_999; // TODO can we make this infinite?
   const setDelegateInstruction = Token.createApproveInstruction(
     TOKEN_PROGRAM_ID,
     dappTokenAccount,
     delegate,
     dappPublicKey,
     [],
-    999_999_999_999 // TODO can we make this infinite?
+    amount
   );
 
   await params.dappProvider.send(
     new web3.Transaction().add(setDelegateInstruction)
   );
 
-  return delegate;
+  return {
+    delegateAccount: delegate,
+    tokenAccount: dappTokenAccount,
+  };
 };
