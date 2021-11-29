@@ -1,11 +1,23 @@
-import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  Connection,
+  Keypair,
+  ParsedConfirmedTransaction,
+  PublicKey,
+  Transaction,
+} from "@solana/web3.js";
+import { complement, isNil } from "ramda";
 
 export type SerumType = "PlaceOrder";
 export type NFTType = "Mint";
+export type DummyType = "DummyTx";
 
-export type Category = "Serum" | "NFT";
+export type Category = "Serum" | "NFT" | "Dummy";
 
-type Subtype<C extends Category> = C extends "Serum" ? SerumType : NFTType;
+type Subtype<C extends Category> = C extends "Serum"
+  ? SerumType
+  : C extends "NFT"
+  ? NFTType
+  : DummyType;
 
 export type BillableTransaction<C extends Category> = {
   programId: PublicKey;
@@ -13,7 +25,7 @@ export type BillableTransaction<C extends Category> = {
   category: C;
   subtype: Subtype<C>;
   signature: string;
-  rawTransaction: Transaction;
+  rawTransaction: ParsedConfirmedTransaction;
 };
 
 const isNotNil = complement(isNil);
@@ -23,20 +35,20 @@ export const buildBillableTransaction = <C extends Category>(
   dapp: PublicKey,
   category: C,
   subtype: Subtype<C>,
-  signature: string
+  signature: string,
+  rawTransaction: ParsedConfirmedTransaction
 ): BillableTransaction<C> => ({
   programId,
   dapp,
   category,
   subtype,
   signature,
+  rawTransaction,
 });
 
 interface Strategy<C extends Category> {
-  category: C;
-  subType: Subtype<C>;
-  matches(transaction: Transaction): boolean;
-  build(transaction: Transaction): BillableTransaction<C>;
+  matches(transaction: ParsedConfirmedTransaction): boolean;
+  build(transaction: ParsedConfirmedTransaction): BillableTransaction<C>;
 }
 
 abstract class SerumStrategy implements Strategy<"Serum"> {
@@ -45,27 +57,33 @@ abstract class SerumStrategy implements Strategy<"Serum"> {
     "D3z8BLmMnPD1LaKwCkyCisM7iDyw9PsXXmvatUwjCuqT"
   );
 
-  category = "Serum" as Category;
-  subType = "PlaceOrder";
-
-  matches(transaction: Transaction): boolean {
-    return transaction.instructions.some((instruction) =>
+  matches(transaction: ParsedConfirmedTransaction): boolean {
+    return transaction.transaction.message.instructions.some((instruction) => {
       if (!instruction.programId.equals(this.programId)) return false;
-      
-      
-      
-      if (instruction. !== 1) return false;
-      
-    );
+
+      // TODO
+      // check the type. This is pseudocode - best to run it and see what happens
+      // my hypothesis is that the validators recognise serum txes and return parsed data
+      // if not, we will need to parse the tx ourselves
+      // I have included the serum-ts library for this purpose
+      if (instruction.parsed && instruction.parsed.type === "PlaceOrder") {
+        return true;
+      }
+
+      return true;
+    });
   }
 
-  build(transaction: Transaction): BillableTransaction<"Serum"> {
+  build(
+    parsedConfirmedTransaction: ParsedConfirmedTransaction
+  ): BillableTransaction<"Serum"> {
     return buildBillableTransaction(
       this.programId,
-      this.dapp,
-      this.category,
-      this.subType,
-      transaction.signature
+      SerumStrategy.proxyProgramId,
+      "Serum",
+      "PlaceOrder",
+      "", // TODO something like parsedConfirmedTransaction.transaction.signature(),
+      parsedConfirmedTransaction
     );
   }
   constructor(
@@ -75,30 +93,45 @@ abstract class SerumStrategy implements Strategy<"Serum"> {
 }
 
 class DummyStrategy implements Strategy<"Dummy"> {
-  matches(transaction: Transaction): boolean {
+  matches(parsedConfirmedTransaction: ParsedConfirmedTransaction): boolean {
     return true;
   }
 
-  build(transaction: Transaction): BillableTransaction<C> {
-    
-  } 
+  build(
+    parsedConfirmedTransaction: ParsedConfirmedTransaction
+  ): BillableTransaction<"Dummy"> {
+    return buildBillableTransaction(
+      parsedConfirmedTransaction.transaction.message.instructions[0].programId,
+      Keypair.generate().publicKey, // TODO
+      "Dummy",
+      "DummyTx",
+      "TODO", // TODO
+      parsedConfirmedTransaction
+    );
+  }
 }
 
-const loadTransactions = (
+const loadTransactions = async (
   connection: Connection,
   signatures: string[],
   strategies: Strategy<any>[]
 ): Promise<BillableTransaction<any>[]> => {
-  const transactions = await connection.getParsedConfirmedTransactions(signatures);
+  const transactions = await connection.getParsedConfirmedTransactions(
+    signatures
+  );
 
-  const buildFromStrategies = (transaction: Transaction) => {
-    const strategy = strategies.find((strategy) => strategy.matches(transaction));
+  const buildFromStrategies = (
+    transaction: ParsedConfirmedTransaction | null
+  ) => {
+    if (!transaction) return null;
+    const strategy = strategies.find((strategy) =>
+      strategy.matches(transaction)
+    );
     if (!strategy) return null;
     return strategy.build(transaction);
   };
-  
+
   return transactions
     .map(buildFromStrategies)
-    .filter(isNotNull);
-  );
+    .filter(isNotNil) as BillableTransaction<any>[];
 };

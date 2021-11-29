@@ -14,6 +14,8 @@ import { Provider, Wallet, web3 } from "@project-serum/anchor";
 
 const DEFAULT_COMMITMENT: web3.Commitment = "confirmed";
 
+type PaginationProps = { offset: number; limit: number };
+
 export class UsageOracleService {
   private connection: Connection;
 
@@ -35,14 +37,14 @@ export class UsageOracleService {
     dapp: web3.PublicKey,
     epoch: number
   ) {
-    // TODO we might want to cache this - it should never change
+    // TODO we might want to cache this - it should never change after an epoch is over
     const epochSchedule = await this.connection.getEpochSchedule();
 
     const firstSlot = epochSchedule.getFirstSlotInEpoch(epoch);
     const lastSlot = epochSchedule.getLastSlotInEpoch(epoch);
 
     // TODO fix deprecation
-    // pagination - only returns the first 1000 transaction
+    // TODO pagination - only returns the first 1000 transactions
     return this.connection.getConfirmedSignaturesForAddress(
       dapp,
       firstSlot,
@@ -55,8 +57,8 @@ export class UsageOracleService {
     dapp,
     epoch,
     offset,
-    limit
-  }: Omit<RegisterUsageParams, "oracleProvider" | "amount">) {
+    limit,
+  }: Omit<RegisterUsageParams, "oracleProvider" | "amount"> & PaginationProps) {
     const fetched = await this.getTransactionSignaturesForEpoch(dapp, epoch);
     // TODO filter/map and reduce
     return fetched;
