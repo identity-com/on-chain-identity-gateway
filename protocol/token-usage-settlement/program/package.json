@@ -10,6 +10,7 @@
     "@oclif/config": "^1.17.1",
     "@oclif/plugin-help": "^3.2.7",
     "@project-serum/anchor": "^0.18.2",
+    "@pythnetwork/client": "^2.5.1",
     "@solana/spl-token": "^0.1.8",
     "oclif": "^1.18.1",
     "tslib": "^2.3.1"
