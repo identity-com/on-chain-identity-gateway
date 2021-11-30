@@ -8,14 +8,15 @@ describe("UsageOracleService", function () {
 
   const oracle = Keypair.generate();
   const gatekeeper = Keypair.generate();
-  const dapp = new PublicKey("D3z8BLmMnPD1LaKwCkyCisM7iDyw9PsXXmvatUwjCuqT");
+  // const dapp = new PublicKey("D3z8BLmMnPD1LaKwCkyCisM7iDyw9PsXXmvatUwjCuqT");
+  const dapp = new PublicKey("FRQb9goeMow4BjNH6yH1vSBicWDhZTgeXsUgkBFbehft")
 
   it("should read data", async () => {
-    const usageOracleService = new UsageOracleService(oracle, "mainnet-beta");
+    const usageOracleService = new UsageOracleService(oracle, "localnet");
 
     const usage = await usageOracleService.readUsage({
       dapp,
-      epoch: 251,
+      epoch: 0,
       gatekeeper: gatekeeper.publicKey,
     });
 

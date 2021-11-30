@@ -11,6 +11,7 @@ import {
   getClusterUrl,
 } from "@identity.com/gateway-usage";
 import { Provider, Wallet, web3 } from "@project-serum/anchor";
+import { DummyStrategy, loadTransactions, NativeTransferStrategy } from "../lib/transactionUtils";
 
 const DEFAULT_COMMITMENT: web3.Commitment = "confirmed";
 
@@ -40,28 +41,48 @@ export class UsageOracleService {
     // TODO we might want to cache this - it should never change after an epoch is over
     const epochSchedule = await this.connection.getEpochSchedule();
 
+    // TODO we need to make sure that we only consider FINALIZED Epochs here
     const firstSlot = epochSchedule.getFirstSlotInEpoch(epoch);
     const lastSlot = epochSchedule.getLastSlotInEpoch(epoch);
 
+    // Split and Join into 1000 tx window
+    const signatures: string[] = []
+    let currentStartSlot = firstSlot;
+    const SLOT_WINDOW = 1000;
+
+    // TODO: Parallelize
+    // TODO: Handle "Error: failed to get confirmed block: Block 1001 cleaned up, does not exist on node. First available block: 44478"
+    while( currentStartSlot < lastSlot) {
+      console.log(`Window: ${currentStartSlot}`)
+      let currentEndSlot = currentStartSlot + SLOT_WINDOW
+      if (currentEndSlot > lastSlot) {
+        currentStartSlot = lastSlot
+      }
+
+      const sigs = await this.connection.getConfirmedSignaturesForAddress(
+        dapp,
+        currentStartSlot,
+        currentEndSlot
+      )
+      signatures.concat(sigs)
+      currentStartSlot = currentEndSlot
+    }
+
     // TODO fix deprecation
-    // TODO pagination - only returns the first 1000 transactions
-    return this.connection.getConfirmedSignaturesForAddress(
-      dapp,
-      firstSlot,
-      lastSlot
-    );
+    return signatures
   }
 
   async readUsage({
     gatekeeper,
     dapp,
     epoch,
-    offset,
-    limit,
   }: Omit<RegisterUsageParams, "oracleProvider" | "amount"> & PaginationProps) {
     const fetched = await this.getTransactionSignaturesForEpoch(dapp, epoch);
     // TODO filter/map and reduce
-    return fetched;
+
+    const billableTx = await loadTransactions(this.connection, fetched, [new NativeTransferStrategy()])
+
+    return billableTx;
   }
 
   writeUsage({
