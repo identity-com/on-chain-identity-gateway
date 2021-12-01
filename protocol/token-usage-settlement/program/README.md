@@ -13,5 +13,4 @@ Data is published onto an PDA account that is derived from
 - Gatekeeper address
 - dApp address
 - Source Chain Contract address? (SOL-Mainnet, ETH ...)
-uniquely identifying the open token usage positions 
-
+uniquely identifying the open token usage positions

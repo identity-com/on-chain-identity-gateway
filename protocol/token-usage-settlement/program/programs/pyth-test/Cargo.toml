@@ -16,3 +16,4 @@ default = []
 
 [dependencies]
 anchor-lang = "0.18.2"
+pyth-client = "0.2.2"
