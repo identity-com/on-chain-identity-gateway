@@ -1,7 +1,7 @@
 {
   "name": "@identity.com/gateway-usage",
   "description": "Client SDK for the Gateway Usage Solana program",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "author": "dankelleher @dankelleher",
   "bugs": "https://github.com/identity-com/on-chain-identity-gateway/issues",
   "license": "MIT",
@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.3",
+    "@types/chai-as-promised": "^7.1.4",
     "@types/mocha": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",

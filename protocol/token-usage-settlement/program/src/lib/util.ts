@@ -14,7 +14,7 @@ import {
 import { Usage } from "../../target/types/usage";
 
 export const USAGE_PROGRAM_ID = new web3.PublicKey(
-  "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+  "GXD3V5AQTDrszePsSjH1yQNvfCceumZp1jM9mQR4fMPH"
 );
 const DEFAULT_COMMITMENT: web3.Commitment = "confirmed";
 
@@ -50,13 +50,18 @@ export const providerFor = (
 export const fetchProgram = async (
   provider: Provider
 ): Promise<Program<Usage>> => {
-  const workspaceProgram = workspace?.Usage as Program<Usage>;
-  if (workspaceProgram)
-    return new Program<Usage>(
-      workspaceProgram.idl,
-      workspaceProgram.programId,
-      provider
-    );
+  try {
+    const workspaceProgram = workspace?.Usage as Program<Usage>;
+    if (workspaceProgram)
+      return new Program<Usage>(
+        workspaceProgram.idl,
+        workspaceProgram.programId,
+        provider
+      );
+  } catch (e) {
+    // ignore and fetch IDL from the blockchain
+    console.log("IDL not found in workspace, fetching from blockchain");
+  }
 
   const idl = await Program.fetchIdl(USAGE_PROGRAM_ID, provider);
 

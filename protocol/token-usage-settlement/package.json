@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "__workspaces_comment": "Order is build order, parent must come first",
+  "workspaces": [
+    "program",
+    "solana-ociv-usage"
+  ],
+  "scripts": {
+    "start-validator": "solana-test-validator --bpf-program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS program/target/deploy/usage.so --reset",
+    "test": "start-server-and-test start-validator http://localhost:8899/health test:inner",
+    "test:inner": "yarn workspaces solana-ociv-usage test",
+    "build": "yarn workspaces run build"
+  },
+  "devDependencies": {
+    "start-server-and-test": "^1.13.1"
+  }
+}

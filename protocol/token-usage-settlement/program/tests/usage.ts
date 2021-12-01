@@ -17,12 +17,9 @@ import { Usage } from "../target/types/usage";
 import {
   deriveATA,
   deriveDelegateAndBumpSeed,
-  deriveUsageAccount,
   providerFor,
 } from "../src/lib/util";
-import { registerUsage } from "../src/registerUsage";
-import { draw } from "../src/draw";
-import { delegate } from "../src/delegateTokens";
+import { delegate, draw, registerUsage } from "../src";
 
 const { Keypair, SystemProgram } = web3;
 
@@ -151,11 +148,13 @@ describe("usage", () => {
       [tokenMint, tokenMintAuthority]
     );
 
-    delegateAccount = await delegate({
+    const delegateResult = await delegate({
       dappProvider,
       oracle: oracle.publicKey,
       token: tokenMint.publicKey,
     });
+
+    delegateAccount = delegateResult.delegateAccount;
   });
 
   it("registers usage", async () => {
@@ -272,6 +271,26 @@ describe("usage", () => {
     const gatekeeperTokenAccountInfo = await mint.getAccountInfo(gatekeeperATA);
     expect(gatekeeperTokenAccountInfo.amount.toNumber()).to.equal(
       usageAmount * 2
+    );
+  });
+
+  it("fails to draw down for an epoch that has nothing registered", () => {
+    const someEpoch = epoch - 1;
+
+    const shouldFail = draw({
+      gatekeeperProvider,
+      epoch: someEpoch,
+      token: tokenMint.publicKey,
+      dapp: dapp.publicKey,
+      oracle: oracle.publicKey,
+    });
+
+    // this error ("The given account is not owned by the executing program") is expected
+    // in this case, because the PDA that is derived from the epoch, oracle and dapp has no
+    // data on chain, and therefore, the "owner" is the SystemProgram by default.
+    // We could consider improving the client to give a more meaningful error message here.
+    return expect(shouldFail).to.be.rejectedWith(
+      /The given account is not owned by the executing program/
     );
   });
 });
