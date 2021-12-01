@@ -6,7 +6,7 @@ use {
     }
 };
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("GXD3V5AQTDrszePsSjH1yQNvfCceumZp1jM9mQR4fMPH");
 
 const PREFIX: &str = "gateway_usage";
 const DELEGATE_SEED: &str = "gateway_usage_delegate";

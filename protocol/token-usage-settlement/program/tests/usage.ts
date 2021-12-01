@@ -273,4 +273,24 @@ describe("usage", () => {
       usageAmount * 2
     );
   });
+
+  it("fails to draw down for an epoch that has nothing registered", () => {
+    const someEpoch = epoch - 1;
+
+    const shouldFail = draw({
+      gatekeeperProvider,
+      epoch: someEpoch,
+      token: tokenMint.publicKey,
+      dapp: dapp.publicKey,
+      oracle: oracle.publicKey,
+    });
+
+    // this error ("The given account is not owned by the executing program") is expected
+    // in this case, because the PDA that is derived from the epoch, oracle and dapp has no
+    // data on chain, and therefore, the "owner" is the SystemProgram by default.
+    // We could consider improving the client to give a more meaningful error message here.
+    return expect(shouldFail).to.be.rejectedWith(
+      /The given account is not owned by the executing program/
+    );
+  });
 });

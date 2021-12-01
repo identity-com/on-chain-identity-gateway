@@ -14,7 +14,7 @@ import {
 import { Usage } from "../../target/types/usage";
 
 export const USAGE_PROGRAM_ID = new web3.PublicKey(
-  "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+  "GXD3V5AQTDrszePsSjH1yQNvfCceumZp1jM9mQR4fMPH"
 );
 const DEFAULT_COMMITMENT: web3.Commitment = "confirmed";
 
@@ -50,15 +50,19 @@ export const providerFor = (
 export const fetchProgram = async (
   provider: Provider
 ): Promise<Program<Usage>> => {
-  const workspaceProgram = workspace?.Usage as Program<Usage>;
-
-  if (workspaceProgram) {
-    return new Program<Usage>(
-      workspaceProgram.idl,
-      workspaceProgram.programId,
-      provider
-    );
+  try {
+    const workspaceProgram = workspace?.Usage as Program<Usage>;
+    if (workspaceProgram)
+      return new Program<Usage>(
+        workspaceProgram.idl,
+        workspaceProgram.programId,
+        provider
+      );
+  } catch (e) {
+    // ignore and fetch IDL from the blockchain
+    console.log("IDL not found in workspace, fetching from blockchain");
   }
+
   const idl = await Program.fetchIdl(USAGE_PROGRAM_ID, provider);
 
   if (!idl) throw new Error("Usage IDL could not be found");
@@ -75,7 +79,7 @@ export const deriveUsageAccount = async (
   // the epoch is used to seed the usage account,
   // so each epoch has its own account
   // the endianness does not actually matter here, we could choose big-endian
-  // as long as it is mirrored in the `seeds=[...]` macro in the Register definition
+  // as long as it is mirrored in the `seeds=[...]` macro in the RegisterUsage definition
   // in the program.
   const epochBuffer = new BN(epoch).toBuffer("le", 8);
 
