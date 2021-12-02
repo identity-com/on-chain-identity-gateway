@@ -3,7 +3,12 @@ name = "solana-gateway"
 version = "0.0.3"
 description = "Solana on-chain identity gateway"
 repository = "https://github.com/identity-com/on-chain-identity-gateway"
+authors = ["Identity.com <daniel@identity.com>"]
+license = "MIT"
 edition = "2018"
+keywords = ["solana", "identity",  "gateway", "civic"]
+homepage = "https://www.identity.com"
+
 
 [features]
 program = []
