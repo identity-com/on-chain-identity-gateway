@@ -164,6 +164,7 @@ describe("usage", () => {
       epoch,
       dapp: dapp.publicKey,
       gatekeeper: gatekeeper.publicKey,
+      program,
     });
   });
 
@@ -174,6 +175,7 @@ describe("usage", () => {
       token: tokenMint.publicKey,
       dapp: dapp.publicKey,
       oracle: oracle.publicKey,
+      program,
     });
 
     // Load the gatekeeper balance - ensure they received the funds
@@ -194,6 +196,7 @@ describe("usage", () => {
       token: tokenMint.publicKey,
       dapp: dapp.publicKey,
       oracle: oracle.publicKey,
+      program,
     });
 
     return expect(shouldFail).to.be.rejectedWith(
@@ -208,6 +211,7 @@ describe("usage", () => {
       epoch,
       dapp: dapp.publicKey,
       gatekeeper: gatekeeper.publicKey,
+      program,
     });
 
     return expect(shouldFail).to.be.rejectedWith(/failed to send transaction/);
@@ -224,6 +228,7 @@ describe("usage", () => {
       epoch,
       dapp: dapp.publicKey,
       gatekeeper: gatekeeper.publicKey,
+      program,
     });
 
     // Try to draw with the delegate account derived from the good oracle
@@ -257,6 +262,7 @@ describe("usage", () => {
       epoch: nextEpoch,
       dapp: dapp.publicKey,
       gatekeeper: gatekeeper.publicKey,
+      program,
     });
 
     await draw({
@@ -265,6 +271,7 @@ describe("usage", () => {
       token: tokenMint.publicKey,
       dapp: dapp.publicKey,
       oracle: oracle.publicKey,
+      program,
     });
 
     // gatekeeper has received funds twice now
@@ -283,6 +290,7 @@ describe("usage", () => {
       token: tokenMint.publicKey,
       dapp: dapp.publicKey,
       oracle: oracle.publicKey,
+      program,
     });
 
     // this error ("The given account is not owned by the executing program") is expected

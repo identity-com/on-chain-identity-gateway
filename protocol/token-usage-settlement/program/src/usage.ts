@@ -1,5 +1,6 @@
-import { BN, Provider, web3 } from "@project-serum/anchor";
+import { BN, Program, Provider, web3 } from "@project-serum/anchor";
 import { deriveUsageAccount, fetchProgram } from "./lib/util";
+import { Usage } from "../target/types/usage";
 
 export type RegisterUsageParams = {
   epoch: number;
@@ -7,9 +8,10 @@ export type RegisterUsageParams = {
   dapp: web3.PublicKey;
   gatekeeper: web3.PublicKey;
   amount: number;
+  program?: Program<Usage>;
 };
 
-export type Usage = {
+export type UsageRecord = {
   id: web3.PublicKey;
   epoch: number;
   dapp: web3.PublicKey;
@@ -31,7 +33,7 @@ export const registerUsage = async (
     params.epoch
   );
 
-  const program = await fetchProgram(params.oracleProvider);
+  const program = await fetchProgram(params.oracleProvider, params.program);
   await program.rpc.registerUsage(
     new BN(params.amount),
     new BN(params.epoch),
@@ -55,7 +57,7 @@ export const getUsage = async (
     oracle: web3.PublicKey;
     provider: Provider;
   }
-): Promise<Usage> => {
+): Promise<UsageRecord> => {
   const [usageAccount] = await deriveUsageAccount(
     params.dapp,
     params.gatekeeper,
@@ -63,7 +65,7 @@ export const getUsage = async (
     params.epoch
   );
 
-  const program = await fetchProgram(params.provider);
+  const program = await fetchProgram(params.provider, params.program);
   const usage = await program.account.usage.fetch(usageAccount);
 
   return {

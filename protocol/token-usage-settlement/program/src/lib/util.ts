@@ -1,24 +1,22 @@
-import {
-  BN,
-  Program,
-  Provider,
-  setProvider,
-  Wallet,
-  web3,
-  workspace,
-} from "@project-serum/anchor";
+import * as anchor from "@project-serum/anchor";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
+import { Cluster, Keypair } from "@solana/web3.js";
+import { Commitment } from "@solana/web3.js";
 import { Usage } from "../../target/types/usage";
+import { Program } from "@project-serum/anchor";
 
-export const USAGE_PROGRAM_ID = new web3.PublicKey(
+const { web3, Wallet, BN } = anchor;
+
+export const USAGE_PROGRAM_ID = new PublicKey(
   "GXD3V5AQTDrszePsSjH1yQNvfCceumZp1jM9mQR4fMPH"
 );
-const DEFAULT_COMMITMENT: web3.Commitment = "confirmed";
+const DEFAULT_COMMITMENT: Commitment = "confirmed";
 
-export type ExtendedCluster = web3.Cluster | "localnet" | "civicnet";
+export type ExtendedCluster = Cluster | "localnet" | "civicnet";
 export const CIVICNET_URL =
   "http://ec2-34-238-243-215.compute-1.amazonaws.com:8899";
 
@@ -34,48 +32,47 @@ export const getClusterUrl = (cluster: ExtendedCluster): string => {
 };
 
 export const providerFor = (
-  keypair: web3.Keypair,
+  keypair: Keypair,
   cluster: ExtendedCluster = "localnet"
-): Provider => {
+): anchor.Provider => {
   const connection = new web3.Connection(
     getClusterUrl(cluster),
     DEFAULT_COMMITMENT
   );
   const wallet = new Wallet(keypair);
-  return new Provider(connection, wallet, {
+  return new anchor.Provider(connection, wallet, {
     commitment: DEFAULT_COMMITMENT,
   });
 };
 
 export const fetchProgram = async (
-  provider: Provider
-): Promise<Program<Usage>> => {
-  try {
-    const workspaceProgram = workspace?.Usage as Program<Usage>;
-    if (workspaceProgram)
-      return new Program<Usage>(
-        workspaceProgram.idl,
-        workspaceProgram.programId,
-        provider
-      );
-  } catch (e) {
-    // ignore and fetch IDL from the blockchain
-    console.log("IDL not found in workspace, fetching from blockchain");
-  }
+  provider: anchor.Provider,
+  workspaceProgram?: Program<Usage>
+): Promise<anchor.Program<Usage>> => {
+  if (workspaceProgram)
+    return new anchor.Program<Usage>(
+      workspaceProgram.idl,
+      workspaceProgram.programId,
+      provider
+    );
 
-  const idl = await Program.fetchIdl(USAGE_PROGRAM_ID, provider);
+  const idl = await anchor.Program.fetchIdl(USAGE_PROGRAM_ID, provider);
 
   if (!idl) throw new Error("Usage IDL could not be found");
 
-  return new Program(idl, USAGE_PROGRAM_ID, provider) as Program<Usage>;
+  return new anchor.Program(
+    idl,
+    USAGE_PROGRAM_ID,
+    provider
+  ) as anchor.Program<Usage>;
 };
 
 export const deriveUsageAccount = async (
-  dapp: web3.PublicKey,
-  gatekeeper: web3.PublicKey,
-  oracle: web3.PublicKey,
+  dapp: PublicKey,
+  gatekeeper: PublicKey,
+  oracle: PublicKey,
   epoch: number
-): Promise<[web3.PublicKey, number]> => {
+): Promise<[PublicKey, number]> => {
   // the epoch is used to seed the usage account,
   // so each epoch has its own account
   // the endianness does not actually matter here, we could choose big-endian
@@ -83,7 +80,7 @@ export const deriveUsageAccount = async (
   // in the program.
   const epochBuffer = new BN(epoch).toBuffer("le", 8);
 
-  return web3.PublicKey.findProgramAddress(
+  return PublicKey.findProgramAddress(
     [
       Buffer.from("gateway_usage"),
       dapp.toBuffer(),
@@ -96,20 +93,20 @@ export const deriveUsageAccount = async (
 };
 
 export const deriveDelegateAndBumpSeed = async (
-  dapp: web3.PublicKey,
-  oracle: web3.PublicKey
-): Promise<[web3.PublicKey, number]> =>
-  await web3.PublicKey.findProgramAddress(
+  dapp: PublicKey,
+  oracle: PublicKey
+): Promise<[PublicKey, number]> =>
+  await PublicKey.findProgramAddress(
     [Buffer.from("gateway_usage_delegate"), dapp.toBuffer(), oracle.toBuffer()],
     USAGE_PROGRAM_ID
   );
 
 export const deriveATA = async (
-  owner: web3.PublicKey,
-  mint: web3.PublicKey
-): Promise<web3.PublicKey> =>
+  owner: PublicKey,
+  mint: PublicKey
+): Promise<PublicKey> =>
   (
-    await web3.PublicKey.findProgramAddress(
+    await PublicKey.findProgramAddress(
       [owner.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
       ASSOCIATED_TOKEN_PROGRAM_ID
     )
