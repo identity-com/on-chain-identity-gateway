@@ -48,7 +48,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --tests --features test-bpf --manifest-path solana/Cargo.toml -Zunstable-options --workspace --all-targets -- --deny=warnings
+          args: --tests --features test-bpf --manifest-path solana/Cargo.toml -- --deny=warnings
 
   solana-gateway-program-build:
     name: Build and test the solana rust code on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
