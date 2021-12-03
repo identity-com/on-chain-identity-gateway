@@ -2,7 +2,7 @@
 #![cfg(feature = "test-bpf")]
 
 use solana_gateway::instruction;
-use solana_gateway::instruction::expire_token;
+use solana_gateway::instruction::{add_feature_to_network, expire_token, NetworkFeature};
 use solana_gateway::state::{
     get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
 };
@@ -295,7 +295,7 @@ async fn expire_token_should_succeed() {
 
     let owner = Keypair::new();
 
-    context.issue_gateway_token(&owner.pubkey(), None).await;
+    context.issue_gateway_token(&owner.pubkey(), Some(4794223772)).await;
 
     let block_hash = context
         .context
@@ -307,27 +307,26 @@ async fn expire_token_should_succeed() {
         .context
         .banks_client
         .process_transaction(Transaction::new_signed_with_payer(
-            &[expire_token(
-                get_gateway_token_address_with_seed(
-                    &owner.pubkey(),
-                    &None,
-                    &context
-                        .gatekeeper_network
-                        .as_ref()
-                        .map(|key| key.pubkey())
-                        .unwrap(),
-                )
-                .0,
-                owner.pubkey(),
-                context
-                    .gatekeeper_network
-                    .as_ref()
-                    .map(|key| key.pubkey())
-                    .unwrap(),
-                None,
-            )],
+            &[
+                add_feature_to_network(
+                    context.context.payer.pubkey(),
+                    context.gatekeeper_network.as_ref().unwrap().pubkey(),
+                    NetworkFeature::UserTokenExpiry,
+                ),
+                expire_token(
+                    get_gateway_token_address_with_seed(
+                        &owner.pubkey(),
+                        &None,
+                        &context.gatekeeper_network.as_ref().unwrap().pubkey(),
+                    )
+                    .0,
+                    owner.pubkey(),
+                    context.gatekeeper_network.as_ref().unwrap().pubkey(),
+                    None,
+                ),
+            ],
             Some(&context.context.payer.pubkey()),
-            &[&context.context.payer, &owner],
+            &[&context.context.payer, &owner, context.gatekeeper_network.as_ref().unwrap()],
             block_hash,
         ))
         .await
