@@ -1,4 +1,5 @@
 //! Program state
+use crate::Gateway;
 use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
     sol_did::validate_owner,
@@ -13,6 +14,45 @@ use {
 fn before_now(timestamp: UnixTimestamp) -> bool {
     let clock = Clock::get().unwrap();
     clock.unix_timestamp > timestamp
+}
+
+/// The seed string used to derive a program address for a gateway token from an owner account
+pub const GATEWAY_TOKEN_ADDRESS_SEED: &[u8] = br"gateway";
+
+/// The seed string used to derive a program address for a gateway token from an owner account
+pub const GATEKEEPER_ADDRESS_SEED: &[u8] = br"gatekeeper";
+
+/// An optional seed to use when generating a gateway token,
+/// allowing multiple gateway tokens per wallet
+pub type AddressSeed = [u8; 8];
+
+/// Get program-derived gateway token address for the authority
+pub fn get_gateway_token_address_with_seed(
+    authority: &Pubkey,
+    additional_seed: &Option<AddressSeed>,
+    network: &Pubkey,
+) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[
+            &authority.to_bytes(),
+            GATEWAY_TOKEN_ADDRESS_SEED,
+            &additional_seed.unwrap_or_default(),
+            &network.to_bytes(),
+        ],
+        &Gateway::program_id(),
+    )
+}
+
+/// Get program-derived gatekeeper address for the authority
+pub fn get_gatekeeper_address_with_seed(authority: &Pubkey, network: &Pubkey) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[
+            &authority.to_bytes(),
+            &network.to_bytes(),
+            GATEKEEPER_ADDRESS_SEED,
+        ],
+        &Gateway::program_id(),
+    )
 }
 
 /// Defines the gateway token structure

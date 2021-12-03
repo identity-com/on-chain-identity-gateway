@@ -4,14 +4,19 @@
 #[macro_use]
 pub mod error;
 pub mod borsh;
+pub mod instruction;
 pub mod state;
 
+use crate::instruction::expire_token;
+use crate::state::AddressSeed;
 use crate::{
     borsh as program_borsh,
     error::GatewayError,
     state::{GatewayToken, GatewayTokenState},
 };
 use num_traits::AsPrimitive;
+use solana_program::entrypoint_deprecated::ProgramResult;
+use solana_program::program::invoke;
 use solana_program::{account_info::AccountInfo, msg, pubkey::Pubkey};
 use std::str::FromStr;
 
@@ -134,6 +139,20 @@ impl Gateway {
             ),
             Err(_) => gateway_token_result.map(|_| ()),
         }
+    }
+
+    pub fn verify_and_expire_token<'a>(
+        gateway_token: AccountInfo<'a>,
+        owner: AccountInfo<'a>,
+        gatekeeper_network: &Pubkey,
+        seed: Option<AddressSeed>,
+    ) -> ProgramResult {
+        Self::verify_gateway_token_account_info(&gateway_token, owner.key, gatekeeper_network)?;
+        invoke(
+            &expire_token(*gateway_token.key, *owner.key, *gatekeeper_network, seed),
+            &[gateway_token, owner],
+        )?;
+        Ok(())
     }
 }
 

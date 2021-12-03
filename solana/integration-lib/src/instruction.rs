@@ -1,15 +1,13 @@
 //! Program instructions
 
+use crate::Gateway;
 use solana_program::clock::UnixTimestamp;
 use {
-    crate::{
-        id,
-        state::{
-            get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, AddressSeed,
-        },
+    crate::state::GatewayTokenState,
+    crate::state::{
+        get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, AddressSeed,
     },
     borsh::{BorshDeserialize, BorshSerialize},
-    solana_gateway::state::GatewayTokenState,
     solana_program::{
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
@@ -86,6 +84,13 @@ pub enum GatewayInstruction {
     /// 2. `[]`                    gatekeeper_authority: the authority that owns the gatekeeper account
     /// 3. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belong
     RemoveGatekeeper,
+
+    /// `[writable]`    gateway_token: The token to expire
+    /// `[signer]`      owner: The wallet that the gateway token is for
+    ExpireToken {
+        seed: Option<AddressSeed>,
+        gatekeeper_network: Pubkey,
+    },
 }
 
 /// Create a `GatewayInstruction::AddGatekeeper` instruction
@@ -97,7 +102,7 @@ pub fn add_gatekeeper(
     let (gatekeeper_account, _) =
         get_gatekeeper_address_with_seed(gatekeeper_authority, gatekeeper_network);
     Instruction::new_with_borsh(
-        id(),
+        Gateway::program_id(),
         &GatewayInstruction::AddGatekeeper {},
         vec![
             AccountMeta::new(*funder_account, true),
@@ -122,7 +127,7 @@ pub fn issue_vanilla(
 ) -> Instruction {
     let (gateway_token, _) = get_gateway_token_address_with_seed(owner, &seed, gatekeeper_network);
     Instruction::new_with_borsh(
-        id(),
+        Gateway::program_id(),
         &GatewayInstruction::IssueVanilla { seed, expire_time },
         vec![
             AccountMeta::new(*funder_account, true),
@@ -145,7 +150,7 @@ pub fn set_state(
     gateway_token_state: GatewayTokenState, // the state of the token to transition to
 ) -> Instruction {
     Instruction::new_with_borsh(
-        id(),
+        Gateway::program_id(),
         &GatewayInstruction::SetState {
             state: gateway_token_state,
         },
@@ -167,7 +172,7 @@ pub fn update_expiry(
     expire_time: UnixTimestamp,  // new expiry time for the accountn
 ) -> Instruction {
     Instruction::new_with_borsh(
-        id(),
+        Gateway::program_id(),
         &GatewayInstruction::UpdateExpiry { expire_time },
         vec![
             AccountMeta::new(*gateway_token, false),
@@ -186,7 +191,7 @@ pub fn remove_gatekeeper(
     let (gatekeeper_address, _) =
         get_gatekeeper_address_with_seed(gatekeeper_authority, gatekeeper_network);
     Instruction::new_with_borsh(
-        id(),
+        Gateway::program_id(),
         &GatewayInstruction::RemoveGatekeeper,
         vec![
             AccountMeta::new(*funds_to_account, false),
@@ -224,4 +229,24 @@ mod tests {
             .into();
         assert!(matches!(err, ProgramError::BorshIoError(_)));
     }
+}
+
+/// Create a `GatewayInstruction::ExpireToken` instruction
+pub fn expire_token(
+    gateway_token: Pubkey,
+    owner: Pubkey,
+    gatekeeper_network: Pubkey,
+    seed: Option<AddressSeed>,
+) -> Instruction {
+    Instruction::new_with_borsh(
+        Gateway::program_id(),
+        &GatewayInstruction::ExpireToken {
+            seed,
+            gatekeeper_network,
+        },
+        vec![
+            AccountMeta::new(gateway_token, false),
+            AccountMeta::new_readonly(owner, true),
+        ],
+    )
 }

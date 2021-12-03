@@ -1,9 +1,6 @@
-use solana_gateway::borsh as program_borsh;
-use solana_gateway::state::{GatewayToken, GatewayTokenState};
-use solana_gateway_program::{
-    id, instruction, instruction::GatewayInstruction, processor::process_instruction,
-    state::get_gatekeeper_address_with_seed, state::get_gateway_token_address_with_seed,
-};
+use solana_gateway::{borsh as program_borsh, instruction};
+use solana_gateway::state::{GatewayToken, GatewayTokenState, get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed};
+use solana_gateway_program::{id, processor::process_instruction};
 use solana_program::{pubkey::Pubkey, system_program, sysvar};
 use solana_program_test::{processor, ProgramTest, ProgramTestContext};
 use solana_sdk::{
@@ -15,6 +12,7 @@ use solana_sdk::{
     transport,
 };
 use std::time::{SystemTime, UNIX_EPOCH};
+use solana_gateway::instruction::GatewayInstruction;
 
 fn program_test() -> ProgramTest {
     ProgramTest::new(
