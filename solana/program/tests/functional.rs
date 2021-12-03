@@ -2,6 +2,10 @@
 #![cfg(feature = "test-bpf")]
 
 use solana_gateway::instruction;
+use solana_gateway::instruction::expire_token;
+use solana_gateway::state::{
+    get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
+};
 use solana_gateway_program::id;
 use solana_sdk::transaction::Transaction;
 use {
@@ -10,10 +14,6 @@ use {
     solana_program::pubkey::Pubkey,
     solana_program_test::tokio,
     solana_sdk::signature::{Keypair, Signer},
-};
-// use solana_gateway::instruction::expire_token;
-use solana_gateway::state::{
-    get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
 };
 
 mod gateway_context;
