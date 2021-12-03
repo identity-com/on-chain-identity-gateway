@@ -110,13 +110,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Gatekeeper<wbr>Service<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, payer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, config<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">GatekeeperConfig</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatekeeperService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperService</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Gatekeeper<wbr>Service<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, payer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, config<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">GatekeeperConfig</span>, retrieveTokenAfterAction<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatekeeperService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperService</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/bad78eb/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L41">service/GatekeeperService.ts:41</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/3905dff/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L65">service/GatekeeperService.ts:65</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -166,6 +166,9 @@
 										</div>
 									</div>
 								</li>
+								<li>
+									<h5>retrieveTokenAfterAction: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></h5>
+								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="GatekeeperService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperService</a></h4>
 						</li>
@@ -184,7 +187,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/bad78eb/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L223">service/GatekeeperService.ts:223</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/3905dff/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L258">service/GatekeeperService.ts:258</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -214,7 +217,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/bad78eb/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L158">service/GatekeeperService.ts:158</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/3905dff/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L189">service/GatekeeperService.ts:189</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -226,11 +229,11 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>gatewayTokenKey: <span class="tsd-signature-type">PublicKey</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
 								</li>
 								<li>
 									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -247,7 +250,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/bad78eb/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L114">service/GatekeeperService.ts:114</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/3905dff/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L146">service/GatekeeperService.ts:146</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -259,11 +262,11 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>recipient: <span class="tsd-signature-type">PublicKey</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
 								</li>
 								<li>
 									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -280,7 +283,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/bad78eb/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L126">service/GatekeeperService.ts:126</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/3905dff/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L157">service/GatekeeperService.ts:157</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -292,11 +295,11 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>gatewayTokenKey: <span class="tsd-signature-type">PublicKey</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
 								</li>
 								<li>
 									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -313,7 +316,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/bad78eb/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L191">service/GatekeeperService.ts:191</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/3905dff/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L224">service/GatekeeperService.ts:224</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -325,11 +328,11 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>gatewayTokenKey: <span class="tsd-signature-type">PublicKey</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
 								</li>
 								<li>
 									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -346,7 +349,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/bad78eb/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L235">service/GatekeeperService.ts:235</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/3905dff/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L269">service/GatekeeperService.ts:269</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -361,11 +364,11 @@
 								</li>
 								<li>
 									<h5>expireTime: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
 								</li>
 								<li>
 									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></h4>

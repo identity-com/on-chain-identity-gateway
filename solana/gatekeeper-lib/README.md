@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.1.3 darwin-x64 node-v16.0.0
+@identity.com/solana-gatekeeper-lib/1.1.3 darwin-x64 node-v14.18.1
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -114,7 +114,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.10/src/commands/help.ts)_
 
 ## `gateway issue ADDRESS`
 
@@ -296,12 +296,12 @@ OPTIONS
 EXAMPLE
   $ gateway verify EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
   {
-    "issuingGatekeeper": "tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp",
-    "gatekeeperNetwork": "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv",
-    "owner": "EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv",
-    "state": "ACTIVE",
-    "publicKey": "3rNZ6RzH6jLCzFeySVDc8Z82sJkeQ4xi7BCUzjpZBvZr",
-    "programId": "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
+   "issuingGatekeeper": "tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp",
+   "gatekeeperNetwork": "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv",
+   "owner": "EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv",
+   "state": "ACTIVE",
+   "publicKey": "3rNZ6RzH6jLCzFeySVDc8Z82sJkeQ4xi7BCUzjpZBvZr",
+   "programId": "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
   }
 ```
 
