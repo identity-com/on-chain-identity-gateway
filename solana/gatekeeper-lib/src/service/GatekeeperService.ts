@@ -1,10 +1,4 @@
-import {
-  ConfirmOptions,
-  Connection,
-  Keypair,
-  PublicKey,
-  Transaction,
-} from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import {
   freeze,
   GatewayToken,
@@ -16,8 +10,11 @@ import {
   updateExpiry,
   findGatewayToken,
   getGatekeeperAccountKey,
+  State,
 } from "@identity.com/solana-gateway-ts";
+
 import { send } from "../util/connection";
+import { PROGRAM_ID } from "../util/constants";
 
 /**
  * Global default configuration for the gatekeeper
@@ -43,7 +40,8 @@ export class GatekeeperService {
     private payer: Keypair,
     private gatekeeperNetwork: PublicKey,
     private gatekeeperAuthority: Keypair,
-    private config: GatekeeperConfig = {}
+    private config: GatekeeperConfig = {},
+    private retrieveTokenAfterAction = false
   ) {}
 
   private getDefaultExpireTime(): number | undefined {
@@ -68,8 +66,7 @@ export class GatekeeperService {
 
   private async issueVanilla(
     owner: PublicKey,
-    seed?: Uint8Array,
-    confirmOptions: ConfirmOptions = {}
+    seed?: Uint8Array
   ): Promise<GatewayToken> {
     const gatewayTokenKey = await getGatewayTokenKeyForOwner(
       owner,
@@ -98,34 +95,39 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
-      confirmOptions,
       this.payer,
       this.gatekeeperAuthority
     );
 
+    if (!this.retrieveTokenAfterAction) {
+      return new GatewayToken(
+        gatekeeperAccount,
+        this.gatekeeperNetwork,
+        owner,
+        State.ACTIVE,
+        gatewayTokenKey,
+        PROGRAM_ID,
+        expireTime
+      );
+    }
     return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 
   /**
    * Issue a token to this recipient
    * @param recipient
-   * @param confirmOptions
    */
-  issue(
-    recipient: PublicKey,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<GatewayToken> {
-    return this.issueVanilla(recipient, undefined, confirmOptions);
+  issue(recipient: PublicKey): Promise<GatewayToken> {
+    return this.issueVanilla(recipient);
   }
 
   /**
    * Revoke the gateway token. The token must have been issued by a gatekeeper in the same network
    * @param gatewayTokenKey
-   * @param confirmOptions
    */
   async revoke(
     gatewayTokenKey: PublicKey,
-    confirmOptions: ConfirmOptions = {}
+    owner?: PublicKey
   ): Promise<GatewayToken> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
@@ -142,22 +144,30 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
-      confirmOptions,
       this.payer,
       this.gatekeeperAuthority
     );
 
+    if (!this.retrieveTokenAfterAction) {
+      return new GatewayToken(
+        gatekeeperAccount,
+        this.gatekeeperNetwork,
+        owner,
+        State.REVOKED,
+        gatewayTokenKey,
+        PROGRAM_ID
+      );
+    }
     return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 
   /**
    * Freeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
-   * @param confirmOptions
    */
   async freeze(
     gatewayTokenKey: PublicKey,
-    confirmOptions: ConfirmOptions = {}
+    owner?: PublicKey
   ): Promise<GatewayToken> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
@@ -175,22 +185,30 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
-      confirmOptions,
       this.payer,
       this.gatekeeperAuthority
     );
 
+    if (!this.retrieveTokenAfterAction) {
+      return new GatewayToken(
+        gatekeeperAccount,
+        this.gatekeeperNetwork,
+        owner,
+        State.FROZEN,
+        gatewayTokenKey,
+        PROGRAM_ID
+      );
+    }
     return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 
   /**
    * Unfreeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
-   * @param confirmOptions
    */
   async unfreeze(
     gatewayTokenKey: PublicKey,
-    confirmOptions: ConfirmOptions = {}
+    owner?: PublicKey
   ): Promise<GatewayToken> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
@@ -208,11 +226,20 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
-      confirmOptions,
       this.payer,
       this.gatekeeperAuthority
     );
 
+    if (!this.retrieveTokenAfterAction) {
+      return new GatewayToken(
+        gatekeeperAccount,
+        this.gatekeeperNetwork,
+        owner,
+        State.ACTIVE,
+        gatewayTokenKey,
+        PROGRAM_ID
+      );
+    }
     return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 
@@ -230,12 +257,11 @@ export class GatekeeperService {
    * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
    * @param expireTime
-   * @param confirmOptions
    */
   async updateExpiry(
     gatewayTokenKey: PublicKey,
     expireTime: number,
-    confirmOptions: ConfirmOptions = {}
+    owner?: PublicKey
   ): Promise<GatewayToken> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
@@ -253,11 +279,21 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
-      confirmOptions,
       this.payer,
       this.gatekeeperAuthority
     );
 
+    if (!this.retrieveTokenAfterAction) {
+      return new GatewayToken(
+        gatekeeperAccount,
+        this.gatekeeperNetwork,
+        owner,
+        State.ACTIVE,
+        gatewayTokenKey,
+        PROGRAM_ID,
+        expireTime
+      );
+    }
     return this.getGatewayTokenOrError(gatewayTokenKey);
   }
 
