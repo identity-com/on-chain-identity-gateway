@@ -1,6 +1,7 @@
 // Mark this test as BPF-only due to current `ProgramTest` limitations when CPIing into the system program
 #![cfg(feature = "test-bpf")]
 
+use solana_gateway::instruction;
 use solana_gateway_program::id;
 use solana_sdk::transaction::Transaction;
 use {
@@ -10,9 +11,10 @@ use {
     solana_program_test::tokio,
     solana_sdk::signature::{Keypair, Signer},
 };
-use solana_gateway::instruction;
 // use solana_gateway::instruction::expire_token;
-use solana_gateway::state::{get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed};
+use solana_gateway::state::{
+    get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
+};
 
 mod gateway_context;
 
@@ -287,7 +289,7 @@ async fn update_expiry_wrong_account_should_fail() {
 }
 
 #[tokio::test]
-async fn expire_token_should_succeed(){
+async fn expire_token_should_succeed() {
     let mut context = GatewayContext::new().await;
     context.create_gatekeeper().await;
 
@@ -295,22 +297,39 @@ async fn expire_token_should_succeed(){
 
     context.issue_gateway_token(&owner.pubkey(), None).await;
 
-    let block_hash = context.context.banks_client.get_recent_blockhash().await.unwrap();
-    context.context.banks_client.process_transaction(Transaction::new_signed_with_payer(
-        &[
-            expire_token(
+    let block_hash = context
+        .context
+        .banks_client
+        .get_recent_blockhash()
+        .await
+        .unwrap();
+    context
+        .context
+        .banks_client
+        .process_transaction(Transaction::new_signed_with_payer(
+            &[expire_token(
                 get_gateway_token_address_with_seed(
                     &owner.pubkey(),
                     &None,
-                    &context.gatekeeper_network.as_ref().map(|key|key.pubkey()).unwrap()
-                ).0,
+                    &context
+                        .gatekeeper_network
+                        .as_ref()
+                        .map(|key| key.pubkey())
+                        .unwrap(),
+                )
+                .0,
                 owner.pubkey(),
-                context.gatekeeper_network.as_ref().map(|key|key.pubkey()).unwrap(),
+                context
+                    .gatekeeper_network
+                    .as_ref()
+                    .map(|key| key.pubkey())
+                    .unwrap(),
                 None,
-            )
-        ],
-        Some(&context.context.payer.pubkey()),
-        &[&context.context.payer, &owner],
-        block_hash
-    )).await.unwrap();
+            )],
+            Some(&context.context.payer.pubkey()),
+            &[&context.context.payer, &owner],
+            block_hash,
+        ))
+        .await
+        .unwrap();
 }
