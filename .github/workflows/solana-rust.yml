@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['nightly-2021-02-18']
+        rust: ['1.55']
         os: [ubuntu-latest]
 
     steps:
@@ -27,8 +27,6 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
-          profile: minimal
           components: rustfmt, clippy
 
       - name: Cache build dependencies
@@ -58,7 +56,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['1.50']
+        rust: ['1.55']
         solana: ['stable']
         os: [ubuntu-latest]
 
@@ -70,8 +68,6 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
-          profile: minimal
 
       - name: Cache build dependencies
         uses: actions/cache@v2
