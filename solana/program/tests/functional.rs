@@ -295,7 +295,9 @@ async fn expire_token_should_succeed() {
 
     let owner = Keypair::new();
 
-    context.issue_gateway_token(&owner.pubkey(), Some(4794223772)).await;
+    context
+        .issue_gateway_token(&owner.pubkey(), Some(4794223772))
+        .await;
 
     let block_hash = context
         .context
@@ -326,7 +328,11 @@ async fn expire_token_should_succeed() {
                 ),
             ],
             Some(&context.context.payer.pubkey()),
-            &[&context.context.payer, &owner, context.gatekeeper_network.as_ref().unwrap()],
+            &[
+                &context.context.payer,
+                &owner,
+                context.gatekeeper_network.as_ref().unwrap(),
+            ],
             block_hash,
         ))
         .await
