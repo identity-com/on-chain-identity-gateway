@@ -1,17 +1,15 @@
 //! Program state processor
 
-use crate::state::{
-    get_gatekeeper_address_with_seed, AddressSeed, Transitionable, GATEKEEPER_ADDRESS_SEED,
-};
+use crate::state::Transitionable;
 use solana_gateway::error::GatewayError;
-use solana_gateway::state::GatewayTokenState;
+use solana_gateway::instruction::GatewayInstruction;
+use solana_gateway::state::{
+    get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, AddressSeed,
+    GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
+};
 use solana_program::clock::UnixTimestamp;
 use {
-    crate::{
-        id,
-        instruction::GatewayInstruction,
-        state::{get_gateway_token_address_with_seed, GATEWAY_TOKEN_ADDRESS_SEED},
-    },
+    crate::id,
     borsh::{BorshDeserialize, BorshSerialize},
     solana_gateway::{
         borsh::{get_instance_packed_len, try_from_slice_incomplete},
@@ -48,6 +46,10 @@ pub fn process_instruction(
         GatewayInstruction::SetState { state } => set_state(accounts, state),
         GatewayInstruction::UpdateExpiry { expire_time } => update_expiry(accounts, expire_time),
         GatewayInstruction::RemoveGatekeeper => remove_gatekeeper(accounts),
+        GatewayInstruction::ExpireToken {
+            seed,
+            gatekeeper_network,
+        } => expire_token(accounts, seed, gatekeeper_network),
     };
 
     if let Some(e) = result.clone().err() {
@@ -362,6 +364,40 @@ fn remove_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
 
     **funds_to_info.lamports.borrow_mut() += **gatekeeper_lamports;
     **gatekeeper_lamports = 0;
+
+    Ok(())
+}
+
+fn expire_token(
+    accounts: &[AccountInfo],
+    seed: Option<AddressSeed>,
+    gatekeeper_network: Pubkey,
+) -> ProgramResult {
+    let account_info_iter = &mut accounts.iter();
+    let gateway_token = next_account_info(account_info_iter)?;
+    let owner = next_account_info(account_info_iter)?;
+
+    if !owner.is_signer {
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+
+    let derived_gt = get_gateway_token_address_with_seed(owner.key, &seed, &gatekeeper_network).0;
+    if &derived_gt != gateway_token.key {
+        return Err(ProgramError::InvalidArgument);
+    }
+
+    if gateway_token.owner != &id() {
+        return Err(ProgramError::IncorrectProgramId);
+    }
+
+    verify_token_length(gateway_token)?;
+
+    let mut gateway_token_data =
+        try_from_slice_incomplete::<GatewayToken>(*gateway_token.data.borrow())?;
+
+    gateway_token_data.expire_time = Some(1497963600); // CVC ICO
+
+    gateway_token_data.serialize(&mut *gateway_token.data.borrow_mut())?;
 
     Ok(())
 }
