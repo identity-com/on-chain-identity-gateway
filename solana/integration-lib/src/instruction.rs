@@ -1,5 +1,6 @@
 //! Program instructions
 
+use crate::state::get_expire_address_with_seed;
 use crate::Gateway;
 use solana_program::clock::UnixTimestamp;
 use {
@@ -17,6 +18,7 @@ use {
 
 /// Instructions supported by the program
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq)]
+#[repr(u8)]
 pub enum GatewayInstruction {
     /// Add a new Gatekeeper to a network
     ///
@@ -85,12 +87,31 @@ pub enum GatewayInstruction {
     /// 3. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belong
     RemoveGatekeeper,
 
-    /// `[writable]`    gateway_token: The token to expire
-    /// `[signer]`      owner: The wallet that the gateway token is for
+    /// 0. `[signer, writable]` funder_account: The account funding this transaction
+    /// 1. `[signer]`           gatekeeper_network: The gatekeeper network receiving a feature
+    /// 2. `[writable]`         feature_account: The new feature account
+    /// 3. `[]`                 system_program: The system program
+    AddFeatureToNetwork { feature: NetworkFeature },
+
+    /// 0. `[signer, writable]` funds_to_account: The account receiving the funds
+    /// 1. `[signer]`           gatekeeper_network: The gatekeeper network receiving a feature
+    /// 2. `[writable]`         feature_account: The new feature account
+    RemoveFeatureFromNetwork { feature: NetworkFeature },
+
+    /// 0. `[writable]`    gateway_token: The token to expire
+    /// 1. `[signer]`      owner: The wallet that the gateway token is for
+    /// 2. `[]`            network_expire_feature: The expire feature for the gatekeeper network
     ExpireToken {
+        /// The seed of the gateway token
         seed: Option<AddressSeed>,
+        /// The gatekeeper network
         gatekeeper_network: Pubkey,
     },
+}
+
+#[derive(Copy, Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq, Eq)]
+pub enum NetworkFeature {
+    UserTokenExpiry,
 }
 
 /// Create a `GatewayInstruction::AddGatekeeper` instruction
@@ -202,6 +223,58 @@ pub fn remove_gatekeeper(
     )
 }
 
+/// Create a `GatewayInstruction::ExpireToken` instruction
+pub fn expire_token(
+    gateway_token: Pubkey,
+    owner: Pubkey,
+    gatekeeper_network: Pubkey,
+    seed: Option<AddressSeed>,
+) -> Instruction {
+    Instruction::new_with_borsh(
+        Gateway::program_id(),
+        &GatewayInstruction::ExpireToken {
+            seed,
+            gatekeeper_network,
+        },
+        vec![
+            AccountMeta::new(gateway_token, false),
+            AccountMeta::new_readonly(owner, true),
+            AccountMeta::new_readonly(get_expire_address_with_seed(&gatekeeper_network).0, false),
+        ],
+    )
+}
+pub fn add_feature_to_network(
+    funder: Pubkey,
+    gatekeeper_network: Pubkey,
+    feature: NetworkFeature,
+) -> Instruction {
+    Instruction::new_with_borsh(
+        Gateway::program_id(),
+        &GatewayInstruction::AddFeatureToNetwork { feature },
+        vec![
+            AccountMeta::new(funder, true),
+            AccountMeta::new_readonly(gatekeeper_network, true),
+            AccountMeta::new(get_expire_address_with_seed(&gatekeeper_network).0, false),
+            AccountMeta::new_readonly(system_program::id(), false),
+        ],
+    )
+}
+pub fn remove_feature_from_network(
+    funds_to: Pubkey,
+    gatekeeper_network: Pubkey,
+    feature: NetworkFeature,
+) -> Instruction {
+    Instruction::new_with_borsh(
+        Gateway::program_id(),
+        &GatewayInstruction::RemoveFeatureFromNetwork { feature },
+        vec![
+            AccountMeta::new(funds_to, false),
+            AccountMeta::new_readonly(gatekeeper_network, true),
+            AccountMeta::new(get_expire_address_with_seed(&gatekeeper_network).0, false),
+        ],
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -229,24 +302,4 @@ mod tests {
             .into();
         assert!(matches!(err, ProgramError::BorshIoError(_)));
     }
-}
-
-/// Create a `GatewayInstruction::ExpireToken` instruction
-pub fn expire_token(
-    gateway_token: Pubkey,
-    owner: Pubkey,
-    gatekeeper_network: Pubkey,
-    seed: Option<AddressSeed>,
-) -> Instruction {
-    Instruction::new_with_borsh(
-        Gateway::program_id(),
-        &GatewayInstruction::ExpireToken {
-            seed,
-            gatekeeper_network,
-        },
-        vec![
-            AccountMeta::new(gateway_token, false),
-            AccountMeta::new_readonly(owner, true),
-        ],
-    )
 }
