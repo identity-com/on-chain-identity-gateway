@@ -1,10 +1,11 @@
 {
   "name": "@identity.com/solana-gateway-ts",
-  "version": "0.3.0",
+  "version": "0.3.3",
   "description": "Typescript adapters for interacting with Solana gateway program",
   "main": "dist/index",
   "types": "dist/index",
   "repository": "git@github.com:identity-com/on-chain-identity-gateway.git",
+  "homepage": "https://www.identity.com",
   "author": "Kevin Colgan <kevin@civic.com>",
   "license": "MIT",
   "scripts": {

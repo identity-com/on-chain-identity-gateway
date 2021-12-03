@@ -1,17 +1,16 @@
 //! Program state processor
 
-use crate::state::{
-    get_gatekeeper_address_with_seed, AddressSeed, Transitionable, GATEKEEPER_ADDRESS_SEED,
-};
+use crate::state::Transitionable;
 use solana_gateway::error::GatewayError;
-use solana_gateway::state::GatewayTokenState;
+use solana_gateway::instruction::{GatewayInstruction, NetworkFeature};
+use solana_gateway::state::{
+    get_expire_address_with_seed, get_gatekeeper_address_with_seed,
+    get_gateway_token_address_with_seed, AddressSeed, GatewayTokenState, GATEKEEPER_ADDRESS_SEED,
+    GATEWAY_TOKEN_ADDRESS_SEED, NETWORK_EXPIRE_FEATURE_SEED,
+};
 use solana_program::clock::UnixTimestamp;
 use {
-    crate::{
-        id,
-        instruction::GatewayInstruction,
-        state::{get_gateway_token_address_with_seed, GATEWAY_TOKEN_ADDRESS_SEED},
-    },
+    crate::id,
     borsh::{BorshDeserialize, BorshSerialize},
     solana_gateway::{
         borsh::{get_instance_packed_len, try_from_slice_incomplete},
@@ -25,7 +24,7 @@ use {
         program_error::ProgramError,
         pubkey::Pubkey,
         rent::Rent,
-        system_instruction,
+        system_instruction, system_program,
         sysvar::Sysvar,
     },
 };
@@ -48,6 +47,16 @@ pub fn process_instruction(
         GatewayInstruction::SetState { state } => set_state(accounts, state),
         GatewayInstruction::UpdateExpiry { expire_time } => update_expiry(accounts, expire_time),
         GatewayInstruction::RemoveGatekeeper => remove_gatekeeper(accounts),
+        GatewayInstruction::ExpireToken {
+            seed,
+            gatekeeper_network,
+        } => expire_token(accounts, seed, gatekeeper_network),
+        GatewayInstruction::AddFeatureToNetwork { feature } => {
+            add_feature_to_network(accounts, feature)
+        }
+        GatewayInstruction::RemoveFeatureFromNetwork { feature } => {
+            remove_feature_from_network(accounts, feature)
+        }
     };
 
     if let Some(e) = result.clone().err() {
@@ -336,6 +345,7 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
 }
 
 fn remove_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
+    msg!("GatewayInstruction::RemoveGatekeeper");
     let account_info_iter = &mut accounts.iter();
     let funds_to_info = next_account_info(account_info_iter)?;
     let gatekeeper_account_info = next_account_info(account_info_iter)?;
@@ -362,6 +372,122 @@ fn remove_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
 
     **funds_to_info.lamports.borrow_mut() += **gatekeeper_lamports;
     **gatekeeper_lamports = 0;
+
+    Ok(())
+}
+
+fn expire_token(
+    accounts: &[AccountInfo],
+    seed: Option<AddressSeed>,
+    gatekeeper_network: Pubkey,
+) -> ProgramResult {
+    msg!("GatewayInstruction::ExpireToken");
+    let account_info_iter = &mut accounts.iter();
+    let gateway_token = next_account_info(account_info_iter)?;
+    let owner = next_account_info(account_info_iter)?;
+    let network_expire_feature = next_account_info(account_info_iter)?;
+
+    if !owner.is_signer {
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+
+    let derived_gt = get_gateway_token_address_with_seed(owner.key, &seed, &gatekeeper_network).0;
+    if &derived_gt != gateway_token.key {
+        return Err(ProgramError::InvalidArgument);
+    }
+
+    if network_expire_feature.owner != &id() {
+        return Err(ProgramError::IllegalOwner);
+    }
+
+    if &get_expire_address_with_seed(&gatekeeper_network).0 != network_expire_feature.key {
+        return Err(ProgramError::InvalidArgument);
+    }
+
+    if gateway_token.owner != &id() {
+        return Err(ProgramError::IllegalOwner);
+    }
+
+    verify_token_length(gateway_token)?;
+
+    let mut gateway_token_data =
+        try_from_slice_incomplete::<GatewayToken>(*gateway_token.data.borrow())?;
+
+    gateway_token_data.set_expire_time(1497963600); // CVC ICO
+
+    gateway_token_data.serialize(&mut *gateway_token.data.borrow_mut())?;
+
+    Ok(())
+}
+
+fn add_feature_to_network(accounts: &[AccountInfo], feature: NetworkFeature) -> ProgramResult {
+    msg!("GatewayInstruction::AddFeatureToNetwork");
+    let account_info_iter = &mut accounts.iter();
+    let funder_account = next_account_info(account_info_iter)?;
+    let gatekeeper_network = next_account_info(account_info_iter)?;
+    let feature_account = next_account_info(account_info_iter)?;
+    let system_program = next_account_info(account_info_iter)?;
+
+    if !funder_account.is_signer || !gatekeeper_network.is_signer {
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+
+    if system_program.key != &system_program::id() {
+        return Err(ProgramError::InvalidArgument);
+    }
+
+    match feature {
+        NetworkFeature::UserTokenExpiry => {
+            let (key, bump_seed) = get_expire_address_with_seed(gatekeeper_network.key);
+            if &key != feature_account.key {
+                return Err(ProgramError::InvalidArgument);
+            }
+            let seeds = &[
+                &gatekeeper_network.key.to_bytes(),
+                NETWORK_EXPIRE_FEATURE_SEED,
+                &[bump_seed],
+            ] as &[&[u8]];
+
+            invoke_signed(
+                &solana_program::system_instruction::create_account(
+                    funder_account.key,
+                    feature_account.key,
+                    1.max(Rent::default().minimum_balance(0)),
+                    0,
+                    &id(),
+                ),
+                &[
+                    system_program.clone(),
+                    funder_account.clone(),
+                    feature_account.clone(),
+                ],
+                &[seeds],
+            )
+        }
+    }
+}
+
+fn remove_feature_from_network(accounts: &[AccountInfo], feature: NetworkFeature) -> ProgramResult {
+    msg!("GatewayInstruction::RemoveFeatureFromNetwork");
+    let account_info_iter = &mut accounts.iter();
+    let funds_to_account = next_account_info(account_info_iter)?;
+    let gatekeeper_network = next_account_info(account_info_iter)?;
+    let feature_account = next_account_info(account_info_iter)?;
+
+    if !gatekeeper_network.is_signer {
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+
+    match feature {
+        NetworkFeature::UserTokenExpiry => {
+            if &get_expire_address_with_seed(gatekeeper_network.key).0 != feature_account.key {
+                return Err(ProgramError::InvalidArgument);
+            }
+        }
+    };
+
+    **funds_to_account.lamports.borrow_mut() += **feature_account.lamports.borrow();
+    **feature_account.lamports.borrow_mut() = 0;
 
     Ok(())
 }

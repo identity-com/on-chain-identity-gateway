@@ -1,4 +1,10 @@
-import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  ConfirmOptions,
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+} from "@solana/web3.js";
 import {
   freeze,
   GatewayToken,
@@ -62,7 +68,8 @@ export class GatekeeperService {
 
   private async issueVanilla(
     owner: PublicKey,
-    seed?: Uint8Array
+    seed?: Uint8Array,
+    confirmOptions: ConfirmOptions = {}
   ): Promise<GatewayToken> {
     const gatewayTokenKey = await getGatewayTokenKeyForOwner(
       owner,
@@ -91,6 +98,7 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
+      confirmOptions,
       this.payer,
       this.gatekeeperAuthority
     );
@@ -101,16 +109,24 @@ export class GatekeeperService {
   /**
    * Issue a token to this recipient
    * @param recipient
+   * @param confirmOptions
    */
-  issue(recipient: PublicKey): Promise<GatewayToken> {
-    return this.issueVanilla(recipient);
+  issue(
+    recipient: PublicKey,
+    confirmOptions: ConfirmOptions = {}
+  ): Promise<GatewayToken> {
+    return this.issueVanilla(recipient, undefined, confirmOptions);
   }
 
   /**
    * Revoke the gateway token. The token must have been issued by a gatekeeper in the same network
    * @param gatewayTokenKey
+   * @param confirmOptions
    */
-  async revoke(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
+  async revoke(
+    gatewayTokenKey: PublicKey,
+    confirmOptions: ConfirmOptions = {}
+  ): Promise<GatewayToken> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
@@ -126,6 +142,7 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
+      confirmOptions,
       this.payer,
       this.gatekeeperAuthority
     );
@@ -136,8 +153,12 @@ export class GatekeeperService {
   /**
    * Freeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
+   * @param confirmOptions
    */
-  async freeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
+  async freeze(
+    gatewayTokenKey: PublicKey,
+    confirmOptions: ConfirmOptions = {}
+  ): Promise<GatewayToken> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
@@ -154,6 +175,7 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
+      confirmOptions,
       this.payer,
       this.gatekeeperAuthority
     );
@@ -164,8 +186,12 @@ export class GatekeeperService {
   /**
    * Unfreeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
+   * @param confirmOptions
    */
-  async unfreeze(gatewayTokenKey: PublicKey): Promise<GatewayToken> {
+  async unfreeze(
+    gatewayTokenKey: PublicKey,
+    confirmOptions: ConfirmOptions = {}
+  ): Promise<GatewayToken> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
@@ -182,6 +208,7 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
+      confirmOptions,
       this.payer,
       this.gatekeeperAuthority
     );
@@ -203,10 +230,12 @@ export class GatekeeperService {
    * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
    * @param expireTime
+   * @param confirmOptions
    */
   async updateExpiry(
     gatewayTokenKey: PublicKey,
-    expireTime: number
+    expireTime: number,
+    confirmOptions: ConfirmOptions = {}
   ): Promise<GatewayToken> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
@@ -224,6 +253,7 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
+      confirmOptions,
       this.payer,
       this.gatekeeperAuthority
     );

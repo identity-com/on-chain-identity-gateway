@@ -11,7 +11,7 @@
     "test": "start-server-and-test start-validator http://localhost:8899/health test:inner",
     "test:inner": "yarn workspaces run test",
     "build": "yarn workspaces run build",
-    "build-porgram": "cargo build-bpf",
+    "build-program": "cargo build-bpf",
     "build-test": "yarn build-porgram && yarn test"
   },
   "devDependencies": {

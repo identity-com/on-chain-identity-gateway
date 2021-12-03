@@ -1,6 +1,7 @@
 import {
   Cluster,
   clusterApiUrl,
+  ConfirmOptions,
   Connection,
   Keypair,
   sendAndConfirmTransaction,
@@ -32,10 +33,11 @@ export const getConnection = (
 export const send = (
   connection: Connection,
   transaction: Transaction,
+  options: ConfirmOptions = {},
   ...signers: Keypair[]
 ): Promise<TransactionSignature> =>
   sendAndConfirmTransaction(connection, transaction, signers, {
     skipPreflight: false,
     commitment: SOLANA_COMMITMENT,
-    preflightCommitment: "recent",
+    ...options,
   });

@@ -1,10 +1,12 @@
 // Mark this test as BPF-only due to current `ProgramTest` limitations when CPIing into the system program
 #![cfg(feature = "test-bpf")]
 
-use solana_gateway_program::state::{
+use solana_gateway::instruction;
+use solana_gateway::instruction::{add_feature_to_network, expire_token, NetworkFeature};
+use solana_gateway::state::{
     get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
 };
-use solana_gateway_program::{id, instruction};
+use solana_gateway_program::id;
 use solana_sdk::transaction::Transaction;
 use {
     crate::gateway_context::GatewayContext,
@@ -284,4 +286,55 @@ async fn update_expiry_wrong_account_should_fail() {
     };
 
     assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn expire_token_should_succeed() {
+    let mut context = GatewayContext::new().await;
+    context.create_gatekeeper().await;
+
+    let owner = Keypair::new();
+
+    context
+        .issue_gateway_token(&owner.pubkey(), Some(4794223772))
+        .await;
+
+    let block_hash = context
+        .context
+        .banks_client
+        .get_recent_blockhash()
+        .await
+        .unwrap();
+    context
+        .context
+        .banks_client
+        .process_transaction(Transaction::new_signed_with_payer(
+            &[
+                add_feature_to_network(
+                    context.context.payer.pubkey(),
+                    context.gatekeeper_network.as_ref().unwrap().pubkey(),
+                    NetworkFeature::UserTokenExpiry,
+                ),
+                expire_token(
+                    get_gateway_token_address_with_seed(
+                        &owner.pubkey(),
+                        &None,
+                        &context.gatekeeper_network.as_ref().unwrap().pubkey(),
+                    )
+                    .0,
+                    owner.pubkey(),
+                    context.gatekeeper_network.as_ref().unwrap().pubkey(),
+                    None,
+                ),
+            ],
+            Some(&context.context.payer.pubkey()),
+            &[
+                &context.context.payer,
+                &owner,
+                context.gatekeeper_network.as_ref().unwrap(),
+            ],
+            block_hash,
+        ))
+        .await
+        .unwrap();
 }

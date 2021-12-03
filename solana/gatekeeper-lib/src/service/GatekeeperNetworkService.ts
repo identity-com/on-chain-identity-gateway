@@ -1,4 +1,10 @@
-import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  Keypair,
+  Connection,
+  PublicKey,
+  Transaction,
+  ConfirmOptions,
+} from "@solana/web3.js";
 import {
   addGatekeeper,
   getGatekeeperAccountKey,
@@ -25,8 +31,12 @@ export class GatekeeperNetworkService {
   /**
    * Add a gatekeeper to the network
    * @param gatekeeperAuthority
+   * @param confirmOptions
    */
-  async addGatekeeper(gatekeeperAuthority: PublicKey): Promise<PublicKey> {
+  async addGatekeeper(
+    gatekeeperAuthority: PublicKey,
+    confirmOptions: ConfirmOptions = {}
+  ): Promise<PublicKey> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
@@ -44,6 +54,7 @@ export class GatekeeperNetworkService {
     await send(
       this.connection,
       transaction,
+      confirmOptions,
       this.payer,
       this.gatekeeperNetwork
     );
@@ -51,7 +62,10 @@ export class GatekeeperNetworkService {
     return gatekeeperAccount;
   }
 
-  async revokeGatekeeper(gatekeeperAuthority: PublicKey): Promise<PublicKey> {
+  async revokeGatekeeper(
+    gatekeeperAuthority: PublicKey,
+    confirmOptions: ConfirmOptions = {}
+  ): Promise<PublicKey> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
@@ -69,6 +83,7 @@ export class GatekeeperNetworkService {
     await send(
       this.connection,
       transaction,
+      confirmOptions,
       this.payer,
       this.gatekeeperNetwork
     );

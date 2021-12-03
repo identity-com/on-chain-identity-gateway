@@ -53,8 +53,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [ '1.50' ]
-        solana: [ 'v1.7.3' ]
+        rust: [ '1.55' ]
+        solana: [ 'stable' ]
         node: ['15.x']
         os: [ubuntu-latest]
 
@@ -70,8 +70,6 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
-          profile: minimal
 
       - name: Cache build dependencies
         uses: actions/cache@v2
