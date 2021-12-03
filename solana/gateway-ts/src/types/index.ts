@@ -14,10 +14,10 @@ export class GatewayToken {
     readonly issuingGatekeeper: PublicKey,
     readonly gatekeeperNetwork: PublicKey,
     readonly owner: PublicKey,
-    readonly state: State,
+    public state: State,
     readonly publicKey: PublicKey,
     readonly programId: PublicKey,
-    readonly expiryTime?: number
+    public expiryTime?: number
   ) {}
 
   isValid(): boolean {
@@ -35,6 +35,18 @@ export class GatewayToken {
   ): GatewayToken {
     const parsedData = GatewayTokenData.fromAccount(accountInfo.data);
     return dataToGatewayToken(parsedData, key);
+  }
+
+  public update({
+    state,
+    expiryTime,
+  }: {
+    state: State;
+    expiryTime?: number;
+  }): GatewayToken {
+    if (state) this.state = state;
+    if (expiryTime) this.expiryTime = expiryTime;
+    return this;
   }
 }
 

@@ -30,27 +30,6 @@ export type GatekeeperConfig = {
 };
 
 /**
- * Create a new GatewayToken from an existing, setting the state to the given option state and optionally updating the expiry
- * {GatewayToken} existingToken
- * options.state: {State}
- * options.expiry: {number}
- * returns {GatewayToken}
- */
-const tokenFromExisting = (
-  existingToken: GatewayToken,
-  { state, expiry }: { state: State; expiry?: number }
-): GatewayToken => {
-  return new GatewayToken(
-    existingToken.issuingGatekeeper,
-    existingToken.gatekeeperNetwork,
-    existingToken.owner,
-    state,
-    existingToken.publicKey,
-    existingToken.programId,
-    expiry ? existingToken.expiryTime : expiry
-  );
-};
-/**
  * Encapsulates actions performed by a gatekeeper
  */
 export class GatekeeperService {
@@ -179,7 +158,7 @@ export class GatekeeperService {
       this.gatekeeperAuthority
     );
 
-    return tokenFromExisting(existingToken, { state: State.REVOKED });
+    return existingToken.update({ state: State.REVOKED });
   }
 
   /**
@@ -214,7 +193,7 @@ export class GatekeeperService {
       this.gatekeeperAuthority
     );
 
-    return tokenFromExisting(existingToken, { state: State.FROZEN });
+    return existingToken.update({ state: State.FROZEN });
   }
 
   /**
@@ -248,7 +227,7 @@ export class GatekeeperService {
       this.gatekeeperAuthority
     );
 
-    return tokenFromExisting(existingToken, { state: State.ACTIVE });
+    return existingToken.update({ state: State.ACTIVE });
   }
 
   /**
@@ -294,9 +273,9 @@ export class GatekeeperService {
       this.gatekeeperAuthority
     );
 
-    return tokenFromExisting(existingToken, {
+    return existingToken.update({
       state: State.ACTIVE,
-      expiry: expireTime,
+      expiryTime: expireTime,
     });
   }
 
