@@ -14,10 +14,10 @@ export class GatewayToken {
     readonly issuingGatekeeper: PublicKey,
     readonly gatekeeperNetwork: PublicKey,
     readonly owner: PublicKey,
-    public state: State,
+    readonly state: State,
     readonly publicKey: PublicKey,
     readonly programId: PublicKey,
-    public expiryTime?: number
+    readonly expiryTime?: number
   ) {}
 
   isValid(): boolean {
@@ -44,9 +44,15 @@ export class GatewayToken {
     state: State;
     expiryTime?: number;
   }): GatewayToken {
-    if (state) this.state = state;
-    if (expiryTime) this.expiryTime = expiryTime;
-    return this;
+    return new GatewayToken(
+      this.issuingGatekeeper,
+      this.gatekeeperNetwork,
+      this.owner,
+      state,
+      this.publicKey,
+      this.programId,
+      expiryTime || this.expiryTime
+    );
   }
 }
 
