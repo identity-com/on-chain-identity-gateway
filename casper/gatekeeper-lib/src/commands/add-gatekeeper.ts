@@ -3,6 +3,7 @@ import { configFlag } from "../util/oclif/flags";
 import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
 import { getNetworkService } from "../util";
+import {getLocalExecutor} from "../util/connection";
 
 export default class AddGatekeeper extends Command {
   static description = "Add a gatekeeper to a network";
@@ -35,7 +36,7 @@ export default class AddGatekeeper extends Command {
       gatekeeper ${gatekeeper.toHex()} 
       to network ${config.networkKey}`);
 
-    const networkService = await getNetworkService(config);
+    const networkService = await getNetworkService(getLocalExecutor(config), config);
     const deployHash = await networkService.addGatekeeper(
       gatekeeper,
       config.whitelistPaymentAmount

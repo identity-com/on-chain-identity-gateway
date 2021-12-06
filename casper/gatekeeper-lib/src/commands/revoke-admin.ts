@@ -3,6 +3,7 @@ import { configFlag } from "../util/oclif/flags";
 import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
 import { getNetworkService } from "../util";
+import {getLocalExecutor} from "../util/connection";
 
 export default class RevokeAdmin extends Command {
   static description = "Revoke an admin";
@@ -34,7 +35,7 @@ export default class RevokeAdmin extends Command {
     this.log(`Revoking:
       admin ${admin.toHex()}`);
 
-    const networkService = await getNetworkService(config);
+    const networkService = await getNetworkService(getLocalExecutor(config), config);
     const deployHash = await networkService.revokeAdmin(
       admin,
       config.whitelistPaymentAmount

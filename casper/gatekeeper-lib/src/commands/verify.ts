@@ -4,6 +4,7 @@ import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
 import { getService } from "../util";
 import { prettyPrint } from "../util/token";
+import {getLocalExecutor} from "../util/connection";
 
 export default class Verify extends Command {
   static description = "Verify a gateway token";
@@ -43,7 +44,7 @@ export default class Verify extends Command {
       account ${account.toHex()} 
       on network ${config.networkKey}`);
 
-    const service = await getService(config);
+    const service = await getService(getLocalExecutor(config), config);
 
     const token = await service.findGatewayTokenForOwner(account);
 

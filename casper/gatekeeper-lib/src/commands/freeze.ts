@@ -3,6 +3,7 @@ import { configFlag } from "../util/oclif/flags";
 import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
 import { getService } from "../util";
+import {getLocalExecutor} from "../util/connection";
 
 export default class Freeze extends Command {
   static description = "Freeze a gateway token";
@@ -36,7 +37,7 @@ Frozen
       account ${account.toHex()} 
       on network ${config.networkKey}`);
 
-    const service = await getService(config);
+    const service = await getService(getLocalExecutor(config), config);
 
     const deployHash = await service.freeze(
       account,

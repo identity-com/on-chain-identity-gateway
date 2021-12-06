@@ -3,6 +3,7 @@ import { configFlag } from "../util/oclif/flags";
 import { CLPublicKey } from "casper-js-sdk";
 import { readConfig } from "../util/config";
 import { getNetworkService } from "../util";
+import {getLocalExecutor} from "../util/connection";
 
 export default class RevokeGatekeeper extends Command {
   static description = "Revoke a gatekeeper from a network";
@@ -35,7 +36,7 @@ export default class RevokeGatekeeper extends Command {
       gatekeeper ${gatekeeper.toHex()} 
       from network ${config.networkKey}`);
 
-    const networkService = await getNetworkService(config);
+    const networkService = await getNetworkService(getLocalExecutor(config), config);
     const deployHash = await networkService.revokeGatekeeper(
       gatekeeper,
       config.whitelistPaymentAmount

@@ -25,7 +25,7 @@ export class CommandConfig {
   constructor(
     readonly masterKey: Keys.AsymmetricKey,
     readonly networkKey: string,
-    readonly nodeAddress: string,
+    readonly nodeAddress: string[],
     readonly chain: string,
     readonly contractHash: string,
     readonly mintPaymentAmount = MINT_PAYMENT_AMOUNT,

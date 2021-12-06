@@ -1,7 +1,7 @@
 {
   "publicKey": "/Users/nisi/.client_keys/integration_public.pem",
   "privateKey": "/Users/nisi/.client_keys/integration_secret.pem",
-  "nodeAddress": "http://3.140.179.157:7777/rpc",
+  "nodeAddress": ["http://3.140.179.157:7777/rpc"],
   "chain": "integration-test",
   "networkKey": "0134aff145d04c718ac1898cc7f06d20a6121a2cc40c95c8626973bdda50c69974",
   "contractHash": "83c6f2e89e454a2ae9f73e1cf56e0f1d9addb4249d8444aede79dd6688c14b4e"

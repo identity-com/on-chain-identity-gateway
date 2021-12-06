@@ -19,7 +19,7 @@ $ npm install -g @identity.com/casper-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/casper-gatekeeper-lib/0.1.4 darwin-x64 node-v14.18.1
+@identity.com/casper-gatekeeper-lib/0.1.4 darwin-x64 node-v14.7.0
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -142,7 +142,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.5/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.10/src/commands/help.ts)_
 
 ## `gateway issue ACCOUNT`
 
@@ -292,11 +292,11 @@ OPTIONS
 EXAMPLE
   $ gateway verify EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
   {
-    "issuingGatekeeper": "tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp",
-    "gatekeeperNetwork": "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv",
-    "owner": "EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv",
-    "status": "Active",
-    "expiry": 1234567890
+   "issuingGatekeeper": "tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp",
+   "gatekeeperNetwork": "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv",
+   "owner": "EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv",
+   "status": "Active",
+   "expiry": 1234567890
   }
 ```
 
