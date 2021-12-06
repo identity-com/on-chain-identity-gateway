@@ -28,6 +28,7 @@
     "@types/yargs": "^16.0.1",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
+    "audit-ci": "^5.1.2",
     "bs58": "^4.0.1",
     "chai": "^4",
     "eslint": "^7.26.0",
@@ -78,7 +79,8 @@
     "test:unit": "nyc --extension .ts mocha --forbid-only \"test/unit/**/*.test.ts\"",
     "test:integration": "nyc --extension .ts mocha --forbid-only \"test/integration/**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md",
-    "doc": "yarn typedoc src/index.ts --readme none --excludeNotDocumented"
+    "doc": "yarn typedoc src/index.ts --readme none --excludeNotDocumented",
+    "audit-ci": "audit-ci --config audit-ci.json"
   },
   "types": "dist/index.d.ts"
 }

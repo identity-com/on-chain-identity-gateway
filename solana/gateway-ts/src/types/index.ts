@@ -36,6 +36,24 @@ export class GatewayToken {
     const parsedData = GatewayTokenData.fromAccount(accountInfo.data);
     return dataToGatewayToken(parsedData, key);
   }
+
+  public update({
+    state,
+    expiryTime,
+  }: {
+    state: State;
+    expiryTime?: number;
+  }): GatewayToken {
+    return new GatewayToken(
+      this.issuingGatekeeper,
+      this.gatekeeperNetwork,
+      this.owner,
+      state,
+      this.publicKey,
+      this.programId,
+      expiryTime || this.expiryTime
+    );
+  }
 }
 
 export type ProgramAccountResponse = {
