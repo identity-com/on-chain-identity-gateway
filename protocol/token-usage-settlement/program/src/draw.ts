@@ -1,4 +1,4 @@
-import { Provider, web3 } from "@project-serum/anchor";
+import { Program, Provider, web3 } from "@project-serum/anchor";
 import {
   deriveATA,
   deriveDelegateAndBumpSeed,
@@ -6,7 +6,8 @@ import {
   fetchProgram,
 } from "./lib/util";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Usage } from "./usage";
+import { UsageRecord } from "./usage";
+import { Usage } from "../target/types/usage";
 
 export type DrawParams = {
   epoch: number;
@@ -16,8 +17,9 @@ export type DrawParams = {
   token: web3.PublicKey;
   dappTokenAccount?: web3.PublicKey; // defaults to the ATA derived from the dApp
   gatekeeperTokenAccount?: web3.PublicKey; // defaults to the ATA derived from the gatekeeperProvider
+  program?: Program<Usage>;
 };
-export const draw = async (params: DrawParams): Promise<Usage> => {
+export const draw = async (params: DrawParams): Promise<UsageRecord> => {
   const gatekeeperPublicKey = params.gatekeeperProvider.wallet.publicKey;
 
   const dappTokenAccount =
@@ -39,7 +41,7 @@ export const draw = async (params: DrawParams): Promise<Usage> => {
     params.oracle
   );
 
-  const program = await fetchProgram(params.gatekeeperProvider);
+  const program = await fetchProgram(params.gatekeeperProvider, params.program);
   await program.rpc.draw(delegate_bump, {
     accounts: {
       usage: usageAccount,
