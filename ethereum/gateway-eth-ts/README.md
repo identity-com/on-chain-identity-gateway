@@ -19,7 +19,7 @@ $ npm install -g @identity.com/gateway-eth-ts
 $ gateway-eth-ts COMMAND
 running command...
 $ gateway-eth-ts (-v|--version|version)
-@identity.com/gateway-eth-ts/0.0.2 darwin-x64 node-v12.18.4
+@identity.com/gateway-eth-ts/0.0.10 darwin-x64 node-v16.0.0
 $ gateway-eth-ts --help [COMMAND]
 USAGE
   $ gateway-eth-ts COMMAND
@@ -75,7 +75,7 @@ EXAMPLE
   $ gateway add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/add-gatekeeper.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/add-gatekeeper.js)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway-eth-ts add-network-authority ADDRESS`
 
@@ -108,7 +108,7 @@ EXAMPLE
   $ gateway add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/add-network-authority.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/add-network-authority.js)_
+_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/add-network-authority.ts)_
 
 ## `gateway-eth-ts blacklist ADDRESS`
 
@@ -138,7 +138,7 @@ EXAMPLE
   $ gateway blacklist 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/blacklist.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/blacklist.js)_
+_See code: [dist/commands/blacklist.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/blacklist.ts)_
 
 ## `gateway-eth-ts burn TOKENID`
 
@@ -171,7 +171,7 @@ EXAMPLE
   $ gateway burn 10
 ```
 
-_See code: [dist/commands/burn.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/burn.js)_
+_See code: [dist/commands/burn.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/burn.ts)_
 
 ## `gateway-eth-ts freeze TOKENID`
 
@@ -204,7 +204,7 @@ EXAMPLE
   $ gateway freeze 10
 ```
 
-_See code: [dist/commands/freeze.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/freeze.js)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/freeze.ts)_
 
 ## `gateway-eth-ts get-token TOKENID`
 
@@ -231,7 +231,7 @@ EXAMPLE
   $ gateway get-token 10
 ```
 
-_See code: [dist/commands/get-token.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/get-token.js)_
+_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/get-token.ts)_
 
 ## `gateway-eth-ts get-token-id ADDRESS`
 
@@ -258,7 +258,7 @@ EXAMPLE
   $ gateway get-token-id 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/get-token-id.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/get-token-id.js)_
+_See code: [dist/commands/get-token-id.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/get-token-id.ts)_
 
 ## `gateway-eth-ts help [COMMAND]`
 
@@ -275,7 +275,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.14/src/commands/help.ts)_
 
 ## `gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]`
 
@@ -317,7 +317,7 @@ EXAMPLE
   $ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -i <TokenID>
 ```
 
-_See code: [dist/commands/issue.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/issue.js)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/issue.ts)_
 
 ## `gateway-eth-ts refresh TOKENID [EXPIRY]`
 
@@ -351,7 +351,7 @@ EXAMPLE
   $ gateway refresh 10 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/refresh.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/refresh.js)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/refresh.ts)_
 
 ## `gateway-eth-ts remove-gatekeeper ADDRESS`
 
@@ -384,7 +384,7 @@ EXAMPLE
   $ gateway remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/remove-gatekeeper.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/remove-gatekeeper.js)_
+_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/remove-gatekeeper.ts)_
 
 ## `gateway-eth-ts remove-network-authority ADDRESS`
 
@@ -417,7 +417,7 @@ EXAMPLE
   $ gateway remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/remove-network-authority.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/remove-network-authority.js)_
+_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/remove-network-authority.ts)_
 
 ## `gateway-eth-ts revoke TOKENID`
 
@@ -450,7 +450,7 @@ EXAMPLE
   $ gateway revoke 10
 ```
 
-_See code: [dist/commands/revoke.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/revoke.js)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/revoke.ts)_
 
 ## `gateway-eth-ts unfreeze TOKENID`
 
@@ -483,7 +483,7 @@ EXAMPLE
   $ gateway unfreeze 10
 ```
 
-_See code: [dist/commands/unfreeze.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/unfreeze.js)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/unfreeze.ts)_
 
 ## `gateway-eth-ts verify ADDRESS [TOKENID]`
 
@@ -511,6 +511,6 @@ EXAMPLE
   $ gateway verify 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/verify.js](https://github.com/secured-finance/gateway-eth-ts/blob/v0.0.2/dist/commands/verify.js)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/verify.ts)_
 <!-- commandsstop -->
 * [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
