@@ -55,7 +55,10 @@ const sendWithTimeout = async (
   ...signers: Keypair[]
 ): Promise<TransactionSignature> => {
   const timeoutPromise = new Promise<TransactionSignature>((_resolve, reject) =>
-    setTimeout(() => reject("Solana call timed out"), getSolanaTimeout())
+    setTimeout(
+      () => reject(new Error("Solana call timed out")),
+      getSolanaTimeout()
+    )
   );
 
   const blockchainPromise = sendAndConfirmTransaction(
