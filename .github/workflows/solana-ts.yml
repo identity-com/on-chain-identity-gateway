@@ -109,6 +109,9 @@ jobs:
       - name: Build dependencies
         run: yarn workspaces run build
 
+      - name: Start validator
+        run: yarn start-server-and-test start-validator http://localhost:8899/health
+
       - name: Unit tests gatekeeper-lib
         run:  yarn workspace @identity.com/solana-gatekeeper-lib test
 
