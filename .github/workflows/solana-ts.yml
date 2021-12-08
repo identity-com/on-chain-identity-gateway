@@ -103,6 +103,10 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+  
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
       - name: Install dependencies
         run: yarn
 
