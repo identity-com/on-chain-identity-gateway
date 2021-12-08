@@ -13,7 +13,7 @@
     "clean": "rimraf -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "prepare": "yarn build",
-    "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --timeout 30000 --paths 'test/**/*.ts'",
+    "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'test/**/*.ts'",
     "lint": "eslint src/ test/ scripts/ --ext .ts",
     "doc": "yarn typedoc src/index.ts --readme none"
   },
