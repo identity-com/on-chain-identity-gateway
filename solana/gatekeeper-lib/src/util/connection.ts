@@ -14,7 +14,6 @@ import {
   SOLANA_TIMEOUT_CONFIRMED,
   SOLANA_TIMEOUT_FINALIZED,
 } from "./constants";
-import retry from "async-retry";
 
 export type ExtendedCluster = Cluster | "localnet" | "civicnet";
 export const CIVICNET_URL =
