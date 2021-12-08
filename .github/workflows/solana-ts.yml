@@ -103,15 +103,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Cache node dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ./node_modules
-          key: yarn-solana-${{ hashFiles('solana/yarn.lock') }}
-
       - name: Install dependencies
-        run: yarn install
+        run: yarn
 
       - name: Unit tests gatekeeper-lib
         run: yarn workspace @identity.com/solana-gatekeeper-lib test
