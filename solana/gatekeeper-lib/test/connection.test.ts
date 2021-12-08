@@ -40,7 +40,7 @@ describe("Solana connection utils tests", () => {
     timeoutConstantStub.value(200);
   });
   describe("send", () => {
-    describe("with blockchain timing out every time", () => {
+    describe("with blockchain timing out", () => {
       beforeEach(() => {
         // Make the blockchain call take longer than 200ms:
         blockchainStub.callsFake(async () => {
@@ -49,59 +49,32 @@ describe("Solana connection utils tests", () => {
           );
         });
       });
-      it("should retry 3 times and then fail", async () => {
-        const results = await Promise.allSettled([
-          connectionUtils.send(connection, transaction),
-        ]);
-        expect(results[0].status).to.equal("rejected");
-        const calls = blockchainStub.getCalls();
-        expect(calls.length).to.equal(4); // Initial call and 3 retries
+      it("should fail with timeout error", async () => {
+        return expect(
+          connectionUtils.send(connection, transaction)
+        ).to.eventually.rejectedWith(/Solana call timed out/);
       });
     });
-
-    describe("with first call timing out and second call succeeding", () => {
+    describe("with blockchain throwing an error", () => {
       beforeEach(() => {
-        // First call times out:
-        blockchainStub.onFirstCall().callsFake(async () => {
-          return new Promise(
-            (resolve) => setTimeout(() => resolve("txId123"), 500) // late, after timeout
-          );
-        });
-
-        // Second call succeeds:
-        blockchainStub.onSecondCall().resolves("txId123");
+        // Make the blockchain call take longer than 200ms:
+        blockchainStub.rejects(new Error("Transaction simulation failed"));
       });
-      it("should retry once and then succeed", async () => {
-        const result = await connectionUtils.send(connection, transaction);
-        expect(result).to.equal("txId123");
-
-        const calls = blockchainStub.getCalls();
-        expect(calls.length).to.equal(2); // Initial call and 3 retries
+      it("should fail with blockchain error", async () => {
+        return expect(
+          connectionUtils.send(connection, transaction)
+        ).to.eventually.rejectedWith(/Transaction simulation failed/);
       });
     });
-
-    describe("with first call timing out and second call failing", () => {
+    describe("with blockchain returning success", () => {
       beforeEach(() => {
-        // First call times out:
-        blockchainStub.onFirstCall().callsFake(async () => {
-          return new Promise(
-            (resolve) => setTimeout(() => resolve("txId123"), 500) // late, after timeout
-          );
-        });
-
-        // Second call throws:
-        blockchainStub
-          .onSecondCall()
-          .throws(new Error("Transaction simulation error"));
+        // Make the blockchain call take longer than 200ms:
+        blockchainStub.resolves("txId456");
       });
-      it("should retry once and then fail", async () => {
-        try {
-          await connectionUtils.send(connection, transaction);
-        } catch {
-          // expect the promise to reject.
-        }
-        const calls = blockchainStub.getCalls();
-        return expect(calls.length).to.equal(2); // Initial call and 3 retries
+      it("should resolve the promise", async () => {
+        return expect(
+          connectionUtils.send(connection, transaction)
+        ).to.eventually.equal("txId456");
       });
     });
   });

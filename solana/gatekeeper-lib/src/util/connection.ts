@@ -13,7 +13,6 @@ import {
   SOLANA_TIMEOUT_PROCESSED,
   SOLANA_TIMEOUT_CONFIRMED,
   SOLANA_TIMEOUT_FINALIZED,
-  SOLANA_RETRIES,
 } from "./constants";
 import retry from "async-retry";
 
@@ -50,61 +49,27 @@ const getSolanaTimeout = (): number => {
   }
 };
 
-const sendWithRetry = async (
+const sendWithTimeout = async (
   connection: Connection,
   transaction: Transaction,
   options: ConfirmOptions = {},
   ...signers: Keypair[]
 ): Promise<TransactionSignature> => {
-  let finalResult;
-  try {
-    finalResult = await retry(
-      async () => {
-        const timeoutPromise = new Promise((resolve) =>
-          setTimeout(() => resolve("timeout"), getSolanaTimeout())
-        );
+  const timeoutPromise = new Promise<TransactionSignature>((_resolve, reject) =>
+    setTimeout(() => reject("Solana call timed out"), getSolanaTimeout())
+  );
 
-        let result;
-        try {
-          const blockchainPromise = sendAndConfirmTransaction(
-            connection,
-            transaction,
-            signers,
-            {
-              commitment: SOLANA_COMMITMENT,
-              ...options,
-            }
-          );
-          result = (await Promise.race([
-            blockchainPromise,
-            timeoutPromise,
-          ])) as string;
-        } catch (err) {
-          // sendAndConfirmTransaction has thrown an error.
-          // We catch it here and re-throw it outside, otherwise it will trigger a retry.
-          return err;
-        }
+  const blockchainPromise = sendAndConfirmTransaction(
+    connection,
+    transaction,
+    signers,
+    {
+      commitment: SOLANA_COMMITMENT,
+      ...options,
+    }
+  );
 
-        if (result === "timeout") {
-          // trigger a retry
-          console.log(
-            `Timeout during Solana sendAndConfirmTransaction. Retry ${SOLANA_RETRIES} times.`
-          );
-          throw new Error("Solana timeout");
-        }
-        return result;
-      },
-      {
-        retries: SOLANA_RETRIES,
-      }
-    );
-  } catch (err) {
-    console.log(`Retries exhausted on Solana sendAndConfirmTransaction`);
-    throw new Error("Retries exhausted");
-  }
-  if (typeof finalResult === "string") return finalResult;
-  // If finalResult is not a string, it comes from sendAndConfirmTransaction throwing an error. Re-throw it to the caller.
-  throw finalResult;
+  return Promise.race([blockchainPromise, timeoutPromise]);
 };
 
 export const send = (
@@ -113,7 +78,7 @@ export const send = (
   options: ConfirmOptions = {},
   ...signers: Keypair[]
 ): Promise<TransactionSignature> =>
-  sendWithRetry(
+  sendWithTimeout(
     connection,
     transaction,
     {
