@@ -103,15 +103,14 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-  
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-
       - name: Install dependencies
         run: yarn
+      
+      - name: Build dependencies
+        run: yarn workspaces run build
 
       - name: Unit tests gatekeeper-lib
-        run: yarn && yarn workspace @identity.com/solana-gatekeeper-lib test
+        run:  yarn workspace @identity.com/solana-gatekeeper-lib test
 
       - name: Unit tests gateway-ts
         run: yarn && yarn workspace @identity.com/solana-gateway-ts test
