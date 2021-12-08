@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.1.4-beta3 darwin-x64 node-v17.0.1
+@identity.com/solana-gatekeeper-lib/1.4.0-beta1 darwin-x64 node-v17.0.1
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
