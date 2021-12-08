@@ -107,7 +107,7 @@ jobs:
         run: yarn
 
       - name: Unit tests gatekeeper-lib
-        run: yarn workspace @identity.com/solana-gatekeeper-lib test
+        run: yarn && yarn workspace @identity.com/solana-gatekeeper-lib test
 
       - name: Unit tests gateway-ts
-        run: yarn workspace @identity.com/solana-gateway-ts test
+        run: yarn && yarn workspace @identity.com/solana-gateway-ts test
