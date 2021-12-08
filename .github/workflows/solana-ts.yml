@@ -113,5 +113,8 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Unit tests
-        run: yarn test
+      - name: Unit tests gatekeeper-lib
+        run: yarn workspace @identity.com/solana-gatekeeper-lib test
+
+      - name: Unit tests gateway-ts
+        run: yarn workspace @identity.com/solana-gateway-ts test
