@@ -4,7 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import * as web3 from "@solana/web3.js";
 import * as connectionUtils from "../src/util/connection";
 import * as constants from "../src/util/constants";
-import { Transaction, Keypair } from "@solana/web3.js";
+import { Transaction, Keypair, Connection } from "@solana/web3.js";
 
 import { addGatekeeper } from "@identity.com/solana-gateway-ts";
 
@@ -14,10 +14,10 @@ const { expect } = chai;
 const sandbox = sinon.createSandbox();
 
 describe("Solana connection utils tests", () => {
-  let blockchainStub;
-  let timeoutConstantStub;
-  let connection;
-  let transaction;
+  let blockchainStub: sinon.SinonStub;
+  let timeoutConstantStub: sinon.SinonStub;
+  let connection: Connection;
+  let transaction: Transaction;
   afterEach(sandbox.restore);
   beforeEach(() => {
     blockchainStub = sandbox.stub(web3, "sendAndConfirmTransaction");
