@@ -16,7 +16,7 @@ pub mod usage {
     use super::*;
     use crate::utils::{spl_token_transfer, TokenTransferParams};
     
-    pub fn register_usage(ctx: Context<RegisterUsage>, amount: u32, epoch: u64, bump: u8) -> ProgramResult {
+    pub fn register_usage(ctx: Context<RegisterUsage>, amount: u64, epoch: u64, bump: u8) -> ProgramResult {
         let usage = &mut ctx.accounts.usage;
         usage.dapp = *ctx.accounts.dapp.key;
         usage.gatekeeper = *ctx.accounts.gatekeeper.key;
@@ -60,14 +60,14 @@ pub struct Usage {
     pub dapp: Pubkey,
     pub gatekeeper: Pubkey,
     pub oracle: Pubkey,
-    pub amount: u32,
+    pub amount: u64,
     pub epoch: u64,
     pub bump: u8,
     pub paid: bool,
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u32, epoch: u64, bump: u8)]
+#[instruction(amount: u64, epoch: u64, bump: u8)]
 pub struct RegisterUsage<'info> {
     #[account(
         init,
@@ -84,7 +84,7 @@ pub struct RegisterUsage<'info> {
         bump={ msg!("bump = {}, epoch = {:?}", bump, epoch.to_le_bytes()); bump },
         // Space is based on the Usage struct - but for some reason it requires an extra 8 bytes to avoid a 
         // deserialisation error
-        space = 32 + 32 + 32 + 4 + 8 + 8 + 1 + 1)
+        space = 32 + 32 + 32 + 8 + 8 + 8 + 1 + 1)
     ]
     usage: ProgramAccount<'info, Usage>,
     #[account(mut)]

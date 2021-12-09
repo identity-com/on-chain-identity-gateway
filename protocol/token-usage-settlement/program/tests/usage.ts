@@ -26,14 +26,14 @@ const { Keypair, SystemProgram } = web3;
 chai.use(chaiAsPromised);
 const { expect } = chai;
 
-const TOKEN_DECIMALS = 2;
+const TOKEN_DECIMALS = 9;
 
 describe("usage", () => {
   // Configure the client to use the local cluster.
   const provider = Provider.local();
   setProvider(provider);
 
-  const usageAmount = 100;
+  const usageAmount = 10_000_000_000; // 10 tokens (9 decimal places)
   const epoch = 1;
 
   const dapp = Keypair.generate();
@@ -134,7 +134,7 @@ describe("usage", () => {
       dappATA,
       tokenMintAuthority.publicKey,
       [],
-      999_999_999_999
+      100_000_000_000
     );
 
     await provider.send(
