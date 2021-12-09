@@ -111,7 +111,10 @@ jobs:
           key: yarn-solana-${{ hashFiles('solana/yarn.lock') }}
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn
+      
+      - name: Build dependencies
+        run: yarn workspaces run build
 
-      - name: Unit tests
+      - name: Run tests
         run: yarn test
