@@ -39,7 +39,7 @@ paid: false
       required: true,
     }),
     oracle: pubkeyFlag({
-      char: "d",
+      char: "o",
       description: "The oracle that registered the usage",
       required: true,
     }),
