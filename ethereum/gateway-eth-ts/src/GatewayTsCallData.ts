@@ -6,8 +6,8 @@ import { getExpirationTime } from './utils/time';
 import { GatewayTsBase } from './GatewayTsBase';
 
 export class GatewayTsCallData extends GatewayTsBase {
-    constructor(provider: BaseProvider,  signer?: Wallet, options?: { defaultGas?: number; defaultGasPrice?: any; }) {
-        super(provider, signer, options);
+    constructor(provider: BaseProvider,  wallet?: Wallet, options?: { defaultGas?: number; defaultGasPrice?: any; }) {
+        super(provider, wallet, options);
     
         super.setGasLimit();
     }

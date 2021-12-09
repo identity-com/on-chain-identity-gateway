@@ -11,6 +11,7 @@ import {
   revokeGatekeeper,
 } from "@identity.com/solana-gateway-ts";
 import { send } from "../util/connection";
+import { DEFAULT_SOLANA_RETRIES } from "../util/constants";
 
 /**
  * Encapsulates the actions performed by a gatekeeper network authority
@@ -21,11 +22,13 @@ export class GatekeeperNetworkService {
    * @param connection A solana connection object
    * @param payer The payer for any transactions performed by the network authority
    * @param gatekeeperNetwork The network authority's key
+   * @param retries How many times to retry send() calls to the blockchain.
    */
   constructor(
     private connection: Connection,
     private payer: Keypair,
-    private gatekeeperNetwork: Keypair
+    private gatekeeperNetwork: Keypair,
+    private retries: number = DEFAULT_SOLANA_RETRIES
   ) {}
 
   /**
@@ -54,6 +57,7 @@ export class GatekeeperNetworkService {
     await send(
       this.connection,
       transaction,
+      this.retries,
       confirmOptions,
       this.payer,
       this.gatekeeperNetwork
@@ -83,6 +87,7 @@ export class GatekeeperNetworkService {
     await send(
       this.connection,
       transaction,
+      this.retries,
       confirmOptions,
       this.payer,
       this.gatekeeperNetwork

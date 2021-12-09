@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/gateway-eth-ts",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Adapter library for Identity.com gateway token system on Ethereum",
   "main": "dist/index.js",
   "scripts": {
@@ -41,9 +41,11 @@
     "@oclif/test": "^1.2.8",
     "@types/expect": "^24.3.0",
     "@types/mocha": "^9.0.0",
+    "@types/chai": "^4.3.0",
     "@types/node": "^16.4.7",
     "@typescript-eslint/eslint-plugin": "^4.28.5",
     "@typescript-eslint/parser": "^4.28.5",
+    "chai": "^4.3.4",
     "dotenv": "^10.0.0",
     "eslint": "^7.31.0",
     "eslint-config-oclif": "^3.1.0",

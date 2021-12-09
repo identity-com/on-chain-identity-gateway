@@ -20,7 +20,7 @@ import {
 } from "@identity.com/solana-gateway-ts";
 
 import { send } from "../util/connection";
-import { PROGRAM_ID } from "../util/constants";
+import { DEFAULT_SOLANA_RETRIES, PROGRAM_ID } from "../util/constants";
 
 /**
  * Global default configuration for the gatekeeper
@@ -40,6 +40,7 @@ export class GatekeeperService {
    * @param gatekeeperNetwork The network that the gatekeeper belongs to
    * @param gatekeeperAuthority The gatekeeper's key
    * @param config Global default configuration for the gatekeeper
+   * @param retries How many times to retry send() calls to the blockchain.
    */
   constructor(
     private connection: Connection,
@@ -47,7 +48,7 @@ export class GatekeeperService {
     private gatekeeperNetwork: PublicKey,
     private gatekeeperAuthority: Keypair,
     private config: GatekeeperConfig = {},
-    private retrieveTokenAfterAction = false
+    private retries: number = DEFAULT_SOLANA_RETRIES
   ) {}
 
   private getDefaultExpireTime(): number | undefined {
@@ -102,6 +103,7 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
+      this.retries,
       confirmOptions,
       this.payer,
       this.gatekeeperAuthority
@@ -153,6 +155,7 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
+      this.retries,
       confirmOptions,
       this.payer,
       this.gatekeeperAuthority
@@ -188,6 +191,7 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
+      this.retries,
       confirmOptions,
       this.payer,
       this.gatekeeperAuthority
@@ -222,6 +226,7 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
+      this.retries,
       confirmOptions,
       this.payer,
       this.gatekeeperAuthority
@@ -268,6 +273,7 @@ export class GatekeeperService {
     await send(
       this.connection,
       transaction,
+      this.retries,
       confirmOptions,
       this.payer,
       this.gatekeeperAuthority
