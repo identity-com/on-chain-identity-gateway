@@ -46,8 +46,7 @@ export class GatekeeperService {
     private payer: Keypair,
     private gatekeeperNetwork: PublicKey,
     private gatekeeperAuthority: Keypair,
-    private config: GatekeeperConfig = {},
-    private retrieveTokenAfterAction = false
+    private config: GatekeeperConfig = {}
   ) {}
 
   private getDefaultExpireTime(): number | undefined {
