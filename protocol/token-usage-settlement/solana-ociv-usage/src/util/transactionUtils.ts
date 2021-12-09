@@ -9,9 +9,9 @@ import { complement, isNil } from "ramda";
 
 export type SerumType = "PlaceOrder";
 export type NFTType = "Mint";
-export type DummyType = "DummyTx" | "NativeTransferTx";
+export type DummyType = "DummyTx" | "NativeTransferTx" | "DevDummyTx";
 
-export type Category = "Serum" | "NFT" | "Dummy" | "NativeTransfer";
+export type Category = "Serum" | "NFT" | "Dummy" | "NativeTransfer" | "DevDummyGatekeeper";
 
 type Subtype<C extends Category> = C extends "Serum"
   ? SerumType
@@ -91,6 +91,39 @@ interface Strategy<C extends Category> {
 //     private readonly dapp: PublicKey
 //   ) {}
 // }
+
+
+export class DevDummyGatekeeperNetwork implements Strategy<"DevDummyGatekeeper"> {
+  // Dex Market Proxy program deployed by Solrise
+  // static proxyProgramId = new PublicKey(
+  //   "gcmJfhh9k7hiEbKYb4ehHEQJGrdtCrmvxw1bgiB56Vb"
+  // );
+
+  matches(transaction: ParsedConfirmedTransaction): boolean {
+    return transaction.transaction.message.instructions.some((instruction) => {
+      if (!instruction.programId.equals(this.programId)) return false;
+
+      return true;
+    });
+  }
+
+  build(
+    parsedConfirmedTransaction: ParsedConfirmedTransaction
+  ): BillableTransaction<"DevDummyGatekeeper"> {
+    return buildBillableTransaction(
+      this.programId,
+      this.dapp,
+      "DevDummyGatekeeper",
+      "DevDummyTx",
+      parsedConfirmedTransaction.transaction.signatures[0],
+      parsedConfirmedTransaction
+    );
+  }
+  constructor(
+    private readonly programId: PublicKey,
+    private readonly dapp: PublicKey
+  ) {}
+}
 
 
 export class NativeTransferStrategy implements Strategy<"NativeTransfer"> {

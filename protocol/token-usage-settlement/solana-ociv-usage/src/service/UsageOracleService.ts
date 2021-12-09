@@ -11,26 +11,24 @@ import {
   getClusterUrl,
 } from "@identity.com/gateway-usage";
 import { Provider, Wallet, web3 } from "@project-serum/anchor";
-import { DummyStrategy, loadTransactions, NativeTransferStrategy } from "../lib/transactionUtils";
-
-const DEFAULT_COMMITMENT: web3.Commitment = "confirmed";
+import {
+  DevDummyGatekeeperNetwork,
+  DummyStrategy,
+  loadTransactions,
+  NativeTransferStrategy,
+} from "../util/transactionUtils";
+import { SOLANA_COMMITMENT } from "../util/constants";
 
 type PaginationProps = { offset: number; limit: number };
 
 export class UsageOracleService {
-  private connection: Connection;
-
-  constructor(private oracle: Keypair, private cluster: ExtendedCluster) {
-    this.connection = new Connection(
-      getClusterUrl(cluster),
-      DEFAULT_COMMITMENT
-    );
+  constructor(private connection: Connection, private oracle: Keypair) {
   }
 
   private getProvider = () => {
     const wallet = new Wallet(this.oracle);
     return new Provider(this.connection, wallet, {
-      commitment: DEFAULT_COMMITMENT,
+      commitment: SOLANA_COMMITMENT,
     });
   };
 
@@ -43,15 +41,20 @@ export class UsageOracleService {
 
     // TODO we need to make sure that we only consider FINALIZED Epochs here
     const firstSlot = epochSchedule.getFirstSlotInEpoch(epoch);
-    const lastSlot = epochSchedule.getLastSlotInEpoch(epoch);
+    // const lastSlot = epochSchedule.getLastSlotInEpoch(epoch);
+    const lastSlot = await this.connection.getSlot()
+
+    console.log(`Reading from Slot ${firstSlot} to ${lastSlot}. Total: ${lastSlot - firstSlot}`)
+
 
     // Split and Join into 1000 tx window
-    const signatures: string[] = []
+    let signatures: string[] = []
     let currentStartSlot = firstSlot;
     const SLOT_WINDOW = 1000;
 
     // TODO: Parallelize
-    // TODO: Handle "Error: failed to get confirmed block: Block 1001 cleaned up, does not exist on node. First available block: 44478"
+    // Currently has a Max of 5k, e.g. 5 runthroughs
+    currentStartSlot = lastSlot - 10000
     while( currentStartSlot < lastSlot) {
       console.log(`Window: ${currentStartSlot}`)
       let currentEndSlot = currentStartSlot + SLOT_WINDOW
@@ -64,7 +67,8 @@ export class UsageOracleService {
         currentStartSlot,
         currentEndSlot
       )
-      signatures.concat(sigs)
+      console.log(sigs)
+      signatures = signatures.concat(sigs)
       currentStartSlot = currentEndSlot
     }
 
@@ -73,14 +77,17 @@ export class UsageOracleService {
   }
 
   async readUsage({
-    gatekeeper,
     dapp,
     epoch,
-  }: Omit<RegisterUsageParams, "oracleProvider" | "amount"> & PaginationProps) {
+  }: Omit<RegisterUsageParams, "oracleProvider" | "amount" | "gatekeeper">) {
+    // TODO readd pagination props.
+
     const fetched = await this.getTransactionSignaturesForEpoch(dapp, epoch);
     // TODO filter/map and reduce
 
-    const billableTx = await loadTransactions(this.connection, fetched, [new NativeTransferStrategy()])
+    const billableTx = await loadTransactions(this.connection, fetched, [new DevDummyGatekeeperNetwork(new PublicKey(
+      "gcmJfhh9k7hiEbKYb4ehHEQJGrdtCrmvxw1bgiB56Vb"
+    ), dapp)])
 
     return billableTx;
   }
