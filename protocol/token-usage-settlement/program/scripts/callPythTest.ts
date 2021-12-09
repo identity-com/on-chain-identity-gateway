@@ -1,31 +1,31 @@
 import {
-  getPythProgramKeyForCluster,
-  PythConnection,
-} from "@pythnetwork/client";
-import {
   Program,
   Provider,
-  web3,
   setProvider,
   workspace,
 } from "@project-serum/anchor";
-import { clusterApiUrl, Connection, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { clusterApiUrl, PublicKey } from "@solana/web3.js";
 import { PythTest } from "../target/types/pyth_test";
+import * as process from "process";
+import * as path from "path";
+import * as os from "os";
 
-const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+process.env.ANCHOR_WALLET =
+  process.env.USAGE_WALLET ||
+  path.join(os.homedir(), ".config", "solana", "id.json");
 
-const provider = Provider.local();
+const provider = Provider.local(clusterApiUrl("devnet"));
 setProvider(provider);
 
 const program = workspace.PythTest as Program<PythTest>;
 
 (async () => {
-  // const { blockhash: recentBlockhash }  = await connection.getRecentBlockhash();
-  // const instruction = new TransactionInstruction({
-  //   keys
-  // });
-  // const transaction = new Transaction({ recentBlockhash }).add(
-  // instruction
-)
+  const result = await program.rpc.run({
+    accounts: {
+      // SOL/USD devnet
+      product: new PublicKey("3Mnn2fX6rQyUsyELYms1sBJyChWofzSNRoqYzvgMVz5E"),
+      price: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
+    },
+  });
+  console.log(result);
 })().catch(console.error);
-  

@@ -14,10 +14,13 @@ const DELEGATE_SEED: &str = "gateway_usage_delegate";
 #[program]
 pub mod usage {
     use super::*;
-    use crate::utils::{spl_token_transfer, TokenTransferParams};
+    use crate::utils::{get_rate, spl_token_transfer, TokenTransferParams};
     
     pub fn register_usage(ctx: Context<RegisterUsage>, amount: u32, epoch: u64, bump: u8) -> ProgramResult {
         let usage = &mut ctx.accounts.usage;
+        
+        let rate = get_rate(&ctx.accounts.rate_product, &ctx.accounts.rate_price)?;
+        
         usage.dapp = *ctx.accounts.dapp.key;
         usage.gatekeeper = *ctx.accounts.gatekeeper.key;
         usage.oracle = *ctx.accounts.oracle.key;
@@ -25,6 +28,7 @@ pub mod usage {
         usage.epoch = epoch;
         usage.bump = bump;
         usage.paid = false;
+        usage.rate = rate;
         Ok(())
     }
     
@@ -61,6 +65,7 @@ pub struct Usage {
     pub gatekeeper: Pubkey,
     pub oracle: Pubkey,
     pub amount: u32,
+    pub rate: i64,
     pub epoch: u64,
     pub bump: u8,
     pub paid: bool,
@@ -84,7 +89,7 @@ pub struct RegisterUsage<'info> {
         bump={ msg!("bump = {}, epoch = {:?}", bump, epoch.to_le_bytes()); bump },
         // Space is based on the Usage struct - but for some reason it requires an extra 8 bytes to avoid a 
         // deserialisation error
-        space = 32 + 32 + 32 + 4 + 8 + 8 + 1 + 1)
+        space = 32 + 32 + 32 + 4 + 8 + 8 + 8 + 1 + 1)
     ]
     usage: ProgramAccount<'info, Usage>,
     #[account(mut)]
@@ -93,6 +98,10 @@ pub struct RegisterUsage<'info> {
     dapp: AccountInfo<'info>,
     #[account()]
     gatekeeper: AccountInfo<'info>,
+    #[account()]
+    rate_product: AccountInfo<'info>,
+    #[account()]
+    rate_price: AccountInfo<'info>,
     system_program: Program<'info, System>,
 }
 

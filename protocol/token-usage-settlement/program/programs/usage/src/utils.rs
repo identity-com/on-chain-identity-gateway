@@ -1,3 +1,5 @@
+use anchor_lang::prelude::{msg, ProgramError};
+use pyth_client::{AccountType, cast, MAGIC, Price, Product, VERSION_2};
 use {
     crate::ErrorCode,
     anchor_lang::{
@@ -49,4 +51,26 @@ pub fn spl_token_transfer(params: TokenTransferParams<'_, '_>) -> ProgramResult 
     );
 
     result.map_err(|_| ErrorCode::TokenTransferFailed.into())
+}
+
+pub fn get_rate(product: &AccountInfo, price: &AccountInfo) -> Result<i64, ProgramError> {
+    let product_info = product;
+    let mut product_data = product_info.try_borrow_mut_data()?;
+    let product_dst: &mut [u8] = &mut product_data;
+    let prod_acct = cast::<Product>( product_dst );
+
+    assert!( prod_acct.px_acc.is_valid(), "not a valid pyth product" );
+    let price_info = price;
+    let mut price_data = price_info.try_borrow_mut_data()?;
+    let price_dst: &mut [u8] = &mut price_data;
+    let pa = cast::<Price>( price_dst );
+
+    assert_eq!( pa.magic, MAGIC, "not a valid pyth account" );
+    assert_eq!( pa.atype, AccountType::Price as u32,
+                "not a valid pyth price account" );
+    assert_eq!( pa.ver, VERSION_2,
+                "unexpected pyth price account version" );
+    msg!( "  price_account .. {:?}", price.key );
+    msg!( "    price ... {}", pa.agg.price);
+    Ok(pa.agg.price)
 }

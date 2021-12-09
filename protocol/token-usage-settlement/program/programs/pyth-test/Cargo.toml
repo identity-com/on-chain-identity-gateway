@@ -1,12 +1,12 @@
 [package]
-name = "pyth-client"
+name = "pyth-test"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "pyth_client"
+name = "pyth_test"
 
 [features]
 no-entrypoint = []
