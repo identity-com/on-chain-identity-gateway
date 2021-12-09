@@ -48,7 +48,6 @@ export class GatekeeperService {
     private gatekeeperNetwork: PublicKey,
     private gatekeeperAuthority: Keypair,
     private config: GatekeeperConfig = {},
-    private retrieveTokenAfterAction = false,
     private retries: number = DEFAULT_SOLANA_RETRIES
   ) {}
 
