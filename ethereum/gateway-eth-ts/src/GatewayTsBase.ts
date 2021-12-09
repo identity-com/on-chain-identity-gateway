@@ -1,6 +1,6 @@
 import { addresses, ContractAddresses } from './lib/addresses';
 import { gatewayTokenAddresses, GatewayTokenItem } from './lib/gatewaytokens';
-import { BigNumber, getDefaultProvider, Signer, Wallet } from 'ethers';
+import { BigNumber, getDefaultProvider, Wallet } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 
 import { SUBTRACT_GAS_LIMIT, NETWORKS, } from './utils'
@@ -24,7 +24,7 @@ export class GatewayTsBase {
   
     network: string;
   
-    signer: Signer;
+    wallet: Wallet;
   
     gatewayTokenAddresses: string[];
   
@@ -42,7 +42,7 @@ export class GatewayTsBase {
       this.defaultGas = options?.defaultGas || 6000000;
       this.defaultGasPrice = options?.defaultGasPrice || 1000000000000;
   
-      this.signer = signer;
+      this.wallet = signer;
   
       this.provider = provider || getDefaultProvider();
     }
@@ -54,8 +54,8 @@ export class GatewayTsBase {
       this.network = NETWORKS[this.networkId];
       this.contractAddresses = addresses[this.networkId];
 
-      this.gatewayTokenController = new GatewayTokenController(this.signer || this.provider, addresses[this.networkId].gatewayTokenController);
-      this.flagsStorage = new FlagsStorage(this.signer || this.provider, addresses[this.networkId].flagsStorage);
+      this.gatewayTokenController = new GatewayTokenController(this.wallet || this.provider, addresses[this.networkId].gatewayTokenController);
+      this.flagsStorage = new FlagsStorage(this.wallet || this.provider, addresses[this.networkId].flagsStorage);
       gatewayTokenAddresses[this.networkId].forEach((gatewayToken: GatewayTokenItem) => {
         const tokenAddress = gatewayToken.address
 
@@ -67,7 +67,7 @@ export class GatewayTsBase {
           name : gatewayToken.name,
           symbol: gatewayToken.symbol,
           address: gatewayToken.address,
-          tokenInstance: new GatewayToken(this.signer || this.provider, gatewayToken.address),
+          tokenInstance: new GatewayToken(this.wallet || this.provider, gatewayToken.address),
         }
       });
     }

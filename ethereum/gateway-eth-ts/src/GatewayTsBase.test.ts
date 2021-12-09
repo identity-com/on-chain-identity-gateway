@@ -42,7 +42,7 @@ describe('Test GatewayTSBase class', function() {
         const networkId = await (await gatewayBase.provider.getNetwork()).chainId;
 
         assert.equal(gatewayBase.defaultGatewayToken, defaultGatewayToken);
-        assert.equal(gatewayBase.signer, wallet);
+        assert.equal(gatewayBase.wallet, wallet);
         assert.equal(networkId, ropstenNetworkID);
         assert.equal(gatewayBase.defaultGas, defaultGas);
         assert.equal(gatewayBase.defaultGasPrice, defaultGasPrice);

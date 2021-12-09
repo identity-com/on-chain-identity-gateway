@@ -46,7 +46,7 @@ describe('Test GatewayTSCallData class', function() {
         const networkId = await (await gatewayLib.provider.getNetwork()).chainId;
 
         assert.equal(gatewayLib.defaultGatewayToken, defaultGatewayToken);
-        assert.equal(gatewayLib.signer, wallet);
+        assert.equal(gatewayLib.wallet, wallet);
         assert.equal(networkId, ropstenNetworkID);
         assert.equal(gatewayLib.defaultGas, defaultGas);
         assert.equal(gatewayLib.defaultGasPrice, defaultGasPrice);
