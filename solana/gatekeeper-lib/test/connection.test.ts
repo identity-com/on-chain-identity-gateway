@@ -51,7 +51,7 @@ describe("Solana connection utils tests", () => {
       });
       it("should retry 3 times and then fail", async () => {
         const results = await Promise.allSettled([
-          connectionUtils.send(connection, transaction),
+          connectionUtils.send(connection, transaction, 3),
         ]);
         expect(results[0].status).to.equal("rejected");
         const calls = blockchainStub.getCalls();
@@ -72,7 +72,7 @@ describe("Solana connection utils tests", () => {
         blockchainStub.onSecondCall().resolves("txId123");
       });
       it("should retry once and then succeed", async () => {
-        const result = await connectionUtils.send(connection, transaction);
+        const result = await connectionUtils.send(connection, transaction, 3);
         expect(result).to.equal("txId123");
 
         const calls = blockchainStub.getCalls();
@@ -96,7 +96,7 @@ describe("Solana connection utils tests", () => {
       });
       it("should retry once and then fail", async () => {
         try {
-          await connectionUtils.send(connection, transaction);
+          await connectionUtils.send(connection, transaction, 3);
         } catch {
           // expect the promise to reject.
         }

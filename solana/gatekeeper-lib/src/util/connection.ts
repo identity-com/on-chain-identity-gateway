@@ -13,7 +13,6 @@ import {
   SOLANA_TIMEOUT_PROCESSED,
   SOLANA_TIMEOUT_CONFIRMED,
   SOLANA_TIMEOUT_FINALIZED,
-  SOLANA_RETRIES,
 } from "./constants";
 import retry from "async-retry";
 
@@ -54,6 +53,7 @@ const sendWithRetry = async (
   connection: Connection,
   transaction: Transaction,
   options: ConfirmOptions = {},
+  retries: number,
   ...signers: Keypair[]
 ): Promise<TransactionSignature> => {
   let finalResult;
@@ -88,14 +88,14 @@ const sendWithRetry = async (
         if (result === "timeout") {
           // trigger a retry
           console.log(
-            `Timeout during Solana sendAndConfirmTransaction. Retry ${SOLANA_RETRIES} times.`
+            `Timeout during Solana sendAndConfirmTransaction. Retry ${retries} times.`
           );
           throw new Error("Solana timeout");
         }
         return result;
       },
       {
-        retries: SOLANA_RETRIES,
+        retries: retries,
       }
     );
   } catch (err) {
@@ -110,6 +110,7 @@ const sendWithRetry = async (
 export const send = (
   connection: Connection,
   transaction: Transaction,
+  retries: number,
   options: ConfirmOptions = {},
   ...signers: Keypair[]
 ): Promise<TransactionSignature> =>
@@ -121,5 +122,6 @@ export const send = (
       commitment: SOLANA_COMMITMENT,
       ...options,
     },
+    retries,
     ...signers
   );
