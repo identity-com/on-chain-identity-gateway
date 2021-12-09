@@ -277,14 +277,6 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@identity.com/prove-solana-wallet@^0.2.2":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@identity.com/prove-solana-wallet/-/prove-solana-wallet-0.2.4.tgz#560b2bfc2df5ff70c2183675f6dc9c4d46e8adc7"
-  integrity sha512-DsGyu9l52//fmhsC1GR+0ylsaGxOgo8e7UEEF3gTHFXECcHgXatuhyBafMO4Gm9a7EHdC22fjgp1MM9hq/rN3A==
-  dependencies:
-    "@solana/web3.js" "^1.22.0"
-    bs58 "^4.0.1"
-
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"
