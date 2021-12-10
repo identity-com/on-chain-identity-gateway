@@ -110,13 +110,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Gatekeeper<wbr>Service<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, payer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, config<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">GatekeeperConfig</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatekeeperService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperService</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Gatekeeper<wbr>Service<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, payer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, config<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">GatekeeperConfig</span>, customRetryConfig<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">DeepPartial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">RetryConfig</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatekeeperService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperService</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d2d53fd/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L44">service/GatekeeperService.ts:44</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/0588bc3/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L49">service/GatekeeperService.ts:49</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -166,6 +166,14 @@
 										</div>
 									</div>
 								</li>
+								<li>
+									<h5>customRetryConfig: <span class="tsd-signature-type">DeepPartial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">RetryConfig</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>RetryConfig including retry count and timeouts. All values have defaults.</p>
+										</div>
+									</div>
+								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="GatekeeperService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperService</a></h4>
 						</li>
@@ -184,7 +192,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d2d53fd/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L236">service/GatekeeperService.ts:236</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/0588bc3/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L247">service/GatekeeperService.ts:247</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -214,7 +222,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d2d53fd/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L167">service/GatekeeperService.ts:167</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/0588bc3/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L178">service/GatekeeperService.ts:178</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -247,7 +255,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d2d53fd/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L124">service/GatekeeperService.ts:124</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/0588bc3/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L135">service/GatekeeperService.ts:135</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -280,7 +288,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d2d53fd/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L135">service/GatekeeperService.ts:135</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/0588bc3/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L146">service/GatekeeperService.ts:146</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -313,7 +321,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d2d53fd/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L202">service/GatekeeperService.ts:202</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/0588bc3/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L213">service/GatekeeperService.ts:213</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -346,7 +354,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d2d53fd/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L247">service/GatekeeperService.ts:247</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/0588bc3/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L258">service/GatekeeperService.ts:258</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
