@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/solana-gateway-ts",
-  "version": "0.4.1-beta5",
+  "version": "0.4.1-beta7",
   "description": "Typescript adapters for interacting with Solana gateway program",
   "main": "dist/index",
   "types": "dist/index",
