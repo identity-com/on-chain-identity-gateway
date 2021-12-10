@@ -1,7 +1,10 @@
 import { AccountInfo, PublicKey } from "@solana/web3.js";
 import { GatewayTokenData } from "../lib/GatewayTokenData";
-import { PROGRAM_ID } from "../lib/constants";
 import { dataToGatewayToken } from "../lib/util";
+
+export declare type DeepPartial<T> = {
+  [P in keyof T]?: DeepPartial<T[P]>;
+};
 
 export enum State {
   ACTIVE = "ACTIVE",

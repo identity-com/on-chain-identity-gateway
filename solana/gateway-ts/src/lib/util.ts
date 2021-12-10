@@ -2,16 +2,175 @@ import {
   AccountInfo,
   Commitment,
   Connection,
+  GetProgramAccountsConfig,
   PublicKey,
+  RpcResponseAndContext,
+  SendOptions,
+  SignatureResult,
+  Signer,
+  Transaction,
 } from "@solana/web3.js";
 import {
   GATEKEEPER_NONCE_SEED_STRING,
   GATEWAY_TOKEN_ADDRESS_SEED,
   PROGRAM_ID,
   SOLANA_COMMITMENT,
+  SOLANA_TIMEOUT_CONFIRMED,
+  SOLANA_TIMEOUT_FINALIZED,
+  SOLANA_TIMEOUT_PROCESSED,
+  DEFAULT_SOLANA_RETRIES,
 } from "./constants";
-import { GatewayToken, ProgramAccountResponse, State } from "../types";
+import {
+  DeepPartial,
+  GatewayToken,
+  ProgramAccountResponse,
+  State,
+} from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
+import retry from "async-retry";
+import * as R from "ramda";
+
+export type RetryConfig = {
+  retryCount: number;
+  exponentialFactor: number;
+  timeouts: {
+    processed: number;
+    confirmed: number;
+    finalized: number;
+  };
+};
+
+export const defaultRetryConfig = {
+  retryCount: DEFAULT_SOLANA_RETRIES,
+  exponentialFactor: 2,
+  timeouts: {
+    processed: SOLANA_TIMEOUT_PROCESSED,
+    confirmed: SOLANA_TIMEOUT_CONFIRMED,
+    finalized: SOLANA_TIMEOUT_FINALIZED,
+  },
+};
+
+export const runFunctionWithRetry = async (
+  fn: () => Promise<unknown>,
+  commitment: Commitment,
+  customRetryConfig: DeepPartial<RetryConfig>
+): Promise<unknown> => {
+  const retryConfig = {
+    ...defaultRetryConfig,
+    ...customRetryConfig,
+  } as RetryConfig;
+  const timeout: number =
+    R.path(["timeouts", commitment], retryConfig) ||
+    retryConfig.timeouts.confirmed;
+
+  let currentAttempt = 0;
+
+  return retry(
+    async () => {
+      currentAttempt++;
+      console.log(
+        `Trying Solana blockchain call (attempt ${currentAttempt} of ${
+          retryConfig.retryCount + 1
+        })`,
+        { timeout }
+      );
+      const timeoutPromise = new Promise((_resolve, reject) =>
+        setTimeout(() => reject(new Error("timeout")), timeout)
+      );
+      const blockchainPromise = fn();
+      return Promise.race([blockchainPromise, timeoutPromise]);
+    },
+    {
+      retries: retryConfig.retryCount,
+      factor: retryConfig.exponentialFactor,
+    }
+  );
+};
+
+export const proxyConnectionWithRetry = (
+  originalConnection: Connection,
+  customRetryConfig: DeepPartial<RetryConfig> = defaultRetryConfig
+): Connection => {
+  const proxyHandler: ProxyHandler<Connection> = {
+    get(target: Connection, propKey, receiver) {
+      switch (propKey) {
+        case "sendTransaction":
+          return (
+            transaction: Transaction,
+            signers: Signer[],
+            options: SendOptions | undefined
+          ): Promise<string> => {
+            const fn = async () =>
+              target.sendTransaction(transaction, signers, options);
+            return runFunctionWithRetry(
+              fn,
+              SOLANA_COMMITMENT,
+              customRetryConfig
+            ) as Promise<string>;
+          };
+        case "confirmTransaction":
+          return (
+            signature: string,
+            commitment?: Commitment | undefined
+          ): Promise<RpcResponseAndContext<SignatureResult>> => {
+            const fn = async () =>
+              target.confirmTransaction(signature, commitment);
+            return runFunctionWithRetry(
+              fn,
+              SOLANA_COMMITMENT,
+              customRetryConfig
+            ) as Promise<RpcResponseAndContext<SignatureResult>>;
+          };
+        case "getProgramAccounts":
+          return (
+            programId: PublicKey,
+            configOrCommitment?:
+              | Commitment
+              | GetProgramAccountsConfig
+              | undefined
+          ): Promise<
+            {
+              pubkey: PublicKey;
+              account: AccountInfo<Buffer>;
+            }[]
+          > => {
+            const fn = async () =>
+              target.getProgramAccounts(programId, configOrCommitment);
+            return runFunctionWithRetry(
+              fn,
+              SOLANA_COMMITMENT,
+              customRetryConfig
+            ) as Promise<
+              {
+                pubkey: PublicKey;
+                account: AccountInfo<Buffer>;
+              }[]
+            >;
+          };
+        case "getAccountInfo":
+          return (
+            publicKey: PublicKey,
+            commitment?: Commitment | undefined
+          ): Promise<AccountInfo<Buffer> | null> => {
+            const fn = async () => target.getAccountInfo(publicKey, commitment);
+            return runFunctionWithRetry(
+              fn,
+              SOLANA_COMMITMENT,
+              customRetryConfig
+            ) as Promise<AccountInfo<Buffer> | null>;
+          };
+        default:
+          // Return the original property unchanged:
+          return Reflect.get(target, propKey, receiver);
+      }
+    },
+    apply(target: any, thisArg, argumentsList) {
+      const fn = async () => target.apply(thisArg, argumentsList);
+      return runFunctionWithRetry(fn, SOLANA_COMMITMENT, customRetryConfig);
+    },
+  };
+  return new Proxy<Connection>(originalConnection, proxyHandler);
+};
 
 /**
  * Derive the address of the gatekeeper PDA for this gatekeeper
