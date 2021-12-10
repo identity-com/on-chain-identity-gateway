@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/1.4.1-beta7 darwin-x64 node-v14.18.2
+@identity.com/solana-gatekeeper-lib/1.4.1-beta8 darwin-x64 node-v14.18.2
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -66,7 +66,7 @@ EXAMPLE
   $ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta7/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta8/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway freeze GATEWAYTOKEN`
 
@@ -89,15 +89,16 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
-                                                   gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
+                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
+                                                   to.
 
 EXAMPLE
   $ gateway freeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
   Frozen
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta7/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta8/dist/commands/freeze.ts)_
 
 ## `gateway help [COMMAND]`
 
@@ -139,14 +140,15 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
-                                                   gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
+                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
+                                                   to.
 
 EXAMPLE
   $ gateway issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta7/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta8/dist/commands/issue.ts)_
 
 ## `gateway refresh GATEWAYTOKEN [EXPIRY]`
 
@@ -170,15 +172,16 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
-                                                   gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
+                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
+                                                   to.
 
 EXAMPLE
   $ gateway refresh EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv 54000
   Refreshed
 ```
 
-_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta7/dist/commands/refresh.ts)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta8/dist/commands/refresh.ts)_
 
 ## `gateway revoke GATEWAYTOKEN`
 
@@ -201,15 +204,16 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
-                                                   gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
+                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
+                                                   to.
 
 EXAMPLE
   $ gateway revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
   Revoked
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta7/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta8/dist/commands/revoke.ts)_
 
 ## `gateway revoke-gatekeeper ADDRESS`
 
@@ -239,7 +243,7 @@ EXAMPLE
   $ gateway revoke-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta7/dist/commands/revoke-gatekeeper.ts)_
+_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta8/dist/commands/revoke-gatekeeper.ts)_
 
 ## `gateway unfreeze GATEWAYTOKEN`
 
@@ -262,15 +266,16 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
-                                                   gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
+                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
+                                                   to.
 
 EXAMPLE
   $ gateway unfreeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
   Unfrozen
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta7/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta8/dist/commands/unfreeze.ts)_
 
 ## `gateway verify OWNER`
 
@@ -290,8 +295,9 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The public key (in base 58) of the
-                                                   gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
+                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
+                                                   to.
 
 EXAMPLE
   $ gateway verify EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
@@ -305,5 +311,5 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta7/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v1.4.1-beta8/dist/commands/verify.ts)_
 <!-- commandsstop -->
