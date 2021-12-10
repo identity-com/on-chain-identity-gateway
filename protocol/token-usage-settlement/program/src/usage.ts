@@ -44,6 +44,10 @@ export const registerUsage = async (
         dapp: params.dapp,
         gatekeeper: params.gatekeeper,
         oracle: oraclePublicKey,
+        // TODO ETH/USD as a test pair
+        // Note - we may not need the product in here, just the price
+        rateProduct: new web3.PublicKey("2ciUuGZiee5macAMeQ7bHGTJtwcYTgnt6jdmQnnKZrfu"),
+        ratePrice: new web3.PublicKey("EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"),
         systemProgram: web3.SystemProgram.programId,
       },
     }

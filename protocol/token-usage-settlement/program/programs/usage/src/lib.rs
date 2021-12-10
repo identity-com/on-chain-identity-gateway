@@ -87,9 +87,9 @@ pub struct RegisterUsage<'info> {
         payer = oracle,
         // the msg! is a hack to help debugging. Remove once we are happy with the code
         bump={ msg!("bump = {}, epoch = {:?}", bump, epoch.to_le_bytes()); bump },
-        // Space is based on the Usage struct - but for some reason it requires an extra 8 bytes to avoid a 
-        // deserialisation error
-        space = 32 + 32 + 32 + 4 + 8 + 8 + 8 + 1 + 1)
+        // Space is based on the Usage struct + 8 bytes that anchor adds, 
+        // as a discriminant to prevent confusion attacks 
+        space = 8 + 32 + 32 + 32 + 8 + 8 + 1 + 1)
     ]
     usage: ProgramAccount<'info, Usage>,
     #[account(mut)]

@@ -1,7 +1,7 @@
 [programs.localnet]
 usage = "GXD3V5AQTDrszePsSjH1yQNvfCceumZp1jM9mQR4fMPH"
 pyth_test = "8xdHZ77AcuZvSE4W18iFSDz4kPd4RGnmzcaHxSWCRMpo"
-pyth = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+pyth = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"   # the test pyth clone
 
 [registry]
 url = "https://anchor.projectserum.com"
