@@ -62,5 +62,12 @@
     "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'test/**/*.ts' -r dotenv/config",
     "lint": "eslint src/ test/ scripts/ --ext .ts"
   },
+  "oclif": {
+    "commands": "./dist/commands",
+    "bin": "gateway-usage",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
   "types": "dist/index.d.ts"
 }

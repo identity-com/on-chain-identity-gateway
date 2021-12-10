@@ -2,3 +2,4 @@ register.csv
 test-ledger/
 
 .env
+oracle-key.json
