@@ -18,6 +18,7 @@ use crate::{
 use num_traits::AsPrimitive;
 use solana_program::entrypoint_deprecated::ProgramResult;
 use solana_program::program::invoke;
+use solana_program::program_error::ProgramError;
 use solana_program::{account_info::AccountInfo, msg, pubkey::Pubkey};
 use std::str::FromStr;
 
@@ -144,11 +145,16 @@ impl Gateway {
 
     /// Verifies a given token and then expires it. Only works on networks that support this feature.
     pub fn verify_and_expire_token<'a>(
+        gateway_program: AccountInfo<'a>,
         gateway_token_info: AccountInfo<'a>,
         owner: AccountInfo<'a>,
         gatekeeper_network: &Pubkey,
         expire_feature_account: AccountInfo<'a>,
     ) -> ProgramResult {
+        if gateway_program.key != &Self::program_id() {
+            return Err(ProgramError::IncorrectProgramId);
+        }
+
         let borrow = gateway_token_info.data.borrow();
         let gateway_token = InPlaceGatewayToken::new(&**borrow)?;
 
@@ -160,7 +166,7 @@ impl Gateway {
 
         invoke(
             &expire_token(*gateway_token_info.key, *owner.key, *gatekeeper_network),
-            &[gateway_token_info, owner, expire_feature_account],
+            &[gateway_token_info, owner, expire_feature_account, gateway_program],
         )?;
         Ok(())
     }
