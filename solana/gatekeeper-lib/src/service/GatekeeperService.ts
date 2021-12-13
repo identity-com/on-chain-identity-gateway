@@ -109,6 +109,26 @@ export class GatekeeperService {
     );
   }
 
+  private async checkTokenAfterAction(
+    gatewayTokenKey: PublicKey,
+    originalError: any,
+    predicate: (token: GatewayToken | null) => boolean
+  ) {
+    // The tx may have succeeded but the blockchain call timed out. Check on-chain.
+    const onChainToken: GatewayToken | null = await getGatewayToken(
+      this.connection,
+      gatewayTokenKey
+    );
+    if (predicate(onChainToken)) {
+      console.log(
+        "Send failed in GatekeeperService, but the on-chain token is already in the desired state. Returning success."
+      );
+    } else {
+      // Token isn't in the desired state. Re-throw the original error.
+      throw originalError;
+    }
+  }
+
   private async issueVanilla(
     owner: PublicKey,
     seed?: Uint8Array,
@@ -147,19 +167,9 @@ export class GatekeeperService {
         this.gatekeeperAuthority
       );
     } catch (err) {
-      // The tx may have succeeded but the blockchain call timed out. Check on-chain.
-      const onChainToken: GatewayToken | null = await getGatewayToken(
-        this.connection,
-        gatewayTokenKey
-      );
-      if (onChainToken && onChainToken.state === State.ACTIVE) {
-        console.log(
-          "Send failed during Issue, but Active token is found on-chain. Returning success."
-        );
-      } else {
-        // Token hasn't been issued on-chain.
-        throw err;
-      }
+      const predicate = (token: GatewayToken | null) =>
+        !!token && token.state === State.ACTIVE;
+      await this.checkTokenAfterAction(gatewayTokenKey, err, predicate);
     }
 
     return new GatewayToken(
@@ -214,19 +224,9 @@ export class GatekeeperService {
         this.gatekeeperAuthority
       );
     } catch (err) {
-      // The tx may have succeeded but the blockchain call timed out. Check on-chain.
-      const onChainToken: GatewayToken | null = await getGatewayToken(
-        this.connection,
-        gatewayTokenKey
-      );
-      if (onChainToken?.state === State.REVOKED) {
-        console.log(
-          "Send failed during Revoke, but token is already revoked on-chain. Returning success."
-        );
-      } else {
-        // State hasn't been updated on-chain.
-        throw err;
-      }
+      const predicate = (token: GatewayToken | null) =>
+        !!token && token.state === State.REVOKED;
+      await this.checkTokenAfterAction(gatewayTokenKey, err, predicate);
     }
 
     return existingToken.update({ state: State.REVOKED });
@@ -266,18 +266,9 @@ export class GatekeeperService {
       );
     } catch (err) {
       // The tx may have succeeded but the blockchain call timed out. Check on-chain.
-      const onChainToken: GatewayToken | null = await getGatewayToken(
-        this.connection,
-        gatewayTokenKey
-      );
-      if (onChainToken?.state === State.FROZEN) {
-        console.log(
-          "Send failed during Freeze, but token is already frozen on-chain. Returning success."
-        );
-      } else {
-        // State hasn't been updated on-chain.
-        throw err;
-      }
+      const predicate = (token: GatewayToken | null) =>
+        !!token && token.state === State.FROZEN;
+      await this.checkTokenAfterAction(gatewayTokenKey, err, predicate);
     }
     return existingToken.update({ state: State.FROZEN });
   }
@@ -314,19 +305,9 @@ export class GatekeeperService {
         this.gatekeeperAuthority
       );
     } catch (err) {
-      // The tx may have succeeded but the blockchain call timed out. Check on-chain.
-      const onChainToken: GatewayToken | null = await getGatewayToken(
-        this.connection,
-        gatewayTokenKey
-      );
-      if (onChainToken?.state === State.ACTIVE) {
-        console.log(
-          "Send failed during Unfreeze, but token is already Active on-chain. Returning success."
-        );
-      } else {
-        // State hasn't been updated on-chain.
-        throw err;
-      }
+      const predicate = (token: GatewayToken | null) =>
+        !!token && token.state === State.ACTIVE;
+      await this.checkTokenAfterAction(gatewayTokenKey, err, predicate);
     }
 
     return existingToken.update({ state: State.ACTIVE });
@@ -376,22 +357,11 @@ export class GatekeeperService {
         this.gatekeeperAuthority
       );
     } catch (err) {
-      // The tx may have succeeded but the blockchain call timed out. Check on-chain.
-      const onChainToken: GatewayToken | null = await getGatewayToken(
-        this.connection,
-        gatewayTokenKey
-      );
-      if (
-        onChainToken?.expiryTime === expireTime &&
-        onChainToken?.state === State.ACTIVE
-      ) {
-        console.log(
-          "Send failed during updateExpiry, but time is already updated on-chain. Returning success."
-        );
-      } else {
-        // State hasn't been updated on-chain.
-        throw err;
-      }
+      const predicate = (token: GatewayToken | null) =>
+        !!token &&
+        token.state === State.ACTIVE &&
+        token.expiryTime === expireTime;
+      await this.checkTokenAfterAction(gatewayTokenKey, err, predicate);
     }
 
     return existingToken.update({
