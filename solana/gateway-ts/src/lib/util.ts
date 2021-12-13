@@ -59,11 +59,36 @@ export const runFunctionWithRetry = async (
     ...defaultRetryConfig,
     ...customRetryConfig,
   } as RetryConfig;
-  const timeout: number =
+  
+  let timeout: number =
     R.path(["timeouts", commitment], retryConfig) ||
     retryConfig.timeouts.confirmed;
 
   let currentAttempt = 0;
+
+  let retryCount = retryConfig.retryCount;
+  let expFactor = retryConfig.exponentialFactor;
+
+  if (!retryCount) {
+    console.error(
+      `retryCount not set in Solana connection proxy. Defaulting to ${DEFAULT_SOLANA_RETRIES}`
+    );
+    retryCount = DEFAULT_SOLANA_RETRIES;
+  }
+
+  if (!expFactor) {
+    console.error(
+      "exponentialFactor not set in Solana connection proxy. Defaulting to 2"
+    );
+    retryCount = 2;
+  }
+
+  if (!timeout) {
+    console.error(
+      `timeout not set in Solana connection proxy. Defaulting to ${SOLANA_TIMEOUT_CONFIRMED}`
+    );
+    timeout = SOLANA_TIMEOUT_CONFIRMED;
+  }
 
   return retry(
     async () => {
@@ -81,8 +106,8 @@ export const runFunctionWithRetry = async (
       return Promise.race([blockchainPromise, timeoutPromise]);
     },
     {
-      retries: retryConfig.retryCount,
-      factor: retryConfig.exponentialFactor,
+      retries: retryCount,
+      factor: expFactor,
     }
   );
 };
