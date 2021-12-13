@@ -59,16 +59,15 @@ export const runFunctionWithRetry = async (
     ...defaultRetryConfig,
     ...customRetryConfig,
   } as RetryConfig;
-  
+
   let timeout: number =
     R.path(["timeouts", commitment], retryConfig) ||
     retryConfig.timeouts.confirmed;
 
-  let currentAttempt = 0;
-
+  // If we have any bugs before this point, this is the final safeguard against undefined retry config values.
+  // TODO IDCOM-1558 Improve the type safety of config to avoid the need for checks such as this.
   let retryCount = retryConfig.retryCount;
   let expFactor = retryConfig.exponentialFactor;
-
   if (!retryCount) {
     console.error(
       `retryCount not set in Solana connection proxy. Defaulting to ${DEFAULT_SOLANA_RETRIES}`
@@ -89,6 +88,8 @@ export const runFunctionWithRetry = async (
     );
     timeout = SOLANA_TIMEOUT_CONFIRMED;
   }
+
+  let currentAttempt = 0;
 
   return retry(
     async () => {
