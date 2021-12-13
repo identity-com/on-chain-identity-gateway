@@ -8,14 +8,14 @@ import {
 import {
   freeze,
   GatewayToken,
-  getGatewayToken,
-  getGatewayTokenKeyForOwner,
+  getGatewayToken as solanaGetGatewayToken,
+  getGatewayTokenKeyForOwner as solanaGetGatewayTokenKeyForOwner,
   issueVanilla,
   revoke,
   unfreeze,
   updateExpiry,
   findGatewayToken,
-  getGatekeeperAccountKey,
+  getGatekeeperAccountKey as solanaGetGatekeeperAccountKey,
   State,
   proxyConnectionWithRetry,
   RetryConfig,
@@ -31,6 +31,35 @@ import { PROGRAM_ID } from "../util/constants";
  */
 export type GatekeeperConfig = {
   defaultExpirySeconds?: number;
+};
+
+/**
+ * Enables easier unit testing of gatekeeper-lib as we don't have to stub the imported function from gateway-ts,
+ * we can stub this function which is in the same lib.
+ */
+export const getGatewayTokenKeyForOwner = async (
+  owner: PublicKey,
+  gatekeeperNetwork: PublicKey
+): Promise<PublicKey> => {
+  return solanaGetGatewayTokenKeyForOwner(owner, gatekeeperNetwork);
+};
+
+/**
+ * Enables easier unit testing of gatekeeper-lib as we don't have to stub the imported function from gateway-ts,
+ * we can stub this function which is in the same lib.
+ */
+export const getGatekeeperAccountKey = async (
+  owner: PublicKey,
+  gatekeeperNetwork: PublicKey
+): Promise<PublicKey> => {
+  return solanaGetGatekeeperAccountKey(owner, gatekeeperNetwork);
+};
+
+export const getGatewayToken = async (
+  connection: Connection,
+  gatewayTokenKey: PublicKey
+): Promise<GatewayToken | null> => {
+  return solanaGetGatewayToken(connection, gatewayTokenKey);
 };
 
 /**
@@ -85,11 +114,11 @@ export class GatekeeperService {
     seed?: Uint8Array,
     confirmOptions: ConfirmOptions = {}
   ): Promise<GatewayToken> {
-    const gatewayTokenKey = await getGatewayTokenKeyForOwner(
+    const gatewayTokenKey: PublicKey = await getGatewayTokenKeyForOwner(
       owner,
       this.gatekeeperNetwork
     );
-    const gatekeeperAccount = await getGatekeeperAccountKey(
+    const gatekeeperAccount: PublicKey = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
     );
@@ -123,9 +152,9 @@ export class GatekeeperService {
         this.connection,
         gatewayTokenKey
       );
-      if (onChainToken) {
+      if (onChainToken && onChainToken.state === State.ACTIVE) {
         console.log(
-          "Send failed during Issue, but token is found on-chain. Returning success."
+          "Send failed during Issue, but Active token is found on-chain. Returning success."
         );
       } else {
         // Token hasn't been issued on-chain.
