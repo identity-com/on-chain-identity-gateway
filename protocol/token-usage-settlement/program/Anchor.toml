@@ -1,0 +1,12 @@
+[programs.localnet]
+usage = "GXD3V5AQTDrszePsSjH1yQNvfCceumZp1jM9mQR4fMPH"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "node_modules/.bin/ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
