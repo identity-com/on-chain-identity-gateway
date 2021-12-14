@@ -1,7 +1,7 @@
 import {
   Connection,
   Keypair,
-  ParsedConfirmedTransaction,
+  ParsedConfirmedTransaction, PartiallyDecodedInstruction,
   PublicKey, SystemProgram,
   Transaction,
 } from "@solana/web3.js";
@@ -93,14 +93,14 @@ interface Strategy<C extends Category> {
 // }
 
 
-export class DevDummyGatekeeperNetwork implements Strategy<"DevDummyGatekeeper"> {
-  // Dex Market Proxy program deployed by Solrise
-  // static proxyProgramId = new PublicKey(
-  //   "gcmJfhh9k7hiEbKYb4ehHEQJGrdtCrmvxw1bgiB56Vb"
-  // );
+export class SimpleProgramIdStrategy implements Strategy<"DevDummyGatekeeper"> {
 
   matches(transaction: ParsedConfirmedTransaction): boolean {
     return transaction.transaction.message.instructions.some((instruction) => {
+      if ("data" in instruction) {
+        // decode first 8 bytes to get discriminant.
+        console.log(instruction.data);
+      }
       if (!instruction.programId.equals(this.programId)) return false;
 
       return true;
@@ -112,7 +112,7 @@ export class DevDummyGatekeeperNetwork implements Strategy<"DevDummyGatekeeper">
   ): BillableTransaction<"DevDummyGatekeeper"> {
     return buildBillableTransaction(
       this.programId,
-      this.dapp,
+      this.programId,
       "DevDummyGatekeeper",
       "DevDummyTx",
       parsedConfirmedTransaction.transaction.signatures[0],
@@ -121,7 +121,6 @@ export class DevDummyGatekeeperNetwork implements Strategy<"DevDummyGatekeeper">
   }
   constructor(
     private readonly programId: PublicKey,
-    private readonly dapp: PublicKey
   ) {}
 }
 
@@ -172,13 +171,14 @@ export const loadTransactions = async (
   signatures: string[],
   strategies: Strategy<any>[]
 ): Promise<BillableTransaction<any>[]> => {
-  console.log(signatures)
+  // console.log(signatures)
 
   const transactions = await connection.getParsedConfirmedTransactions(
     signatures
   );
 
-  console.log(transactions)
+
+  // console.log(transactions)
 
   const buildFromStrategies = (
     transaction: ParsedConfirmedTransaction | null

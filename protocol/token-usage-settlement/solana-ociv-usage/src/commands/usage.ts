@@ -7,6 +7,7 @@ import {
   clusterFlag,
   oracleKeyFlag,
 } from "../util/oclif/flags"
+import { ExtendedCluster } from "../util/connection";
 
 export default class AddGatekeeper extends Command {
   static description = "Read usage based on a strategy.";
@@ -20,6 +21,11 @@ export default class AddGatekeeper extends Command {
     help: flags.help({ char: "h" }),
     oracleKey: oracleKeyFlag(),
     cluster: clusterFlag(),
+    epoch: flags.integer({
+      char: "e",
+      description: "The epoch or period that the usage refers to",
+      required: true,
+    }),
   };
 
   static args = [
@@ -34,19 +40,21 @@ export default class AddGatekeeper extends Command {
   async run() {
     const { args, flags } = this.parse(AddGatekeeper);
 
-    const dAppAddress: PublicKey = args.address;
+    const lookupProgram: PublicKey = args.address;
     const oracleKey = flags.oracleKey as Keypair;
     this.log(`Reading Usage:
       oracle ${oracleKey.publicKey.toBase58()}
-      dApp ${dAppAddress}`);
+      program ${lookupProgram}`);
 
-    const connection = getConnection(flags.cluster);
+    const epoch = flags.epoch as number;
 
-    await airdropTo(
-      connection,
-      oracleKey.publicKey,
-      flags.cluster as string
-    );
+    const connection = getConnection(flags.cluster as ExtendedCluster);
+
+    // await airdropTo(
+    //   connection,
+    //   oracleKey.publicKey,
+    //   flags.cluster as string
+    // );
 
     const usageOracleService = new UsageOracleService(
       connection,
@@ -54,12 +62,16 @@ export default class AddGatekeeper extends Command {
     );
 
     const result = await usageOracleService.readUsage({
-      dapp: dAppAddress,
-      epoch: 256,
+      program: lookupProgram,
+      epoch,
     });
 
     this.log(
       `Read Usage: ${result.length}`
     );
+
+    this.log(
+      JSON.stringify(result.map(x => x.signature))
+    )
   }
 }

@@ -17,7 +17,7 @@ export type UsageRecord = {
   dapp: web3.PublicKey;
   gatekeeper: web3.PublicKey;
   oracle: web3.PublicKey;
-  amount: number;
+  amount: BN;
   paid: boolean;
 };
 
