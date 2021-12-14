@@ -21,7 +21,8 @@
   "dependencies": {
     "@solana/web3.js": "^1.22.0",
     "bn.js": "^5.2.0",
-    "borsh": "^0.4.0"
+    "borsh": "^0.4.0",
+    "ramda": "^0.27.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.16",
