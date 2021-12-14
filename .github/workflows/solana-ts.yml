@@ -53,7 +53,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [ '1.50' ]
+        rust: [ '1.55' ]
         solana: [ 'stable' ]
         node: ['15.x']
         os: [ubuntu-latest]
@@ -70,8 +70,6 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
-          profile: minimal
 
       - name: Cache build dependencies
         uses: actions/cache@v2
@@ -113,7 +111,10 @@ jobs:
           key: yarn-solana-${{ hashFiles('solana/yarn.lock') }}
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn
+      
+      - name: Build dependencies
+        run: yarn workspaces run build
 
-      - name: Unit tests
+      - name: Run tests
         run: yarn test

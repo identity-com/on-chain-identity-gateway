@@ -7,14 +7,15 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npx hardhat test",
-    "deploy": "npx hardhat deploy",
+    "test": "hardhat test",
+    "deploy": "hardhat deploy",
+    "local": "hardhat node",
     "build": "truffle compile && typechain --target truffle-v5 --out-dir types/truffle-contracts './build/contracts/*.json'"
   },
   "author": "Secured Finance",
   "license": "MIT",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.1.0",
+    "@openzeppelin/contracts": "^4.3.2",
     "@truffle/hdwallet-provider": "^1.4.1",
     "@typechain/truffle-v5": "^5.0.0",
     "abi-to-sol": "^0.2.1",

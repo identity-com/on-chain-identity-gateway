@@ -1,5 +1,4 @@
 import { Command, flags } from "@oclif/command";
-import { draw } from "../draw";
 import { clusterFlag, pubkeyFlag } from "../lib/cli/flags";
 import { initProvider } from "../lib/cli/utils";
 import { delegate } from "../delegateTokens";

@@ -116,8 +116,8 @@ describe("getGatewayTokenKeyForOwner", function () {
         new Uint8Array([100, 212])
       );
       expect.fail("Succeeded when should fail");
-    } catch (e) {
-      expect(e.message).to.deep.equal(
+    } catch (error) {
+      expect((error as Error).message).to.deep.equal(
         "Additional Seed has length 2 instead of 8 when calling getGatewayTokenKeyForOwner."
       );
     }

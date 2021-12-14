@@ -1,7 +1,10 @@
 import { AccountInfo, PublicKey } from "@solana/web3.js";
 import { GatewayTokenData } from "../lib/GatewayTokenData";
-import { PROGRAM_ID } from "../lib/constants";
 import { dataToGatewayToken } from "../lib/util";
+
+export declare type DeepPartial<T> = {
+  [P in keyof T]?: DeepPartial<T[P]>;
+};
 
 export enum State {
   ACTIVE = "ACTIVE",
@@ -35,6 +38,24 @@ export class GatewayToken {
   ): GatewayToken {
     const parsedData = GatewayTokenData.fromAccount(accountInfo.data);
     return dataToGatewayToken(parsedData, key);
+  }
+
+  public update({
+    state,
+    expiryTime,
+  }: {
+    state: State;
+    expiryTime?: number;
+  }): GatewayToken {
+    return new GatewayToken(
+      this.issuingGatekeeper,
+      this.gatekeeperNetwork,
+      this.owner,
+      state,
+      this.publicKey,
+      this.programId,
+      expiryTime || this.expiryTime
+    );
   }
 }
 

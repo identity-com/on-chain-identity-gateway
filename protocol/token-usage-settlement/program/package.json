@@ -1,21 +1,21 @@
 {
   "name": "@identity.com/gateway-usage",
   "description": "Client SDK for the Gateway Usage Solana program",
-  "version": "0.0.3",
+  "version": "0.0.10",
   "author": "dankelleher @dankelleher",
   "bugs": "https://github.com/identity-com/on-chain-identity-gateway/issues",
   "license": "MIT",
   "dependencies": {
-    "@oclif/command": "^1.8.4",
-    "@oclif/config": "^1.17.1",
-    "@oclif/plugin-help": "^3.2.7",
+    "@oclif/command": "^1.8.10",
+    "@oclif/config": "^1.18.2",
     "@project-serum/anchor": "^0.18.2",
+    "@pythnetwork/client": "^2.5.1",
     "@solana/spl-token": "^0.1.8",
-    "oclif": "^1.18.1",
+    "oclif": "^2.0.1",
     "tslib": "^2.3.1"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1.26.3",
+    "@oclif/dev-cli": "^1.26.8",
     "@types/chai-as-promised": "^7.1.4",
     "@types/mocha": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",

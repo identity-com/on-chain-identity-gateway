@@ -9,6 +9,11 @@ interface IGatewayTokenController {
     event AdminTransfered(address indexed previousAdmin, address indexed admin);
 
     /**
+    * @dev Emitted when Identity.com Admin updated FlagsStorage contract address from `previousFlagsStorage` to `flagsStorage`.
+    */
+    event FlagsStorageUpdated(address indexed previousFlagsStorage, address indexed flagsStorage);
+
+    /**
     * @dev Emitted when new GatewayToken contract deployed with 
     * associated `name` and `symbol` to specific `address`.
     */
@@ -87,7 +92,7 @@ interface IGatewayTokenController {
     * @param _name Gateway Token name
     * @param _symbol Gateway Token symbol
     */
-    function createGatekeeperNetwork(string memory _name, string memory _symbol, bool _isDAOGoverned, address _daoExecutor) external returns (address tokenAddress);
+    function createGatekeeperNetwork(string memory _name, string memory _symbol, bool _isDAOGoverned, address _daoExecutor, address trustedForwarder) external returns (address tokenAddress);
 
     /**
     * @dev Triggers to add multiple network authorities in gateway token contract. 

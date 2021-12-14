@@ -100,6 +100,8 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="GatewayToken.html#hasExpired" class="tsd-kind-icon">has<wbr>Expired</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatewayToken.html#isValid" class="tsd-kind-icon">is<wbr>Valid</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatewayToken.html#update" class="tsd-kind-icon">update</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="GatewayToken.html#fromAccount" class="tsd-kind-icon">from<wbr>Account</a></li>
 							</ul>
 						</section>
 					</div>
@@ -117,7 +119,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9610307/solana/gateway-ts/src/types/index.ts#L9">types/index.ts:9</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/702471c/solana/gateway-ts/src/types/index.ts#L15">types/index.ts:15</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -213,7 +215,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9610307/solana/gateway-ts/src/types/index.ts#L24">types/index.ts:24</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/702471c/solana/gateway-ts/src/types/index.ts#L30">types/index.ts:30</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -230,10 +232,67 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9610307/solana/gateway-ts/src/types/index.ts#L20">types/index.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/702471c/solana/gateway-ts/src/types/index.ts#L26">types/index.ts:26</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="update" class="tsd-anchor"></a>
+					<h3>update</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">update<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>expiryTime<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>state<span class="tsd-signature-symbol">: </span><a href="../enums/State.html" class="tsd-signature-type" data-tsd-kind="Enumeration">State</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatewayToken.html" class="tsd-signature-type" data-tsd-kind="Class">GatewayToken</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/702471c/solana/gateway-ts/src/types/index.ts#L43">types/index.ts:43</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>__namedParameters: <span class="tsd-signature-symbol">{ </span>expiryTime<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>state<span class="tsd-signature-symbol">: </span><a href="../enums/State.html" class="tsd-signature-type" data-tsd-kind="Enumeration">State</a><span class="tsd-signature-symbol"> }</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> expiry<wbr>Time<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>state<span class="tsd-signature-symbol">: </span><a href="../enums/State.html" class="tsd-signature-type" data-tsd-kind="Enumeration">State</a></h5>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="GatewayToken.html" class="tsd-signature-type" data-tsd-kind="Class">GatewayToken</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="fromAccount" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> from<wbr>Account</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">from<wbr>Account<span class="tsd-signature-symbol">(</span>accountInfo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AccountInfo</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">&gt;</span>, key<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatewayToken.html" class="tsd-signature-type" data-tsd-kind="Class">GatewayToken</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/702471c/solana/gateway-ts/src/types/index.ts#L35">types/index.ts:35</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>accountInfo: <span class="tsd-signature-type">AccountInfo</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>key: <span class="tsd-signature-type">PublicKey</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="GatewayToken.html" class="tsd-signature-type" data-tsd-kind="Class">GatewayToken</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -251,6 +310,15 @@
 				<ul class="before-current">
 					<li class=" tsd-kind-enum">
 						<a href="../enums/State.html" class="tsd-kind-icon">State</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="Active.html" class="tsd-kind-icon">Active</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="Frozen.html" class="tsd-kind-icon">Frozen</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="GatewayInstruction.html" class="tsd-kind-icon">Gateway<wbr>Instruction</a>
 					</li>
 				</ul>
 				<ul class="current">
@@ -287,15 +355,66 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="GatewayToken.html#isValid" class="tsd-kind-icon">is<wbr>Valid</a>
 							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="GatewayToken.html#update" class="tsd-kind-icon">update</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="GatewayToken.html#fromAccount" class="tsd-kind-icon">from<wbr>Account</a>
+							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
+					<li class=" tsd-kind-class">
+						<a href="GatewayTokenData.html" class="tsd-kind-icon">Gateway<wbr>Token<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="GatewayTokenState.html" class="tsd-kind-icon">Gateway<wbr>Token<wbr>State</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="Revoked.html" class="tsd-kind-icon">Revoked</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="../index.html#DeepPartial" class="tsd-kind-icon">Deep<wbr>Partial</a>
+					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="../index.html#ProgramAccountResponse" class="tsd-kind-icon">Program<wbr>Account<wbr>Response</a>
 					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="../index.html#RetryConfig" class="tsd-kind-icon">Retry<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#DEFAULT_SOLANA_RETRIES" class="tsd-kind-icon">DEFAULT_<wbr>SOLANA_<wbr>RETRIES</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#GATEKEEPER_NONCE_SEED_STRING" class="tsd-kind-icon">GATEKEEPER_<wbr>NONCE_<wbr>SEED_<wbr>STRING</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#GATEWAY_TOKEN_ADDRESS_SEED" class="tsd-kind-icon">GATEWAY_<wbr>TOKEN_<wbr>ADDRESS_<wbr>SEED</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#PROGRAM_ID" class="tsd-kind-icon">PROGRAM_<wbr>ID</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#SOLANA_COMMITMENT" class="tsd-kind-icon">SOLANA_<wbr>COMMITMENT</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#SOLANA_TIMEOUT_CONFIRMED" class="tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>CONFIRMED</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#SOLANA_TIMEOUT_FINALIZED" class="tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>FINALIZED</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#SOLANA_TIMEOUT_PROCESSED" class="tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>PROCESSED</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#defaultRetryConfig" class="tsd-kind-icon">default<wbr>Retry<wbr>Config</a>
+					</li>
 					<li class=" tsd-kind-function">
 						<a href="../index.html#addGatekeeper" class="tsd-kind-icon">add<wbr>Gatekeeper</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../index.html#dataToGatewayToken" class="tsd-kind-icon">data<wbr>ToGateway<wbr>Token</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="../index.html#findGatewayToken" class="tsd-kind-icon">find<wbr>Gateway<wbr>Token</a>
@@ -325,10 +444,19 @@
 						<a href="../index.html#onGatewayTokenChange" class="tsd-kind-icon">on<wbr>Gateway<wbr>Token<wbr>Change</a>
 					</li>
 					<li class=" tsd-kind-function">
+						<a href="../index.html#proxyConnectionWithRetry" class="tsd-kind-icon">proxy<wbr>Connection<wbr>With<wbr>Retry</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../index.html#removeAccountChangeListener" class="tsd-kind-icon">remove<wbr>Account<wbr>Change<wbr>Listener</a>
+					</li>
+					<li class=" tsd-kind-function">
 						<a href="../index.html#revoke" class="tsd-kind-icon">revoke</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="../index.html#revokeGatekeeper" class="tsd-kind-icon">revoke<wbr>Gatekeeper</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../index.html#runFunctionWithRetry" class="tsd-kind-icon">run<wbr>Function<wbr>With<wbr>Retry</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="../index.html#unfreeze" class="tsd-kind-icon">unfreeze</a>
@@ -351,7 +479,15 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+			</ul>
+			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
 			</ul>
 		</div>
 	</div>

@@ -4,6 +4,16 @@ This repository contains set of Ethereum smart contracts for Identity.com On-cha
 
 Gateway tokens allows Ethereum DeFi projects validate their users who succesfully completed KYC with regulations and guidances from FATF, US OFAC, US OCC BSA and others.
 
+## Deployed contracts
+
+[GatewayTokenController](https://ropsten.etherscan.io/address/0x560691424bCEF5ceF4D5076C8ACA7B38B7b1f9A0)
+
+[FlagsStorage](https://ropsten.etherscan.io/address/0xC4ED3F939754f43555932AD2A2Ec1301d0848C07)
+
+[GatewayToken](https://ropsten.etherscan.io/address/0xa3894BbA27f4Be571fFA319D02c122E021024cF2)
+
+[Forwarder](https://ropsten.etherscan.io/address/0x79C2bDD404e629828E3702a5f2cdd01FD5De8808)
+
 ## Gateway Token system architecture
 
 TODO
