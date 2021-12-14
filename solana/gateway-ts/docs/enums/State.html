@@ -88,7 +88,7 @@
 					<div class="tsd-signature tsd-kind-icon">ACTIVE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;ACTIVE&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a8076d4/solana/gateway-ts/src/types/index.ts#L7">types/index.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/702471c/solana/gateway-ts/src/types/index.ts#L10">types/index.ts:10</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -98,7 +98,7 @@
 					<div class="tsd-signature tsd-kind-icon">FROZEN<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;FROZEN&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a8076d4/solana/gateway-ts/src/types/index.ts#L9">types/index.ts:9</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/702471c/solana/gateway-ts/src/types/index.ts#L12">types/index.ts:12</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -108,7 +108,7 @@
 					<div class="tsd-signature tsd-kind-icon">REVOKED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;REVOKED&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/a8076d4/solana/gateway-ts/src/types/index.ts#L8">types/index.ts:8</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/702471c/solana/gateway-ts/src/types/index.ts#L11">types/index.ts:11</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -163,8 +163,41 @@
 					<li class=" tsd-kind-class">
 						<a href="../classes/Revoked.html" class="tsd-kind-icon">Revoked</a>
 					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="../index.html#DeepPartial" class="tsd-kind-icon">Deep<wbr>Partial</a>
+					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="../index.html#ProgramAccountResponse" class="tsd-kind-icon">Program<wbr>Account<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="../index.html#RetryConfig" class="tsd-kind-icon">Retry<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#DEFAULT_SOLANA_RETRIES" class="tsd-kind-icon">DEFAULT_<wbr>SOLANA_<wbr>RETRIES</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#GATEKEEPER_NONCE_SEED_STRING" class="tsd-kind-icon">GATEKEEPER_<wbr>NONCE_<wbr>SEED_<wbr>STRING</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#GATEWAY_TOKEN_ADDRESS_SEED" class="tsd-kind-icon">GATEWAY_<wbr>TOKEN_<wbr>ADDRESS_<wbr>SEED</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#PROGRAM_ID" class="tsd-kind-icon">PROGRAM_<wbr>ID</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#SOLANA_COMMITMENT" class="tsd-kind-icon">SOLANA_<wbr>COMMITMENT</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#SOLANA_TIMEOUT_CONFIRMED" class="tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>CONFIRMED</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#SOLANA_TIMEOUT_FINALIZED" class="tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>FINALIZED</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#SOLANA_TIMEOUT_PROCESSED" class="tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>PROCESSED</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../index.html#defaultRetryConfig" class="tsd-kind-icon">default<wbr>Retry<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="../index.html#addGatekeeper" class="tsd-kind-icon">add<wbr>Gatekeeper</a>
@@ -200,6 +233,9 @@
 						<a href="../index.html#onGatewayTokenChange" class="tsd-kind-icon">on<wbr>Gateway<wbr>Token<wbr>Change</a>
 					</li>
 					<li class=" tsd-kind-function">
+						<a href="../index.html#proxyConnectionWithRetry" class="tsd-kind-icon">proxy<wbr>Connection<wbr>With<wbr>Retry</a>
+					</li>
+					<li class=" tsd-kind-function">
 						<a href="../index.html#removeAccountChangeListener" class="tsd-kind-icon">remove<wbr>Account<wbr>Change<wbr>Listener</a>
 					</li>
 					<li class=" tsd-kind-function">
@@ -207,6 +243,9 @@
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="../index.html#revokeGatekeeper" class="tsd-kind-icon">revoke<wbr>Gatekeeper</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../index.html#runFunctionWithRetry" class="tsd-kind-icon">run<wbr>Function<wbr>With<wbr>Retry</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="../index.html#unfreeze" class="tsd-kind-icon">unfreeze</a>
