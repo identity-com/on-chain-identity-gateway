@@ -9,6 +9,7 @@ pub mod networks;
 pub mod state;
 
 use crate::instruction::expire_token;
+use crate::state::{GatewayTokenAccess, GatewayTokenFunctions, InPlaceGatewayToken};
 use crate::{
     borsh as program_borsh,
     error::GatewayError,
@@ -19,7 +20,6 @@ use solana_program::entrypoint_deprecated::ProgramResult;
 use solana_program::program::invoke;
 use solana_program::{account_info::AccountInfo, msg, pubkey::Pubkey};
 use std::str::FromStr;
-use crate::state::{GatewayTokenAccess, GatewayTokenFunctions, InPlaceGatewayToken};
 
 // Session gateway tokens, that have a lamport balance that exceeds this value, are rejected
 const MAX_SESSION_TOKEN_BALANCE: u64 = 0;

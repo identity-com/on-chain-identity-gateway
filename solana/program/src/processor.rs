@@ -3,7 +3,12 @@
 use crate::state::Transitionable;
 use solana_gateway::error::GatewayError;
 use solana_gateway::instruction::{GatewayInstruction, NetworkFeature};
-use solana_gateway::state::{get_expire_address_with_seed, get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, AddressSeed, GatewayTokenState, InPlaceGatewayToken, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED, NETWORK_EXPIRE_FEATURE_SEED, GatewayTokenAccess};
+use solana_gateway::state::{
+    get_expire_address_with_seed, get_gatekeeper_address_with_seed,
+    get_gateway_token_address_with_seed, AddressSeed, GatewayTokenAccess, GatewayTokenState,
+    InPlaceGatewayToken, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
+    NETWORK_EXPIRE_FEATURE_SEED,
+};
 use solana_program::clock::{Clock, UnixTimestamp};
 use {
     crate::id,

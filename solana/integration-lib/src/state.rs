@@ -167,7 +167,10 @@ impl<T> InPlaceGatewayToken<T> {
         self.data
     }
 }
-impl<T> InPlaceGatewayToken<T> where T: AsRef<[u8]>{
+impl<T> InPlaceGatewayToken<T>
+where
+    T: AsRef<[u8]>,
+{
     pub fn new(data: T) -> Result<Self, ProgramError> {
         let data_ref = data.as_ref();
         let mut additional_offset = 0;
@@ -398,7 +401,7 @@ fn pubkey_mut_ref_from_array<'a>(val: &'a mut [u8; 32]) -> &'a mut Pubkey {
     unsafe { transmute::<&'a mut [u8; 32], &'a mut Pubkey>(val) }
 }
 
-pub trait GatewayTokenAccess{
+pub trait GatewayTokenAccess {
     fn features(&self) -> u8;
     fn parent_gateway_token(&self) -> Option<&Pubkey>;
     fn owner_wallet(&self) -> &Pubkey;
@@ -408,7 +411,7 @@ pub trait GatewayTokenAccess{
     fn state(&self) -> GatewayTokenState;
     fn expire_time(&self) -> Option<UnixTimestamp>;
 }
-impl GatewayTokenAccess for GatewayToken{
+impl GatewayTokenAccess for GatewayToken {
     fn features(&self) -> u8 {
         self.features
     }
@@ -441,7 +444,7 @@ impl GatewayTokenAccess for GatewayToken{
         self.expire_time
     }
 }
-pub trait GatewayTokenFunctions: GatewayTokenAccess{
+pub trait GatewayTokenFunctions: GatewayTokenAccess {
     /// Tests if the gateway token has the required feature
     fn has_feature(&self, feature: Feature) -> bool {
         let ordinal = feature as u8;
@@ -523,7 +526,7 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess{
     //     self.transaction_details.unwrap().compatible_with(transaction_details)
     // }
 }
-impl<T> GatewayTokenFunctions for T where T: GatewayTokenAccess{}
+impl<T> GatewayTokenFunctions for T where T: GatewayTokenAccess {}
 
 /// Enum representing the states that a gateway token can be in.
 #[derive(Copy, Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, BorshSchema)]
