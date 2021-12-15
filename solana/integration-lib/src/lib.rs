@@ -143,16 +143,29 @@ impl Gateway {
 
     /// Verifies a given token and then expires it. Only works on networks that support this feature.
     pub fn verify_and_expire_token<'a>(
-        gateway_token: AccountInfo<'a>,
+        gateway_token_info: AccountInfo<'a>,
         owner: AccountInfo<'a>,
         gatekeeper_network: &Pubkey,
         expire_feature_account: AccountInfo<'a>,
         seed: Option<AddressSeed>,
     ) -> ProgramResult {
-        Self::verify_gateway_token_account_info(&gateway_token, owner.key, gatekeeper_network)?;
+        let gateway_token = Gateway::parse_gateway_token(&gateway_token_info)?;
+
+        if !gateway_token.is_vanilla() {
+            msg!(
+                "Gateway token is of an invalid type. Only vanilla gateway tokens can be verified."
+            );
+            return Err(GatewayError::InvalidToken.into());
+        }
+
+        if !gateway_token.is_valid() {
+            msg!("Gateway token is invalid. It has either been revoked or frozen, or has expired");
+            return Err(GatewayError::TokenRevoked.into());
+        }
+
         invoke(
-            &expire_token(*gateway_token.key, *owner.key, *gatekeeper_network, seed),
-            &[gateway_token, owner, expire_feature_account],
+            &expire_token(*gateway_token_info.key, *owner.key, *gatekeeper_network, seed),
+            &[gateway_token_info, owner, expire_feature_account],
         )?;
         Ok(())
     }
