@@ -7,7 +7,7 @@ export type RegisterUsageParams = {
   oracleProvider: Provider;
   dapp: web3.PublicKey;
   gatekeeper: web3.PublicKey;
-  amount: number;
+  amount: BN;
   program?: Program<Usage>;
 };
 
@@ -17,7 +17,7 @@ export type UsageRecord = {
   dapp: web3.PublicKey;
   gatekeeper: web3.PublicKey;
   oracle: web3.PublicKey;
-  amount: number;
+  amount: BN;
   paid: boolean;
 };
 
@@ -34,20 +34,15 @@ export const registerUsage = async (
   );
 
   const program = await fetchProgram(params.oracleProvider, params.program);
-  await program.rpc.registerUsage(
-    new BN(params.amount),
-    new BN(params.epoch),
-    bump,
-    {
-      accounts: {
-        usage: usageAccount,
-        dapp: params.dapp,
-        gatekeeper: params.gatekeeper,
-        oracle: oraclePublicKey,
-        systemProgram: web3.SystemProgram.programId,
-      },
-    }
-  );
+  await program.rpc.registerUsage(params.amount, new BN(params.epoch), bump, {
+    accounts: {
+      usage: usageAccount,
+      dapp: params.dapp,
+      gatekeeper: params.gatekeeper,
+      oracle: oraclePublicKey,
+      systemProgram: web3.SystemProgram.programId,
+    },
+  });
 
   return usageAccount;
 };
