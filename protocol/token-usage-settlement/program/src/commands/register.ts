@@ -2,6 +2,7 @@ import { Command, flags } from "@oclif/command";
 import { registerUsage } from "../usage";
 import { clusterFlag, pubkeyFlag } from "../lib/cli/flags";
 import { initProvider } from "../lib/cli/utils";
+import { BN } from "@project-serum/anchor";
 
 export default class Register extends Command {
   static description =
@@ -46,7 +47,7 @@ Registered usage
     const provider = initProvider(flags.cluster);
 
     const usageAccount = await registerUsage({
-      amount: flags.amount,
+      amount: new BN(flags.amount),
       epoch: flags.epoch,
       dapp: flags.dapp,
       gatekeeper: flags.gatekeeper,
