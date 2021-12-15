@@ -3,12 +3,8 @@
 use crate::state::Transitionable;
 use solana_gateway::error::GatewayError;
 use solana_gateway::instruction::{GatewayInstruction, NetworkFeature};
-use solana_gateway::state::{
-    get_expire_address_with_seed, get_gatekeeper_address_with_seed,
-    get_gateway_token_address_with_seed, AddressSeed, GatewayTokenState, GATEKEEPER_ADDRESS_SEED,
-    GATEWAY_TOKEN_ADDRESS_SEED, NETWORK_EXPIRE_FEATURE_SEED,
-};
-use solana_program::clock::UnixTimestamp;
+use solana_gateway::state::{get_expire_address_with_seed, get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, AddressSeed, GatewayTokenState, InPlaceGatewayToken, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED, NETWORK_EXPIRE_FEATURE_SEED, GatewayTokenAccess};
+use solana_program::clock::{Clock, UnixTimestamp};
 use {
     crate::id,
     borsh::{BorshDeserialize, BorshSerialize},
@@ -47,10 +43,9 @@ pub fn process_instruction(
         GatewayInstruction::SetState { state } => set_state(accounts, state),
         GatewayInstruction::UpdateExpiry { expire_time } => update_expiry(accounts, expire_time),
         GatewayInstruction::RemoveGatekeeper => remove_gatekeeper(accounts),
-        GatewayInstruction::ExpireToken {
-            seed,
-            gatekeeper_network,
-        } => expire_token(accounts, seed, gatekeeper_network),
+        GatewayInstruction::ExpireToken { gatekeeper_network } => {
+            expire_token(accounts, gatekeeper_network)
+        }
         GatewayInstruction::AddFeatureToNetwork { feature } => {
             add_feature_to_network(accounts, feature)
         }
@@ -376,11 +371,7 @@ fn remove_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
     Ok(())
 }
 
-fn expire_token(
-    accounts: &[AccountInfo],
-    seed: Option<AddressSeed>,
-    gatekeeper_network: Pubkey,
-) -> ProgramResult {
+fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> ProgramResult {
     msg!("GatewayInstruction::ExpireToken");
     let account_info_iter = &mut accounts.iter();
     let gateway_token = next_account_info(account_info_iter)?;
@@ -389,11 +380,6 @@ fn expire_token(
 
     if !owner.is_signer {
         return Err(ProgramError::MissingRequiredSignature);
-    }
-
-    let derived_gt = get_gateway_token_address_with_seed(owner.key, &seed, &gatekeeper_network).0;
-    if &derived_gt != gateway_token.key {
-        return Err(ProgramError::InvalidArgument);
     }
 
     if network_expire_feature.owner != &id() {
@@ -410,12 +396,20 @@ fn expire_token(
 
     verify_token_length(gateway_token)?;
 
-    let mut gateway_token_data =
-        try_from_slice_incomplete::<GatewayToken>(*gateway_token.data.borrow())?;
+    let mut borrow = gateway_token.data.borrow_mut();
+    let mut gateway_token_data = InPlaceGatewayToken::new(&mut **borrow)?;
 
-    gateway_token_data.set_expire_time(1497963600); // CVC ICO
+    if gateway_token_data.owner_wallet() != owner.key {
+        return Err(GatewayError::InvalidOwner.into());
+    }
 
-    gateway_token_data.serialize(&mut *gateway_token.data.borrow_mut())?;
+    if gateway_token_data.gatekeeper_network() != &gatekeeper_network {
+        return Err(ProgramError::InvalidAccountData);
+    }
+
+    gateway_token_data
+        .set_expire_time(Clock::get()?.unix_timestamp - 120)
+        .expect("Could not set expire time");
 
     Ok(())
 }
