@@ -102,6 +102,8 @@ pub enum GatewayInstruction {
     /// 1. `[signer]`      owner: The wallet that the gateway token is for
     /// 2. `[]`            network_expire_feature: The expire feature for the gatekeeper network
     ExpireToken {
+        /// Padding for backwards compatibility
+        padding: Option<AddressSeed>,
         /// The gatekeeper network
         gatekeeper_network: Pubkey,
     },
@@ -229,7 +231,7 @@ pub fn expire_token(
 ) -> Instruction {
     Instruction::new_with_borsh(
         Gateway::program_id(),
-        &GatewayInstruction::ExpireToken { gatekeeper_network },
+        &GatewayInstruction::ExpireToken { padding: None, gatekeeper_network },
         vec![
             AccountMeta::new(gateway_token, false),
             AccountMeta::new_readonly(owner, true),

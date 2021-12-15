@@ -48,7 +48,7 @@ pub fn process_instruction(
         GatewayInstruction::SetState { state } => set_state(accounts, state),
         GatewayInstruction::UpdateExpiry { expire_time } => update_expiry(accounts, expire_time),
         GatewayInstruction::RemoveGatekeeper => remove_gatekeeper(accounts),
-        GatewayInstruction::ExpireToken { gatekeeper_network } => {
+        GatewayInstruction::ExpireToken { gatekeeper_network, .. } => {
             expire_token(accounts, gatekeeper_network)
         }
         GatewayInstruction::AddFeatureToNetwork { feature } => {
