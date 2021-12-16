@@ -231,7 +231,10 @@ pub fn expire_token(
 ) -> Instruction {
     Instruction::new_with_borsh(
         Gateway::program_id(),
-        &GatewayInstruction::ExpireToken { padding: None, gatekeeper_network },
+        &GatewayInstruction::ExpireToken {
+            padding: None,
+            gatekeeper_network,
+        },
         vec![
             AccountMeta::new(gateway_token, false),
             AccountMeta::new_readonly(owner, true),
