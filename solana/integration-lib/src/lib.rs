@@ -166,7 +166,12 @@ impl Gateway {
 
         invoke(
             &expire_token(*gateway_token_info.key, *owner.key, *gatekeeper_network),
-            &[gateway_token_info, owner, expire_feature_account, gateway_program],
+            &[
+                gateway_token_info,
+                owner,
+                expire_feature_account,
+                gateway_program,
+            ],
         )?;
         Ok(())
     }
