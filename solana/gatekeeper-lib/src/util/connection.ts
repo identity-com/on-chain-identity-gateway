@@ -9,6 +9,7 @@ import {
   TransactionSignature,
 } from "@solana/web3.js";
 import { SOLANA_COMMITMENT } from "./constants";
+import retry from "async-retry";
 
 export type ExtendedCluster = Cluster | "localnet" | "civicnet";
 export const CIVICNET_URL =
@@ -37,7 +38,6 @@ export const send = (
   ...signers: Keypair[]
 ): Promise<TransactionSignature> =>
   sendAndConfirmTransaction(connection, transaction, signers, {
-    skipPreflight: false,
     commitment: SOLANA_COMMITMENT,
     ...options,
   });

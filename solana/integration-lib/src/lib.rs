@@ -5,10 +5,11 @@
 pub mod error;
 pub mod borsh;
 pub mod instruction;
+pub mod networks;
 pub mod state;
 
 use crate::instruction::expire_token;
-use crate::state::AddressSeed;
+use crate::state::{GatewayTokenAccess, GatewayTokenFunctions, InPlaceGatewayToken};
 use crate::{
     borsh as program_borsh,
     error::GatewayError,
@@ -17,6 +18,7 @@ use crate::{
 use num_traits::AsPrimitive;
 use solana_program::entrypoint_deprecated::ProgramResult;
 use solana_program::program::invoke;
+use solana_program::program_error::ProgramError;
 use solana_program::{account_info::AccountInfo, msg, pubkey::Pubkey};
 use std::str::FromStr;
 
@@ -60,21 +62,21 @@ impl Gateway {
     /// Verifies the gateway token belongs to the expected owner,
     /// is signed by the gatekeeper and is not revoked.
     pub fn verify_gateway_token(
-        gateway_token: &GatewayToken,
+        gateway_token: &impl GatewayTokenAccess,
         expected_owner: &Pubkey,
         expected_gatekeeper_network_key: &Pubkey,
         gateway_token_account_balance: u64,
     ) -> Result<(), GatewayError> {
-        if *expected_owner != gateway_token.owner_wallet {
+        if expected_owner != gateway_token.owner_wallet() {
             msg!(
                 "Gateway token does not have the correct owner. Expected: {} Was: {}",
                 *expected_owner,
-                gateway_token.owner_wallet
+                gateway_token.owner_wallet()
             );
             return Err(GatewayError::InvalidOwner);
         }
 
-        if *expected_gatekeeper_network_key != gateway_token.gatekeeper_network {
+        if expected_gatekeeper_network_key != gateway_token.gatekeeper_network() {
             msg!("Gateway token not issued by correct gatekeeper network");
             return Err(GatewayError::IncorrectGatekeeper);
         }
@@ -143,16 +145,33 @@ impl Gateway {
 
     /// Verifies a given token and then expires it. Only works on networks that support this feature.
     pub fn verify_and_expire_token<'a>(
-        gateway_token: AccountInfo<'a>,
+        gateway_program: AccountInfo<'a>,
+        gateway_token_info: AccountInfo<'a>,
         owner: AccountInfo<'a>,
         gatekeeper_network: &Pubkey,
         expire_feature_account: AccountInfo<'a>,
-        seed: Option<AddressSeed>,
     ) -> ProgramResult {
-        Self::verify_gateway_token_account_info(&gateway_token, owner.key, gatekeeper_network)?;
+        if gateway_program.key != &Self::program_id() {
+            return Err(ProgramError::IncorrectProgramId);
+        }
+
+        let borrow = gateway_token_info.data.borrow();
+        let gateway_token = InPlaceGatewayToken::new(&**borrow)?;
+
+        if !gateway_token.is_valid() {
+            msg!("Gateway token is invalid. It has either been revoked or frozen, or has expired");
+            return Err(GatewayError::TokenRevoked.into());
+        }
+        drop(borrow);
+
         invoke(
-            &expire_token(*gateway_token.key, *owner.key, *gatekeeper_network, seed),
-            &[gateway_token, owner, expire_feature_account],
+            &expire_token(*gateway_token_info.key, *owner.key, *gatekeeper_network),
+            &[
+                gateway_token_info,
+                owner,
+                expire_feature_account,
+                gateway_program,
+            ],
         )?;
         Ok(())
     }

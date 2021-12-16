@@ -1,5 +1,10 @@
 //! Program state
+use crate::networks::GATEWAY_NETWORKS;
 use crate::Gateway;
+use solana_program::entrypoint::ProgramResult;
+use solana_program::program_error::ProgramError;
+use std::convert::TryInto;
+use std::mem::{size_of, transmute};
 use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
     sol_did::validate_owner,
@@ -58,9 +63,15 @@ pub fn get_gatekeeper_address_with_seed(authority: &Pubkey, network: &Pubkey) ->
     )
 }
 
+// Ignite bump seed is 255 so most optimal create
 pub fn get_expire_address_with_seed(network: &Pubkey) -> (Pubkey, u8) {
+    for gateway_network in GATEWAY_NETWORKS {
+        if &gateway_network.address == network {
+            return gateway_network.expire_address;
+        }
+    }
     Pubkey::find_program_address(
-        &[&network.to_bytes(), NETWORK_EXPIRE_FEATURE_SEED],
+        &[network.as_ref(), NETWORK_EXPIRE_FEATURE_SEED],
         &Gateway::program_id(),
     )
 }
@@ -127,12 +138,319 @@ impl GatewayToken {
         self.features |= 1 << ordinal;
     }
 
+    pub fn set_expire_time(&mut self, expire_time: UnixTimestamp) {
+        self.set_feature(Feature::Expirable);
+        self.expire_time = Some(expire_time);
+    }
+}
+
+/// An optimized gateway token to access additional data
+pub struct InPlaceGatewayToken<T> {
+    data: T,
+    has_parent_gateway_token: bool,
+    has_owner_identity: bool,
+    has_expire_time: bool,
+}
+impl<T> InPlaceGatewayToken<T> {
+    const MIN_FEATURES_OFFSET: usize = 0;
+    const MIN_PARENT_GATEWAY_TOKEN_OFFSET: usize = Self::MIN_FEATURES_OFFSET + 1;
+    const PARENT_GATEWAY_TOKEN_ADD_OFFSET: usize = 32;
+    const MIN_OWNER_WALLET_OFFSET: usize = Self::MIN_PARENT_GATEWAY_TOKEN_OFFSET + 1;
+    const MIN_OWNER_IDENTITY_OFFSET: usize = Self::MIN_OWNER_WALLET_OFFSET + 32;
+    const OWNER_IDENTITY_ADD_OFFSET: usize = 32;
+    const MIN_GATEKEEPER_NETWORK_OFFSET: usize = Self::MIN_OWNER_IDENTITY_OFFSET + 1;
+    const MIN_ISSUING_GATEKEEPER_OFFSET: usize = Self::MIN_GATEKEEPER_NETWORK_OFFSET + 32;
+    const MIN_STATE_OFFSET: usize = Self::MIN_ISSUING_GATEKEEPER_OFFSET + 32;
+    const MIN_EXPIRE_TIME_OFFSET: usize = Self::MIN_STATE_OFFSET + 1;
+
+    pub fn data(self) -> T {
+        self.data
+    }
+}
+impl<T> InPlaceGatewayToken<T>
+where
+    T: AsRef<[u8]>,
+{
+    pub fn new(data: T) -> Result<Self, ProgramError> {
+        let data_ref = data.as_ref();
+        let mut additional_offset = 0;
+        let has_parent_gateway_token =
+            data_ref[Self::MIN_PARENT_GATEWAY_TOKEN_OFFSET + additional_offset] != 0;
+        if has_parent_gateway_token {
+            additional_offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+        }
+        let has_owner_identity = data_ref[Self::MIN_OWNER_IDENTITY_OFFSET + additional_offset] != 0;
+        if has_owner_identity {
+            additional_offset += Self::OWNER_IDENTITY_ADD_OFFSET;
+        }
+        let has_expire_time = data_ref[Self::MIN_EXPIRE_TIME_OFFSET + additional_offset] != 0;
+        Ok(Self {
+            data,
+            has_parent_gateway_token,
+            has_owner_identity,
+            has_expire_time,
+        })
+    }
+}
+impl<T> GatewayTokenAccess for InPlaceGatewayToken<T>
+where
+    T: AsRef<[u8]>,
+{
+    fn features(&self) -> u8 {
+        self.data.as_ref()[Self::MIN_FEATURES_OFFSET]
+    }
+
+    fn parent_gateway_token(&self) -> Option<&Pubkey> {
+        if self.has_parent_gateway_token {
+            let bytes = &self.data.as_ref()[Self::MIN_PARENT_GATEWAY_TOKEN_OFFSET + 1..];
+            Some(pubkey_ref_from_array((&bytes[..32]).try_into().unwrap()))
+        } else {
+            None
+        }
+    }
+
+    fn owner_wallet(&self) -> &Pubkey {
+        let mut offset = 0;
+        if self.has_parent_gateway_token {
+            offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+        }
+        let bytes = &self.data.as_ref()[Self::MIN_OWNER_WALLET_OFFSET + offset..][..32];
+        pubkey_ref_from_array(bytes.try_into().unwrap())
+    }
+
+    fn owner_identity(&self) -> Option<&Pubkey> {
+        if self.has_owner_identity {
+            let mut offset = 0;
+            if self.has_parent_gateway_token {
+                offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+            }
+            let bytes = &self.data.as_ref()[Self::MIN_OWNER_IDENTITY_OFFSET + 1 + offset..][..32];
+            Some(pubkey_ref_from_array(bytes.try_into().unwrap()))
+        } else {
+            None
+        }
+    }
+
+    fn gatekeeper_network(&self) -> &Pubkey {
+        let mut offset = 0;
+        if self.has_parent_gateway_token {
+            offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+        }
+        if self.has_owner_identity {
+            offset += Self::OWNER_IDENTITY_ADD_OFFSET;
+        }
+        let bytes = &self.data.as_ref()[Self::MIN_GATEKEEPER_NETWORK_OFFSET + offset..][..32];
+        pubkey_ref_from_array(bytes.try_into().unwrap())
+    }
+
+    fn issuing_gatekeeper(&self) -> &Pubkey {
+        let mut offset = 0;
+        if self.has_parent_gateway_token {
+            offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+        }
+        if self.has_owner_identity {
+            offset += Self::OWNER_IDENTITY_ADD_OFFSET;
+        }
+        let bytes = &self.data.as_ref()[Self::MIN_ISSUING_GATEKEEPER_OFFSET + offset..][..32];
+        pubkey_ref_from_array(bytes.try_into().unwrap())
+    }
+
+    fn state(&self) -> GatewayTokenState {
+        let mut offset = 0;
+        if self.has_parent_gateway_token {
+            offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+        }
+        if self.has_owner_identity {
+            offset += Self::OWNER_IDENTITY_ADD_OFFSET;
+        }
+        match self.data.as_ref()[Self::MIN_STATE_OFFSET + offset] {
+            0 => GatewayTokenState::Active,
+            1 => GatewayTokenState::Frozen,
+            2 => GatewayTokenState::Revoked,
+            x => unreachable!("Invalid byte for `GatewayTokenState`: {}", x),
+        }
+    }
+
+    fn expire_time(&self) -> Option<UnixTimestamp> {
+        if self.has_expire_time {
+            let mut offset = 0;
+            if self.has_parent_gateway_token {
+                offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+            }
+            if self.has_owner_identity {
+                offset += Self::OWNER_IDENTITY_ADD_OFFSET;
+            }
+            let bytes = &self.data.as_ref()[Self::MIN_EXPIRE_TIME_OFFSET + 1 + offset..]
+                [..size_of::<UnixTimestamp>()];
+            Some(UnixTimestamp::from_le_bytes(bytes.try_into().unwrap()))
+        } else {
+            None
+        }
+    }
+}
+impl<T> InPlaceGatewayToken<T>
+where
+    T: AsMut<[u8]>,
+{
+    pub fn features_mut(&mut self) -> &mut u8
+    where
+        T: AsMut<[u8]>,
+    {
+        &mut self.data.as_mut()[Self::MIN_FEATURES_OFFSET]
+    }
+
+    pub fn set_features(&mut self, features: u8) {
+        self.data.as_mut()[Self::MIN_FEATURES_OFFSET] = features;
+    }
+
+    pub fn parent_gateway_token_mut(&mut self) -> Option<&mut Pubkey> {
+        if self.has_parent_gateway_token {
+            let bytes = &mut self.data.as_mut()[Self::MIN_PARENT_GATEWAY_TOKEN_OFFSET + 1..][..32];
+            Some(pubkey_mut_ref_from_array(bytes.try_into().unwrap()))
+        } else {
+            None
+        }
+    }
+
+    pub fn owner_wallet_mut(&mut self) -> &mut Pubkey {
+        let mut offset = 0;
+        if self.has_parent_gateway_token {
+            offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+        }
+        let bytes = &mut self.data.as_mut()[Self::MIN_OWNER_WALLET_OFFSET + offset..][..32];
+        pubkey_mut_ref_from_array(bytes.try_into().unwrap())
+    }
+
+    pub fn owner_identity_mut(&mut self) -> Option<&mut Pubkey> {
+        if self.has_owner_identity {
+            let mut offset = 0;
+            if self.has_parent_gateway_token {
+                offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+            }
+            let bytes =
+                &mut self.data.as_mut()[Self::MIN_OWNER_IDENTITY_OFFSET + 1 + offset..][..32];
+            Some(pubkey_mut_ref_from_array(bytes.try_into().unwrap()))
+        } else {
+            None
+        }
+    }
+
+    pub fn gatekeeper_network_mut(&mut self) -> &mut Pubkey {
+        let mut offset = 0;
+        if self.has_parent_gateway_token {
+            offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+        }
+        if self.has_owner_identity {
+            offset += Self::OWNER_IDENTITY_ADD_OFFSET;
+        }
+        let bytes = &mut self.data.as_mut()[Self::MIN_GATEKEEPER_NETWORK_OFFSET + offset..][..32];
+        pubkey_mut_ref_from_array(bytes.try_into().unwrap())
+    }
+
+    pub fn issuing_gatekeeper_mut(&mut self) -> &mut Pubkey {
+        let mut offset = 0;
+        if self.has_parent_gateway_token {
+            offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+        }
+        if self.has_owner_identity {
+            offset += Self::OWNER_IDENTITY_ADD_OFFSET;
+        }
+        let bytes = &mut self.data.as_mut()[Self::MIN_ISSUING_GATEKEEPER_OFFSET + offset..][..32];
+        pubkey_mut_ref_from_array(bytes.try_into().unwrap())
+    }
+
+    pub fn set_state(&mut self, state: GatewayTokenState) {
+        let mut offset = 0;
+        if self.has_parent_gateway_token {
+            offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+        }
+        if self.has_owner_identity {
+            offset += Self::OWNER_IDENTITY_ADD_OFFSET;
+        }
+        self.data.as_mut()[Self::MIN_STATE_OFFSET + offset] = match state {
+            GatewayTokenState::Active => 0,
+            GatewayTokenState::Frozen => 1,
+            GatewayTokenState::Revoked => 2,
+        };
+    }
+
+    pub fn set_expire_time(&mut self, expire_time: UnixTimestamp) -> ProgramResult {
+        if self.has_expire_time {
+            let mut offset = 0;
+            if self.has_parent_gateway_token {
+                offset += Self::PARENT_GATEWAY_TOKEN_ADD_OFFSET;
+            }
+            if self.has_owner_identity {
+                offset += Self::OWNER_IDENTITY_ADD_OFFSET;
+            }
+            self.data.as_mut()[Self::MIN_EXPIRE_TIME_OFFSET + 1 + offset..]
+                [..size_of::<UnixTimestamp>()]
+                .copy_from_slice(&expire_time.to_le_bytes());
+            Ok(())
+        } else {
+            Err(ProgramError::InvalidAccountData)
+        }
+    }
+}
+fn pubkey_ref_from_array<'a>(val: &'a [u8; 32]) -> &'a Pubkey {
+    // Safe because pubkey is transparent to [u8; 32]
+    unsafe { transmute::<&'a [u8; 32], &'a Pubkey>(val) }
+}
+fn pubkey_mut_ref_from_array<'a>(val: &'a mut [u8; 32]) -> &'a mut Pubkey {
+    // Safe because pubkey is transparent to [u8; 32]
+    unsafe { transmute::<&'a mut [u8; 32], &'a mut Pubkey>(val) }
+}
+
+pub trait GatewayTokenAccess {
+    fn features(&self) -> u8;
+    fn parent_gateway_token(&self) -> Option<&Pubkey>;
+    fn owner_wallet(&self) -> &Pubkey;
+    fn owner_identity(&self) -> Option<&Pubkey>;
+    fn gatekeeper_network(&self) -> &Pubkey;
+    fn issuing_gatekeeper(&self) -> &Pubkey;
+    fn state(&self) -> GatewayTokenState;
+    fn expire_time(&self) -> Option<UnixTimestamp>;
+}
+impl GatewayTokenAccess for GatewayToken {
+    fn features(&self) -> u8 {
+        self.features
+    }
+
+    fn parent_gateway_token(&self) -> Option<&Pubkey> {
+        self.parent_gateway_token.as_ref()
+    }
+
+    fn owner_wallet(&self) -> &Pubkey {
+        &self.owner_wallet
+    }
+
+    fn owner_identity(&self) -> Option<&Pubkey> {
+        self.owner_identity.as_ref()
+    }
+
+    fn gatekeeper_network(&self) -> &Pubkey {
+        &self.gatekeeper_network
+    }
+
+    fn issuing_gatekeeper(&self) -> &Pubkey {
+        &self.issuing_gatekeeper
+    }
+
+    fn state(&self) -> GatewayTokenState {
+        self.state
+    }
+
+    fn expire_time(&self) -> Option<UnixTimestamp> {
+        self.expire_time
+    }
+}
+pub trait GatewayTokenFunctions: GatewayTokenAccess {
     /// Tests if the gateway token has the required feature
-    pub fn has_feature(&self, feature: Feature) -> bool {
+    fn has_feature(&self, feature: Feature) -> bool {
         let ordinal = feature as u8;
         if ordinal < 8 {
             // If this fails, the features enum must have grown to >8 elements
-            self.features & (1 << ordinal) != 0
+            self.features() & (1 << ordinal) != 0
         } else {
             false
         }
@@ -140,34 +458,29 @@ impl GatewayToken {
 
     /// Checks if this is a "vanilla" token,
     /// ie one that needs no additional account inputs to validate it
-    pub fn is_vanilla(&self) -> bool {
+    fn is_vanilla(&self) -> bool {
         !self.has_feature(Feature::IdentityLinked)
     }
 
     /// Checks if the gateway token is in a valid state
     /// Note, this does not check ownership or expiry.
-    pub fn is_valid_state(&self) -> bool {
-        self.state == GatewayTokenState::Active
+    fn is_valid_state(&self) -> bool {
+        self.state() == GatewayTokenState::Active
     }
 
     /// Checks if a vanilla gateway token is in a valid state
     /// Use is_valid_exotic to validate exotic gateway tokens
-    pub fn is_valid(&self) -> bool {
+    fn is_valid(&self) -> bool {
         self.is_vanilla() && self.is_valid_state() && !self.has_expired()
     }
 
-    pub fn has_expired(&self) -> bool {
-        self.has_feature(Feature::Expirable) && before_now(self.expire_time.unwrap())
-    }
-
-    pub fn set_expire_time(&mut self, expire_time: UnixTimestamp) {
-        self.set_feature(Feature::Expirable);
-        self.expire_time = Some(expire_time);
+    fn has_expired(&self) -> bool {
+        self.has_feature(Feature::Expirable) && before_now(self.expire_time().unwrap())
     }
 
     /// Checks if the exotic gateway token is in a valid state (not inactive or expired)
     /// Note, this does not check association to any wallet.
-    pub fn is_valid_exotic(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
+    fn is_valid_exotic(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
         // Check the token is active
         if !self.is_valid_state() {
             return false;
@@ -188,14 +501,14 @@ impl GatewayToken {
 
     /// Checks if the gateway token is owned by the identity,
     /// and that the identity has signed the transaction
-    pub fn owned_by_did(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
+    fn owned_by_did(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
         // check if this gateway token is linked to an identity
         if !self.has_feature(Feature::IdentityLinked) {
             return false;
         }
 
         // check if the passed-in did is the owner of this gateway token
-        if *did.key != self.owner_identity.unwrap() {
+        if did.key != self.owner_identity().unwrap() {
             return false;
         }
 
@@ -203,8 +516,8 @@ impl GatewayToken {
         validate_owner(did, signers).is_ok()
     }
 
-    pub fn is_session_token(&self) -> bool {
-        self.parent_gateway_token.is_some()
+    fn is_session_token(&self) -> bool {
+        self.parent_gateway_token().is_some()
     }
 
     // pub fn matches_transaction_details(&self, transaction_details: &dyn CompatibleTransactionDetails) -> bool {
@@ -213,9 +526,10 @@ impl GatewayToken {
     //     self.transaction_details.unwrap().compatible_with(transaction_details)
     // }
 }
+impl<T> GatewayTokenFunctions for T where T: GatewayTokenAccess {}
 
 /// Enum representing the states that a gateway token can be in.
-#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, BorshSchema)]
+#[derive(Copy, Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, BorshSchema)]
 pub enum GatewayTokenState {
     /// Valid, non-frozen token. Note - a token may be active but have passed its expire_time.
     Active,
@@ -223,6 +537,10 @@ pub enum GatewayTokenState {
     Frozen,
     /// A token that has been revoked by the gatekeeper network.
     Revoked,
+}
+impl GatewayTokenState {
+    pub const ALL_STATES: &'static [GatewayTokenState] =
+        &[Self::Active, Self::Frozen, Self::Revoked];
 }
 impl Default for GatewayTokenState {
     fn default() -> Self {
@@ -273,9 +591,13 @@ impl CompatibleTransactionDetails for SimpleTransactionDetails {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use rand::{CryptoRng, Rng, RngCore, SeedableRng};
+    use rand_chacha::ChaCha20Rng;
     use sol_did::state::{SolData, VerificationMethod};
     use solana_program::program_stubs;
     use solana_sdk::signature::{Keypair, Signer};
+    use std::array::IntoIter;
+    use std::iter::FusedIterator;
     use std::{
         cell::RefCell,
         rc::Rc,
@@ -444,5 +766,237 @@ pub mod tests {
         // verify that the token can be used in this transaction, as a signature from
         // a valid signer of the linked identity has been provided.
         assert!(token.is_valid_exotic(&did_account_info, &[&signer_account_info]))
+    }
+
+    #[test]
+    fn in_place_test() {
+        let mut rng = ChaCha20Rng::from_entropy();
+        IntoIter::new([true, false])
+            .into_iter()
+            .compound(IntoIter::new([true, false]))
+            .compound(IntoIter::new([true, false]))
+            .compound(GatewayTokenState::ALL_STATES)
+            .compound(GatewayTokenState::ALL_STATES)
+            .for_each(
+                |((((has_parent, has_owner_identity), has_expire_time), &state), &to_state)| {
+                    let token = new_token(
+                        &mut rng,
+                        has_parent,
+                        has_owner_identity,
+                        has_expire_time,
+                        state,
+                    );
+
+                    let mut token_data =
+                        BorshSerialize::try_to_vec(&token).expect("Could not serialize");
+                    let in_place =
+                        InPlaceGatewayToken::new(&token_data).expect("Could not create in place");
+                    assert_eq!(in_place.features(), token.features);
+                    assert_eq!(
+                        in_place.parent_gateway_token(),
+                        token.parent_gateway_token.as_ref()
+                    );
+                    assert_eq!(in_place.owner_wallet(), &token.owner_wallet);
+                    assert_eq!(in_place.owner_identity(), token.owner_identity.as_ref());
+                    assert_eq!(in_place.gatekeeper_network(), &token.gatekeeper_network);
+                    assert_eq!(in_place.issuing_gatekeeper(), &token.issuing_gatekeeper);
+                    assert_eq!(in_place.state(), token.state);
+                    assert_eq!(in_place.expire_time(), token.expire_time);
+                    let after = BorshDeserialize::try_from_slice(&token_data)
+                        .expect("Could not deserialize");
+                    assert_eq!(token, after);
+
+                    let mut in_place = InPlaceGatewayToken::new(&mut token_data)
+                        .expect("Could not create in place mut");
+                    assert_eq!(in_place.features_mut(), &token.features);
+                    assert_eq!(
+                        in_place.parent_gateway_token_mut(),
+                        token.parent_gateway_token.clone().as_mut()
+                    );
+                    assert_eq!(in_place.owner_wallet_mut(), &token.owner_wallet);
+                    assert_eq!(
+                        in_place.owner_identity_mut(),
+                        token.owner_identity.clone().as_mut()
+                    );
+                    assert_eq!(in_place.gatekeeper_network_mut(), &token.gatekeeper_network);
+                    assert_eq!(in_place.issuing_gatekeeper_mut(), &token.issuing_gatekeeper);
+                    let after = BorshDeserialize::try_from_slice(&token_data)
+                        .expect("Could not deserialize");
+                    assert_eq!(token, after);
+
+                    let token = new_token(
+                        &mut rng,
+                        has_parent,
+                        has_owner_identity,
+                        has_expire_time,
+                        to_state,
+                    );
+
+                    let mut in_place = InPlaceGatewayToken::new(&mut token_data)
+                        .expect("Could not create in place mut");
+                    in_place.set_features(token.features);
+                    assert_eq!(in_place.features(), token.features);
+                    assert_eq!(in_place.features_mut(), &token.features);
+                    if has_parent {
+                        *in_place.parent_gateway_token_mut().unwrap() =
+                            token.parent_gateway_token.unwrap();
+                    }
+                    assert_eq!(
+                        in_place.parent_gateway_token(),
+                        token.parent_gateway_token.as_ref()
+                    );
+                    assert_eq!(
+                        in_place.parent_gateway_token_mut(),
+                        token.parent_gateway_token.clone().as_mut()
+                    );
+                    *in_place.owner_wallet_mut() = token.owner_wallet;
+                    assert_eq!(in_place.owner_wallet(), &token.owner_wallet);
+                    assert_eq!(in_place.owner_wallet_mut(), &token.owner_wallet);
+                    if has_owner_identity {
+                        *in_place.owner_identity_mut().unwrap() = token.owner_identity.unwrap();
+                    }
+                    assert_eq!(in_place.owner_identity(), token.owner_identity.as_ref());
+                    assert_eq!(
+                        in_place.owner_identity_mut(),
+                        token.owner_identity.clone().as_mut()
+                    );
+                    *in_place.gatekeeper_network_mut() = token.gatekeeper_network;
+                    assert_eq!(in_place.gatekeeper_network(), &token.gatekeeper_network);
+                    assert_eq!(in_place.gatekeeper_network_mut(), &token.gatekeeper_network);
+                    *in_place.issuing_gatekeeper_mut() = token.issuing_gatekeeper;
+                    assert_eq!(in_place.issuing_gatekeeper(), &token.issuing_gatekeeper);
+                    assert_eq!(in_place.issuing_gatekeeper_mut(), &token.issuing_gatekeeper);
+                    in_place.set_state(token.state);
+                    assert_eq!(in_place.state(), token.state);
+                    if has_expire_time {
+                        in_place
+                            .set_expire_time(token.expire_time.unwrap())
+                            .expect("Could not set expire time");
+                    }
+                    assert_eq!(in_place.expire_time(), token.expire_time);
+
+                    assert_eq!(in_place.features_mut(), &token.features);
+                    assert_eq!(
+                        in_place.parent_gateway_token_mut(),
+                        token.parent_gateway_token.clone().as_mut()
+                    );
+                    assert_eq!(in_place.owner_wallet_mut(), &token.owner_wallet);
+                    assert_eq!(
+                        in_place.owner_identity_mut(),
+                        token.owner_identity.clone().as_mut()
+                    );
+                    assert_eq!(in_place.gatekeeper_network_mut(), &token.gatekeeper_network);
+                    assert_eq!(in_place.issuing_gatekeeper_mut(), &token.issuing_gatekeeper);
+                    assert_eq!(in_place.features(), token.features);
+                    assert_eq!(
+                        in_place.parent_gateway_token(),
+                        token.parent_gateway_token.as_ref()
+                    );
+                    assert_eq!(in_place.owner_wallet(), &token.owner_wallet);
+                    assert_eq!(in_place.owner_identity(), token.owner_identity.as_ref());
+                    assert_eq!(in_place.gatekeeper_network(), &token.gatekeeper_network);
+                    assert_eq!(in_place.issuing_gatekeeper(), &token.issuing_gatekeeper);
+                    assert_eq!(in_place.state(), token.state);
+                    assert_eq!(in_place.expire_time(), token.expire_time);
+                    let after = BorshDeserialize::try_from_slice(&token_data)
+                        .expect("Could not deserialize");
+                    assert_eq!(token, after);
+                },
+            );
+    }
+
+    fn new_token(
+        rng: &mut (impl RngCore + CryptoRng),
+        has_parent: bool,
+        has_owner_identity: bool,
+        has_expire_time: bool,
+        state: GatewayTokenState,
+    ) -> GatewayToken {
+        GatewayToken {
+            features: rng.gen(),
+            parent_gateway_token: if has_parent {
+                Some(Keypair::generate(rng).pubkey())
+            } else {
+                None
+            },
+            owner_wallet: Keypair::generate(rng).pubkey(),
+            owner_identity: if has_owner_identity {
+                Some(Keypair::generate(rng).pubkey())
+            } else {
+                None
+            },
+            gatekeeper_network: Keypair::generate(rng).pubkey(),
+            issuing_gatekeeper: Keypair::generate(rng).pubkey(),
+            state,
+            expire_time: if has_expire_time {
+                Some(rng.gen())
+            } else {
+                None
+            },
+        }
+    }
+
+    pub trait CompoundIterator: Iterator + Sized {
+        fn compound<I: IntoIterator>(self, other: I) -> CompoundIter<Self, I::IntoIter>
+        where
+            I::IntoIter: Clone;
+    }
+    impl<T> CompoundIterator for T
+    where
+        T: Iterator,
+    {
+        fn compound<I: IntoIterator>(mut self, other: I) -> CompoundIter<Self, I::IntoIter>
+        where
+            I::IntoIter: Clone,
+        {
+            let i2_iter = other.into_iter();
+            CompoundIter {
+                i2_current: i2_iter.clone(),
+                i2: i2_iter,
+                i1_current: self.next(),
+                i1: self,
+            }
+        }
+    }
+    pub struct CompoundIter<I1, I2>
+    where
+        I1: Iterator,
+    {
+        i1: I1,
+        i1_current: Option<I1::Item>,
+        i2: I2,
+        i2_current: I2,
+    }
+    impl<I1, I2> Iterator for CompoundIter<I1, I2>
+    where
+        I1: Iterator,
+        I2: Iterator + Clone,
+        I1::Item: Clone,
+    {
+        type Item = (I1::Item, I2::Item);
+
+        fn next(&mut self) -> Option<Self::Item> {
+            loop {
+                match &self.i1_current {
+                    Some(i1_current) => match self.i2_current.next() {
+                        None => {
+                            self.i1_current = self.i1.next();
+                            self.i2_current = self.i2.clone();
+                        }
+                        Some(i2) => {
+                            return Some((i1_current.clone(), i2));
+                        }
+                    },
+                    None => return None,
+                }
+            }
+        }
+    }
+    impl<I1, I2> FusedIterator for CompoundIter<I1, I2>
+    where
+        I1: FusedIterator,
+        I2: FusedIterator + Clone,
+        I1::Item: Clone,
+    {
     }
 }

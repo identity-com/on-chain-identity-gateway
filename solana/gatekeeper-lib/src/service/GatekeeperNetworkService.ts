@@ -9,6 +9,10 @@ import {
   addGatekeeper,
   getGatekeeperAccountKey,
   revokeGatekeeper,
+  proxyConnectionWithRetry,
+  RetryConfig,
+  defaultRetryConfig,
+  DeepPartial,
 } from "@identity.com/solana-gateway-ts";
 import { send } from "../util/connection";
 
@@ -21,12 +25,19 @@ export class GatekeeperNetworkService {
    * @param connection A solana connection object
    * @param payer The payer for any transactions performed by the network authority
    * @param gatekeeperNetwork The network authority's key
+   * @param customRetryConfig RetryConfig including retry count and timeouts. All values have defaults.
    */
   constructor(
     private connection: Connection,
     private payer: Keypair,
-    private gatekeeperNetwork: Keypair
-  ) {}
+    private gatekeeperNetwork: Keypair,
+    customRetryConfig: DeepPartial<RetryConfig> = defaultRetryConfig
+  ) {
+    this.connection = proxyConnectionWithRetry(this.connection, {
+      ...defaultRetryConfig,
+      ...customRetryConfig,
+    });
+  }
 
   /**
    * Add a gatekeeper to the network

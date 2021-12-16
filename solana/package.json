@@ -15,6 +15,7 @@
     "build-test": "yarn build-porgram && yarn test"
   },
   "devDependencies": {
+    "audit-ci": "^5.1.2",
     "start-server-and-test": "^1.13.1"
   }
 }
