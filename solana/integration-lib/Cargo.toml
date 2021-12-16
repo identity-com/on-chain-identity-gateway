@@ -31,3 +31,6 @@ crate-type = ["cdylib", "lib"]
 
 [dev-dependencies]
 solana-sdk = "1.7.11"
+# These are older as solana sdk relies on rand_core 0.5.1
+rand = "0.7.3"
+rand_chacha = "0.2.2"
