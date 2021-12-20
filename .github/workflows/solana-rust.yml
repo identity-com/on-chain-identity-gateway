@@ -76,7 +76,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             ./solana/target
-          key: cargo-build-${{ hashFiles('solana/Cargo.lock') }}
+          key: cargo-build-v2-${{ hashFiles('solana/Cargo.lock') }}
 
       - name: Cache Solana version
         uses: actions/cache@v2
