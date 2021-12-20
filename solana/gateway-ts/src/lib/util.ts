@@ -34,6 +34,7 @@ export type RetryConfig = {
   retryCount: number;
   exponentialFactor: number;
   timeouts: {
+    healthcheck: number;
     processed: number;
     confirmed: number;
     finalized: number;
@@ -51,6 +52,7 @@ export const defaultRetryConfig = {
 };
 
 export const runFunctionWithRetry = async (
+  methodName: string, // for logging purposes so we know which call this was
   fn: () => Promise<unknown>,
   commitment: Commitment,
   customRetryConfig: DeepPartial<RetryConfig>
@@ -91,26 +93,34 @@ export const runFunctionWithRetry = async (
 
   let currentAttempt = 0;
 
-  return retry(
-    async () => {
-      currentAttempt++;
-      console.log(
-        `Trying Solana blockchain call (attempt ${currentAttempt} of ${
-          retryConfig.retryCount + 1
-        })`,
-        { timeout }
-      );
-      const timeoutPromise = new Promise((_resolve, reject) =>
-        setTimeout(() => reject(new Error("timeout")), timeout)
-      );
-      const blockchainPromise = fn();
-      return Promise.race([blockchainPromise, timeoutPromise]);
-    },
-    {
-      retries: retryCount,
-      factor: expFactor,
-    }
-  );
+  try {
+    return await retry(
+      async () => {
+        currentAttempt++;
+        console.log(
+          `Trying Solana connection method '${methodName}' (attempt ${currentAttempt} of ${
+            retryConfig.retryCount + 1
+          })`,
+          { timeout }
+        );
+        const timeoutPromise = new Promise((_resolve, reject) =>
+          setTimeout(() => reject(new Error("timeout")), timeout)
+        );
+        const blockchainPromise = fn();
+        return Promise.race([blockchainPromise, timeoutPromise]);
+      },
+      {
+        retries: retryCount,
+        factor: expFactor,
+      }
+    );
+  } catch (err) {
+    console.error(
+      `Retries exhausted in Solana connection method '${methodName}' .`,
+      { error: err }
+    );
+    throw err;
+  }
 };
 
 export const proxyConnectionWithRetry = (
@@ -129,6 +139,7 @@ export const proxyConnectionWithRetry = (
             const fn = async () =>
               target.sendTransaction(transaction, signers, options);
             return runFunctionWithRetry(
+              "sendTransaction",
               fn,
               SOLANA_COMMITMENT,
               customRetryConfig
@@ -142,6 +153,7 @@ export const proxyConnectionWithRetry = (
             const fn = async () =>
               target.confirmTransaction(signature, commitment);
             return runFunctionWithRetry(
+              "confirmTransaction",
               fn,
               SOLANA_COMMITMENT,
               customRetryConfig
@@ -163,6 +175,7 @@ export const proxyConnectionWithRetry = (
             const fn = async () =>
               target.getProgramAccounts(programId, configOrCommitment);
             return runFunctionWithRetry(
+              "getProgramAccounts",
               fn,
               SOLANA_COMMITMENT,
               customRetryConfig
@@ -180,6 +193,7 @@ export const proxyConnectionWithRetry = (
           ): Promise<AccountInfo<Buffer> | null> => {
             const fn = async () => target.getAccountInfo(publicKey, commitment);
             return runFunctionWithRetry(
+              "getAccountInfo",
               fn,
               SOLANA_COMMITMENT,
               customRetryConfig
@@ -192,7 +206,12 @@ export const proxyConnectionWithRetry = (
     },
     apply(target: any, thisArg, argumentsList) {
       const fn = async () => target.apply(thisArg, argumentsList);
-      return runFunctionWithRetry(fn, SOLANA_COMMITMENT, customRetryConfig);
+      return runFunctionWithRetry(
+        "apply",
+        fn,
+        SOLANA_COMMITMENT,
+        customRetryConfig
+      );
     },
   };
   return new Proxy<Connection>(originalConnection, proxyHandler);
