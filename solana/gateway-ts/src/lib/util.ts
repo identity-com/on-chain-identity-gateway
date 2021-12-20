@@ -34,6 +34,7 @@ export type RetryConfig = {
   retryCount: number;
   exponentialFactor: number;
   timeouts: {
+    healthcheck: number;
     processed: number;
     confirmed: number;
     finalized: number;
