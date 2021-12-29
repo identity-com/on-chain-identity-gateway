@@ -1,6 +1,6 @@
 //! Program instructions
 
-use crate::state::get_expire_address_with_seed;
+use crate::state::{get_expire_address_with_seed, get_retrieve_address_with_seed};
 use crate::Gateway;
 use solana_program::clock::UnixTimestamp;
 use {
@@ -93,7 +93,7 @@ pub enum GatewayInstruction {
     /// 3. `[]`                 system_program: The system program
     AddFeatureToNetwork { feature: NetworkFeature },
 
-    /// 0. `[signer, writable]` funds_to_account: The account receiving the funds
+    /// 0. `[writable]`         funds_to_account: The account receiving the funds
     /// 1. `[signer]`           gatekeeper_network: The gatekeeper network receiving a feature
     /// 2. `[writable]`         feature_account: The new feature account
     RemoveFeatureFromNetwork { feature: NetworkFeature },
@@ -107,11 +107,28 @@ pub enum GatewayInstruction {
         /// The gatekeeper network
         gatekeeper_network: Pubkey,
     },
+
+    /// 0. `[writable]`     gateway_token: The token to retrieve
+    /// 1. `[signer]`       gatekeeper_authority: The issuing gatekeeper for the token
+    /// 2. `[]`             gatekeeper_account: The data for the gatekeeper authority
+    /// 3. `[signer?]`      gatekeeper_network: the gatekeeper network to which the gatekeeper belongs, must sign if token is revoked
+    /// 4. `[writable]`     funds_to: The account to put the funds into
+    /// 5. `[]`             retrieve_feature: The network's retrieve feature
+    RetrieveToken,
 }
 
 #[derive(Copy, Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq, Eq)]
 pub enum NetworkFeature {
     UserTokenExpiry,
+    RetrievableTokens,
+}
+impl NetworkFeature {
+    pub fn get_address(&self, network: &Pubkey) -> (Pubkey, u8) {
+        match self {
+            NetworkFeature::UserTokenExpiry => get_expire_address_with_seed(network),
+            NetworkFeature::RetrievableTokens => get_retrieve_address_with_seed(network),
+        }
+    }
 }
 
 /// Create a `GatewayInstruction::AddGatekeeper` instruction
@@ -253,7 +270,7 @@ pub fn add_feature_to_network(
         vec![
             AccountMeta::new(funder, true),
             AccountMeta::new_readonly(gatekeeper_network, true),
-            AccountMeta::new(get_expire_address_with_seed(&gatekeeper_network).0, false),
+            AccountMeta::new(feature.get_address(&gatekeeper_network).0, false),
             AccountMeta::new_readonly(system_program::id(), false),
         ],
     )
@@ -269,7 +286,28 @@ pub fn remove_feature_from_network(
         vec![
             AccountMeta::new(funds_to, false),
             AccountMeta::new_readonly(gatekeeper_network, true),
-            AccountMeta::new(get_expire_address_with_seed(&gatekeeper_network).0, false),
+            AccountMeta::new(feature.get_address(&gatekeeper_network).0, false),
+        ],
+    )
+}
+pub fn retrieve_token(
+    token: Pubkey,
+    gatekeeper_authority: Pubkey,
+    gatekeeper_account: Pubkey,
+    gatekeeper_network: Pubkey,
+    funds_to: Pubkey,
+    network_signs: bool,
+) -> Instruction {
+    Instruction::new_with_borsh(
+        Gateway::program_id(),
+        &GatewayInstruction::RetrieveToken,
+        vec![
+            AccountMeta::new(token, false),
+            AccountMeta::new_readonly(gatekeeper_authority, true),
+            AccountMeta::new_readonly(gatekeeper_account, false),
+            AccountMeta::new_readonly(gatekeeper_network, network_signs),
+            AccountMeta::new(funds_to, false),
+            AccountMeta::new_readonly(get_retrieve_address_with_seed(&gatekeeper_network).0, false),
         ],
     )
 }

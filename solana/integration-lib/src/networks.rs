@@ -4,6 +4,7 @@ use solana_program::pubkey::Pubkey;
 pub struct GatewayNetwork {
     pub address: Pubkey,
     pub expire_address: (Pubkey, u8),
+    pub retrieve_address: (Pubkey, u8),
 }
 
 /// The IGNITE network
@@ -21,6 +22,7 @@ pub const IGNITE: GatewayNetwork = GatewayNetwork {
         ]),
         255,
     ),
+    retrieve_address: (Pubkey::new_from_array([0; 32]), 0), //TODO Fix this
 };
 
 /// A list of all cached networks

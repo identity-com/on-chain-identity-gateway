@@ -5,9 +5,9 @@ use solana_gateway::error::GatewayError;
 use solana_gateway::instruction::{GatewayInstruction, NetworkFeature};
 use solana_gateway::state::{
     get_expire_address_with_seed, get_gatekeeper_address_with_seed,
-    get_gateway_token_address_with_seed, AddressSeed, GatewayTokenAccess, GatewayTokenState,
-    InPlaceGatewayToken, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
-    NETWORK_EXPIRE_FEATURE_SEED,
+    get_gateway_token_address_with_seed, get_retrieve_address_with_seed, AddressSeed,
+    GatewayTokenAccess, GatewayTokenState, InPlaceGatewayToken, GATEKEEPER_ADDRESS_SEED,
+    GATEWAY_TOKEN_ADDRESS_SEED, NETWORK_EXPIRE_FEATURE_SEED, NETWORK_RETRIEVE_FEATURE_SEED,
 };
 use solana_program::clock::{Clock, UnixTimestamp};
 use {
@@ -57,6 +57,7 @@ pub fn process_instruction(
         GatewayInstruction::RemoveFeatureFromNetwork { feature } => {
             remove_feature_from_network(accounts, feature)
         }
+        GatewayInstruction::RetrieveToken => retrieve_token(accounts),
     };
 
     if let Some(e) = result.clone().err() {
@@ -384,18 +385,22 @@ fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> Program
     let network_expire_feature = next_account_info(account_info_iter)?;
 
     if !owner.is_signer {
+        msg!("Token owner is not signer");
         return Err(ProgramError::MissingRequiredSignature);
     }
 
     if network_expire_feature.owner != &id() {
+        msg!("Network expire feature not present");
         return Err(ProgramError::IllegalOwner);
     }
 
     if &get_expire_address_with_seed(&gatekeeper_network).0 != network_expire_feature.key {
+        msg!("Invalid network expire address");
         return Err(ProgramError::InvalidArgument);
     }
 
     if gateway_token.owner != &id() {
+        msg!("Token is not owned by gateway program or does not exist");
         return Err(ProgramError::IllegalOwner);
     }
 
@@ -405,10 +410,12 @@ fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> Program
     let mut gateway_token_data = InPlaceGatewayToken::new(&mut **borrow)?;
 
     if gateway_token_data.owner_wallet() != owner.key {
+        msg!("Token data does not have correct owner");
         return Err(GatewayError::InvalidOwner.into());
     }
 
     if gateway_token_data.gatekeeper_network() != &gatekeeper_network {
+        msg!("Gateway token not for network");
         return Err(ProgramError::InvalidAccountData);
     }
 
@@ -435,35 +442,37 @@ fn add_feature_to_network(accounts: &[AccountInfo], feature: NetworkFeature) -> 
         return Err(ProgramError::InvalidArgument);
     }
 
-    match feature {
+    let (key, bump, seed) = match feature {
         NetworkFeature::UserTokenExpiry => {
-            let (key, bump_seed) = get_expire_address_with_seed(gatekeeper_network.key);
-            if &key != feature_account.key {
-                return Err(ProgramError::InvalidArgument);
-            }
-            let seeds = &[
-                &gatekeeper_network.key.to_bytes(),
-                NETWORK_EXPIRE_FEATURE_SEED,
-                &[bump_seed],
-            ] as &[&[u8]];
-
-            invoke_signed(
-                &solana_program::system_instruction::create_account(
-                    funder_account.key,
-                    feature_account.key,
-                    1.max(Rent::default().minimum_balance(0)),
-                    0,
-                    &id(),
-                ),
-                &[
-                    system_program.clone(),
-                    funder_account.clone(),
-                    feature_account.clone(),
-                ],
-                &[seeds],
-            )
+            let (key, bump) = get_expire_address_with_seed(gatekeeper_network.key);
+            (key, bump, NETWORK_EXPIRE_FEATURE_SEED)
         }
+        NetworkFeature::RetrievableTokens => {
+            let (key, bump) = get_retrieve_address_with_seed(gatekeeper_network.key);
+            (key, bump, NETWORK_RETRIEVE_FEATURE_SEED)
+        }
+    };
+
+    if &key != feature_account.key {
+        return Err(ProgramError::InvalidArgument);
     }
+    let seeds = &[&gatekeeper_network.key.to_bytes(), seed, &[bump]] as &[&[u8]];
+
+    invoke_signed(
+        &solana_program::system_instruction::create_account(
+            funder_account.key,
+            feature_account.key,
+            1.max(Rent::default().minimum_balance(0)),
+            0,
+            &id(),
+        ),
+        &[
+            system_program.clone(),
+            funder_account.clone(),
+            feature_account.clone(),
+        ],
+        &[seeds],
+    )
 }
 
 fn remove_feature_from_network(accounts: &[AccountInfo], feature: NetworkFeature) -> ProgramResult {
@@ -483,10 +492,84 @@ fn remove_feature_from_network(accounts: &[AccountInfo], feature: NetworkFeature
                 return Err(ProgramError::InvalidArgument);
             }
         }
+        NetworkFeature::RetrievableTokens => {
+            if &get_retrieve_address_with_seed(gatekeeper_network.key).0 != feature_account.key {
+                return Err(ProgramError::InvalidArgument);
+            }
+        }
     };
 
     **funds_to_account.lamports.borrow_mut() += **feature_account.lamports.borrow();
     **feature_account.lamports.borrow_mut() = 0;
+
+    Ok(())
+}
+
+fn retrieve_token(accounts: &[AccountInfo]) -> ProgramResult {
+    msg!("GatewayInstruction::RetrieveToken");
+    let account_info_iter = &mut accounts.iter();
+    let gateway_token = next_account_info(account_info_iter)?;
+    let gatekeeper_authority = next_account_info(account_info_iter)?;
+    let gatekeeper_account = next_account_info(account_info_iter)?;
+    let gatekeeper_network = next_account_info(account_info_iter)?;
+    let funds_to = next_account_info(account_info_iter)?;
+    let retrieve_feature = next_account_info(account_info_iter)?;
+
+    if &get_retrieve_address_with_seed(gatekeeper_network.key).0 != retrieve_feature.key {
+        msg!("Invalid seeds for network retrieve feature");
+        return Err(ProgramError::InvalidArgument);
+    }
+
+    if retrieve_feature.owner != &id() {
+        msg!("Retrieve feature not owned by gateway program/does not exist");
+        return Err(ProgramError::IllegalOwner);
+    }
+
+    if !gatekeeper_authority.is_signer {
+        msg!("Missing gatekeeper_authority signature");
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+
+    if gatekeeper_account.owner != &id() {
+        msg!("Gatekeeper account not owned by gateway program/does not exist");
+        return Err(ProgramError::IllegalOwner);
+    }
+
+    if gateway_token.owner != &id() {
+        msg!("Token not owned by gateway program/does not exist");
+        return Err(ProgramError::IllegalOwner);
+    }
+
+    verify_gatekeeper_length(gatekeeper_account)?;
+
+    if &get_gatekeeper_address_with_seed(gatekeeper_authority.key, gatekeeper_network.key).0
+        != gatekeeper_account.key
+    {
+        msg!("Gatekeeper Account is not from authority and network");
+        return Err(ProgramError::InvalidArgument);
+    }
+
+    let mut borrow = gateway_token.data.borrow_mut();
+    let token_data = InPlaceGatewayToken::new(&mut **borrow)?;
+
+    if token_data.gatekeeper_network() != gatekeeper_network.key {
+        msg!("Token network does not match");
+        return Err(ProgramError::InvalidAccountData);
+    }
+    if token_data.issuing_gatekeeper() != gatekeeper_authority.key {
+        msg!("Token issuing gatekeeper mismatch");
+        return Err(ProgramError::InvalidAccountData);
+    }
+    if token_data.state() == GatewayTokenState::Revoked && !gatekeeper_network.is_signer {
+        msg!("Gateway network must sign if token is revoked");
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+    let data = token_data.data();
+    // This is pretty much an unsafe function, if n > s.len() there is ub
+    solana_program::program_memory::sol_memset(data, 0, data.len());
+
+    **funds_to.lamports.borrow_mut() += **gateway_token.lamports.borrow();
+    **gateway_token.lamports.borrow_mut() = 0;
 
     Ok(())
 }

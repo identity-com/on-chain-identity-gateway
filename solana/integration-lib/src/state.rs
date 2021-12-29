@@ -30,6 +30,9 @@ pub const GATEKEEPER_ADDRESS_SEED: &[u8] = br"gatekeeper";
 /// The seed string used to derive a program address for a network expire feature
 pub const NETWORK_EXPIRE_FEATURE_SEED: &[u8] = br"expire";
 
+/// The seed string used to derive a program address for a network retrieve feature
+pub const NETWORK_RETRIEVE_FEATURE_SEED: &[u8] = br"retrieve";
+
 /// An optional seed to use when generating a gateway token,
 /// allowing multiple gateway tokens per wallet
 pub type AddressSeed = [u8; 8];
@@ -63,7 +66,6 @@ pub fn get_gatekeeper_address_with_seed(authority: &Pubkey, network: &Pubkey) ->
     )
 }
 
-// Ignite bump seed is 255 so most optimal create
 pub fn get_expire_address_with_seed(network: &Pubkey) -> (Pubkey, u8) {
     for gateway_network in GATEWAY_NETWORKS {
         if &gateway_network.address == network {
@@ -72,6 +74,18 @@ pub fn get_expire_address_with_seed(network: &Pubkey) -> (Pubkey, u8) {
     }
     Pubkey::find_program_address(
         &[network.as_ref(), NETWORK_EXPIRE_FEATURE_SEED],
+        &Gateway::program_id(),
+    )
+}
+
+pub fn get_retrieve_address_with_seed(network: &Pubkey) -> (Pubkey, u8) {
+    for gateway_network in GATEWAY_NETWORKS {
+        if &gateway_network.address == network {
+            return gateway_network.retrieve_address;
+        }
+    }
+    Pubkey::find_program_address(
+        &[network.as_ref(), NETWORK_RETRIEVE_FEATURE_SEED],
         &Gateway::program_id(),
     )
 }

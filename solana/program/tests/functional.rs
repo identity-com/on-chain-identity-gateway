@@ -2,7 +2,9 @@
 #![cfg(feature = "test-bpf")]
 
 use solana_gateway::instruction;
-use solana_gateway::instruction::{add_feature_to_network, expire_token, NetworkFeature};
+use solana_gateway::instruction::{
+    add_feature_to_network, expire_token, retrieve_token, set_state, NetworkFeature,
+};
 use solana_gateway::state::{
     get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
 };
@@ -336,4 +338,139 @@ async fn expire_token_should_succeed() {
         ))
         .await
         .unwrap();
+}
+
+#[tokio::test]
+async fn retrieve_token_should_succeed() {
+    let mut context = GatewayContext::new().await;
+    context.create_gatekeeper().await;
+
+    let owner1 = Keypair::new();
+    let owner2 = Keypair::new();
+
+    let payer_key = context.context.payer.pubkey();
+    let gatekeeper_network_key = context.gatekeeper_network.as_ref().unwrap().pubkey();
+    let gatekeeper_authority_key = context.gatekeeper_authority.as_ref().unwrap().pubkey();
+    let gatekeeper_account_key =
+        get_gatekeeper_address_with_seed(&gatekeeper_authority_key, &gatekeeper_network_key).0;
+    let token1_key =
+        get_gateway_token_address_with_seed(&owner1.pubkey(), &None, &gatekeeper_network_key).0;
+    let token2_key =
+        get_gateway_token_address_with_seed(&owner2.pubkey(), &None, &gatekeeper_network_key).0;
+
+    context.issue_gateway_token(&owner1.pubkey(), None).await;
+    context.issue_gateway_token(&owner2.pubkey(), None).await;
+    let block_hash = context
+        .context
+        .banks_client
+        .get_recent_blockhash()
+        .await
+        .unwrap();
+    let before_funds = context
+        .context
+        .banks_client
+        .get_account(payer_key)
+        .await
+        .unwrap()
+        .unwrap()
+        .lamports;
+    context
+        .context
+        .banks_client
+        .process_transaction(Transaction::new_signed_with_payer(
+            &[
+                add_feature_to_network(
+                    payer_key,
+                    gatekeeper_network_key,
+                    NetworkFeature::RetrievableTokens,
+                ),
+                retrieve_token(
+                    token1_key,
+                    gatekeeper_authority_key,
+                    gatekeeper_account_key,
+                    gatekeeper_network_key,
+                    payer_key,
+                    false,
+                ),
+            ],
+            Some(&payer_key),
+            &[
+                &context.context.payer,
+                &owner1,
+                context.gatekeeper_authority.as_ref().unwrap(),
+            ],
+            block_hash,
+        ))
+        .await
+        .unwrap();
+    let between_funds = context
+        .context
+        .banks_client
+        .get_account(payer_key)
+        .await
+        .unwrap()
+        .unwrap()
+        .lamports;
+    assert!(between_funds > before_funds);
+    assert!(context
+        .context
+        .banks_client
+        .get_account(token1_key)
+        .await
+        .unwrap()
+        .is_none());
+
+    let block_hash = context
+        .context
+        .banks_client
+        .get_recent_blockhash()
+        .await
+        .unwrap();
+    context
+        .context
+        .banks_client
+        .process_transaction(Transaction::new_signed_with_payer(
+            &[
+                set_state(
+                    &token2_key,
+                    &gatekeeper_authority_key,
+                    &gatekeeper_account_key,
+                    GatewayTokenState::Revoked,
+                ),
+                retrieve_token(
+                    token2_key,
+                    gatekeeper_authority_key,
+                    gatekeeper_account_key,
+                    gatekeeper_network_key,
+                    payer_key,
+                    true,
+                ),
+            ],
+            Some(&payer_key),
+            &[
+                &context.context.payer,
+                &owner1,
+                context.gatekeeper_authority.as_ref().unwrap(),
+                context.gatekeeper_network.as_ref().unwrap(),
+            ],
+            block_hash,
+        ))
+        .await
+        .unwrap();
+    let after_funds = context
+        .context
+        .banks_client
+        .get_account(payer_key)
+        .await
+        .unwrap()
+        .unwrap()
+        .lamports;
+    assert!(after_funds > before_funds);
+    assert!(context
+        .context
+        .banks_client
+        .get_account(token2_key)
+        .await
+        .unwrap()
+        .is_none());
 }
