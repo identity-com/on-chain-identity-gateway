@@ -299,6 +299,23 @@ export class GatekeeperService {
     );
   }
 
+  /**
+   * Allows the caller to confirm a previously sent transaction to the given Commitment level.
+   * Useful for implementing timeout / retry logic.
+   * @param transactionId
+   * @param confirmOptions
+   * @returns
+   */
+  async confirmTransaction(
+    transactionId: string,
+    confirmOptions: ConfirmOptions
+  ) {
+    return this.connection.confirmTransaction(
+      transactionId,
+      confirmOptions.commitment
+    );
+  }
+
   // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key
   async isRegistered(): Promise<boolean> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
