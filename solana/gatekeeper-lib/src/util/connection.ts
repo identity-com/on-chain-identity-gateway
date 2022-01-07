@@ -9,7 +9,6 @@ import {
   TransactionSignature,
 } from "@solana/web3.js";
 import { SOLANA_COMMITMENT } from "./constants";
-import retry from "async-retry";
 
 export type ExtendedCluster = Cluster | "localnet" | "civicnet";
 export const CIVICNET_URL =
@@ -31,7 +30,7 @@ export const getConnection = (
     getClusterUrl(process.env.CLUSTER as ExtendedCluster)
 ): Connection => new Connection(clusterUrl, SOLANA_COMMITMENT);
 
-export const send = (
+export const send = async (
   connection: Connection,
   transaction: Transaction,
   options: ConfirmOptions = {},
