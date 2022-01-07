@@ -74,8 +74,8 @@ export default class Issue extends Command {
       );
     }
 
-    const token = await service.issue(address);
+    const { gatewayToken: issuedToken } = await service.issue(address);
 
-    this.log(prettyPrint(token));
+    this.log(prettyPrint(issuedToken));
   }
 }
