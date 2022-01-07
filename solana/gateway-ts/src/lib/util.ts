@@ -11,11 +11,7 @@ import {
   PROGRAM_ID,
   SOLANA_COMMITMENT,
 } from "./constants";
-import {
-  GatewayToken,
-  ProgramAccountResponse,
-  State,
-} from "../types";
+import { GatewayToken, ProgramAccountResponse, State } from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
 
 /**
