@@ -59,7 +59,7 @@ export default class AddGatekeeper extends Command {
       .addGatekeeper(gatekeeper)
       .then((t) => t.confirm());
     this.log(
-      `Added gatekeeper to network. Gatekeeper account: ${gatekeeperAccount.toBase58()}`
+      `Added gatekeeper to network. Gatekeeper account: ${gatekeeperAccount?.toBase58()}`
     );
   }
 }

@@ -82,7 +82,7 @@ export class SentTransaction {
 
 export class DataTransaction<T> {
   readonly sentTransaction: SentTransaction;
-  readonly data: T | (() => T | Promise<T>) | null;
+  readonly data: T | (() => T | Promise<T>);
 
   constructor(
     sentTransaction: SentTransaction,

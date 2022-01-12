@@ -58,7 +58,7 @@ export default class RevokeGatekeeper extends Command {
       .revokeGatekeeper(gatekeeper)
       .then((t) => t.confirm());
     this.log(
-      `Revoked gatekeeper from network. Gatekeeper account: ${gatekeeperAccount.toBase58()}`
+      `Revoked gatekeeper from network. Gatekeeper account: ${gatekeeperAccount?.toBase58()}`
     );
   }
 }

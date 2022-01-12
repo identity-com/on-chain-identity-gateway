@@ -75,7 +75,10 @@ export default class Issue extends Command {
     }
 
     const issuedToken = await service.issue(address).then((t) => t.confirm());
-
-    this.log(prettyPrint(issuedToken));
+    if (issuedToken) {
+      this.log(prettyPrint(issuedToken));
+    } else {
+      this.log("No gateway token found after issuance.");
+    }
   }
 }

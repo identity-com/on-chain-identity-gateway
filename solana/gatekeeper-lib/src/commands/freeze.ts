@@ -46,6 +46,6 @@ Frozen
       .freeze(gatewayToken)
       .then((t) => t.confirm());
 
-    this.log("Frozen token", frozenToken.publicKey.toBase58());
+    this.log("Frozen token", frozenToken?.publicKey.toBase58());
   }
 }
