@@ -74,7 +74,7 @@ export default class Issue extends Command {
       );
     }
 
-    const { gatewayToken: issuedToken } = await service.issue(address);
+    const issuedToken = await service.issue(address).then((t) => t.confirm());
 
     this.log(prettyPrint(issuedToken));
   }

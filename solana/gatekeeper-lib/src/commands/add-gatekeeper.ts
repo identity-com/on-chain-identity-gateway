@@ -2,7 +2,7 @@ import { Command, flags } from "@oclif/command";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
 import { airdropTo, getConnection } from "../util";
-import { GatekeeperNetworkService } from "../service/GatekeeperNetworkService";
+import { GatekeeperNetworkService } from "../service";
 import {
   clusterFlag,
   gatekeeperKeyFlag,
@@ -55,7 +55,9 @@ export default class AddGatekeeper extends Command {
       gatekeeperNetwork,
       gatekeeperNetwork
     );
-    const gatekeeperAccount = await networkService.addGatekeeper(gatekeeper);
+    const gatekeeperAccount = await networkService
+      .addGatekeeper(gatekeeper)
+      .then((t) => t.confirm());
     this.log(
       `Added gatekeeper to network. Gatekeeper account: ${gatekeeperAccount.toBase58()}`
     );

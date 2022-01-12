@@ -1,2 +1,2 @@
-export { GatekeeperService, GatewayTokenTxResult } from "./GatekeeperService";
+export { GatekeeperService } from "./GatekeeperService";
 export { GatekeeperNetworkService } from "./GatekeeperNetworkService";
