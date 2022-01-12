@@ -2,7 +2,6 @@ import {
   Cluster,
   clusterApiUrl,
   Commitment,
-  ConfirmOptions,
   Connection,
   Keypair,
   SendOptions,
@@ -83,7 +82,7 @@ export class SentTransaction {
 
 export class DataTransaction<T> {
   readonly sentTransaction: SentTransaction;
-  readonly data: T | (() => T | Promise<T>);
+  readonly data: T | (() => T | Promise<T>) | null;
 
   constructor(
     sentTransaction: SentTransaction,
@@ -100,7 +99,7 @@ export class DataTransaction<T> {
   async confirm(
     commitment?: Commitment,
     errorCallback?: (error: TransactionError) => void
-  ): Promise<T> {
+  ): Promise<T | null> {
     await this.sentTransaction.confirm(commitment, errorCallback);
     return this.data instanceof Function ? await this.data() : this.data;
   }

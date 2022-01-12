@@ -109,7 +109,7 @@ export class GatekeeperService {
     owner: PublicKey,
     seed?: Uint8Array,
     sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+  ): Promise<DataTransaction<GatewayToken | null>> {
     const gatewayTokenKey: PublicKey = await getGatewayTokenKeyForOwner(
       owner,
       this.gatekeeperNetwork
@@ -140,7 +140,7 @@ export class GatekeeperService {
     );
 
     return sentTransaction.withData(() =>
-      this.getGatewayTokenOrError(gatewayTokenKey)
+      getGatewayToken(this.connection, gatewayTokenKey)
     );
   }
 
@@ -152,7 +152,7 @@ export class GatekeeperService {
   issue(
     recipient: PublicKey,
     confirmOptions: ConfirmOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+  ): Promise<DataTransaction<GatewayToken | null>> {
     return this.issueVanilla(recipient, undefined, confirmOptions);
   }
 
