@@ -3,14 +3,14 @@ import {
   Connection,
   PublicKey,
   Transaction,
-  ConfirmOptions,
+  SendOptions,
 } from "@solana/web3.js";
 import {
   addGatekeeper,
   getGatekeeperAccountKey,
   revokeGatekeeper,
 } from "@identity.com/solana-gateway-ts";
-import { send } from "../util/connection";
+import { DataTransaction, send } from "../util/connection";
 
 /**
  * Encapsulates the actions performed by a gatekeeper network authority
@@ -23,7 +23,7 @@ export class GatekeeperNetworkService {
    * @param gatekeeperNetwork The network authority's key
    */
   constructor(
-    private connection: Connection,
+    private readonly connection: Connection,
     private payer: Keypair,
     private gatekeeperNetwork: Keypair
   ) {}
@@ -31,12 +31,12 @@ export class GatekeeperNetworkService {
   /**
    * Add a gatekeeper to the network
    * @param gatekeeperAuthority
-   * @param confirmOptions
+   * @param sendOptions
    */
   async addGatekeeper(
     gatekeeperAuthority: PublicKey,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<PublicKey> {
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<PublicKey>> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
@@ -51,21 +51,21 @@ export class GatekeeperNetworkService {
       )
     );
 
-    await send(
+    const sentTransaction = await send(
       this.connection,
       transaction,
-      confirmOptions,
+      sendOptions,
       this.payer,
       this.gatekeeperNetwork
     );
 
-    return gatekeeperAccount;
+    return sentTransaction.withData(gatekeeperAccount);
   }
 
   async revokeGatekeeper(
     gatekeeperAuthority: PublicKey,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<PublicKey> {
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<PublicKey>> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
@@ -80,15 +80,15 @@ export class GatekeeperNetworkService {
       )
     );
 
-    await send(
+    const sentTransaction = await send(
       this.connection,
       transaction,
-      confirmOptions,
+      sendOptions,
       this.payer,
       this.gatekeeperNetwork
     );
 
-    return gatekeeperAccount;
+    return sentTransaction.withData(gatekeeperAccount);
   }
 
   /**
