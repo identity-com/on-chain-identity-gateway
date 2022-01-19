@@ -1,5 +1,6 @@
 import chai from "chai";
 import chaiSubset from "chai-subset";
+import chaiAsPromised from "chai-as-promised";
 import { Keypair, Connection, PublicKey } from "@solana/web3.js";
 import sinon from "sinon";
 import * as connectionUtils from "../src/util/connection";
@@ -10,6 +11,7 @@ import * as GatewayTs from "@identity.com/solana-gateway-ts";
 import { DataTransaction, SentTransaction } from "../src/util/connection";
 
 chai.use(chaiSubset);
+chai.use(chaiAsPromised);
 const { expect } = chai;
 
 const sandbox = sinon.createSandbox();
@@ -104,17 +106,18 @@ describe("GatekeeperService", () => {
       });
       context("with the freeze blockchain call succeeding", () => {
         beforeEach(() => {
-          sandbox.stub(connectionUtils, "send").resolves();
+          stubSend({
+            ...activeGatewayToken,
+            state: State.FROZEN,
+          });
         });
         it("should resolve with a FROZEN token", async () => {
           const result = await gatekeeperService.freeze(
             activeGatewayToken.publicKey
           );
-          return expect(result).to.containSubset({
-            gatewayToken: {
-              state: State.FROZEN,
-              publicKey: activeGatewayToken.publicKey,
-            },
+          return expect(result.data).to.containSubset({
+            state: State.FROZEN,
+            publicKey: activeGatewayToken.publicKey,
           });
         });
       });
@@ -128,17 +131,18 @@ describe("GatekeeperService", () => {
       });
       context("with the unfreeze blockchain call succeeding", () => {
         beforeEach(() => {
-          sandbox.stub(connectionUtils, "send").resolves();
+          stubSend({
+            ...activeGatewayToken,
+            state: State.ACTIVE,
+          });
         });
         it("should resolve with a ACTIVE token", async () => {
           const result = await gatekeeperService.unfreeze(
             activeGatewayToken.publicKey
           );
-          return expect(result).to.containSubset({
-            gatewayToken: {
-              state: State.ACTIVE,
-              publicKey: activeGatewayToken.publicKey,
-            },
+          return expect(result.data).to.containSubset({
+            state: State.ACTIVE,
+            publicKey: activeGatewayToken.publicKey,
           });
         });
       });
@@ -152,17 +156,18 @@ describe("GatekeeperService", () => {
       });
       context("with the revoke blockchain call succeeding", () => {
         beforeEach(() => {
-          sandbox.stub(connectionUtils, "send").resolves();
+          stubSend({
+            ...activeGatewayToken,
+            state: State.REVOKED,
+          });
         });
         it("should resolve with a REVOKED token", async () => {
           const result = await gatekeeperService.revoke(
             revokedGatewayToken.publicKey
           );
-          return expect(result).to.containSubset({
-            gatewayToken: {
-              state: State.REVOKED,
-              publicKey: revokedGatewayToken.publicKey,
-            },
+          return expect(result.data).to.containSubset({
+            state: State.REVOKED,
+            publicKey: revokedGatewayToken.publicKey,
           });
         });
       });
@@ -195,20 +200,22 @@ describe("GatekeeperService", () => {
           ); // token starts with a low expiry time.
       });
       context("with the update blockchain call succeeding", () => {
+        const newExpiry = 123456;
         beforeEach(() => {
-          sandbox.stub(connectionUtils, "send").resolves();
+          stubSend({
+            ...activeGatewayToken,
+            expiryTime: newExpiry,
+          });
         });
         it("should resolve with the updated expiry token", async () => {
           const result = await gatekeeperService.updateExpiry(
             revokedGatewayToken.publicKey,
-            123456
+            newExpiry
           );
-          return expect(result).to.containSubset({
-            gatewayToken: {
-              state: State.ACTIVE,
-              publicKey: activeGatewayToken.publicKey,
-              expiryTime: 123456,
-            },
+          return expect(result.data).to.containSubset({
+            state: State.ACTIVE,
+            publicKey: activeGatewayToken.publicKey,
+            expiryTime: newExpiry,
           });
         });
       });
