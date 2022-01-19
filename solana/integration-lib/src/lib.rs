@@ -7,6 +7,8 @@ pub mod borsh;
 pub mod instruction;
 pub mod networks;
 pub mod state;
+
+#[cfg(test)]
 mod test_utils;
 
 use crate::instruction::expire_token;
@@ -208,7 +210,7 @@ impl Gateway {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::test_utils::{init, now};
+    use crate::test_utils::test_utils::{init, now};
     use std::{cell::RefCell, rc::Rc};
 
     fn expired_gateway_token() -> GatewayToken {

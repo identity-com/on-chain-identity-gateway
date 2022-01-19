@@ -591,7 +591,7 @@ impl CompatibleTransactionDetails for SimpleTransactionDetails {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::test_utils::{init, now};
+    use crate::test_utils::test_utils::{init, now};
     use rand::{CryptoRng, Rng, RngCore, SeedableRng};
     use rand_chacha::ChaCha20Rng;
     use sol_did::state::{SolData, VerificationMethod};
