@@ -84,7 +84,6 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="index.html#DeepPartial" class="tsd-kind-icon">Deep<wbr>Partial</a></li>
 								<li class="tsd-kind-type-alias"><a href="index.html#ProgramAccountResponse" class="tsd-kind-icon">Program<wbr>Account<wbr>Response</a></li>
-								<li class="tsd-kind-type-alias"><a href="index.html#RetryConfig" class="tsd-kind-icon">Retry<wbr>Config</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -98,7 +97,6 @@
 								<li class="tsd-kind-variable"><a href="index.html#SOLANA_TIMEOUT_CONFIRMED" class="tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>CONFIRMED</a></li>
 								<li class="tsd-kind-variable"><a href="index.html#SOLANA_TIMEOUT_FINALIZED" class="tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>FINALIZED</a></li>
 								<li class="tsd-kind-variable"><a href="index.html#SOLANA_TIMEOUT_PROCESSED" class="tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>PROCESSED</a></li>
-								<li class="tsd-kind-variable"><a href="index.html#defaultRetryConfig" class="tsd-kind-icon">default<wbr>Retry<wbr>Config</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -115,11 +113,9 @@
 								<li class="tsd-kind-function"><a href="index.html#getGatewayTokenKeyForOwner" class="tsd-kind-icon">get<wbr>Gateway<wbr>Token<wbr>Key<wbr>For<wbr>Owner</a></li>
 								<li class="tsd-kind-function"><a href="index.html#issueVanilla" class="tsd-kind-icon">issue<wbr>Vanilla</a></li>
 								<li class="tsd-kind-function"><a href="index.html#onGatewayTokenChange" class="tsd-kind-icon">on<wbr>Gateway<wbr>Token<wbr>Change</a></li>
-								<li class="tsd-kind-function"><a href="index.html#proxyConnectionWithRetry" class="tsd-kind-icon">proxy<wbr>Connection<wbr>With<wbr>Retry</a></li>
 								<li class="tsd-kind-function"><a href="index.html#removeAccountChangeListener" class="tsd-kind-icon">remove<wbr>Account<wbr>Change<wbr>Listener</a></li>
 								<li class="tsd-kind-function"><a href="index.html#revoke" class="tsd-kind-icon">revoke</a></li>
 								<li class="tsd-kind-function"><a href="index.html#revokeGatekeeper" class="tsd-kind-icon">revoke<wbr>Gatekeeper</a></li>
-								<li class="tsd-kind-function"><a href="index.html#runFunctionWithRetry" class="tsd-kind-icon">run<wbr>Function<wbr>With<wbr>Retry</a></li>
 								<li class="tsd-kind-function"><a href="index.html#unfreeze" class="tsd-kind-icon">unfreeze</a></li>
 								<li class="tsd-kind-function"><a href="index.html#updateExpiry" class="tsd-kind-icon">update<wbr>Expiry</a></li>
 							</ul>
@@ -135,7 +131,7 @@
 					<div class="tsd-signature tsd-kind-icon">Deep<wbr>Partial&lt;T&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span><span class="tsd-signature-symbol">[ </span><span class="tsd-signature-type">P</span><span class="tsd-signature-symbol"> in </span><span class="tsd-signature-symbol">keyof </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">: </span><a href="index.html#DeepPartial" class="tsd-signature-type" data-tsd-kind="Type alias">DeepPartial</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">P</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/types/index.ts#L5">types/index.ts:5</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/types/index.ts#L5">types/index.ts:5</a></li>
 						</ul>
 					</aside>
 					<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -151,7 +147,7 @@
 					<div class="tsd-signature tsd-kind-icon">Program<wbr>Account<wbr>Response<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AccountInfo</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>pubkey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/types/index.ts#L62">types/index.ts:62</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/types/index.ts#L62">types/index.ts:62</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -166,41 +162,6 @@
 						</ul>
 					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias">
-					<a name="RetryConfig" class="tsd-anchor"></a>
-					<h3>Retry<wbr>Config</h3>
-					<div class="tsd-signature tsd-kind-icon">Retry<wbr>Config<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>exponentialFactor<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>retryCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>timeouts<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>confirmed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>finalized<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>processed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> }</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L33">lib/util.ts:33</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter">
-								<h5>exponential<wbr>Factor<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
-							</li>
-							<li class="tsd-parameter">
-								<h5>retry<wbr>Count<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
-							</li>
-							<li class="tsd-parameter">
-								<h5>timeouts<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>confirmed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>finalized<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>processed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></h5>
-								<ul class="tsd-parameters">
-									<li class="tsd-parameter">
-										<h5>confirmed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
-									</li>
-									<li class="tsd-parameter">
-										<h5>finalized<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
-									</li>
-									<li class="tsd-parameter">
-										<h5>processed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</div>
-				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Variables</h2>
@@ -210,7 +171,7 @@
 					<div class="tsd-signature tsd-kind-icon">DEFAULT_<wbr>SOLANA_<wbr>RETRIES<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 3</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/constants.ts#L11">lib/constants.ts:11</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/constants.ts#L11">lib/constants.ts:11</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -220,7 +181,7 @@
 					<div class="tsd-signature tsd-kind-icon">GATEKEEPER_<wbr>NONCE_<wbr>SEED_<wbr>STRING<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;gatekeeper&quot;</span><span class="tsd-signature-symbol"> = &quot;gatekeeper&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/constants.ts#L7">lib/constants.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/constants.ts#L7">lib/constants.ts:7</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -230,7 +191,7 @@
 					<div class="tsd-signature tsd-kind-icon">GATEWAY_<wbr>TOKEN_<wbr>ADDRESS_<wbr>SEED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;gateway&quot;</span><span class="tsd-signature-symbol"> = &quot;gateway&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/constants.ts#L8">lib/constants.ts:8</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/constants.ts#L8">lib/constants.ts:8</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -240,7 +201,7 @@
 					<div class="tsd-signature tsd-kind-icon">PROGRAM_<wbr>ID<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol"> = ...</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/constants.ts#L4">lib/constants.ts:4</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/constants.ts#L4">lib/constants.ts:4</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -250,7 +211,7 @@
 					<div class="tsd-signature tsd-kind-icon">SOLANA_<wbr>COMMITMENT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Commitment</span><span class="tsd-signature-symbol"> = &quot;confirmed&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/constants.ts#L10">lib/constants.ts:10</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/constants.ts#L10">lib/constants.ts:10</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -260,7 +221,7 @@
 					<div class="tsd-signature tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>CONFIRMED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">7000</span><span class="tsd-signature-symbol"> = 7000</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/constants.ts#L14">lib/constants.ts:14</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/constants.ts#L14">lib/constants.ts:14</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -270,7 +231,7 @@
 					<div class="tsd-signature tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>FINALIZED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">10000</span><span class="tsd-signature-symbol"> = 10000</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/constants.ts#L15">lib/constants.ts:15</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/constants.ts#L15">lib/constants.ts:15</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -280,44 +241,9 @@
 					<div class="tsd-signature tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>PROCESSED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">3000</span><span class="tsd-signature-symbol"> = 3000</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/constants.ts#L13">lib/constants.ts:13</a></li>
+							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/constants.ts#L13">lib/constants.ts:13</a></li>
 						</ul>
 					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable">
-					<a name="defaultRetryConfig" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> default<wbr>Retry<wbr>Config</h3>
-					<div class="tsd-signature tsd-kind-icon">default<wbr>Retry<wbr>Config<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>exponentialFactor<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>retryCount<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>timeouts<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>confirmed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>finalized<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>processed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = ...</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L43">lib/util.ts:43</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter">
-								<h5>exponential<wbr>Factor<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
-							</li>
-							<li class="tsd-parameter">
-								<h5>retry<wbr>Count<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
-							</li>
-							<li class="tsd-parameter">
-								<h5>timeouts<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>confirmed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>finalized<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>processed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></h5>
-								<ul class="tsd-parameters">
-									<li class="tsd-parameter">
-										<h5>confirmed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
-									</li>
-									<li class="tsd-parameter">
-										<h5>finalized<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
-									</li>
-									<li class="tsd-parameter">
-										<h5>processed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
@@ -332,7 +258,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/instruction.ts#L101">lib/instruction.ts:101</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/instruction.ts#L101">lib/instruction.ts:101</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -382,7 +308,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L269">lib/util.ts:269</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/util.ts#L85">lib/util.ts:85</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -408,7 +334,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L336">lib/util.ts:336</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/util.ts#L152">lib/util.ts:152</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -452,7 +378,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L291">lib/util.ts:291</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/util.ts#L107">lib/util.ts:107</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -502,7 +428,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/instruction.ts#L235">lib/instruction.ts:235</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/instruction.ts#L235">lib/instruction.ts:235</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -546,7 +472,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L428">lib/util.ts:428</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/util.ts#L244">lib/util.ts:244</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -589,7 +515,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L206">lib/util.ts:206</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/util.ts#L22">lib/util.ts:22</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -626,7 +552,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L405">lib/util.ts:405</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/util.ts#L221">lib/util.ts:221</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -663,7 +589,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L227">lib/util.ts:227</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/util.ts#L43">lib/util.ts:43</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -706,7 +632,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/instruction.ts#L165">lib/instruction.ts:165</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/instruction.ts#L165">lib/instruction.ts:165</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -781,7 +707,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L370">lib/util.ts:370</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/util.ts#L186">lib/util.ts:186</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -840,32 +766,6 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="proxyConnectionWithRetry" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> proxy<wbr>Connection<wbr>With<wbr>Retry</h3>
-					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">proxy<wbr>Connection<wbr>With<wbr>Retry<span class="tsd-signature-symbol">(</span>originalConnection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, customRetryConfig<span class="tsd-signature-symbol">?: </span><a href="index.html#DeepPartial" class="tsd-signature-type" data-tsd-kind="Type alias">DeepPartial</a><span class="tsd-signature-symbol">&lt;</span><a href="index.html#RetryConfig" class="tsd-signature-type" data-tsd-kind="Type alias">RetryConfig</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L116">lib/util.ts:116</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>originalConnection: <span class="tsd-signature-type">Connection</span></h5>
-								</li>
-								<li>
-									<h5>customRetryConfig: <a href="index.html#DeepPartial" class="tsd-signature-type" data-tsd-kind="Type alias">DeepPartial</a><span class="tsd-signature-symbol">&lt;</span><a href="index.html#RetryConfig" class="tsd-signature-type" data-tsd-kind="Type alias">RetryConfig</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Connection</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function">
 					<a name="removeAccountChangeListener" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagConst">Const</span> remove<wbr>Account<wbr>Change<wbr>Listener</h3>
 					<ul class="tsd-signatures tsd-kind-function">
@@ -875,7 +775,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L395">lib/util.ts:395</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/util.ts#L211">lib/util.ts:211</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -912,7 +812,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/instruction.ts#L210">lib/instruction.ts:210</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/instruction.ts#L210">lib/instruction.ts:210</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -956,7 +856,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/instruction.ts#L132">lib/instruction.ts:132</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/instruction.ts#L132">lib/instruction.ts:132</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -997,47 +897,6 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="runFunctionWithRetry" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> run<wbr>Function<wbr>With<wbr>Retry</h3>
-					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">run<wbr>Function<wbr>With<wbr>Retry<span class="tsd-signature-symbol">(</span>fn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span>, commitment<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Commitment</span>, customRetryConfig<span class="tsd-signature-symbol">: </span><a href="index.html#DeepPartial" class="tsd-signature-type" data-tsd-kind="Type alias">DeepPartial</a><span class="tsd-signature-symbol">&lt;</span><a href="index.html#RetryConfig" class="tsd-signature-type" data-tsd-kind="Type alias">RetryConfig</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/util.ts#L53">lib/util.ts:53</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>fn: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h5>
-									<ul class="tsd-parameters">
-										<li class="tsd-parameter-signature">
-											<ul class="tsd-signatures tsd-kind-type-literal">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></li>
-											</ul>
-											<ul class="tsd-descriptions">
-												<li class="tsd-description">
-													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h4>
-												</li>
-											</ul>
-										</li>
-									</ul>
-								</li>
-								<li>
-									<h5>commitment: <span class="tsd-signature-type">Commitment</span></h5>
-								</li>
-								<li>
-									<h5>customRetryConfig: <a href="index.html#DeepPartial" class="tsd-signature-type" data-tsd-kind="Type alias">DeepPartial</a><span class="tsd-signature-symbol">&lt;</span><a href="index.html#RetryConfig" class="tsd-signature-type" data-tsd-kind="Type alias">RetryConfig</a><span class="tsd-signature-symbol">&gt;</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function">
 					<a name="unfreeze" class="tsd-anchor"></a>
 					<h3>unfreeze</h3>
 					<ul class="tsd-signatures tsd-kind-function">
@@ -1047,7 +906,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/instruction.ts#L260">lib/instruction.ts:260</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/instruction.ts#L260">lib/instruction.ts:260</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1091,7 +950,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5125b2d/solana/gateway-ts/src/lib/instruction.ts#L286">lib/instruction.ts:286</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9b32e38/solana/gateway-ts/src/lib/instruction.ts#L286">lib/instruction.ts:286</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1173,9 +1032,6 @@
 					<li class=" tsd-kind-type-alias">
 						<a href="index.html#ProgramAccountResponse" class="tsd-kind-icon">Program<wbr>Account<wbr>Response</a>
 					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="index.html#RetryConfig" class="tsd-kind-icon">Retry<wbr>Config</a>
-					</li>
 					<li class=" tsd-kind-variable">
 						<a href="index.html#DEFAULT_SOLANA_RETRIES" class="tsd-kind-icon">DEFAULT_<wbr>SOLANA_<wbr>RETRIES</a>
 					</li>
@@ -1199,9 +1055,6 @@
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="index.html#SOLANA_TIMEOUT_PROCESSED" class="tsd-kind-icon">SOLANA_<wbr>TIMEOUT_<wbr>PROCESSED</a>
-					</li>
-					<li class=" tsd-kind-variable">
-						<a href="index.html#defaultRetryConfig" class="tsd-kind-icon">default<wbr>Retry<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="index.html#addGatekeeper" class="tsd-kind-icon">add<wbr>Gatekeeper</a>
@@ -1237,9 +1090,6 @@
 						<a href="index.html#onGatewayTokenChange" class="tsd-kind-icon">on<wbr>Gateway<wbr>Token<wbr>Change</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="index.html#proxyConnectionWithRetry" class="tsd-kind-icon">proxy<wbr>Connection<wbr>With<wbr>Retry</a>
-					</li>
-					<li class=" tsd-kind-function">
 						<a href="index.html#removeAccountChangeListener" class="tsd-kind-icon">remove<wbr>Account<wbr>Change<wbr>Listener</a>
 					</li>
 					<li class=" tsd-kind-function">
@@ -1247,9 +1097,6 @@
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="index.html#revokeGatekeeper" class="tsd-kind-icon">revoke<wbr>Gatekeeper</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="index.html#runFunctionWithRetry" class="tsd-kind-icon">run<wbr>Function<wbr>With<wbr>Retry</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="index.html#unfreeze" class="tsd-kind-icon">unfreeze</a>

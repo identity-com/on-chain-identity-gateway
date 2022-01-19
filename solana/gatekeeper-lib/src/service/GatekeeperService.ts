@@ -3,7 +3,9 @@ import {
   Connection,
   Keypair,
   PublicKey,
+  SendOptions,
   Transaction,
+  TransactionInstruction,
 } from "@solana/web3.js";
 import {
   freeze,
@@ -16,15 +18,9 @@ import {
   updateExpiry,
   findGatewayToken,
   getGatekeeperAccountKey as solanaGetGatekeeperAccountKey,
-  State,
-  proxyConnectionWithRetry,
-  RetryConfig,
-  defaultRetryConfig,
-  DeepPartial,
 } from "@identity.com/solana-gateway-ts";
 
-import { send } from "../util/connection";
-import { PROGRAM_ID } from "../util/constants";
+import { DataTransaction, send } from "../util/connection";
 
 /**
  * Global default configuration for the gatekeeper
@@ -73,20 +69,20 @@ export class GatekeeperService {
    * @param gatekeeperNetwork The network that the gatekeeper belongs to
    * @param gatekeeperAuthority The gatekeeper's key
    * @param config Global default configuration for the gatekeeper
-   * @param customRetryConfig RetryConfig including retry count and timeouts. All values have defaults.
    */
   constructor(
-    private connection: Connection,
+    private readonly connection: Connection,
     private payer: Keypair,
     private gatekeeperNetwork: PublicKey,
     private gatekeeperAuthority: Keypair,
-    private config: GatekeeperConfig = {},
-    customRetryConfig: DeepPartial<RetryConfig> = defaultRetryConfig
-  ) {
-    this.connection = proxyConnectionWithRetry(connection, {
-      ...defaultRetryConfig,
-      ...customRetryConfig,
-    });
+    private config: GatekeeperConfig = {}
+  ) {}
+
+  private gatekeeperAccountKey() {
+    return getGatekeeperAccountKey(
+      this.gatekeeperAuthority.publicKey,
+      this.gatekeeperNetwork
+    );
   }
 
   private getDefaultExpireTime(): number | undefined {
@@ -109,39 +105,16 @@ export class GatekeeperService {
     );
   }
 
-  private async checkTokenAfterAction(
-    gatewayTokenKey: PublicKey,
-    originalError: any,
-    predicate: (token: GatewayToken | null) => boolean
-  ) {
-    // The tx may have succeeded but the blockchain call timed out. Check on-chain.
-    const onChainToken: GatewayToken | null = await getGatewayToken(
-      this.connection,
-      gatewayTokenKey
-    );
-    if (predicate(onChainToken)) {
-      console.log(
-        "Send failed in GatekeeperService, but the on-chain token is already in the desired state. Returning success."
-      );
-    } else {
-      // Token isn't in the desired state. Re-throw the original error.
-      throw originalError;
-    }
-  }
-
   private async issueVanilla(
     owner: PublicKey,
     seed?: Uint8Array,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<GatewayToken> {
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<GatewayToken | null>> {
     const gatewayTokenKey: PublicKey = await getGatewayTokenKeyForOwner(
       owner,
       this.gatekeeperNetwork
     );
-    const gatekeeperAccount: PublicKey = await getGatekeeperAccountKey(
-      this.gatekeeperAuthority.publicKey,
-      this.gatekeeperNetwork
-    );
+    const gatekeeperAccount = await this.gatekeeperAccountKey();
 
     const expireTime = this.getDefaultExpireTime();
 
@@ -158,159 +131,114 @@ export class GatekeeperService {
       )
     );
 
-    try {
-      await send(
-        this.connection,
-        transaction,
-        confirmOptions,
-        this.payer,
-        this.gatekeeperAuthority
-      );
-    } catch (err) {
-      const predicate = (token: GatewayToken | null) =>
-        !!token && token.state === State.ACTIVE;
-      await this.checkTokenAfterAction(gatewayTokenKey, err, predicate);
-    }
+    const sentTransaction = await send(
+      this.connection,
+      transaction,
+      sendOptions,
+      this.payer,
+      this.gatekeeperAuthority
+    );
 
-    return new GatewayToken(
-      gatekeeperAccount,
-      this.gatekeeperNetwork,
-      owner,
-      State.ACTIVE,
-      gatewayTokenKey,
-      PROGRAM_ID,
-      expireTime
+    return sentTransaction.withData(() =>
+      getGatewayToken(this.connection, gatewayTokenKey)
     );
   }
 
   /**
    * Issue a token to this recipient
    * @param recipient
+   * @param confirmOptions
    */
   issue(
     recipient: PublicKey,
     confirmOptions: ConfirmOptions = {}
-  ): Promise<GatewayToken> {
+  ): Promise<DataTransaction<GatewayToken | null>> {
     return this.issueVanilla(recipient, undefined, confirmOptions);
+  }
+
+  /**
+   * Updates a GatewayToken by building a transaction with the given txBuilder function,
+   * and returning the existing token with the given updated state value and (optional) expiryTime.
+   * @param gatewayTokenKey
+   * @param instruction
+   * @param sendOptions
+   */
+  private async updateToken(
+    gatewayTokenKey: PublicKey,
+    instruction: TransactionInstruction,
+    sendOptions: SendOptions
+  ): Promise<DataTransaction<GatewayToken>> {
+    const transaction = new Transaction().add(instruction);
+
+    const sentTransaction = await send(
+      this.connection,
+      transaction,
+      sendOptions,
+      this.payer,
+      this.gatekeeperAuthority
+    );
+
+    return sentTransaction.withData(() =>
+      this.getGatewayTokenOrError(gatewayTokenKey)
+    );
   }
 
   /**
    * Revoke the gateway token. The token must have been issued by a gatekeeper in the same network
    * @param gatewayTokenKey
+   * @param sendOptions
    */
   async revoke(
     gatewayTokenKey: PublicKey,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<GatewayToken> {
-    const existingToken = await this.getGatewayTokenOrError(gatewayTokenKey);
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<GatewayToken>> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
     );
-    const transaction = new Transaction().add(
+    return this.updateToken(
+      gatewayTokenKey,
       revoke(
         gatewayTokenKey,
         this.gatekeeperAuthority.publicKey,
         gatekeeperAccount
-      )
+      ),
+      sendOptions
     );
-
-    try {
-      await send(
-        this.connection,
-        transaction,
-        confirmOptions,
-        this.payer,
-        this.gatekeeperAuthority
-      );
-    } catch (err) {
-      const predicate = (token: GatewayToken | null) =>
-        !!token && token.state === State.REVOKED;
-      await this.checkTokenAfterAction(gatewayTokenKey, err, predicate);
-    }
-
-    return existingToken.update({ state: State.REVOKED });
   }
 
   /**
    * Freeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
+   * @param sendOptions
    */
   async freeze(
     gatewayTokenKey: PublicKey,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<GatewayToken> {
-    const existingToken = await this.getGatewayTokenOrError(gatewayTokenKey);
-
-    const gatekeeperAccount = await getGatekeeperAccountKey(
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<GatewayToken>> {
+    const instruction: TransactionInstruction = freeze(
+      gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
-      this.gatekeeperNetwork
+      await this.gatekeeperAccountKey()
     );
-
-    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
-    const transaction = new Transaction().add(
-      freeze(
-        gatewayTokenKey,
-        this.gatekeeperAuthority.publicKey,
-        gatekeeperAccount
-      )
-    );
-
-    try {
-      await send(
-        this.connection,
-        transaction,
-        confirmOptions,
-        this.payer,
-        this.gatekeeperAuthority
-      );
-    } catch (err) {
-      // The tx may have succeeded but the blockchain call timed out. Check on-chain.
-      const predicate = (token: GatewayToken | null) =>
-        !!token && token.state === State.FROZEN;
-      await this.checkTokenAfterAction(gatewayTokenKey, err, predicate);
-    }
-    return existingToken.update({ state: State.FROZEN });
+    return this.updateToken(gatewayTokenKey, instruction, sendOptions);
   }
 
   /**
    * Unfreeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
+   * @param sendOptions
    */
   async unfreeze(
     gatewayTokenKey: PublicKey,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<GatewayToken> {
-    const existingToken = await this.getGatewayTokenOrError(gatewayTokenKey);
-
-    const gatekeeperAccount = await getGatekeeperAccountKey(
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<GatewayToken>> {
+    const instruction: TransactionInstruction = unfreeze(
+      gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
-      this.gatekeeperNetwork
+      await this.gatekeeperAccountKey()
     );
-    console.log("gatekeeperAccount", gatekeeperAccount.toBase58());
-    const transaction = new Transaction().add(
-      unfreeze(
-        gatewayTokenKey,
-        this.gatekeeperAuthority.publicKey,
-        gatekeeperAccount
-      )
-    );
-
-    try {
-      await send(
-        this.connection,
-        transaction,
-        confirmOptions,
-        this.payer,
-        this.gatekeeperAuthority
-      );
-    } catch (err) {
-      const predicate = (token: GatewayToken | null) =>
-        !!token && token.state === State.ACTIVE;
-      await this.checkTokenAfterAction(gatewayTokenKey, err, predicate);
-    }
-
-    return existingToken.update({ state: State.ACTIVE });
+    return this.updateToken(gatewayTokenKey, instruction, sendOptions);
   }
 
   /**
@@ -327,47 +255,20 @@ export class GatekeeperService {
    * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
    * @param expireTime
+   * @param sendOptions
    */
   async updateExpiry(
     gatewayTokenKey: PublicKey,
     expireTime: number,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<GatewayToken> {
-    const existingToken = await this.getGatewayTokenOrError(gatewayTokenKey);
-
-    const gatekeeperAccount = await getGatekeeperAccountKey(
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<GatewayToken>> {
+    const instruction: TransactionInstruction = updateExpiry(
+      gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
-      this.gatekeeperNetwork
+      await this.gatekeeperAccountKey(),
+      expireTime
     );
-    const transaction = new Transaction().add(
-      updateExpiry(
-        gatewayTokenKey,
-        this.gatekeeperAuthority.publicKey,
-        gatekeeperAccount,
-        expireTime
-      )
-    );
-
-    try {
-      await send(
-        this.connection,
-        transaction,
-        confirmOptions,
-        this.payer,
-        this.gatekeeperAuthority
-      );
-    } catch (err) {
-      const predicate = (token: GatewayToken | null) =>
-        !!token &&
-        token.state === State.ACTIVE &&
-        token.expiryTime === expireTime;
-      await this.checkTokenAfterAction(gatewayTokenKey, err, predicate);
-    }
-
-    return existingToken.update({
-      state: State.ACTIVE,
-      expiryTime: expireTime,
-    });
+    return this.updateToken(gatewayTokenKey, instruction, sendOptions);
   }
 
   // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key
