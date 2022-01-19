@@ -5,7 +5,8 @@ import sinon from "sinon";
 import * as connectionUtils from "../src/util/connection";
 import * as gatekeeperServiceModule from "../src/service/GatekeeperService";
 import { PROGRAM_ID } from "../src/util/constants";
-import { Active, GatewayToken, State } from "@identity.com/solana-gateway-ts";
+import { GatewayToken, State } from "@identity.com/solana-gateway-ts";
+import * as GatewayTs from "@identity.com/solana-gateway-ts";
 
 chai.use(chaiSubset);
 const { expect } = chai;
@@ -22,8 +23,8 @@ describe("GatekeeperService", () => {
   let activeGatewayToken: GatewayToken;
   let frozenGatewayToken: GatewayToken;
   let revokedGatewayToken: GatewayToken;
-  let gatewayTokenKey: PublicKey;
-  let gatekeeperAccountKey: PublicKey;
+  let gatewayTokenAddress: PublicKey;
+  let gatekeeperAccountAddress: PublicKey;
 
   afterEach(sandbox.restore);
 
@@ -40,15 +41,15 @@ describe("GatekeeperService", () => {
       gatekeeperAuthority
     );
 
-    gatewayTokenKey = Keypair.generate().publicKey;
-    gatekeeperAccountKey = Keypair.generate().publicKey;
+    gatewayTokenAddress = Keypair.generate().publicKey;
+    gatekeeperAccountAddress = Keypair.generate().publicKey;
 
     activeGatewayToken = new GatewayToken(
       Keypair.generate().publicKey, // Gatekeeper account
       gatekeeperNetwork.publicKey,
       tokenOwner.publicKey,
       State.ACTIVE,
-      gatewayTokenKey,
+      gatewayTokenAddress,
       PROGRAM_ID
     );
     frozenGatewayToken = activeGatewayToken.update({ state: State.FROZEN });
@@ -57,11 +58,11 @@ describe("GatekeeperService", () => {
   context("issue", () => {
     beforeEach(() => {
       sandbox
-        .stub(gatekeeperServiceModule, "getGatewayTokenKeyForOwner")
-        .resolves(gatewayTokenKey);
+        .stub(GatewayTs, "getGatewayTokenAddressForOwnerAndGatekeeperNetwork")
+        .resolves(gatewayTokenAddress);
       sandbox
-        .stub(gatekeeperServiceModule, "getGatekeeperAccountKey")
-        .resolves(gatekeeperAccountKey);
+        .stub(GatewayTs, "getGatekeeperAccountAddress")
+        .resolves(gatekeeperAccountAddress);
     });
     context("with send resolving success", () => {
       beforeEach(() => {
@@ -91,11 +92,9 @@ describe("GatekeeperService", () => {
   context("freeze", () => {
     context("with a previously Active token existing on-chain", () => {
       beforeEach(() => {
-        sandbox
-          .stub(gatekeeperServiceModule, "getGatewayToken")
-          .resolves(activeGatewayToken);
+        sandbox.stub(GatewayTs, "getGatewayToken").resolves(activeGatewayToken);
       });
-      context("with the freeze blochchain call succeeding", () => {
+      context("with the freeze blockchain call succeeding", () => {
         beforeEach(() => {
           sandbox.stub(connectionUtils, "send").resolves();
         });
@@ -117,11 +116,9 @@ describe("GatekeeperService", () => {
   context("unfreeze", () => {
     context("with a previously Frozen token existing on-chain", () => {
       beforeEach(() => {
-        sandbox
-          .stub(gatekeeperServiceModule, "getGatewayToken")
-          .resolves(frozenGatewayToken);
+        sandbox.stub(GatewayTs, "getGatewayToken").resolves(frozenGatewayToken);
       });
-      context("with the unfreeze blochchain call succeeding", () => {
+      context("with the unfreeze blockchain call succeeding", () => {
         beforeEach(() => {
           sandbox.stub(connectionUtils, "send").resolves();
         });
@@ -143,11 +140,9 @@ describe("GatekeeperService", () => {
   context("revoke", () => {
     context("with a previously Active token existing on-chain", () => {
       beforeEach(() => {
-        sandbox
-          .stub(gatekeeperServiceModule, "getGatewayToken")
-          .resolves(activeGatewayToken);
+        sandbox.stub(GatewayTs, "getGatewayToken").resolves(activeGatewayToken);
       });
-      context("with the revoke blochchain call succeeding", () => {
+      context("with the revoke blockchain call succeeding", () => {
         beforeEach(() => {
           sandbox.stub(connectionUtils, "send").resolves();
         });
@@ -163,11 +158,11 @@ describe("GatekeeperService", () => {
           });
         });
       });
-      context("with the revoke blochchain call failing", () => {
+      context("with the revoke blockchain call failing", () => {
         beforeEach(() => {
           sandbox.restore();
           sandbox
-            .stub(gatekeeperServiceModule, "getGatewayToken")
+            .stub(GatewayTs, "getGatewayToken")
             .resolves(activeGatewayToken);
           sandbox
             .stub(connectionUtils, "send")
@@ -186,12 +181,12 @@ describe("GatekeeperService", () => {
     context("with a previously Active token existing on-chain", () => {
       beforeEach(() => {
         sandbox
-          .stub(gatekeeperServiceModule, "getGatewayToken")
+          .stub(GatewayTs, "getGatewayToken")
           .resolves(
             activeGatewayToken.update({ state: State.ACTIVE, expiryTime: 100 })
           ); // token starts with a low expiry time.
       });
-      context("with the update blochchain call succeeding", () => {
+      context("with the update blockchain call succeeding", () => {
         beforeEach(() => {
           sandbox.stub(connectionUtils, "send").resolves();
         });
@@ -209,13 +204,13 @@ describe("GatekeeperService", () => {
           });
         });
       });
-      context("with the update blochchain call failing", () => {
+      context("with the update blockchain call failing", () => {
         beforeEach(() => {
           sandbox.restore();
           sandbox
             .stub(connectionUtils, "send")
             .rejects(new Error("Transaction simulation failed"));
-          sandbox.stub(gatekeeperServiceModule, "getGatewayToken").resolves(
+          sandbox.stub(GatewayTs, "getGatewayToken").resolves(
             activeGatewayToken.update({
               state: State.ACTIVE,
               expiryTime: 100,
