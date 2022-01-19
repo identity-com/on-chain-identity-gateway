@@ -1,7 +1,7 @@
-use std::sync::Once;
-use std::time::{SystemTime, UNIX_EPOCH};
 use solana_program::clock::{Clock, UnixTimestamp};
 use solana_program::program_stubs;
+use std::sync::Once;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 static INIT_TESTS: Once = Once::new();
 

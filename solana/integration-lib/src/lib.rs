@@ -34,10 +34,10 @@ pub struct VerificationOptions {
     check_expiry: bool,
     /// Number of seconds to allow a token to have expired by, for it still to be counted as active.
     /// Defaults to 0. Must be set if check_expiry is true.
-    expiry_tolerance_seconds: Option<u32>
+    expiry_tolerance_seconds: Option<u32>,
 }
 
-pub const DEFAULT_VERIFICATION_OPTIONS:VerificationOptions = VerificationOptions {
+pub const DEFAULT_VERIFICATION_OPTIONS: VerificationOptions = VerificationOptions {
     check_expiry: true,
     expiry_tolerance_seconds: Some(0),
 };
@@ -118,8 +118,10 @@ impl Gateway {
             msg!("Gateway token is invalid. It has either been revoked or frozen");
             return Err(GatewayError::TokenRevoked);
         }
-        
-        if verification_options.check_expiry && gateway_token.has_expired(verification_options.expiry_tolerance_seconds.unwrap_or(0)) {
+
+        if verification_options.check_expiry
+            && gateway_token.has_expired(verification_options.expiry_tolerance_seconds.unwrap_or(0))
+        {
             msg!("Gateway token has expired");
             return Err(GatewayError::TokenExpired);
         }
@@ -206,8 +208,8 @@ impl Gateway {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use std::{cell::RefCell, rc::Rc};
     use crate::test_utils::{init, now};
+    use std::{cell::RefCell, rc::Rc};
 
     fn expired_gateway_token() -> GatewayToken {
         let mut token = GatewayToken {
@@ -218,7 +220,7 @@ pub mod tests {
             gatekeeper_network: Default::default(),
             issuing_gatekeeper: Default::default(),
             state: Default::default(),
-            expire_time: None
+            expire_time: None,
         };
         token.set_expire_time(0); // 1.1.1970 is definitely in the past
         token
@@ -241,7 +243,7 @@ pub mod tests {
             &account_info,
             &Default::default(),
             &Default::default(),
-            None
+            None,
         );
 
         assert!(matches!(
@@ -259,10 +261,13 @@ pub mod tests {
             &Default::default(),
             &Default::default(),
             0,
-            Some(VerificationOptions { check_expiry: false, ..Default::default() })
+            Some(VerificationOptions {
+                check_expiry: false,
+                ..Default::default()
+            }),
         );
 
-        assert!(matches!(verify_result,Ok(())))
+        assert!(matches!(verify_result, Ok(())))
     }
 
     #[test]
@@ -274,13 +279,10 @@ pub mod tests {
             &Default::default(),
             &Default::default(),
             0,
-            None
+            None,
         );
 
-        assert!(matches!(
-            verify_result,
-            Err(GatewayError::TokenExpired)
-        ))
+        assert!(matches!(verify_result, Err(GatewayError::TokenExpired)))
     }
 
     #[test]
@@ -293,9 +295,12 @@ pub mod tests {
             &Default::default(),
             &Default::default(),
             0,
-            Some(VerificationOptions { check_expiry: true, expiry_tolerance_seconds: Some(60) })
+            Some(VerificationOptions {
+                check_expiry: true,
+                expiry_tolerance_seconds: Some(60),
+            }),
         );
 
-        assert!(matches!(verify_result,Ok(())))
+        assert!(matches!(verify_result, Ok(())))
     }
 }

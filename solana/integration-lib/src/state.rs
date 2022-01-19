@@ -3,7 +3,6 @@ use crate::networks::GATEWAY_NETWORKS;
 use crate::Gateway;
 use std::convert::TryInto;
 use std::mem::{size_of, transmute};
-use solana_program::msg;
 use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
     sol_did::validate_owner,
@@ -478,7 +477,7 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess {
     fn has_expired(&self, tolerance: u32) -> bool {
         self.has_feature(Feature::Expirable) && before_now(self.expire_time().unwrap(), tolerance)
     }
-    
+
     /// Checks if the exotic gateway token is in a valid state (not inactive or expired)
     /// Note, this does not check association to any wallet.
     fn is_valid_exotic(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
@@ -592,17 +591,14 @@ impl CompatibleTransactionDetails for SimpleTransactionDetails {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use crate::test_utils::{init, now};
     use rand::{CryptoRng, Rng, RngCore, SeedableRng};
     use rand_chacha::ChaCha20Rng;
     use sol_did::state::{SolData, VerificationMethod};
     use solana_sdk::signature::{Keypair, Signer};
     use std::array::IntoIter;
     use std::iter::FusedIterator;
-    use std::{
-        cell::RefCell,
-        rc::Rc,
-    };
-    use crate::test_utils::{init, now};
+    use std::{cell::RefCell, rc::Rc};
 
     fn stub_vanilla_gateway_token() -> GatewayToken {
         GatewayToken {
