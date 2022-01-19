@@ -1,24 +1,25 @@
 //! Program state
 use crate::networks::GATEWAY_NETWORKS;
 use crate::Gateway;
-use solana_program::entrypoint::ProgramResult;
-use solana_program::program_error::ProgramError;
 use std::convert::TryInto;
 use std::mem::{size_of, transmute};
+use solana_program::msg;
 use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
     sol_did::validate_owner,
     solana_program::{
         account_info::AccountInfo,
         clock::UnixTimestamp,
+        entrypoint::ProgramResult,
+        program_error::ProgramError,
         pubkey::Pubkey,
         sysvar::{clock::Clock, Sysvar},
     },
 };
 
-fn before_now(timestamp: UnixTimestamp) -> bool {
+fn before_now(timestamp: UnixTimestamp, tolerance: u32) -> bool {
     let clock = Clock::get().unwrap();
-    clock.unix_timestamp > timestamp
+    (clock.unix_timestamp - (tolerance as i64)) > timestamp
 }
 
 /// The seed string used to derive a program address for a gateway token from an owner account
@@ -471,13 +472,13 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess {
     /// Checks if a vanilla gateway token is in a valid state
     /// Use is_valid_exotic to validate exotic gateway tokens
     fn is_valid(&self) -> bool {
-        self.is_vanilla() && self.is_valid_state() && !self.has_expired()
+        self.is_vanilla() && self.is_valid_state() && !self.has_expired(0)
     }
 
-    fn has_expired(&self) -> bool {
-        self.has_feature(Feature::Expirable) && before_now(self.expire_time().unwrap())
+    fn has_expired(&self, tolerance: u32) -> bool {
+        self.has_feature(Feature::Expirable) && before_now(self.expire_time().unwrap(), tolerance)
     }
-
+    
     /// Checks if the exotic gateway token is in a valid state (not inactive or expired)
     /// Note, this does not check association to any wallet.
     fn is_valid_exotic(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
@@ -487,7 +488,7 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess {
         }
 
         // Check the token has not expired
-        if self.has_expired() {
+        if self.has_expired(0) {
             return false;
         }
 
@@ -594,57 +595,14 @@ pub mod tests {
     use rand::{CryptoRng, Rng, RngCore, SeedableRng};
     use rand_chacha::ChaCha20Rng;
     use sol_did::state::{SolData, VerificationMethod};
-    use solana_program::program_stubs;
     use solana_sdk::signature::{Keypair, Signer};
     use std::array::IntoIter;
     use std::iter::FusedIterator;
     use std::{
         cell::RefCell,
         rc::Rc,
-        sync::Once,
-        time::{SystemTime, UNIX_EPOCH},
     };
-
-    static INIT_TESTS: Once = Once::new();
-
-    // Get the current unix timestamp from SystemTime
-    fn now() -> UnixTimestamp {
-        let start = SystemTime::now();
-        let now = start
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
-
-        now.as_secs() as UnixTimestamp
-    }
-
-    // Create stubs for anything we need that is provided by the solana runtime
-    struct TestSyscallStubs {}
-    impl program_stubs::SyscallStubs for TestSyscallStubs {
-        // create a stub clock object and set it at the provided address
-        fn sol_get_clock_sysvar(&self, var_addr: *mut u8) -> u64 {
-            // we only need the unix_timestamp
-            let stub_clock = Clock {
-                slot: 0,
-                epoch_start_timestamp: 0,
-                epoch: 0,
-                leader_schedule_epoch: 0,
-                unix_timestamp: now(),
-            };
-
-            // rust magic
-            unsafe {
-                *(var_addr as *mut _ as *mut Clock) = stub_clock;
-            }
-
-            0
-        }
-    }
-    // Inject stubs into the solana program singleton
-    fn init() {
-        INIT_TESTS.call_once(|| {
-            program_stubs::set_syscall_stubs(Box::new(TestSyscallStubs {}));
-        });
-    }
+    use crate::test_utils::{init, now};
 
     fn stub_vanilla_gateway_token() -> GatewayToken {
         GatewayToken {
@@ -711,7 +669,7 @@ pub mod tests {
 
         token.set_expire_time(now() - 1000);
 
-        assert!(token.has_expired());
+        assert!(token.has_expired(0));
         assert!(!token.is_valid());
     }
 
