@@ -49,10 +49,9 @@ Refreshed
      ${gatewayToken.toBase58()}
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
-    const token = await service.updateExpiry(
-      gatewayToken,
-      args.expiry + Math.floor(Date.now() / 1000)
-    );
+    await service
+      .updateExpiry(gatewayToken, args.expiry + Math.floor(Date.now() / 1000))
+      .then((t) => t.confirm());
 
     this.log("Refreshed");
   }

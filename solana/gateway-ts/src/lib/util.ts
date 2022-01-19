@@ -4,225 +4,22 @@ import {
   Connection,
   GetProgramAccountsConfig,
   PublicKey,
-  RpcResponseAndContext,
-  SendOptions,
-  SignatureResult,
-  Signer,
-  Transaction,
 } from "@solana/web3.js";
 import {
   GATEKEEPER_NONCE_SEED_STRING,
   GATEWAY_TOKEN_ADDRESS_SEED,
   PROGRAM_ID,
   SOLANA_COMMITMENT,
-  SOLANA_TIMEOUT_CONFIRMED,
-  SOLANA_TIMEOUT_FINALIZED,
-  SOLANA_TIMEOUT_PROCESSED,
-  DEFAULT_SOLANA_RETRIES,
 } from "./constants";
-import {
-  DeepPartial,
-  GatewayToken,
-  ProgramAccountResponse,
-  State,
-} from "../types";
+import { GatewayToken, ProgramAccountResponse, State } from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
-import retry from "async-retry";
-import * as R from "ramda";
-
-export type RetryConfig = {
-  retryCount: number;
-  exponentialFactor: number;
-  timeouts: {
-    healthcheck: number;
-    processed: number;
-    confirmed: number;
-    finalized: number;
-  };
-};
-
-export const defaultRetryConfig = {
-  retryCount: DEFAULT_SOLANA_RETRIES,
-  exponentialFactor: 2,
-  timeouts: {
-    processed: SOLANA_TIMEOUT_PROCESSED,
-    confirmed: SOLANA_TIMEOUT_CONFIRMED,
-    finalized: SOLANA_TIMEOUT_FINALIZED,
-  },
-};
-
-export const runFunctionWithRetry = async (
-  methodName: string, // for logging purposes so we know which call this was
-  fn: () => Promise<unknown>,
-  commitment: Commitment,
-  customRetryConfig: DeepPartial<RetryConfig>
-): Promise<unknown> => {
-  const retryConfig = {
-    ...defaultRetryConfig,
-    ...customRetryConfig,
-  } as RetryConfig;
-
-  let timeout: number =
-    R.path(["timeouts", commitment], retryConfig) ||
-    retryConfig.timeouts.confirmed;
-
-  // If we have any bugs before this point, this is the final safeguard against undefined retry config values.
-  // TODO IDCOM-1558 Improve the type safety of config to avoid the need for checks such as this.
-  let retryCount = retryConfig.retryCount;
-  let expFactor = retryConfig.exponentialFactor;
-  if (!retryCount) {
-    console.error(
-      `retryCount not set in Solana connection proxy. Defaulting to ${DEFAULT_SOLANA_RETRIES}`
-    );
-    retryCount = DEFAULT_SOLANA_RETRIES;
-  }
-
-  if (!expFactor) {
-    console.error(
-      "exponentialFactor not set in Solana connection proxy. Defaulting to 2"
-    );
-    retryCount = 2;
-  }
-
-  if (!timeout) {
-    console.error(
-      `timeout not set in Solana connection proxy. Defaulting to ${SOLANA_TIMEOUT_CONFIRMED}`
-    );
-    timeout = SOLANA_TIMEOUT_CONFIRMED;
-  }
-
-  let currentAttempt = 0;
-
-  try {
-    return await retry(
-      async () => {
-        currentAttempt++;
-        console.log(
-          `Trying Solana connection method '${methodName}' (attempt ${currentAttempt} of ${
-            retryConfig.retryCount + 1
-          })`,
-          { timeout }
-        );
-        const timeoutPromise = new Promise((_resolve, reject) =>
-          setTimeout(() => reject(new Error("timeout")), timeout)
-        );
-        const blockchainPromise = fn();
-        return Promise.race([blockchainPromise, timeoutPromise]);
-      },
-      {
-        retries: retryCount,
-        factor: expFactor,
-      }
-    );
-  } catch (err) {
-    console.error(
-      `Retries exhausted in Solana connection method '${methodName}' .`,
-      { error: err }
-    );
-    throw err;
-  }
-};
-
-export const proxyConnectionWithRetry = (
-  originalConnection: Connection,
-  customRetryConfig: DeepPartial<RetryConfig> = defaultRetryConfig
-): Connection => {
-  const proxyHandler: ProxyHandler<Connection> = {
-    get(target: Connection, propKey, receiver) {
-      switch (propKey) {
-        case "sendTransaction":
-          return (
-            transaction: Transaction,
-            signers: Signer[],
-            options: SendOptions | undefined
-          ): Promise<string> => {
-            const fn = async () =>
-              target.sendTransaction(transaction, signers, options);
-            return runFunctionWithRetry(
-              "sendTransaction",
-              fn,
-              SOLANA_COMMITMENT,
-              customRetryConfig
-            ) as Promise<string>;
-          };
-        case "confirmTransaction":
-          return (
-            signature: string,
-            commitment?: Commitment | undefined
-          ): Promise<RpcResponseAndContext<SignatureResult>> => {
-            const fn = async () =>
-              target.confirmTransaction(signature, commitment);
-            return runFunctionWithRetry(
-              "confirmTransaction",
-              fn,
-              SOLANA_COMMITMENT,
-              customRetryConfig
-            ) as Promise<RpcResponseAndContext<SignatureResult>>;
-          };
-        case "getProgramAccounts":
-          return (
-            programId: PublicKey,
-            configOrCommitment?:
-              | Commitment
-              | GetProgramAccountsConfig
-              | undefined
-          ): Promise<
-            {
-              pubkey: PublicKey;
-              account: AccountInfo<Buffer>;
-            }[]
-          > => {
-            const fn = async () =>
-              target.getProgramAccounts(programId, configOrCommitment);
-            return runFunctionWithRetry(
-              "getProgramAccounts",
-              fn,
-              SOLANA_COMMITMENT,
-              customRetryConfig
-            ) as Promise<
-              {
-                pubkey: PublicKey;
-                account: AccountInfo<Buffer>;
-              }[]
-            >;
-          };
-        case "getAccountInfo":
-          return (
-            publicKey: PublicKey,
-            commitment?: Commitment | undefined
-          ): Promise<AccountInfo<Buffer> | null> => {
-            const fn = async () => target.getAccountInfo(publicKey, commitment);
-            return runFunctionWithRetry(
-              "getAccountInfo",
-              fn,
-              SOLANA_COMMITMENT,
-              customRetryConfig
-            ) as Promise<AccountInfo<Buffer> | null>;
-          };
-        default:
-          // Return the original property unchanged:
-          return Reflect.get(target, propKey, receiver);
-      }
-    },
-    apply(target: any, thisArg, argumentsList) {
-      const fn = async () => target.apply(thisArg, argumentsList);
-      return runFunctionWithRetry(
-        "apply",
-        fn,
-        SOLANA_COMMITMENT,
-        customRetryConfig
-      );
-    },
-  };
-  return new Proxy<Connection>(originalConnection, proxyHandler);
-};
 
 /**
  * Derive the address of the gatekeeper PDA for this gatekeeper
  * @param authority The gatekeeper
  * @param network The network
  */
-export const getGatekeeperAccountKey = async (
+export const getGatekeeperAccountAddress = async (
   authority: PublicKey,
   network: PublicKey
 ): Promise<PublicKey> => {
@@ -243,7 +40,7 @@ export const getGatekeeperAccountKey = async (
  * @param gatekeeperNetwork The network of the gateway token
  * @param seed An 8-byte seed array, used to add multiple tokens to the same owner. Must be unique to each token, if present
  */
-export const getGatewayTokenKeyForOwner = async (
+export const getGatewayTokenAddressForOwnerAndGatekeeperNetwork = async (
   owner: PublicKey,
   gatekeeperNetwork: PublicKey,
   seed?: Uint8Array
@@ -255,7 +52,7 @@ export const getGatewayTokenKeyForOwner = async (
     throw new Error(
       "Additional Seed has length " +
         additionalSeed.length +
-        " instead of 8 when calling getGatewayTokenKeyForOwner."
+        " instead of 8 when calling getGatewayTokenAddressForOwnerAndGatekeeperNetwork."
     );
   }
   const seeds = [
@@ -300,7 +97,11 @@ export const dataToGatewayToken = (
   );
 
 /**
- * Find all gateway tokens for a user on a gatekeeper network, optionally filtering out revoked tokens
+ * Find all gateway tokens for a user on a gatekeeper network, optionally filtering out revoked tokens.
+ *
+ * Warning - this uses the Solana getProgramAccounts RPC endpoint, which is inefficient and may be
+ * blocked by some RPC services.
+ *
  * @param connection A solana connection object
  * @param owner The token owner
  * @param gatekeeperNetwork The network to find a token for
@@ -346,7 +147,7 @@ export const findGatewayTokens = async (
 };
 
 /**
- * Find any unrevoked token for a user on a gatekeeper network
+ * Get a gateway token for the owner and network, if it exists.
  * @param connection A solana connection object
  * @param owner The token owner
  * @param gatekeeperNetwork The network to find a token for
@@ -357,25 +158,22 @@ export const findGatewayToken = async (
   owner: PublicKey,
   gatekeeperNetwork: PublicKey
 ): Promise<GatewayToken | null> => {
-  const tokens = await findGatewayTokens(
-    connection,
-    owner,
-    gatekeeperNetwork,
-    false
+  const gatewayTokenAddress: PublicKey =
+    await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
+      owner,
+      gatekeeperNetwork
+    );
+  const account = await connection.getAccountInfo(
+    gatewayTokenAddress,
+    SOLANA_COMMITMENT
   );
 
-  if (tokens.length === 0) return null;
+  if (!account) return null;
 
-  // if any are valid, return the first one
-  const validTokens = tokens.filter((token) => token.isValid());
-  if (validTokens.length > 0) return validTokens[0];
-
-  // if none is valid, return the first non-revoked one
-  const nonRevokedTokens = tokens.filter(
-    (token) => token.state !== State.REVOKED
+  return dataToGatewayToken(
+    GatewayTokenData.fromAccount(account.data),
+    gatewayTokenAddress
   );
-
-  return nonRevokedTokens.length === 0 ? null : nonRevokedTokens[0];
 };
 
 /**
@@ -449,7 +247,7 @@ export const gatekeeperExists = async (
   gatekeeperAuthority: PublicKey,
   gatekeeperNetwork: PublicKey
 ): Promise<boolean> => {
-  const gatekeeperAccount = await getGatekeeperAccountKey(
+  const gatekeeperAccount = await getGatekeeperAccountAddress(
     gatekeeperAuthority,
     gatekeeperNetwork
   );

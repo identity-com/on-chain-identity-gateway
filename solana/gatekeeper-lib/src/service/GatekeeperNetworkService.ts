@@ -3,18 +3,14 @@ import {
   Connection,
   PublicKey,
   Transaction,
-  ConfirmOptions,
+  SendOptions,
 } from "@solana/web3.js";
 import {
   addGatekeeper,
-  getGatekeeperAccountKey,
+  getGatekeeperAccountAddress,
   revokeGatekeeper,
-  proxyConnectionWithRetry,
-  RetryConfig,
-  defaultRetryConfig,
-  DeepPartial,
 } from "@identity.com/solana-gateway-ts";
-import { send } from "../util/connection";
+import { DataTransaction, send } from "../util/connection";
 
 /**
  * Encapsulates the actions performed by a gatekeeper network authority
@@ -25,30 +21,23 @@ export class GatekeeperNetworkService {
    * @param connection A solana connection object
    * @param payer The payer for any transactions performed by the network authority
    * @param gatekeeperNetwork The network authority's key
-   * @param customRetryConfig RetryConfig including retry count and timeouts. All values have defaults.
    */
   constructor(
-    private connection: Connection,
+    private readonly connection: Connection,
     private payer: Keypair,
-    private gatekeeperNetwork: Keypair,
-    customRetryConfig: DeepPartial<RetryConfig> = defaultRetryConfig
-  ) {
-    this.connection = proxyConnectionWithRetry(this.connection, {
-      ...defaultRetryConfig,
-      ...customRetryConfig,
-    });
-  }
+    private gatekeeperNetwork: Keypair
+  ) {}
 
   /**
    * Add a gatekeeper to the network
    * @param gatekeeperAuthority
-   * @param confirmOptions
+   * @param sendOptions
    */
   async addGatekeeper(
     gatekeeperAuthority: PublicKey,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<PublicKey> {
-    const gatekeeperAccount = await getGatekeeperAccountKey(
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<PublicKey>> {
+    const gatekeeperAccount = await getGatekeeperAccountAddress(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
     );
@@ -62,22 +51,22 @@ export class GatekeeperNetworkService {
       )
     );
 
-    await send(
+    const sentTransaction = await send(
       this.connection,
       transaction,
-      confirmOptions,
+      sendOptions,
       this.payer,
       this.gatekeeperNetwork
     );
 
-    return gatekeeperAccount;
+    return sentTransaction.withData(gatekeeperAccount);
   }
 
   async revokeGatekeeper(
     gatekeeperAuthority: PublicKey,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<PublicKey> {
-    const gatekeeperAccount = await getGatekeeperAccountKey(
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<PublicKey>> {
+    const gatekeeperAccount = await getGatekeeperAccountAddress(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
     );
@@ -91,15 +80,15 @@ export class GatekeeperNetworkService {
       )
     );
 
-    await send(
+    const sentTransaction = await send(
       this.connection,
       transaction,
-      confirmOptions,
+      sendOptions,
       this.payer,
       this.gatekeeperNetwork
     );
 
-    return gatekeeperAccount;
+    return sentTransaction.withData(gatekeeperAccount);
   }
 
   /**
@@ -107,7 +96,7 @@ export class GatekeeperNetworkService {
    * @param gatekeeperAuthority
    */
   async hasGatekeeper(gatekeeperAuthority: PublicKey): Promise<boolean> {
-    const gatekeeperAccount = await getGatekeeperAccountKey(
+    const gatekeeperAccount = await getGatekeeperAccountAddress(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
     );

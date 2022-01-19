@@ -22,12 +22,8 @@ In the instruction processor (typically processor.rs)
 use solana_gateway::Gateway;
 use solana_program::{
     account_info::AccountInfo,
-    program_error::ProgramError,
     program_pack::Pack,
     pubkey::Pubkey,
-    rent::Rent,
-    sysvar::{Sysvar, SysvarId},
-    msg
 };
 
 fn process() {
@@ -40,7 +36,7 @@ fn process() {
 
     let gateway_verification_result:Result<(), GatewayError> =
         Gateway::verify_gateway_token_account_info(
-            &gateway_token_account_info, &owner.key, &gatekeeper
+            &gateway_token_account_info, &owner.key, &gatekeeper, None
         );
 }
 ```
