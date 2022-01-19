@@ -7,6 +7,7 @@ import * as gatekeeperServiceModule from "../src/service/GatekeeperService";
 import { PROGRAM_ID } from "../src/util/constants";
 import { GatewayToken, State } from "@identity.com/solana-gateway-ts";
 import * as GatewayTs from "@identity.com/solana-gateway-ts";
+import { DataTransaction, SentTransaction } from "../src/util/connection";
 
 chai.use(chaiSubset);
 const { expect } = chai;
@@ -55,6 +56,15 @@ describe("GatekeeperService", () => {
     frozenGatewayToken = activeGatewayToken.update({ state: State.FROZEN });
     revokedGatewayToken = activeGatewayToken.update({ state: State.REVOKED });
   });
+
+  const stubSend = <T>(result: T) => {
+    const sentTransaction = new SentTransaction(connection, "");
+    sandbox
+      .stub(sentTransaction, "withData")
+      .returns(new DataTransaction<T>(sentTransaction, result));
+    sandbox.stub(connectionUtils, "send").resolves(sentTransaction);
+  };
+
   context("issue", () => {
     beforeEach(() => {
       sandbox
@@ -66,13 +76,11 @@ describe("GatekeeperService", () => {
     });
     context("with send resolving success", () => {
       beforeEach(() => {
-        sandbox.stub(connectionUtils, "send").resolves();
+        stubSend(activeGatewayToken);
       });
       it("should return new gateway token", async () => {
         const issueResult = await gatekeeperService.issue(tokenOwner.publicKey);
-        return expect(issueResult).to.containSubset({
-          gatewayToken: { state: State.ACTIVE },
-        });
+        return expect(issueResult.data).to.equal(activeGatewayToken);
       });
     });
     context("with send rejecting with an error", () => {
