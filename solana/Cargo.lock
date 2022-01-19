@@ -2233,7 +2233,7 @@ dependencies = [
 
 [[package]]
 name = "solana-gateway"
-version = "0.0.4"
+version = "0.1.0"
 dependencies = [
  "bitflags",
  "borsh",

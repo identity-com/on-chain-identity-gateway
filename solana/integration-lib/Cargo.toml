@@ -1,6 +1,6 @@
 [package]
 name = "solana-gateway"
-version = "0.0.4"
+version = "0.1.0"
 description = "Solana on-chain identity gateway"
 repository = "https://github.com/identity-com/on-chain-identity-gateway"
 authors = ["Identity.com <daniel@identity.com>"]
