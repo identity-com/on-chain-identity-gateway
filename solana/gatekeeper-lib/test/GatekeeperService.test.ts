@@ -1,11 +1,17 @@
 import chai from "chai";
 import chaiSubset from "chai-subset";
-import { Keypair, Connection, PublicKey } from "@solana/web3.js";
+import {
+  Keypair,
+  Connection,
+  PublicKey,
+  SendTransactionError,
+} from "@solana/web3.js";
 import sinon from "sinon";
 import * as connectionUtils from "../src/util/connection";
 import * as gatekeeperServiceModule from "../src/service/GatekeeperService";
 import { PROGRAM_ID } from "../src/util/constants";
-import { Active, GatewayToken, State } from "@identity.com/solana-gateway-ts";
+import { GatewayToken, State } from "@identity.com/solana-gateway-ts";
+import { SentTransaction } from "../src/util/connection";
 
 chai.use(chaiSubset);
 const { expect } = chai;
@@ -24,6 +30,7 @@ describe("GatekeeperService", () => {
   let revokedGatewayToken: GatewayToken;
   let gatewayTokenKey: PublicKey;
   let gatekeeperAccountKey: PublicKey;
+  let getGatewayTokenStub;
 
   afterEach(sandbox.restore);
 
@@ -53,24 +60,32 @@ describe("GatekeeperService", () => {
     );
     frozenGatewayToken = activeGatewayToken.update({ state: State.FROZEN });
     revokedGatewayToken = activeGatewayToken.update({ state: State.REVOKED });
+
+    getGatewayTokenStub = sandbox.stub(
+      gatekeeperServiceModule,
+      "getGatewayToken"
+    );
   });
   context("issue", () => {
     beforeEach(() => {
-      sandbox
-        .stub(gatekeeperServiceModule, "getGatewayTokenKeyForOwner")
-        .resolves(gatewayTokenKey);
-      sandbox
-        .stub(gatekeeperServiceModule, "getGatekeeperAccountKey")
-        .resolves(gatekeeperAccountKey);
+      getGatewayTokenStub.resolves(gatewayTokenKey);
+      getGatewayTokenStub.resolves(gatekeeperAccountKey);
     });
     context("with send resolving success", () => {
       beforeEach(() => {
-        sandbox.stub(connectionUtils, "send").resolves();
+        const connection = {} as unknown as Connection;
+        sandbox
+          .stub(connectionUtils, "send")
+          .resolves(
+            new connectionUtils.SentTransaction(connection, "txSig123")
+          );
       });
-      it("should return new gateway token", async () => {
+      it("should return sent tx details", async () => {
         const issueResult = await gatekeeperService.issue(tokenOwner.publicKey);
         return expect(issueResult).to.containSubset({
-          gatewayToken: { state: State.ACTIVE },
+          sentTransaction: {
+            _signature: "txSig123",
+          },
         });
       });
     });
@@ -90,24 +105,45 @@ describe("GatekeeperService", () => {
 
   context("freeze", () => {
     context("with a previously Active token existing on-chain", () => {
+      let confirmStub;
       beforeEach(() => {
-        sandbox
-          .stub(gatekeeperServiceModule, "getGatewayToken")
-          .resolves(activeGatewayToken);
+        getGatewayTokenStub.resolves(activeGatewayToken);
       });
-      context("with the freeze blochchain call succeeding", () => {
+      context("with the send call succeeding", () => {
         beforeEach(() => {
-          sandbox.stub(connectionUtils, "send").resolves();
+          confirmStub = sinon.stub();
+          const connection = {
+            confirmTransaction: confirmStub,
+          } as unknown as Connection;
+          const sendResult = new SentTransaction(connection, "txSig123");
+          sandbox.stub(connectionUtils, "send").resolves(sendResult);
         });
-        it("should resolve with a FROZEN token", async () => {
+
+        it("should return a DataTransaction", async () => {
           const result = await gatekeeperService.freeze(
             activeGatewayToken.publicKey
           );
-          return expect(result).to.containSubset({
-            gatewayToken: {
-              state: State.FROZEN,
-              publicKey: activeGatewayToken.publicKey,
-            },
+          expect(result.data).to.be.instanceOf(Function);
+          expect(result.sentTransaction).to.containSubset({
+            _signature: "txSig123",
+          });
+        });
+
+        context("with the confirm call succeeding", () => {
+          beforeEach(() => {
+            confirmStub.resolves({ value: {} }); // no Error
+          });
+          context("with getGatewayToken returning a frozen token", () => {
+            beforeEach(() => {
+              getGatewayTokenStub.resolves(frozenGatewayToken);
+            });
+            it("should return Frozen token on confirm", async () => {
+              const sendResult = await gatekeeperService.freeze(
+                activeGatewayToken.publicKey
+              );
+              const confirmResult = await sendResult.confirm();
+              expect(confirmResult).to.containSubset({ state: State.FROZEN });
+            });
           });
         });
       });
@@ -116,24 +152,45 @@ describe("GatekeeperService", () => {
 
   context("unfreeze", () => {
     context("with a previously Frozen token existing on-chain", () => {
+      let confirmStub;
       beforeEach(() => {
-        sandbox
-          .stub(gatekeeperServiceModule, "getGatewayToken")
-          .resolves(frozenGatewayToken);
+        getGatewayTokenStub.resolves(frozenGatewayToken);
       });
-      context("with the unfreeze blochchain call succeeding", () => {
+      context("with the send call succeeding", () => {
         beforeEach(() => {
-          sandbox.stub(connectionUtils, "send").resolves();
+          confirmStub = sinon.stub();
+          const connection = {
+            confirmTransaction: confirmStub,
+          } as unknown as Connection;
+          const sendResult = new SentTransaction(connection, "txSig123");
+          sandbox.stub(connectionUtils, "send").resolves(sendResult);
         });
-        it("should resolve with a ACTIVE token", async () => {
+
+        it("should return a DataTransaction", async () => {
           const result = await gatekeeperService.unfreeze(
             activeGatewayToken.publicKey
           );
-          return expect(result).to.containSubset({
-            gatewayToken: {
-              state: State.ACTIVE,
-              publicKey: activeGatewayToken.publicKey,
-            },
+          expect(result.data).to.be.instanceOf(Function);
+          expect(result.sentTransaction).to.containSubset({
+            _signature: "txSig123",
+          });
+        });
+
+        context("with the confirm call succeeding", () => {
+          beforeEach(() => {
+            confirmStub.resolves({ value: {} }); // no Error
+          });
+          context("with getGatewayToken returning a Active token", () => {
+            beforeEach(() => {
+              getGatewayTokenStub.resolves(activeGatewayToken);
+            });
+            it("should return Active token on confirm", async () => {
+              const sendResult = await gatekeeperService.freeze(
+                activeGatewayToken.publicKey
+              );
+              const confirmResult = await sendResult.confirm();
+              expect(confirmResult).to.containSubset({ state: State.ACTIVE });
+            });
           });
         });
       });
@@ -142,41 +199,46 @@ describe("GatekeeperService", () => {
 
   context("revoke", () => {
     context("with a previously Active token existing on-chain", () => {
+      let confirmStub;
       beforeEach(() => {
-        sandbox
-          .stub(gatekeeperServiceModule, "getGatewayToken")
-          .resolves(activeGatewayToken);
+        getGatewayTokenStub.resolves(activeGatewayToken);
       });
-      context("with the revoke blochchain call succeeding", () => {
+      context("with the send call succeeding", () => {
         beforeEach(() => {
-          sandbox.stub(connectionUtils, "send").resolves();
+          confirmStub = sinon.stub();
+          const connection = {
+            confirmTransaction: confirmStub,
+          } as unknown as Connection;
+          const sendResult = new SentTransaction(connection, "txSig123");
+          sandbox.stub(connectionUtils, "send").resolves(sendResult);
         });
-        it("should resolve with a REVOKED token", async () => {
+
+        it("should return a DataTransaction", async () => {
           const result = await gatekeeperService.revoke(
-            revokedGatewayToken.publicKey
+            activeGatewayToken.publicKey
           );
-          return expect(result).to.containSubset({
-            gatewayToken: {
-              state: State.REVOKED,
-              publicKey: revokedGatewayToken.publicKey,
-            },
+          expect(result.data).to.be.instanceOf(Function);
+          expect(result.sentTransaction).to.containSubset({
+            _signature: "txSig123",
           });
         });
-      });
-      context("with the revoke blochchain call failing", () => {
-        beforeEach(() => {
-          sandbox.restore();
-          sandbox
-            .stub(gatekeeperServiceModule, "getGatewayToken")
-            .resolves(activeGatewayToken);
-          sandbox
-            .stub(connectionUtils, "send")
-            .rejects(new Error("Transaction simulation failed"));
-        });
-        it("should throw an error", async () => {
-          return expect(
-            gatekeeperService.revoke(tokenOwner.publicKey)
-          ).to.be.rejectedWith(/Transaction simulation failed/);
+
+        context("with the confirm call succeeding", () => {
+          beforeEach(() => {
+            confirmStub.resolves({ value: {} }); // no Error
+          });
+          context("with getGatewayToken returning a Revoked token", () => {
+            beforeEach(() => {
+              getGatewayTokenStub.resolves(revokedGatewayToken);
+            });
+            it("should return Active token on confirm", async () => {
+              const sendResult = await gatekeeperService.revoke(
+                activeGatewayToken.publicKey
+              );
+              const confirmResult = await sendResult.confirm();
+              expect(confirmResult).to.containSubset({ state: State.REVOKED });
+            });
+          });
         });
       });
     });
@@ -184,51 +246,76 @@ describe("GatekeeperService", () => {
 
   context("updateExpiry", () => {
     context("with a previously Active token existing on-chain", () => {
+      let confirmStub;
       beforeEach(() => {
-        sandbox
-          .stub(gatekeeperServiceModule, "getGatewayToken")
-          .resolves(
-            activeGatewayToken.update({ state: State.ACTIVE, expiryTime: 100 })
-          ); // token starts with a low expiry time.
+        getGatewayTokenStub.resolves(
+          activeGatewayToken.update({ state: State.ACTIVE, expiryTime: 100 })
+        ); // token starts with a low expiry time.
       });
-      context("with the update blochchain call succeeding", () => {
+      context("with the send call succeeding", () => {
         beforeEach(() => {
-          sandbox.stub(connectionUtils, "send").resolves();
+          confirmStub = sinon.stub();
+          const connection = {
+            confirmTransaction: confirmStub,
+          } as unknown as Connection;
+          const sendResult = new SentTransaction(connection, "txSig123");
+          sandbox.stub(connectionUtils, "send").resolves(sendResult);
         });
-        it("should resolve with the updated expiry token", async () => {
+
+        it("should return a DataTransaction", async () => {
           const result = await gatekeeperService.updateExpiry(
             revokedGatewayToken.publicKey,
             123456
           );
-          return expect(result).to.containSubset({
-            gatewayToken: {
-              state: State.ACTIVE,
-              publicKey: activeGatewayToken.publicKey,
-              expiryTime: 123456,
-            },
+          expect(result.data).to.be.instanceOf(Function);
+          expect(result.sentTransaction).to.containSubset({
+            _signature: "txSig123",
+          });
+        });
+
+        context("with the confirm call succeeding", () => {
+          beforeEach(() => {
+            confirmStub.resolves({ value: {} }); // no Error
+          });
+          context("with getGatewayToken returning a Revoked token", () => {
+            beforeEach(() => {
+              getGatewayTokenStub.resolves({
+                ...activeGatewayToken,
+                expiryTime: 123456,
+              });
+            });
+            it("should return Active token on confirm", async () => {
+              const sendResult = await gatekeeperService.updateExpiry(
+                revokedGatewayToken.publicKey,
+                123456
+              );
+              const confirmResult = await sendResult.confirm();
+              expect(confirmResult).to.containSubset({
+                state: State.ACTIVE,
+                publicKey: activeGatewayToken.publicKey,
+                expiryTime: 123456,
+              });
+            });
           });
         });
       });
-      context("with the update blochchain call failing", () => {
+      context("with the send blochchain call failing", () => {
         beforeEach(() => {
           sandbox.restore();
           sandbox
             .stub(connectionUtils, "send")
             .rejects(new Error("Transaction simulation failed"));
-          sandbox.stub(gatekeeperServiceModule, "getGatewayToken").resolves(
+          getGatewayTokenStub.resolves(
             activeGatewayToken.update({
               state: State.ACTIVE,
               expiryTime: 100,
             })
           );
         });
-
-        it("should resolve with the ACTIVE token with the updated expiry", async () => {
-          it("should throw an error", async () => {
-            return expect(
-              gatekeeperService.updateExpiry(tokenOwner.publicKey, 123456)
-            ).to.be.rejectedWith(/Transaction simulation failed/);
-          });
+        it("should throw an error", async () => {
+          return expect(
+            gatekeeperService.updateExpiry(tokenOwner.publicKey, 123456)
+          ).to.be.rejectedWith(/Transaction simulation failed/);
         });
       });
     });

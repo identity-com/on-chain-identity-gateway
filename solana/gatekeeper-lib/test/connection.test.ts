@@ -57,14 +57,6 @@ describe("Solana connection utils tests", () => {
         const calls = connection.sendTransaction.getCalls();
         return expect(calls.length).to.equal(1);
       });
-
-      it("should call connection.confirmTransaction", async () => {
-        const results = await Promise.allSettled([
-          connectionUtils.send(connection, transaction),
-        ]);
-        const calls = connection.confirmTransaction.getCalls();
-        return expect(calls.length).to.equal(1);
-      });
     });
   });
 });
