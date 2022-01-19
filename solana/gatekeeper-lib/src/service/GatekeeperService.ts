@@ -11,14 +11,14 @@ import {
 import {
   freeze,
   GatewayToken,
-  getGatewayToken as solanaGetGatewayToken,
-  getGatewayTokenKeyForOwner as solanaGetGatewayTokenKeyForOwner,
   issueVanilla,
   revoke,
   unfreeze,
   updateExpiry,
+  getGatewayToken,
+  getGatewayTokenAddressForOwnerAndGatekeeperNetwork,
+  getGatekeeperAccountAddress,
   findGatewayToken,
-  getGatekeeperAccountKey as solanaGetGatekeeperAccountKey,
 } from "@identity.com/solana-gateway-ts";
 
 import {
@@ -33,35 +33,6 @@ export const dummyBlockhash = "AvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
  */
 export type GatekeeperConfig = {
   defaultExpirySeconds?: number;
-};
-
-/**
- * Enables easier unit testing of gatekeeper-lib as we don't have to stub the imported function from gateway-ts,
- * we can stub this function which is in the same lib.
- */
-export const getGatewayTokenKeyForOwner = async (
-  owner: PublicKey,
-  gatekeeperNetwork: PublicKey
-): Promise<PublicKey> => {
-  return solanaGetGatewayTokenKeyForOwner(owner, gatekeeperNetwork);
-};
-
-/**
- * Enables easier unit testing of gatekeeper-lib as we don't have to stub the imported function from gateway-ts,
- * we can stub this function which is in the same lib.
- */
-export const getGatekeeperAccountKey = async (
-  owner: PublicKey,
-  gatekeeperNetwork: PublicKey
-): Promise<PublicKey> => {
-  return solanaGetGatekeeperAccountKey(owner, gatekeeperNetwork);
-};
-
-export const getGatewayToken = async (
-  connection: Connection,
-  gatewayTokenKey: PublicKey
-): Promise<GatewayToken | null> => {
-  return solanaGetGatewayToken(connection, gatewayTokenKey);
 };
 
 /**
@@ -84,8 +55,8 @@ export class GatekeeperService {
     private config: GatekeeperConfig = {}
   ) {}
 
-  private gatekeeperAccountKey() {
-    return getGatekeeperAccountKey(
+  private gatekeeperAccountAddress() {
+    return getGatekeeperAccountAddress(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
     );
@@ -98,13 +69,13 @@ export class GatekeeperService {
   }
 
   private getGatewayTokenOrError(
-    gatewayTokenKey: PublicKey
+    gatewayTokenAddress: PublicKey
   ): Promise<GatewayToken> {
-    return getGatewayToken(this.connection, gatewayTokenKey).then(
+    return getGatewayToken(this.connection, gatewayTokenAddress).then(
       (gatewayToken: GatewayToken | null) => {
         if (!gatewayToken)
           throw new Error(
-            "Error retrieving gateway token at address " + gatewayTokenKey
+            "Error retrieving gateway token at address " + gatewayToken
           );
         return gatewayToken;
       }
@@ -145,15 +116,20 @@ export class GatekeeperService {
     owner: PublicKey,
     seed?: Uint8Array
   ): Promise<BuildGatewayTokenTransactionResult> {
-    const gatewayTokenKey: PublicKey = await getGatewayTokenKeyForOwner(
-      owner,
+    const gatewayTokenAddress: PublicKey =
+      await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
+        owner,
+        this.gatekeeperNetwork
+      );
+    const gatekeeperAccount: PublicKey = await getGatekeeperAccountAddress(
+      this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
     );
-    const gatekeeperAccount = await this.gatekeeperAccountKey();
+
     const expireTime = this.getDefaultExpireTime();
     const transaction = new Transaction().add(
       issueVanilla(
-        gatewayTokenKey,
+        gatewayTokenAddress,
         this.payer.publicKey,
         gatekeeperAccount,
         owner,
@@ -166,7 +142,11 @@ export class GatekeeperService {
     const unsignedSerializedTx = await this.serializeBuiltTransaction(
       transaction
     );
-    return { unsignedSerializedTx, transaction, gatewayTokenKey };
+    return {
+      unsignedSerializedTx,
+      transaction,
+      gatewayTokenAddress,
+    };
   }
 
   private async issueVanilla(
@@ -174,10 +154,11 @@ export class GatekeeperService {
     seed?: Uint8Array,
     sendOptions: SendOptions = {}
   ): Promise<DataTransaction<GatewayToken | null>> {
-    const gatewayTokenKey: PublicKey = await getGatewayTokenKeyForOwner(
-      owner,
-      this.gatekeeperNetwork
-    );
+    const gatewayTokenAddress: PublicKey =
+      await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
+        owner,
+        this.gatekeeperNetwork
+      );
 
     const { transaction } = await this.buildIssueTransaction(owner, seed);
 
@@ -190,7 +171,7 @@ export class GatekeeperService {
     );
 
     return sentTransaction.withData(() =>
-      getGatewayToken(this.connection, gatewayTokenKey)
+      getGatewayToken(this.connection, gatewayTokenAddress)
     );
   }
 
@@ -242,7 +223,7 @@ export class GatekeeperService {
     gatewayTokenKey: PublicKey,
     sendOptions: SendOptions = {}
   ): Promise<DataTransaction<GatewayToken>> {
-    const gatekeeperAccount = await getGatekeeperAccountKey(
+    const gatekeeperAccount = await getGatekeeperAccountAddress(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
     );
@@ -269,7 +250,7 @@ export class GatekeeperService {
     const instruction: TransactionInstruction = freeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
-      await this.gatekeeperAccountKey()
+      await this.gatekeeperAccountAddress()
     );
     return this.updateToken(gatewayTokenKey, instruction, sendOptions);
   }
@@ -286,7 +267,7 @@ export class GatekeeperService {
     const instruction: TransactionInstruction = unfreeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
-      await this.gatekeeperAccountKey()
+      await this.gatekeeperAccountAddress()
     );
     return this.updateToken(gatewayTokenKey, instruction, sendOptions);
   }
@@ -304,25 +285,25 @@ export class GatekeeperService {
   /**
    * Create a transaction with an update expiry instruction and return
    * a serialized form of the transaction with a dummy blockhash
-   * @param {PublicKey} gatewayTokenKey
+   * @param {PublicKey} gatewayTokenAddress
    * @param {number} expireTime
    * @returns {Promise<BuildGatewayTokenTransactionResult>}
    */
   async buildUpdateExpiryTransaction(
-    gatewayTokenKey: PublicKey,
+    gatewayTokenAddress: PublicKey,
     expireTime: number
   ): Promise<BuildGatewayTokenTransactionResult> {
     const instruction: TransactionInstruction = updateExpiry(
-      gatewayTokenKey,
+      gatewayTokenAddress,
       this.gatekeeperAuthority.publicKey,
-      await this.gatekeeperAccountKey(),
+      await this.gatekeeperAccountAddress(),
       expireTime
     );
     const transaction = new Transaction().add(instruction);
     const unsignedSerializedTx = await this.serializeBuiltTransaction(
       transaction
     );
-    return { unsignedSerializedTx, transaction, gatewayTokenKey };
+    return { unsignedSerializedTx, transaction, gatewayTokenAddress };
   }
   /**
    * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
@@ -338,7 +319,7 @@ export class GatekeeperService {
     const instruction: TransactionInstruction = updateExpiry(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
-      await this.gatekeeperAccountKey(),
+      await this.gatekeeperAccountAddress(),
       expireTime
     );
     return this.updateToken(gatewayTokenKey, instruction, sendOptions);
@@ -346,7 +327,7 @@ export class GatekeeperService {
 
   // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key
   async isRegistered(): Promise<boolean> {
-    const gatekeeperAccount = await getGatekeeperAccountKey(
+    const gatekeeperAccount = await getGatekeeperAccountAddress(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
     );

@@ -8,6 +8,9 @@ pub mod instruction;
 pub mod networks;
 pub mod state;
 
+#[cfg(test)]
+mod test_utils;
+
 use crate::instruction::expire_token;
 use crate::state::{GatewayTokenAccess, GatewayTokenFunctions, InPlaceGatewayToken};
 use crate::{
@@ -24,6 +27,22 @@ use std::str::FromStr;
 
 // Session gateway tokens, that have a lamport balance that exceeds this value, are rejected
 const MAX_SESSION_TOKEN_BALANCE: u64 = 0;
+
+/// Options to configure how a gateway token is considered valid. Typically, integrators should
+/// use the default options.
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
+pub struct VerificationOptions {
+    /// If true, consider an expired token as invalid. Defaults to true
+    check_expiry: bool,
+    /// Number of seconds to allow a token to have expired by, for it still to be counted as active.
+    /// Defaults to 0. Must be set if check_expiry is true.
+    expiry_tolerance_seconds: Option<u32>,
+}
+
+pub const DEFAULT_VERIFICATION_OPTIONS: VerificationOptions = VerificationOptions {
+    check_expiry: true,
+    expiry_tolerance_seconds: Some(0),
+};
 
 pub struct Gateway {}
 impl Gateway {
@@ -66,7 +85,9 @@ impl Gateway {
         expected_owner: &Pubkey,
         expected_gatekeeper_network_key: &Pubkey,
         gateway_token_account_balance: u64,
+        options: Option<VerificationOptions>,
     ) -> Result<(), GatewayError> {
+        let verification_options = options.unwrap_or(DEFAULT_VERIFICATION_OPTIONS);
         if expected_owner != gateway_token.owner_wallet() {
             msg!(
                 "Gateway token does not have the correct owner. Expected: {} Was: {}",
@@ -95,9 +116,16 @@ impl Gateway {
             return Err(GatewayError::InvalidSessionToken);
         }
 
-        if !gateway_token.is_valid() {
-            msg!("Gateway token is invalid. It has either been revoked or frozen, or has expired");
+        if !gateway_token.is_valid_state() {
+            msg!("Gateway token is invalid. It has either been revoked or frozen");
             return Err(GatewayError::TokenRevoked);
+        }
+
+        if verification_options.check_expiry
+            && gateway_token.has_expired(verification_options.expiry_tolerance_seconds.unwrap_or(0))
+        {
+            msg!("Gateway token has expired");
+            return Err(GatewayError::TokenExpired);
         }
 
         Ok(())
@@ -117,7 +145,7 @@ impl Gateway {
         }
     }
 
-    /// Verifies the gateway token accout parses to a valid gateway token,
+    /// Verifies the gateway token account parses to a valid gateway token,
     /// belongs to the expected owner,
     /// is signed by the gatekeeper,
     /// and is not revoked.
@@ -125,6 +153,7 @@ impl Gateway {
         gateway_token_info: &AccountInfo,
         expected_owner: &Pubkey,
         expected_gatekeeper_key: &Pubkey,
+        options: Option<VerificationOptions>,
     ) -> Result<(), GatewayError> {
         if gateway_token_info.owner.ne(&Gateway::program_id()) {
             return Err(GatewayError::IncorrectProgramId);
@@ -138,6 +167,7 @@ impl Gateway {
                 expected_owner,
                 expected_gatekeeper_key,
                 gateway_token_info.lamports.borrow().as_(),
+                options,
             ),
             Err(_) => gateway_token_result.map(|_| ()),
         }
@@ -180,7 +210,23 @@ impl Gateway {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use crate::test_utils::test_utils_stubs::{init, now};
     use std::{cell::RefCell, rc::Rc};
+
+    fn expired_gateway_token() -> GatewayToken {
+        let mut token = GatewayToken {
+            features: 0,
+            parent_gateway_token: None,
+            owner_wallet: Default::default(),
+            owner_identity: None,
+            gatekeeper_network: Default::default(),
+            issuing_gatekeeper: Default::default(),
+            state: Default::default(),
+            expire_time: None,
+        };
+        token.set_expire_time(0); // 1.1.1970 is definitely in the past
+        token
+    }
 
     #[test]
     fn verify_gateway_token_account_info_fails_on_incorrect_program_id() {
@@ -199,11 +245,64 @@ pub mod tests {
             &account_info,
             &Default::default(),
             &Default::default(),
+            None,
         );
 
         assert!(matches!(
             verify_result,
             Err(GatewayError::IncorrectProgramId)
         ))
+    }
+
+    #[test]
+    fn verify_gateway_token_account_info_passes_an_expired_token_if_check_expiry_is_off() {
+        init();
+        let token = expired_gateway_token();
+        let verify_result = Gateway::verify_gateway_token(
+            &token,
+            &Default::default(),
+            &Default::default(),
+            0,
+            Some(VerificationOptions {
+                check_expiry: false,
+                ..Default::default()
+            }),
+        );
+
+        assert!(matches!(verify_result, Ok(())))
+    }
+
+    #[test]
+    fn verify_gateway_token_account_info_fails_an_expired_token_if_check_expiry_is_on() {
+        init();
+        let token = expired_gateway_token();
+        let verify_result = Gateway::verify_gateway_token(
+            &token,
+            &Default::default(),
+            &Default::default(),
+            0,
+            None,
+        );
+
+        assert!(matches!(verify_result, Err(GatewayError::TokenExpired)))
+    }
+
+    #[test]
+    fn verify_gateway_token_account_info_passes_an_expired_token_if_it_is_within_tolerance() {
+        init();
+        let mut token = expired_gateway_token();
+        token.set_expire_time(now() - 10);
+        let verify_result = Gateway::verify_gateway_token(
+            &token,
+            &Default::default(),
+            &Default::default(),
+            0,
+            Some(VerificationOptions {
+                check_expiry: true,
+                expiry_tolerance_seconds: Some(60),
+            }),
+        );
+
+        assert!(matches!(verify_result, Ok(())))
     }
 }

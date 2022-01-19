@@ -19,7 +19,7 @@ import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
  * @param authority The gatekeeper
  * @param network The network
  */
-export const getGatekeeperAccountKey = async (
+export const getGatekeeperAccountAddress = async (
   authority: PublicKey,
   network: PublicKey
 ): Promise<PublicKey> => {
@@ -40,7 +40,7 @@ export const getGatekeeperAccountKey = async (
  * @param gatekeeperNetwork The network of the gateway token
  * @param seed An 8-byte seed array, used to add multiple tokens to the same owner. Must be unique to each token, if present
  */
-export const getGatewayTokenKeyForOwner = async (
+export const getGatewayTokenAddressForOwnerAndGatekeeperNetwork = async (
   owner: PublicKey,
   gatekeeperNetwork: PublicKey,
   seed?: Uint8Array
@@ -52,7 +52,7 @@ export const getGatewayTokenKeyForOwner = async (
     throw new Error(
       "Additional Seed has length " +
         additionalSeed.length +
-        " instead of 8 when calling getGatewayTokenKeyForOwner."
+        " instead of 8 when calling getGatewayTokenAddressForOwnerAndGatekeeperNetwork."
     );
   }
   const seeds = [
@@ -97,7 +97,11 @@ export const dataToGatewayToken = (
   );
 
 /**
- * Find all gateway tokens for a user on a gatekeeper network, optionally filtering out revoked tokens
+ * Find all gateway tokens for a user on a gatekeeper network, optionally filtering out revoked tokens.
+ *
+ * Warning - this uses the Solana getProgramAccounts RPC endpoint, which is inefficient and may be
+ * blocked by some RPC services.
+ *
  * @param connection A solana connection object
  * @param owner The token owner
  * @param gatekeeperNetwork The network to find a token for
@@ -143,7 +147,7 @@ export const findGatewayTokens = async (
 };
 
 /**
- * Find any unrevoked token for a user on a gatekeeper network
+ * Get a gateway token for the owner and network, if it exists.
  * @param connection A solana connection object
  * @param owner The token owner
  * @param gatekeeperNetwork The network to find a token for
@@ -154,25 +158,22 @@ export const findGatewayToken = async (
   owner: PublicKey,
   gatekeeperNetwork: PublicKey
 ): Promise<GatewayToken | null> => {
-  const tokens = await findGatewayTokens(
-    connection,
-    owner,
-    gatekeeperNetwork,
-    false
+  const gatewayTokenAddress: PublicKey =
+    await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
+      owner,
+      gatekeeperNetwork
+    );
+  const account = await connection.getAccountInfo(
+    gatewayTokenAddress,
+    SOLANA_COMMITMENT
   );
 
-  if (tokens.length === 0) return null;
+  if (!account) return null;
 
-  // if any are valid, return the first one
-  const validTokens = tokens.filter((token) => token.isValid());
-  if (validTokens.length > 0) return validTokens[0];
-
-  // if none is valid, return the first non-revoked one
-  const nonRevokedTokens = tokens.filter(
-    (token) => token.state !== State.REVOKED
+  return dataToGatewayToken(
+    GatewayTokenData.fromAccount(account.data),
+    gatewayTokenAddress
   );
-
-  return nonRevokedTokens.length === 0 ? null : nonRevokedTokens[0];
 };
 
 /**
@@ -246,7 +247,7 @@ export const gatekeeperExists = async (
   gatekeeperAuthority: PublicKey,
   gatekeeperNetwork: PublicKey
 ): Promise<boolean> => {
-  const gatekeeperAccount = await getGatekeeperAccountKey(
+  const gatekeeperAccount = await getGatekeeperAccountAddress(
     gatekeeperAuthority,
     gatekeeperNetwork
   );
