@@ -53,9 +53,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [ '1.55' ]
-        solana: [ 'stable' ]
+        rust: [ '1.58' ]
         node: ['15.x']
+        solana: ['stable']
         os: [ubuntu-latest]
 
     defaults:
