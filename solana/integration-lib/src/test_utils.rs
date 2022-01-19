@@ -4,7 +4,7 @@ pub mod test_utils {
     use solana_program::program_stubs;
     use std::sync::Once;
     use std::time::{SystemTime, UNIX_EPOCH};
-    
+
     static INIT_TESTS: Once = Once::new();
 
     // Get the current unix timestamp from SystemTime
