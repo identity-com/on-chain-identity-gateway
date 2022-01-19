@@ -210,7 +210,7 @@ impl Gateway {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::test_utils::test_utils::{init, now};
+    use crate::test_utils::test_utils_stubs::{init, now};
     use std::{cell::RefCell, rc::Rc};
 
     fn expired_gateway_token() -> GatewayToken {

@@ -1,5 +1,5 @@
 #[cfg(test)]
-pub mod test_utils {
+pub mod test_utils_stubs {
     use solana_program::clock::{Clock, UnixTimestamp};
     use solana_program::program_stubs;
     use std::sync::Once;

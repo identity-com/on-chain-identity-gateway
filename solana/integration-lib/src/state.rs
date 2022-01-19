@@ -591,12 +591,11 @@ impl CompatibleTransactionDetails for SimpleTransactionDetails {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::test_utils::test_utils::{init, now};
+    use crate::test_utils::test_utils_stubs::{init, now};
     use rand::{CryptoRng, Rng, RngCore, SeedableRng};
     use rand_chacha::ChaCha20Rng;
     use sol_did::state::{SolData, VerificationMethod};
     use solana_sdk::signature::{Keypair, Signer};
-    use std::array::IntoIter;
     use std::iter::FusedIterator;
     use std::{cell::RefCell, rc::Rc};
 
@@ -725,19 +724,19 @@ pub mod tests {
     #[test]
     fn in_place_test() {
         let mut rng = ChaCha20Rng::from_entropy();
-        IntoIter::new([true, false])
-            .into_iter()
-            .compound(IntoIter::new([true, false]))
-            .compound(IntoIter::new([true, false]))
+        [true, false]
+            .iter()
+            .compound([true, false].iter())
+            .compound([true, false].iter())
             .compound(GatewayTokenState::ALL_STATES)
             .compound(GatewayTokenState::ALL_STATES)
             .for_each(
                 |((((has_parent, has_owner_identity), has_expire_time), &state), &to_state)| {
                     let token = new_token(
                         &mut rng,
-                        has_parent,
-                        has_owner_identity,
-                        has_expire_time,
+                        *has_parent,
+                        *has_owner_identity,
+                        *has_expire_time,
                         state,
                     );
 
@@ -780,9 +779,9 @@ pub mod tests {
 
                     let token = new_token(
                         &mut rng,
-                        has_parent,
-                        has_owner_identity,
-                        has_expire_time,
+                        *has_parent,
+                        *has_owner_identity,
+                        *has_expire_time,
                         to_state,
                     );
 
@@ -791,7 +790,7 @@ pub mod tests {
                     in_place.set_features(token.features);
                     assert_eq!(in_place.features(), token.features);
                     assert_eq!(in_place.features_mut(), &token.features);
-                    if has_parent {
+                    if *has_parent {
                         *in_place.parent_gateway_token_mut().unwrap() =
                             token.parent_gateway_token.unwrap();
                     }
@@ -806,7 +805,7 @@ pub mod tests {
                     *in_place.owner_wallet_mut() = token.owner_wallet;
                     assert_eq!(in_place.owner_wallet(), &token.owner_wallet);
                     assert_eq!(in_place.owner_wallet_mut(), &token.owner_wallet);
-                    if has_owner_identity {
+                    if *has_owner_identity {
                         *in_place.owner_identity_mut().unwrap() = token.owner_identity.unwrap();
                     }
                     assert_eq!(in_place.owner_identity(), token.owner_identity.as_ref());
@@ -822,7 +821,7 @@ pub mod tests {
                     assert_eq!(in_place.issuing_gatekeeper_mut(), &token.issuing_gatekeeper);
                     in_place.set_state(token.state);
                     assert_eq!(in_place.state(), token.state);
-                    if has_expire_time {
+                    if *has_expire_time {
                         in_place
                             .set_expire_time(token.expire_time.unwrap())
                             .expect("Could not set expire time");
