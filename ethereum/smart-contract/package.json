@@ -15,7 +15,7 @@
   "author": "Secured Finance",
   "license": "MIT",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.3.2",
+    "@openzeppelin/contracts": "^4.4.2",
     "@truffle/hdwallet-provider": "^1.4.1",
     "@typechain/truffle-v5": "^5.0.0",
     "abi-to-sol": "^0.2.1",
