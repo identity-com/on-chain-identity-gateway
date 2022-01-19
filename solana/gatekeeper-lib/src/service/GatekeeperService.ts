@@ -2,6 +2,7 @@ import {
   ConfirmOptions,
   Connection,
   Keypair,
+  Message,
   PublicKey,
   SendOptions,
   Transaction,
@@ -20,8 +21,13 @@ import {
   getGatekeeperAccountKey as solanaGetGatekeeperAccountKey,
 } from "@identity.com/solana-gateway-ts";
 
-import { DataTransaction, send } from "../util/connection";
+import {
+  BuildGatewayTokenTransactionResult,
+  DataTransaction,
+  send,
+} from "../util/connection";
 
+export const dummyBlockhash = "AvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
 /**
  * Global default configuration for the gatekeeper
  */
@@ -105,19 +111,46 @@ export class GatekeeperService {
     );
   }
 
-  private async issueVanilla(
+  /**
+   * Given a transaction, add a 'dummy' recent blockhash, a feePayer
+   * and serialize to a base64 string
+   * @param {Transaction} transaction
+   * @returns {Promise<string>}
+   */
+  private async serializeBuiltTransaction(
+    transaction: Transaction
+  ): Promise<string> {
+    // recent blockhash and feepayer are required for serialization
+    // a real recent blockhash will be added in signAndSendTransaction
+    transaction.recentBlockhash = dummyBlockhash;
+    transaction.feePayer = this.payer.publicKey;
+    const unsignedSerializedTx = await transaction
+      .serialize({
+        verifySignatures: false,
+        requireAllSignatures: false,
+      })
+      .toString("base64");
+    return unsignedSerializedTx;
+  }
+
+  /**
+   * Builds and serializes a transaction with a token issuance instruction for sending later.
+   * A 'dummy' blockhash is added to avoid an on-chain call, a real blockhash will be added
+   * when the transaction is hydrated, signed and sent
+   * @param {PublicKey} owner
+   * @param {Uint8Array} seed
+   * @returns {Promise<BuildGatewayTokenTransactionResult>}
+   */
+  async buildIssueTransaction(
     owner: PublicKey,
-    seed?: Uint8Array,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken | null>> {
+    seed?: Uint8Array
+  ): Promise<BuildGatewayTokenTransactionResult> {
     const gatewayTokenKey: PublicKey = await getGatewayTokenKeyForOwner(
       owner,
       this.gatekeeperNetwork
     );
     const gatekeeperAccount = await this.gatekeeperAccountKey();
-
     const expireTime = this.getDefaultExpireTime();
-
     const transaction = new Transaction().add(
       issueVanilla(
         gatewayTokenKey,
@@ -130,6 +163,23 @@ export class GatekeeperService {
         expireTime
       )
     );
+    const unsignedSerializedTx = await this.serializeBuiltTransaction(
+      transaction
+    );
+    return { unsignedSerializedTx, transaction, gatewayTokenKey };
+  }
+
+  private async issueVanilla(
+    owner: PublicKey,
+    seed?: Uint8Array,
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<GatewayToken | null>> {
+    const gatewayTokenKey: PublicKey = await getGatewayTokenKeyForOwner(
+      owner,
+      this.gatekeeperNetwork
+    );
+
+    const { transaction } = await this.buildIssueTransaction(owner, seed);
 
     const sentTransaction = await send(
       this.connection,
@@ -252,6 +302,29 @@ export class GatekeeperService {
   }
 
   /**
+   * Create a transaction with an update expiry instruction and return
+   * a serialized form of the transaction with a dummy blockhash
+   * @param {PublicKey} gatewayTokenKey
+   * @param {number} expireTime
+   * @returns {Promise<BuildGatewayTokenTransactionResult>}
+   */
+  async buildUpdateExpiryTransaction(
+    gatewayTokenKey: PublicKey,
+    expireTime: number
+  ): Promise<BuildGatewayTokenTransactionResult> {
+    const instruction: TransactionInstruction = updateExpiry(
+      gatewayTokenKey,
+      this.gatekeeperAuthority.publicKey,
+      await this.gatekeeperAccountKey(),
+      expireTime
+    );
+    const transaction = new Transaction().add(instruction);
+    const unsignedSerializedTx = await this.serializeBuiltTransaction(
+      transaction
+    );
+    return { unsignedSerializedTx, transaction, gatewayTokenKey };
+  }
+  /**
    * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
    * @param expireTime
@@ -282,5 +355,41 @@ export class GatekeeperService {
     );
 
     return !!gatekeeperAccountInfo;
+  }
+
+  /**
+   * Given a serialized, unsigned transaction:
+   *  - hydrate the transaction
+   *  - add a recent blockhash to increase change of success
+   *  - sign transaction with payer and gatekeeper authority
+   *  - send the transaction to the chain
+   *  - get the updated associated gateway token
+   * @param {string} unsignedSerializedTx
+   * @param {PublicKey} gatewayTokenKey
+   * @param {SendOptions} sendOptions
+   * @returns {Promise<DataTransaction<GatewayToken | null>>}
+   */
+  async signAndSendTransaction(
+    unsignedSerializedTx: string,
+    gatewayTokenKey: PublicKey,
+    sendOptions: SendOptions = {}
+  ): Promise<DataTransaction<GatewayToken | null>> {
+    const transaction = Transaction.from(
+      Buffer.from(unsignedSerializedTx, "base64")
+    );
+    const recentBlockhash = await this.connection.getRecentBlockhash();
+    transaction.recentBlockhash = recentBlockhash.blockhash;
+    await transaction.sign(this.payer, this.gatekeeperAuthority);
+    const sentTransaction = await send(
+      this.connection,
+      transaction,
+      sendOptions,
+      this.payer,
+      this.gatekeeperAuthority
+    );
+
+    return sentTransaction.withData(() =>
+      getGatewayToken(this.connection, gatewayTokenKey)
+    );
   }
 }

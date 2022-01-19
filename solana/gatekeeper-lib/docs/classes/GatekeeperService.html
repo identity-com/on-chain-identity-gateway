@@ -93,10 +93,14 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#buildIssueTransaction" class="tsd-kind-icon">build<wbr>Issue<wbr>Transaction</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#buildUpdateExpiryTransaction" class="tsd-kind-icon">build<wbr>Update<wbr>Expiry<wbr>Transaction</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#findGatewayTokenForOwner" class="tsd-kind-icon">find<wbr>Gateway<wbr>Token<wbr>For<wbr>Owner</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#freeze" class="tsd-kind-icon">freeze</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#issue" class="tsd-kind-icon">issue</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#revoke" class="tsd-kind-icon">revoke</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="GatekeeperService.html#serializeBuiltTransaction" class="tsd-kind-icon">serialize<wbr>Built<wbr>Transaction</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#signAndSendTransaction" class="tsd-kind-icon">sign<wbr>And<wbr>Send<wbr>Transaction</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#unfreeze" class="tsd-kind-icon">unfreeze</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#updateExpiry" class="tsd-kind-icon">update<wbr>Expiry</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="GatekeeperService.html#updateToken" class="tsd-kind-icon">update<wbr>Token</a></li>
@@ -117,7 +121,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/798832a/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L73">service/GatekeeperService.ts:73</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L79">service/GatekeeperService.ts:79</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -176,6 +180,71 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="buildIssueTransaction" class="tsd-anchor"></a>
+					<h3>build<wbr>Issue<wbr>Transaction</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">build<wbr>Issue<wbr>Transaction<span class="tsd-signature-symbol">(</span>owner<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, seed<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BuildGatewayTokenTransactionResult</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L145">service/GatekeeperService.ts:145</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Builds and serializes a transaction with a token issuance instruction for sending later.
+										A &#39;dummy&#39; blockhash is added to avoid an on-chain call, a real blockhash will be added
+									when the transaction is hydrated, signed and sent</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>owner: <span class="tsd-signature-type">PublicKey</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> seed: <span class="tsd-signature-type">Uint8Array</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BuildGatewayTokenTransactionResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="buildUpdateExpiryTransaction" class="tsd-anchor"></a>
+					<h3>build<wbr>Update<wbr>Expiry<wbr>Transaction</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">build<wbr>Update<wbr>Expiry<wbr>Transaction<span class="tsd-signature-symbol">(</span>gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, expireTime<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BuildGatewayTokenTransactionResult</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L312">service/GatekeeperService.ts:312</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Create a transaction with an update expiry instruction and return
+									a serialized form of the transaction with a dummy blockhash</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>gatewayTokenKey: <span class="tsd-signature-type">PublicKey</span></h5>
+								</li>
+								<li>
+									<h5>expireTime: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BuildGatewayTokenTransactionResult</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="findGatewayTokenForOwner" class="tsd-anchor"></a>
 					<h3>find<wbr>Gateway<wbr>Token<wbr>For<wbr>Owner</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -185,7 +254,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/798832a/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L248">service/GatekeeperService.ts:248</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L299">service/GatekeeperService.ts:299</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -215,7 +284,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/798832a/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L215">service/GatekeeperService.ts:215</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L266">service/GatekeeperService.ts:266</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -248,7 +317,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/798832a/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L152">service/GatekeeperService.ts:152</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L203">service/GatekeeperService.ts:203</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -281,7 +350,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/798832a/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L191">service/GatekeeperService.ts:191</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L242">service/GatekeeperService.ts:242</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -304,6 +373,76 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
+					<a name="serializeBuiltTransaction" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> serialize<wbr>Built<wbr>Transaction</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+						<li class="tsd-signature tsd-kind-icon">serialize<wbr>Built<wbr>Transaction<span class="tsd-signature-symbol">(</span>transaction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Transaction</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L120">service/GatekeeperService.ts:120</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Given a transaction, add a &#39;dummy&#39; recent blockhash, a feePayer
+									and serialize to a base64 string</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>transaction: <span class="tsd-signature-type">Transaction</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="signAndSendTransaction" class="tsd-anchor"></a>
+					<h3>sign<wbr>And<wbr>Send<wbr>Transaction</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">sign<wbr>And<wbr>Send<wbr>Transaction<span class="tsd-signature-symbol">(</span>unsignedSerializedTx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, sendOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">SendOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L373">service/GatekeeperService.ts:373</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Given a serialized, unsigned transaction:</p>
+									<ul>
+										<li>hydrate the transaction</li>
+										<li>add a recent blockhash to increase change of success</li>
+										<li>sign transaction with payer and gatekeeper authority</li>
+										<li>send the transaction to the chain</li>
+										<li>get the updated associated gateway token</li>
+									</ul>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>unsignedSerializedTx: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>gatewayTokenKey: <span class="tsd-signature-type">PublicKey</span></h5>
+								</li>
+								<li>
+									<h5>sendOptions: <span class="tsd-signature-type">SendOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="unfreeze" class="tsd-anchor"></a>
 					<h3>unfreeze</h3>
@@ -314,7 +453,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/798832a/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L232">service/GatekeeperService.ts:232</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L283">service/GatekeeperService.ts:283</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -347,7 +486,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/798832a/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L260">service/GatekeeperService.ts:260</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L334">service/GatekeeperService.ts:334</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -383,7 +522,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/798832a/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L166">service/GatekeeperService.ts:166</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/9f18af9/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L217">service/GatekeeperService.ts:217</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -434,6 +573,12 @@
 								<a href="GatekeeperService.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="GatekeeperService.html#buildIssueTransaction" class="tsd-kind-icon">build<wbr>Issue<wbr>Transaction</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="GatekeeperService.html#buildUpdateExpiryTransaction" class="tsd-kind-icon">build<wbr>Update<wbr>Expiry<wbr>Transaction</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="GatekeeperService.html#findGatewayTokenForOwner" class="tsd-kind-icon">find<wbr>Gateway<wbr>Token<wbr>For<wbr>Owner</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
@@ -444,6 +589,12 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="GatekeeperService.html#revoke" class="tsd-kind-icon">revoke</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
+								<a href="GatekeeperService.html#serializeBuiltTransaction" class="tsd-kind-icon">serialize<wbr>Built<wbr>Transaction</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="GatekeeperService.html#signAndSendTransaction" class="tsd-kind-icon">sign<wbr>And<wbr>Send<wbr>Transaction</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="GatekeeperService.html#unfreeze" class="tsd-kind-icon">unfreeze</a>

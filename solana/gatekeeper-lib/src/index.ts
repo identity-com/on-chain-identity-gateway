@@ -6,4 +6,5 @@ export {
   constants,
   SentTransaction,
   DataTransaction,
+  BuildGatewayTokenTransactionResult,
 } from "./util";
