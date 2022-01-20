@@ -2,24 +2,16 @@ import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinonChai from "sinon-chai";
 import chaiAsPromised from "chai-as-promised";
-import { Keypair, Connection, PublicKey } from "@solana/web3.js";
+import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import sinon from "sinon";
 import * as connectionUtils from "../src/util/connection";
 import * as gatekeeperServiceModule from "../src/service/GatekeeperService";
 import { PROGRAM_ID } from "../src/util/constants";
-import {
-  GatewayToken,
-  issueVanilla,
-  State,
-} from "@identity.com/solana-gateway-ts";
+import { GatewayToken, State } from "@identity.com/solana-gateway-ts";
 import * as GatewayTs from "@identity.com/solana-gateway-ts";
-import {
-  BuildGatewayTokenTransactionResult,
-  DataTransaction,
-  SentTransaction,
-} from "../src/util/connection";
-import { Transaction } from "@solana/web3.js/lib/index.cjs";
+import { DataTransaction, SentTransaction } from "../src/util/connection";
 import { dummyBlockhash } from "../src/service/GatekeeperService";
+import * as transactionUtils from "../src/util/transaction";
 
 chai.use(sinonChai);
 chai.use(chaiSubset);
@@ -76,7 +68,7 @@ describe("GatekeeperService", () => {
     sandbox
       .stub(sentTransaction, "withData")
       .returns(new DataTransaction<T>(sentTransaction, result));
-    sandbox.stub(connectionUtils, "send").resolves(sentTransaction);
+    return sandbox.stub(connectionUtils, "send").resolves(sentTransaction);
   };
 
   context("issue", () => {
@@ -352,6 +344,55 @@ describe("GatekeeperService", () => {
   });
 
   context("signAndSendTransaction", () => {
-    // TODO
+    let stubSign;
+    let transaction;
+    let unsignedSerializedTx;
+    let recentBlockhash;
+    let sendStub;
+    beforeEach(async () => {
+      recentBlockhash = Keypair.generate().publicKey.toBase58();
+      ({ transaction, unsignedSerializedTx } =
+        await gatekeeperService.buildIssueTransaction(tokenOwner.publicKey));
+      stubSign = sandbox.stub(transaction, "sign").resolves();
+      sandbox.stub(Transaction, "from").returns(transaction);
+      sendStub = stubSend(activeGatewayToken);
+      connection.getRecentBlockhash = sandbox.stub().resolves(recentBlockhash);
+    });
+
+    context("with an invalid program id on the transaction", () => {
+      beforeEach(() => {
+        sandbox.stub(transactionUtils, "isGatewayTransaction").returns(false);
+      });
+      it("should throw an error", async () => {
+        return expect(
+          gatekeeperService.signAndSendTransaction(
+            unsignedSerializedTx,
+            gatewayTokenAddress
+          )
+        ).to.be.rejectedWith(/transaction must be for the gateway program/);
+      });
+    });
+
+    context("with a valid program id on the transaction", () => {
+      beforeEach(() => {
+        sandbox.stub(transactionUtils, "isGatewayTransaction").returns(true);
+      });
+
+      it("should call sign", async () => {
+        await gatekeeperService.signAndSendTransaction(
+          unsignedSerializedTx,
+          gatewayTokenAddress
+        );
+        expect(stubSign).calledOnce;
+      });
+
+      it("should call send", async () => {
+        await gatekeeperService.signAndSendTransaction(
+          unsignedSerializedTx,
+          gatewayTokenAddress
+        );
+        expect(sendStub).calledOnce;
+      });
+    });
   });
 });
