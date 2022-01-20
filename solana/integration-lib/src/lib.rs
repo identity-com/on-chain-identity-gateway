@@ -33,10 +33,10 @@ const MAX_SESSION_TOKEN_BALANCE: u64 = 0;
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
 pub struct VerificationOptions {
     /// If true, consider an expired token as invalid. Defaults to true
-    check_expiry: bool,
+    pub check_expiry: bool,
     /// Number of seconds to allow a token to have expired by, for it still to be counted as active.
     /// Defaults to 0. Must be set if check_expiry is true.
-    expiry_tolerance_seconds: Option<u32>,
+    pub expiry_tolerance_seconds: Option<u32>,
 }
 
 pub const DEFAULT_VERIFICATION_OPTIONS: VerificationOptions = VerificationOptions {
