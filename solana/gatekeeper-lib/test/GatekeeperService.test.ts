@@ -1,15 +1,27 @@
 import chai from "chai";
 import chaiSubset from "chai-subset";
+import sinonChai from "sinon-chai";
 import chaiAsPromised from "chai-as-promised";
 import { Keypair, Connection, PublicKey } from "@solana/web3.js";
 import sinon from "sinon";
 import * as connectionUtils from "../src/util/connection";
 import * as gatekeeperServiceModule from "../src/service/GatekeeperService";
 import { PROGRAM_ID } from "../src/util/constants";
-import { GatewayToken, State } from "@identity.com/solana-gateway-ts";
+import {
+  GatewayToken,
+  issueVanilla,
+  State,
+} from "@identity.com/solana-gateway-ts";
 import * as GatewayTs from "@identity.com/solana-gateway-ts";
-import { DataTransaction, SentTransaction } from "../src/util/connection";
+import {
+  BuildGatewayTokenTransactionResult,
+  DataTransaction,
+  SentTransaction,
+} from "../src/util/connection";
+import { Transaction } from "@solana/web3.js/lib/index.cjs";
+import { dummyBlockhash } from "../src/service/GatekeeperService";
 
+chai.use(sinonChai);
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -242,5 +254,104 @@ describe("GatekeeperService", () => {
         });
       });
     });
+  });
+  const expectValidGatewayTransaction = (transaction: Transaction) => {
+    expect(transaction).to.be.an.instanceOf(Transaction);
+    expect(transaction.instructions[0].programId.toBase58()).to.eq(
+      PROGRAM_ID.toBase58()
+    );
+    expect(transaction.recentBlockhash).to.eq(dummyBlockhash);
+  };
+
+  context("buildIssueTransaction", () => {
+    beforeEach(() => {
+      sandbox
+        .stub(GatewayTs, "getGatewayTokenAddressForOwnerAndGatekeeperNetwork")
+        .resolves(gatewayTokenAddress);
+      sandbox
+        .stub(GatewayTs, "getGatekeeperAccountAddress")
+        .resolves(gatekeeperAccountAddress);
+    });
+    beforeEach(() => {
+      stubSend(activeGatewayToken);
+    });
+
+    it("should return a valid unserialized transaction", async () => {
+      const buildResponse = await gatekeeperService.buildIssueTransaction(
+        tokenOwner.publicKey
+      );
+      expect(buildResponse.unsignedSerializedTx).to.be.a("string");
+      const rehydratedTransaction = Transaction.from(
+        Buffer.from(buildResponse.unsignedSerializedTx, "base64")
+      );
+      expectValidGatewayTransaction(rehydratedTransaction);
+    });
+
+    it("should return a valid transaction", async () => {
+      const buildResponse = await gatekeeperService.buildIssueTransaction(
+        tokenOwner.publicKey
+      );
+      expectValidGatewayTransaction(buildResponse.transaction);
+    });
+
+    it("should return a valid gatewayTokenAddress", async () => {
+      const buildResponse = await gatekeeperService.buildIssueTransaction(
+        tokenOwner.publicKey
+      );
+      expect(buildResponse.gatewayTokenAddress.toBase58()).to.a("string");
+    });
+  });
+
+  context("buildUpdateExpiryTransaction", () => {
+    beforeEach(() => {
+      sandbox
+        .stub(GatewayTs, "getGatewayToken")
+        .resolves(
+          activeGatewayToken.update({ state: State.ACTIVE, expiryTime: 100 })
+        ); // token starts with a low expiry time.
+    });
+    context("with the update blockchain call succeeding", () => {
+      const newExpiry = 123456;
+      beforeEach(() => {
+        stubSend({
+          ...activeGatewayToken,
+          expiryTime: newExpiry,
+        });
+      });
+      it("should return a valid unserialized transaction", async () => {
+        const buildResponse =
+          await gatekeeperService.buildUpdateExpiryTransaction(
+            tokenOwner.publicKey,
+            newExpiry
+          );
+        expect(buildResponse.unsignedSerializedTx).to.be.a("string");
+        const rehydratedTransaction = Transaction.from(
+          Buffer.from(buildResponse.unsignedSerializedTx, "base64")
+        );
+        expectValidGatewayTransaction(rehydratedTransaction);
+      });
+
+      it("should return a valid transaction", async () => {
+        const buildResponse =
+          await gatekeeperService.buildUpdateExpiryTransaction(
+            tokenOwner.publicKey,
+            newExpiry
+          );
+        expectValidGatewayTransaction(buildResponse.transaction);
+      });
+
+      it("should return a valid gatewayTokenAddress", async () => {
+        const buildResponse =
+          await gatekeeperService.buildUpdateExpiryTransaction(
+            tokenOwner.publicKey,
+            newExpiry
+          );
+        expect(buildResponse.gatewayTokenAddress.toBase58()).to.a("string");
+      });
+    });
+  });
+
+  context("signAndSendTransaction", () => {
+    // TODO
   });
 });
