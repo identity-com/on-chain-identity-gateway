@@ -4,6 +4,7 @@ import {
   Commitment,
   Connection,
   Keypair,
+  PublicKey,
   SendOptions,
   Transaction,
   TransactionError,
@@ -79,6 +80,12 @@ export class SentTransaction {
     }
   }
 }
+
+export type BuildGatewayTokenTransactionResult = {
+  transaction: Transaction;
+  gatewayTokenAddress: PublicKey;
+  unsignedSerializedTx: string;
+};
 
 export class DataTransaction<T> {
   readonly sentTransaction: SentTransaction;
