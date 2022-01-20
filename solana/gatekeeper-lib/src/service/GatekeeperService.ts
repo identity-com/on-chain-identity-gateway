@@ -2,7 +2,6 @@ import {
   ConfirmOptions,
   Connection,
   Keypair,
-  Message,
   PublicKey,
   SendOptions,
   Transaction,
@@ -26,6 +25,7 @@ import {
   DataTransaction,
   send,
 } from "../util/connection";
+import { isGatewayTransaction } from "../util/transaction";
 
 export const dummyBlockhash = "AvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
 /**
@@ -342,6 +342,7 @@ export class GatekeeperService {
    * Given a serialized, unsigned transaction:
    *  - hydrate the transaction
    *  - add a recent blockhash to increase change of success
+   *  - check that the transaction is a gateway transaction
    *  - sign transaction with payer and gatekeeper authority
    *  - send the transaction to the chain
    *  - get the updated associated gateway token
@@ -360,6 +361,10 @@ export class GatekeeperService {
     );
     const recentBlockhash = await this.connection.getRecentBlockhash();
     transaction.recentBlockhash = recentBlockhash.blockhash;
+    // Guard against someone sending a non-gateway unserialized transaction
+    if (!isGatewayTransaction(transaction)) {
+      throw Error("transaction must be for the gateway program");
+    }
     await transaction.sign(this.payer, this.gatekeeperAuthority);
     const sentTransaction = await send(
       this.connection,
