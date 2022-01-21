@@ -41,7 +41,6 @@ export const send = async (
   new SentTransaction(
     connection,
     await connection.sendTransaction(transaction, signers, {
-      preflightCommitment: SOLANA_COMMITMENT,
       ...options,
     })
   );
