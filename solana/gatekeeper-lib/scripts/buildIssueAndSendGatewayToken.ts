@@ -51,8 +51,8 @@ const payer = myKeypair;
     await gatekeeperService.buildIssueTransaction(owner);
 
   console.log("builtTransaction", builtTransaction);
-  const result = await gatekeeperService.signAndSendTransaction(
-    builtTransaction.unsignedSerializedTx,
+  const result = await gatekeeperService.sendSerializedTransaction(
+    builtTransaction.serializedTx,
     builtTransaction.gatewayTokenAddress
   );
 

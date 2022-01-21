@@ -27,7 +27,6 @@ import {
 } from "../util/connection";
 import { isGatewayTransaction } from "../util/transaction";
 
-export const dummyBlockhash = "AvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
 /**
  * Global default configuration for the gatekeeper
  */
@@ -88,26 +87,26 @@ export class GatekeeperService {
    * @param {Transaction} transaction
    * @returns {Promise<string>}
    */
-  private async serializeBuiltTransaction(
+  private async signAndSerializeBuiltTransaction(
     transaction: Transaction
   ): Promise<string> {
     // recent blockhash and feepayer are required for serialization
-    // a real recent blockhash will be added in signAndSendTransaction
-    transaction.recentBlockhash = dummyBlockhash;
+    // a real recent blockhash will be added in sendSerializedTransaction
+    const recentBlockhash = await this.connection.getRecentBlockhash();
+    transaction.recentBlockhash = recentBlockhash.blockhash;
     transaction.feePayer = this.payer.publicKey;
-    const unsignedSerializedTx = await transaction
+    await transaction.sign(this.payer, this.gatekeeperAuthority);
+    const serializedTx = await transaction
       .serialize({
         verifySignatures: false,
         requireAllSignatures: false,
       })
       .toString("base64");
-    return unsignedSerializedTx;
+    return serializedTx;
   }
 
   /**
    * Builds and serializes a transaction with a token issuance instruction for sending later.
-   * A 'dummy' blockhash is added to avoid an on-chain call, a real blockhash will be added
-   * when the transaction is hydrated, signed and sent
    * @param {PublicKey} owner
    * @param {Uint8Array} seed
    * @returns {Promise<BuildGatewayTokenTransactionResult>}
@@ -139,11 +138,12 @@ export class GatekeeperService {
         expireTime
       )
     );
-    const unsignedSerializedTx = await this.serializeBuiltTransaction(
+
+    const serializedTx = await this.signAndSerializeBuiltTransaction(
       transaction
     );
     return {
-      unsignedSerializedTx,
+      serializedTx,
       transaction,
       gatewayTokenAddress,
     };
@@ -300,10 +300,10 @@ export class GatekeeperService {
       expireTime
     );
     const transaction = new Transaction().add(instruction);
-    const unsignedSerializedTx = await this.serializeBuiltTransaction(
+    const serializedTx = await this.signAndSerializeBuiltTransaction(
       transaction
     );
-    return { unsignedSerializedTx, transaction, gatewayTokenAddress };
+    return { serializedTx, transaction, gatewayTokenAddress };
   }
   /**
    * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
@@ -346,26 +346,22 @@ export class GatekeeperService {
    *  - sign transaction with payer and gatekeeper authority
    *  - send the transaction to the chain
    *  - get the updated associated gateway token
-   * @param {string} unsignedSerializedTx
+   * @param {string} serializedTx
    * @param {PublicKey} gatewayTokenKey
    * @param {SendOptions} sendOptions
    * @returns {Promise<DataTransaction<GatewayToken | null>>}
    */
-  async signAndSendTransaction(
-    unsignedSerializedTx: string,
+  async sendSerializedTransaction(
+    serializedTx: string,
     gatewayTokenKey: PublicKey,
     sendOptions: SendOptions = {}
   ): Promise<DataTransaction<GatewayToken | null>> {
-    const transaction = Transaction.from(
-      Buffer.from(unsignedSerializedTx, "base64")
-    );
-    const recentBlockhash = await this.connection.getRecentBlockhash();
-    transaction.recentBlockhash = recentBlockhash.blockhash;
+    const transaction = Transaction.from(Buffer.from(serializedTx, "base64"));
     // Guard against someone sending a non-gateway unserialized transaction
     if (!isGatewayTransaction(transaction)) {
       throw Error("transaction must be for the gateway program");
     }
-    await transaction.sign(this.payer, this.gatekeeperAuthority);
+
     const sentTransaction = await send(
       this.connection,
       transaction,

@@ -10,7 +10,6 @@ import { PROGRAM_ID } from "../src/util/constants";
 import { GatewayToken, State } from "@identity.com/solana-gateway-ts";
 import * as GatewayTs from "@identity.com/solana-gateway-ts";
 import { DataTransaction, SentTransaction } from "../src/util/connection";
-import { dummyBlockhash } from "../src/service/GatekeeperService";
 import * as transactionUtils from "../src/util/transaction";
 
 chai.use(sinonChai);
@@ -19,6 +18,8 @@ chai.use(chaiAsPromised);
 const { expect } = chai;
 
 const sandbox = sinon.createSandbox();
+
+export const dummyBlockhash = "AvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
 
 describe("GatekeeperService", () => {
   let gatekeeperService: gatekeeperServiceModule.GatekeeperService;
@@ -36,7 +37,9 @@ describe("GatekeeperService", () => {
   afterEach(sandbox.restore);
 
   beforeEach(() => {
-    connection = {} as unknown as Connection; // The connection won't be called as we're stubbing at a higher level.
+    connection = {
+      getRecentBlockhash: () => ({ blockhash: dummyBlockhash }),
+    } as unknown as Connection; // The connection won't be called as we're stubbing at a higher level.
     payer = Keypair.generate();
     tokenOwner = Keypair.generate();
     gatekeeperNetwork = Keypair.generate();
@@ -252,7 +255,7 @@ describe("GatekeeperService", () => {
     expect(transaction.instructions[0].programId.toBase58()).to.eq(
       PROGRAM_ID.toBase58()
     );
-    expect(transaction.recentBlockhash).to.eq(dummyBlockhash);
+    expect(transaction.recentBlockhash).to.be.a("string");
   };
 
   context("buildIssueTransaction", () => {
@@ -272,9 +275,9 @@ describe("GatekeeperService", () => {
       const buildResponse = await gatekeeperService.buildIssueTransaction(
         tokenOwner.publicKey
       );
-      expect(buildResponse.unsignedSerializedTx).to.be.a("string");
+      expect(buildResponse.serializedTx).to.be.a("string");
       const rehydratedTransaction = Transaction.from(
-        Buffer.from(buildResponse.unsignedSerializedTx, "base64")
+        Buffer.from(buildResponse.serializedTx, "base64")
       );
       expectValidGatewayTransaction(rehydratedTransaction);
     });
@@ -316,9 +319,9 @@ describe("GatekeeperService", () => {
             tokenOwner.publicKey,
             newExpiry
           );
-        expect(buildResponse.unsignedSerializedTx).to.be.a("string");
+        expect(buildResponse.serializedTx).to.be.a("string");
         const rehydratedTransaction = Transaction.from(
-          Buffer.from(buildResponse.unsignedSerializedTx, "base64")
+          Buffer.from(buildResponse.serializedTx, "base64")
         );
         expectValidGatewayTransaction(rehydratedTransaction);
       });
@@ -343,17 +346,15 @@ describe("GatekeeperService", () => {
     });
   });
 
-  context("signAndSendTransaction", () => {
-    let stubSign;
+  context("sendSerializedTransaction", () => {
     let transaction;
-    let unsignedSerializedTx;
+    let serializedTx;
     let recentBlockhash;
     let sendStub;
     beforeEach(async () => {
       recentBlockhash = Keypair.generate().publicKey.toBase58();
-      ({ transaction, unsignedSerializedTx } =
+      ({ transaction, serializedTx } =
         await gatekeeperService.buildIssueTransaction(tokenOwner.publicKey));
-      stubSign = sandbox.stub(transaction, "sign").resolves();
       sandbox.stub(Transaction, "from").returns(transaction);
       sendStub = stubSend(activeGatewayToken);
       connection.getRecentBlockhash = sandbox.stub().resolves(recentBlockhash);
@@ -365,8 +366,8 @@ describe("GatekeeperService", () => {
       });
       it("should throw an error", async () => {
         return expect(
-          gatekeeperService.signAndSendTransaction(
-            unsignedSerializedTx,
+          gatekeeperService.sendSerializedTransaction(
+            serializedTx,
             gatewayTokenAddress
           )
         ).to.be.rejectedWith(/transaction must be for the gateway program/);
@@ -378,17 +379,9 @@ describe("GatekeeperService", () => {
         sandbox.stub(transactionUtils, "isGatewayTransaction").returns(true);
       });
 
-      it("should call sign", async () => {
-        await gatekeeperService.signAndSendTransaction(
-          unsignedSerializedTx,
-          gatewayTokenAddress
-        );
-        expect(stubSign).calledOnce;
-      });
-
       it("should call send", async () => {
-        await gatekeeperService.signAndSendTransaction(
-          unsignedSerializedTx,
+        await gatekeeperService.sendSerializedTransaction(
+          serializedTx,
           gatewayTokenAddress
         );
         expect(sendStub).calledOnce;
