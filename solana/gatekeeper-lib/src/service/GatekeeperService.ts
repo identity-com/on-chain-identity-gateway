@@ -88,13 +88,12 @@ export class GatekeeperService {
    * @returns {Promise<string>}
    */
   private async signAndSerializeBuiltTransaction(
-    transaction: Transaction,
-    blockhash?: string
+    transaction: Transaction
   ): Promise<string> {
     // recent blockhash and feepayer are required for signing and serialization
-    transaction.recentBlockhash = blockhash
-      ? blockhash
-      : (await this.connection.getRecentBlockhash()).blockhash;
+    transaction.recentBlockhash = (
+      await this.connection.getRecentBlockhash()
+    ).blockhash;
     transaction.feePayer = this.payer.publicKey;
     await transaction.sign(this.payer, this.gatekeeperAuthority);
     const serializedTx = await transaction.serialize().toString("base64");
@@ -102,7 +101,7 @@ export class GatekeeperService {
   }
 
   /**
-   * Builds and serializes a transaction with a token issuance instruction for sending later.
+   * Builds, signs and serializes a transaction with a token issuance instruction for sending later.
    * @param {PublicKey} owner
    * @param {Uint8Array} seed
    * @returns {Promise<BuildGatewayTokenTransactionResult>}
@@ -280,7 +279,7 @@ export class GatekeeperService {
 
   /**
    * Create a transaction with an update expiry instruction and return
-   * a serialized form of the transaction with a dummy blockhash
+   * a serialized form of the transaction
    * @param {PublicKey} gatewayTokenAddress
    * @param {number} expireTime
    * @returns {Promise<BuildGatewayTokenTransactionResult>}
@@ -337,9 +336,8 @@ export class GatekeeperService {
   /**
    * Given a serialized, unsigned transaction:
    *  - hydrate the transaction
-   *  - add a recent blockhash to increase change of success
    *  - check that the transaction is a gateway transaction
-   *  - sign transaction with payer and gatekeeper authority
+   *  - set the recentBlockhash on the transaction if provided in sendOptions
    *  - send the transaction to the chain
    *  - get the updated associated gateway token
    * @param {string} serializedTx
@@ -350,12 +348,17 @@ export class GatekeeperService {
   async sendSerializedTransaction(
     serializedTx: string,
     gatewayTokenKey: PublicKey,
-    sendOptions: SendOptions = {}
+    sendOptions: SendOptions = {},
+    recentBlockhash?: string
   ): Promise<DataTransaction<GatewayToken | null>> {
     const transaction = Transaction.from(Buffer.from(serializedTx, "base64"));
     // Guard against someone sending a non-gateway unserialized transaction
     if (!isGatewayTransaction(transaction)) {
       throw Error("transaction must be for the gateway program");
+    }
+
+    if (recentBlockhash) {
+      transaction.recentBlockhash = recentBlockhash;
     }
 
     const sentTransaction = await send(
