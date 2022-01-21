@@ -88,20 +88,16 @@ export class GatekeeperService {
    * @returns {Promise<string>}
    */
   private async signAndSerializeBuiltTransaction(
-    transaction: Transaction
+    transaction: Transaction,
+    blockhash?: string
   ): Promise<string> {
-    // recent blockhash and feepayer are required for serialization
-    // a real recent blockhash will be added in sendSerializedTransaction
-    const recentBlockhash = await this.connection.getRecentBlockhash();
-    transaction.recentBlockhash = recentBlockhash.blockhash;
+    // recent blockhash and feepayer are required for signing and serialization
+    transaction.recentBlockhash = blockhash
+      ? blockhash
+      : (await this.connection.getRecentBlockhash()).blockhash;
     transaction.feePayer = this.payer.publicKey;
     await transaction.sign(this.payer, this.gatekeeperAuthority);
-    const serializedTx = await transaction
-      .serialize({
-        verifySignatures: false,
-        requireAllSignatures: false,
-      })
-      .toString("base64");
+    const serializedTx = await transaction.serialize().toString("base64");
     return serializedTx;
   }
 
