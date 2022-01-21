@@ -10,7 +10,7 @@ import { decode } from "bs58";
  * Usage: 
     npx ts-node scripts/sendSerializedGatewayTokenTx.ts \
     --gatewayTokenAddress=Ha8zGJVUo56VnVp6AEShYNiJmGkY5Yf8m7EBLVTWNYw6  \
-    --unsignedSerializedTx=AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAIE3x6vb/z2zcTeEk10jh6M7hHEbyFdAL0K+nj4wTg3YzP2ODBVFE7OPp+89wiJ1zMMFAOVJrCJKdRZJjkXFi0wdcXig3r7vZEjGriLtwKPe8gKVUMBWom8r59jwkyIGA6uCiP4wZwKTf/19S8mrshUOmIqDMXGHlEZPp1JE9zEq16ThKvipVUHKjnhiV43RSjkb/3b+lL0d46YFPFAgC+m0gEDAwEAAgkDmAzpYQAAAAA=
+    --serializedTx=AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAIE3x6vb/z2zcTeEk10jh6M7hHEbyFdAL0K+nj4wTg3YzP2ODBVFE7OPp+89wiJ1zMMFAOVJrCJKdRZJjkXFi0wdcXig3r7vZEjGriLtwKPe8gKVUMBWom8r59jwkyIGA6uCiP4wZwKTf/19S8mrshUOmIqDMXGHlEZPp1JE9zEq16ThKvipVUHKjnhiV43RSjkb/3b+lL0d46YFPFAgC+m0gEDAwEAAgkDmAzpYQAAAAA=
  */
 const mySecretKey = require(path.join(
   homedir(),
@@ -48,10 +48,10 @@ const payer = myKeypair;
   );
   const wallet = Keypair.generate().publicKey;
 
-  console.log("unsignedSerializedTx", argv.unsignedSerializedTx);
+  console.log("serializedTx", argv.serializedTx);
   console.log("gatewayTokenAddress", argv.gatewayTokenAddress);
-  const result = await gatekeeperService.signAndSendTransaction(
-    argv.unsignedSerializedTx as string,
+  const result = await gatekeeperService.sendSerializedTransaction(
+    argv.serializedTx as string,
     new PublicKey(argv.gatewayTokenAddress as string)
   );
 

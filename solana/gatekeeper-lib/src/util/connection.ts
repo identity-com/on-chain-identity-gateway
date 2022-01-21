@@ -84,7 +84,7 @@ export class SentTransaction {
 export type BuildGatewayTokenTransactionResult = {
   transaction: Transaction;
   gatewayTokenAddress: PublicKey;
-  unsignedSerializedTx: string;
+  serializedTx: string;
 };
 
 export class DataTransaction<T> {

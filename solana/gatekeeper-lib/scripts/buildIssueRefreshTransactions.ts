@@ -51,8 +51,8 @@ const payer = myKeypair;
   const builtIssueTransaction: BuildGatewayTokenTransactionResult =
     await gatekeeperService.buildIssueTransaction(useWallet.publicKey);
   console.log("builtTransaction", builtIssueTransaction);
-  const issueResult = await gatekeeperService.signAndSendTransaction(
-    builtIssueTransaction.unsignedSerializedTx,
+  const issueResult = await gatekeeperService.sendSerializedTransaction(
+    builtIssueTransaction.serializedTx,
     builtIssueTransaction.gatewayTokenAddress
   );
   console.log("issue result signature", issueResult.signature);
@@ -74,11 +74,16 @@ const payer = myKeypair;
       gatewayToken?.expiryTime + 1000 * 60
     );
 
-  const refreshResult = await gatekeeperService.signAndSendTransaction(
-    builtRefreshTransaction.unsignedSerializedTx,
+  const refreshResult = await gatekeeperService.sendSerializedTransaction(
+    builtRefreshTransaction.serializedTx,
     builtRefreshTransaction.gatewayTokenAddress
   );
-  console.log("refresh result signature", refreshResult.signature);
+
+  const refreshResult2 = await gatekeeperService.sendSerializedTransaction(
+    builtRefreshTransaction.serializedTx,
+    builtRefreshTransaction.gatewayTokenAddress
+  );
+  console.log("refresh result signature", { refreshResult, refreshResult2 });
 
   gatewayToken = await gatekeeperService.findGatewayTokenForOwner(
     useWallet.publicKey
