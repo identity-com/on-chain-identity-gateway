@@ -78,7 +78,12 @@ const payer = myKeypair;
     builtRefreshTransaction.serializedTx,
     builtRefreshTransaction.gatewayTokenAddress
   );
-  console.log("refresh result signature", refreshResult.signature);
+
+  const refreshResult2 = await gatekeeperService.sendSerializedTransaction(
+    builtRefreshTransaction.serializedTx,
+    builtRefreshTransaction.gatewayTokenAddress
+  );
+  console.log("refresh result signature", { refreshResult, refreshResult2 });
 
   gatewayToken = await gatekeeperService.findGatewayTokenForOwner(
     useWallet.publicKey

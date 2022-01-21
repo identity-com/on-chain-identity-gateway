@@ -28,15 +28,18 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`gateway add-gatekeeper ADDRESS`](#gateway-add-gatekeeper-address)
-* [`gateway freeze GATEWAYTOKEN`](#gateway-freeze-gatewaytoken)
-* [`gateway help [COMMAND]`](#gateway-help-command)
-* [`gateway issue ADDRESS`](#gateway-issue-address)
-* [`gateway refresh GATEWAYTOKEN [EXPIRY]`](#gateway-refresh-gatewaytoken-expiry)
-* [`gateway revoke GATEWAYTOKEN`](#gateway-revoke-gatewaytoken)
-* [`gateway revoke-gatekeeper ADDRESS`](#gateway-revoke-gatekeeper-address)
-* [`gateway unfreeze GATEWAYTOKEN`](#gateway-unfreeze-gatewaytoken)
-* [`gateway verify OWNER`](#gateway-verify-owner)
+- [gatekeeper-lib](#gatekeeper-lib)
+- [Usage](#usage)
+- [Commands](#commands)
+  - [`gateway add-gatekeeper ADDRESS`](#gateway-add-gatekeeper-address)
+  - [`gateway freeze GATEWAYTOKEN`](#gateway-freeze-gatewaytoken)
+  - [`gateway help [COMMAND]`](#gateway-help-command)
+  - [`gateway issue ADDRESS`](#gateway-issue-address)
+  - [`gateway refresh GATEWAYTOKEN [EXPIRY]`](#gateway-refresh-gatewaytoken-expiry)
+  - [`gateway revoke GATEWAYTOKEN`](#gateway-revoke-gatewaytoken)
+  - [`gateway revoke-gatekeeper ADDRESS`](#gateway-revoke-gatekeeper-address)
+  - [`gateway unfreeze GATEWAYTOKEN`](#gateway-unfreeze-gatewaytoken)
+  - [`gateway verify OWNER`](#gateway-verify-owner)
 
 ## `gateway add-gatekeeper ADDRESS`
 
@@ -54,12 +57,12 @@ OPTIONS
                                                    cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
                                                    Alternatively, set the environment variable SOLANA_CLUSTER
 
-  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+  -g, --gatekeeperKey=gatekeeperKey                [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The private key file for the gatekeeper
                                                    authority
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The private key file for the gatekeeper
                                                    authority
 
 EXAMPLE
@@ -84,14 +87,13 @@ OPTIONS
                                                    cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
                                                    Alternatively, set the environment variable SOLANA_CLUSTER
 
-  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+  -g, --gatekeeperKey=gatekeeperKey                [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The private key file for the gatekeeper
                                                    authority
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
-                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
-                                                   to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway freeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
@@ -135,14 +137,13 @@ OPTIONS
 
   -e, --expiry=expiry                              The expiry time in seconds for the gateway token (default none)
 
-  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+  -g, --gatekeeperKey=gatekeeperKey                [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The private key file for the gatekeeper
                                                    authority
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
-                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
-                                                   to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
@@ -167,14 +168,13 @@ OPTIONS
                                                    cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
                                                    Alternatively, set the environment variable SOLANA_CLUSTER
 
-  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+  -g, --gatekeeperKey=gatekeeperKey                [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The private key file for the gatekeeper
                                                    authority
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
-                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
-                                                   to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway refresh EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv 54000
@@ -199,14 +199,13 @@ OPTIONS
                                                    cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
                                                    Alternatively, set the environment variable SOLANA_CLUSTER
 
-  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+  -g, --gatekeeperKey=gatekeeperKey                [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The private key file for the gatekeeper
                                                    authority
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
-                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
-                                                   to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
@@ -231,12 +230,12 @@ OPTIONS
                                                    cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
                                                    Alternatively, set the environment variable SOLANA_CLUSTER
 
-  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+  -g, --gatekeeperKey=gatekeeperKey                [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The private key file for the gatekeeper
                                                    authority
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: [object Object]] The private key file for the gatekeeper
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The private key file for the gatekeeper
                                                    authority
 
 EXAMPLE
@@ -261,14 +260,13 @@ OPTIONS
                                                    cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet.
                                                    Alternatively, set the environment variable SOLANA_CLUSTER
 
-  -g, --gatekeeperKey=gatekeeperKey                [default: [object Object]] The private key file for the gatekeeper
+  -g, --gatekeeperKey=gatekeeperKey                [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The private key file for the gatekeeper
                                                    authority
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
-                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
-                                                   to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway unfreeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
@@ -295,9 +293,8 @@ OPTIONS
 
   -h, --help                                       show CLI help
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf] The public key
-                                                   (in base 58) of the gatekeeper network that the gatekeeper belongs
-                                                   to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey  [default: 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf'] The public key (in base 58) of the
+                                                   gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway verify EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
