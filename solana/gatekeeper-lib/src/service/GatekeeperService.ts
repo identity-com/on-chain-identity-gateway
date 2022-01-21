@@ -4,7 +4,6 @@ import {
   Keypair,
   PublicKey,
   SendOptions,
-  SendTransactionError,
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
@@ -349,7 +348,8 @@ export class GatekeeperService {
   async sendSerializedTransaction(
     serializedTx: string,
     gatewayTokenKey: PublicKey,
-    sendOptions: SendOptions = {}
+    sendOptions: SendOptions = {},
+    recentBlockhash?: string
   ): Promise<DataTransaction<GatewayToken | null>> {
     const transaction = Transaction.from(Buffer.from(serializedTx, "base64"));
     // Guard against someone sending a non-gateway unserialized transaction
@@ -357,8 +357,8 @@ export class GatekeeperService {
       throw Error("transaction must be for the gateway program");
     }
 
-    if (sendOptions.blockhash) {
-      transaction.recentBlockhash = sendOptions.blockhash;
+    if (recentBlockhash) {
+      transaction.recentBlockhash = recentBlockhash;
     }
 
     const sentTransaction = await send(
