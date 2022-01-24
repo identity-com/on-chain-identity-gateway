@@ -1,13 +1,9 @@
-import { findGatewayTokens } from "@identity.com/solana-gateway-ts";
 import { Command, flags } from "@oclif/command";
-import { Keypair, PublicKey } from "@solana/web3.js";
-import { getConnection } from "../util";
-import {
-  clusterFlag,
-  gatekeeperNetworkKeyFlag,
-  gatekeeperNetworkPubkeyFlag,
-} from "../util/oclif/flags";
+import { PublicKey } from "@solana/web3.js";
+import { clusterFlag, gatekeeperNetworkPubkeyFlag } from "../util/oclif/flags";
 import { prettyPrint } from "../util/token";
+import { getConnectionFromEnv } from "../util/oclif/utils";
+import { findGatewayToken } from "@identity.com/solana-gateway-ts";
 
 export default class Verify extends Command {
   static description = "Verify a gateway token";
@@ -45,23 +41,22 @@ export default class Verify extends Command {
 
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
 
-    const connection = getConnection(flags.cluster);
+    const connection = getConnectionFromEnv(flags.cluster);
 
     this.log(
       `Verifying wallet ${args.owner.toBase58()} has a gateway token in the network ${gatekeeperNetwork.toBase58()}`
     );
-    const tokens = await findGatewayTokens(
+    const token = await findGatewayToken(
       connection,
       args.owner,
-      gatekeeperNetwork,
-      true
+      gatekeeperNetwork
     );
 
-    if (!tokens.length) {
+    if (!token) {
       this.log("No token found for " + args.owner.toBase58());
       return;
     }
 
-    tokens.map((t) => this.log(prettyPrint(t)));
+    this.log(prettyPrint(token));
   }
 }
