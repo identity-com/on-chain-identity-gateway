@@ -8,10 +8,24 @@ export const pubkeyFlag = flags.build<web3.PublicKey>({
 });
 
 export const clusterFlag = flags.build<ExtendedCluster>({
+  parse: (cluster: string) => {
+    if (process.env.SOLANA_CLUSTER_URL) {
+      if (process.env.SOLANA_CLUSTER) {
+        throw new Error(
+          "Cannot specify both SOLANA_CLUSTER and SOLANA_CLUSTER_URL"
+        );
+      } else {
+        throw new Error(
+          "Cannot specify the cluster flag if SOLANA_CLUSTER_URL is set"
+        );
+      }
+    }
+    return cluster as ExtendedCluster;
+  },
+  options: ["mainnet-beta", "testnet", "devnet", "civicnet", "localnet"],
   char: "c",
   env: "SOLANA_CLUSTER",
-  parse: (cluster: string) => cluster as ExtendedCluster,
-  default: () => "devnet",
+  default: "devnet" as ExtendedCluster,
   description:
-    "The cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet. Alternatively, set the environment variable SOLANA_CLUSTER",
+    "The cluster to target: mainnet-beta (default), testnet, devnet, civicnet, localnet. Alternatively, set the environment variable SOLANA_CLUSTER",
 });
