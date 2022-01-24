@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/3.1.1-beta2 darwin-x64 node-v16.0.0
+@identity.com/solana-gatekeeper-lib/3.1.1-beta3 darwin-x64 node-v16.0.0
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -50,10 +50,10 @@ ARGUMENTS
   ADDRESS  The address of the gatekeeper to add to the network
 
 OPTIONS
-  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target:
-                                                               mainnet-beta (default), testnet, devnet, civicnet,
-                                                               localnet. Alternatively, set the environment variable
-                                                               SOLANA_CLUSTER
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
 
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
@@ -67,7 +67,7 @@ EXAMPLE
   $ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta2/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway freeze GATEWAYTOKEN`
 
@@ -81,10 +81,10 @@ ARGUMENTS
   GATEWAYTOKEN  The gateway token to freeze
 
 OPTIONS
-  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target:
-                                                               mainnet-beta (default), testnet, devnet, civicnet,
-                                                               localnet. Alternatively, set the environment variable
-                                                               SOLANA_CLUSTER
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
 
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
@@ -99,7 +99,7 @@ EXAMPLE
   Frozen
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta2/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/freeze.ts)_
 
 ## `gateway help [COMMAND]`
 
@@ -130,10 +130,10 @@ ARGUMENTS
   ADDRESS  The address to issue the token to
 
 OPTIONS
-  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target:
-                                                               mainnet-beta (default), testnet, devnet, civicnet,
-                                                               localnet. Alternatively, set the environment variable
-                                                               SOLANA_CLUSTER
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
 
   -e, --expiry=expiry                                          The expiry time in seconds for the gateway token (default
                                                                none)
@@ -150,7 +150,7 @@ EXAMPLE
   $ gateway issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta2/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/issue.ts)_
 
 ## `gateway refresh GATEWAYTOKEN [EXPIRY]`
 
@@ -165,10 +165,10 @@ ARGUMENTS
   EXPIRY        [default: 54000] The new expiry time in seconds for the gateway token (default 15 minutes)
 
 OPTIONS
-  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target:
-                                                               mainnet-beta (default), testnet, devnet, civicnet,
-                                                               localnet. Alternatively, set the environment variable
-                                                               SOLANA_CLUSTER
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
 
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
@@ -183,7 +183,7 @@ EXAMPLE
   Refreshed
 ```
 
-_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta2/dist/commands/refresh.ts)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/refresh.ts)_
 
 ## `gateway revoke GATEWAYTOKEN`
 
@@ -197,10 +197,10 @@ ARGUMENTS
   GATEWAYTOKEN  The gateway token to revoke
 
 OPTIONS
-  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target:
-                                                               mainnet-beta (default), testnet, devnet, civicnet,
-                                                               localnet. Alternatively, set the environment variable
-                                                               SOLANA_CLUSTER
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
 
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
@@ -215,7 +215,7 @@ EXAMPLE
   Revoked
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta2/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/revoke.ts)_
 
 ## `gateway revoke-gatekeeper ADDRESS`
 
@@ -229,10 +229,10 @@ ARGUMENTS
   ADDRESS  The address of the gatekeeper to revoke from the network
 
 OPTIONS
-  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target:
-                                                               mainnet-beta (default), testnet, devnet, civicnet,
-                                                               localnet. Alternatively, set the environment variable
-                                                               SOLANA_CLUSTER
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
 
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
@@ -246,7 +246,7 @@ EXAMPLE
   $ gateway revoke-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta2/dist/commands/revoke-gatekeeper.ts)_
+_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/revoke-gatekeeper.ts)_
 
 ## `gateway unfreeze GATEWAYTOKEN`
 
@@ -260,10 +260,10 @@ ARGUMENTS
   GATEWAYTOKEN  The gateway token to unfreeze
 
 OPTIONS
-  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target:
-                                                               mainnet-beta (default), testnet, devnet, civicnet,
-                                                               localnet. Alternatively, set the environment variable
-                                                               SOLANA_CLUSTER
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
 
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
@@ -278,7 +278,7 @@ EXAMPLE
   Unfrozen
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta2/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/unfreeze.ts)_
 
 ## `gateway verify OWNER`
 
@@ -292,10 +292,10 @@ ARGUMENTS
   OWNER  The gateway token to revoke
 
 OPTIONS
-  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target:
-                                                               mainnet-beta (default), testnet, devnet, civicnet,
-                                                               localnet. Alternatively, set the environment variable
-                                                               SOLANA_CLUSTER
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
 
   -h, --help                                                   show CLI help
 
@@ -314,5 +314,5 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta2/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/verify.ts)_
 <!-- commandsstop -->

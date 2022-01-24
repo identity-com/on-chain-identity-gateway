@@ -27,5 +27,5 @@ export const clusterFlag = flags.build<ExtendedCluster>({
   env: "SOLANA_CLUSTER",
   default: "devnet" as ExtendedCluster,
   description:
-    "The cluster to target: mainnet-beta (default), testnet, devnet, civicnet, localnet. Alternatively, set the environment variable SOLANA_CLUSTER",
+    "The cluster to target. Alternatively, set the environment variable SOLANA_CLUSTER. To override this property with a specific endpoint url, set SOLANA_CLUSTER_URL",
 });
