@@ -44,6 +44,7 @@ Frozen
 
     const frozenToken = await service
       .freeze(gatewayToken)
+      .then((t) => t.send())
       .then((t) => t.confirm());
 
     this.log("Frozen token", frozenToken.publicKey.toBase58());

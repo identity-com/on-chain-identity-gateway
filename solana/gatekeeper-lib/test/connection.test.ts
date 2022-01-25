@@ -1,7 +1,6 @@
 import chai from "chai";
 import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
-import * as connectionUtils from "../src/util/connection";
 import {
   Transaction,
   Keypair,
@@ -11,6 +10,7 @@ import {
 } from "@solana/web3.js";
 
 import { addGatekeeper } from "@identity.com/solana-gateway-ts";
+import { SendableTransaction } from "../src";
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -52,7 +52,9 @@ describe("Solana connection utils tests", () => {
     describe("with getAccountInfo timing out every time", () => {
       it("should call connection.sendTransaction", async () => {
         const results = await Promise.allSettled([
-          connectionUtils.send(connection, transaction),
+          new SendableTransaction(connection, transaction)
+            .send()
+            .then((t) => t.confirm()),
         ]);
         const calls = connection.sendTransaction.getCalls();
         return expect(calls.length).to.equal(1);
@@ -60,7 +62,9 @@ describe("Solana connection utils tests", () => {
 
       it("should call connection.confirmTransaction", async () => {
         const results = await Promise.allSettled([
-          connectionUtils.send(connection, transaction),
+          new SendableTransaction(connection, transaction)
+            .send()
+            .then((t) => t.confirm()),
         ]);
         const calls = connection.confirmTransaction.getCalls();
         return expect(calls.length).to.equal(1);

@@ -1,9 +1,7 @@
 import {
-  ConfirmOptions,
   Connection,
   Keypair,
   PublicKey,
-  SendOptions,
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
@@ -20,7 +18,7 @@ import {
   getGatekeeperAccountKey as solanaGetGatekeeperAccountKey,
 } from "@identity.com/solana-gateway-ts";
 
-import { DataTransaction, send } from "../util/connection";
+import { SendableDataTransaction, SendableTransaction } from "../util";
 
 /**
  * Global default configuration for the gatekeeper
@@ -107,9 +105,8 @@ export class GatekeeperService {
 
   private async issueVanilla(
     owner: PublicKey,
-    seed?: Uint8Array,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+    seed?: Uint8Array
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const gatewayTokenKey: PublicKey = await getGatewayTokenKeyForOwner(
       owner,
       this.gatekeeperNetwork
@@ -131,15 +128,9 @@ export class GatekeeperService {
       )
     );
 
-    const sentTransaction = await send(
-      this.connection,
-      transaction,
-      sendOptions,
-      this.payer,
-      this.gatekeeperAuthority
-    );
+    transaction.sign(this.gatekeeperAuthority);
 
-    return sentTransaction.withData(() =>
+    return new SendableTransaction(this.connection, transaction).withData(() =>
       this.getGatewayTokenOrError(gatewayTokenKey)
     );
   }
@@ -147,13 +138,9 @@ export class GatekeeperService {
   /**
    * Issue a token to this recipient
    * @param recipient
-   * @param confirmOptions
    */
-  issue(
-    recipient: PublicKey,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
-    return this.issueVanilla(recipient, undefined, confirmOptions);
+  issue(recipient: PublicKey): Promise<SendableDataTransaction<GatewayToken>> {
+    return this.issueVanilla(recipient, undefined);
   }
 
   /**
@@ -161,24 +148,16 @@ export class GatekeeperService {
    * and returning the existing token with the given updated state value and (optional) expiryTime.
    * @param gatewayTokenKey
    * @param instruction
-   * @param sendOptions
    */
   private async updateToken(
     gatewayTokenKey: PublicKey,
-    instruction: TransactionInstruction,
-    sendOptions: SendOptions
-  ): Promise<DataTransaction<GatewayToken>> {
+    instruction: TransactionInstruction
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const transaction = new Transaction().add(instruction);
 
-    const sentTransaction = await send(
-      this.connection,
-      transaction,
-      sendOptions,
-      this.payer,
-      this.gatekeeperAuthority
-    );
+    transaction.sign(this.gatekeeperAuthority);
 
-    return sentTransaction.withData(() =>
+    return new SendableTransaction(this.connection, transaction).withData(() =>
       this.getGatewayTokenOrError(gatewayTokenKey)
     );
   }
@@ -186,12 +165,10 @@ export class GatekeeperService {
   /**
    * Revoke the gateway token. The token must have been issued by a gatekeeper in the same network
    * @param gatewayTokenKey
-   * @param sendOptions
    */
   async revoke(
-    gatewayTokenKey: PublicKey,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+    gatewayTokenKey: PublicKey
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
@@ -202,43 +179,38 @@ export class GatekeeperService {
         gatewayTokenKey,
         this.gatekeeperAuthority.publicKey,
         gatekeeperAccount
-      ),
-      sendOptions
+      )
     );
   }
 
   /**
    * Freeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
-   * @param sendOptions
    */
   async freeze(
-    gatewayTokenKey: PublicKey,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+    gatewayTokenKey: PublicKey
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const instruction: TransactionInstruction = freeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
       await this.gatekeeperAccountKey()
     );
-    return this.updateToken(gatewayTokenKey, instruction, sendOptions);
+    return this.updateToken(gatewayTokenKey, instruction);
   }
 
   /**
    * Unfreeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
-   * @param sendOptions
    */
   async unfreeze(
-    gatewayTokenKey: PublicKey,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+    gatewayTokenKey: PublicKey
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const instruction: TransactionInstruction = unfreeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
       await this.gatekeeperAccountKey()
     );
-    return this.updateToken(gatewayTokenKey, instruction, sendOptions);
+    return this.updateToken(gatewayTokenKey, instruction);
   }
 
   /**
@@ -255,20 +227,18 @@ export class GatekeeperService {
    * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
    * @param expireTime
-   * @param sendOptions
    */
   async updateExpiry(
     gatewayTokenKey: PublicKey,
-    expireTime: number,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+    expireTime: number
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const instruction: TransactionInstruction = updateExpiry(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
       await this.gatekeeperAccountKey(),
       expireTime
     );
-    return this.updateToken(gatewayTokenKey, instruction, sendOptions);
+    return this.updateToken(gatewayTokenKey, instruction);
   }
 
   // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key

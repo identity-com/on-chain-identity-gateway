@@ -4,6 +4,8 @@ export {
   getConnection,
   airdropTo,
   constants,
+  SendableDataTransaction,
+  SendableTransaction,
   SentTransaction,
-  DataTransaction,
+  SentDataTransaction,
 } from "./util";

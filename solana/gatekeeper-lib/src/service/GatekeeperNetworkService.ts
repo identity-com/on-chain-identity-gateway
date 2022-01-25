@@ -1,16 +1,10 @@
-import {
-  Keypair,
-  Connection,
-  PublicKey,
-  Transaction,
-  SendOptions,
-} from "@solana/web3.js";
+import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import {
   addGatekeeper,
   getGatekeeperAccountKey,
   revokeGatekeeper,
 } from "@identity.com/solana-gateway-ts";
-import { DataTransaction, send } from "../util/connection";
+import { SendableDataTransaction, SendableTransaction } from "../util";
 
 /**
  * Encapsulates the actions performed by a gatekeeper network authority
@@ -31,12 +25,10 @@ export class GatekeeperNetworkService {
   /**
    * Add a gatekeeper to the network
    * @param gatekeeperAuthority
-   * @param sendOptions
    */
   async addGatekeeper(
-    gatekeeperAuthority: PublicKey,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<PublicKey>> {
+    gatekeeperAuthority: PublicKey
+  ): Promise<SendableDataTransaction<PublicKey>> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
@@ -50,22 +42,16 @@ export class GatekeeperNetworkService {
         this.gatekeeperNetwork.publicKey
       )
     );
+    transaction.sign(this.gatekeeperNetwork);
 
-    const sentTransaction = await send(
-      this.connection,
-      transaction,
-      sendOptions,
-      this.payer,
-      this.gatekeeperNetwork
+    return new SendableTransaction(this.connection, transaction).withData(
+      gatekeeperAccount
     );
-
-    return sentTransaction.withData(gatekeeperAccount);
   }
 
   async revokeGatekeeper(
-    gatekeeperAuthority: PublicKey,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<PublicKey>> {
+    gatekeeperAuthority: PublicKey
+  ): Promise<SendableDataTransaction<PublicKey>> {
     const gatekeeperAccount = await getGatekeeperAccountKey(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
@@ -80,15 +66,11 @@ export class GatekeeperNetworkService {
       )
     );
 
-    const sentTransaction = await send(
-      this.connection,
-      transaction,
-      sendOptions,
-      this.payer,
-      this.gatekeeperNetwork
-    );
+    transaction.sign(this.gatekeeperNetwork);
 
-    return sentTransaction.withData(gatekeeperAccount);
+    return new SendableTransaction(this.connection, transaction).withData(
+      gatekeeperAccount
+    );
   }
 
   /**
