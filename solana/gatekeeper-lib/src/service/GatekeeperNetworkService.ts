@@ -1,10 +1,4 @@
-import {
-  Keypair,
-  Connection,
-  PublicKey,
-  Transaction,
-  SendOptions,
-} from "@solana/web3.js";
+import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import {
   addGatekeeper,
   getGatekeeperAccountAddress,

@@ -1,11 +1,7 @@
 import {
-  Blockhash,
-  ConfirmOptions,
   Connection,
   Keypair,
-  NonceInformation,
   PublicKey,
-  SendOptions,
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
