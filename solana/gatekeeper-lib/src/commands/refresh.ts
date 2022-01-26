@@ -50,7 +50,12 @@ Refreshed
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
     await service
-      .updateExpiry(gatewayToken, args.expiry + Math.floor(Date.now() / 1000))
+      .updateExpiry(
+        gatewayToken,
+        args.expiry + Math.floor(Date.now() / 1000),
+        "find"
+      )
+      .then((t) => t.send())
       .then((t) => t.confirm());
 
     this.log("Refreshed");

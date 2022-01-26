@@ -43,7 +43,8 @@ Frozen
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
     const frozenToken = await service
-      .freeze(gatewayToken)
+      .freeze(gatewayToken, "find")
+      .then((t) => t.send())
       .then((t) => t.confirm());
 
     this.log("Frozen token", frozenToken?.publicKey.toBase58());

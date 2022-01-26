@@ -56,7 +56,8 @@ export default class AddGatekeeper extends Command {
       gatekeeperNetwork
     );
     const gatekeeperAccount = await networkService
-      .addGatekeeper(gatekeeper)
+      .addGatekeeper(gatekeeper, "find")
+      .then((t) => t.send())
       .then((t) => t.confirm());
     this.log(
       `Added gatekeeper to network. Gatekeeper account: ${gatekeeperAccount?.toBase58()}`
