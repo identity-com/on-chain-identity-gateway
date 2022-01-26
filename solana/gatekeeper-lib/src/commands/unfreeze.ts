@@ -42,7 +42,10 @@ Unfrozen
      ${gatewayToken.toBase58()}
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
-    await service.unfreeze(gatewayToken).then((t) => t.confirm());
+    await service
+      .unfreeze(gatewayToken, "find")
+      .then((t) => t.send())
+      .then((t) => t.confirm());
 
     this.log("Unfrozen");
   }
