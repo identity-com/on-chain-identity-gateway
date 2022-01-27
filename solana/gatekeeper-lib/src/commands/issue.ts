@@ -74,7 +74,10 @@ export default class Issue extends Command {
       );
     }
 
-    const issuedToken = await service.issue(address).then((t) => t.confirm());
+    const issuedToken = await service
+      .issue(address, "find")
+      .then((t) => t.send())
+      .then((t) => t.confirm());
     if (issuedToken) {
       this.log(prettyPrint(issuedToken));
     } else {

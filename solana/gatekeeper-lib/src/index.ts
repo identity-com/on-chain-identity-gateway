@@ -5,6 +5,7 @@ export {
   airdropTo,
   constants,
   SentTransaction,
-  DataTransaction,
-  BuildGatewayTokenTransactionResult,
+  SentDataTransaction,
+  SendableTransaction,
+  SendableDataTransaction,
 } from "./util";
