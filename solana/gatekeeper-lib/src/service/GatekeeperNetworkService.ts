@@ -1,16 +1,11 @@
-import {
-  Keypair,
-  Connection,
-  PublicKey,
-  Transaction,
-  SendOptions,
-} from "@solana/web3.js";
+import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import {
   addGatekeeper,
   getGatekeeperAccountAddress,
   revokeGatekeeper,
 } from "@identity.com/solana-gateway-ts";
-import { DataTransaction, send } from "../util/connection";
+import { SendableDataTransaction, SendableTransaction } from "../util";
+import { HashOrNonce } from "../util/connection";
 
 /**
  * Encapsulates the actions performed by a gatekeeper network authority
@@ -31,12 +26,14 @@ export class GatekeeperNetworkService {
   /**
    * Add a gatekeeper to the network
    * @param gatekeeperAuthority
-   * @param sendOptions
+   * @param hashOrNonce
+   * @param feePayer Defaults to gatekeeper network
    */
   async addGatekeeper(
     gatekeeperAuthority: PublicKey,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<PublicKey>> {
+    hashOrNonce: HashOrNonce,
+    feePayer?: PublicKey
+  ): Promise<SendableDataTransaction<PublicKey>> {
     const gatekeeperAccount = await getGatekeeperAccountAddress(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
@@ -51,21 +48,18 @@ export class GatekeeperNetworkService {
       )
     );
 
-    const sentTransaction = await send(
-      this.connection,
-      transaction,
-      sendOptions,
-      this.payer,
-      this.gatekeeperNetwork
-    );
-
-    return sentTransaction.withData(gatekeeperAccount);
+    return new SendableTransaction(this.connection, transaction)
+      .withData(gatekeeperAccount)
+      .feePayer(feePayer ? feePayer : this.gatekeeperNetwork.publicKey)
+      .addHashOrNonce(hashOrNonce)
+      .then((t) => t.partialSign(this.gatekeeperNetwork));
   }
 
   async revokeGatekeeper(
     gatekeeperAuthority: PublicKey,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<PublicKey>> {
+    hashOrNonce: HashOrNonce,
+    feePayer?: PublicKey
+  ): Promise<SendableDataTransaction<PublicKey>> {
     const gatekeeperAccount = await getGatekeeperAccountAddress(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
@@ -80,15 +74,11 @@ export class GatekeeperNetworkService {
       )
     );
 
-    const sentTransaction = await send(
-      this.connection,
-      transaction,
-      sendOptions,
-      this.payer,
-      this.gatekeeperNetwork
-    );
-
-    return sentTransaction.withData(gatekeeperAccount);
+    return new SendableTransaction(this.connection, transaction)
+      .withData(gatekeeperAccount)
+      .feePayer(feePayer ? feePayer : this.gatekeeperNetwork.publicKey)
+      .addHashOrNonce(hashOrNonce)
+      .then((t) => t.partialSign(this.gatekeeperNetwork));
   }
 
   /**

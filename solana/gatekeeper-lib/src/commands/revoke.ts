@@ -42,7 +42,10 @@ Revoked
      ${gatewayToken.toBase58()}
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
-    await service.revoke(gatewayToken).then((t) => t.confirm());
+    await service
+      .revoke(gatewayToken, "find")
+      .then((t) => t.send())
+      .then((t) => t.confirm());
 
     this.log("Revoked");
   }

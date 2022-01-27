@@ -1,9 +1,7 @@
 import {
-  ConfirmOptions,
   Connection,
   Keypair,
   PublicKey,
-  SendOptions,
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
@@ -20,12 +18,8 @@ import {
   findGatewayToken,
 } from "@identity.com/solana-gateway-ts";
 
-import {
-  BuildGatewayTokenTransactionResult,
-  DataTransaction,
-  send,
-} from "../util/connection";
-import { isGatewayTransaction } from "../util/transaction";
+import { SendableDataTransaction, SendableTransaction } from "../util";
+import { HashOrNonce, TransactionHolder } from "../util/connection";
 
 /**
  * Global default configuration for the gatekeeper
@@ -81,35 +75,12 @@ export class GatekeeperService {
     );
   }
 
-  /**
-   * Given a transaction, add a 'dummy' recent blockhash, a feePayer
-   * and serialize to a base64 string
-   * @param {Transaction} transaction
-   * @returns {Promise<string>}
-   */
-  private async signAndSerializeBuiltTransaction(
-    transaction: Transaction
-  ): Promise<string> {
-    // recent blockhash and feepayer are required for signing and serialization
-    transaction.recentBlockhash = (
-      await this.connection.getRecentBlockhash()
-    ).blockhash;
-    transaction.feePayer = this.payer.publicKey;
-    await transaction.sign(this.payer, this.gatekeeperAuthority);
-    const serializedTx = await transaction.serialize().toString("base64");
-    return serializedTx;
-  }
-
-  /**
-   * Builds, signs and serializes a transaction with a token issuance instruction for sending later.
-   * @param {PublicKey} owner
-   * @param {Uint8Array} seed
-   * @returns {Promise<BuildGatewayTokenTransactionResult>}
-   */
-  async buildIssueTransaction(
+  private async issueVanilla(
     owner: PublicKey,
+    feePayer: PublicKey,
+    hashOrNonce: HashOrNonce,
     seed?: Uint8Array
-  ): Promise<BuildGatewayTokenTransactionResult> {
+  ): Promise<SendableDataTransaction<GatewayToken | null>> {
     const gatewayTokenAddress: PublicKey =
       await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
         owner,
@@ -134,52 +105,29 @@ export class GatekeeperService {
       )
     );
 
-    const serializedTx = await this.signAndSerializeBuiltTransaction(
-      transaction
-    );
-    return {
-      serializedTx,
-      transaction,
-      gatewayTokenAddress,
-    };
-  }
-
-  private async issueVanilla(
-    owner: PublicKey,
-    seed?: Uint8Array,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken | null>> {
-    const gatewayTokenAddress: PublicKey =
-      await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
-        owner,
-        this.gatekeeperNetwork
-      );
-
-    const { transaction } = await this.buildIssueTransaction(owner, seed);
-
-    const sentTransaction = await send(
-      this.connection,
-      transaction,
-      sendOptions,
-      this.payer,
-      this.gatekeeperAuthority
-    );
-
-    return sentTransaction.withData(() =>
-      getGatewayToken(this.connection, gatewayTokenAddress)
-    );
+    return new SendableTransaction(this.connection, transaction)
+      .withData(() => getGatewayToken(this.connection, gatewayTokenAddress))
+      .feePayer(feePayer)
+      .addHashOrNonce(hashOrNonce)
+      .then((t) => t.partialSign(this.gatekeeperAuthority, this.payer));
   }
 
   /**
    * Issue a token to this recipient
    * @param recipient
-   * @param confirmOptions
+   * @param hashOrNonce Defaults to grabbing blockhash from chain
+   * @param feePayer Defaults to gatekeeperAuthority
    */
   issue(
     recipient: PublicKey,
-    confirmOptions: ConfirmOptions = {}
-  ): Promise<DataTransaction<GatewayToken | null>> {
-    return this.issueVanilla(recipient, undefined, confirmOptions);
+    hashOrNonce: HashOrNonce,
+    feePayer?: PublicKey
+  ): Promise<SendableDataTransaction<GatewayToken | null>> {
+    return this.issueVanilla(
+      recipient,
+      feePayer ? feePayer : this.gatekeeperAuthority.publicKey,
+      hashOrNonce
+    );
   }
 
   /**
@@ -187,37 +135,35 @@ export class GatekeeperService {
    * and returning the existing token with the given updated state value and (optional) expiryTime.
    * @param gatewayTokenKey
    * @param instruction
-   * @param sendOptions
+   * @param hashOrNonce
+   * @param feePayer Defaults to gatekeeperAuthority
    */
   private async updateToken(
     gatewayTokenKey: PublicKey,
     instruction: TransactionInstruction,
-    sendOptions: SendOptions
-  ): Promise<DataTransaction<GatewayToken>> {
+    hashOrNonce: HashOrNonce,
+    feePayer?: PublicKey
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const transaction = new Transaction().add(instruction);
 
-    const sentTransaction = await send(
-      this.connection,
-      transaction,
-      sendOptions,
-      this.payer,
-      this.gatekeeperAuthority
-    );
-
-    return sentTransaction.withData(() =>
-      this.getGatewayTokenOrError(gatewayTokenKey)
-    );
+    return new SendableTransaction(this.connection, transaction)
+      .withData(() => this.getGatewayTokenOrError(gatewayTokenKey))
+      .feePayer(feePayer ? feePayer : this.gatekeeperAuthority.publicKey)
+      .addHashOrNonce(hashOrNonce)
+      .then((t) => t.partialSign(this.gatekeeperAuthority));
   }
 
   /**
    * Revoke the gateway token. The token must have been issued by a gatekeeper in the same network
    * @param gatewayTokenKey
-   * @param sendOptions
+   * @param hashOrNonce
+   * @param feePayer
    */
   async revoke(
     gatewayTokenKey: PublicKey,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+    hashOrNonce: HashOrNonce,
+    feePayer?: PublicKey
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const gatekeeperAccount = await getGatekeeperAccountAddress(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
@@ -229,42 +175,57 @@ export class GatekeeperService {
         this.gatekeeperAuthority.publicKey,
         gatekeeperAccount
       ),
-      sendOptions
+      hashOrNonce,
+      feePayer
     );
   }
 
   /**
    * Freeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
-   * @param sendOptions
+   * @param hashOrNonce
+   * @param feePayer
    */
   async freeze(
     gatewayTokenKey: PublicKey,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+    hashOrNonce: HashOrNonce,
+    feePayer?: PublicKey
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const instruction: TransactionInstruction = freeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
       await this.gatekeeperAccountAddress()
     );
-    return this.updateToken(gatewayTokenKey, instruction, sendOptions);
+    return this.updateToken(
+      gatewayTokenKey,
+      instruction,
+      hashOrNonce,
+      feePayer
+    );
   }
 
   /**
    * Unfreeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
-   * @param sendOptions
+   * @param hashOrNonce
+   * @param feePayer
    */
   async unfreeze(
     gatewayTokenKey: PublicKey,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+    hashOrNonce: HashOrNonce,
+    feePayer?: PublicKey
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const instruction: TransactionInstruction = unfreeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
       await this.gatekeeperAccountAddress()
     );
-    return this.updateToken(gatewayTokenKey, instruction, sendOptions);
+    return this.updateToken(
+      gatewayTokenKey,
+      instruction,
+      hashOrNonce,
+      feePayer
+    );
   }
 
   /**
@@ -278,46 +239,30 @@ export class GatekeeperService {
   }
 
   /**
-   * Create a transaction with an update expiry instruction and return
-   * a serialized form of the transaction
-   * @param {PublicKey} gatewayTokenAddress
-   * @param {number} expireTime
-   * @returns {Promise<BuildGatewayTokenTransactionResult>}
-   */
-  async buildUpdateExpiryTransaction(
-    gatewayTokenAddress: PublicKey,
-    expireTime: number
-  ): Promise<BuildGatewayTokenTransactionResult> {
-    const instruction: TransactionInstruction = updateExpiry(
-      gatewayTokenAddress,
-      this.gatekeeperAuthority.publicKey,
-      await this.gatekeeperAccountAddress(),
-      expireTime
-    );
-    const transaction = new Transaction().add(instruction);
-    const serializedTx = await this.signAndSerializeBuiltTransaction(
-      transaction
-    );
-    return { serializedTx, transaction, gatewayTokenAddress };
-  }
-  /**
    * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
    * @param expireTime
-   * @param sendOptions
+   * @param hashOrNonce
+   * @param feePayer
    */
   async updateExpiry(
     gatewayTokenKey: PublicKey,
     expireTime: number,
-    sendOptions: SendOptions = {}
-  ): Promise<DataTransaction<GatewayToken>> {
+    hashOrNonce: HashOrNonce,
+    feePayer?: PublicKey
+  ): Promise<SendableDataTransaction<GatewayToken>> {
     const instruction: TransactionInstruction = updateExpiry(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
       await this.gatekeeperAccountAddress(),
       expireTime
     );
-    return this.updateToken(gatewayTokenKey, instruction, sendOptions);
+    return this.updateToken(
+      gatewayTokenKey,
+      instruction,
+      hashOrNonce,
+      feePayer
+    );
   }
 
   // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key
@@ -333,44 +278,30 @@ export class GatekeeperService {
     return !!gatekeeperAccountInfo;
   }
 
-  /**
-   * Given a serialized, unsigned transaction:
-   *  - hydrate the transaction
-   *  - check that the transaction is a gateway transaction
-   *  - set the recentBlockhash on the transaction if provided in sendOptions
-   *  - send the transaction to the chain
-   *  - get the updated associated gateway token
-   * @param {string} serializedTx
-   * @param {PublicKey} gatewayTokenKey
-   * @param {SendOptions} sendOptions
-   * @returns {Promise<DataTransaction<GatewayToken | null>>}
-   */
-  async sendSerializedTransaction(
-    serializedTx: string,
-    gatewayTokenKey: PublicKey,
-    sendOptions: SendOptions = {},
-    recentBlockhash?: string
-  ): Promise<DataTransaction<GatewayToken | null>> {
-    const transaction = Transaction.from(Buffer.from(serializedTx, "base64"));
-    // Guard against someone sending a non-gateway unserialized transaction
-    if (!isGatewayTransaction(transaction)) {
-      throw Error("transaction must be for the gateway program");
+  async updateTransactionBlockhash(
+    transaction: TransactionHolder,
+    hashOrNonce: HashOrNonce
+  ) {
+    const transactionSignedByGatekeeper =
+      !!transaction.transaction.signatures.find((sig) =>
+        sig.publicKey.equals(this.gatekeeperAuthority.publicKey)
+      );
+    const transactionSignedByPayer = !!transaction.transaction.signatures.find(
+      (sig) => sig.publicKey.equals(this.payer.publicKey)
+    );
+    if (
+      (transactionSignedByGatekeeper || transactionSignedByPayer) &&
+      !transaction.transaction.verifySignatures()
+    ) {
+      throw Error("Transaction is not validly signed by gatekeeper");
     }
 
-    if (recentBlockhash) {
-      transaction.recentBlockhash = recentBlockhash;
+    await transaction.addHashOrNonce(hashOrNonce);
+    if (transactionSignedByGatekeeper) {
+      transaction.partialSign(this.gatekeeperAuthority);
     }
-
-    const sentTransaction = await send(
-      this.connection,
-      transaction,
-      sendOptions,
-      this.payer,
-      this.gatekeeperAuthority
-    );
-
-    return sentTransaction.withData(() =>
-      getGatewayToken(this.connection, gatewayTokenKey)
-    );
+    if (transactionSignedByPayer) {
+      transaction.partialSign(this.payer);
+    }
   }
 }
