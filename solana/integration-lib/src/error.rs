@@ -40,6 +40,10 @@ pub enum GatewayError {
     /// The account is not owned by the gateway program
     #[error("The account is not owned by the gateway program")]
     IncorrectProgramId,
+
+    /// The gateway token has expired
+    #[error("The gateway token has expired")]
+    TokenExpired,
 }
 impl From<GatewayError> for ProgramError {
     fn from(e: GatewayError) -> Self {

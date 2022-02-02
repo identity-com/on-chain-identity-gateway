@@ -302,7 +302,7 @@ async fn expire_token_should_succeed() {
     let block_hash = context
         .context
         .banks_client
-        .get_recent_blockhash()
+        .get_latest_blockhash()
         .await
         .unwrap();
     context
@@ -324,7 +324,6 @@ async fn expire_token_should_succeed() {
                     .0,
                     owner.pubkey(),
                     context.gatekeeper_network.as_ref().unwrap().pubkey(),
-                    None,
                 ),
             ],
             Some(&context.context.payer.pubkey()),
