@@ -2,14 +2,25 @@ import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinonChai from "sinon-chai";
 import chaiAsPromised from "chai-as-promised";
-import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  Keypair,
+  Connection,
+  PublicKey,
+  Transaction,
+  SystemProgram,
+  Message,
+} from "@solana/web3.js";
 import sinon from "sinon";
 import * as gatekeeperServiceModule from "../src/service/GatekeeperService";
 import { PROGRAM_ID } from "../src/util/constants";
 import { GatewayToken, State } from "@identity.com/solana-gateway-ts";
 import * as GatewayTs from "@identity.com/solana-gateway-ts";
-import { SentDataTransaction, SentTransaction } from "../src";
-import { SendableTransaction } from "../dist";
+import {
+  SentDataTransaction,
+  SentTransaction,
+  SendableTransaction,
+} from "../src";
+import bs58 = require("bs58");
 
 chai.use(sinonChai);
 chai.use(chaiSubset);
@@ -75,6 +86,33 @@ describe("GatekeeperService", () => {
     return sandbox.stub(sendableTransaction, "send").resolves(sentTransaction);
   };
 
+  it("SendableTransaction serialization", async () => {
+    const keypair1 = Keypair.generate();
+    const keypair2 = Keypair.generate();
+    const transfer = SystemProgram.transfer({
+      fromPubkey: keypair1.publicKey,
+      toPubkey: keypair2.publicKey,
+      lamports: 10,
+    });
+    const transaction = new SendableTransaction(connection, new Transaction());
+    transaction.transaction.add(transfer);
+    transaction.transaction.feePayer = keypair2.publicKey;
+    transaction.transaction.recentBlockhash = await connection
+      .getRecentBlockhash("confirmed")
+      .then((rbh) => rbh.blockhash);
+    transaction.partialSign(keypair1);
+    const serialized = transaction.serializeForRelaying();
+
+    const newTransaction = SendableTransaction.fromSerialized(
+      connection,
+      serialized.message,
+      serialized.signatures
+    );
+    expect(newTransaction.transaction.verifySignatures()).to.be.false;
+    newTransaction.partialSign(keypair2);
+    expect(newTransaction.transaction.verifySignatures()).to.be.true;
+  });
+
   context("issue", () => {
     beforeEach(() => {
       sandbox
@@ -86,10 +124,7 @@ describe("GatekeeperService", () => {
     });
     context("with send resolving success", () => {
       it("should return new gateway token", async () => {
-        const issueResult = await gatekeeperService.issue(
-          tokenOwner.publicKey,
-          "find"
-        );
+        const issueResult = await gatekeeperService.issue(tokenOwner.publicKey);
         stubSend(issueResult.sendableTransaction, activeGatewayToken);
         const result = await issueResult.send().then((t) => t.confirm());
         return expect(result).to.equal(activeGatewayToken);
@@ -97,10 +132,7 @@ describe("GatekeeperService", () => {
     });
     context("with send rejecting with an error", () => {
       it("should throw an error", async () => {
-        const transaction = await gatekeeperService.issue(
-          tokenOwner.publicKey,
-          "find"
-        );
+        const transaction = await gatekeeperService.issue(tokenOwner.publicKey);
         sandbox
           .stub(transaction, "send")
           .rejects(new Error("Transaction simulation failed"));
@@ -283,10 +315,7 @@ describe("GatekeeperService", () => {
     });
 
     it("should return a valid transaction", async () => {
-      const buildResponse = await gatekeeperService.issue(
-        tokenOwner.publicKey,
-        "find"
-      );
+      const buildResponse = await gatekeeperService.issue(tokenOwner.publicKey);
 
       expectValidGatewayTransaction(buildResponse.transaction);
     });
@@ -319,10 +348,7 @@ describe("GatekeeperService", () => {
       "BvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
 
     it("should error if not validly signed by gatekeeper", async () => {
-      const transaction = await gatekeeperService.issue(
-        tokenOwner.publicKey,
-        "find"
-      );
+      const transaction = await gatekeeperService.issue(tokenOwner.publicKey);
       transaction.transaction.signatures = [];
       expect(() =>
         gatekeeperService.updateTransactionBlockhash(transaction, {
@@ -332,10 +358,7 @@ describe("GatekeeperService", () => {
     });
 
     it("should update blockhash and sign if validly signed", async () => {
-      const transaction = await gatekeeperService.issue(
-        tokenOwner.publicKey,
-        "find"
-      );
+      const transaction = await gatekeeperService.issue(tokenOwner.publicKey);
       await gatekeeperService.updateTransactionBlockhash(transaction, {
         recentBlockhash,
       });

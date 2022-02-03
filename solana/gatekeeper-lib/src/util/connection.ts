@@ -13,6 +13,7 @@ import {
   TransactionError,
   TransactionSignature,
 } from "@solana/web3.js";
+import bs58 from "bs58";
 import { SOLANA_COMMITMENT } from "./constants";
 
 export type ExtendedCluster = Cluster | "localnet" | "civicnet";
@@ -65,6 +66,11 @@ export async function addHashOrNonce(
   }
 }
 
+/**
+ * from `@solana/web3.js`
+ */
+const DEFAULT_SIGNATURE = Buffer.alloc(64).fill(0);
+
 export class SendableTransaction implements TransactionHolder {
   constructor(
     readonly connection: Connection,
@@ -93,20 +99,21 @@ export class SendableTransaction implements TransactionHolder {
    */
   serializeForRelaying(): {
     message: Buffer;
-    signatures: (Buffer | null)[];
+    signatures: string[];
   } {
     const message = this.transaction.compileMessage();
-    const signatures: (Buffer | null)[] = [];
-    for (let x = 0; x < message.header.numRequiredSignatures; x++) {
-      const sig = this.transaction.signatures.find((sig) =>
-        sig.publicKey.equals(message.accountKeys[x])
-      );
-      if (sig) {
-        signatures.push(sig.signature);
-      } else {
-        signatures.push(null);
-      }
-    }
+    const signatures = message.accountKeys
+      .slice(0, message.header.numRequiredSignatures)
+      .map((key) => {
+        const result = this.transaction.signatures.find((sig) =>
+          sig.publicKey.equals(key)
+        );
+        if (result && result.signature) {
+          return bs58.encode(result.signature);
+        } else {
+          return bs58.encode(DEFAULT_SIGNATURE);
+        }
+      });
     return {
       message: message.serialize(),
       signatures,
@@ -116,25 +123,12 @@ export class SendableTransaction implements TransactionHolder {
   static fromSerialized(
     connection: Connection,
     message: Buffer,
-    signatures: (Buffer | null)[]
+    signatures: string[]
   ): SendableTransaction {
-    const deMessage = Message.from(message);
-    const transaction = Transaction.populate(deMessage);
-    transaction.signatures = signatures
-      .concat(
-        ...Array(
-          Math.max(
-            0,
-            deMessage.header.numRequiredSignatures - signatures.length
-          )
-        ).fill(null)
-      )
-      .slice(0, deMessage.header.numRequiredSignatures)
-      .map((sig, index) => ({
-        publicKey: deMessage.accountKeys[index],
-        signature: sig,
-      }));
-    return new SendableTransaction(connection, transaction);
+    return new SendableTransaction(
+      connection,
+      Transaction.populate(Message.from(message), signatures)
+    );
   }
   partialSign(...signers: Signer[]): this {
     this.transaction.partialSign(...signers);

@@ -78,6 +78,7 @@ export class GatekeeperService {
   private async issueVanilla(
     owner: PublicKey,
     feePayer: PublicKey,
+    rentPayer: PublicKey,
     hashOrNonce: HashOrNonce,
     seed?: Uint8Array
   ): Promise<SendableDataTransaction<GatewayToken | null>> {
@@ -95,7 +96,7 @@ export class GatekeeperService {
     const transaction = new Transaction().add(
       issueVanilla(
         gatewayTokenAddress,
-        this.payer.publicKey,
+        rentPayer,
         gatekeeperAccount,
         owner,
         this.gatekeeperAuthority.publicKey,
@@ -105,28 +106,39 @@ export class GatekeeperService {
       )
     );
 
+    let signers = [this.gatekeeperAuthority];
+    if (
+      this.payer.publicKey.equals(feePayer) ||
+      this.payer.publicKey.equals(rentPayer)
+    ) {
+      signers.push(this.payer);
+    }
+
     return new SendableTransaction(this.connection, transaction)
       .withData(() => getGatewayToken(this.connection, gatewayTokenAddress))
       .feePayer(feePayer)
       .addHashOrNonce(hashOrNonce)
-      .then((t) => t.partialSign(this.gatekeeperAuthority, this.payer));
+      .then((t) => t.partialSign(...signers));
   }
 
   /**
    * Issue a token to this recipient
    * @param recipient
-   * @param hashOrNonce Defaults to grabbing blockhash from chain
-   * @param feePayer Defaults to gatekeeperAuthority
+   * @param options
    */
   issue(
     recipient: PublicKey,
-    hashOrNonce: HashOrNonce,
-    feePayer?: PublicKey
+    options: {
+      hashOrNonce?: HashOrNonce;
+      feePayer?: PublicKey;
+      rentPayer?: PublicKey;
+    } = {}
   ): Promise<SendableDataTransaction<GatewayToken | null>> {
     return this.issueVanilla(
       recipient,
-      feePayer ? feePayer : this.gatekeeperAuthority.publicKey,
-      hashOrNonce
+      options.feePayer ? options.feePayer : this.gatekeeperAuthority.publicKey,
+      options.rentPayer ? options.rentPayer : this.payer.publicKey,
+      options.hashOrNonce ? options.hashOrNonce : "find"
     );
   }
 
