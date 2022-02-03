@@ -51,11 +51,10 @@ export default class RevokeGatekeeper extends Command {
 
     const networkService = new GatekeeperNetworkService(
       connection,
-      gatekeeperNetwork,
       gatekeeperNetwork
     );
     const gatekeeperAccount = await networkService
-      .revokeGatekeeper(gatekeeper, "find")
+      .revokeGatekeeper(gatekeeper)
       .then((t) => t.send())
       .then((t) => t.confirm());
     this.log(

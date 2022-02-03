@@ -72,7 +72,7 @@ export class SendableTransaction implements TransactionHolder {
   ) {}
 
   withData<T>(data: T | (() => T | Promise<T>)): SendableDataTransaction<T> {
-    return new SendableDataTransaction<T>(this, data);
+    return new SendableDataTransaction<T>(this, normalizeDataCallback(data));
   }
 
   async send(
@@ -153,7 +153,7 @@ export class SendableTransaction implements TransactionHolder {
 export class SendableDataTransaction<T> implements TransactionHolder {
   constructor(
     readonly sendableTransaction: SendableTransaction,
-    readonly data: T | (() => T | Promise<T>)
+    readonly data: DataCallback<T>
   ) {}
 
   get connection(): Connection {
@@ -185,14 +185,38 @@ export class SendableDataTransaction<T> implements TransactionHolder {
   }
 }
 
+// The following functions are used to allow a SentTransaction to provide a callback
+// that returns a datatype (e.g. a Gateway Token) related to the transaction.
+
+// SentDataTransaction exposes this type from its data() function
+type DataCallback<T> = () => Promise<T>;
+// SentTransaction withData() accepts this more generic type
+export type DataOrGeneralDataCallback<T> = T | (() => T | Promise<T>);
+
+// checks if the input is a data callback or purely data.
+const isGeneralDataCallback = <T>(
+  data: DataOrGeneralDataCallback<T>
+): data is () => T | Promise<T> => typeof data === "function";
+
+// Convert the input callback into a standardised function that returns a promise of data
+const normalizeDataCallback = <T>(
+  d: DataOrGeneralDataCallback<T>
+): DataCallback<T> => {
+  if (isGeneralDataCallback(d)) {
+    return () => Promise.resolve(d());
+  } else {
+    return () => Promise.resolve(d);
+  }
+};
+
 export class SentTransaction {
   constructor(
     readonly connection: Connection,
     readonly signature: TransactionSignature
   ) {}
 
-  withData<T>(data: T | (() => T | Promise<T>)): SentDataTransaction<T> {
-    return new SentDataTransaction<T>(this, data);
+  withData<T>(data: DataOrGeneralDataCallback<T>): SentDataTransaction<T> {
+    return new SentDataTransaction<T>(this, normalizeDataCallback(data));
   }
 
   async confirm(
@@ -216,7 +240,7 @@ export class SentTransaction {
 export class SentDataTransaction<T> {
   constructor(
     readonly sentTransaction: SentTransaction,
-    readonly data: T | (() => T | Promise<T>)
+    readonly data: DataCallback<T>
   ) {}
 
   get signature(): TransactionSignature {
