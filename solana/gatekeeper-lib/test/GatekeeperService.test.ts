@@ -2,7 +2,13 @@ import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinonChai from "sinon-chai";
 import chaiAsPromised from "chai-as-promised";
-import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  Keypair,
+  Connection,
+  PublicKey,
+  Transaction,
+  SystemProgram,
+} from "@solana/web3.js";
 import sinon from "sinon";
 import { PROGRAM_ID } from "../src/util/constants";
 import { GatewayToken, State } from "@identity.com/solana-gateway-ts";
@@ -75,6 +81,33 @@ describe("GatekeeperService", () => {
     sandbox.stub(dataTransaction, "confirm").resolves(result);
     return sandbox.stub(sendableTransaction, "send").resolves(sentTransaction);
   };
+
+  it("SendableTransaction serialization", async () => {
+    const keypair1 = Keypair.generate();
+    const keypair2 = Keypair.generate();
+    const transfer = SystemProgram.transfer({
+      fromPubkey: keypair1.publicKey,
+      toPubkey: keypair2.publicKey,
+      lamports: 10,
+    });
+    const transaction = new SendableTransaction(connection, new Transaction());
+    transaction.transaction.add(transfer);
+    transaction.transaction.feePayer = keypair2.publicKey;
+    transaction.transaction.recentBlockhash = await connection
+      .getRecentBlockhash("confirmed")
+      .then((rbh) => rbh.blockhash);
+    transaction.partialSign(keypair1);
+    const serialized = transaction.serializeForRelaying();
+
+    const newTransaction = SendableTransaction.fromSerialized(
+      connection,
+      serialized.message,
+      serialized.signatures
+    );
+    expect(newTransaction.transaction.verifySignatures()).to.be.false;
+    newTransaction.partialSign(keypair2);
+    expect(newTransaction.transaction.verifySignatures()).to.be.true;
+  });
 
   context("issue", () => {
     beforeEach(() => {
