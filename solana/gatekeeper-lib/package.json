@@ -78,7 +78,7 @@
     "posttest": "yarn lint",
     "prepack": "yarn build",
     "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs ../program/target/deploy/solana_gateway_program.so --reset",
-    "lint": "eslint '{src,test}/**/*.ts' --max-warnings 0 && yarn tsc --noemit",
+    "lint": "eslint '{src,test}/**/*.ts' --max-warnings 0",
     "lint:fix": "yarn lint --fix",
     "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --extension .ts --reporter=text ts-mocha --timeout 30000 --paths 'test/**/*.ts'",
     "version": "oclif-dev readme && git add README.md",
