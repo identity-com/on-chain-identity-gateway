@@ -85,13 +85,21 @@ export class SendableTransaction implements TransactionHolder {
     options: SendOptions = {},
     ...extraSigners: Signer[]
   ): Promise<SentTransaction> {
-    return new SentTransaction(
-      this.connection,
-      await this.connection.sendTransaction(this.transaction, extraSigners, {
-        preflightCommitment: SOLANA_COMMITMENT,
-        ...options,
-      })
+    if (extraSigners.length) {
+      this.partialSign(...extraSigners);
+    }
+
+    const fullOptions = {
+      preflightCommitment: SOLANA_COMMITMENT,
+      ...options,
+    };
+
+    const txSig = await this.connection.sendRawTransaction(
+      this.transaction.serialize(),
+      fullOptions
     );
+
+    return new SentTransaction(this.connection, txSig);
   }
 
   /**
