@@ -106,13 +106,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Gatekeeper<wbr>Network<wbr>Service<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, payer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, customRetryConfig<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">DeepPartial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">RetryConfig</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatekeeperNetworkService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperNetworkService</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Gatekeeper<wbr>Network<wbr>Service<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatekeeperNetworkService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperNetworkService</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5bd559f/solana/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L30">service/GatekeeperNetworkService.ts:30</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L24">service/GatekeeperNetworkService.ts:24</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -131,26 +131,10 @@
 									</div>
 								</li>
 								<li>
-									<h5>payer: <span class="tsd-signature-type">Keypair</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>The payer for any transactions performed by the network authority</p>
-										</div>
-									</div>
-								</li>
-								<li>
 									<h5>gatekeeperNetwork: <span class="tsd-signature-type">Keypair</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>The network authority&#39;s key</p>
-										</div>
-									</div>
-								</li>
-								<li>
-									<h5>customRetryConfig: <span class="tsd-signature-type">DeepPartial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">RetryConfig</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>RetryConfig including retry count and timeouts. All values have defaults.</p>
 										</div>
 									</div>
 								</li>
@@ -166,13 +150,13 @@
 					<a name="addGatekeeper" class="tsd-anchor"></a>
 					<h3>add<wbr>Gatekeeper</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">add<wbr>Gatekeeper<span class="tsd-signature-symbol">(</span>gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, confirmOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Gatekeeper<span class="tsd-signature-symbol">(</span>gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">TransactionOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5bd559f/solana/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L47">service/GatekeeperNetworkService.ts:47</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L55">service/GatekeeperNetworkService.ts:55</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -186,12 +170,12 @@
 									<h5>gatekeeperAuthority: <span class="tsd-signature-type">PublicKey</span></h5>
 								</li>
 								<li>
-									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">TransactionOptions</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PublicKey</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -205,7 +189,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5bd559f/solana/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L109">service/GatekeeperNetworkService.ts:109</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperNetworkService.ts#L111">service/GatekeeperNetworkService.ts:111</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -270,6 +254,9 @@
 			<ul class="tsd-legend">
 				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
 			</ul>
 		</div>
 	</div>

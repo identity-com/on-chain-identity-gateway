@@ -53,9 +53,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [ '1.55' ]
-        solana: [ 'stable' ]
+        rust: [ '1.58' ]
         node: ['15.x']
+        solana: ['stable']
         os: [ubuntu-latest]
 
     defaults:
@@ -78,7 +78,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             ./solana/target
-          key: cargo-build-${{ hashFiles('solana/Cargo.lock') }}
+          key: cargo-build-v2-${{ hashFiles('solana/Cargo.lock') }}
 
       - name: Cache Solana version
         uses: actions/cache@v2

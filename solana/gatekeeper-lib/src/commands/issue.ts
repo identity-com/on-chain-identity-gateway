@@ -57,7 +57,6 @@ export default class Issue extends Command {
 
     const service = new GatekeeperService(
       connection,
-      gatekeeper,
       gatekeeperNetwork,
       gatekeeper,
       flags.expiry
@@ -74,8 +73,14 @@ export default class Issue extends Command {
       );
     }
 
-    const token = await service.issue(address);
-
-    this.log(prettyPrint(token));
+    const issuedToken = await service
+      .issue(address)
+      .then((t) => t.send())
+      .then((t) => t.confirm());
+    if (issuedToken) {
+      this.log(prettyPrint(issuedToken));
+    } else {
+      this.log("No gateway token found after issuance.");
+    }
   }
 }
