@@ -20,11 +20,16 @@ import {
 
 import { SendableDataTransaction, SendableTransaction } from "../util";
 import { HashOrNonce, TransactionHolder } from "../util/connection";
+import { SOLANA_COMMITMENT } from "../util/constants";
+import {
+  getOrCreateBlockhashOrNonce,
+  TransactionOptions,
+} from "../util/transaction";
 
 /**
  * Global default configuration for the gatekeeper
  */
-export type GatekeeperConfig = {
+export type GatekeeperConfig = TransactionOptions & {
   defaultExpirySeconds?: number;
 };
 
@@ -35,18 +40,38 @@ export class GatekeeperService {
   /**
    * Construct a new GatekeeperService instance
    * @param connection A solana connection object
-   * @param payer The payer for any transactions performed by the gatekeeper
    * @param gatekeeperNetwork The network that the gatekeeper belongs to
    * @param gatekeeperAuthority The gatekeeper's key
    * @param config Global default configuration for the gatekeeper
    */
   constructor(
     private readonly connection: Connection,
-    private payer: Keypair,
     private gatekeeperNetwork: PublicKey,
     private gatekeeperAuthority: Keypair,
     private config: GatekeeperConfig = {}
   ) {}
+
+  private async optionsWithDefaults(
+    options: TransactionOptions = {}
+  ): Promise<Required<TransactionOptions>> {
+    const defaultOptions = {
+      feePayer: this.gatekeeperAuthority.publicKey,
+      rentPayer: this.gatekeeperAuthority.publicKey,
+      commitment: SOLANA_COMMITMENT,
+      ...this.config,
+      ...options,
+    };
+
+    const blockhashOrNonce = await getOrCreateBlockhashOrNonce(
+      this.connection,
+      defaultOptions.blockhashOrNonce
+    );
+
+    return {
+      ...defaultOptions,
+      blockhashOrNonce,
+    };
+  }
 
   private gatekeeperAccountAddress() {
     return getGatekeeperAccountAddress(
@@ -77,10 +102,10 @@ export class GatekeeperService {
 
   private async issueVanilla(
     owner: PublicKey,
-    feePayer: PublicKey,
-    hashOrNonce: HashOrNonce,
-    seed?: Uint8Array
+    seed?: Uint8Array,
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<GatewayToken | null>> {
+    const normalizedOptions = await this.optionsWithDefaults(options);
     const gatewayTokenAddress: PublicKey =
       await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
         owner,
@@ -95,7 +120,7 @@ export class GatekeeperService {
     const transaction = new Transaction().add(
       issueVanilla(
         gatewayTokenAddress,
-        this.payer.publicKey,
+        normalizedOptions.rentPayer,
         gatekeeperAccount,
         owner,
         this.gatekeeperAuthority.publicKey,
@@ -105,29 +130,27 @@ export class GatekeeperService {
       )
     );
 
+    const hashOrNonce =
+      normalizedOptions.blockhashOrNonce ||
+      (await this.connection.getRecentBlockhash());
+
     return new SendableTransaction(this.connection, transaction)
       .withData(() => getGatewayToken(this.connection, gatewayTokenAddress))
-      .feePayer(feePayer)
+      .feePayer(normalizedOptions.feePayer)
       .addHashOrNonce(hashOrNonce)
-      .then((t) => t.partialSign(this.gatekeeperAuthority, this.payer));
+      .then((t) => t.partialSign(this.gatekeeperAuthority));
   }
 
   /**
    * Issue a token to this recipient
    * @param recipient
-   * @param hashOrNonce Defaults to grabbing blockhash from chain
-   * @param feePayer Defaults to gatekeeperAuthority
+   * @param options
    */
   issue(
     recipient: PublicKey,
-    hashOrNonce: HashOrNonce,
-    feePayer?: PublicKey
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<GatewayToken | null>> {
-    return this.issueVanilla(
-      recipient,
-      feePayer ? feePayer : this.gatekeeperAuthority.publicKey,
-      hashOrNonce
-    );
+    return this.issueVanilla(recipient, undefined, options);
   }
 
   /**
@@ -135,34 +158,31 @@ export class GatekeeperService {
    * and returning the existing token with the given updated state value and (optional) expiryTime.
    * @param gatewayTokenKey
    * @param instruction
-   * @param hashOrNonce
-   * @param feePayer Defaults to gatekeeperAuthority
+   * @param options
    */
   private async updateToken(
     gatewayTokenKey: PublicKey,
     instruction: TransactionInstruction,
-    hashOrNonce: HashOrNonce,
-    feePayer?: PublicKey
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<GatewayToken>> {
+    const normalizedOptions = await this.optionsWithDefaults(options);
     const transaction = new Transaction().add(instruction);
 
     return new SendableTransaction(this.connection, transaction)
       .withData(() => this.getGatewayTokenOrError(gatewayTokenKey))
-      .feePayer(feePayer ? feePayer : this.gatekeeperAuthority.publicKey)
-      .addHashOrNonce(hashOrNonce)
+      .feePayer(normalizedOptions.feePayer)
+      .addHashOrNonce(normalizedOptions.blockhashOrNonce)
       .then((t) => t.partialSign(this.gatekeeperAuthority));
   }
 
   /**
    * Revoke the gateway token. The token must have been issued by a gatekeeper in the same network
    * @param gatewayTokenKey
-   * @param hashOrNonce
-   * @param feePayer
+   * @param options
    */
   async revoke(
     gatewayTokenKey: PublicKey,
-    hashOrNonce: HashOrNonce,
-    feePayer?: PublicKey
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<GatewayToken>> {
     const gatekeeperAccount = await getGatekeeperAccountAddress(
       this.gatekeeperAuthority.publicKey,
@@ -175,57 +195,42 @@ export class GatekeeperService {
         this.gatekeeperAuthority.publicKey,
         gatekeeperAccount
       ),
-      hashOrNonce,
-      feePayer
+      options
     );
   }
 
   /**
    * Freeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
-   * @param hashOrNonce
-   * @param feePayer
+   * @param options
    */
   async freeze(
     gatewayTokenKey: PublicKey,
-    hashOrNonce: HashOrNonce,
-    feePayer?: PublicKey
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<GatewayToken>> {
     const instruction: TransactionInstruction = freeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
       await this.gatekeeperAccountAddress()
     );
-    return this.updateToken(
-      gatewayTokenKey,
-      instruction,
-      hashOrNonce,
-      feePayer
-    );
+    return this.updateToken(gatewayTokenKey, instruction, options);
   }
 
   /**
    * Unfreeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
-   * @param hashOrNonce
-   * @param feePayer
+   * @param options
    */
   async unfreeze(
     gatewayTokenKey: PublicKey,
-    hashOrNonce: HashOrNonce,
-    feePayer?: PublicKey
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<GatewayToken>> {
     const instruction: TransactionInstruction = unfreeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
       await this.gatekeeperAccountAddress()
     );
-    return this.updateToken(
-      gatewayTokenKey,
-      instruction,
-      hashOrNonce,
-      feePayer
-    );
+    return this.updateToken(gatewayTokenKey, instruction, options);
   }
 
   /**
@@ -242,14 +247,12 @@ export class GatekeeperService {
    * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
    * @param expireTime
-   * @param hashOrNonce
-   * @param feePayer
+   * @param options
    */
   async updateExpiry(
     gatewayTokenKey: PublicKey,
     expireTime: number,
-    hashOrNonce: HashOrNonce,
-    feePayer?: PublicKey
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<GatewayToken>> {
     const instruction: TransactionInstruction = updateExpiry(
       gatewayTokenKey,
@@ -257,12 +260,7 @@ export class GatekeeperService {
       await this.gatekeeperAccountAddress(),
       expireTime
     );
-    return this.updateToken(
-      gatewayTokenKey,
-      instruction,
-      hashOrNonce,
-      feePayer
-    );
+    return this.updateToken(gatewayTokenKey, instruction, options);
   }
 
   // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key
@@ -280,14 +278,15 @@ export class GatekeeperService {
 
   async updateTransactionBlockhash(
     transaction: TransactionHolder,
-    hashOrNonce: HashOrNonce
+    options?: TransactionOptions
   ) {
+    const normalizedOptions = await this.optionsWithDefaults(options);
     const transactionSignedByGatekeeper =
       !!transaction.transaction.signatures.find((sig) =>
         sig.publicKey.equals(this.gatekeeperAuthority.publicKey)
       );
     const transactionSignedByPayer = !!transaction.transaction.signatures.find(
-      (sig) => sig.publicKey.equals(this.payer.publicKey)
+      (sig) => sig.publicKey.equals(normalizedOptions.rentPayer)
     );
     if (
       (transactionSignedByGatekeeper || transactionSignedByPayer) &&
@@ -296,12 +295,9 @@ export class GatekeeperService {
       throw Error("Transaction is not validly signed by gatekeeper");
     }
 
-    await transaction.addHashOrNonce(hashOrNonce);
+    await transaction.addHashOrNonce(normalizedOptions.blockhashOrNonce);
     if (transactionSignedByGatekeeper) {
       transaction.partialSign(this.gatekeeperAuthority);
-    }
-    if (transactionSignedByPayer) {
-      transaction.partialSign(this.payer);
     }
   }
 }
