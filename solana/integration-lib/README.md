@@ -22,12 +22,8 @@ In the instruction processor (typically processor.rs)
 use solana_gateway::Gateway;
 use solana_program::{
     account_info::AccountInfo,
-    program_error::ProgramError,
     program_pack::Pack,
     pubkey::Pubkey,
-    rent::Rent,
-    sysvar::{Sysvar, SysvarId},
-    msg
 };
 
 fn process() {
@@ -40,7 +36,45 @@ fn process() {
 
     let gateway_verification_result:Result<(), GatewayError> =
         Gateway::verify_gateway_token_account_info(
-            &gateway_token_account_info, &owner.key, &gatekeeper
+            &gateway_token_account_info, &owner.key, &gatekeeper, None
         );
 }
+```
+
+## Advanced Usage
+
+By default, the verify function will fail if the token has expired. This is an important security measure
+in some gatekeeper networks, particularly ones that require ongoing monitoring of the token's owner.
+
+In gatekeeper networks where this is not relevant, it is recommended to issue tokens without expiry.
+
+However, in some scenarios, an expired token may still be considered valid. Alternatively the integrator
+may wish to set a tolerance value.
+
+To ignore expiry:
+
+```rust
+let gateway_verification_result:Result<(), GatewayError> =
+        Gateway::verify_gateway_token_account_info(
+            &gateway_token_account_info, &owner.key, &gatekeeper, {
+                Some(VerificationOptions {
+                    check_expiry: false,
+                    ..Default::default()
+                },
+            }
+        );
+```
+
+To set a tolerance:
+
+```rust
+let gateway_verification_result:Result<(), GatewayError> =
+        Gateway::verify_gateway_token_account_info(
+            &gateway_token_account_info, &owner.key, &gatekeeper, {
+                Some(VerificationOptions {
+                    check_expiry: true,
+                    expiry_tolerance_seconds: Some(120),    // allow 2 minutes tolerance for token expiry
+                },
+            }
+        );
 ```

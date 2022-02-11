@@ -99,6 +99,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#revoke" class="tsd-kind-icon">revoke</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#unfreeze" class="tsd-kind-icon">unfreeze</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="GatekeeperService.html#updateExpiry" class="tsd-kind-icon">update<wbr>Expiry</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="GatekeeperService.html#updateToken" class="tsd-kind-icon">update<wbr>Token</a></li>
 							</ul>
 						</section>
 					</div>
@@ -110,13 +111,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Gatekeeper<wbr>Service<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, payer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, config<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">GatekeeperConfig</span>, customRetryConfig<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">DeepPartial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">RetryConfig</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatekeeperService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperService</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Gatekeeper<wbr>Service<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Connection</span>, gatekeeperNetwork<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, gatekeeperAuthority<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Keypair</span>, config<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">GatekeeperConfig</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="GatekeeperService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperService</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5bd559f/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L49">service/GatekeeperService.ts:49</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L47">service/GatekeeperService.ts:47</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -131,14 +132,6 @@
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>A solana connection object</p>
-										</div>
-									</div>
-								</li>
-								<li>
-									<h5>payer: <span class="tsd-signature-type">Keypair</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>The payer for any transactions performed by the gatekeeper</p>
 										</div>
 									</div>
 								</li>
@@ -166,14 +159,6 @@
 										</div>
 									</div>
 								</li>
-								<li>
-									<h5>customRetryConfig: <span class="tsd-signature-type">DeepPartial</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">RetryConfig</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>RetryConfig including retry count and timeouts. All values have defaults.</p>
-										</div>
-									</div>
-								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="GatekeeperService.html" class="tsd-signature-type" data-tsd-kind="Class">GatekeeperService</a></h4>
 						</li>
@@ -192,7 +177,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5bd559f/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L310">service/GatekeeperService.ts:310</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L240">service/GatekeeperService.ts:240</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -216,13 +201,13 @@
 					<a name="freeze" class="tsd-anchor"></a>
 					<h3>freeze</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">freeze<span class="tsd-signature-symbol">(</span>gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, confirmOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">freeze<span class="tsd-signature-symbol">(</span>gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">TransactionOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5bd559f/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L210">service/GatekeeperService.ts:210</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L207">service/GatekeeperService.ts:207</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -234,14 +219,14 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>gatewayTokenKey: <span class="tsd-signature-type">PublicKey</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">TransactionOptions</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
-								<li>
-									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
-								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -249,13 +234,13 @@
 					<a name="issue" class="tsd-anchor"></a>
 					<h3>issue</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">issue<span class="tsd-signature-symbol">(</span>recipient<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, confirmOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">issue<span class="tsd-signature-symbol">(</span>recipient<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">TransactionOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5bd559f/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L151">service/GatekeeperService.ts:151</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L149">service/GatekeeperService.ts:149</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -267,14 +252,14 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>recipient: <span class="tsd-signature-type">PublicKey</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">TransactionOptions</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
-								<li>
-									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
-								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -282,13 +267,13 @@
 					<a name="revoke" class="tsd-anchor"></a>
 					<h3>revoke</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">revoke<span class="tsd-signature-symbol">(</span>gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, confirmOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">revoke<span class="tsd-signature-symbol">(</span>gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">TransactionOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5bd559f/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L162">service/GatekeeperService.ts:162</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L183">service/GatekeeperService.ts:183</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -300,14 +285,14 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>gatewayTokenKey: <span class="tsd-signature-type">PublicKey</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">TransactionOptions</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
-								<li>
-									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
-								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -315,13 +300,13 @@
 					<a name="unfreeze" class="tsd-anchor"></a>
 					<h3>unfreeze</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">unfreeze<span class="tsd-signature-symbol">(</span>gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, confirmOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">unfreeze<span class="tsd-signature-symbol">(</span>gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">TransactionOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5bd559f/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L260">service/GatekeeperService.ts:260</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L224">service/GatekeeperService.ts:224</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -333,14 +318,14 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>gatewayTokenKey: <span class="tsd-signature-type">PublicKey</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">TransactionOptions</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
-								<li>
-									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
-								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -348,13 +333,13 @@
 					<a name="updateExpiry" class="tsd-anchor"></a>
 					<h3>update<wbr>Expiry</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">update<wbr>Expiry<span class="tsd-signature-symbol">(</span>gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, expireTime<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, confirmOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">update<wbr>Expiry<span class="tsd-signature-symbol">(</span>gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, expireTime<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">TransactionOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/5bd559f/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L321">service/GatekeeperService.ts:321</a></li>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L252">service/GatekeeperService.ts:252</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -369,14 +354,51 @@
 								</li>
 								<li>
 									<h5>expireTime: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">TransactionOptions</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
+					<a name="updateToken" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> update<wbr>Token</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+						<li class="tsd-signature tsd-kind-icon">update<wbr>Token<span class="tsd-signature-symbol">(</span>gatewayTokenKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PublicKey</span>, instruction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TransactionInstruction</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">TransactionOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/identity-com/on-chain-identity-gateway/blob/d1248b8/solana/gatekeeper-lib/src/service/GatekeeperService.ts#L163">service/GatekeeperService.ts:163</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Updates a GatewayToken by building a transaction with the given txBuilder function,
+									and returning the existing token with the given updated state value and (optional) expiryTime.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
 								<li>
-									<h5>confirmOptions: <span class="tsd-signature-type">ConfirmOptions</span><span class="tsd-signature-symbol"> = {}</span></h5>
+									<h5>gatewayTokenKey: <span class="tsd-signature-type">PublicKey</span></h5>
+								</li>
+								<li>
+									<h5>instruction: <span class="tsd-signature-type">TransactionInstruction</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">TransactionOptions</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">SendableDataTransaction</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">GatewayToken</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -421,6 +443,9 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="GatekeeperService.html#updateExpiry" class="tsd-kind-icon">update<wbr>Expiry</a>
 							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
+								<a href="GatekeeperService.html#updateToken" class="tsd-kind-icon">update<wbr>Token</a>
+							</li>
 						</ul>
 					</li>
 				</ul>
@@ -437,6 +462,9 @@
 			<ul class="tsd-legend">
 				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
 			</ul>
 		</div>
 	</div>

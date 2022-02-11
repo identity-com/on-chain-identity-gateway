@@ -15,8 +15,8 @@ import {
 import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
 import {
   addGatekeeper,
-  getGatekeeperAccountKey,
-  getGatewayTokenKeyForOwner,
+  getGatekeeperAccountAddress,
+  getGatewayTokenAddressForOwnerAndGatekeeperNetwork,
   issueVanilla,
 } from "../../src";
 import { VALIDATOR_URL } from "../constatnts";
@@ -64,7 +64,7 @@ describe("getGatewayTokenKeyForOwner", function () {
     owner = Keypair.generate().publicKey;
     gatekeeperAuthority = Keypair.generate();
     gatekeeperNetwork = Keypair.generate();
-    gatekeeperAccount = await getGatekeeperAccountKey(
+    gatekeeperAccount = await getGatekeeperAccountAddress(
       gatekeeperAuthority.publicKey,
       gatekeeperNetwork.publicKey
     );
@@ -86,7 +86,7 @@ describe("getGatewayTokenKeyForOwner", function () {
           )
           .add(
             issueVanilla(
-              await getGatewayTokenKeyForOwner(
+              await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
                 owner,
                 gatekeeperNetwork.publicKey
               ),
@@ -110,7 +110,7 @@ describe("getGatewayTokenKeyForOwner", function () {
 
   it("get token address with wrong size seed should fail", async () => {
     try {
-      await getGatewayTokenKeyForOwner(
+      await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
         owner,
         gatekeeperNetwork.publicKey,
         new Uint8Array([100, 212])
@@ -118,7 +118,7 @@ describe("getGatewayTokenKeyForOwner", function () {
       expect.fail("Succeeded when should fail");
     } catch (error) {
       expect((error as Error).message).to.deep.equal(
-        "Additional Seed has length 2 instead of 8 when calling getGatewayTokenKeyForOwner."
+        "Additional Seed has length 2 instead of 8 when calling getGatewayTokenAddressForOwnerAndGatekeeperNetwork."
       );
     }
   });

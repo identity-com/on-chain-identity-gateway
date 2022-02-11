@@ -153,7 +153,7 @@ export function revokeGatekeeper(
  * Issue a gateway token to the owner publicKey. This is a 'vanilla' token, in that it does not
  * rely on any other accounts (e.g. identity accounts) to validate.
  * Returns a Solana instruction that must be signed by the gatekeeper authority.
- * @param gatewayTokenAccount An uninitialised gateway token account PDA. The address must be derived via getGatewayTokenKeyForOwner
+ * @param gatewayTokenAccount An uninitialised gateway token account PDA. The address must be derived via getGatewayTokenAddressForOwnerAndGatekeeperNetwork
  * @param payer The payer of the transaction (used to pay rent into the gatekeeper account).
  * @param gatekeeperAccount The account in the gatekeeper network of the gatekeeper issuing the token
  * @param owner The recipient of the token
