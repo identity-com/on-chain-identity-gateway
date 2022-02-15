@@ -1,7 +1,7 @@
 import { Command, flags } from "@oclif/command";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
-import { airdropTo, getConnection } from "../util";
+import { airdropTo } from "../util";
 import { GatekeeperService } from "../service";
 import {
   clusterFlag,
@@ -9,6 +9,7 @@ import {
   gatekeeperNetworkPubkeyFlag,
 } from "../util/oclif/flags";
 import { prettyPrint } from "../util/token";
+import { getConnectionFromEnv } from "../util/oclif/utils";
 
 export default class Issue extends Command {
   static description = "Issue a gateway token to a wallet";
@@ -51,7 +52,7 @@ export default class Issue extends Command {
       from gatekeeper ${gatekeeper.publicKey.toBase58()}
       in network ${gatekeeperNetwork.toBase58()}`);
 
-    const connection = getConnection(flags.cluster);
+    const connection = getConnectionFromEnv(flags.cluster);
 
     await airdropTo(connection, gatekeeper.publicKey, flags.cluster as string);
 

@@ -1,7 +1,12 @@
 import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import {
+  addFeatureToNetwork,
   addGatekeeper,
+  featureExists,
+  getFeatureAccountAddress,
   getGatekeeperAccountAddress,
+  NetworkFeature,
+  removeFeatureFromNetwork,
   revokeGatekeeper,
 } from "@identity.com/solana-gateway-ts";
 import { SendableDataTransaction, SendableTransaction } from "../util";
@@ -95,5 +100,68 @@ export class GatekeeperNetworkService {
     );
 
     return !!gatekeeperAccountInfo;
+  }
+
+  /**
+   * Add Network Feature to Network
+   * @param feature
+   */
+  async addNetworkFeature(
+    hashOrNonce: HashOrNonce,
+    feature: NetworkFeature,
+    feePayer?: PublicKey
+  ): Promise<SendableDataTransaction<PublicKey>> {
+    const instruction = await addFeatureToNetwork(
+      this.payer.publicKey,
+      this.gatekeeperNetwork.publicKey,
+      feature
+    );
+    const transaction = new Transaction().add(instruction);
+
+    return new SendableTransaction(this.connection, transaction)
+      .withData(() =>
+        getFeatureAccountAddress(feature, this.gatekeeperNetwork.publicKey)
+      )
+      .feePayer(feePayer ? feePayer : this.gatekeeperNetwork.publicKey)
+      .addHashOrNonce(hashOrNonce)
+      .then((t) => t.partialSign(this.gatekeeperNetwork));
+  }
+
+  /**
+   * Add Network Feature to Network
+   * @param feature
+   */
+  async removeNetworkFeature(
+    hashOrNonce: HashOrNonce,
+    feature: NetworkFeature,
+    feePayer?: PublicKey
+  ): Promise<SendableDataTransaction<PublicKey>> {
+    const transaction = new Transaction().add(
+      await removeFeatureFromNetwork(
+        this.payer.publicKey,
+        this.gatekeeperNetwork.publicKey,
+        feature
+      )
+    );
+
+    return new SendableTransaction(this.connection, transaction)
+      .withData(() =>
+        getFeatureAccountAddress(feature, this.gatekeeperNetwork.publicKey)
+      )
+      .feePayer(feePayer ? feePayer : this.gatekeeperNetwork.publicKey)
+      .addHashOrNonce(hashOrNonce)
+      .then((t) => t.partialSign(this.gatekeeperNetwork));
+  }
+
+  /**
+   * Check if the feature is set for the network
+   * @param feature
+   */
+  async hasNetworkFeature(feature: NetworkFeature): Promise<boolean> {
+    return featureExists(
+      this.connection,
+      feature,
+      this.gatekeeperNetwork.publicKey
+    );
   }
 }
