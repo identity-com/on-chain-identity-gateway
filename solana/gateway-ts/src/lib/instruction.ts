@@ -8,6 +8,8 @@ import {
   TransactionInstruction,
 } from "@solana/web3.js";
 import { Active, Frozen, GatewayTokenState, Revoked } from "./GatewayTokenData";
+import { NetworkFeature, UserTokenExpiry } from "./GatewayNetworkData";
+import { getFeatureAccountAddress } from "./util";
 
 /**
  * Creates instructions to send to the gateway program.
@@ -27,6 +29,12 @@ class UpdateExpiry extends Assignable {
   expireTime!: number;
 }
 class RevokeGatekeeper extends Assignable {}
+class AddFeatureToNetwork extends Assignable {
+  feature!: NetworkFeature;
+}
+class RemoveFeatureFromNetwork extends Assignable {
+  feature!: NetworkFeature;
+}
 
 export class GatewayInstruction extends Enum {
   addGatekeeper?: AddGatekeeper;
@@ -34,6 +42,8 @@ export class GatewayInstruction extends Enum {
   setState?: SetState;
   updateExpiry?: UpdateExpiry;
   revokeGatekeeper?: RevokeGatekeeper;
+  addFeatureToNetwork?: AddFeatureToNetwork;
+  removeFeatureFromNetwork?: RemoveFeatureFromNetwork;
 
   static addGatekeeper(): GatewayInstruction {
     return new GatewayInstruction({
@@ -85,6 +95,22 @@ export class GatewayInstruction extends Enum {
   static revokeGatekeeper(): GatewayInstruction {
     return new GatewayInstruction({
       revokeGatekeeper: new RevokeGatekeeper({}),
+    });
+  }
+
+  static addFeatureToNetwork(feature: NetworkFeature): GatewayInstruction {
+    return new GatewayInstruction({
+      addFeatureToNetwork: new AddFeatureToNetwork({
+        feature,
+      }),
+    });
+  }
+
+  static removeFeatureFromNetwork(feature: NetworkFeature): GatewayInstruction {
+    return new GatewayInstruction({
+      removeFeatureFromNetwork: new RemoveFeatureFromNetwork({
+        feature,
+      }),
     });
   }
 }
@@ -302,6 +328,62 @@ export function updateExpiry(
   });
 }
 
+/**
+ * Add a feature to an existing Gatekeeper Network.
+ * Returns a Solana instruction that must be signed by the gatekeeper authority.
+ * @param payer The payer of the transaction (used to pay rent into the gatekeeper account)
+ * @param network The gatekeeper network that the account is being added to.
+ * @param feature The NetworkFeature Enum value
+ */
+export async function addFeatureToNetwork(
+  payer: PublicKey,
+  network: PublicKey,
+  feature: NetworkFeature
+): Promise<TransactionInstruction> {
+  const featureAccount = await getFeatureAccountAddress(feature, network);
+
+  const keys: AccountMeta[] = [
+    { pubkey: payer, isSigner: true, isWritable: true },
+    { pubkey: network, isSigner: true, isWritable: false },
+    { pubkey: featureAccount, isSigner: false, isWritable: true },
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  ];
+  const data = GatewayInstruction.addFeatureToNetwork(feature).encode();
+  return new TransactionInstruction({
+    keys,
+    programId: PROGRAM_ID,
+    data,
+  });
+}
+
+/**
+ * Remove a feature to an existing Gatekeeper Network.
+ * Returns a Solana instruction that must be signed by the gatekeeper authority.
+ * @param payer The payer of the transaction (used to pay rent into the gatekeeper account)
+ * @param network The gatekeeper network that the account is being added to.
+ * @param feature The NetworkFeature Enum value
+ */
+export async function removeFeatureFromNetwork(
+  payer: PublicKey,
+  network: PublicKey,
+  feature: NetworkFeature
+): Promise<TransactionInstruction> {
+  const featureAccount = await getFeatureAccountAddress(feature, network);
+
+  const keys: AccountMeta[] = [
+    { pubkey: payer, isSigner: true, isWritable: true },
+    { pubkey: network, isSigner: true, isWritable: false },
+    { pubkey: featureAccount, isSigner: false, isWritable: true },
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  ];
+  const data = GatewayInstruction.removeFeatureFromNetwork(feature).encode();
+  return new TransactionInstruction({
+    keys,
+    programId: PROGRAM_ID,
+    data,
+  });
+}
+
 SCHEMA.set(GatewayInstruction, {
   kind: "enum",
   field: "enum",
@@ -311,6 +393,8 @@ SCHEMA.set(GatewayInstruction, {
     ["setState", SetState],
     ["updateExpiry", UpdateExpiry],
     ["revokeGatekeeper", RevokeGatekeeper],
+    ["addFeatureToNetwork", AddFeatureToNetwork],
+    ["removeFeatureFromNetwork", RemoveFeatureFromNetwork],
   ],
 });
 SCHEMA.set(AddGatekeeper, {
@@ -335,4 +419,12 @@ SCHEMA.set(UpdateExpiry, {
 SCHEMA.set(RevokeGatekeeper, {
   kind: "struct",
   fields: [],
+});
+SCHEMA.set(AddFeatureToNetwork, {
+  kind: "struct",
+  fields: [["state", NetworkFeature]],
+});
+SCHEMA.set(RemoveFeatureFromNetwork, {
+  kind: "struct",
+  fields: [["state", NetworkFeature]],
 });
