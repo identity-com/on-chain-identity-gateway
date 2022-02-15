@@ -132,10 +132,11 @@ export class GatekeeperNetworkService {
   async addNetworkFeature(
     hashOrNonce: HashOrNonce,
     feature: NetworkFeature,
-    feePayer?: PublicKey
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<PublicKey>> {
+    const normalizedOptions = await this.optionsWithDefaults(options);
     const instruction = await addFeatureToNetwork(
-      this.payer.publicKey,
+      normalizedOptions.rentPayer,
       this.gatekeeperNetwork.publicKey,
       feature
     );
@@ -145,8 +146,8 @@ export class GatekeeperNetworkService {
       .withData(() =>
         getFeatureAccountAddress(feature, this.gatekeeperNetwork.publicKey)
       )
-      .feePayer(feePayer ? feePayer : this.gatekeeperNetwork.publicKey)
-      .addHashOrNonce(hashOrNonce)
+      .feePayer(normalizedOptions.feePayer)
+      .addHashOrNonce(normalizedOptions.blockhashOrNonce)
       .then((t) => t.partialSign(this.gatekeeperNetwork));
   }
 
@@ -157,11 +158,12 @@ export class GatekeeperNetworkService {
   async removeNetworkFeature(
     hashOrNonce: HashOrNonce,
     feature: NetworkFeature,
-    feePayer?: PublicKey
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<PublicKey>> {
+    const normalizedOptions = await this.optionsWithDefaults(options);
     const transaction = new Transaction().add(
       await removeFeatureFromNetwork(
-        this.payer.publicKey,
+        normalizedOptions.rentPayer,
         this.gatekeeperNetwork.publicKey,
         feature
       )
@@ -171,8 +173,8 @@ export class GatekeeperNetworkService {
       .withData(() =>
         getFeatureAccountAddress(feature, this.gatekeeperNetwork.publicKey)
       )
-      .feePayer(feePayer ? feePayer : this.gatekeeperNetwork.publicKey)
-      .addHashOrNonce(hashOrNonce)
+      .feePayer(normalizedOptions.feePayer)
+      .addHashOrNonce(normalizedOptions.blockhashOrNonce)
       .then((t) => t.partialSign(this.gatekeeperNetwork));
   }
 
