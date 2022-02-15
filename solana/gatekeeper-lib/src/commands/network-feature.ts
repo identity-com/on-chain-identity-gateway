@@ -71,7 +71,6 @@ export default class AddGatekeeper extends Command {
 
     const networkService = new GatekeeperNetworkService(
       connection,
-      gatekeeperNetwork,
       gatekeeperNetwork
     );
 
