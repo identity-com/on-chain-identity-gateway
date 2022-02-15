@@ -53,11 +53,10 @@ export default class AddGatekeeper extends Command {
 
     const networkService = new GatekeeperNetworkService(
       connection,
-      gatekeeperNetwork,
       gatekeeperNetwork
     );
     const gatekeeperAccount = await networkService
-      .addGatekeeper(gatekeeper, "find")
+      .addGatekeeper(gatekeeper)
       .then((t) => t.send())
       .then((t) => t.confirm());
     this.log(

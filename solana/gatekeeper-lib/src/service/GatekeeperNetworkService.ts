@@ -11,6 +11,11 @@ import {
 } from "@identity.com/solana-gateway-ts";
 import { SendableDataTransaction, SendableTransaction } from "../util";
 import { HashOrNonce } from "../util/connection";
+import {
+  getOrCreateBlockhashOrNonce,
+  TransactionOptions,
+} from "../util/transaction";
+import { SOLANA_COMMITMENT } from "../util/constants";
 
 /**
  * Encapsulates the actions performed by a gatekeeper network authority
@@ -19,26 +24,44 @@ export class GatekeeperNetworkService {
   /**
    * Construct a new gatekeeper network service
    * @param connection A solana connection object
-   * @param payer The payer for any transactions performed by the network authority
    * @param gatekeeperNetwork The network authority's key
    */
   constructor(
     private readonly connection: Connection,
-    private payer: Keypair,
     private gatekeeperNetwork: Keypair
   ) {}
+
+  private async optionsWithDefaults(
+    options: TransactionOptions = {}
+  ): Promise<Required<TransactionOptions>> {
+    const defaultOptions = {
+      feePayer: this.gatekeeperNetwork.publicKey,
+      rentPayer: this.gatekeeperNetwork.publicKey,
+      commitment: SOLANA_COMMITMENT,
+      ...options,
+    };
+
+    const blockhashOrNonce = await getOrCreateBlockhashOrNonce(
+      this.connection,
+      defaultOptions.blockhashOrNonce
+    );
+
+    return {
+      ...defaultOptions,
+      blockhashOrNonce,
+    };
+  }
 
   /**
    * Add a gatekeeper to the network
    * @param gatekeeperAuthority
-   * @param hashOrNonce
-   * @param feePayer Defaults to gatekeeper network
+   * @param options
    */
   async addGatekeeper(
     gatekeeperAuthority: PublicKey,
-    hashOrNonce: HashOrNonce,
-    feePayer?: PublicKey
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<PublicKey>> {
+    const normalizedOptions = await this.optionsWithDefaults(options);
     const gatekeeperAccount = await getGatekeeperAccountAddress(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
@@ -46,7 +69,7 @@ export class GatekeeperNetworkService {
 
     const transaction = new Transaction().add(
       addGatekeeper(
-        this.payer.publicKey,
+        normalizedOptions.rentPayer,
         gatekeeperAccount,
         gatekeeperAuthority,
         this.gatekeeperNetwork.publicKey
@@ -55,16 +78,16 @@ export class GatekeeperNetworkService {
 
     return new SendableTransaction(this.connection, transaction)
       .withData(gatekeeperAccount)
-      .feePayer(feePayer ? feePayer : this.gatekeeperNetwork.publicKey)
-      .addHashOrNonce(hashOrNonce)
+      .feePayer(normalizedOptions.feePayer)
+      .addHashOrNonce(normalizedOptions.blockhashOrNonce)
       .then((t) => t.partialSign(this.gatekeeperNetwork));
   }
 
   async revokeGatekeeper(
     gatekeeperAuthority: PublicKey,
-    hashOrNonce: HashOrNonce,
-    feePayer?: PublicKey
+    options?: TransactionOptions
   ): Promise<SendableDataTransaction<PublicKey>> {
+    const normalizedOptions = await this.optionsWithDefaults(options);
     const gatekeeperAccount = await getGatekeeperAccountAddress(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
@@ -72,7 +95,7 @@ export class GatekeeperNetworkService {
 
     const transaction = new Transaction().add(
       revokeGatekeeper(
-        this.payer.publicKey,
+        normalizedOptions.rentPayer,
         gatekeeperAccount,
         gatekeeperAuthority,
         this.gatekeeperNetwork.publicKey
@@ -81,8 +104,8 @@ export class GatekeeperNetworkService {
 
     return new SendableTransaction(this.connection, transaction)
       .withData(gatekeeperAccount)
-      .feePayer(feePayer ? feePayer : this.gatekeeperNetwork.publicKey)
-      .addHashOrNonce(hashOrNonce)
+      .feePayer(normalizedOptions.feePayer)
+      .addHashOrNonce(normalizedOptions.blockhashOrNonce)
       .then((t) => t.partialSign(this.gatekeeperNetwork));
   }
 

@@ -58,7 +58,6 @@ export default class Issue extends Command {
 
     const service = new GatekeeperService(
       connection,
-      gatekeeper,
       gatekeeperNetwork,
       gatekeeper,
       flags.expiry
@@ -76,7 +75,7 @@ export default class Issue extends Command {
     }
 
     const issuedToken = await service
-      .issue(address, "find")
+      .issue(address)
       .then((t) => t.send())
       .then((t) => t.confirm());
     if (issuedToken) {

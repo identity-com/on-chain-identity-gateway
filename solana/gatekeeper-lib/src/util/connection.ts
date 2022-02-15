@@ -13,6 +13,7 @@ import {
   TransactionError,
   TransactionSignature,
 } from "@solana/web3.js";
+import bs58 from "bs58";
 import { SOLANA_COMMITMENT } from "./constants";
 
 export type ExtendedCluster = Cluster | "localnet" | "civicnet";
@@ -65,6 +66,11 @@ export async function addHashOrNonce(
   }
 }
 
+/**
+ * from `@solana/web3.js`
+ */
+const DEFAULT_SIGNATURE = Buffer.alloc(64).fill(0);
+
 export class SendableTransaction implements TransactionHolder {
   constructor(
     readonly connection: Connection,
@@ -72,20 +78,28 @@ export class SendableTransaction implements TransactionHolder {
   ) {}
 
   withData<T>(data: T | (() => T | Promise<T>)): SendableDataTransaction<T> {
-    return new SendableDataTransaction<T>(this, data);
+    return new SendableDataTransaction<T>(this, normalizeDataCallback(data));
   }
 
   async send(
     options: SendOptions = {},
-    ...signers: Signer[]
+    ...extraSigners: Signer[]
   ): Promise<SentTransaction> {
-    return new SentTransaction(
-      this.connection,
-      await this.connection.sendTransaction(this.transaction, signers, {
-        preflightCommitment: SOLANA_COMMITMENT,
-        ...options,
-      })
+    if (extraSigners.length) {
+      this.partialSign(...extraSigners);
+    }
+
+    const fullOptions = {
+      preflightCommitment: SOLANA_COMMITMENT,
+      ...options,
+    };
+
+    const txSig = await this.connection.sendRawTransaction(
+      this.transaction.serialize(),
+      fullOptions
     );
+
+    return new SentTransaction(this.connection, txSig);
   }
 
   /**
@@ -93,20 +107,21 @@ export class SendableTransaction implements TransactionHolder {
    */
   serializeForRelaying(): {
     message: Buffer;
-    signatures: (Buffer | null)[];
+    signatures: string[];
   } {
     const message = this.transaction.compileMessage();
-    const signatures: (Buffer | null)[] = [];
-    for (let x = 0; x < message.header.numRequiredSignatures; x++) {
-      const sig = this.transaction.signatures.find((sig) =>
-        sig.publicKey.equals(message.accountKeys[x])
-      );
-      if (sig) {
-        signatures.push(sig.signature);
-      } else {
-        signatures.push(null);
-      }
-    }
+    const signatures = message.accountKeys
+      .slice(0, message.header.numRequiredSignatures)
+      .map((key) => {
+        const result = this.transaction.signatures.find((sig) =>
+          sig.publicKey.equals(key)
+        );
+        if (result && result.signature) {
+          return bs58.encode(result.signature);
+        } else {
+          return bs58.encode(DEFAULT_SIGNATURE);
+        }
+      });
     return {
       message: message.serialize(),
       signatures,
@@ -116,25 +131,12 @@ export class SendableTransaction implements TransactionHolder {
   static fromSerialized(
     connection: Connection,
     message: Buffer,
-    signatures: (Buffer | null)[]
+    signatures: string[]
   ): SendableTransaction {
-    const deMessage = Message.from(message);
-    const transaction = Transaction.populate(deMessage);
-    transaction.signatures = signatures
-      .concat(
-        ...Array(
-          Math.max(
-            0,
-            deMessage.header.numRequiredSignatures - signatures.length
-          )
-        ).fill(null)
-      )
-      .slice(0, deMessage.header.numRequiredSignatures)
-      .map((sig, index) => ({
-        publicKey: deMessage.accountKeys[index],
-        signature: sig,
-      }));
-    return new SendableTransaction(connection, transaction);
+    return new SendableTransaction(
+      connection,
+      Transaction.populate(Message.from(message), signatures)
+    );
   }
   partialSign(...signers: Signer[]): this {
     this.transaction.partialSign(...signers);
@@ -151,10 +153,9 @@ export class SendableTransaction implements TransactionHolder {
 }
 
 export class SendableDataTransaction<T> implements TransactionHolder {
-  allPartialSigners: Signer[] = [];
   constructor(
     readonly sendableTransaction: SendableTransaction,
-    readonly data: T | (() => T | Promise<T>)
+    readonly data: DataCallback<T>
   ) {}
 
   get connection(): Connection {
@@ -169,7 +170,7 @@ export class SendableDataTransaction<T> implements TransactionHolder {
     ...extraSigners: Signer[]
   ): Promise<SentDataTransaction<T>> {
     return this.sendableTransaction
-      .send(options, ...this.allPartialSigners.concat(extraSigners))
+      .send(options, ...extraSigners)
       .then((t) => t.withData(this.data));
   }
   async addHashOrNonce(hashOrNonce: HashOrNonce): Promise<this> {
@@ -178,8 +179,6 @@ export class SendableDataTransaction<T> implements TransactionHolder {
   }
   partialSign(...signers: Signer[]): this {
     this.transaction.partialSign(...signers);
-    // add every signer to the data transaction
-    this.allPartialSigners.push(...signers);
     return this;
   }
   feePayer(feePayer: PublicKey): this {
@@ -188,14 +187,38 @@ export class SendableDataTransaction<T> implements TransactionHolder {
   }
 }
 
+// The following functions are used to allow a SentTransaction to provide a callback
+// that returns a datatype (e.g. a Gateway Token) related to the transaction.
+
+// SentDataTransaction exposes this type from its data() function
+type DataCallback<T> = () => Promise<T>;
+// SentTransaction withData() accepts this more generic type
+export type DataOrGeneralDataCallback<T> = T | (() => T | Promise<T>);
+
+// checks if the input is a data callback or purely data.
+const isGeneralDataCallback = <T>(
+  data: DataOrGeneralDataCallback<T>
+): data is () => T | Promise<T> => typeof data === "function";
+
+// Convert the input callback into a standardised function that returns a promise of data
+const normalizeDataCallback = <T>(
+  d: DataOrGeneralDataCallback<T>
+): DataCallback<T> => {
+  if (isGeneralDataCallback(d)) {
+    return () => Promise.resolve(d());
+  } else {
+    return () => Promise.resolve(d);
+  }
+};
+
 export class SentTransaction {
   constructor(
     readonly connection: Connection,
     readonly signature: TransactionSignature
   ) {}
 
-  withData<T>(data: T | (() => T | Promise<T>)): SentDataTransaction<T> {
-    return new SentDataTransaction<T>(this, data);
+  withData<T>(data: DataOrGeneralDataCallback<T>): SentDataTransaction<T> {
+    return new SentDataTransaction<T>(this, normalizeDataCallback(data));
   }
 
   async confirm(
@@ -219,7 +242,7 @@ export class SentTransaction {
 export class SentDataTransaction<T> {
   constructor(
     readonly sentTransaction: SentTransaction,
-    readonly data: T | (() => T | Promise<T>)
+    readonly data: DataCallback<T>
   ) {}
 
   get signature(): TransactionSignature {
