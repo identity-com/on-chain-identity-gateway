@@ -27,16 +27,16 @@ describe("GatewayNetwork", () => {
 
   context("GatekeeperNetwork Feature", () => {
     it("can correctly derive featureAccount", async () => {
-      const feature = new NetworkFeature({
+      const expireFeature = new NetworkFeature({
         userTokenExpiry: new UserTokenExpiry({}),
       });
 
       const featureAddress = await getFeatureAccountAddress(
-        feature,
-        gatekeeperNetworkKey
+        expireFeature,
+        new PublicKey("tibePmPaoTgrs929rWpu755EXaxC7M3SthVCf6GzjZt")
       );
       expect(featureAddress.toBase58()).to.equal(
-        "8fbnt3ThbA1VUHgLKJuxvU4AGxzfq7tw4DrcjLik3hvn"
+        "BNkYz4VZFuNaLey1hF1GCjFfN1p11trYouGPKqwH7ioJ"
       );
     });
   });

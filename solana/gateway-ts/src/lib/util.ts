@@ -257,7 +257,7 @@ export const gatekeeperExists = async (
     SOLANA_COMMITMENT
   );
 
-  return account != null && account.owner == PROGRAM_ID;
+  return account != null && PROGRAM_ID.equals(account.owner);
 };
 
 /**
@@ -298,5 +298,5 @@ export const featureExists = async (
     SOLANA_COMMITMENT
   );
 
-  return account != null && account.owner == PROGRAM_ID;
+  return account != null && PROGRAM_ID.equals(account.owner);
 };
