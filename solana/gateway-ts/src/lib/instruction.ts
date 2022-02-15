@@ -422,9 +422,9 @@ SCHEMA.set(RevokeGatekeeper, {
 });
 SCHEMA.set(AddFeatureToNetwork, {
   kind: "struct",
-  fields: [["state", NetworkFeature]],
+  fields: [["feature", NetworkFeature]],
 });
 SCHEMA.set(RemoveFeatureFromNetwork, {
   kind: "struct",
-  fields: [["state", NetworkFeature]],
+  fields: [["feature", NetworkFeature]],
 });
