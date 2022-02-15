@@ -7,35 +7,15 @@ import { PROGRAM_ID } from "../../src/lib/constants";
 import {
   Active,
   Revoked,
-  GatewayTokenData,
   GatewayTokenState,
 } from "../../src/lib/GatewayTokenData";
-import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
 import { VALIDATOR_URL } from "../constatnts";
 import { describe } from "mocha";
+import { getAccountWithState } from "./utils";
 
 chai.use(chaiSubset);
 const { expect } = chai;
 const sandbox = sinon.createSandbox();
-const getAccountWithState = (
-  state: GatewayTokenState,
-  pubkey: PublicKey,
-  ownerKey: PublicKey,
-  gatekeeperNetworkKey: PublicKey,
-  gatekeeperKey: PublicKey
-) => {
-  const gtData = new GatewayTokenData({
-    state,
-    owner: AssignablePublicKey.fromPublicKey(ownerKey),
-    issuingGatekeeper: AssignablePublicKey.fromPublicKey(gatekeeperKey),
-    gatekeeperNetwork: AssignablePublicKey.fromPublicKey(gatekeeperNetworkKey),
-    features: [0],
-    parentGatewayToken: undefined,
-    ownerIdentity: undefined,
-    expiry: undefined,
-  });
-  return { pubkey, account: { data: gtData.encode() } };
-};
 
 describe("findGatewayTokens", () => {
   let connection: Connection;

@@ -13,6 +13,7 @@ import {
 } from "./constants";
 import { GatewayToken, ProgramAccountResponse, State } from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
+import { mapEnumToFeatureName, NetworkFeature } from "./GatewayNetworkData";
 
 /**
  * Derive the address of the gatekeeper PDA for this gatekeeper
@@ -253,6 +254,47 @@ export const gatekeeperExists = async (
   );
   const account = await connection.getAccountInfo(
     gatekeeperAccount,
+    SOLANA_COMMITMENT
+  );
+
+  return account != null && account.owner == PROGRAM_ID;
+};
+
+/**
+ * Derive the address of the feature PDA
+ * @param featureName The name of the feature to set.
+ * @param network The network
+ */
+export const getFeatureAccountAddress = async (
+  feature: NetworkFeature,
+  network: PublicKey
+): Promise<PublicKey> => {
+  const featureName = mapEnumToFeatureName(feature.enum);
+
+  const publicKeyNonce = await PublicKey.findProgramAddress(
+    [network.toBytes(), Buffer.from(featureName, "utf8")],
+    PROGRAM_ID
+  );
+  return publicKeyNonce[0];
+};
+
+/**
+ * Return true if an address feature exists.
+ * @param featureName The name of the feature to set.
+ * @param network The network
+ */
+export const featureExists = async (
+  connection: Connection,
+  feature: NetworkFeature,
+  network: PublicKey
+): Promise<boolean> => {
+  const featureAccountAddress = await getFeatureAccountAddress(
+    feature,
+    network
+  );
+
+  const account = await connection.getAccountInfo(
+    featureAccountAddress,
     SOLANA_COMMITMENT
   );
 
