@@ -77,11 +77,11 @@ export class SendableTransaction implements TransactionHolder {
 
   async send(
     options: SendOptions = {},
-    ...extraSigners: Signer[]
+    ...signers: Signer[]
   ): Promise<SentTransaction> {
     return new SentTransaction(
       this.connection,
-      await this.connection.sendTransaction(this.transaction, extraSigners, {
+      await this.connection.sendTransaction(this.transaction, signers, {
         preflightCommitment: SOLANA_COMMITMENT,
         ...options,
       })
@@ -151,6 +151,7 @@ export class SendableTransaction implements TransactionHolder {
 }
 
 export class SendableDataTransaction<T> implements TransactionHolder {
+  allPartialSigners: Signer[] = [];
   constructor(
     readonly sendableTransaction: SendableTransaction,
     readonly data: T | (() => T | Promise<T>)
@@ -168,7 +169,7 @@ export class SendableDataTransaction<T> implements TransactionHolder {
     ...extraSigners: Signer[]
   ): Promise<SentDataTransaction<T>> {
     return this.sendableTransaction
-      .send(options, ...extraSigners)
+      .send(options, ...this.allPartialSigners.concat(extraSigners))
       .then((t) => t.withData(this.data));
   }
   async addHashOrNonce(hashOrNonce: HashOrNonce): Promise<this> {
@@ -177,6 +178,8 @@ export class SendableDataTransaction<T> implements TransactionHolder {
   }
   partialSign(...signers: Signer[]): this {
     this.transaction.partialSign(...signers);
+    // add every signer to the data transaction
+    this.allPartialSigners.push(...signers);
     return this;
   }
   feePayer(feePayer: PublicKey): this {
