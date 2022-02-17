@@ -154,6 +154,20 @@ export class GatekeeperService {
   }
 
   /**
+   * Calls issue, sends and confirms
+   * @param recipient
+   * @param options
+   * @returns
+   */
+  async sendIssue(
+    recipient: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.issue(recipient, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  /**
    * Updates a GatewayToken by building a transaction with the given txBuilder function,
    * and returning the existing token with the given updated state value and (optional) expiryTime.
    * @param gatewayTokenKey
@@ -200,6 +214,33 @@ export class GatekeeperService {
   }
 
   /**
+   * Sends and confirms revoke
+   * @param gatewayTokenKey
+   * @param options
+   * @returns
+   */
+  async sendRevoke(
+    gatewayTokenKey: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken> {
+    const gatekeeperAccount = await getGatekeeperAccountAddress(
+      this.gatekeeperAuthority.publicKey,
+      this.gatekeeperNetwork
+    );
+    return this.updateToken(
+      gatewayTokenKey,
+      revoke(
+        gatewayTokenKey,
+        this.gatekeeperAuthority.publicKey,
+        gatekeeperAccount
+      ),
+      options
+    )
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+
+  /**
    * Freeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
    * @param options
@@ -217,6 +258,26 @@ export class GatekeeperService {
   }
 
   /**
+   * Sends and confirms Freeze
+   * @param gatewayTokenKey
+   * @param options
+   * @returns
+   */
+  async sendFreeze(
+    gatewayTokenKey: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken> {
+    const instruction: TransactionInstruction = freeze(
+      gatewayTokenKey,
+      this.gatekeeperAuthority.publicKey,
+      await this.gatekeeperAccountAddress()
+    );
+    return this.updateToken(gatewayTokenKey, instruction, options)
+      .then((results) => results.send())
+      .then((results) => results.confirm());
+  }
+
+  /**
    * Unfreeze the gateway token. The token must have been issued by this gatekeeper.
    * @param gatewayTokenKey
    * @param options
@@ -231,6 +292,26 @@ export class GatekeeperService {
       await this.gatekeeperAccountAddress()
     );
     return this.updateToken(gatewayTokenKey, instruction, options);
+  }
+
+  /**
+   * Sends and confirms unfreeze
+   * @param gatewayTokenKey
+   * @param options
+   * @returns
+   */
+  async sendUnfreeze(
+    gatewayTokenKey: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken> {
+    const instruction: TransactionInstruction = unfreeze(
+      gatewayTokenKey,
+      this.gatekeeperAuthority.publicKey,
+      await this.gatekeeperAccountAddress()
+    );
+    return this.updateToken(gatewayTokenKey, instruction, options)
+      .then((results) => results.send())
+      .then((results) => results.confirm());
   }
 
   /**
@@ -263,6 +344,28 @@ export class GatekeeperService {
     return this.updateToken(gatewayTokenKey, instruction, options);
   }
 
+  /**
+   * Sends and confirms updateExpiry
+   * @param gatewayTokenKey
+   * @param expireTime
+   * @param options
+   * @returns
+   */
+  async sendUpdateExpiry(
+    gatewayTokenKey: PublicKey,
+    expireTime: number,
+    options?: TransactionOptions
+  ): Promise<GatewayToken> {
+    const instruction: TransactionInstruction = updateExpiry(
+      gatewayTokenKey,
+      this.gatekeeperAuthority.publicKey,
+      await this.gatekeeperAccountAddress(),
+      expireTime
+    );
+    return this.updateToken(gatewayTokenKey, instruction, options)
+      .then((results) => results.send())
+      .then((results) => results.confirm());
+  }
   // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key
   async isRegistered(): Promise<boolean> {
     const gatekeeperAccount = await getGatekeeperAccountAddress(
