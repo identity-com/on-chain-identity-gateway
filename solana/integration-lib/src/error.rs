@@ -44,6 +44,10 @@ pub enum GatewayError {
     /// The gateway token has expired
     #[error("The gateway token has expired")]
     TokenExpired,
+
+    /// The passed gatekeeper account is not valid
+    #[error("The passed gatekeeper account is not valid")]
+    InvalidGatekeeperAccount,
 }
 impl From<GatewayError> for ProgramError {
     fn from(e: GatewayError) -> Self {

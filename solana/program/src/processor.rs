@@ -5,18 +5,16 @@ use solana_gateway::error::GatewayError;
 use solana_gateway::instruction::{GatewayInstruction, NetworkFeature};
 use solana_gateway::state::{
     get_expire_address_with_seed, get_gatekeeper_address_with_seed,
-    get_gateway_token_address_with_seed, AddressSeed, GatewayTokenAccess, GatewayTokenState,
-    InPlaceGatewayToken, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
+    get_gateway_token_address_with_seed, verify_gatekeeper, AddressSeed, GatewayTokenAccess,
+    GatewayTokenState, InPlaceGatewayToken, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
     NETWORK_EXPIRE_FEATURE_SEED,
 };
+use solana_gateway::Gateway;
 use solana_program::clock::{Clock, UnixTimestamp};
 use {
     crate::id,
     borsh::{BorshDeserialize, BorshSerialize},
-    solana_gateway::{
-        borsh::{get_instance_packed_len, try_from_slice_incomplete},
-        state::GatewayToken,
-    },
+    solana_gateway::{borsh::get_instance_packed_len, state::GatewayToken},
     solana_program::{
         account_info::{next_account_info, AccountInfo},
         entrypoint::ProgramResult,
@@ -60,7 +58,7 @@ pub fn process_instruction(
     };
 
     if let Some(e) = result.clone().err() {
-        msg!("Gateway Program Error {}", e)
+        msg!("Gateway Program Error {:?}", e)
     };
 
     result
@@ -162,26 +160,16 @@ fn issue_vanilla(
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    if gatekeeper_account_info.owner.ne(&id()) {
-        msg!("Incorrect program Id for gatekeeper account");
-        return Err(ProgramError::IncorrectProgramId);
-    }
-
-    verify_gatekeeper_length(gatekeeper_account_info)?;
+    verify_gatekeeper(
+        gatekeeper_account_info,
+        *gatekeeper_authority_info.key,
+        *gatekeeper_network_info.key,
+    )?;
 
     let (gateway_token_address, gateway_token_bump_seed) =
         get_gateway_token_address_with_seed(owner_info.key, seed, gatekeeper_network_info.key);
     if gateway_token_address != *gateway_token_info.key {
         msg!("Error: gateway_token address derivation mismatch");
-        return Err(ProgramError::InvalidArgument);
-    }
-
-    let (gatekeeper_address, _gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
-        gatekeeper_authority_info.key,
-        gatekeeper_network_info.key,
-    );
-    if gatekeeper_address != *gatekeeper_account_info.key {
-        msg!("Error: gatekeeper_account address derivation mismatch");
         return Err(ProgramError::InvalidArgument);
     }
 
@@ -249,24 +237,16 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
 
     verify_token_length(gateway_token_info)?;
 
-    if gatekeeper_account_info.owner.ne(&id()) {
-        msg!("Incorrect program Id for gatekeeper account");
-        return Err(ProgramError::IncorrectProgramId);
-    }
+    let mut gateway_token = Gateway::parse_gateway_token(gateway_token_info)?;
 
-    verify_gatekeeper_length(gatekeeper_account_info)?;
+    verify_gatekeeper(
+        gatekeeper_account_info,
+        *gatekeeper_authority_info.key,
+        gateway_token.gatekeeper_network,
+    )?;
 
-    let mut gateway_token =
-        try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
-
-    let (gatekeeper_address, _gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
-        gatekeeper_authority_info.key,
-        &gateway_token.gatekeeper_network,
-    );
-    if gatekeeper_address != *gatekeeper_account_info.key {
-        msg!("Error: gatekeeper_account address derivation mismatch");
-        return Err(ProgramError::InvalidArgument);
-    }
+    // let mut gateway_token =
+    //     try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
 
     // check that the required state change is allowed
     if !gateway_token.is_valid_state_change(&state) {
@@ -318,24 +298,13 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
         return Err(ProgramError::InvalidAccountData);
     }
 
-    if gatekeeper_account_info.owner.ne(&id()) {
-        msg!("Incorrect program Id for gatekeeper account");
-        return Err(ProgramError::IncorrectProgramId);
-    }
+    let mut gateway_token = Gateway::parse_gateway_token(gateway_token_info)?;
 
-    verify_gatekeeper_length(gatekeeper_account_info)?;
-
-    let mut gateway_token =
-        try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
-
-    let (gatekeeper_address, _gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
-        gatekeeper_authority_info.key,
-        &gateway_token.gatekeeper_network,
-    );
-    if gatekeeper_address != *gatekeeper_account_info.key {
-        msg!("Error: gatekeeper_account address derivation mismatch");
-        return Err(ProgramError::InvalidArgument);
-    }
+    verify_gatekeeper(
+        gatekeeper_account_info,
+        *gatekeeper_authority_info.key,
+        gateway_token.gatekeeper_network,
+    )?;
 
     gateway_token.set_expire_time(expire_time);
 
@@ -365,8 +334,6 @@ fn remove_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         msg!("Error: gatekeeper account address derivation mismatch");
         return Err(ProgramError::InvalidArgument);
     }
-
-    verify_gatekeeper_length(gatekeeper_account_info)?;
 
     let mut gatekeeper_lamports = gatekeeper_account_info.lamports.borrow_mut();
 
@@ -489,18 +456,6 @@ fn remove_feature_from_network(accounts: &[AccountInfo], feature: NetworkFeature
     **feature_account.lamports.borrow_mut() = 0;
 
     Ok(())
-}
-
-fn verify_gatekeeper_length(gatekeeper_account_info: &AccountInfo) -> ProgramResult {
-    // Length must be same as `GATEKEEPER_ACCOUNT_LENGTH` and have at least one non-zero byte.
-    // Must have one non-zero as being assigned an account with the proper length requires all bytes be zero
-    // Pubkey guarantees one non-zero byte with proper data
-    if gatekeeper_account_info.data_len() != GATEKEEPER_ACCOUNT_LENGTH {
-        msg!("Incorrect account type for gatekeeper account");
-        Err(ProgramError::InvalidAccountData)
-    } else {
-        Ok(())
-    }
 }
 
 fn verify_token_length(gateway_token_info: &AccountInfo) -> ProgramResult {
