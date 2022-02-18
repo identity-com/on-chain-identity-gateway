@@ -1,6 +1,7 @@
 //! Program state
+
 use crate::networks::GATEWAY_NETWORKS;
-use crate::Gateway;
+use crate::{Gateway, GatewayError};
 use std::convert::TryInto;
 use std::mem::{size_of, transmute};
 use {
@@ -29,6 +30,8 @@ pub const GATEKEEPER_ADDRESS_SEED: &[u8] = br"gatekeeper";
 
 /// The seed string used to derive a program address for a network expire feature
 pub const NETWORK_EXPIRE_FEATURE_SEED: &[u8] = br"expire";
+
+const GATEKEEPER_ACCOUNT_LENGTH: usize = 0;
 
 /// An optional seed to use when generating a gateway token,
 /// allowing multiple gateway tokens per wallet
@@ -61,6 +64,41 @@ pub fn get_gatekeeper_address_with_seed(authority: &Pubkey, network: &Pubkey) ->
         ],
         &Gateway::program_id(),
     )
+}
+
+fn verify_gatekeeper_length(gatekeeper_account_info: &AccountInfo) -> Result<(), GatewayError> {
+    // Length must be same as `GATEKEEPER_ACCOUNT_LENGTH` and have at least one non-zero byte.
+    // Must have one non-zero as being assigned an account with the proper length requires all bytes be zero
+    // Pubkey guarantees one non-zero byte with proper data
+    if gatekeeper_account_info.data_len() != GATEKEEPER_ACCOUNT_LENGTH {
+        return Err(GatewayError::InvalidGatekeeperAccount);
+    }
+
+    Ok(())
+}
+/// Verifies that the gatekeeper account matches the passed in gatekeeper and gatekeeper network
+/// NOTE: This does not check that the gatekeeper is a signer of the transaction.
+pub fn verify_gatekeeper(
+    gatekeeper_account_info: &AccountInfo,
+    gatekeeper: Pubkey,
+    gatekeeper_network: Pubkey,
+) -> Result<(), GatewayError> {
+    // Gatekeeper account must be owned by the gateway program
+    if gatekeeper_account_info.owner.ne(&Gateway::program_id()) {
+        return Err(GatewayError::IncorrectProgramId);
+    }
+
+    // Gatekeeper account must be of the correct length
+    verify_gatekeeper_length(gatekeeper_account_info)?;
+
+    // Gatekeeper account must be derived correctly from the gatekeeper and gatekeeper network
+    let (gatekeeper_address, _gatekeeper_bump_seed) =
+        get_gatekeeper_address_with_seed(&gatekeeper, &gatekeeper_network);
+    if gatekeeper_address != *gatekeeper_account_info.key {
+        return Err(GatewayError::IncorrectGatekeeper);
+    }
+
+    Ok(())
 }
 
 // Ignite bump seed is 255 so most optimal create
