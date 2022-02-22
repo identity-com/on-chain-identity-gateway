@@ -162,8 +162,8 @@ fn issue_vanilla(
 
     verify_gatekeeper(
         gatekeeper_account_info,
-        *gatekeeper_authority_info.key,
-        *gatekeeper_network_info.key,
+        gatekeeper_authority_info.key,
+        gatekeeper_network_info.key,
     )?;
 
     let (gateway_token_address, gateway_token_bump_seed) =
@@ -241,12 +241,9 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
 
     verify_gatekeeper(
         gatekeeper_account_info,
-        *gatekeeper_authority_info.key,
-        gateway_token.gatekeeper_network,
+        gatekeeper_authority_info.key,
+        &gateway_token.gatekeeper_network,
     )?;
-
-    // let mut gateway_token =
-    //     try_from_slice_incomplete::<GatewayToken>(*gateway_token_info.data.borrow())?;
 
     // check that the required state change is allowed
     if !gateway_token.is_valid_state_change(&state) {
@@ -302,8 +299,8 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
 
     verify_gatekeeper(
         gatekeeper_account_info,
-        *gatekeeper_authority_info.key,
-        gateway_token.gatekeeper_network,
+        gatekeeper_authority_info.key,
+        &gateway_token.gatekeeper_network,
     )?;
 
     gateway_token.set_expire_time(expire_time);
