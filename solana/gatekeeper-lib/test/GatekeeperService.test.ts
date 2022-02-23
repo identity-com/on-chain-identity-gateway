@@ -57,6 +57,9 @@ describe("GatekeeperService", () => {
       confirmTransaction: async () => {
         return { value: { err: null } };
       },
+      getAccountInfo: async () => {
+        Promise.resolve();
+      },
     } as unknown as Connection; // The connection won't be called as we're stubbing at a higher level.
     payer = Keypair.generate();
     tokenOwner = Keypair.generate();
@@ -170,11 +173,13 @@ describe("GatekeeperService", () => {
     });
     context("with send rejecting with an error", () => {
       it("should throw an error", async () => {
-        const transaction = await gatekeeperService.issue(tokenOwner.publicKey);
+        const transaction = await gatekeeperService.sendIssue(
+          tokenOwner.publicKey
+        );
         sandbox
           .stub(transaction, "send")
           .rejects(new Error("Transaction simulation failed"));
-        return expect(transaction.send()).to.be.rejectedWith(
+        return expect(transaction).to.be.rejectedWith(
           /Transaction simulation failed/
         );
       });
@@ -255,8 +260,8 @@ describe("GatekeeperService", () => {
           const transaction = await gatekeeperService.sendUnfreeze(
             activeGatewayToken.publicKey
           );
-          const result = await transaction.send().then((t) => t.confirm());
-          return expect(result).to.containSubset({
+          // const result = await transaction.send().then((t) => t.confirm());
+          return expect(transaction).to.containSubset({
             state: State.ACTIVE,
             publicKey: activeGatewayToken.publicKey,
           });
@@ -318,8 +323,8 @@ describe("GatekeeperService", () => {
           const transaction = await gatekeeperService.sendRevoke(
             revokedGatewayToken.publicKey
           );
-          const result = await transaction.send().then((t) => t.confirm());
-          return expect(result).to.containSubset({
+          // const result = await transaction.send().then((t) => t.confirm());
+          return expect(transaction).to.containSubset({
             state: State.REVOKED,
             publicKey: revokedGatewayToken.publicKey,
           });
@@ -339,7 +344,7 @@ describe("GatekeeperService", () => {
           sandbox
             .stub(transaction, "send")
             .rejects(new Error("Transaction simulation failed"));
-          return expect(transaction.send()).to.be.rejectedWith(
+          return expect(transaction).to.be.rejectedWith(
             /Transaction simulation failed/
           );
         });
@@ -403,7 +408,7 @@ describe("GatekeeperService", () => {
       });
     });
   });
-  
+
   context("sendUpdateExpiry", () => {
     context("with a previously Active token existing on-chain", () => {
       beforeEach(() => {
@@ -420,8 +425,8 @@ describe("GatekeeperService", () => {
             revokedGatewayToken.publicKey,
             newExpiry
           );
-          const result = await transaction.send().then((t) => t.confirm());
-          return expect(result).to.containSubset({
+          // const result = await transaction.send().then((t) => t.confirm());
+          return expect(transaction).to.containSubset({
             state: State.ACTIVE,
             publicKey: activeGatewayToken.publicKey,
             expiryTime: newExpiry,
@@ -448,7 +453,7 @@ describe("GatekeeperService", () => {
             sandbox
               .stub(transaction, "send")
               .rejects(new Error("Transaction simulation failed"));
-            return expect(transaction.send()).to.be.rejectedWith(
+            return expect(transaction).to.be.rejectedWith(
               /Transaction simulation failed/
             );
           });
