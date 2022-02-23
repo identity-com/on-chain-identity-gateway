@@ -102,32 +102,6 @@ export class SendableTransaction implements TransactionHolder {
     return new SentTransaction(this.connection, txSig);
   }
 
-  /**
-   * Message is separate from signatures due to the way rebuilding serialized transactions doesn't handle signatures
-   */
-  serializeForRelaying(): {
-    message: Buffer;
-    signatures: string[];
-  } {
-    const message = this.transaction.compileMessage();
-    const signatures = message.accountKeys
-      .slice(0, message.header.numRequiredSignatures)
-      .map((key) => {
-        const result = this.transaction.signatures.find((sig) =>
-          sig.publicKey.equals(key)
-        );
-        if (result && result.signature) {
-          return bs58.encode(result.signature);
-        } else {
-          return bs58.encode(DEFAULT_SIGNATURE);
-        }
-      });
-    return {
-      message: message.serialize(),
-      signatures,
-    };
-  }
-
   static fromSerialized(
     connection: Connection,
     message: Buffer,
@@ -229,6 +203,7 @@ export class SentTransaction {
       this.signature,
       commitment ? commitment : SOLANA_COMMITMENT
     );
+    console.log(result);
     if (result.value.err) {
       if (errorCallback) {
         errorCallback(result.value.err);
