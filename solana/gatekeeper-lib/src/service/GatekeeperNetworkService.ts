@@ -92,7 +92,7 @@ export class GatekeeperNetworkService {
   async sendAddGateKeeper(
     gatekeeperAuthority: PublicKey,
     options?: TransactionOptions
-  ): Promise<PublicKey> {
+  ): Promise<PublicKey | null> {
     const normalizedOptions = await this.optionsWithDefaults(options);
     const gatekeeperAccount = await getGatekeeperAccountAddress(
       gatekeeperAuthority,
@@ -151,7 +151,7 @@ export class GatekeeperNetworkService {
   async sendRevokeGatekeeper(
     gatekeeperAuthority: PublicKey,
     options?: TransactionOptions
-  ): Promise<PublicKey> {
+  ): Promise<PublicKey | null> {
     const normalizedOptions = await this.optionsWithDefaults(options);
     const gatekeeperAccount = await getGatekeeperAccountAddress(
       gatekeeperAuthority,
@@ -228,7 +228,7 @@ export class GatekeeperNetworkService {
     hashOrNonce: HashOrNonce,
     feature: NetworkFeature,
     options?: TransactionOptions
-  ): Promise<PublicKey> {
+  ): Promise<PublicKey | null> {
     const normalizedOptions = await this.optionsWithDefaults(options);
     const instruction = await addFeatureToNetwork(
       normalizedOptions.rentPayer,
@@ -285,7 +285,7 @@ export class GatekeeperNetworkService {
     hashOrNonce: HashOrNonce,
     feature: NetworkFeature,
     options?: TransactionOptions
-  ): Promise<PublicKey> {
+  ): Promise<PublicKey | null> {
     const normalizedOptions = await this.optionsWithDefaults(options);
     const transaction = new Transaction().add(
       await removeFeatureFromNetwork(
