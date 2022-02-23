@@ -2,6 +2,7 @@ import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinonChai from "sinon-chai";
 import chaiAsPromised from "chai-as-promised";
+
 import {
   Keypair,
   Connection,
@@ -18,6 +19,7 @@ import {
   SendableTransaction,
   SentTransaction,
 } from "../src";
+import { isContext } from "vm";
 
 chai.use(sinonChai);
 chai.use(chaiSubset);
@@ -47,6 +49,14 @@ describe("GatekeeperService", () => {
     connection = {
       getRecentBlockhash: async () =>
         Promise.resolve({ blockhash: dummyBlockhash }),
+      sendRawTransaction: async () => {
+        Promise.resolve(
+          "5cuE6h5EdvCHbhdgPYitnZLSrnWrH82nzisNG3AAAoa1T3A3GyYbWgoUShCgAD68Jd283jFLxR95FmrS7fXXvEHm"
+        );
+      },
+      confirmTransaction: async () => {
+        return { value: { err: null } };
+      },
     } as unknown as Connection; // The connection won't be called as we're stubbing at a higher level.
     payer = Keypair.generate();
     tokenOwner = Keypair.generate();
@@ -139,6 +149,37 @@ describe("GatekeeperService", () => {
     });
   });
 
+  context("sendIssue", () => {
+    beforeEach(() => {
+      sandbox
+        .stub(GatewayTs, "getGatewayTokenAddressForOwnerAndGatekeeperNetwork")
+        .resolves(gatewayTokenAddress);
+      sandbox
+        .stub(GatewayTs, "getGatekeeperAccountAddress")
+        .resolves(gatekeeperAccountAddress);
+      sandbox.stub(GatewayTs, "getGatewayToken").resolves(activeGatewayToken);
+    });
+    context("with send resolving success", () => {
+      it("should return new gateway token", async () => {
+        const issueResult = await gatekeeperService.sendIssue(
+          tokenOwner.publicKey
+        );
+        return expect(issueResult).to.equal(activeGatewayToken);
+      });
+    });
+    context("with send rejecting with an error", () => {
+      it("should throw an error", async () => {
+        const transaction = await gatekeeperService.issue(tokenOwner.publicKey);
+        sandbox
+          .stub(transaction, "send")
+          .rejects(new Error("Transaction simulation failed"));
+        return expect(transaction.send()).to.be.rejectedWith(
+          /Transaction simulation failed/
+        );
+      });
+    });
+  });
+
   context("freeze", () => {
     context("with a previously Active token existing on-chain", () => {
       beforeEach(() => {
@@ -162,6 +203,22 @@ describe("GatekeeperService", () => {
       });
     });
   });
+
+  // context("sendFreeze", () => {
+  //   context("with a previously Active token existing on-chain", () => {
+  //     beforeEach(() => {
+  //       sandbox.stub(GatewayTs, "getGatewayToken").resolves(activeGatewayToken);
+  //     });
+  //     context("with the freeze blockchain call succeeding", () => {
+  //       it("should resolve with a FROZEN token", async () => {
+  //         const transaction = await gatekeeperService.freeze(
+  //           activeGatewayToken.publicKey
+  //         );
+  //         return expect(transaction).to.equal(activeGatewayToken);
+  //       });
+  //     });
+  //   });
+  // });
 
   context("unfreeze", () => {
     context("with a previously Frozen token existing on-chain", () => {
