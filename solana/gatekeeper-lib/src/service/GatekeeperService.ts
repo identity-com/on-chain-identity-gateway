@@ -222,7 +222,7 @@ export class GatekeeperService {
   async sendRevoke(
     gatewayTokenKey: PublicKey,
     options?: TransactionOptions
-  ): Promise<GatewayToken> {
+  ): Promise<GatewayToken | null> {
     const gatekeeperAccount = await getGatekeeperAccountAddress(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
@@ -266,7 +266,7 @@ export class GatekeeperService {
   async sendFreeze(
     gatewayTokenKey: PublicKey,
     options?: TransactionOptions
-  ): Promise<GatewayToken> {
+  ): Promise<GatewayToken | null> {
     const instruction: TransactionInstruction = freeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
@@ -303,7 +303,7 @@ export class GatekeeperService {
   async sendUnfreeze(
     gatewayTokenKey: PublicKey,
     options?: TransactionOptions
-  ): Promise<GatewayToken> {
+  ): Promise<GatewayToken | null> {
     const instruction: TransactionInstruction = unfreeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
@@ -355,7 +355,7 @@ export class GatekeeperService {
     gatewayTokenKey: PublicKey,
     expireTime: number,
     options?: TransactionOptions
-  ): Promise<GatewayToken> {
+  ): Promise<GatewayToken | null> {
     const instruction: TransactionInstruction = updateExpiry(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
