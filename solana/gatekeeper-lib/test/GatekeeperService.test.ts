@@ -107,12 +107,13 @@ describe("GatekeeperService", () => {
       .getRecentBlockhash("confirmed")
       .then((rbh) => rbh.blockhash);
     transaction.partialSign(keypair1);
-    const serialized = transaction.serializeForRelaying();
+    const serialized = transaction.transaction.serialize({
+      requireAllSignatures: false,
+    });
 
     const newTransaction = SendableTransaction.fromSerialized(
       connection,
-      serialized.message,
-      serialized.signatures
+      serialized
     );
     expect(newTransaction.transaction.verifySignatures()).to.be.false;
     newTransaction.partialSign(keypair2);
