@@ -57,9 +57,6 @@ describe("GatekeeperService", () => {
       confirmTransaction: async () => {
         return { value: { err: null } };
       },
-      getAccountInfo: async () => {
-        Promise.resolve();
-      },
     } as unknown as Connection; // The connection won't be called as we're stubbing at a higher level.
     payer = Keypair.generate();
     tokenOwner = Keypair.generate();
