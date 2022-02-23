@@ -104,13 +104,9 @@ export class SendableTransaction implements TransactionHolder {
 
   static fromSerialized(
     connection: Connection,
-    message: Buffer,
-    signatures: string[]
+    message: Buffer
   ): SendableTransaction {
-    return new SendableTransaction(
-      connection,
-      Transaction.populate(Message.from(message), signatures)
-    );
+    return new SendableTransaction(connection, Transaction.from(message));
   }
   partialSign(...signers: Signer[]): this {
     this.transaction.partialSign(...signers);
