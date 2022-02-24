@@ -16,7 +16,6 @@ import {
   TransactionOptions,
 } from "../util/transaction";
 import { SOLANA_COMMITMENT } from "../util/constants";
-import { Hash } from "crypto";
 
 /**
  * Encapsulates the actions performed by a gatekeeper network authority

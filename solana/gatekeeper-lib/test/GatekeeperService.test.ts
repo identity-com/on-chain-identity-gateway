@@ -11,15 +11,14 @@ import {
   SystemProgram,
 } from "@solana/web3.js";
 import sinon from "sinon";
-import { PROGRAM_ID } from "../src/util/constants";
-import { GatewayToken, State } from "@identity.com/solana-gateway-ts";
 import * as GatewayTs from "@identity.com/solana-gateway-ts";
+import { GatewayToken, State } from "@identity.com/solana-gateway-ts";
+import { PROGRAM_ID } from "../src/util/constants";
 import {
   GatekeeperService,
   SendableTransaction,
   SentTransaction,
 } from "../src";
-import { isContext } from "vm";
 
 chai.use(sinonChai);
 chai.use(chaiSubset);
@@ -87,7 +86,7 @@ describe("GatekeeperService", () => {
     const sentTransaction = new SentTransaction(connection, "");
     const dataTransaction = sentTransaction.withData(result);
     sandbox.stub(sentTransaction, "withData").returns(dataTransaction);
-    sandbox.stub(sentTransaction, "confirm").returns();
+    sandbox.stub(sentTransaction, "confirm").resolves();
     sandbox.stub(dataTransaction, "confirm").resolves(result);
     return sandbox.stub(sendableTransaction, "send").resolves(sentTransaction);
   };
@@ -152,12 +151,6 @@ describe("GatekeeperService", () => {
 
   context("sendIssue", () => {
     beforeEach(() => {
-      sandbox
-        .stub(GatewayTs, "getGatewayTokenAddressForOwnerAndGatekeeperNetwork")
-        .resolves(gatewayTokenAddress);
-      sandbox
-        .stub(GatewayTs, "getGatekeeperAccountAddress")
-        .resolves(gatekeeperAccountAddress);
       sandbox.stub(GatewayTs, "getGatewayToken").resolves(activeGatewayToken);
     });
     context("with send resolving success", () => {

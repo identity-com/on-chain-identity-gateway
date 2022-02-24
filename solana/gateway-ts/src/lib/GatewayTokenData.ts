@@ -1,7 +1,7 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { Assignable, Enum, SCHEMA } from "./solanaBorsh";
 import { AssignablePublicKey } from "./AssignablePublicKey";
-import BN from "bn.js";
+import * as BN from "bn.js";
 
 /**
  * The on-chain structure of a gateway token.

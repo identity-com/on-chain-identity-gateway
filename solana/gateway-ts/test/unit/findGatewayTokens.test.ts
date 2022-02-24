@@ -1,6 +1,6 @@
-import chai from "chai";
-import chaiSubset from "chai-subset";
-import sinon from "sinon";
+import * as chai from "chai";
+import * as chaiSubset from "chai-subset";
+import * as sinon from "sinon";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import { findGatewayTokens, State } from "../../src";
 import { PROGRAM_ID } from "../../src/lib/constants";

@@ -1,5 +1,5 @@
-import chai from "chai";
-import chaiSubset from "chai-subset";
+import * as chai from "chai";
+import * as chaiSubset from "chai-subset";
 import { PublicKey, Keypair, AccountInfo } from "@solana/web3.js";
 import { PROGRAM_ID } from "../../src/lib/constants";
 import {
@@ -8,7 +8,6 @@ import {
   GatewayTokenState,
 } from "../../src/lib/GatewayTokenData";
 import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
-import { describe } from "mocha";
 import { GatewayToken } from "../../src";
 
 chai.use(chaiSubset);

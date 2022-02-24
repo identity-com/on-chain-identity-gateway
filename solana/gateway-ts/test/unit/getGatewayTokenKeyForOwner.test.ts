@@ -1,12 +1,11 @@
-import chai from "chai";
-import chaiSubset from "chai-subset";
+import * as chai from "chai";
+import * as chaiSubset from "chai-subset";
 import {
   Connection,
   PublicKey,
   Keypair,
   LAMPORTS_PER_SOL,
   Transaction,
-  clusterApiUrl,
 } from "@solana/web3.js";
 import {
   GatewayTokenData,

@@ -1,6 +1,6 @@
-import chai from "chai";
-import chaiSubset from "chai-subset";
-import sinon from "sinon";
+import * as chai from "chai";
+import * as chaiSubset from "chai-subset";
+import * as sinon from "sinon";
 import { PublicKey, Keypair } from "@solana/web3.js";
 import { getFeatureAccountAddress } from "../../src";
 import { describe } from "mocha";
