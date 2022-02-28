@@ -25,6 +25,7 @@ import {
   getOrCreateBlockhashOrNonce,
   TransactionOptions,
 } from "../util/transaction";
+import { Commitment } from "@solana/web3.js";
 
 /**
  * Global default configuration for the gatekeeper
@@ -61,7 +62,6 @@ export class GatekeeperService {
       ...this.config,
       ...options,
     };
-
     const blockhashOrNonce = await getOrCreateBlockhashOrNonce(
       this.connection,
       defaultOptions.blockhashOrNonce
@@ -133,7 +133,6 @@ export class GatekeeperService {
     const hashOrNonce =
       normalizedOptions.blockhashOrNonce ||
       (await this.connection.getRecentBlockhash());
-
     return new SendableTransaction(this.connection, transaction)
       .withData(() => getGatewayToken(this.connection, gatewayTokenAddress))
       .feePayer(normalizedOptions.feePayer)
@@ -165,7 +164,9 @@ export class GatekeeperService {
   ): Promise<GatewayToken | null> {
     return this.issue(recipient, options)
       .then((result) => result.send())
-      .then((result) => result.confirm());
+      .then((result) => {
+        return result.confirm();
+      });
   }
   /**
    * Updates a GatewayToken by building a transaction with the given txBuilder function,
