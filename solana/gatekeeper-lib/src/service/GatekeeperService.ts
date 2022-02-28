@@ -405,3 +405,74 @@ export class GatekeeperService {
     }
   }
 }
+
+export class SimpleGatekeeperService {
+  gs: GatekeeperService;
+
+  /**
+   *
+   * @param connection
+   * @param gatekeeperNetwork
+   * @param gatekeeperAuthority
+   * @param config
+   */
+  constructor(
+    connection: Connection,
+    gatekeeperNetwork: PublicKey,
+    gatekeeperAuthority: Keypair,
+    config: GatekeeperConfig = {}
+  ) {
+    this.gs = new GatekeeperService(
+      connection,
+      gatekeeperNetwork,
+      gatekeeperAuthority,
+      config
+    );
+  }
+  async issue(
+    recipient: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.gs
+      .issue(recipient, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  async revoke(
+    gatewayTokenKey: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.gs
+      .revoke(gatewayTokenKey, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  async freeze(
+    gatewayTokenKey: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.gs
+      .freeze(gatewayTokenKey, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  async unfreeze(
+    gatewayTokenKey: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.gs
+      .unfreeze(gatewayTokenKey, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  async updateExpiry(
+    gatewayTokenKey: PublicKey,
+    expireTime: number,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.gs
+      .updateExpiry(gatewayTokenKey, expireTime, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+}
