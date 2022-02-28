@@ -24,6 +24,7 @@ import {
   GatekeeperService,
   SendableTransaction,
   SentTransaction,
+  SimpleGatekeeperService,
 } from "../src";
 import { Active } from "@identity.com/solana-gateway-ts/dist/lib/GatewayTokenData";
 // import { isContext } from "vm";
@@ -39,6 +40,7 @@ export const dummyBlockhash = "AvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
 
 describe("GatekeeperService", () => {
   let gatekeeperService: GatekeeperService;
+  let simpleGatekeeperService: SimpleGatekeeperService;
   let connection: Connection;
   let payer: Keypair;
   let tokenOwner: Keypair;
@@ -107,13 +109,15 @@ describe("GatekeeperService", () => {
           }).encode(),
         };
       },
-      getAndrew: async () => {
-        return "Andrew";
-      },
     } as unknown as Connection; // The connection won't be called as we're stubbing at a higher level.
     frozenGatewayToken = activeGatewayToken.update({ state: State.FROZEN });
     revokedGatewayToken = activeGatewayToken.update({ state: State.REVOKED });
     gatekeeperService = new GatekeeperService(
+      connection,
+      gatekeeperNetwork.publicKey,
+      gatekeeperAuthority
+    );
+    simpleGatekeeperService = new SimpleGatekeeperService(
       connection,
       gatekeeperNetwork.publicKey,
       gatekeeperAuthority
@@ -182,10 +186,9 @@ describe("GatekeeperService", () => {
   context("sendIssue", () => {
     context("with send resolving success", () => {
       it("should return new gateway token", async () => {
-        const issueResult = await gatekeeperService.sendIssue(
+        const issueResult = await simpleGatekeeperService.issue(
           tokenOwner.publicKey
         );
-        // return expect(issueResult).to.equal(activeGatewayToken);
         return expect(issueResult.equals(activeGatewayToken)).to.be.true;
       });
     });
@@ -216,7 +219,7 @@ describe("GatekeeperService", () => {
     context("with a previously Active token existing on-chain", () => {
       context("with the freeze blockchain call succeeding", () => {
         it("should resolve with a FROZEN token", async () => {
-          const transaction = await gatekeeperService.sendFreeze(
+          const transaction = await simpleGatekeeperService.freeze(
             activeGatewayToken.publicKey
           );
           return expect(transaction.equals(activeGatewayToken)).to.be.true;
@@ -250,10 +253,9 @@ describe("GatekeeperService", () => {
     context("with a previously Frozen token existing on-chain", () => {
       context("with the unfreeze blockchain call succeeding", () => {
         it("should resolve with a ACTIVE token", async () => {
-          const transaction = await gatekeeperService.sendUnfreeze(
+          const transaction = await simpleGatekeeperService.unfreeze(
             activeGatewayToken.publicKey
           );
-          // const result = await transaction.send().then((t) => t.confirm());
           return expect(transaction).to.containSubset({
             state: State.ACTIVE,
             publicKey: activeGatewayToken.publicKey,
@@ -301,7 +303,7 @@ describe("GatekeeperService", () => {
     context("with a previously Active token existing on-chain", () => {
       context("with the revoke blockchain call succeeding", () => {
         it("should resolve with a REVOKED token", async () => {
-          const transaction = await gatekeeperService.sendRevoke(
+          const transaction = await simpleGatekeeperService.revoke(
             revokedGatewayToken.publicKey
           );
           return expect(transaction.equals(activeGatewayToken)).to.be.true;
@@ -355,7 +357,7 @@ describe("GatekeeperService", () => {
       context("with the update blockchain call succeeding", () => {
         const newExpiry = 123456;
         it("should resolve with the updated expiry token", async () => {
-          const transaction = await gatekeeperService.sendUpdateExpiry(
+          const transaction = await simpleGatekeeperService.updateExpiry(
             revokedGatewayToken.publicKey,
             newExpiry
           );
