@@ -199,7 +199,6 @@ export class SentTransaction {
       this.signature,
       commitment ? commitment : SOLANA_COMMITMENT
     );
-    console.log(result);
     if (result.value.err) {
       if (errorCallback) {
         errorCallback(result.value.err);

@@ -27,6 +27,18 @@ export class GatewayToken {
     return this.state === State.ACTIVE && !this.hasExpired();
   }
 
+  equals(other: GatewayToken): boolean {
+    return (
+      this.issuingGatekeeper.equals(other.issuingGatekeeper) &&
+      this.gatekeeperNetwork.equals(other.gatekeeperNetwork) &&
+      this.owner.equals(other.owner) &&
+      this.state == other.state &&
+      this.publicKey.equals(other.publicKey) &&
+      this.programId.equals(other.programId) &&
+      this.expiryTime == other.expiryTime
+    );
+  }
+
   private hasExpired(): boolean {
     const now = Math.floor(Date.now() / 1000);
     return !!this.expiryTime && now > this.expiryTime;
