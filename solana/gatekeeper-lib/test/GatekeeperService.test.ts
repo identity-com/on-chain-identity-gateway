@@ -76,9 +76,6 @@ describe("GatekeeperService", () => {
       PROGRAM_ID
     );
     connection = {
-      getAndrew: () => {
-        return "Andrew";
-      },
       getRecentBlockhash: async () => {
         return { blockhash: dummyBlockhash };
       },
