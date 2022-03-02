@@ -304,7 +304,7 @@ export class SimpleGatekeeperService {
   gs: GatekeeperService;
 
   /**
-   *
+   * Simpler version of the GatekeeperService class. The functions in here send and confirm the results from those in GatekeeperService, returning a GatewayToken rather than a SendableDataTransaction
    * @param connection
    * @param gatekeeperNetwork
    * @param gatekeeperAuthority
@@ -323,6 +323,12 @@ export class SimpleGatekeeperService {
       config
     );
   }
+  /**
+   * Sends and Confirms results from the GatekeeperService "issue" function
+   * @param recipient
+   * @param options
+   * @returns
+   */
   async issue(
     recipient: PublicKey,
     options?: TransactionOptions
@@ -332,6 +338,12 @@ export class SimpleGatekeeperService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+  /**
+   * Sends and Confirms results from the GatekeeperService "revoke" function
+   * @param gatewayTokenKey
+   * @param options
+   * @returns
+   */
   async revoke(
     gatewayTokenKey: PublicKey,
     options?: TransactionOptions
@@ -341,6 +353,12 @@ export class SimpleGatekeeperService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+  /**
+   * Sends and Confirms results from the GatekeeperService "freeze" function
+   * @param gatewayTokenKey
+   * @param options
+   * @returns
+   */
   async freeze(
     gatewayTokenKey: PublicKey,
     options?: TransactionOptions
@@ -350,6 +368,12 @@ export class SimpleGatekeeperService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+  /**
+   * Sends and Confirms results from the GatekeeperService "unfreeze" function
+   * @param gatewayTokenKey
+   * @param options
+   * @returns
+   */
   async unfreeze(
     gatewayTokenKey: PublicKey,
     options?: TransactionOptions
@@ -359,6 +383,13 @@ export class SimpleGatekeeperService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+  /**
+   * Sends and Confirms results from the GatekeeperService "updateExpiry" function
+   * @param gatewayTokenKey
+   * @param expireTime
+   * @param options
+   * @returns
+   */
   async updateExpiry(
     gatewayTokenKey: PublicKey,
     expireTime: number,

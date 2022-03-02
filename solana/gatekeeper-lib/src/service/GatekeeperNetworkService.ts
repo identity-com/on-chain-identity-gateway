@@ -16,7 +16,6 @@ import {
   TransactionOptions,
 } from "../util/transaction";
 import { SOLANA_COMMITMENT } from "../util/constants";
-import { Hash } from "crypto";
 
 /**
  * Encapsulates the actions performed by a gatekeeper network authority
@@ -194,10 +193,20 @@ export class GatekeeperNetworkService {
 
 export class SimpleGatekeeperNetworkService {
   gns: GatekeeperNetworkService;
-
+  /**
+   * Simpler version of the GatekeeperNetworkService class. The functions in here send and confirm the results from those in GatekeeperNetworkService, returning a PublicKey rather than a SendableDataTransaction
+   * @param connection
+   * @param gatekeeperNetwork
+   */
   constructor(connection: Connection, gatekeeperNetwork: Keypair) {
     this.gns = new GatekeeperNetworkService(connection, gatekeeperNetwork);
   }
+  /**
+   * Sends and Confirms results from the GatekeeperNetworkService "addGatekeeper" function
+   * @param gatekeeperAuthority
+   * @param options
+   * @returns
+   */
   async addGatekeeper(
     gatekeeperAuthority: PublicKey,
     options?: TransactionOptions
@@ -207,6 +216,12 @@ export class SimpleGatekeeperNetworkService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+  /**
+   * Sends and Confirms results from the GatekeeperNetworkService "revokeGatekeeper" function
+   * @param gatekeeperAuthority
+   * @param options
+   * @returns
+   */
   async revokeGatekeeper(
     gatekeeperAuthority: PublicKey,
     options?: TransactionOptions
@@ -216,6 +231,13 @@ export class SimpleGatekeeperNetworkService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+  /**
+   * Sends and Confirms results from the GatekeeperNetworkService "addNetworkFeature" function
+   * @param hashOrNonce
+   * @param feature
+   * @param options
+   * @returns
+   */
   async addNetworkFeature(
     hashOrNonce: HashOrNonce,
     feature: NetworkFeature,
@@ -226,6 +248,13 @@ export class SimpleGatekeeperNetworkService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+  /**
+   * Sends and Confirms results from the GatekeeperNetworkService "removeNetworkFeature" function
+   * @param hashOrNonce
+   * @param feature
+   * @param options
+   * @returns
+   */
   async removeNetworkFeature(
     hashOrNonce: HashOrNonce,
     feature: NetworkFeature,
