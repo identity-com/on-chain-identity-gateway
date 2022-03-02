@@ -186,7 +186,7 @@ describe("GatekeeperService", () => {
         const issueResult = await simpleGatekeeperService.issue(
           tokenOwner.publicKey
         );
-        return expect(issueResult.equals(activeGatewayToken)).to.be.true;
+        return expect(issueResult).to.eql(activeGatewayToken);
       });
     });
   });
@@ -219,7 +219,7 @@ describe("GatekeeperService", () => {
           const transaction = await simpleGatekeeperService.freeze(
             activeGatewayToken.publicKey
           );
-          return expect(transaction.equals(activeGatewayToken)).to.be.true;
+          return expect(transaction).to.eql(activeGatewayToken);
         });
       });
     });
@@ -303,7 +303,7 @@ describe("GatekeeperService", () => {
           const transaction = await simpleGatekeeperService.revoke(
             revokedGatewayToken.publicKey
           );
-          return expect(transaction.equals(activeGatewayToken)).to.be.true;
+          return expect(transaction).to.eql(activeGatewayToken);
         });
       });
     });
@@ -358,7 +358,7 @@ describe("GatekeeperService", () => {
             revokedGatewayToken.publicKey,
             newExpiry
           );
-          return expect(transaction.equals(activeGatewayToken)).to.be.true;
+          return expect(transaction).to.eql(activeGatewayToken);
         });
       });
     });
