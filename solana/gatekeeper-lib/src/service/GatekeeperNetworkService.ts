@@ -152,7 +152,7 @@ export class GatekeeperNetworkService {
   }
 
   /**
-   * Add Network Feature to Network
+   * Remove Network Feature from Network
    * @param feature
    */
   async removeNetworkFeature(
@@ -188,5 +188,81 @@ export class GatekeeperNetworkService {
       feature,
       this.gatekeeperNetwork.publicKey
     );
+  }
+}
+
+export class SimpleGatekeeperNetworkService {
+  gns: GatekeeperNetworkService;
+  /**
+   * Simpler version of the GatekeeperNetworkService class. The functions in here send and confirm the results from those in GatekeeperNetworkService, returning a PublicKey rather than a SendableDataTransaction
+   * @param connection
+   * @param gatekeeperNetwork
+   */
+  constructor(connection: Connection, gatekeeperNetwork: Keypair) {
+    this.gns = new GatekeeperNetworkService(connection, gatekeeperNetwork);
+  }
+  /**
+   * Sends and Confirms results from the GatekeeperNetworkService "addGatekeeper" function
+   * @param gatekeeperAuthority
+   * @param options
+   * @returns
+   */
+  async addGatekeeper(
+    gatekeeperAuthority: PublicKey,
+    options?: TransactionOptions
+  ): Promise<PublicKey | null> {
+    return this.gns
+      .addGatekeeper(gatekeeperAuthority, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  /**
+   * Sends and Confirms results from the GatekeeperNetworkService "revokeGatekeeper" function
+   * @param gatekeeperAuthority
+   * @param options
+   * @returns
+   */
+  async revokeGatekeeper(
+    gatekeeperAuthority: PublicKey,
+    options?: TransactionOptions
+  ): Promise<PublicKey | null> {
+    return this.gns
+      .revokeGatekeeper(gatekeeperAuthority, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  /**
+   * Sends and Confirms results from the GatekeeperNetworkService "addNetworkFeature" function
+   * @param hashOrNonce
+   * @param feature
+   * @param options
+   * @returns
+   */
+  async addNetworkFeature(
+    hashOrNonce: HashOrNonce,
+    feature: NetworkFeature,
+    options?: TransactionOptions
+  ): Promise<PublicKey | null> {
+    return this.gns
+      .addNetworkFeature(hashOrNonce, feature, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  /**
+   * Sends and Confirms results from the GatekeeperNetworkService "removeNetworkFeature" function
+   * @param hashOrNonce
+   * @param feature
+   * @param options
+   * @returns
+   */
+  async removeNetworkFeature(
+    hashOrNonce: HashOrNonce,
+    feature: NetworkFeature,
+    options?: TransactionOptions
+  ): Promise<PublicKey | null> {
+    return this.gns
+      .removeNetworkFeature(hashOrNonce, feature, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
   }
 }
