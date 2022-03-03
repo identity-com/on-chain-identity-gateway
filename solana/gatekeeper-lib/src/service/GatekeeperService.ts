@@ -25,6 +25,7 @@ import {
   getOrCreateBlockhashOrNonce,
   TransactionOptions,
 } from "../util/transaction";
+import { Commitment } from "@solana/web3.js";
 
 /**
  * Global default configuration for the gatekeeper
@@ -61,7 +62,6 @@ export class GatekeeperService {
       ...this.config,
       ...options,
     };
-
     const blockhashOrNonce = await getOrCreateBlockhashOrNonce(
       this.connection,
       defaultOptions.blockhashOrNonce
@@ -133,7 +133,6 @@ export class GatekeeperService {
     const hashOrNonce =
       normalizedOptions.blockhashOrNonce ||
       (await this.connection.getRecentBlockhash());
-
     return new SendableTransaction(this.connection, transaction)
       .withData(() => getGatewayToken(this.connection, gatewayTokenAddress))
       .feePayer(normalizedOptions.feePayer)
@@ -152,7 +151,6 @@ export class GatekeeperService {
   ): Promise<SendableDataTransaction<GatewayToken | null>> {
     return this.issueVanilla(recipient, undefined, options);
   }
-
   /**
    * Updates a GatewayToken by building a transaction with the given txBuilder function,
    * and returning the existing token with the given updated state value and (optional) expiryTime.
@@ -299,5 +297,107 @@ export class GatekeeperService {
     if (transactionSignedByGatekeeper) {
       transaction.partialSign(this.gatekeeperAuthority);
     }
+  }
+}
+
+export class SimpleGatekeeperService {
+  gs: GatekeeperService;
+
+  /**
+   * Simpler version of the GatekeeperService class. The functions in here send and confirm the results from those in GatekeeperService, returning a GatewayToken rather than a SendableDataTransaction
+   * @param connection
+   * @param gatekeeperNetwork
+   * @param gatekeeperAuthority
+   * @param config
+   */
+  constructor(
+    connection: Connection,
+    gatekeeperNetwork: PublicKey,
+    gatekeeperAuthority: Keypair,
+    config: GatekeeperConfig = {}
+  ) {
+    this.gs = new GatekeeperService(
+      connection,
+      gatekeeperNetwork,
+      gatekeeperAuthority,
+      config
+    );
+  }
+  /**
+   * Sends and Confirms results from the GatekeeperService "issue" function
+   * @param recipient
+   * @param options
+   * @returns
+   */
+  async issue(
+    recipient: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.gs
+      .issue(recipient, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  /**
+   * Sends and Confirms results from the GatekeeperService "revoke" function
+   * @param gatewayTokenKey
+   * @param options
+   * @returns
+   */
+  async revoke(
+    gatewayTokenKey: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.gs
+      .revoke(gatewayTokenKey, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  /**
+   * Sends and Confirms results from the GatekeeperService "freeze" function
+   * @param gatewayTokenKey
+   * @param options
+   * @returns
+   */
+  async freeze(
+    gatewayTokenKey: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.gs
+      .freeze(gatewayTokenKey, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  /**
+   * Sends and Confirms results from the GatekeeperService "unfreeze" function
+   * @param gatewayTokenKey
+   * @param options
+   * @returns
+   */
+  async unfreeze(
+    gatewayTokenKey: PublicKey,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.gs
+      .unfreeze(gatewayTokenKey, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
+  }
+  /**
+   * Sends and Confirms results from the GatekeeperService "updateExpiry" function
+   * @param gatewayTokenKey
+   * @param expireTime
+   * @param options
+   * @returns
+   */
+  async updateExpiry(
+    gatewayTokenKey: PublicKey,
+    expireTime: number,
+    options?: TransactionOptions
+  ): Promise<GatewayToken | null> {
+    return this.gs
+      .updateExpiry(gatewayTokenKey, expireTime, options)
+      .then((result) => result.send())
+      .then((result) => result.confirm());
   }
 }
