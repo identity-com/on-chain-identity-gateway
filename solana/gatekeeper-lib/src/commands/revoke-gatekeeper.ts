@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import {
   clusterFlag,
   gatekeeperKeyFlag,
@@ -18,7 +18,7 @@ export default class RevokeGatekeeper extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
     cluster: clusterFlag(),
@@ -29,12 +29,12 @@ export default class RevokeGatekeeper extends Command {
       name: "address",
       required: true,
       description: "The address of the gatekeeper to revoke from the network",
-      parse: (input: string) => new PublicKey(input),
+      parse: async (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(RevokeGatekeeper);
+    const { args, flags } = await this.parse(RevokeGatekeeper);
 
     const gatekeeper: PublicKey = args.address;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
