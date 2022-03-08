@@ -10,7 +10,8 @@
   "dependencies": {
     "@identity.com/solana-gateway-ts": "^0.8.2",
     "@oclif/core": "^1.5.2",
-    "@oclif/plugin-help": "^3.2.2",
+    "@oclif/plugin-help": "^5.1.11",
+    "@oclif/plugin-plugins": "^2.0.1",
     "@oclif/plugin-version": "^1",
     "@solana/spl-token": "^0.1.4",
     "@solana/web3.js": "^1.32.0",
@@ -72,7 +73,8 @@
     "topicSeparator": " ",
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-version"
+      "@oclif/plugin-version",
+      "@oclif/plugin-plugins"
     ]
   },
   "repository": "git@github.com:identity-com/on-chain-identity-gateway.git",
