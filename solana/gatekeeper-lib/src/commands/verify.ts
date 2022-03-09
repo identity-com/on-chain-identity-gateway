@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { PublicKey } from "@solana/web3.js";
 import { clusterFlag, gatekeeperNetworkPubkeyFlag } from "../util/oclif/flags";
 import { prettyPrint } from "../util/token";
@@ -22,7 +22,7 @@ export default class Verify extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
     cluster: clusterFlag(),
   };
@@ -32,12 +32,12 @@ export default class Verify extends Command {
       name: "owner",
       required: true,
       description: "The gateway token to revoke",
-      parse: (input: string) => new PublicKey(input),
+      parse: async (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(Verify);
+    const { args, flags } = await this.parse(Verify);
 
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
 

@@ -1,29 +1,30 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { flags } from "@oclif/command";
+import { Flags } from "@oclif/core";
 import { readKey } from "../account";
 import { ExtendedCluster } from "../connection";
 
-export const gatekeeperKeyFlag = flags.build<Keypair>({
+export const gatekeeperKeyFlag = Flags.build<Keypair>({
   char: "g",
   parse: readKey,
-  default: () => readKey(`${__dirname}/test-gatekeeper.json`),
+  default: async () => readKey(`${__dirname}/test-gatekeeper.json`),
   description: "The private key file for the gatekeeper authority",
 });
-export const gatekeeperNetworkKeyFlag = flags.build<Keypair>({
+export const gatekeeperNetworkKeyFlag = Flags.build<Keypair>({
   char: "n",
   parse: readKey,
-  default: () => readKey(`${__dirname}/test-gatekeeper-network.json`),
+  default: async () => readKey(`${__dirname}/test-gatekeeper-network.json`),
   description: "The private key file for the gatekeeper authority",
 });
-export const gatekeeperNetworkPubkeyFlag = flags.build<PublicKey>({
+export const gatekeeperNetworkPubkeyFlag = Flags.build<PublicKey>({
   char: "n",
-  parse: (pubkey: string) => new PublicKey(pubkey),
-  default: () => readKey(`${__dirname}/test-gatekeeper-network.json`).publicKey,
+  parse: async (pubkey: string) => new PublicKey(pubkey),
+  default: async () =>
+    (await readKey(`${__dirname}/test-gatekeeper-network.json`)).publicKey,
   description:
     "The public key (in base 58) of the gatekeeper network that the gatekeeper belongs to.",
 });
-export const clusterFlag = flags.build<ExtendedCluster>({
-  parse: (cluster: string) => {
+export const clusterFlag = Flags.build<ExtendedCluster>({
+  parse: async (cluster: string) => {
     if (process.env.SOLANA_CLUSTER_URL) {
       if (process.env.SOLANA_CLUSTER) {
         throw new Error(

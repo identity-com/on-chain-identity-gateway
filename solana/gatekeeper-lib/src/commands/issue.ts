@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
 import { airdropTo } from "../util";
@@ -20,12 +20,12 @@ export default class Issue extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
-    expiry: flags.integer({
+    help: Flags.help({ char: "h" }),
+    expiry: Flags.integer({
       char: "e",
       description:
         "The expiry time in seconds for the gateway token (default none)",
-      parse: (input: string) => Number(input),
+      parse: async (input: string) => Number(input),
     }),
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
@@ -37,12 +37,12 @@ export default class Issue extends Command {
       name: "address",
       required: true,
       description: "The address to issue the token to",
-      parse: (input: string) => new PublicKey(input),
+      parse: async (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(Issue);
+    const { args, flags } = await this.parse(Issue);
 
     const address: PublicKey = args.address;
     const gatekeeper = flags.gatekeeperKey as Keypair;

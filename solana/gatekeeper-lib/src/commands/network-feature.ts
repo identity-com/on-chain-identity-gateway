@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { Keypair } from "@solana/web3.js";
 
 import { airdropTo } from "../util";
@@ -12,8 +12,8 @@ import { getConnectionFromEnv } from "../util/oclif/utils";
 
 type featureOperation = "add" | "remove" | "get";
 
-export const featureOperation = flags.build<featureOperation>({
-  parse: (input: string) => {
+export const featureOperation = Flags.build<featureOperation>({
+  parse: async (input: string) => {
     switch (input) {
       case "add":
         return input;
@@ -34,7 +34,7 @@ export default class AddGatekeeper extends Command {
   static examples = [`$ gateway network-feature userTokenExpiry`];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     featureOperation: featureOperation(),
     gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
     cluster: clusterFlag(),
@@ -45,7 +45,7 @@ export default class AddGatekeeper extends Command {
       name: "feature",
       required: true,
       description: "The Network Feature Name",
-      parse: (input: string) => {
+      parse: async (input: string) => {
         switch (input) {
           case "userTokenExpiry":
             return new NetworkFeature({
@@ -57,7 +57,7 @@ export default class AddGatekeeper extends Command {
   ];
 
   async run() {
-    const { args, flags } = this.parse(AddGatekeeper);
+    const { args, flags } = await this.parse(AddGatekeeper);
 
     const networkFeature: NetworkFeature = args.feature;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
