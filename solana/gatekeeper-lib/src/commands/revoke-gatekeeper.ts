@@ -1,12 +1,13 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import {
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkKeyFlag,
 } from "../util/oclif/flags";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { airdropTo, getConnection } from "../util";
+import { airdropTo } from "../util";
 import { GatekeeperNetworkService } from "../service";
+import { getConnectionFromEnv } from "../util/oclif/utils";
 
 export default class RevokeGatekeeper extends Command {
   static description = "Revoke a gatekeeper from a network";
@@ -17,7 +18,7 @@ export default class RevokeGatekeeper extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
     cluster: clusterFlag(),
@@ -28,12 +29,12 @@ export default class RevokeGatekeeper extends Command {
       name: "address",
       required: true,
       description: "The address of the gatekeeper to revoke from the network",
-      parse: (input: string) => new PublicKey(input),
+      parse: async (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(RevokeGatekeeper);
+    const { args, flags } = await this.parse(RevokeGatekeeper);
 
     const gatekeeper: PublicKey = args.address;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
@@ -41,7 +42,7 @@ export default class RevokeGatekeeper extends Command {
       gatekeeper ${gatekeeper.toBase58()}
       from network ${gatekeeperNetwork.publicKey.toBase58()}`);
 
-    const connection = getConnection(flags.cluster);
+    const connection = getConnectionFromEnv(flags.cluster);
 
     await airdropTo(
       connection,
