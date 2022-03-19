@@ -20,7 +20,7 @@ use crate::{
 };
 use num_traits::AsPrimitive;
 use solana_program::entrypoint_deprecated::ProgramResult;
-use solana_program::program::{invoke, invoke_unchecked};
+use solana_program::program::invoke_unchecked;
 use solana_program::program_error::ProgramError;
 use solana_program::{account_info::AccountInfo, msg, pubkey::Pubkey};
 use std::str::FromStr;
