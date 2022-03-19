@@ -19,12 +19,12 @@ use crate::{
     state::{GatewayToken, GatewayTokenState},
 };
 use num_traits::AsPrimitive;
+use solana_program::clock::UnixTimestamp;
 use solana_program::entrypoint_deprecated::ProgramResult;
 use solana_program::program::invoke;
 use solana_program::program_error::ProgramError;
 use solana_program::{account_info::AccountInfo, msg, pubkey::Pubkey};
 use std::str::FromStr;
-use solana_program::clock::UnixTimestamp;
 
 // Session gateway tokens, that have a lamport balance that exceeds this value, are rejected
 const MAX_SESSION_TOKEN_BALANCE: u64 = 0;
@@ -192,7 +192,7 @@ impl Gateway {
             &gateway_token_info,
             owner,
             gatekeeper_network,
-            expire_feature_account
+            expire_feature_account,
         )
     }
 
@@ -203,7 +203,10 @@ impl Gateway {
         owner: AccountInfo<'a>,
         gatekeeper_network: &Pubkey,
         expire_feature_account: AccountInfo<'a>,
-    ) -> ProgramResult where T: AsRef<[u8]>{
+    ) -> ProgramResult
+    where
+        T: AsRef<[u8]>,
+    {
         if gateway_program.key != &Self::program_id() {
             msg!("Gateway token passed is not owned by gateway program");
             return Err(ProgramError::IncorrectProgramId);
@@ -233,11 +236,15 @@ impl Gateway {
         gatekeeper_network: &Pubkey,
         expire_feature_account: AccountInfo<'a>,
         min_expire_time: UnixTimestamp,
-    ) -> ProgramResult{
+    ) -> ProgramResult {
         let borrow = gateway_token_info.data.borrow();
         let gateway_token = InPlaceGatewayToken::new(&**borrow)?;
 
-        if gateway_token.expire_time().map(|val| val < min_expire_time).unwrap_or(false){
+        if gateway_token
+            .expire_time()
+            .map(|val| val < min_expire_time)
+            .unwrap_or(false)
+        {
             msg!("Gateway token was issued too early");
             return Err(ProgramError::InvalidAccountData);
         }
@@ -248,7 +255,7 @@ impl Gateway {
             &gateway_token_info,
             owner,
             gatekeeper_network,
-            expire_feature_account
+            expire_feature_account,
         )
     }
 }
