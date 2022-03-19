@@ -24,6 +24,7 @@ use solana_program::program::invoke;
 use solana_program::program_error::ProgramError;
 use solana_program::{account_info::AccountInfo, msg, pubkey::Pubkey};
 use std::str::FromStr;
+use solana_program::clock::UnixTimestamp;
 
 // Session gateway tokens, that have a lamport balance that exceeds this value, are rejected
 const MAX_SESSION_TOKEN_BALANCE: u64 = 0;
@@ -156,6 +157,7 @@ impl Gateway {
         options: Option<VerificationOptions>,
     ) -> Result<(), GatewayError> {
         if gateway_token_info.owner.ne(&Gateway::program_id()) {
+            msg!("Gateway token is not owned by gateway program");
             return Err(GatewayError::IncorrectProgramId);
         }
 
@@ -181,29 +183,73 @@ impl Gateway {
         gatekeeper_network: &Pubkey,
         expire_feature_account: AccountInfo<'a>,
     ) -> ProgramResult {
-        if gateway_program.key != &Self::program_id() {
-            return Err(ProgramError::IncorrectProgramId);
-        }
-
         let borrow = gateway_token_info.data.borrow();
         let gateway_token = InPlaceGatewayToken::new(&**borrow)?;
+
+        Self::verify_and_expire_token_priv(
+            gateway_token,
+            gateway_program,
+            &gateway_token_info,
+            owner,
+            gatekeeper_network,
+            expire_feature_account
+        )
+    }
+
+    fn verify_and_expire_token_priv<'a, T>(
+        gateway_token: InPlaceGatewayToken<T>,
+        gateway_program: AccountInfo<'a>,
+        gateway_token_info: &AccountInfo<'a>,
+        owner: AccountInfo<'a>,
+        gatekeeper_network: &Pubkey,
+        expire_feature_account: AccountInfo<'a>,
+    ) -> ProgramResult where T: AsRef<[u8]>{
+        if gateway_program.key != &Self::program_id() {
+            msg!("Gateway token passed is not owned by gateway program");
+            return Err(ProgramError::IncorrectProgramId);
+        }
 
         if !gateway_token.is_valid() {
             msg!("Gateway token is invalid. It has either been revoked or frozen, or has expired");
             return Err(GatewayError::TokenRevoked.into());
         }
-        drop(borrow);
 
         invoke(
             &expire_token(*gateway_token_info.key, *owner.key, *gatekeeper_network),
             &[
-                gateway_token_info,
+                gateway_token_info.clone(),
                 owner,
                 expire_feature_account,
                 gateway_program,
             ],
         )?;
         Ok(())
+    }
+
+    pub fn verify_and_expire_token_with_start<'a>(
+        gateway_program: AccountInfo<'a>,
+        gateway_token_info: AccountInfo<'a>,
+        owner: AccountInfo<'a>,
+        gatekeeper_network: &Pubkey,
+        expire_feature_account: AccountInfo<'a>,
+        min_expire_time: UnixTimestamp,
+    ) -> ProgramResult{
+        let borrow = gateway_token_info.data.borrow();
+        let gateway_token = InPlaceGatewayToken::new(&**borrow)?;
+
+        if gateway_token.expire_time().map(|val| val < min_expire_time).unwrap_or(false){
+            msg!("Gateway token was issued too early");
+            return Err(ProgramError::InvalidAccountData);
+        }
+
+        Self::verify_and_expire_token_priv(
+            gateway_token,
+            gateway_program,
+            &gateway_token_info,
+            owner,
+            gatekeeper_network,
+            expire_feature_account
+        )
     }
 }
 
