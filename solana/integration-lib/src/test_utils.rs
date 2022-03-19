@@ -1,6 +1,10 @@
 #[cfg(test)]
 pub mod test_utils_stubs {
+    use crate::Gateway;
+    use solana_program::account_info::AccountInfo;
     use solana_program::clock::{Clock, UnixTimestamp};
+    use solana_program::entrypoint::ProgramResult;
+    use solana_program::instruction::Instruction;
     use solana_program::program_stubs;
     use std::sync::Once;
     use std::time::{SystemTime, UNIX_EPOCH};
@@ -38,6 +42,23 @@ pub mod test_utils_stubs {
             }
 
             0
+        }
+
+        fn sol_invoke_signed(
+            &self,
+            instruction: &Instruction,
+            account_infos: &[AccountInfo],
+            _signers_seeds: &[&[&[u8]]],
+        ) -> ProgramResult {
+            if instruction.program_id == Gateway::program_id() {
+                solana_gateway_program::processor::process_instruction(
+                    &instruction.program_id,
+                    account_infos,
+                    &instruction.data,
+                )
+            } else {
+                panic!("Cannot execute other programs");
+            }
         }
     }
 
