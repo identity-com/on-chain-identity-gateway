@@ -20,7 +20,7 @@ use crate::{
 };
 use num_traits::AsPrimitive;
 use solana_program::entrypoint_deprecated::ProgramResult;
-use solana_program::program::invoke;
+use solana_program::program::{invoke, invoke_unchecked};
 use solana_program::program_error::ProgramError;
 use solana_program::{account_info::AccountInfo, msg, pubkey::Pubkey};
 use std::str::FromStr;
@@ -215,11 +215,12 @@ impl Gateway {
             msg!("Gateway token is invalid. It has either been revoked or frozen, or has expired");
             return Err(GatewayError::TokenRevoked.into());
         }
+        drop(borrow);
 
-        invoke(
+        invoke_unchecked(
             &expire_token(*gateway_token_info.key, *owner.key, *gatekeeper_network),
             &[
-                gateway_token_info.clone(),
+                gateway_token_info,
                 owner,
                 expire_feature_account,
                 gateway_program,
@@ -232,7 +233,10 @@ impl Gateway {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use crate::state::{get_expire_address_with_seed, get_gateway_token_address_with_seed};
     use crate::test_utils::test_utils_stubs::{init, now};
+    use ::borsh::{BorshDeserialize, BorshSerialize};
+    use solana_program::native_token::LAMPORTS_PER_SOL;
     use std::{cell::RefCell, rc::Rc};
 
     fn expired_gateway_token() -> GatewayToken {
@@ -326,5 +330,92 @@ pub mod tests {
         );
 
         assert!(matches!(verify_result, Ok(())))
+    }
+
+    struct EvalOut {
+        result: ProgramResult,
+        data: GatewayToken,
+    }
+    fn run_eval(
+        mut token: GatewayToken,
+        eval: impl FnOnce(&InPlaceGatewayToken<&[u8]>) -> ProgramResult,
+    ) -> EvalOut {
+        let owner = Pubkey::new_unique();
+        token.owner_wallet = owner;
+        let network = Pubkey::new_unique();
+        token.gatekeeper_network = network;
+        let gateway_token = get_gateway_token_address_with_seed(&owner, &None, &network);
+        let expire = get_expire_address_with_seed(&network);
+        let mut token_data = token.try_to_vec().unwrap();
+        let result = Gateway::verify_and_expire_token_with_eval(
+            AccountInfo::new(
+                &Gateway::program_id(),
+                false,
+                false,
+                &mut LAMPORTS_PER_SOL,
+                &mut [],
+                &Pubkey::new_from_array([0; 32]),
+                true,
+                0,
+            ),
+            AccountInfo::new(
+                &gateway_token.0,
+                false,
+                true,
+                &mut LAMPORTS_PER_SOL,
+                &mut token_data,
+                &Gateway::program_id(),
+                false,
+                0,
+            ),
+            AccountInfo::new(
+                &owner,
+                true,
+                false,
+                &mut LAMPORTS_PER_SOL,
+                &mut [],
+                &Pubkey::new_from_array([0; 32]),
+                false,
+                0,
+            ),
+            &network,
+            AccountInfo::new(
+                &expire.0,
+                false,
+                false,
+                &mut LAMPORTS_PER_SOL,
+                &mut [],
+                &Gateway::program_id(),
+                false,
+                0,
+            ),
+            eval,
+        );
+        EvalOut {
+            result,
+            data: GatewayToken::deserialize(&mut token_data.as_slice()).unwrap(),
+        }
+    }
+
+    #[test]
+    fn verify_and_expire_gateway_token_with_func_should_fail() {
+        init();
+        let mut token = expired_gateway_token();
+        token.expire_time = Some(now() + (1 << 10));
+
+        const ERROR_CODE: u32 = 123456;
+        let result = run_eval(token, |_| Err(ProgramError::Custom(ERROR_CODE)));
+        assert_eq!(result.result, Err(ProgramError::Custom(ERROR_CODE)));
+    }
+
+    #[test]
+    fn verify_and_expire_gateway_token_with_func_should_succeed() {
+        init();
+        let mut token = expired_gateway_token();
+        token.expire_time = Some(now() + (1 << 10));
+
+        let result = run_eval(token, |_| Ok(()));
+        result.result.expect("Could not verify");
+        assert!(result.data.expire_time.unwrap() < now());
     }
 }
