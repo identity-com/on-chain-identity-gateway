@@ -236,7 +236,6 @@ pub mod tests {
     use crate::state::{get_expire_address_with_seed, get_gateway_token_address_with_seed};
     use crate::test_utils::test_utils_stubs::{init, now};
     use ::borsh::{BorshDeserialize, BorshSerialize};
-    use solana_program::native_token::LAMPORTS_PER_SOL;
     use std::{cell::RefCell, rc::Rc};
 
     fn expired_gateway_token() -> GatewayToken {
@@ -352,7 +351,7 @@ pub mod tests {
                 &Gateway::program_id(),
                 false,
                 false,
-                &mut LAMPORTS_PER_SOL,
+                &mut 1_000_000,
                 &mut [],
                 &Pubkey::new_from_array([0; 32]),
                 true,
@@ -362,7 +361,7 @@ pub mod tests {
                 &gateway_token.0,
                 false,
                 true,
-                &mut LAMPORTS_PER_SOL,
+                &mut 1_000_000,
                 &mut token_data,
                 &Gateway::program_id(),
                 false,
@@ -372,7 +371,7 @@ pub mod tests {
                 &owner,
                 true,
                 false,
-                &mut LAMPORTS_PER_SOL,
+                &mut 1_000_000,
                 &mut [],
                 &Pubkey::new_from_array([0; 32]),
                 false,
@@ -383,7 +382,7 @@ pub mod tests {
                 &expire.0,
                 false,
                 false,
-                &mut LAMPORTS_PER_SOL,
+                &mut 1_000_000,
                 &mut [],
                 &Gateway::program_id(),
                 false,
