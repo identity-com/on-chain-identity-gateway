@@ -19,7 +19,6 @@ use crate::{
     state::{GatewayToken, GatewayTokenState},
 };
 use num_traits::AsPrimitive;
-use solana_program::clock::UnixTimestamp;
 use solana_program::entrypoint_deprecated::ProgramResult;
 use solana_program::program::invoke;
 use solana_program::program_error::ProgramError;
