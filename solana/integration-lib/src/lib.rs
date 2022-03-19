@@ -183,30 +183,30 @@ impl Gateway {
         gatekeeper_network: &Pubkey,
         expire_feature_account: AccountInfo<'a>,
     ) -> ProgramResult {
-        let borrow = gateway_token_info.data.borrow();
-        let gateway_token = InPlaceGatewayToken::new(&**borrow)?;
-
-        Self::verify_and_expire_token_priv(
-            gateway_token,
+        Self::verify_and_expire_token_with_eval(
             gateway_program,
-            &gateway_token_info,
+            gateway_token_info,
             owner,
             gatekeeper_network,
             expire_feature_account,
+            |_| Ok(()),
         )
     }
 
-    fn verify_and_expire_token_priv<'a, T>(
-        gateway_token: InPlaceGatewayToken<T>,
+    /// Verifies a given token, followed by a given evaluation function and then expires it. Only works on networks that support this feature.
+    pub fn verify_and_expire_token_with_eval<'a>(
         gateway_program: AccountInfo<'a>,
-        gateway_token_info: &AccountInfo<'a>,
+        gateway_token_info: AccountInfo<'a>,
         owner: AccountInfo<'a>,
         gatekeeper_network: &Pubkey,
         expire_feature_account: AccountInfo<'a>,
-    ) -> ProgramResult
-    where
-        T: AsRef<[u8]>,
-    {
+        eval_function: impl FnOnce(&InPlaceGatewayToken<&[u8]>) -> ProgramResult,
+    ) -> ProgramResult {
+        let borrow = gateway_token_info.data.borrow();
+        let gateway_token = InPlaceGatewayToken::new(&**borrow)?;
+
+        eval_function(&gateway_token)?;
+
         if gateway_program.key != &Self::program_id() {
             msg!("Gateway token passed is not owned by gateway program");
             return Err(ProgramError::IncorrectProgramId);
@@ -227,36 +227,6 @@ impl Gateway {
             ],
         )?;
         Ok(())
-    }
-
-    pub fn verify_and_expire_token_with_start<'a>(
-        gateway_program: AccountInfo<'a>,
-        gateway_token_info: AccountInfo<'a>,
-        owner: AccountInfo<'a>,
-        gatekeeper_network: &Pubkey,
-        expire_feature_account: AccountInfo<'a>,
-        min_expire_time: UnixTimestamp,
-    ) -> ProgramResult {
-        let borrow = gateway_token_info.data.borrow();
-        let gateway_token = InPlaceGatewayToken::new(&**borrow)?;
-
-        if gateway_token
-            .expire_time()
-            .map(|val| val < min_expire_time)
-            .unwrap_or(false)
-        {
-            msg!("Gateway token was issued too early");
-            return Err(ProgramError::InvalidAccountData);
-        }
-
-        Self::verify_and_expire_token_priv(
-            gateway_token,
-            gateway_program,
-            &gateway_token_info,
-            owner,
-            gatekeeper_network,
-            expire_feature_account,
-        )
     }
 }
 
