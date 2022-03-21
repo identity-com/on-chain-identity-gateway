@@ -10,6 +10,7 @@ import { checkTokenState, parseTokenState } from './utils/token-state';
 import { TokenData } from './utils/types';
 import { generateId } from './utils/tokenId';
 import { toBytes32 } from './utils/string';
+import { Forwarder } from './contracts/Forwarder';
 
 export class GatewayTsBase {
     provider: BaseProvider;
@@ -31,6 +32,8 @@ export class GatewayTsBase {
     contractAddresses: ContractAddresses;
   
     gatewayTokenController: GatewayTokenController;
+
+    forwarder: Forwarder;
   
     flagsStorage: FlagsStorage;
   
@@ -56,6 +59,8 @@ export class GatewayTsBase {
 
       this.gatewayTokenController = new GatewayTokenController(this.wallet || this.provider, addresses[this.networkId].gatewayTokenController);
       this.flagsStorage = new FlagsStorage(this.wallet || this.provider, addresses[this.networkId].flagsStorage);
+      this.forwarder = new Forwarder(this.wallet || this.provider, addresses[this.networkId].forwarder);
+
       gatewayTokenAddresses[this.networkId].forEach((gatewayToken: GatewayTokenItem) => {
         const tokenAddress = gatewayToken.address
 

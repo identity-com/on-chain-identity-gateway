@@ -1,10 +1,12 @@
-import { BigNumber, Wallet } from 'ethers';
+import { BigNumber, PopulatedTransaction, VoidSigner, Wallet } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 
 import { ethTransaction, TxOptions } from "./utils/tx";
 import { getExpirationTime } from './utils/time';
 import { toBytes32 } from './utils/string';
 import { GatewayTsBase } from './GatewayTsBase';
+import { SendableTransaction } from './utils/types';
+import { signMetaTxRequest } from './utils/signer';
 
 export class GatewayTs extends GatewayTsBase {
   constructor(provider: BaseProvider,  wallet?: Wallet, options?: { defaultGas?: number; defaultGasPrice?: any; }) {
@@ -45,19 +47,36 @@ export class GatewayTs extends GatewayTsBase {
     return ethTransaction(contract, 'removeNetworkAuthority', args, options);
   }
 
-  async issue(owner: string, tokenId: number | BigNumber = null, expiration: number | BigNumber = 0, bitmask: BigNumber = BigNumber.from('0'), constrains: BigNumber = BigNumber.from('0'), gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+  async issue(
+    owner: string, 
+    tokenId: number | BigNumber = null, 
+    expiration: number | BigNumber = 0, 
+    bitmask: BigNumber = BigNumber.from('0'), 
+    constrains: BigNumber = BigNumber.from('0'), 
+    gatewayTokenAddress?: string, 
+    options?: TxOptions):Promise<SendableTransaction<string>> {
+    const gatewayTokenContract = this.getGatewayTokenContract(gatewayTokenAddress);
 
     if (tokenId === null) {
-      tokenId = await this.generateTokenId(owner, constrains, gatewayToken);
+      tokenId = await this.generateTokenId(owner, constrains, gatewayTokenContract);
     }
 
     if (expiration > 0) {
       expiration = getExpirationTime(expiration);
     }
 
-    const args: any[] = [owner, tokenId, expiration, bitmask];
-    return ethTransaction(gatewayToken.contract, 'mint', args, options);
+    const txRequest: PopulatedTransaction = await gatewayTokenContract.mint(owner, tokenId, expiration, bitmask);
+    const signer = new VoidSigner(this.wallet.address, this.provider);
+    const { request, signature } = await signMetaTxRequest(signer, this.forwarder.contract, {
+      from: this.wallet.address,
+      to: gatewayTokenContract.contract.address,
+      data: txRequest.data
+    });
+
+    const metaTx: PopulatedTransaction = await this.forwarder.execute(request, signature);
+    const sendableTransaction = new SendableTransaction<string>(gatewayTokenContract.contract, metaTx, options)
+
+    return sendableTransaction;
   }
 
   async revoke(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {

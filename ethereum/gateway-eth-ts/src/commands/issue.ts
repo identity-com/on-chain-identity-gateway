@@ -16,6 +16,7 @@ import { TxBase } from "../utils/tx";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 import { generateId } from "../utils/tokenId";
 import { getExpirationTime } from "../utils/time";
+import { GatewayETH } from "..";
 
 export default class IssueToken extends Command {
 	static description = "Issue new identity token with TokenID for Ethereum address";
@@ -103,6 +104,17 @@ export default class IssueToken extends Command {
 			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
 		};
 
+		const gateway = new GatewayETH(provider, signer);
+		const sendableTransaction = await gateway.issue(
+			ownerAddress, 
+			tokenID, 
+			expiration, 
+			bitmask, 
+			null, 
+			gatewayTokenAddress, 
+			{ confirmations }
+		);
+
 		this.log(`Issuing new token with TokenID:
 			${tokenID} 
 			for owner ${ownerAddress}
@@ -110,9 +122,9 @@ export default class IssueToken extends Command {
 		);
 
 		if (confirmations > 0) {
-			tx = await(await gatewayToken.mint(ownerAddress, tokenID, expiration, bitmask, txParams)).wait(confirmations);
+			tx = (await sendableTransaction.send()).confirm();
 		} else {
-			tx = await gatewayToken.mint(ownerAddress, tokenID, expiration, bitmask, txParams);
+			tx = await sendableTransaction.send();
 		}
 
 		this.log(
