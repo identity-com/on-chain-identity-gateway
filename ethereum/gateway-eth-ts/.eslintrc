@@ -12,6 +12,7 @@
       "eqeqeq": "warn",
       "no-eq-null": "warn",
       "unicorn/filename-case": "off",
-      "max-statements-per-line": "warn"
+      "max-statements-per-line": "warn",
+      "no-useless-constructor": "off"
     }
 }

@@ -1,4 +1,4 @@
-import { Wallet, getDefaultProvider, Contract, Signer, VoidSigner, BigNumber } from 'ethers';
+import { Wallet, getDefaultProvider, Contract, BigNumber } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 import { TypedDataField } from '@ethersproject/abstract-signer';
 import { DEFAULT_CHAIN_ID, DEFAULT_MNEMONIC, NETWORKS } from './constants';
@@ -102,7 +102,7 @@ const getMetaTxTypeData = (chainId: number, verifyingContract: string):Omit<EIP7
   primaryType: 'ForwardRequest',
 });
 
-async function signTypedData(signer: VoidSigner, data: EIP712TypedData) {
+async function signTypedData(signer: Wallet, data: EIP712TypedData) {
   const types = { ForwardRequest } as Record<string, Array<TypedDataField>>
   return signer._signTypedData(data.domain, types, data.message)
 }
@@ -118,7 +118,7 @@ const buildTypedData = async (forwarder: Contract, request: EIP712Message): Prom
   return { ...typeData, message: request };
 };
 
-export const signMetaTxRequest = async (signer: VoidSigner, forwarder: Contract, input: Input): Promise<SignedMetaTxRequest> => {
+export const signMetaTxRequest = async (signer: Wallet, forwarder: Contract, input: Input): Promise<SignedMetaTxRequest> => {
   const request = await buildRequest(forwarder, input);
   const toSign = await buildTypedData(forwarder, request);
   const signature = await signTypedData(signer, toSign);

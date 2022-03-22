@@ -10,19 +10,19 @@ export declare type TokenData = {
     bitmask: number | BigNumber | string,
 }
 
-export class SendableTransaction<T> {
+export class SendableTransaction {
     constructor(
         readonly contract: Contract, 
         readonly transaction: PopulatedTransaction, 
         readonly options?: TxOptions) {}
     
-    async send():Promise<SentTransaction<T>> {
+    async send(): Promise<SentTransaction> {
         const result = await this.contract.signer.sendTransaction(this.transaction);
-        return new SentTransaction<T>(result, this.options);
+        return new SentTransaction(result, this.options);
     }
 }
 
-export class SentTransaction<T> {
+export class SentTransaction {
     constructor(
         readonly response: TransactionResponse, 
         readonly options?: TxOptions) {}

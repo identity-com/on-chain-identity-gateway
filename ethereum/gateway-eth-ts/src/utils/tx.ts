@@ -17,7 +17,8 @@ export declare type TxBase = {
 }
 
 export interface TxOptions extends TxBase {
-    confirmations?: number
+    confirmations?: number,
+    forwardTransaction?: boolean
 }
 
 export const populateTx = async (contract: Contract, method: string, args: any[], options?: TxOptions): Promise<PopulatedTransaction> => {
@@ -51,10 +52,9 @@ export const ethTransaction = async (contract: Contract, method: string, args: a
 
         return tx.transactionHash;
     } 
-        const tx: TransactionResponse = await contract.signer.sendTransaction(txRequest);
-        
-        return tx.hash;
     
+    const tx: TransactionResponse = await contract.signer.sendTransaction(txRequest);
+    return tx.hash;
 }
 
 export const signTranaction = async (contract: Contract, method: string, args: any[], options?: TxOptions):Promise<Transaction> => {

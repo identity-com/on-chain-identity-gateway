@@ -84,11 +84,9 @@ export class GatewayTsBase {
 
     getGatewayTokenContract(gatewayTokenAddress?: string):GatewayToken {
         let gatewayToken: GatewayToken;
-    
         if (gatewayTokenAddress) {
-          gatewayToken = this.gatewayTokens[gatewayTokenAddress].tokenInstance
-    
-          if (gatewayToken === null) {
+          gatewayToken = this.gatewayTokens[gatewayTokenAddress]?.tokenInstance
+          if (!gatewayToken) {
             gatewayToken = this.defaultGatewayTokenContract();
           }
         } else {
@@ -99,10 +97,10 @@ export class GatewayTsBase {
       }
         
     defaultGatewayTokenContract():GatewayToken {
-        if (this.defaultGatewayToken != null) {
+        if (this.defaultGatewayToken) {
             return this.gatewayTokens[this.defaultGatewayToken].tokenInstance
         }
-    
+
         const addr = gatewayTokenAddresses[this.networkId][0].address;
         return this.gatewayTokens[addr].tokenInstance
     }

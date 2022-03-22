@@ -19,7 +19,7 @@ $ npm install -g @identity.com/gateway-eth-ts
 $ gateway-eth-ts COMMAND
 running command...
 $ gateway-eth-ts (-v|--version|version)
-@identity.com/gateway-eth-ts/0.0.12 darwin-x64 node-v16.0.0
+@identity.com/gateway-eth-ts/0.0.12 darwin-arm64 node-v14.18.3
 $ gateway-eth-ts --help [COMMAND]
 USAGE
   $ gateway-eth-ts COMMAND
@@ -58,8 +58,8 @@ ARGUMENTS
 OPTIONS
   -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee                  [default: [object Promise]] Gas Price level to execute transaction
-                                                 with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
 
@@ -91,8 +91,8 @@ ARGUMENTS
 OPTIONS
   -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee                  [default: [object Promise]] Gas Price level to execute transaction
-                                                 with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
 
@@ -124,7 +124,7 @@ ARGUMENTS
 OPTIONS
   -c, --confirmations=confirmations  [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee      [default: [object Promise]] Gas Price level to execute transaction with. For
+  -f, --gasPriceFee=gasPriceFee      [default: [object Object]] Gas Price level to execute transaction with. For
                                      example: instant, fast, standard, slow
 
   -h, --help                         show CLI help
@@ -154,8 +154,8 @@ ARGUMENTS
 OPTIONS
   -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee                  [default: [object Promise]] Gas Price level to execute transaction
-                                                 with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
 
@@ -187,8 +187,8 @@ ARGUMENTS
 OPTIONS
   -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee                  [default: [object Promise]] Gas Price level to execute transaction
-                                                 with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
 
@@ -288,14 +288,16 @@ USAGE
 ARGUMENTS
   ADDRESS     Owner ethereum address to tokenID for
   EXPIRATION  [default: 0] Expiration timestamp for newly issued token
-  CONSTRAINS  [default: 0] Constrains to generate tokenId
+  CONSTRAINS  [default: [object Object]] Constrains to generate tokenId
 
 OPTIONS
-  -b, --bitmask=bitmask                          [default: 0] Bitmask constrains to link with newly minting tokenID
+  -b, --bitmask=bitmask                          [default: [object Object]] Bitmask constrains to link with newly
+                                                 minting tokenID
+
   -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee                  [default: [object Promise]] Gas Price level to execute transaction
-                                                 with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
   -g, --[no-]generateTokenId                     Identifier used to determine wether tokenId has to be generated
 
@@ -310,6 +312,8 @@ OPTIONS
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
                                                  address to target
+
+  --[no-]forwardTransaction                      Whether the transaction will be sent via the Forwarder contract
 
 EXAMPLE
   $ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -i <TokenID>
@@ -332,8 +336,8 @@ ARGUMENTS
 OPTIONS
   -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee                  [default: [object Promise]] Gas Price level to execute transaction
-                                                 with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
 
@@ -365,8 +369,8 @@ ARGUMENTS
 OPTIONS
   -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee                  [default: [object Promise]] Gas Price level to execute transaction
-                                                 with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
 
@@ -398,8 +402,8 @@ ARGUMENTS
 OPTIONS
   -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee                  [default: [object Promise]] Gas Price level to execute transaction
-                                                 with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
 
@@ -431,8 +435,8 @@ ARGUMENTS
 OPTIONS
   -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee                  [default: [object Promise]] Gas Price level to execute transaction
-                                                 with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
 
@@ -464,8 +468,8 @@ ARGUMENTS
 OPTIONS
   -c, --confirmations=confirmations              [default: 0] The amount of blocks to wait mined transaction
 
-  -f, --gasPriceFee=gasPriceFee                  [default: [object Promise]] Gas Price level to execute transaction
-                                                 with. For example: instant, fast, standard, slow
+  -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
+                                                 For example: instant, fast, standard, slow
 
   -h, --help                                     show CLI help
 
