@@ -174,6 +174,32 @@ impl Gateway {
         }
     }
 
+    pub fn verify_gateway_token_with_eval(
+        gateway_token_info: &AccountInfo,
+        expected_owner: &Pubkey,
+        expected_gatekeeper_key: &Pubkey,
+        options: Option<VerificationOptions>,
+        eval_function: impl FnOnce(&InPlaceGatewayToken<&[u8]>) -> ProgramResult,
+    ) -> ProgramResult {
+        if gateway_token_info.owner.ne(&Gateway::program_id()) {
+            msg!("Gateway token is not owned by gateway program");
+            return Err(GatewayError::IncorrectProgramId.into());
+        }
+
+        let data = gateway_token_info.data.borrow();
+        let gateway_token = InPlaceGatewayToken::new(&**data)?;
+
+        eval_function(&gateway_token)?;
+
+        Ok(Gateway::verify_gateway_token(
+            &gateway_token,
+            expected_owner,
+            expected_gatekeeper_key,
+            gateway_token_info.lamports.borrow().as_(),
+            options,
+        )?)
+    }
+
     /// Verifies a given token and then expires it. Only works on networks that support this feature.
     pub fn verify_and_expire_token<'a>(
         gateway_program: AccountInfo<'a>,
