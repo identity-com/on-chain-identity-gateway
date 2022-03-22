@@ -1,7 +1,7 @@
-import { BigNumber, PopulatedTransaction, VoidSigner, Wallet } from 'ethers';
+import { BigNumber, Wallet } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 
-import { ethTransaction, TxOptions } from "./utils/tx";
+import { ethTransaction, populateTx, TxOptions } from "./utils/tx";
 import { getExpirationTime } from './utils/time';
 import { toBytes32 } from './utils/string';
 import { GatewayTsBase } from './GatewayTsBase';
@@ -54,7 +54,8 @@ export class GatewayTs extends GatewayTsBase {
     bitmask: BigNumber = BigNumber.from('0'), 
     constrains: BigNumber = BigNumber.from('0'), 
     gatewayTokenAddress?: string, 
-    options?: TxOptions):Promise<SendableTransaction<string>> {
+    options?: TxOptions): Promise<SendableTransaction> {
+    
     const gatewayTokenContract = this.getGatewayTokenContract(gatewayTokenAddress);
 
     if (tokenId === null) {
@@ -65,17 +66,21 @@ export class GatewayTs extends GatewayTsBase {
       expiration = getExpirationTime(expiration);
     }
 
-    const txRequest: PopulatedTransaction = await gatewayTokenContract.mint(owner, tokenId, expiration, bitmask);
-    const signer = new VoidSigner(this.wallet.address, this.provider);
-    const { request, signature } = await signMetaTxRequest(signer, this.forwarder.contract, {
-      from: this.wallet.address,
-      to: gatewayTokenContract.contract.address,
-      data: txRequest.data
-    });
+    const txRequest = await populateTx(gatewayTokenContract.contract, 'mint', [owner, tokenId, expiration, bitmask], options);
 
-    const metaTx: PopulatedTransaction = await this.forwarder.execute(request, signature);
-    const sendableTransaction = new SendableTransaction<string>(gatewayTokenContract.contract, metaTx, options)
+    if (options?.forwardTransaction) {
+      const { request, signature } = await signMetaTxRequest(this.wallet, this.forwarder.contract, {
+        from: this.wallet.address,
+        to: gatewayTokenContract.contract.address,
+        data: txRequest.data
+      });
 
+      const metaTx = await populateTx(this.forwarder.contract, 'execute', [request, signature], options);
+      const sendableTransaction = new SendableTransaction(gatewayTokenContract.contract, metaTx, options);
+      return sendableTransaction;
+    }
+
+    const sendableTransaction = new SendableTransaction(gatewayTokenContract.contract, txRequest, options);
     return sendableTransaction;
   }
 

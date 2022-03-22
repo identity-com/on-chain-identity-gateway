@@ -54,6 +54,14 @@ export const confirmationsFlag = flags.build<number>({
   description:"The amount of blocks to wait mined transaction",
 });
 
+export const forwardTransactionFlag = flags.boolean<boolean>({
+  required: false,
+  parse: (input: boolean) => input,
+  default: false,
+  allowNo: true,
+  description: "Whether the transaction will be sent via the Forwarder contract",
+})
+
 export const generateTokenIdFlag = flags.boolean<boolean>({
   char: "g",
   required: false,
@@ -62,7 +70,7 @@ export const generateTokenIdFlag = flags.boolean<boolean>({
   allowNo: true,
   description:"Identifier used to determine wether tokenId has to be generated",
   exclusive: ['tokenIdFlag'],
-})
+});
 
 export const bitmaskFlag = flags.build<BigNumber>({
   char: "b",
