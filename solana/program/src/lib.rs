@@ -1,6 +1,8 @@
 //! SOL program
 #![deny(missing_docs)]
 
+extern crate core;
+
 mod entrypoint;
 pub mod error;
 pub mod processor;

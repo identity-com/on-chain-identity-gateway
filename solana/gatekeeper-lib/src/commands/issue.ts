@@ -1,7 +1,7 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
-import { airdropTo, getConnection } from "../util";
+import { airdropTo } from "../util";
 import { GatekeeperService } from "../service";
 import {
   clusterFlag,
@@ -9,6 +9,7 @@ import {
   gatekeeperNetworkPubkeyFlag,
 } from "../util/oclif/flags";
 import { prettyPrint } from "../util/token";
+import { getConnectionFromEnv } from "../util/oclif/utils";
 
 export default class Issue extends Command {
   static description = "Issue a gateway token to a wallet";
@@ -19,12 +20,12 @@ export default class Issue extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
-    expiry: flags.integer({
+    help: Flags.help({ char: "h" }),
+    expiry: Flags.integer({
       char: "e",
       description:
         "The expiry time in seconds for the gateway token (default none)",
-      parse: (input: string) => Number(input),
+      parse: async (input: string) => Number(input),
     }),
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
@@ -36,12 +37,12 @@ export default class Issue extends Command {
       name: "address",
       required: true,
       description: "The address to issue the token to",
-      parse: (input: string) => new PublicKey(input),
+      parse: async (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(Issue);
+    const { args, flags } = await this.parse(Issue);
 
     const address: PublicKey = args.address;
     const gatekeeper = flags.gatekeeperKey as Keypair;
@@ -51,13 +52,12 @@ export default class Issue extends Command {
       from gatekeeper ${gatekeeper.publicKey.toBase58()}
       in network ${gatekeeperNetwork.toBase58()}`);
 
-    const connection = getConnection(flags.cluster);
+    const connection = getConnectionFromEnv(flags.cluster);
 
     await airdropTo(connection, gatekeeper.publicKey, flags.cluster as string);
 
     const service = new GatekeeperService(
       connection,
-      gatekeeper,
       gatekeeperNetwork,
       gatekeeper,
       flags.expiry
@@ -75,7 +75,7 @@ export default class Issue extends Command {
     }
 
     const issuedToken = await service
-      .issue(address, "find")
+      .issue(address)
       .then((t) => t.send())
       .then((t) => t.confirm());
     if (issuedToken) {

@@ -1,6 +1,7 @@
 //! Program state
+
 use crate::networks::GATEWAY_NETWORKS;
-use crate::Gateway;
+use crate::{Gateway, GatewayError};
 use std::convert::TryInto;
 use std::mem::{size_of, transmute};
 use {
@@ -61,6 +62,28 @@ pub fn get_gatekeeper_address_with_seed(authority: &Pubkey, network: &Pubkey) ->
         ],
         &Gateway::program_id(),
     )
+}
+
+/// Verifies that the gatekeeper account matches the passed in gatekeeper and gatekeeper network
+/// NOTE: This does not check that the gatekeeper is a signer of the transaction.
+pub fn verify_gatekeeper(
+    gatekeeper_account_info: &AccountInfo,
+    gatekeeper: &Pubkey,
+    gatekeeper_network: &Pubkey,
+) -> Result<(), GatewayError> {
+    // Gatekeeper account must be owned by the gateway program
+    if gatekeeper_account_info.owner.ne(&Gateway::program_id()) {
+        return Err(GatewayError::IncorrectProgramId);
+    }
+
+    // Gatekeeper account must be derived correctly from the gatekeeper and gatekeeper network
+    let (gatekeeper_address, _gatekeeper_bump_seed) =
+        get_gatekeeper_address_with_seed(gatekeeper, gatekeeper_network);
+    if gatekeeper_address != *gatekeeper_account_info.key {
+        return Err(GatewayError::IncorrectGatekeeper);
+    }
+
+    Ok(())
 }
 
 // Ignite bump seed is 255 so most optimal create

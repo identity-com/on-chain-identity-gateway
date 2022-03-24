@@ -20,7 +20,6 @@ export const getTokenUpdateProperties = async (
   await airdropTo(connection, gatekeeper.publicKey, flags.cluster as string);
   const service = new GatekeeperService(
     connection,
-    gatekeeper,
     gatekeeperNetwork,
     gatekeeper
   );

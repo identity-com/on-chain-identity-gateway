@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { PublicKey } from "@solana/web3.js";
 import {
   clusterFlag,
@@ -17,7 +17,7 @@ Revoked
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
     cluster: clusterFlag(),
@@ -28,12 +28,12 @@ Revoked
       name: "gatewayToken",
       required: true,
       description: "The gateway token to revoke",
-      parse: (input: string) => new PublicKey(input),
+      parse: async (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(Revoke);
+    const { args, flags } = await this.parse(Revoke);
 
     const { gatewayToken, gatekeeper, service } =
       await getTokenUpdateProperties(args, flags);
@@ -43,7 +43,7 @@ Revoked
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
     await service
-      .revoke(gatewayToken, "find")
+      .revoke(gatewayToken)
       .then((t) => t.send())
       .then((t) => t.confirm());
 

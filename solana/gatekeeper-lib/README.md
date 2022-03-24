@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/3.1.1-beta3 darwin-x64 node-v16.0.0
+@identity.com/solana-gatekeeper-lib/4.0.1-beta2 darwin-arm64 node-v16.14.0
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -32,6 +32,7 @@ USAGE
 * [`gateway freeze GATEWAYTOKEN`](#gateway-freeze-gatewaytoken)
 * [`gateway help [COMMAND]`](#gateway-help-command)
 * [`gateway issue ADDRESS`](#gateway-issue-address)
+* [`gateway network-feature FEATURE`](#gateway-network-feature-feature)
 * [`gateway refresh GATEWAYTOKEN [EXPIRY]`](#gateway-refresh-gatewaytoken-expiry)
 * [`gateway revoke GATEWAYTOKEN`](#gateway-revoke-gatewaytoken)
 * [`gateway revoke-gatekeeper ADDRESS`](#gateway-revoke-gatekeeper-address)
@@ -58,7 +59,7 @@ OPTIONS
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
-  -h, --help                                                   show CLI help
+  -h, --help                                                   Show CLI help.
 
   -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The private key file for the
                                                                gatekeeper authority
@@ -67,7 +68,7 @@ EXAMPLE
   $ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway freeze GATEWAYTOKEN`
 
@@ -89,7 +90,7 @@ OPTIONS
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
-  -h, --help                                                   show CLI help
+  -h, --help                                                   Show CLI help.
 
   -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
@@ -99,7 +100,7 @@ EXAMPLE
   Frozen
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/freeze.ts)_
 
 ## `gateway help [COMMAND]`
 
@@ -116,7 +117,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.14/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.3.1/src/commands/help.ts)_
 
 ## `gateway issue ADDRESS`
 
@@ -141,7 +142,7 @@ OPTIONS
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
-  -h, --help                                                   show CLI help
+  -h, --help                                                   Show CLI help.
 
   -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
@@ -150,7 +151,37 @@ EXAMPLE
   $ gateway issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/issue.ts)_
+
+## `gateway network-feature FEATURE`
+
+Get or Change a Network Feature
+
+```
+USAGE
+  $ gateway network-feature FEATURE
+
+ARGUMENTS
+  FEATURE  The Network Feature Name
+
+OPTIONS
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
+
+  -h, --help                                                   Show CLI help.
+
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -o, --featureOperation=add|remove|get                        [default: get] add, remove, or get a network feature
+
+EXAMPLE
+  $ gateway network-feature userTokenExpiry
+```
+
+_See code: [dist/commands/network-feature.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/network-feature.ts)_
 
 ## `gateway refresh GATEWAYTOKEN [EXPIRY]`
 
@@ -173,7 +204,7 @@ OPTIONS
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
-  -h, --help                                                   show CLI help
+  -h, --help                                                   Show CLI help.
 
   -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
@@ -183,7 +214,7 @@ EXAMPLE
   Refreshed
 ```
 
-_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/refresh.ts)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/refresh.ts)_
 
 ## `gateway revoke GATEWAYTOKEN`
 
@@ -205,7 +236,7 @@ OPTIONS
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
-  -h, --help                                                   show CLI help
+  -h, --help                                                   Show CLI help.
 
   -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
@@ -215,7 +246,7 @@ EXAMPLE
   Revoked
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/revoke.ts)_
 
 ## `gateway revoke-gatekeeper ADDRESS`
 
@@ -237,7 +268,7 @@ OPTIONS
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
-  -h, --help                                                   show CLI help
+  -h, --help                                                   Show CLI help.
 
   -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The private key file for the
                                                                gatekeeper authority
@@ -246,7 +277,7 @@ EXAMPLE
   $ gateway revoke-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/revoke-gatekeeper.ts)_
+_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/revoke-gatekeeper.ts)_
 
 ## `gateway unfreeze GATEWAYTOKEN`
 
@@ -268,7 +299,7 @@ OPTIONS
   -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
-  -h, --help                                                   show CLI help
+  -h, --help                                                   Show CLI help.
 
   -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
@@ -278,7 +309,7 @@ EXAMPLE
   Unfrozen
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/unfreeze.ts)_
 
 ## `gateway verify OWNER`
 
@@ -297,7 +328,7 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -h, --help                                                   show CLI help
+  -h, --help                                                   Show CLI help.
 
   -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
@@ -314,5 +345,5 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v3.1.1-beta3/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/verify.ts)_
 <!-- commandsstop -->
