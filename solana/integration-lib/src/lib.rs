@@ -51,7 +51,7 @@ impl Gateway {
     }
 
     /// Unpacks an account into a gateway token object
-    fn parse_gateway_token(account_info: &AccountInfo) -> Result<GatewayToken, GatewayError> {
+    pub fn parse_gateway_token(account_info: &AccountInfo) -> Result<GatewayToken, GatewayError> {
         program_borsh::try_from_slice_incomplete::<GatewayToken>(*account_info.data.borrow())
             .map_err(|_| GatewayError::InvalidToken)
     }

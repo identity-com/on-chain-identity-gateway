@@ -36,7 +36,7 @@ export const airdropTo = async (
   throw new Error(`Airdrop of ${lamports} failed`);
 };
 
-export const readKey = (file: string): Keypair =>
+export const readKey = async (file: string): Promise<Keypair> =>
   Keypair.fromSecretKey(
     new Uint8Array(JSON.parse(fs.readFileSync(file).toString("utf-8")))
   );

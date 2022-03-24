@@ -1,13 +1,14 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
-import { airdropTo, getConnection } from "../util";
+import { airdropTo } from "../util";
 import { GatekeeperNetworkService } from "../service";
 import {
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkKeyFlag,
 } from "../util/oclif/flags";
+import { getConnectionFromEnv } from "../util/oclif/utils";
 
 export default class AddGatekeeper extends Command {
   static description = "Add a gatekeeper to a network";
@@ -18,7 +19,7 @@ export default class AddGatekeeper extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
     cluster: clusterFlag(),
@@ -29,12 +30,12 @@ export default class AddGatekeeper extends Command {
       name: "address",
       required: true,
       description: "The address of the gatekeeper to add to the network",
-      parse: (input: string) => new PublicKey(input),
+      parse: async (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(AddGatekeeper);
+    const { args, flags } = await this.parse(AddGatekeeper);
 
     const gatekeeper: PublicKey = args.address;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
@@ -42,7 +43,7 @@ export default class AddGatekeeper extends Command {
       gatekeeper ${gatekeeper.toBase58()} 
       to network ${gatekeeperNetwork.publicKey.toBase58()}`);
 
-    const connection = getConnection(flags.cluster);
+    const connection = getConnectionFromEnv(flags.cluster);
 
     await airdropTo(
       connection,
@@ -52,11 +53,10 @@ export default class AddGatekeeper extends Command {
 
     const networkService = new GatekeeperNetworkService(
       connection,
-      gatekeeperNetwork,
       gatekeeperNetwork
     );
     const gatekeeperAccount = await networkService
-      .addGatekeeper(gatekeeper, "find")
+      .addGatekeeper(gatekeeper)
       .then((t) => t.send())
       .then((t) => t.confirm());
     this.log(

@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { PublicKey } from "@solana/web3.js";
 import {
   clusterFlag,
@@ -17,7 +17,7 @@ Unfrozen
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
     cluster: clusterFlag(),
@@ -28,12 +28,12 @@ Unfrozen
       name: "gatewayToken",
       required: true,
       description: "The gateway token to unfreeze",
-      parse: (input: string) => new PublicKey(input),
+      parse: async (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(Unfreeze);
+    const { args, flags } = await this.parse(Unfreeze);
 
     const { gatewayToken, gatekeeper, service } =
       await getTokenUpdateProperties(args, flags);
@@ -43,7 +43,7 @@ Unfrozen
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
     await service
-      .unfreeze(gatewayToken, "find")
+      .unfreeze(gatewayToken)
       .then((t) => t.send())
       .then((t) => t.confirm());
 
