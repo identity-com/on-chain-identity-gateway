@@ -16,7 +16,8 @@
     "@solana/web3.js": "^1.30.2",
     "eslint-config-oclif": "^4.0.0",
     "ramda": "^0.27.1",
-    "ts-mocha": "^8.0.0"
+    "ts-mocha": "^8.0.0",
+    "yaml": "^1.10.2"
   },
   "devDependencies": {
     "@oclif/test": "^2.1.0",

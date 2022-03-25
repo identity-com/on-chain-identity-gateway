@@ -3,14 +3,14 @@ import {
   loadTransactions,
   SimpleProgramIdStrategy,
 } from "../util/transactionUtils";
+import { UsageConfig } from "./config";
 
 type GetUsageParams = {
-  program: PublicKey;
   epoch: number;
 };
 
 export class UsageOracleService {
-  constructor(private connection: Connection, private oracle: Keypair) {}
+  constructor(private connection: Connection, private config: UsageConfig) {}
 
   // private getProvider = () => {
   //   const wallet = new Wallet(this.oracle);
@@ -20,7 +20,6 @@ export class UsageOracleService {
   // };
 
   private async getTransactionSignaturesForEpoch(
-    dapp: PublicKey,
     epoch: number
   ) {
     const epochSchedule = await this.connection.getEpochSchedule();
@@ -52,7 +51,7 @@ export class UsageOracleService {
       console.log(`Window: ${currentStartSlot} - ${currentEndSlot}`);
 
       const sigs = await this.connection.getConfirmedSignaturesForAddress(
-        dapp,
+        this.config.program,
         currentStartSlot,
         currentEndSlot
       );
@@ -65,10 +64,10 @@ export class UsageOracleService {
     return signatures;
   }
 
-  async readUsage({ program, epoch }: GetUsageParams) {
-    const fetched = await this.getTransactionSignaturesForEpoch(program, epoch);
+  async readUsage({ epoch }: GetUsageParams) {
+    const fetched = await this.getTransactionSignaturesForEpoch(epoch);
     const billableTx = await loadTransactions(this.connection, fetched, [
-      new SimpleProgramIdStrategy(program),
+      new SimpleProgramIdStrategy(this.config.program),
     ]);
     return billableTx;
   }

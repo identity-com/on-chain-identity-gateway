@@ -1,0 +1,10 @@
+cluster: https://rough-misty-night.solana-mainnet.quiknode.pro/b57300ff234c12e95763e9b8cda67e9d86772a0d/
+configs:
+  - name: Solrise
+    program: D3z8BLmMnPD1LaKwCkyCisM7iDyw9PsXXmvatUwjCuqT
+    mask: [0, 1]
+    instructions:
+      - name: PlaceOrder
+        mask: '000a0000'
+        gatewayTokenPosition: 0
+        ownerPosition: 8
