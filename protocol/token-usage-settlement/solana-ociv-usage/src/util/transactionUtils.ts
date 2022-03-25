@@ -1,9 +1,9 @@
 import {
   Connection,
   Keypair,
-  ParsedConfirmedTransaction, PartiallyDecodedInstruction,
-  PublicKey, SystemProgram,
-  Transaction,
+  ParsedConfirmedTransaction,
+  PublicKey,
+  SystemProgram,
 } from "@solana/web3.js";
 import { complement, isNil } from "ramda";
 
@@ -11,7 +11,12 @@ export type SerumType = "PlaceOrder";
 export type NFTType = "Mint";
 export type DummyType = "DummyTx" | "NativeTransferTx" | "DevDummyTx";
 
-export type Category = "Serum" | "NFT" | "Dummy" | "NativeTransfer" | "DevDummyGatekeeper";
+export type Category =
+  | "Serum"
+  | "NFT"
+  | "Dummy"
+  | "NativeTransfer"
+  | "DevDummyGatekeeper";
 
 type Subtype<C extends Category> = C extends "Serum"
   ? SerumType
@@ -92,9 +97,7 @@ interface Strategy<C extends Category> {
 //   ) {}
 // }
 
-
 export class SimpleProgramIdStrategy implements Strategy<"DevDummyGatekeeper"> {
-
   matches(transaction: ParsedConfirmedTransaction): boolean {
     return transaction.transaction.message.instructions.some((instruction) => {
       if ("data" in instruction) {
@@ -119,17 +122,18 @@ export class SimpleProgramIdStrategy implements Strategy<"DevDummyGatekeeper"> {
       parsedConfirmedTransaction
     );
   }
-  constructor(
-    private readonly programId: PublicKey,
-  ) {}
+  constructor(private readonly programId: PublicKey) {}
 }
-
 
 export class NativeTransferStrategy implements Strategy<"NativeTransfer"> {
   matches(parsedConfirmedTransaction: ParsedConfirmedTransaction): boolean {
     // TODO Parse instructions in more Detail
-    return parsedConfirmedTransaction.transaction.message.instructions.length === 1 &&
-      parsedConfirmedTransaction.transaction.message.instructions[0].programId === SystemProgram.programId
+    return (
+      parsedConfirmedTransaction.transaction.message.instructions.length ===
+        1 &&
+      parsedConfirmedTransaction.transaction.message.instructions[0]
+        .programId === SystemProgram.programId
+    );
   }
 
   build(
@@ -145,7 +149,6 @@ export class NativeTransferStrategy implements Strategy<"NativeTransfer"> {
     );
   }
 }
-
 
 export class DummyStrategy implements Strategy<"Dummy"> {
   matches(parsedConfirmedTransaction: ParsedConfirmedTransaction): boolean {
@@ -176,7 +179,6 @@ export const loadTransactions = async (
   const transactions = await connection.getParsedConfirmedTransactions(
     signatures
   );
-
 
   // console.log(transactions)
 

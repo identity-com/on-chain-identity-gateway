@@ -1,8 +1,8 @@
 import { describe } from "mocha";
-import { UsageOracleService } from "../../src/service/UsageOracleService";
+import { UsageOracleService } from "../../src";
 import { expect } from "chai";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { getConnection } from "../../src/util";
+import { getConnection } from "../../src";
 
 describe("UsageOracleService", function () {
   this.timeout(30_000);
@@ -12,9 +12,8 @@ describe("UsageOracleService", function () {
   // const dapp = new PublicKey("D3z8BLmMnPD1LaKwCkyCisM7iDyw9PsXXmvatUwjCuqT");
   // const dapp = new PublicKey("FRQb9goeMow4BjNH6yH1vSBicWDhZTgeXsUgkBFbehft")
   // const dapp = new PublicKey("Hx2YiHbtU91ipPQRptZ5yusuhyAF99ykz2Jh7tdtHn23")
-  const dapp = new PublicKey("Hx2YiHbtU91ipPQRptZ5yusuhyAF99ykz2Jh7tdtHn23")
+  const dapp = new PublicKey("Hx2YiHbtU91ipPQRptZ5yusuhyAF99ykz2Jh7tdtHn23");
   // const dapp = new PublicKey("Bx2A5FyD693PzTMx7T7v2bXNYFvwBd54UKZaXfvSzGd3")
-
 
   it("should read data", async () => {
     const connection = getConnection();

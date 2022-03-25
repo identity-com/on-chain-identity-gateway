@@ -1,39 +1,26 @@
+import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import {
-  ConfirmedSignaturesForAddress2Options,
-  Connection,
-  Keypair,
-  PublicKey,
-} from "@solana/web3.js";
-import {
-  ExtendedCluster,
-  registerUsage,
-  RegisterUsageParams,
-  getClusterUrl,
-} from "@identity.com/gateway-usage";
-import { Provider, Wallet, web3 } from "@project-serum/anchor";
-import {
-  loadTransactions, SimpleProgramIdStrategy,
+  loadTransactions,
+  SimpleProgramIdStrategy,
 } from "../util/transactionUtils";
-import { SOLANA_COMMITMENT } from "../util/constants";
 
 type GetUsageParams = {
-  program: web3.PublicKey;
+  program: PublicKey;
   epoch: number;
 };
 
 export class UsageOracleService {
-  constructor(private connection: Connection, private oracle: Keypair) {
-  }
+  constructor(private connection: Connection, private oracle: Keypair) {}
 
-  private getProvider = () => {
-    const wallet = new Wallet(this.oracle);
-    return new Provider(this.connection, wallet, {
-      commitment: SOLANA_COMMITMENT,
-    });
-  };
+  // private getProvider = () => {
+  //   const wallet = new Wallet(this.oracle);
+  //   return new Provider(this.connection, wallet, {
+  //     commitment: SOLANA_COMMITMENT,
+  //   });
+  // };
 
   private async getTransactionSignaturesForEpoch(
-    dapp: web3.PublicKey,
+    dapp: PublicKey,
     epoch: number
   ) {
     const epochSchedule = await this.connection.getEpochSchedule();
@@ -41,7 +28,7 @@ export class UsageOracleService {
     // TODO we need to make sure that we only consider FINALIZED Epochs here
     const firstSlot = epochSchedule.getFirstSlotInEpoch(epoch);
     // const lastSlot = epochSchedule.getLastSlotInEpoch(epoch);
-    const lastSlot = await this.connection.getSlot()
+    const lastSlot = await this.connection.getSlot();
 
     console.log(
       `Reading from Slot ${firstSlot} to ${lastSlot}. Total: ${
@@ -57,7 +44,7 @@ export class UsageOracleService {
     // TODO: Parallelize
     // Currently has a Max of 5k, e.g. 5 runthroughs
     currentStartSlot = lastSlot - 5000;
-    while( currentStartSlot < lastSlot) {
+    while (currentStartSlot < lastSlot) {
       let currentEndSlot = currentStartSlot + SLOT_WINDOW;
       if (currentEndSlot > lastSlot) {
         currentStartSlot = lastSlot;
@@ -78,10 +65,7 @@ export class UsageOracleService {
     return signatures;
   }
 
-  async readUsage({
-    program,
-    epoch,
-  }: GetUsageParams) {
+  async readUsage({ program, epoch }: GetUsageParams) {
     const fetched = await this.getTransactionSignaturesForEpoch(program, epoch);
     const billableTx = await loadTransactions(this.connection, fetched, [
       new SimpleProgramIdStrategy(program),
@@ -89,19 +73,19 @@ export class UsageOracleService {
     return billableTx;
   }
 
-  writeUsage({
-    gatekeeper,
-    dapp,
-    epoch,
-    amount,
-  }: Omit<RegisterUsageParams, "oracleProvider">): Promise<PublicKey> {
-    const oracleProvider = this.getProvider();
-    return registerUsage({
-      amount,
-      dapp,
-      epoch,
-      gatekeeper,
-      oracleProvider,
-    });
-  }
+  // writeUsage({
+  //   gatekeeper,
+  //   dapp,
+  //   epoch,
+  //   amount,
+  // }: Omit<RegisterUsageParams, "oracleProvider">): Promise<PublicKey> {
+  //   const oracleProvider = this.getProvider();
+  //   return registerUsage({
+  //     amount,
+  //     dapp,
+  //     epoch,
+  //     gatekeeper,
+  //     oracleProvider,
+  //   });
+  // }
 }
