@@ -1,12 +1,9 @@
 import { Command, flags } from "@oclif/command";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
-import { airdropTo, getConnection } from "../util";
-import { UsageOracleService } from "../service/UsageOracleService";
-import {
-  clusterFlag,
-  oracleKeyFlag,
-} from "../util/oclif/flags"
+import { getConnection } from "../util";
+import { UsageOracleService } from "../service";
+import { clusterFlag, oracleKeyFlag } from "../util/oclif/flags";
 import { ExtendedCluster } from "../util/connection";
 
 export default class AddGatekeeper extends Command {
@@ -56,22 +53,15 @@ export default class AddGatekeeper extends Command {
     //   flags.cluster as string
     // );
 
-    const usageOracleService = new UsageOracleService(
-      connection,
-      oracleKey
-    );
+    const usageOracleService = new UsageOracleService(connection, oracleKey);
 
     const result = await usageOracleService.readUsage({
       program: lookupProgram,
       epoch,
     });
 
-    this.log(
-      `Read Usage: ${result.length}`
-    );
+    this.log(`Read Usage: ${result.length}`);
 
-    this.log(
-      JSON.stringify(result.map(x => x.signature))
-    )
+    this.log(JSON.stringify(result.map((x) => x.signature)));
   }
 }
