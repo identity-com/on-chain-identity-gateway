@@ -24,7 +24,9 @@ export const getClusterUrl = (cluster: ExtendedCluster) => {
   }
 };
 
-export const getConnection = (cluster: ExtendedCluster): Connection => {
+export const getConnection = (
+  cluster: ExtendedCluster = "mainnet-beta"
+): Connection => {
   const clusterUrl = process.env.CLUSTER_URL
     ? process.env.CLUSTER_URL
     : getClusterUrl(cluster);
