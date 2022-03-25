@@ -1,67 +1,94 @@
-import { Command, flags } from "@oclif/command";
 import { Keypair, PublicKey } from "@solana/web3.js";
+import * as commonFlags from "../lib/flags";
+import { Flags } from "@oclif/core";
 
 import { getConnection } from "../util";
 import { UsageOracleService } from "../service";
 import { clusterFlag, oracleKeyFlag } from "../util/oclif/flags";
 import { ExtendedCluster } from "../util/connection";
+import Base from "./base";
+import { UsageConfig } from "../service/config";
 
-export default class AddGatekeeper extends Command {
-  static description = "Read usage based on a strategy.";
+export default class SolanaUsage extends Base {
+  static description = "Read usage based on a configuration.";
 
   static examples = [
-    `$ gateway-usage <Strategy>
-`,
+    `$ solana-usage <Strategy>`,
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    ...commonFlags.common,
     oracleKey: oracleKeyFlag(),
     cluster: clusterFlag(),
-    epoch: flags.integer({
-      char: "e",
-      description: "The epoch or period that the usage refers to",
-      required: true,
-    }),
+    // epoch: Flags.integer({
+    //   char: "e",
+    //   description: "The epoch or period that the usage refers to",
+    //   required: true,
+    // }),
   };
 
   static args = [
     {
-      name: "address",
+      name: "name",
       required: true,
-      description: "",
-      parse: (input: string) => new PublicKey(input),
+      description: "Name of the Program config to use",
+      // parse: async (input: string) => new PublicKey(input),
     },
   ];
 
   async run() {
-    const { args, flags } = this.parse(AddGatekeeper);
+    const { args, flags } = await this.parse(SolanaUsage);
 
-    const lookupProgram: PublicKey = args.address;
-    const oracleKey = flags.oracleKey as Keypair;
-    this.log(`Reading Usage:
-      oracle ${oracleKey.publicKey.toBase58()}
-      program ${lookupProgram}`);
+    this.usageConfig.config.configs.forEach((config) => {
+      // print all
+      this.log(config.name);
+      this.log(`${config.mask[0]}, ${config.mask[1]}`);
+      this.log(`${config.maskMaxLength}`);
+      this.log(config.program.toBase58());
+      this.log(
+        `instructions: ${JSON.stringify(config.instructions["000a0000"])}`);
+    });
 
-    const epoch = flags.epoch as number;
+    let matchedConfig: UsageConfig | undefined;
+    this.usageConfig.config.configs.forEach((config) => {
+      if (config.name === args.name) {
+        matchedConfig = config;
+      }
+    });
 
+    if (!matchedConfig) {
+      throw new Error(`No config found for ${args.name}`);
+    }
+
+
+
+    // const lookupProgram: PublicKey = args.address;
+    // const oracleKey = flags.oracleKey as Keypair;
+    // this.log(`Reading Usage:
+    //   oracle ${oracleKey.publicKey.toBase58()}
+    //   program ${lookupProgram}`);
+    //
+    // const epoch = flags.epoch as number;
+    //
     const connection = getConnection(flags.cluster as ExtendedCluster);
-
-    // await airdropTo(
-    //   connection,
-    //   oracleKey.publicKey,
-    //   flags.cluster as string
-    // );
-
-    const usageOracleService = new UsageOracleService(connection, oracleKey);
+    //
+    // // await airdropTo(
+    // //   connection,
+    // //   oracleKey.publicKey,
+    // //   flags.cluster as string
+    // // );
+    //
+    const usageOracleService = new UsageOracleService(
+      connection,
+      matchedConfig
+    );
 
     const result = await usageOracleService.readUsage({
-      program: lookupProgram,
       epoch,
     });
 
     this.log(`Read Usage: ${result.length}`);
 
-    this.log(JSON.stringify(result.map((x) => x.signature)));
+    // this.log(JSON.stringify(result.map((x) => x.signature)));
   }
 }

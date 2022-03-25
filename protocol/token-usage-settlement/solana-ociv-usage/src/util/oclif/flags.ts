@@ -1,19 +1,19 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { flags } from "@oclif/command";
+import { Flags } from "@oclif/core";
 import { readKey } from "../account";
-import { getClusterUrl } from "../connection";
+import { ExtendedCluster, getClusterUrl } from "../connection";
 
-export const oracleKeyFlag = flags.build<Keypair>({
+export const oracleKeyFlag = Flags.build<Keypair>({
   char: "o",
-  parse: readKey,
+  parse: async (file: string) => readKey(file),
   description: "The private key file for the oracle authority",
 });
 
-export const clusterFlag = flags.build<string>({
+export const clusterFlag = Flags.build<string>({
   char: "c",
   env: "SOLANA_CLUSTER",
-  parse: getClusterUrl,
-  default: () => getClusterUrl("civicnet"),
+  parse: async (cluster: ExtendedCluster) => getClusterUrl(cluster),
+  default: async () => getClusterUrl("civicnet"),
   description:
     "The cluster to target: mainnet-beta, testnet, devnet, civicnet, localnet. Alternatively, set the environment variable SOLANA_CLUSTER",
 });
