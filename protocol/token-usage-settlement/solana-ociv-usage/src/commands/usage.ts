@@ -1,4 +1,3 @@
-import { Keypair, PublicKey } from "@solana/web3.js";
 import * as commonFlags from "../lib/flags";
 import { Flags } from "@oclif/core";
 
@@ -8,23 +7,22 @@ import { clusterFlag, oracleKeyFlag } from "../util/oclif/flags";
 import { ExtendedCluster } from "../util/connection";
 import Base from "./base";
 import { UsageConfig } from "../service/config";
+import { printCSV } from "../service/CsvWriter";
 
 export default class SolanaUsage extends Base {
   static description = "Read usage based on a configuration.";
 
-  static examples = [
-    `$ solana-usage <Strategy>`,
-  ];
+  static examples = [`$ solana-usage <Strategy>`];
 
   static flags = {
     ...commonFlags.common,
     oracleKey: oracleKeyFlag(),
     cluster: clusterFlag(),
-    // epoch: Flags.integer({
-    //   char: "e",
-    //   description: "The epoch or period that the usage refers to",
-    //   required: true,
-    // }),
+    epoch: Flags.integer({
+      char: "e",
+      description: "The epoch or period that the usage refers to",
+      required: true,
+    }),
   };
 
   static args = [
@@ -43,10 +41,10 @@ export default class SolanaUsage extends Base {
       // print all
       this.log(config.name);
       this.log(`${config.mask[0]}, ${config.mask[1]}`);
-      this.log(`${config.maskMaxLength}`);
       this.log(config.program.toBase58());
       this.log(
-        `instructions: ${JSON.stringify(config.instructions["000a0000"])}`);
+        `instructions: ${JSON.stringify(config.instructions["000a0000"])}`
+      );
     });
 
     let matchedConfig: UsageConfig | undefined;
@@ -60,15 +58,13 @@ export default class SolanaUsage extends Base {
       throw new Error(`No config found for ${args.name}`);
     }
 
-
-
     // const lookupProgram: PublicKey = args.address;
     // const oracleKey = flags.oracleKey as Keypair;
     // this.log(`Reading Usage:
     //   oracle ${oracleKey.publicKey.toBase58()}
     //   program ${lookupProgram}`);
     //
-    // const epoch = flags.epoch as number;
+    const epoch = flags.epoch as number;
     //
     const connection = getConnection(flags.cluster as ExtendedCluster);
     //
@@ -87,7 +83,9 @@ export default class SolanaUsage extends Base {
       epoch,
     });
 
-    this.log(`Read Usage: ${result.length}`);
+    printCSV(result);
+
+    // this.log(`Read Usage: ${result.length}`);
 
     // this.log(JSON.stringify(result.map((x) => x.signature)));
   }

@@ -1,199 +1,149 @@
 import {
   Connection,
-  Keypair,
   ParsedConfirmedTransaction,
+  ParsedInstruction,
+  PartiallyDecodedInstruction,
   PublicKey,
-  SystemProgram,
 } from "@solana/web3.js";
-import { complement, isNil } from "ramda";
+import * as R from "ramda";
+import { InstructionConfig, UsageConfig } from "../service/config";
+import * as base58 from "bs58";
 
-export type SerumType = "PlaceOrder";
-export type NFTType = "Mint";
-export type DummyType = "DummyTx" | "NativeTransferTx" | "DevDummyTx";
-
-export type Category =
-  | "Serum"
-  | "NFT"
-  | "Dummy"
-  | "NativeTransfer"
-  | "DevDummyGatekeeper";
-
-type Subtype<C extends Category> = C extends "Serum"
-  ? SerumType
-  : C extends "NFT"
-  ? NFTType
-  : DummyType;
-
-export type BillableTransaction<C extends Category> = {
+export type BillableInstruction = {
+  txSignature: string;
   programId: PublicKey;
-  dapp: PublicKey;
-  category: C;
-  subtype: Subtype<C>;
-  signature: string;
+  progamName: string;
+  instructionName: string;
+  rawInstruction: PartiallyDecodedInstruction;
   rawTransaction: ParsedConfirmedTransaction;
+  gatewayToken: PublicKey;
+  ownerAddress: PublicKey;
 };
 
-const isNotNil = complement(isNil);
+const isNotNil = R.complement(R.isNil);
 
-export const buildBillableTransaction = <C extends Category>(
+export const buildBillableInstruction = (
+  txSignature: string,
   programId: PublicKey,
-  dapp: PublicKey,
-  category: C,
-  subtype: Subtype<C>,
-  signature: string,
-  rawTransaction: ParsedConfirmedTransaction
-): BillableTransaction<C> => ({
+  progamName: string,
+  instructionName: string,
+  rawInstruction: PartiallyDecodedInstruction,
+  rawTransaction: ParsedConfirmedTransaction,
+  gatewayToken: PublicKey,
+  ownerAddress: PublicKey
+): BillableInstruction => ({
+  txSignature,
   programId,
-  dapp,
-  category,
-  subtype,
-  signature,
+  progamName,
+  instructionName,
+  rawInstruction,
   rawTransaction,
+  gatewayToken,
+  ownerAddress,
 });
 
-interface Strategy<C extends Category> {
+const matchInstruction = (
+  instruction: PartiallyDecodedInstruction,
+  config: UsageConfig
+): InstructionConfig | undefined => {
+  const data = Uint8Array.from(base58.decode(instruction.data));
+
+  // console.log(`matchInstruction Program: ${instruction.programId}`);
+  // console.log(`matchInstruction Data: ${data}`);
+  // console.log(
+  //   `matchInstruction Accounts: ${R.map((a: PublicKey) => a.toBase58())(
+  //     instruction.accounts
+  //   )}`
+  // );
+
+  if (
+    data.length < config.mask[1] ||
+    !config.program.equals(instruction.programId)
+  ) {
+    return;
+  }
+  const determ = Buffer.from(
+    data.subarray(config.mask[0], config.mask[1])
+  ).toString("hex");
+
+  return config.instructions[determ];
+};
+
+interface Strategy {
   matches(transaction: ParsedConfirmedTransaction): boolean;
-  build(transaction: ParsedConfirmedTransaction): BillableTransaction<C>;
+  build(transaction: ParsedConfirmedTransaction): BillableInstruction[];
 }
 
-// abstract class SerumStrategy implements Strategy<"Serum"> {
-//   // Dex Market Proxy program deployed by Solrise
-//   static proxyProgramId = new PublicKey(
-//     "D3z8BLmMnPD1LaKwCkyCisM7iDyw9PsXXmvatUwjCuqT"
-//   );
-//
-//   matches(transaction: ParsedConfirmedTransaction): boolean {
-//     return transaction.transaction.message.instructions.some((instruction) => {
-//       if (!instruction.programId.equals(this.programId)) return false;
-//
-//       // TODO
-//       // check the type. This is pseudocode - best to run it and see what happens
-//       // my hypothesis is that the validators recognise serum txes and return parsed data
-//       // if not, we will need to parse the tx ourselves
-//       // I have included the serum-ts library for this purpose
-//       if (instruction.parsed && instruction.parsed.type === "PlaceOrder") {
-//         return true;
-//       }
-//
-//       return true;
-//     });
-//   }
-//
-//   build(
-//     parsedConfirmedTransaction: ParsedConfirmedTransaction
-//   ): BillableTransaction<"Serum"> {
-//     return buildBillableTransaction(
-//       this.programId,
-//       SerumStrategy.proxyProgramId,
-//       "Serum",
-//       "PlaceOrder",
-//       "", // TODO something like parsedConfirmedTransaction.transaction.signature(),
-//       parsedConfirmedTransaction
-//     );
-//   }
-//   constructor(
-//     private readonly programId: PublicKey,
-//     private readonly dapp: PublicKey
-//   ) {}
-// }
+export class ConfigBasedStrategy implements Strategy {
+  private readonly config: UsageConfig;
 
-export class SimpleProgramIdStrategy implements Strategy<"DevDummyGatekeeper"> {
+  constructor(config: UsageConfig) {
+    this.config = config;
+  }
+
   matches(transaction: ParsedConfirmedTransaction): boolean {
-    return transaction.transaction.message.instructions.some((instruction) => {
-      if ("data" in instruction) {
-        // decode first 8 bytes to get discriminant.
-        console.log(instruction.data);
-      }
-      if (!instruction.programId.equals(this.programId)) return false;
-
-      return true;
-    });
+    return R.pipe(
+      R.filter(
+        (i: ParsedInstruction | PartiallyDecodedInstruction): boolean =>
+          "data" in i
+      ),
+      R.map((i: PartiallyDecodedInstruction) =>
+        matchInstruction(i, this.config)
+      ),
+      R.any(isNotNil)
+    )(transaction.transaction.message.instructions);
   }
 
-  build(
-    parsedConfirmedTransaction: ParsedConfirmedTransaction
-  ): BillableTransaction<"DevDummyGatekeeper"> {
-    return buildBillableTransaction(
-      this.programId,
-      this.programId,
-      "DevDummyGatekeeper",
-      "DevDummyTx",
-      parsedConfirmedTransaction.transaction.signatures[0],
-      parsedConfirmedTransaction
-    );
-  }
-  constructor(private readonly programId: PublicKey) {}
-}
-
-export class NativeTransferStrategy implements Strategy<"NativeTransfer"> {
-  matches(parsedConfirmedTransaction: ParsedConfirmedTransaction): boolean {
-    // TODO Parse instructions in more Detail
-    return (
-      parsedConfirmedTransaction.transaction.message.instructions.length ===
-        1 &&
-      parsedConfirmedTransaction.transaction.message.instructions[0]
-        .programId === SystemProgram.programId
-    );
-  }
-
-  build(
-    parsedConfirmedTransaction: ParsedConfirmedTransaction
-  ): BillableTransaction<"NativeTransfer"> {
-    return buildBillableTransaction(
-      parsedConfirmedTransaction.transaction.message.instructions[0].programId,
-      Keypair.generate().publicKey, // TODO
-      "NativeTransfer",
-      "NativeTransferTx",
-      parsedConfirmedTransaction.transaction.signatures[0],
-      parsedConfirmedTransaction
-    );
-  }
-}
-
-export class DummyStrategy implements Strategy<"Dummy"> {
-  matches(parsedConfirmedTransaction: ParsedConfirmedTransaction): boolean {
-    return true;
-  }
-
-  build(
-    parsedConfirmedTransaction: ParsedConfirmedTransaction
-  ): BillableTransaction<"Dummy"> {
-    return buildBillableTransaction(
-      parsedConfirmedTransaction.transaction.message.instructions[0].programId,
-      Keypair.generate().publicKey, // TODO
-      "Dummy",
-      "DummyTx",
-      "TODO", // TODO
-      parsedConfirmedTransaction
-    );
+  build(transaction: ParsedConfirmedTransaction): BillableInstruction[] {
+    return R.pipe(
+      // Filter out ParsedInstruction
+      R.filter(
+        (i: ParsedInstruction | PartiallyDecodedInstruction): boolean =>
+          "data" in i
+      ),
+      // Find matching InstructionConfig (or undefined)
+      R.map((i: PartiallyDecodedInstruction) => [
+        i,
+        matchInstruction(i, this.config),
+      ]),
+      // Filter undefined InstructionConfig
+      R.filter(([_, match]) => isNotNil(match)),
+      // Build BillableInstruction
+      R.map(([i, match]: [PartiallyDecodedInstruction, InstructionConfig]) =>
+        buildBillableInstruction(
+          transaction.transaction.signatures[0],
+          i.programId,
+          this.config.name,
+          match.name,
+          i,
+          transaction,
+          i.accounts[match.gatewayTokenPosition],
+          i.accounts[match.ownerPosition]
+        )
+      )
+    )(transaction.transaction.message.instructions);
   }
 }
 
 export const loadTransactions = async (
   connection: Connection,
   signatures: string[],
-  strategies: Strategy<any>[]
-): Promise<BillableTransaction<any>[]> => {
-  // console.log(signatures)
-
+  strategies: Strategy[]
+): Promise<BillableInstruction[]> => {
   const transactions = await connection.getParsedConfirmedTransactions(
     signatures
   );
 
-  // console.log(transactions)
-
   const buildFromStrategies = (
     transaction: ParsedConfirmedTransaction | null
-  ) => {
-    if (!transaction) return null;
+  ): BillableInstruction[] => {
+    if (!transaction) return [];
     const strategy = strategies.find((strategy) =>
       strategy.matches(transaction)
     );
-    if (!strategy) return null;
+    if (!strategy) return [];
     return strategy.build(transaction);
   };
 
-  return transactions
-    .map(buildFromStrategies)
-    .filter(isNotNil) as BillableTransaction<any>[];
+  return transactions.map(buildFromStrategies).flat();
 };

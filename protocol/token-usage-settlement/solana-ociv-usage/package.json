@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@oclif/test": "^2.1.0",
+    "@types/bs58": "^4.0.1",
     "@types/chai": "^4",
     "@types/mocha": "^5",
     "@types/node": "^10",

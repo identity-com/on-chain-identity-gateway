@@ -2,13 +2,8 @@ import * as os from "os";
 import * as path from "path";
 import * as yaml from "yaml";
 import * as fs from "fs";
-import {
-  Commitment,
-  Connection,
-  Keypair,
-  PublicKey,
-} from "@solana/web3.js";
-import { ExtendedCluster, getClusterUrl } from "../../util/connection";
+import { Commitment, Connection, PublicKey } from "@solana/web3.js";
+import { ExtendedCluster, getConnection } from "../../util/connection";
 
 const DEFAULT_CONFIG_FILE = path.join(
   os.homedir(),
@@ -30,9 +25,8 @@ export type InstructionConfig = {
 export type UsageConfig = {
   name: string;
   program: PublicKey;
-  mask: [number, number]; // byte offset, byte length
-  maskMaxLength: number;
-  instructions: { [key: string]: InstructionConfig }; // keyed by mask
+  mask: [number, number]; // [start, end]
+  instructions: { [key: string]: InstructionConfig | undefined }; // keyed by mask
 };
 
 export type ConfigFile = {
@@ -56,7 +50,6 @@ const parseRawConfig = (rawConfig: any): ConfigFile => {
       name: config.name,
       program: new PublicKey(config.program),
       mask: config.mask,
-      maskMaxLength: config.mask[0] + config.mask[1],
       instructions,
     };
   });
@@ -80,11 +73,11 @@ export class Config {
     const rawConfig = yaml.parse(configFileString);
     this.config = parseRawConfig(rawConfig);
 
-    const clusterUrl =
-      this.config.cluster === "localnet"
-        ? "http://localhost:8899"
-        : getClusterUrl(this.config.cluster);
-    this.connection = new Connection(clusterUrl, DEFAULT_COMMITMENT);
+    if (this.config.cluster.startsWith("http")) {
+      process.env.CLUSTER_URL = this.config.cluster;
+    }
+
+    this.connection = getConnection(this.config.cluster, DEFAULT_COMMITMENT);
   }
 
   static init(
@@ -92,7 +85,6 @@ export class Config {
     configPath: string = DEFAULT_CONFIG_FILE,
     cluster: ExtendedCluster = DEFAULT_CLUSTER
   ): Config {
-
     const configObject: ConfigFile = {
       cluster,
       configs: [],
@@ -124,9 +116,7 @@ export class Config {
     fs.writeFileSync(this.configPath, yaml.stringify(configObject));
 
     this.config = configObject;
-  };
-
-
+  }
 
   show(): string {
     return yaml.stringify(this.config);

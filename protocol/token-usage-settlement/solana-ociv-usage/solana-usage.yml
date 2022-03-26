@@ -1,10 +1,35 @@
 cluster: https://rough-misty-night.solana-mainnet.quiknode.pro/b57300ff234c12e95763e9b8cda67e9d86772a0d/
+#cluster: mainnet
 configs:
   - name: Solrise
     program: D3z8BLmMnPD1LaKwCkyCisM7iDyw9PsXXmvatUwjCuqT
-    mask: [0, 1]
+    mask: [1, 5] # [start, end]
     instructions:
-      - name: PlaceOrder
+      - name: InitOpenOrders
+        mask: '000f0000'
+        gatewayTokenPosition: 1
+        ownerPosition: 5
+      - name: NewOrderV3
         mask: '000a0000'
-        gatewayTokenPosition: 0
-        ownerPosition: 8
+        gatewayTokenPosition: 1
+        ownerPosition: 9
+      - name: CancelOrderV2
+        mask: '000b0000'
+        gatewayTokenPosition: 1
+        ownerPosition: 6
+      - name: CancelOrderByClientIdV2
+        mask: '000c0000'
+        gatewayTokenPosition: 1
+        ownerPosition: 6
+      - name: SettleFunds
+        mask: '00050000'
+        gatewayTokenPosition: 1
+        ownerPosition: 4
+      - name: CloseOpenOrders
+        mask: '000e0000'
+        gatewayTokenPosition: 1
+        ownerPosition: 3
+      - name: Prune
+        mask: '00100000'
+        gatewayTokenPosition: 1
+        ownerPosition: 7
