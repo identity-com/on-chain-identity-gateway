@@ -1,7 +1,7 @@
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { Connection } from "@solana/web3.js";
 import {
   loadTransactions,
-  SimpleProgramIdStrategy,
+  ConfigBasedStrategy,
 } from "../util/transactionUtils";
 import { UsageConfig } from "./config";
 
@@ -19,9 +19,7 @@ export class UsageOracleService {
   //   });
   // };
 
-  private async getTransactionSignaturesForEpoch(
-    epoch: number
-  ) {
+  private async getTransactionSignaturesForEpoch(epoch: number) {
     const epochSchedule = await this.connection.getEpochSchedule();
 
     // TODO we need to make sure that we only consider FINALIZED Epochs here
@@ -42,7 +40,7 @@ export class UsageOracleService {
 
     // TODO: Parallelize
     // Currently has a Max of 5k, e.g. 5 runthroughs
-    currentStartSlot = lastSlot - 5000;
+    currentStartSlot = lastSlot - SLOT_WINDOW * 5;
     while (currentStartSlot < lastSlot) {
       let currentEndSlot = currentStartSlot + SLOT_WINDOW;
       if (currentEndSlot > lastSlot) {
@@ -67,7 +65,7 @@ export class UsageOracleService {
   async readUsage({ epoch }: GetUsageParams) {
     const fetched = await this.getTransactionSignaturesForEpoch(epoch);
     const billableTx = await loadTransactions(this.connection, fetched, [
-      new SimpleProgramIdStrategy(this.config.program),
+      new ConfigBasedStrategy(this.config),
     ]);
     return billableTx;
   }

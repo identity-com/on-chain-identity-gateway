@@ -1,8 +1,7 @@
 import { describe } from "mocha";
-import { UsageOracleService } from "../../src";
 import { expect } from "chai";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { getConnection } from "../../src";
+import { getConnection, UsageOracleService } from "../../../src";
 
 describe("UsageOracleService", function () {
   this.timeout(30_000);
@@ -21,7 +20,6 @@ describe("UsageOracleService", function () {
     const usageOracleService = new UsageOracleService(connection, oracle);
 
     const usage = await usageOracleService.readUsage({
-      dapp,
       epoch: 226,
     });
 

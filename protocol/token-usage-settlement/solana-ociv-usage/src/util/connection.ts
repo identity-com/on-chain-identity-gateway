@@ -25,14 +25,15 @@ export const getClusterUrl = (cluster: ExtendedCluster) => {
 };
 
 export const getConnection = (
-  cluster: ExtendedCluster = "mainnet-beta"
+  cluster: ExtendedCluster = "mainnet-beta",
+  commitment = SOLANA_COMMITMENT
 ): Connection => {
   const clusterUrl = process.env.CLUSTER_URL
     ? process.env.CLUSTER_URL
     : getClusterUrl(cluster);
 
   console.log(`Returning Connection with clusterURL: ${clusterUrl}`);
-  return new Connection(clusterUrl, SOLANA_COMMITMENT);
+  return new Connection(clusterUrl, commitment);
 };
 
 export const send = (
