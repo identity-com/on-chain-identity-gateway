@@ -1,19 +1,22 @@
 import { BigNumber } from "ethers/lib/ethers";
 import { KYCFlags, maxFlagIndex } from "../lib/flags";
-import { ONE_BN, ZERO_BN } from "./constants";
+import { ONE_BN } from "./constants";
 
-export const addFlagsToBitmask = (bitmask: BigNumber = ZERO_BN, flags: KYCFlags[] | number[]):BigNumber => {
-    let index: number;
-    
-    for (let i = 0; i < flags.length; i++) {
-        index = flags[i];
+export const addFlagsToBitmask = (
+  bitmask: BigNumber,
+  flags: KYCFlags[] | number[]
+): BigNumber => {
+  let index: number;
 
-        if (index >= 256 || index >= maxFlagIndex) {
-            break;
-        }
+  for (const flag of flags) {
+    index = flag;
 
-        bitmask = bitmask.or(ONE_BN.shl(index));
+    if (index >= 256 || index >= maxFlagIndex) {
+      break;
     }
 
-    return bitmask;
-}
+    bitmask = bitmask.or(ONE_BN.shl(index));
+  }
+
+  return bitmask;
+};
