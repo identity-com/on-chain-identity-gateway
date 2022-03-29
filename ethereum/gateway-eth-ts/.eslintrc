@@ -9,8 +9,14 @@
     ],
     "rules": {
       "no-return-await": "warn",
+      "node/no-missing-import": ["error", {
+        "tryExtensions": [".js", ".ts", ".node"]
+      }],
+      "max-params": 0,
       "eqeqeq": "warn",
       "no-eq-null": "warn",
+      "unicorn/prefer-node-protocol": "off",
+      "unicorn/no-array-for-each": "off",
       "unicorn/filename-case": "off",
       "max-statements-per-line": "warn"
     }
