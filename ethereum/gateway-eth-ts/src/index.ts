@@ -3,7 +3,7 @@ import { utils, Wallet } from 'ethers';
 // export { run } from "@oclif/command";
 import { BaseProvider } from '@ethersproject/providers';
 export { GasPriceKey } from "./utils/gas";
-export { TokenData } from './utils/types';
+export { TokenData, SendableTransaction, SentTransaction } from './utils/types';
 
 export class GatewayETH extends GatewayTs {
   utils: any;
