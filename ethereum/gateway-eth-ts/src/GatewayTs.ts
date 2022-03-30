@@ -107,7 +107,7 @@ export class GatewayTs extends GatewayTsBase {
   async refresh(tokenId: number | BigNumber, expiry?: number, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
     const expirationDate = getExpirationTime(expiry);
-    const gatewayTxRequest = await populateTx(contract, 'unfreeze', [tokenId, expirationDate], options);
+    const gatewayTxRequest = await populateTx(contract, 'refresh', [tokenId, expirationDate], options);
     const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
 
     return new SendableTransaction(contract, txRequest, options);
@@ -166,7 +166,7 @@ export class GatewayTs extends GatewayTsBase {
       bytes32Array.push(bytes32);
     }
     
-    const gatewayTxRequest = await populateTx(contract, 'removeFlag', [bytes32Array], options);
+    const gatewayTxRequest = await populateTx(contract, 'removeFlags', [bytes32Array], options);
     const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
 
     return new SendableTransaction(contract, txRequest, options);
