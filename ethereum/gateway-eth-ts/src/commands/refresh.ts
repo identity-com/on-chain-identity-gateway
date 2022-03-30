@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
@@ -23,7 +23,7 @@ export default class RefreshToken extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     privateKey: privateKeyFlag(),
     gatewayTokenAddress: gatewayTokenAddressFlag(),
     network: networkFlag(),
@@ -36,19 +36,19 @@ export default class RefreshToken extends Command {
       name: "tokenID",
       required: true,
       description: "Token ID number to refresh",
-      parse: (input: string): BigNumber => BigNumber.from(input),
+      parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
     {
       name: "expiry",
       required: false,
       description:
         "The new expiry time in seconds for the gateway token (default 14 days)",
-      parse: (input: string): number => Number(input),
+      parse: async (input: string): Promise<number> => Number(input),
     },
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = this.parse(RefreshToken);
+    const { args, flags } = await this.parse(RefreshToken);
 
     const pk = flags.privateKey;
     const provider: BaseProvider = flags.network;

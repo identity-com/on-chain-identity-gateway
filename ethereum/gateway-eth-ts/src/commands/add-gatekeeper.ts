@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
@@ -21,7 +21,7 @@ export default class AddGatekeeper extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     privateKey: privateKeyFlag(),
     gatewayTokenAddress: gatewayTokenAddressFlag(),
     network: networkFlag(),
@@ -34,13 +34,13 @@ export default class AddGatekeeper extends Command {
       name: "address",
       required: true,
       description: "Gatekeeper address to add to the GatewayToken contract",
-      parse: (input: string): string | null =>
+      parse: async (input: string): Promise<string | null> =>
         utils.isAddress(input) ? input : null,
     },
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = this.parse(AddGatekeeper);
+    const { args, flags } = await this.parse(AddGatekeeper);
 
     const pk = flags.privateKey;
     const gatekeeper: string = args.address;

@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayTokenController } from "../contracts";
@@ -21,7 +21,7 @@ export default class Blacklist extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     privateKey: privateKeyFlag(),
     gatewayTokenController: gatewayTokenControllerFlag(),
     network: networkFlag(),
@@ -34,12 +34,13 @@ export default class Blacklist extends Command {
       name: "address",
       required: true,
       description: "User ETH address to blacklist",
-      parse: (input: string): string => (utils.isAddress(input) ? input : null),
+      parse: async (input: string): Promise<string> =>
+        utils.isAddress(input) ? input : null,
     },
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = this.parse(Blacklist);
+    const { args, flags } = await this.parse(Blacklist);
     const pk = flags.privateKey;
     const provider: BaseProvider = flags.network;
     const user: string = args.address;
