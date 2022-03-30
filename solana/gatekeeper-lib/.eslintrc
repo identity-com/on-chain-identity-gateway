@@ -3,6 +3,12 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "extends": [
-    "plugin:prettier/recommended"
-  ]
+    "oclif",
+    "oclif-typescript",
+    "prettier",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+  ],
+  "rules": {
+    "@typescript-eslint/no-implicit-any-catch": "error"
+  }
 }
