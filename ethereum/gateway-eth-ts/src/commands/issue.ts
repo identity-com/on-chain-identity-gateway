@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { BigNumber, utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
@@ -27,7 +27,7 @@ export default class IssueToken extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     privateKey: privateKeyFlag(),
     gatewayTokenAddress: gatewayTokenAddressFlag(),
     network: networkFlag(),
@@ -43,26 +43,27 @@ export default class IssueToken extends Command {
       name: "address",
       required: true,
       description: "Owner ethereum address to tokenID for",
-      parse: (input: string): string => (utils.isAddress(input) ? input : null),
+      parse: async (input: string): Promise<string> =>
+        utils.isAddress(input) ? input : null,
     },
     {
       name: "expiration",
       required: false,
       description: "Expiration timestamp for newly issued token",
-      parse: (input: any): BigNumber => BigNumber.from(input),
+      parse: async (input: any): Promise<BigNumber> => BigNumber.from(input),
       default: 0,
     },
     {
       name: "constrains",
       required: false,
       description: "Constrains to generate tokenId",
-      parse: (input: any): BigNumber => BigNumber.from(input),
+      parse: async (input: any): Promise<BigNumber> => BigNumber.from(input),
       default: BigNumber.from("0"),
     },
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = this.parse(IssueToken);
+    const { args, flags } = await this.parse(IssueToken);
 
     const pk = flags.privateKey;
     const provider: BaseProvider = flags.network;

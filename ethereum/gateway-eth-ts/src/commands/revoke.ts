@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
@@ -21,7 +21,7 @@ export default class RevokeToken extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     privateKey: privateKeyFlag(),
     gatewayTokenAddress: gatewayTokenAddressFlag(),
     network: networkFlag(),
@@ -34,12 +34,12 @@ export default class RevokeToken extends Command {
       name: "tokenID",
       required: true,
       description: "Token ID number to revoke",
-      parse: (input: string): BigNumber => BigNumber.from(input),
+      parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = this.parse(RevokeToken);
+    const { args, flags } = await this.parse(RevokeToken);
 
     const tokenID: BigNumber = args.tokenID;
     const pk = flags.privateKey;

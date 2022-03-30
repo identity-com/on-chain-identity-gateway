@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
 import {
@@ -21,7 +21,7 @@ export default class UnfreezeToken extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     privateKey: privateKeyFlag(),
     gatewayTokenAddress: gatewayTokenAddressFlag(),
     network: networkFlag(),
@@ -34,12 +34,12 @@ export default class UnfreezeToken extends Command {
       name: "tokenID",
       required: true,
       description: "Token ID number to unfreeze",
-      parse: (input: string): BigNumber => BigNumber.from(input),
+      parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = this.parse(UnfreezeToken);
+    const { args, flags } = await this.parse(UnfreezeToken);
 
     const pk = flags.privateKey;
     const provider: BaseProvider = flags.network;

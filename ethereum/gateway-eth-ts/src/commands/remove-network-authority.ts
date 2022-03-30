@@ -1,4 +1,4 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
@@ -21,7 +21,7 @@ export default class RemoveNetworkAuthority extends Command {
   ];
 
   static flags = {
-    help: flags.help({ char: "h" }),
+    help: Flags.help({ char: "h" }),
     privateKey: privateKeyFlag(),
     gatewayTokenAddress: gatewayTokenAddressFlag(),
     network: networkFlag(),
@@ -35,12 +35,13 @@ export default class RemoveNetworkAuthority extends Command {
       required: true,
       description:
         "Network authority address to remove to the GatewayToken contract",
-      parse: (input: string): string => (utils.isAddress(input) ? input : null),
+      parse: async (input: string): Promise<string> =>
+        utils.isAddress(input) ? input : null,
     },
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = this.parse(RemoveNetworkAuthority);
+    const { args, flags } = await this.parse(RemoveNetworkAuthority);
 
     const pk = flags.privateKey;
     const provider: BaseProvider = flags.network;
