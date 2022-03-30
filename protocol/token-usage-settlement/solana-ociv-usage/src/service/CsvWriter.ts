@@ -10,21 +10,25 @@ export const printCSV = (instructions: BillableInstruction[]) => {
   // write output
   // header
   console.log(
-    `Timestamp,Program Name,Instruction Name,Signature,Result,Gateway Token,Owner Token,Total Instructions`
+    `Identifier,Timestamp,Program Name,Program Address,Gatekeeper Network Address,Instruction Name,Signature,Result,Gateway Token Address,Wallet Address,Total Instructions,Instruction Position`
   );
 
   // data
   instructions.forEach((row) => {
     console.log(
-      "%s,%s,%s,%s,%s,%s,%s,%s",
+      "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+      `${row.txSignature}-${row.instructionIndex}`,
       format_time(row.rawTransaction.blockTime),
       row.progamName,
+      row.programAddress.toBase58(),
+      row.networkAddress.toBase58(),
       row.instructionName,
       row.txSignature,
       row.rawTransaction.meta?.err ? "ERROR" : "SUCCESS",
       row.gatewayToken.toBase58(),
       row.ownerAddress.toBase58(),
-      row.rawTransaction.transaction.message.instructions.length
+      row.rawTransaction.transaction.message.instructions.length,
+      row.instructionIndex
     );
   });
 };

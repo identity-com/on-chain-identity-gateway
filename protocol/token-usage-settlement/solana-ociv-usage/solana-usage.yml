@@ -3,6 +3,7 @@ cluster: https://rough-misty-night.solana-mainnet.quiknode.pro/b57300ff234c12e95
 configs:
   - name: Solrise
     program: D3z8BLmMnPD1LaKwCkyCisM7iDyw9PsXXmvatUwjCuqT
+    network: gatbGF9DvLAw3kWyn1EmH5Nh1Sqp8sTukF7yaQpSc71
     mask: [1, 5] # [start, end]
     instructions:
       - name: InitOpenOrders
