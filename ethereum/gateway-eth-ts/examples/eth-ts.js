@@ -17,7 +17,7 @@ require("dotenv/config");
     await gtLib.init()
     const testUser = '0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28';
 
-    let gatewayToken = await gtLib.gatewayTokens["0xa3894BbA27f4Be571fFA319D02c122E021024cF2"].tokenInstance
+    let gatewayToken = await gtLib.gatewayTokens["0x67306284Fb127E9baF713Ebf793d741cE763F81A"].tokenInstance
     let contract = gatewayToken.contract;
 
     let tokenId = await gtLib.generateTokenId(testUser, BigNumber.from(2), gatewayToken);
