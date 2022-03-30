@@ -13,7 +13,10 @@ export type BillableInstruction = {
   txSignature: string;
   programId: PublicKey;
   progamName: string;
+  programAddress: PublicKey;
+  networkAddress: PublicKey;
   instructionName: string;
+  instructionIndex: number;
   rawInstruction: PartiallyDecodedInstruction;
   rawTransaction: ParsedConfirmedTransaction;
   gatewayToken: PublicKey;
@@ -26,7 +29,10 @@ export const buildBillableInstruction = (
   txSignature: string,
   programId: PublicKey,
   progamName: string,
+  programAddress: PublicKey,
+  networkAddress: PublicKey,
   instructionName: string,
+  instructionIndex: number,
   rawInstruction: PartiallyDecodedInstruction,
   rawTransaction: ParsedConfirmedTransaction,
   gatewayToken: PublicKey,
@@ -35,7 +41,10 @@ export const buildBillableInstruction = (
   txSignature,
   programId,
   progamName,
+  programAddress,
+  networkAddress,
   instructionName,
+  instructionIndex,
   rawInstruction,
   rawTransaction,
   gatewayToken,
@@ -96,30 +105,41 @@ export class ConfigBasedStrategy implements Strategy {
 
   build(transaction: ParsedConfirmedTransaction): BillableInstruction[] {
     return R.pipe(
+      // Add Index
+      R.addIndex(R.map)((val, idx) => [val, idx]),
       // Filter out ParsedInstruction
       R.filter(
-        (i: ParsedInstruction | PartiallyDecodedInstruction): boolean =>
+        ([i]: [ParsedInstruction | PartiallyDecodedInstruction]): boolean =>
           "data" in i
       ),
       // Find matching InstructionConfig (or undefined)
-      R.map((i: PartiallyDecodedInstruction) => [
-        i,
+      R.map(([i, idx]: [PartiallyDecodedInstruction, number]) => [
         matchInstruction(i, this.config),
+        i,
+        idx,
       ]),
       // Filter undefined InstructionConfig
-      R.filter(([_, match]) => isNotNil(match)),
+      R.filter(([match]) => isNotNil(match)),
       // Build BillableInstruction
-      R.map(([i, match]: [PartiallyDecodedInstruction, InstructionConfig]) =>
-        buildBillableInstruction(
-          transaction.transaction.signatures[0],
-          i.programId,
-          this.config.name,
-          match.name,
-          i,
-          transaction,
-          i.accounts[match.gatewayTokenPosition],
-          i.accounts[match.ownerPosition]
-        )
+      R.map(
+        ([match, i, idx]: [
+          InstructionConfig,
+          PartiallyDecodedInstruction,
+          number
+        ]) =>
+          buildBillableInstruction(
+            transaction.transaction.signatures[0],
+            i.programId,
+            this.config.name,
+            this.config.program,
+            this.config.network,
+            match.name,
+            idx,
+            i,
+            transaction,
+            i.accounts[match.gatewayTokenPosition],
+            i.accounts[match.ownerPosition]
+          )
       )
     )(transaction.transaction.message.instructions);
   }

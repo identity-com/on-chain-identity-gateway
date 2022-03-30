@@ -40,7 +40,7 @@ export class UsageOracleService {
 
     // TODO: Parallelize
     // Currently has a Max of 5k, e.g. 5 runthroughs
-    currentStartSlot = lastSlot - SLOT_WINDOW * 5;
+    currentStartSlot = lastSlot - SLOT_WINDOW;
     while (currentStartSlot < lastSlot) {
       let currentEndSlot = currentStartSlot + SLOT_WINDOW;
       if (currentEndSlot > lastSlot) {

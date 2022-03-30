@@ -25,6 +25,7 @@ export type InstructionConfig = {
 export type UsageConfig = {
   name: string;
   program: PublicKey;
+  network: PublicKey;
   mask: [number, number]; // [start, end]
   instructions: { [key: string]: InstructionConfig | undefined }; // keyed by mask
 };
@@ -49,6 +50,7 @@ const parseRawConfig = (rawConfig: any): ConfigFile => {
     return {
       name: config.name,
       program: new PublicKey(config.program),
+      network: new PublicKey(config.network),
       mask: config.mask,
       instructions,
     };
