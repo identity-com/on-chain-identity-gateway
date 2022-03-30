@@ -1,4 +1,4 @@
-import { BigNumber, Wallet } from 'ethers';
+import { BigNumber, PopulatedTransaction, Wallet } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 
 import { ethTransaction, populateTx, TxOptions } from "./utils/tx";
@@ -57,6 +57,7 @@ export class GatewayTs extends GatewayTsBase {
     options?: TxOptions): Promise<SendableTransaction> {
     
     const gatewayTokenContract = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = gatewayTokenContract;
 
     if (tokenId === null) {
       tokenId = await this.generateTokenId(owner, constrains, gatewayTokenContract);
@@ -66,175 +67,194 @@ export class GatewayTs extends GatewayTsBase {
       expiration = getExpirationTime(expiration);
     }
 
-    const txRequest = await populateTx(gatewayTokenContract.contract, 'mint', [owner, tokenId, expiration, bitmask], options);
+    const gatewayTxRequest = await populateTx(contract, 'mint', [owner, tokenId, expiration, bitmask], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+    return new SendableTransaction(contract, txRequest, options);
+  }
 
+  async revoke(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'revoke', [tokenId], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async burn(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'burn', [tokenId], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async freeze(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'freeze', [tokenId], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async unfreeze(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'unfreeze', [tokenId], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async refresh(tokenId: number | BigNumber, expiry?: number, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const expirationDate = getExpirationTime(expiry);
+    const gatewayTxRequest = await populateTx(contract, 'unfreeze', [tokenId, expirationDate], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async blacklist(user: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.gatewayTokenController;
+    const gatewayTxRequest = await populateTx(contract, 'blacklist', [user], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async addFlag(flag: string, index: number | BigNumber, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.flagsStorage;
+    const bytes32 = toBytes32(flag);
+    const gatewayTxRequest = await populateTx(contract, 'addFlag', [bytes32, index], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async addFlags(flags: string[], indexes: number[] | BigNumber[], options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.flagsStorage;
+
+    let bytes32Array: string[];
+
+    for (const flag of flags) {
+      const bytes32 = toBytes32(flag);
+      bytes32Array.push(bytes32);
+    }
+
+    const gatewayTxRequest = await populateTx(contract, 'addFlags', [bytes32Array, indexes], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async removeFlag(flag: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.flagsStorage;
+
+    const bytes32 = toBytes32(flag);
+    const gatewayTxRequest = await populateTx(contract, 'removeFlag', [bytes32], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async removeFlags(flags: string[], options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.flagsStorage;
+
+    let bytes32Array: string[];
+
+    for (const flag of flags) {
+      const bytes32 = toBytes32(flag);
+      bytes32Array.push(bytes32);
+    }
+    
+    const gatewayTxRequest = await populateTx(contract, 'removeFlag', [bytes32Array], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async updateDAOManagerAtFlagsStorage(controller: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.flagsStorage;
+
+    const gatewayTxRequest = await populateTx(contract, 'updateDAOManager', [controller], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async setBitmask(tokenId: number | BigNumber, bitmask: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'setBitmask', [tokenId, bitmask], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async addBitmask(tokenId: number | BigNumber, bitmask: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'addBitmask', [tokenId, bitmask], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async addBit(tokenId: number | BigNumber, index: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'addBit', [tokenId, index], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async removeBitmask(tokenId: number | BigNumber, bitmask: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'removeBitmask', [tokenId, bitmask], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async removeBit(tokenId: number | BigNumber, index: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'removeBit', [tokenId, index], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async removeUnsupportedBits(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'removeUnsupportedBits', [tokenId], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async clearBitmask(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'clearBitmask', [tokenId], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  async checkAnyHighRiskBits(tokenId: number | BigNumber, highRiskBitmask: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions): Promise<SendableTransaction> {
+    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayTxRequest = await populateTx(contract, 'anyHighRiskBits', [tokenId, highRiskBitmask], options);
+    const txRequest = await this.wrapTxIfForwarded(gatewayTxRequest, contract.address, options);
+
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  private async wrapTxIfForwarded(tx: PopulatedTransaction, contractAddress: string, options?: TxOptions): Promise<PopulatedTransaction> {
     if (options?.forwardTransaction) {
       const { request, signature } = await signMetaTxRequest(this.wallet, this.forwarder.contract, {
         from: this.wallet.address,
-        to: gatewayTokenContract.contract.address,
-        data: txRequest.data
+        to: contractAddress,
+        data: tx.data
       });
 
-      const metaTx = await populateTx(this.forwarder.contract, 'execute', [request, signature], options);
-      const sendableTransaction = new SendableTransaction(gatewayTokenContract.contract, metaTx, options);
-      return sendableTransaction;
+      return populateTx(this.forwarder.contract, 'execute', [request, signature], options);
     }
 
-    const sendableTransaction = new SendableTransaction(gatewayTokenContract.contract, txRequest, options);
-    return sendableTransaction;
-  }
-
-  async revoke(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
-
-    return ethTransaction(contract, 'revoke', args, options);
-  }
-
-  async burn(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
-
-    return ethTransaction(contract, 'burn', args, options);
-  }
-
-  async freeze(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
-
-    return ethTransaction(contract, 'freeze', args, options);
-  }
-
-  async unfreeze(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
-
-    return ethTransaction(contract, 'unfreeze', args, options);
-  }
-
-  async refresh(tokenId: number | BigNumber, expiry?: number, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const expirationDate = getExpirationTime(expiry);
-    const args: any[] = [tokenId, expirationDate];
-
-    return ethTransaction(contract, 'setExpiration', args, options);
-  }
-
-  async blacklist(user: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.gatewayTokenController;
-    const args: any[] = [user];
-
-    return ethTransaction(contract, 'blacklist', args, options);
-  }
-
-  async addFlag(flag: string, index: number | BigNumber, options?: TxOptions):Promise<string> {
-    const { contract } = this.flagsStorage;
-
-    const bytes32 = toBytes32(flag);
-    const args: any[] = [bytes32, index];
-
-    return ethTransaction(contract, 'addFlag', args, options);
-  }
-
-  async addFlags(flags: string[], indexes: number[] | BigNumber[], options?: TxOptions):Promise<string> {
-    const { contract } = this.flagsStorage;
-
-    let bytes32Array: string[];
-
-    for (let i = 0; i < flags.length; i++) {
-      const bytes32 = toBytes32(flags[i]);
-      bytes32Array.push(bytes32);
-    }
-    
-    const args: any[] = [bytes32Array, indexes];
-
-    return ethTransaction(contract, 'addFlags', args, options);
-  }
-
-  async removeFlag(flag: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.flagsStorage;
-
-    const bytes32 = toBytes32(flag);
-    const args: any[] = [bytes32];
-
-    return ethTransaction(contract, 'removeFlag', args, options);
-  }
-
-  async removeFlags(flags: string[], options?: TxOptions):Promise<string> {
-    const { contract } = this.flagsStorage;
-
-    let bytes32Array: string[];
-
-    for (let i = 0; i < flags.length; i++) {
-      const bytes32 = toBytes32(flags[i]);
-      bytes32Array.push(bytes32);
-    }
-    
-    const args: any[] = [bytes32Array];
-
-    return ethTransaction(contract, 'removeFlags', args, options);
-  }
-
-  async updateDAOManagerAtFlagsStorage(controller: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.flagsStorage;
-    const args: any[] = [controller];
-
-    return ethTransaction(contract, 'updateDAOManager', args, options);
-  }
-
-  async setBitmask(tokenId: number | BigNumber, bitmask: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, bitmask];
-
-    return ethTransaction(contract, 'setBitmask', args, options);
-  }
-
-  async addBitmask(tokenId: number | BigNumber, bitmask: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, bitmask];
-
-    return ethTransaction(contract, 'addBitmask', args, options);
-  }
-
-  async addBit(tokenId: number | BigNumber, index: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, index];
-
-    return ethTransaction(contract, 'addBit', args, options);
-  }
-
-  async removeBitmask(tokenId: number | BigNumber, bitmask: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, bitmask];
-
-    return ethTransaction(contract, 'removeBitmask', args, options);
-  }
-
-  async removeBit(tokenId: number | BigNumber, index: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, index];
-
-    return ethTransaction(contract, 'removeBit', args, options);
-  }
-
-  async removeUnsupportedBits(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
-
-    return ethTransaction(contract, 'removeUnsupportedBits', args, options);
-  }
-
-  async clearBitmask(tokenId: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
-
-    return ethTransaction(contract, 'clearBitmask', args, options);
-  }
-
-  async checkAnyHighRiskBits(tokenId: number | BigNumber, highRiskBitmask: number | BigNumber, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, highRiskBitmask];
-
-    return ethTransaction(contract, 'anyHighRiskBits', args, options);
+    return tx;
   }
 }
