@@ -68,7 +68,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -101,7 +101,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -164,7 +164,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -197,7 +197,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -224,7 +224,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -251,7 +251,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -310,7 +310,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
   --[no-]forwardTransaction                      Whether the transaction will be sent via the Forwarder contract
@@ -346,7 +346,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -379,7 +379,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -412,7 +412,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -445,7 +445,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -478,7 +478,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
@@ -506,7 +506,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
                                                  The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0xfD745e67635A8c394C5644E676D2B507d60380DF] GatewayToken
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
 
 EXAMPLE
