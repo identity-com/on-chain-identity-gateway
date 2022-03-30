@@ -4,6 +4,7 @@ import { utils, Wallet } from 'ethers';
 import { BaseProvider } from '@ethersproject/providers';
 export { GasPriceKey } from "./utils/gas";
 export { TokenData, SendableTransaction, SentTransaction } from './utils/types';
+export { DEFAULT_GATEWAY_TOKEN } from './utils/constants';
 
 export class GatewayETH extends GatewayTs {
   utils: any;
