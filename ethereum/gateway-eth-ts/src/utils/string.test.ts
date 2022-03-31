@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { toBytes32 } from "./string";
 import { utils } from "ethers/lib/ethers";
 import assert = require("assert");

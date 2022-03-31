@@ -34,6 +34,7 @@ export default class BurnToken extends Command {
       name: "tokenID",
       required: true,
       description: "Token ID number to burn",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
   ];

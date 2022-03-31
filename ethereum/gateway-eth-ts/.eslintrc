@@ -1,6 +1,7 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {"project": ["./tsconfig.json"]},
   "plugins": ["@typescript-eslint"],
   "extends": [
     "oclif",
@@ -9,6 +10,10 @@
     "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
   "rules": {
-    "@typescript-eslint/no-implicit-any-catch": "error"
+    "@typescript-eslint/no-implicit-any-catch": "error",
+    "node/no-missing-import": ["error", {
+      "tryExtensions": [".js", ".ts", ".node"]
+    }],
+    "unicorn/filename-case": "off"
   }
 }

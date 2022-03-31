@@ -34,6 +34,7 @@ export default class FreezeToken extends Command {
       name: "tokenID",
       required: true,
       description: "Token ID number to freeze",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
   ];
@@ -58,7 +59,7 @@ export default class FreezeToken extends Command {
 
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-    const gasPrice = await flags.gasPriceFee;
+    const gasPrice = flags.gasPriceFee;
     const gasLimit = await gatewayToken.contract.estimateGas.freeze(tokenID);
 
     const txParams: TxBase = {

@@ -1,5 +1,5 @@
 import { addresses, ContractAddresses } from "./lib/addresses";
-import { gatewayTokenAddresses, GatewayTokenItem } from "./lib/gatewaytokens";
+import { gatewayTokenAddresses } from "./lib/gatewaytokens";
 import { BigNumber, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 
@@ -45,7 +45,7 @@ export class GatewayTsBase {
   constructor(
     provider: BaseProvider,
     signer?: Wallet,
-    options?: { defaultGas?: number; defaultGasPrice?: any }
+    options?: { defaultGas?: number; defaultGasPrice?: number }
   ) {
     this.defaultGas = options?.defaultGas || 6_000_000;
     this.defaultGasPrice = options?.defaultGasPrice || 1_000_000_000_000;
@@ -70,28 +70,25 @@ export class GatewayTsBase {
       this.wallet || this.provider,
       addresses[this.networkId].flagsStorage
     );
-    gatewayTokenAddresses[this.networkId].forEach(
-      (gatewayToken: GatewayTokenItem) => {
-        const tokenAddress = gatewayToken.address;
-
-        if (
-          defaultGatewayToken !== null &&
-          tokenAddress === defaultGatewayToken
-        ) {
-          this.defaultGatewayToken = defaultGatewayToken;
-        }
-
-        this.gatewayTokens[tokenAddress] = {
-          name: gatewayToken.name,
-          symbol: gatewayToken.symbol,
-          address: gatewayToken.address,
-          tokenInstance: new GatewayToken(
-            this.wallet || this.provider,
-            gatewayToken.address
-          ),
-        };
+    for (const gatewayToken of gatewayTokenAddresses[this.networkId]) {
+      const tokenAddress: string = gatewayToken.address;
+      if (
+        defaultGatewayToken !== null &&
+        tokenAddress === defaultGatewayToken
+      ) {
+        this.defaultGatewayToken = defaultGatewayToken;
       }
-    );
+
+      this.gatewayTokens[tokenAddress] = {
+        name: gatewayToken.name,
+        symbol: gatewayToken.symbol,
+        address: gatewayToken.address,
+        tokenInstance: new GatewayToken(
+          this.wallet || this.provider,
+          gatewayToken.address
+        ),
+      };
+    }
   }
 
   async setGasLimit(): Promise<void> {
@@ -134,8 +131,9 @@ export class GatewayTsBase {
     const result = await (tokenId
       ? gatewayToken.verifyTokenByTokenID(owner, tokenId)
       : gatewayToken.verifyToken(owner));
+    console.log(result);
 
-    return result[0];
+    return result[0] as boolean;
   }
 
   async getTokenBalance(

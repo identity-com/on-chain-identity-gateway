@@ -53,7 +53,7 @@ describe("Test GatewayTSCallData class", function () {
     gatewayLib = new GatewayTsCallData(provider, wallet);
 
     await gatewayLib.init(defaultGatewayToken);
-    const networkId = await (await gatewayLib.provider.getNetwork()).chainId;
+    const networkId = (await gatewayLib.provider.getNetwork()).chainId;
 
     assert.equal(gatewayLib.defaultGatewayToken, defaultGatewayToken);
     assert.equal(gatewayLib.wallet, wallet);
@@ -65,8 +65,8 @@ describe("Test GatewayTSCallData class", function () {
 
   it("Test mint token functions, should pass calldata checks", async () => {
     const tokenId = await gatewayLib.generateTokenId(sampleWalletAddress);
-    const expiration = await getExpirationTime(DEFAULT_EXPIRATION_BN);
-    const bitmask = await addFlagsToBitmask(ZERO_BN, [0, 1]);
+    const expiration = getExpirationTime(DEFAULT_EXPIRATION_BN);
+    const bitmask = addFlagsToBitmask(ZERO_BN, [0, 1]);
 
     const args = [sampleWalletAddress, tokenId, expiration, bitmask];
     const argsTypes = ["address", "uint256", "uint256", "uint256"];
@@ -198,7 +198,7 @@ describe("Test GatewayTSCallData class", function () {
         .interface.functions["setExpiration(uint256,uint256)"];
 
     const expiry = DEFAULT_EXPIRATION_BN.mul(BigNumber.from("2")); // 28 days
-    const expiration = await getExpirationTime(expiry);
+    const expiration = getExpirationTime(expiry);
     const transaction = await gatewayLib.refresh(tokenId, expiry);
 
     const args = [tokenId, expiration];
@@ -208,7 +208,7 @@ describe("Test GatewayTSCallData class", function () {
   }).timeout(10_000);
 
   it("Try to refresh non-existing token, expect revert", async () => {
-    const expiration = await getExpirationTime();
+    const expiration = getExpirationTime();
     await assert.rejects(gatewayLib.refresh(sampleTokenId, expiration));
   }).timeout(4000);
 
@@ -220,8 +220,7 @@ describe("Test GatewayTSCallData class", function () {
       "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be"
     );
 
-    const gatewayToken: GatewayToken =
-      await gatewayLib.getGatewayTokenContract();
+    const gatewayToken: GatewayToken = gatewayLib.getGatewayTokenContract();
     assert.equal(
       gatewayToken.contract.address,
       gatewayTokenAddresses[ropstenNetworkID][0].address

@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/prefer-node-protocol */
+/* eslint-disable @typescript-eslint/require-await */
 import { GatewayTsBase } from "./GatewayTsBase";
 import { BaseProvider, getDefaultProvider } from "@ethersproject/providers";
 import { BigNumber, utils, Wallet } from "ethers";
@@ -43,7 +45,7 @@ describe("Test GatewayTSBase class", function () {
     gatewayBase = new GatewayTsBase(provider, wallet);
 
     await gatewayBase.init(defaultGatewayToken);
-    const networkId = await (await gatewayBase.provider.getNetwork()).chainId;
+    const networkId = (await gatewayBase.provider.getNetwork()).chainId;
 
     assert.equal(gatewayBase.defaultGatewayToken, defaultGatewayToken);
     assert.equal(gatewayBase.wallet, wallet);
@@ -54,13 +56,10 @@ describe("Test GatewayTSBase class", function () {
   });
 
   it("Test getting gateway token address functions", async () => {
-    let gatewayToken: GatewayToken =
-      await gatewayBase.getGatewayTokenContract();
+    let gatewayToken: GatewayToken = gatewayBase.getGatewayTokenContract();
     assert.equal(gatewayToken.contract.address, defaultGatewayToken);
 
-    gatewayToken = await gatewayBase.getGatewayTokenContract(
-      defaultGatewayToken
-    );
+    gatewayToken = gatewayBase.getGatewayTokenContract(defaultGatewayToken);
     assert.equal(gatewayToken.contract.address, defaultGatewayToken);
 
     assert.throws(

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { Command, Flags } from "@oclif/core";
 import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
@@ -55,7 +56,7 @@ export default class Blacklist extends Command {
 
     this.log(`Blacklisting user: ${user}`);
 
-    const gasPrice = await flags.gasPriceFee;
+    const gasPrice = flags.gasPriceFee;
     const gasLimit = await controller.contract.estimateGas.blacklist(user);
 
     const txParams: TxBase = {
