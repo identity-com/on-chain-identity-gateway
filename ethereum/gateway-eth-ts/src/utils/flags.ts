@@ -60,7 +60,7 @@ export const confirmationsFlag = Flags.build<number>({
 
 export const forwardTransactionFlag = Flags.boolean<boolean>({
   required: false,
-  parse: (input: boolean) => input,
+  parse: async (input: boolean) => input,
   default: false,
   allowNo: true,
   description: "Whether the transaction will be sent via the Forwarder contract",
