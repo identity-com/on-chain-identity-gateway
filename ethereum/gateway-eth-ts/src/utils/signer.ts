@@ -1,6 +1,7 @@
 import { Wallet, getDefaultProvider } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { DEFAULT_CHAIN_ID, NETWORKS } from "./constants";
+// eslint-disable-next-line unicorn/prefer-node-protocol
 import * as fs from "fs";
 import { getProvider } from "./providers";
 
@@ -20,7 +21,9 @@ export const readPrivateKey = (
   file: string,
   networkId: number = DEFAULT_CHAIN_ID
 ): Wallet => {
-  const privateKey = JSON.parse(fs.readFileSync(file).toString("utf-8"));
+  const privateKey = JSON.parse(
+    fs.readFileSync(file).toString("utf-8")
+  ) as string;
   const provider = getDefaultProvider(NETWORKS[networkId]);
 
   return new Wallet(privateKey, provider);

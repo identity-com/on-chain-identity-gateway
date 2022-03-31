@@ -11,6 +11,7 @@ describe("Test token state checks", function () {
     bitmask: "",
   };
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   it("Test token state checks", async () => {
     let state = checkTokenState(0);
     assert.equal(state, "ACTIVE");
@@ -25,6 +26,7 @@ describe("Test token state checks", function () {
     assert.equal(state, "");
   });
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   it("Test token state parsing from TokenData", async () => {
     let state = parseTokenState(defaultTokenData);
     assert.equal(state.state, "ACTIVE");

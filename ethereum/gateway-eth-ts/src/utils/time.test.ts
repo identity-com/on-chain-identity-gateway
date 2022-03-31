@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { getExpirationTime } from "./time";
 import { BigNumber } from "ethers/lib/ethers";
 import assert = require("assert");

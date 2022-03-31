@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+
 import { BigNumber, BytesLike, Contract, Signer } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import abis from "../lib/abis";
@@ -18,51 +21,54 @@ export class FlagsStorage {
     flag: BytesLike,
     index: number | BigNumber,
     txParams?: TxBase
-  ): Promise<any> => {
-    return this.contract.addFlag(flag, index, txParams);
+  ): Promise<unknown> => {
+    return this.contract.addFlag(flag, index, txParams) as unknown;
   };
 
   addFlags = async (
     flags: BytesLike[],
     indexes: number[] | BigNumber[],
     txParams?: TxBase
-  ): Promise<any> => {
-    return this.contract.addFlags(flags, indexes, txParams);
+  ): Promise<unknown> => {
+    return this.contract.addFlags(flags, indexes, txParams) as unknown;
   };
 
-  getDAOControllerAddress = async (): Promise<any> => {
-    return this.contract.daoController();
+  getDAOControllerAddress = async (): Promise<unknown> => {
+    return this.contract.daoController() as unknown;
   };
 
   getFlagIndex = async (flag: BytesLike): Promise<BigNumber> => {
-    return this.contract.flagIndexes(flag);
+    return this.contract.flagIndexes(flag) as BigNumber;
   };
 
   isFlagSupported = async (flag: BytesLike): Promise<boolean> => {
-    return this.contract.isFlagSupported(flag);
+    return this.contract.isFlagSupported(flag) as boolean;
   };
 
   isFlagsSupported = async (flags: BytesLike[]): Promise<boolean[]> => {
-    return this.contract.isFlagsSupported(flags);
+    return this.contract.isFlagsSupported(flags) as Array<boolean>;
   };
 
-  removeFlag = async (flag: BytesLike, txParams?: TxBase): Promise<any> => {
-    return this.contract.removeFlag(flag, txParams);
+  removeFlag = async (flag: BytesLike, txParams?: TxBase): Promise<unknown> => {
+    return this.contract.removeFlag(flag, txParams) as unknown;
   };
 
-  removeFlags = async (flags: BytesLike[], txParams?: TxBase): Promise<any> => {
-    return this.contract.removeFlags(flags, txParams);
+  removeFlags = async (
+    flags: BytesLike[],
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.removeFlags(flags, txParams) as unknown;
   };
 
   getSupportedBitmask = async (): Promise<BigNumber> => {
-    return this.contract.supportedFlagsMask();
+    return this.contract.supportedFlagsMask() as BigNumber;
   };
 
   getUnsupportedBitmask = async (): Promise<BigNumber> => {
-    return this.contract.unsupportedFlagsMask();
+    return this.contract.unsupportedFlagsMask() as BigNumber;
   };
 
-  updateDAOManager = async (daoController: string): Promise<any> => {
-    return this.contract.updateDAOManager(daoController);
+  updateDAOManager = async (daoController: string): Promise<unknown> => {
+    return this.contract.updateDAOManager(daoController) as unknown;
   };
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { Wallet } from "ethers";
 import { privateKeySigner, mnemonicSigner } from "./signer";
 import assert = require("assert");

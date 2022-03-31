@@ -33,7 +33,7 @@ export interface TxOptions extends TxBase {
 export const populateTx = async (
   contract: Contract,
   method: string,
-  args: any[],
+  args: unknown[],
   options?: TxOptions
 ): Promise<PopulatedTransaction> => {
   const overrides = {

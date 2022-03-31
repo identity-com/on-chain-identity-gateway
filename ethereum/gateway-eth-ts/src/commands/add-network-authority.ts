@@ -35,6 +35,7 @@ export default class AddNetworkAuthority extends Command {
       required: true,
       description:
         "Network authority address to add to the GatewayToken contract",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<string> =>
         utils.isAddress(input) ? input : null,
     },

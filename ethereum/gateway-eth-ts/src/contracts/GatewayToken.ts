@@ -1,7 +1,12 @@
+/* eslint-disable max-params */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/require-await */
+
 import { BigNumber, Contract, Signer } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import abis from "../lib/abis";
 import { TxBase } from "../utils/tx";
+import { TokenData } from "../utils/types";
 
 export class GatewayToken {
   contract: Contract;
@@ -14,73 +19,75 @@ export class GatewayToken {
     );
   }
 
-  getName = async () => {
-    return this.contract.name();
+  getName = async (): Promise<unknown> => {
+    return this.contract.name() as unknown;
   };
 
-  getSymbol = async () => {
-    return this.contract.symbol();
+  getSymbol = async (): Promise<unknown> => {
+    return this.contract.symbol() as unknown;
   };
 
-  getControllerAddress = async () => {
-    return this.contract.controller();
+  getControllerAddress = async (): Promise<unknown> => {
+    return this.contract.controller() as unknown;
   };
 
-  getDeployerAddress = async () => {
-    return this.contract.deployer();
+  getDeployerAddress = async (): Promise<unknown> => {
+    return this.contract.deployer() as unknown;
   };
 
-  isTransfersRestricted = async () => {
-    return this.contract.transfersRestricted();
+  isTransfersRestricted = async (): Promise<unknown> => {
+    return this.contract.transfersRestricted() as unknown;
   };
 
-  getBalance = async (account: string) => {
-    return this.contract.balanceOf(account);
+  getBalance = async (account: string): Promise<number | BigNumber> => {
+    return this.contract.balanceOf(account) as number | BigNumber;
   };
 
-  getTokenOwner = async (tokenID: number | BigNumber) => {
-    return this.contract.ownerOf(tokenID);
+  getTokenOwner = async (tokenID: number | BigNumber): Promise<unknown> => {
+    return this.contract.ownerOf(tokenID) as unknown;
   };
 
-  getIdentity = async (tokenID: number | BigNumber) => {
-    return this.contract.getIdentity(tokenID);
+  getIdentity = async (tokenID: number | BigNumber): Promise<unknown> => {
+    return this.contract.getIdentity(tokenID) as unknown;
   };
 
-  getToken = async (tokenID: number | BigNumber) => {
-    return this.contract.getToken(tokenID);
+  getToken = async (tokenID: number | BigNumber): Promise<TokenData> => {
+    return this.contract.getToken(tokenID) as TokenData;
   };
 
-  getTokenState = async (tokenID: number | BigNumber) => {
-    return this.contract.getTokenState(tokenID);
+  getTokenState = async (tokenID: number | BigNumber): Promise<number> => {
+    return this.contract.getTokenState(tokenID) as number;
   };
 
-  getTokenBitmask = async (tokenId: number | BigNumber) => {
-    return this.contract.getTokenBitmask(tokenId);
+  getTokenBitmask = async (
+    tokenId: number | BigNumber
+  ): Promise<number | BigNumber> => {
+    return this.contract.getTokenBitmask(tokenId) as number | BigNumber;
   };
 
-  getTokenURI = async (tokenID: number | BigNumber) => {
-    return this.contract.tokenURI(tokenID);
+  getTokenURI = async (tokenID: number | BigNumber): Promise<unknown> => {
+    return this.contract.tokenURI(tokenID) as unknown;
   };
 
   setTokenURI = async (
     tokenID: number | BigNumber,
     tokenURI: string,
     txParams?: TxBase
-  ) => {
-    return this.contract.setTokenURI(tokenID, tokenURI, txParams);
+  ): Promise<unknown> => {
+    return this.contract.setTokenURI(tokenID, tokenURI, txParams) as unknown;
   };
 
   verifyTokenByTokenID = async (
     address: string,
     tokenID: number | BigNumber
-  ) => {
+  ): Promise<any> => {
     return this.contract.functions["verifyToken(address,uint256)"](
       address,
       tokenID
-    );
+    ) as unknown;
   };
 
-  verifyToken = async (address: string) => {
+  verifyToken = async (address: string): Promise<unknown> => {
     return this.contract.functions["verifyToken(address)"](address);
   };
 
@@ -88,24 +95,31 @@ export class GatewayToken {
     tokenID: number | BigNumber,
     addressTo: string,
     txParams?: TxBase
-  ) => {
-    return this.contract.approve(addressTo, tokenID, txParams);
+  ): Promise<unknown> => {
+    return this.contract.approve(addressTo, tokenID, txParams) as unknown;
   };
 
   getApprovedAddress = async (tokenID: number | BigNumber): Promise<string> => {
-    return this.contract.getApproved(tokenID);
+    return this.contract.getApproved(tokenID) as string;
   };
 
   setApprovalForAll = async (
     operator: string,
     approved: boolean,
     txParams?: TxBase
-  ) => {
-    return this.contract.setApprovalForAll(operator, approved, txParams);
+  ): Promise<unknown> => {
+    return this.contract.setApprovalForAll(
+      operator,
+      approved,
+      txParams
+    ) as unknown;
   };
 
-  checkApprovalForAll = async (owner: string, operator: string) => {
-    return this.contract.isApprovedForAll(owner, operator);
+  checkApprovalForAll = async (
+    owner: string,
+    operator: string
+  ): Promise<unknown> => {
+    return this.contract.isApprovedForAll(owner, operator) as unknown;
   };
 
   transferFrom = async (
@@ -113,8 +127,8 @@ export class GatewayToken {
     to: string,
     tokenID: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.transferFrom(from, to, tokenID, txParams);
+  ): Promise<unknown> => {
+    return this.contract.transferFrom(from, to, tokenID, txParams) as unknown;
   };
 
   safeTransferFrom = async (
@@ -122,16 +136,27 @@ export class GatewayToken {
     to: string,
     tokenID: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.safeTransferFrom(from, to, tokenID, txParams);
+  ): Promise<unknown> => {
+    return this.contract.safeTransferFrom(
+      from,
+      to,
+      tokenID,
+      txParams
+    ) as unknown;
   };
 
-  burn = async (tokenID: number | BigNumber, txParams?: TxBase) => {
-    return this.contract.burn(tokenID, txParams);
+  burn = async (
+    tokenID: number | BigNumber,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.burn(tokenID, txParams) as unknown;
   };
 
-  revoke = async (tokenID: number | BigNumber, txParams?: TxBase) => {
-    return this.contract.revoke(tokenID, txParams);
+  revoke = async (
+    tokenID: number | BigNumber,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.revoke(tokenID, txParams) as unknown;
   };
 
   mint = async (
@@ -140,137 +165,170 @@ export class GatewayToken {
     expiration: number | BigNumber,
     bitmask: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.mint(to, tokenID, expiration, bitmask, txParams);
+  ): Promise<unknown> => {
+    return this.contract.mint(
+      to,
+      tokenID,
+      expiration,
+      bitmask,
+      txParams
+    ) as unknown;
   };
 
-  freeze = async (tokenID: number | BigNumber, txParams?: TxBase) => {
-    return this.contract.freeze(tokenID, txParams);
+  freeze = async (
+    tokenID: number | BigNumber,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.freeze(tokenID, txParams) as unknown;
   };
 
-  unfreeze = async (tokenID: number | BigNumber, txParams?: TxBase) => {
-    return this.contract.unfreeze(tokenID, txParams);
+  unfreeze = async (
+    tokenID: number | BigNumber,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.unfreeze(tokenID, txParams) as unknown;
   };
 
-  getExpiration = async (tokenID: number | BigNumber) => {
-    return this.contract.expiration(tokenID);
+  getExpiration = async (tokenID: number | BigNumber): Promise<unknown> => {
+    return this.contract.expiration(tokenID) as unknown;
   };
 
   setExpiration = async (
     tokenID: number | BigNumber,
     time: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.setExpiration(tokenID, time, txParams);
+  ): Promise<unknown> => {
+    return this.contract.setExpiration(tokenID, time, txParams) as unknown;
   };
 
-  getTokenId = async (owner: string) => {
-    return this.contract.getTokenId(owner);
+  getTokenId = async (owner: string): Promise<number | BigNumber> => {
+    return this.contract.getTokenId(owner) as number | BigNumber;
   };
 
   setDefaultTokenId = async (
     owner: string,
     tokenID: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.setDefaultTokenId(owner, tokenID, txParams);
+  ): Promise<unknown> => {
+    return this.contract.setDefaultTokenId(owner, tokenID, txParams) as unknown;
   };
 
-  addGatekeeper = async (gatekeeper: string, txParams?: TxBase) => {
-    return this.contract.addGatekeeper(gatekeeper, txParams);
+  addGatekeeper = async (
+    gatekeeper: string,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.addGatekeeper(gatekeeper, txParams) as unknown;
   };
 
-  removeGatekeeper = async (gatekeeper: string, txParams?: TxBase) => {
-    return this.contract.removeGatekeeper(gatekeeper, txParams);
+  removeGatekeeper = async (
+    gatekeeper: string,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.removeGatekeeper(gatekeeper, txParams) as unknown;
   };
 
   isGatekeeper = async (
     gatekeeper: string,
     txParams?: TxBase
   ): Promise<boolean> => {
-    return this.contract.isGatekeeper(gatekeeper, txParams);
+    return this.contract.isGatekeeper(gatekeeper, txParams) as boolean;
   };
 
-  addNetworkAuthority = async (authority: string, txParams?: TxBase) => {
-    return this.contract.addNetworkAuthority(authority, txParams);
+  addNetworkAuthority = async (
+    authority: string,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.addNetworkAuthority(authority, txParams) as unknown;
   };
 
-  removeNetworkAuthority = async (authority: string, txParams?: TxBase) => {
-    return this.contract.removeNetworkAuthority(authority, txParams);
+  removeNetworkAuthority = async (
+    authority: string,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.removeNetworkAuthority(authority, txParams) as unknown;
   };
 
   isNetworkAuthority = async (
     authority: string,
     txParams?: TxBase
   ): Promise<boolean> => {
-    return this.contract.isNetworkAuthority(authority, txParams);
+    return this.contract.isNetworkAuthority(authority, txParams) as boolean;
   };
 
   allowTransfers = async (txParams?: TxBase): Promise<boolean> => {
-    return this.contract.allowTransfers(txParams);
+    return this.contract.allowTransfers(txParams) as boolean;
   };
 
   stopTransfers = async (txParams?: TxBase): Promise<boolean> => {
-    return this.contract.stopTransfers(txParams);
+    return this.contract.stopTransfers(txParams) as boolean;
   };
 
-  transferDAOManager = async (daoManager: string, txParams?: TxBase) => {
-    return this.contract.transferDAOManager(daoManager, txParams);
+  transferDAOManager = async (
+    daoManager: string,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.transferDAOManager(daoManager, txParams) as unknown;
   };
 
-  updateFlagsStorage = async (flagsStorage: string, txParams?: TxBase) => {
-    return this.contract.updateFlagsStorage(flagsStorage, txParams);
+  updateFlagsStorage = async (
+    flagsStorage: string,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.updateFlagsStorage(flagsStorage, txParams) as unknown;
   };
 
   setBitmask = async (
     tokenId: number | BigNumber,
     bitmask: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.setBitmask(tokenId, bitmask, txParams);
+  ): Promise<unknown> => {
+    return this.contract.setBitmask(tokenId, bitmask, txParams) as unknown;
   };
 
   addBitmask = async (
     tokenId: number | BigNumber,
     bitmask: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.addBitmask(tokenId, bitmask, txParams);
+  ): Promise<unknown> => {
+    return this.contract.addBitmask(tokenId, bitmask, txParams) as unknown;
   };
 
   addBit = async (
     tokenId: number | BigNumber,
     index: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.addBit(tokenId, index, txParams);
+  ): Promise<unknown> => {
+    return this.contract.addBit(tokenId, index, txParams) as unknown;
   };
 
   removeBitmask = async (
     tokenId: number | BigNumber,
     bitmask: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.removeBitmask(tokenId, bitmask, txParams);
+  ): Promise<unknown> => {
+    return this.contract.removeBitmask(tokenId, bitmask, txParams) as unknown;
   };
 
   removeBit = async (
     tokenId: number | BigNumber,
     index: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.removeBit(tokenId, index, txParams);
+  ): Promise<unknown> => {
+    return this.contract.removeBit(tokenId, index, txParams) as unknown;
   };
 
   removeUnsupportedBits = async (
     tokenId: number | BigNumber,
     txParams?: TxBase
-  ) => {
-    return this.contract.removeUnsupportedBits(tokenId, txParams);
+  ): Promise<unknown> => {
+    return this.contract.removeUnsupportedBits(tokenId, txParams) as unknown;
   };
 
-  clearBitmask = async (tokenId: number | BigNumber, txParams?: TxBase) => {
-    return this.contract.clearBitmask(tokenId, txParams);
+  clearBitmask = async (
+    tokenId: number | BigNumber,
+    txParams?: TxBase
+  ): Promise<unknown> => {
+    return this.contract.clearBitmask(tokenId, txParams) as unknown;
   };
 
   anyHighRiskBits = async (
@@ -278,6 +336,10 @@ export class GatewayToken {
     highRiskBitmask: number | BigNumber,
     txParams?: TxBase
   ): Promise<boolean> => {
-    return this.contract.anyHighRiskBits(tokenId, highRiskBitmask, txParams);
+    return this.contract.anyHighRiskBits(
+      tokenId,
+      highRiskBitmask,
+      txParams
+    ) as boolean;
   };
 }
