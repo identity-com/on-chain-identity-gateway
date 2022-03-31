@@ -3,11 +3,11 @@ import { BigNumber, Contract, PopulatedTransaction } from "ethers";
 import { TxOptions } from "../utils/tx";
 
 export declare type TokenData = {
-    owner: string,
-    state: number | string,
-    identity: string, 
-    expiration: number | BigNumber | string,
-    bitmask: number | BigNumber | string,
+    owner: string;
+    state: number | string;
+    identity: string;
+    expiration: number | BigNumber | string;
+    bitmask: number | BigNumber | string;
 }
 
 export class SendableTransaction {

@@ -1,99 +1,115 @@
-import { BigNumber, utils, Wallet } from 'ethers';
-import { GasPriceOracle } from 'gas-price-oracle';
-import { DEFAULT_CHAIN_ID } from './constants';
-import { getProvider } from './providers';
-import { mnemonicSigner } from './signer';
-import { TxBase } from './tx';
+import { BigNumber, utils, Wallet } from "ethers";
+import { GasPriceOracle } from "gas-price-oracle";
+import { DEFAULT_CHAIN_ID } from "./constants";
+import { getProvider } from "./providers";
+import { mnemonicSigner } from "./signer";
+import { DEFAULT_MNEMONIC } from "./constants";
+import { TxBase } from "./tx";
 
 export declare type GasPrices = {
-    instant: number,
-    fast: number,
-    standard: number,
-    low: number,
-}
+  instant: number;
+  fast: number;
+  standard: number;
+  low: number;
+};
 
 export declare type GasPriceOracleOptions = {
-    chainId: number,
-    defaultRpc: string,
-    timeout: number,
-    defaultFallbackGasPrices: GasPrices,
-}
+  chainId: number;
+  defaultRpc: string;
+  timeout: number;
+  defaultFallbackGasPrices: GasPrices;
+};
 
-export declare type GasPriceKey = 'instant' | 'fast' | 'standard' | 'low';
+export declare type GasPriceKey = "instant" | "fast" | "standard" | "low";
 
-export const DEFAULT_GAS_PRICES: {[key: number]: GasPrices} = {
-    1: {
-        instant: 23,
-        fast: 17,
-        standard: 13,
-        low: 9,
-    },
-    3: {
-        instant: 10,
-        fast: 5,
-        standard: 3,
-        low: 1,
-    },
-    1337: {
-        instant: 1,
-        fast: 1,
-        standard: 1,
-        low: 1,
-    }
+export const DEFAULT_GAS_PRICES: { [key: number]: GasPrices } = {
+  1: {
+    instant: 23,
+    fast: 17,
+    standard: 13,
+    low: 9,
+  },
+  3: {
+    instant: 10,
+    fast: 5,
+    standard: 3,
+    low: 1,
+  },
+  1337: {
+    instant: 1,
+    fast: 1,
+    standard: 1,
+    low: 1,
+  },
 };
 
 const options: GasPriceOracleOptions = {
-    chainId: 1,
-    defaultRpc: 'https://api.mycryptoapi.com/eth',
-    timeout: 10000,
-    defaultFallbackGasPrices: DEFAULT_GAS_PRICES[DEFAULT_CHAIN_ID],
+  chainId: 1,
+  defaultRpc: "https://api.mycryptoapi.com/eth",
+  timeout: 10_000,
+  defaultFallbackGasPrices: DEFAULT_GAS_PRICES[DEFAULT_CHAIN_ID],
 };
 
-export const SUBTRACT_GAS_LIMIT = 100000;
+export const SUBTRACT_GAS_LIMIT = 100_000;
 
 export const getDefaultOracle = (chainId = 1): GasPriceOracle => {
-    options.defaultFallbackGasPrices = DEFAULT_GAS_PRICES[chainId];
-    options.chainId = chainId
+  options.defaultFallbackGasPrices = DEFAULT_GAS_PRICES[chainId];
+  options.chainId = chainId;
 
-    return new GasPriceOracle(options);
-}
+  return new GasPriceOracle(options);
+};
 
-export const currentGasPrices = async (oracle?: GasPriceOracle, fallbackGasPrices?: GasPrices): Promise<GasPrices> => {
-    if (oracle == null) {
-        oracle = new GasPriceOracle(options);
-    }
+export const currentGasPrices = async (
+  oracle?: GasPriceOracle,
+  fallbackGasPrices?: GasPrices
+): Promise<GasPrices> => {
+  if (oracle === null) {
+    oracle = new GasPriceOracle(options);
+  }
 
-    return await oracle.gasPrices(fallbackGasPrices).then((gasPrices: GasPrices): GasPrices => {
-        return gasPrices;
+  return oracle
+    .gasPrices(fallbackGasPrices)
+    .then((gasPrices: GasPrices): GasPrices => {
+      return gasPrices;
     });
-}
+};
 
-export const estimateGasPrice = async (priceKey: GasPriceKey = "fast", oracle?: GasPriceOracle, fallbackGasPrices?: GasPrices): Promise<number | BigNumber> => {
-    const prices = await currentGasPrices(oracle, fallbackGasPrices);
+export const estimateGasPrice = async (
+  priceKey: GasPriceKey,
+  oracle?: GasPriceOracle,
+  fallbackGasPrices?: GasPrices
+): Promise<number | BigNumber> => {
+  const prices = await currentGasPrices(oracle, fallbackGasPrices);
 
-    if (prices == null) {
-        return DEFAULT_GAS_PRICES[DEFAULT_CHAIN_ID][priceKey];
-    }
-    const gweiPrice = prices[priceKey].toString();
-    const weiPrice = utils.parseUnits(gweiPrice, 'gwei');
+  if (prices === null) {
+    return DEFAULT_GAS_PRICES[DEFAULT_CHAIN_ID][priceKey];
+  }
 
-    return weiPrice;
-}
+  const gweiPrice = prices[priceKey].toString();
+  const weiPrice = utils.parseUnits(gweiPrice, "gwei");
 
-export const estimateGasLimit = async (toAddress: string, value? :number, data? :any, signer?: Wallet): Promise<number | BigNumber> => {
-    if (!signer) {
-        signer = mnemonicSigner();
-        const provider = getProvider();
+  return weiPrice;
+};
 
-        signer = signer.connect(provider);
-    }
+export const estimateGasLimit = async (
+  toAddress: string,
+  value?: number,
+  data?: any,
+  signer?: Wallet
+): Promise<number | BigNumber> => {
+  if (!signer) {
+    signer = mnemonicSigner(DEFAULT_MNEMONIC);
+    const provider = getProvider();
 
-    const tx: TxBase = { 
-        to: toAddress,
-        value: value ? value: 0,
-        data: data ? data: null,
-    };
+    signer = signer.connect(provider);
+  }
 
-    const gasLimit = await signer.estimateGas(tx);
-    return gasLimit;
-}
+  const tx: TxBase = {
+    to: toAddress,
+    value: value ? value : 0,
+    data: data ? data : null,
+  };
+
+  const gasLimit = await signer.estimateGas(tx);
+  return gasLimit;
+};
