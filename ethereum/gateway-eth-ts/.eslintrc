@@ -1,18 +1,14 @@
 {
-    "root": true,
-    "parser": "@typescript-eslint/parser",
-    "plugins": ["@typescript-eslint"],
-    "extends": [
-      "oclif",
-      "oclif-typescript",
-      "prettier"
-    ],
-    "rules": {
-      "no-return-await": "warn",
-      "eqeqeq": "warn",
-      "no-eq-null": "warn",
-      "unicorn/filename-case": "off",
-      "max-statements-per-line": "warn",
-      "no-useless-constructor": "off"
-    }
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "oclif",
+    "oclif-typescript",
+    "prettier",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+  ],
+  "rules": {
+    "@typescript-eslint/no-implicit-any-catch": "error"
+  }
 }

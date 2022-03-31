@@ -9,42 +9,62 @@ import { SendableTransaction } from './utils/types';
 import { signMetaTxRequest } from './utils/signer';
 
 export class GatewayTs extends GatewayTsBase {
-  constructor(provider: BaseProvider,  wallet?: Wallet, options?: { defaultGas?: number; defaultGasPrice?: any; }) {
+  constructor(
+    provider: BaseProvider,
+    wallet?: Wallet,
+    options?: { defaultGas?: number; defaultGasPrice?: any }
+  ) {
     super(provider, wallet, options);
 
     super.setGasLimit();
   }
 
-  async addGatekeeper(gatekeeper: string, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
+  async addGatekeeper(
+    gatekeeper: string,
+    gatewayTokenAddress?: string,
+    options?: TxOptions
+  ): Promise<string> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
 
     const args: any[] = [gatekeeper];
-    
-    return ethTransaction(contract, 'addGatekeeper', args, options);
+
+    return ethTransaction(contract, "addGatekeeper", args, options);
   }
 
-  removeGatekeeper = async (gatekeeper: string, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> => {
+  removeGatekeeper = async (
+    gatekeeper: string,
+    gatewayTokenAddress?: string,
+    options?: TxOptions
+  ): Promise<string> => {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
 
     const args: any[] = [gatekeeper];
-    
-    return ethTransaction(contract, 'removeGatekeeper', args, options);
-  }
 
-  async addNetworkAuthority(authority: string, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
+    return ethTransaction(contract, "removeGatekeeper", args, options);
+  };
+
+  async addNetworkAuthority(
+    authority: string,
+    gatewayTokenAddress?: string,
+    options?: TxOptions
+  ): Promise<string> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
 
     const args: any[] = [authority];
-    
-    return ethTransaction(contract, 'addNetworkAuthority', args, options);
+
+    return ethTransaction(contract, "addNetworkAuthority", args, options);
   }
 
-  async removeNetworkAuthority (authority: string, gatewayTokenAddress?: string, options?: TxOptions):Promise<string> {
+  async removeNetworkAuthority(
+    authority: string,
+    gatewayTokenAddress?: string,
+    options?: TxOptions
+  ): Promise<string> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
 
     const args: any[] = [authority];
-    
-    return ethTransaction(contract, 'removeNetworkAuthority', args, options);
+
+    return ethTransaction(contract, "removeNetworkAuthority", args, options);
   }
 
   async issue(

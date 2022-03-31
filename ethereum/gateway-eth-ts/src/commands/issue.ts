@@ -1,17 +1,17 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { BigNumber, utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
-import { BaseProvider } from '@ethersproject/providers';
+import { BaseProvider } from "@ethersproject/providers";
 import {
-		privateKeyFlag,
-		gatewayTokenAddressFlag,
-		networkFlag,
-		gasPriceFeeFlag,
-		confirmationsFlag,
-		forwardTransactionFlag,
-		generateTokenIdFlag,
-		bitmaskFlag,
-		tokenIdFlag,
+  privateKeyFlag,
+  gatewayTokenAddressFlag,
+  networkFlag,
+  gasPriceFeeFlag,
+  confirmationsFlag,
+  generateTokenIdFlag,
+  bitmaskFlag,
+  tokenIdFlag,
+  forwardTransactionFlag,
 } from "../utils/flags";
 import { TxBase, TxOptions } from "../utils/tx";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
@@ -21,51 +21,53 @@ import { GatewayETH } from "..";
 import { SentTransaction } from "../utils/types";
 
 export default class IssueToken extends Command {
-	static description = "Issue new identity token with TokenID for Ethereum address";
+  static description =
+    "Issue new identity token with TokenID for Ethereum address";
 
-	static examples = [
-		`$ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -i <TokenID>
+  static examples = [
+    `$ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -i <TokenID>
 		`,
-	];
+  ];
 
-	static flags = {
-		help: flags.help({ char: "h" }),
-		privateKey: privateKeyFlag(),
-		gatewayTokenAddress: gatewayTokenAddressFlag(),
-		network: networkFlag(),
-		gasPriceFee: gasPriceFeeFlag(),
-		confirmations: confirmationsFlag(),
-		generateTokenId: generateTokenIdFlag,
-		bitmask: bitmaskFlag(),
-		tokenID: tokenIdFlag(),
-		forwardTransaction: forwardTransactionFlag,
-	};
+  static flags = {
+    help: Flags.help({ char: "h" }),
+    privateKey: privateKeyFlag(),
+    gatewayTokenAddress: gatewayTokenAddressFlag(),
+    network: networkFlag(),
+    gasPriceFee: gasPriceFeeFlag(),
+    confirmations: confirmationsFlag(),
+    generateTokenId: generateTokenIdFlag,
+    bitmask: bitmaskFlag(),
+    tokenID: tokenIdFlag(),
+	forwardTransaction: forwardTransactionFlag,
+  };
 
-	static args = [
-		{
-			name: "address",
-			required: true,
-			description: "Owner ethereum address to tokenID for",
-			parse: (input: string) => utils.isAddress(input) ? input : null,
-		},
-		{
-			name: "expiration",
-			required: false,
-			description: "Expiration timestamp for newly issued token",
-			parse: (input: any) => BigNumber.from(input),
-			default: 0,
-		},
-		{
-			name: "constrains",
-			required: false,
-			description: "Constrains to generate tokenId",
-			parse: (input: any) => BigNumber.from(input),
-			default: BigNumber.from("0"),
-		}
-	];
+  static args = [
+    {
+      name: "address",
+      required: true,
+      description: "Owner ethereum address to tokenID for",
+      parse: async (input: string): Promise<string> =>
+        utils.isAddress(input) ? input : null,
+    },
+    {
+      name: "expiration",
+      required: false,
+      description: "Expiration timestamp for newly issued token",
+      parse: async (input: any): Promise<BigNumber> => BigNumber.from(input),
+      default: 0,
+    },
+    {
+      name: "constrains",
+      required: false,
+      description: "Constrains to generate tokenId",
+      parse: async (input: any): Promise<BigNumber> => BigNumber.from(input),
+      default: BigNumber.from("0"),
+    },
+  ];
 
-	async run() {
-		const { args, flags } = this.parse(IssueToken);
+  async run(): Promise<void> {
+    const { args, flags } = await this.parse(IssueToken);
 
 		const pk = flags.privateKey;
 		const provider:BaseProvider = flags.network;
@@ -93,8 +95,7 @@ export default class IssueToken extends Command {
 			tokenID = generateId(ownerAddress, constrains);
 		}
 
-
-		const gasPrice = await flags.gasPriceFee;
+		const gasPrice = flags.gasPriceFee;
 		let gasLimit: BigNumber 
 		
 		if (expiration.gt(0)) {
@@ -110,7 +111,6 @@ export default class IssueToken extends Command {
 			forwardTransaction,
 		};
 
-		
 		const gateway = new GatewayETH(provider, signer);
 		await gateway.init();
 		const sendableTransaction = await gateway.issue(

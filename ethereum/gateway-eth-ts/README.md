@@ -1,7 +1,4 @@
-gateway-eth-ts
-========
-
-
+# gateway-eth-ts
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/gateway-eth-ts.svg)](https://npmjs.org/package/gateway-eth-ts)
@@ -9,11 +6,15 @@ gateway-eth-ts
 [![License](https://img.shields.io/npm/l/gateway-eth-ts.svg)](https://github.com/Secured-Finance/gateway-eth-ts/blob/master/package.json)
 
 <!-- toc -->
-* [Usage](#usage)
-* [Commands](#commands)
+
+- [Usage](#usage)
+- [Commands](#commands)
 <!-- tocstop -->
-# Usage
+
+## Usage
+
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @identity.com/gateway-eth-ts
 $ gateway-eth-ts COMMAND
@@ -25,30 +26,34 @@ USAGE
   $ gateway-eth-ts COMMAND
 ...
 ```
+
 <!-- usagestop -->
-# Commands
+
+## Commands
+
 <!-- commands -->
-* [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
-* [`gateway-eth-ts add-network-authority ADDRESS`](#gateway-eth-ts-add-network-authority-address)
-* [`gateway-eth-ts blacklist ADDRESS`](#gateway-eth-ts-blacklist-address)
-* [`gateway-eth-ts burn TOKENID`](#gateway-eth-ts-burn-tokenid)
-* [`gateway-eth-ts freeze TOKENID`](#gateway-eth-ts-freeze-tokenid)
-* [`gateway-eth-ts get-token TOKENID`](#gateway-eth-ts-get-token-tokenid)
-* [`gateway-eth-ts get-token-id ADDRESS`](#gateway-eth-ts-get-token-id-address)
-* [`gateway-eth-ts help [COMMAND]`](#gateway-eth-ts-help-command)
-* [`gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]`](#gateway-eth-ts-issue-address-expiration-constrains)
-* [`gateway-eth-ts refresh TOKENID [EXPIRY]`](#gateway-eth-ts-refresh-tokenid-expiry)
-* [`gateway-eth-ts remove-gatekeeper ADDRESS`](#gateway-eth-ts-remove-gatekeeper-address)
-* [`gateway-eth-ts remove-network-authority ADDRESS`](#gateway-eth-ts-remove-network-authority-address)
-* [`gateway-eth-ts revoke TOKENID`](#gateway-eth-ts-revoke-tokenid)
-* [`gateway-eth-ts unfreeze TOKENID`](#gateway-eth-ts-unfreeze-tokenid)
-* [`gateway-eth-ts verify ADDRESS [TOKENID]`](#gateway-eth-ts-verify-address-tokenid)
+
+- [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
+- [`gateway-eth-ts add-network-authority ADDRESS`](#gateway-eth-ts-add-network-authority-address)
+- [`gateway-eth-ts blacklist ADDRESS`](#gateway-eth-ts-blacklist-address)
+- [`gateway-eth-ts burn TOKENID`](#gateway-eth-ts-burn-tokenid)
+- [`gateway-eth-ts freeze TOKENID`](#gateway-eth-ts-freeze-tokenid)
+- [`gateway-eth-ts get-token TOKENID`](#gateway-eth-ts-get-token-tokenid)
+- [`gateway-eth-ts get-token-id ADDRESS`](#gateway-eth-ts-get-token-id-address)
+- [`gateway-eth-ts help [COMMAND]`](#gateway-eth-ts-help-command)
+- [`gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]`](#gateway-eth-ts-issue-address-expiration-constrains)
+- [`gateway-eth-ts refresh TOKENID [EXPIRY]`](#gateway-eth-ts-refresh-tokenid-expiry)
+- [`gateway-eth-ts remove-gatekeeper ADDRESS`](#gateway-eth-ts-remove-gatekeeper-address)
+- [`gateway-eth-ts remove-network-authority ADDRESS`](#gateway-eth-ts-remove-network-authority-address)
+- [`gateway-eth-ts revoke TOKENID`](#gateway-eth-ts-revoke-tokenid)
+- [`gateway-eth-ts unfreeze TOKENID`](#gateway-eth-ts-unfreeze-tokenid)
+- [`gateway-eth-ts verify ADDRESS [TOKENID]`](#gateway-eth-ts-verify-address-tokenid)
 
 ## `gateway-eth-ts add-gatekeeper ADDRESS`
 
 Add a gatekeeper to a GatewayToken contract
 
-```
+```shell
 USAGE
   $ gateway-eth-ts add-gatekeeper ADDRESS
 
@@ -81,7 +86,7 @@ _See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-
 
 Add a network authority to a GatewayToken contract
 
-```
+```shell
 USAGE
   $ gateway-eth-ts add-network-authority ADDRESS
 
@@ -114,7 +119,7 @@ _See code: [dist/commands/add-network-authority.ts](https://github.com/identity-
 
 Blacklist user globaly in the gateway token system
 
-```
+```shell
 USAGE
   $ gateway-eth-ts blacklist ADDRESS
 
@@ -144,7 +149,7 @@ _See code: [dist/commands/blacklist.ts](https://github.com/identity-com/on-chain
 
 Burn existing identity token using TokenID
 
-```
+```shell
 USAGE
   $ gateway-eth-ts burn TOKENID
 
@@ -177,7 +182,7 @@ _See code: [dist/commands/burn.ts](https://github.com/identity-com/on-chain-iden
 
 Freeze existing identity token using TokenID
 
-```
+```shell
 USAGE
   $ gateway-eth-ts freeze TOKENID
 
@@ -210,7 +215,7 @@ _See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-id
 
 Get information related to gateway token by tokenID
 
-```
+```shell
 USAGE
   $ gateway-eth-ts get-token TOKENID
 
@@ -237,7 +242,7 @@ _See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain
 
 Get default gateway token ID by owner's address
 
-```
+```shell
 USAGE
   $ gateway-eth-ts get-token-id ADDRESS
 
@@ -264,7 +269,7 @@ _See code: [dist/commands/get-token-id.ts](https://github.com/identity-com/on-ch
 
 display help for gateway-eth-ts
 
-```
+```shell
 USAGE
   $ gateway-eth-ts help [COMMAND]
 
@@ -281,7 +286,7 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.1
 
 Issue new identity token with TokenID for Ethereum address
 
-```
+```shell
 USAGE
   $ gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]
 
@@ -325,7 +330,7 @@ _See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-ide
 
 Refresh existing identity token with TokenID for Ethereum address
 
-```
+```shell
 USAGE
   $ gateway-eth-ts refresh TOKENID [EXPIRY]
 
@@ -359,7 +364,7 @@ _See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-i
 
 Remove gatekeeper to a GatewayToken contract
 
-```
+```shell
 USAGE
   $ gateway-eth-ts remove-gatekeeper ADDRESS
 
@@ -392,7 +397,7 @@ _See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/
 
 Remove network authority to a GatewayToken contract
 
-```
+```shell
 USAGE
   $ gateway-eth-ts remove-network-authority ADDRESS
 
@@ -425,7 +430,7 @@ _See code: [dist/commands/remove-network-authority.ts](https://github.com/identi
 
 Revoke existing identity token by TokenID
 
-```
+```shell
 USAGE
   $ gateway-eth-ts revoke TOKENID
 
@@ -458,7 +463,7 @@ _See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-id
 
 Unfreeze existing identity token using TokenID
 
-```
+```shell
 USAGE
   $ gateway-eth-ts unfreeze TOKENID
 
@@ -491,7 +496,7 @@ _See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-
 
 Verify existing identity using token owner address
 
-```
+```shell
 USAGE
   $ gateway-eth-ts verify ADDRESS [TOKENID]
 
@@ -514,5 +519,7 @@ EXAMPLE
 ```
 
 _See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/verify.ts)_
+
 <!-- commandsstop -->
-* [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
+
+- [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
