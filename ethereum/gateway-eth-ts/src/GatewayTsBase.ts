@@ -130,9 +130,10 @@ export class GatewayTsBase {
 
     const result = await (tokenId
       ? gatewayToken.verifyTokenByTokenID(owner, tokenId)
-      : gatewayToken.verifyToken(owner));
+      : gatewayToken.verifyToken(owner)) as unknown as boolean[];
 
-    return result;
+    // TODO: Not sure why boolean is wrapped in an array here.
+    return result[0];
   }
 
   async getTokenBalance(
