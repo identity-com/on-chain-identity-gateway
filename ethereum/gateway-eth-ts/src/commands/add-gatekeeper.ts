@@ -62,25 +62,24 @@ export default class AddGatekeeper extends Command {
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
     const gasPrice = flags.gasPriceFee;
-    const gasLimit = await gatewayToken.contract.estimateGas.addGatekeeper(
+    const gasLimit: BigNumber = await gatewayToken.contract.estimateGas.addGatekeeper(
       gatekeeper
     );
 
-    const txParams: TxBase = {
+    const txParams = {
       gasLimit: gasLimit,
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx = await (confirmations > 0
-      ? (
-          await gatewayToken.addGatekeeper(gatekeeper, txParams)
-        ).wait(confirmations)
-      : gatewayToken.addGatekeeper(gatekeeper, txParams));
+
+    const tx = await gatewayToken.addGatekeeper(gatekeeper, txParams)
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Added gatekeeper to Gateway Token contract. TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Added gatekeeper to Gateway Token contract. TxHash: ${hash}`
     );
   }
 }

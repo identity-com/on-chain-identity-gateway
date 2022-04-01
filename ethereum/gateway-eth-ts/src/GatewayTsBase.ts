@@ -131,9 +131,8 @@ export class GatewayTsBase {
     const result = await (tokenId
       ? gatewayToken.verifyTokenByTokenID(owner, tokenId)
       : gatewayToken.verifyToken(owner));
-    console.log(result);
 
-    return result[0] as boolean;
+    return result;
   }
 
   async getTokenBalance(
@@ -156,14 +155,13 @@ export class GatewayTsBase {
         gatewayToken = this.getGatewayTokenContract(this.defaultGatewayToken);
       }
 
-      const balance: number | BigNumber = await gatewayToken.getBalance(
-        address
-      );
+      const balance = await gatewayToken.getBalance(address);
 
-      constrains =
-        typeof balance === "number"
-          ? BigNumber.from(balance.toString()).add(BigNumber.from("1"))
-          : balance.add(BigNumber.from("1"));
+      // TODO: This line was simplified because balance is ALWAYS BigNumber
+      constrains = balance.add(BigNumber.from("1"));
+        // typeof balance === "number"
+        //   ? BigNumber.from(balance.toString()).add(BigNumber.from("1"))
+        //   : balance.add(BigNumber.from("1"));
     }
 
     return generateId(address, constrains);
