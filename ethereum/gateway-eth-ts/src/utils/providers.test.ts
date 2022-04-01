@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
-
 import { BaseProvider, JsonRpcProvider } from "@ethersproject/providers";
 import { getProvider, getLocalhostProvider } from "./providers";
 import assert = require("assert");
@@ -23,7 +21,7 @@ describe("Check ethers provider", function () {
     assert.equal(networkId, ropstenNetworkID);
   });
 
-  it("Try connect to localhost provider, check connection URL", async () => {
+  it("Try connect to localhost provider, check connection URL", () => {
     const provider: JsonRpcProvider = getLocalhostProvider();
     assert.equal(provider.connection.url, "http://localhost:8545");
   });

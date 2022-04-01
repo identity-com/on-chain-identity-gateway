@@ -1,5 +1,3 @@
-/* eslint-disable max-params */
-
 import { BigNumber, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 
@@ -16,8 +14,8 @@ export class GatewayTs extends GatewayTsBase {
   ) {
     super(provider, wallet, options);
 
-    // eslint-disable-next-line no-void
-    void super.setGasLimit();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    super.setGasLimit();
   }
 
   async addGatekeeper(
@@ -68,6 +66,7 @@ export class GatewayTs extends GatewayTsBase {
     return ethTransaction(contract, "removeNetworkAuthority", args, options);
   }
 
+  // eslint-disable-next-line max-params
   async issue(
     owner: string,
     tokenId: number | BigNumber,

@@ -11,8 +11,8 @@ import { BytesLike, hexDataSlice, id } from "ethers/lib/utils";
 import { generateId } from "./utils/tokenId";
 import assert = require("assert");
 import { GatewayToken } from "./contracts";
-// eslint-disable-next-line unicorn/prefer-module
-require("dotenv/config");
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 const computeCallData = (
   sigHash: string | utils.BytesLike,

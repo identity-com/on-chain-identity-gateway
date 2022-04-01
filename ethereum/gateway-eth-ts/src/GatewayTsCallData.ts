@@ -1,5 +1,3 @@
-/* eslint-disable max-params */
-
 import { BigNumber, Transaction, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 
@@ -15,10 +13,11 @@ export class GatewayTsCallData extends GatewayTsBase {
   ) {
     super(provider, wallet, options);
 
-    // eslint-disable-next-line no-void
-    void super.setGasLimit();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    super.setGasLimit();
   }
 
+  /* eslint-disable max-params */
   async issue(
     owner: string,
     tokenId: number | BigNumber,

@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/require-await */
 import { getExpirationTime } from "./time";
 import { BigNumber } from "ethers/lib/ethers";
 import assert = require("assert");
 import { DEFAULT_EXPIRATION_BN } from "./constants";
 
-describe("Check expiration calculations", function () {
+describe("Check expiration calculations", () => {
   let now: number;
   let nowBN: BigNumber;
   let expiration;
@@ -13,7 +12,7 @@ describe("Check expiration calculations", function () {
   const _minus15days = BigNumber.from(-15 * 24 * 60 * 60);
   const _1850days = 1850 * 24 * 60 * 60;
 
-  it("Try to add 30 days to current time, expect results being equal", async () => {
+  it("Try to add 30 days to current time, expect results being equal", () => {
     now = Math.floor(Date.now() / 1000);
     nowBN = BigNumber.from(now);
     const timeSum = nowBN.add(_30days);
@@ -22,7 +21,7 @@ describe("Check expiration calculations", function () {
     assert.equal(expiration.toString(), timeSum.toString());
   });
 
-  it("Try to add 1850 days to current time, expect results being equal", async () => {
+  it("Try to add 1850 days to current time, expect results being equal", () => {
     now = Math.floor(Date.now() / 1000);
     nowBN = BigNumber.from(now);
     const timeSum = nowBN.add(BigNumber.from(_1850days));
@@ -31,7 +30,7 @@ describe("Check expiration calculations", function () {
     assert.equal(expiration.toString(), timeSum.toString());
   });
 
-  it("Try to add -15 days to current time, expect adding default expiration (14 days)", async () => {
+  it("Try to add -15 days to current time, expect adding default expiration (14 days)", () => {
     now = Math.floor(Date.now() / 1000);
     nowBN = BigNumber.from(now);
     const timeSum = nowBN.add(DEFAULT_EXPIRATION_BN);
