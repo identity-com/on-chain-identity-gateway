@@ -78,11 +78,14 @@ export class GatewayToken {
     address: string,
     tokenID: BigNumberish
   ): Promise<boolean> => {
-    return this.contract.verifyToken(address, tokenID) as Promise<boolean>;
+    return await this.contract.functions["verifyToken(address,uint256)"](
+      address,
+      tokenID
+    ) as Promise<boolean>;
   };
 
   verifyToken = async (address: string): Promise<boolean> => {
-    return this.contract.verifyToken(address) as Promise<boolean>;
+    return await this.contract.functions["verifyToken(address)"](address) as Promise<boolean>;
   };
 
   approve = async (
