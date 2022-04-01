@@ -45,7 +45,7 @@ export default class AddNetworkAuthority extends Command {
     const { args, flags } = await this.parse(AddNetworkAuthority);
 
     const pk = flags.privateKey;
-    const authority: string = args.address;
+    const authority: string = args.address as string;
     const provider: BaseProvider = flags.network;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
@@ -61,7 +61,7 @@ export default class AddNetworkAuthority extends Command {
 
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-    const gasPrice = await flags.gasPriceFee;
+    const gasPrice = flags.gasPriceFee;
     const gasLimit =
       await gatewayToken.contract.estimateGas.addNetworkAuthority(authority);
 
@@ -70,16 +70,15 @@ export default class AddNetworkAuthority extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx: any = await (confirmations > 0
-      ? (
-          await gatewayToken.addNetworkAuthority(authority, txParams)
-        ).wait(confirmations)
-      : gatewayToken.addNetworkAuthority(authority, txParams));
+    const tx = await gatewayToken.addNetworkAuthority(authority, txParams)
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Added network authority to Gateway Token contract. TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Added gatekeeper to Gateway Token contract. TxHash: ${hash}`
     );
+
   }
 }

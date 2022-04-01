@@ -66,7 +66,7 @@ export default class AddGatekeeper extends Command {
       gatekeeper
     );
 
-    const txParams = {
+    const txParams: TxBase = {
       gasLimit: gasLimit,
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
