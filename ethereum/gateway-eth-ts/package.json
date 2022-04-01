@@ -11,10 +11,6 @@
     "postbuild": "rm -f oclif.manifest.json",
     "test": "ts-mocha src/*.test.ts src/**/*.test.ts",
     "posttest": "eslint . --ext .ts --config .eslintrc",
-    "gen-contracts": "yarn gen-contract-flags-storage && yarn gen-contract-gateway-token && yarn gen-contract-gateway-token-controller",
-    "gen-contract-flags-storage": "abi-types-generator './src/lib/abis/FlagsStorage.json' --output='./src/lib/gen/' --name=FlagsStorageContract --provider=ethers_v5",
-    "gen-contract-gateway-token": "abi-types-generator './src/lib/abis/GatewayToken.json' --output='./src/lib/gen/' --name=GatewayTokenContract --provider=ethers_v5",
-    "gen-contract-gateway-token-controller": "abi-types-generator './src/lib/abis/GatewayTokenController.json' --output='./src/lib/gen/' --name=GatewayTokenControllerContract --provider=ethers_v5",
     "version": "oclif-dev readme"
   },
   "repository": "git@github.com:identity-com/on-chain-identity-gateway.git",
