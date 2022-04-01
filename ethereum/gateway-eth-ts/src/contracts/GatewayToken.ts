@@ -1,4 +1,3 @@
-/* eslint-disable max-params */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/require-await */
 
@@ -159,6 +158,7 @@ export class GatewayToken {
     return this.contract.revoke(tokenID, txParams) as unknown;
   };
 
+  /* eslint-disable max-params */
   mint = async (
     to: string,
     tokenID: number | BigNumber,

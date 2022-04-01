@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/require-await */
-/* eslint-disable max-params */
-
 import { Contract, Signer } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import abis from "../lib/abis";
@@ -61,6 +59,7 @@ export class GatewayTokenController {
     return this.contract.isBlacklisted(user) as unknown;
   };
 
+  /* eslint-disable max-params */
   createGatekeeperNetwork = async (
     name: string,
     symbol: string,

@@ -18,7 +18,7 @@ export declare type TxBase = {
   from?: string;
   nonce?: BigNumberish;
 
-  gasLimit?: BigNumberish;
+  gasLimit?: number;
   gasPrice?: number | bigint | BigNumber | Bytes | GasPriceKey;
 
   data?: BytesLike;

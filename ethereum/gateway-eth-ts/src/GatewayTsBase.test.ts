@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/prefer-node-protocol */
-/* eslint-disable @typescript-eslint/require-await */
 import { GatewayTsBase } from "./GatewayTsBase";
 import { BaseProvider, getDefaultProvider } from "@ethersproject/providers";
 import { BigNumber, utils, Wallet } from "ethers";
@@ -7,11 +5,10 @@ import { gatewayTokenAddresses } from "./lib/gatewaytokens";
 import { addresses } from "./lib/addresses";
 import { ONE_BN, ZERO_BN } from "./utils/constants";
 import { TokenData } from "./utils/types";
-import { rejects } from "assert";
-import assert = require("assert");
+import * as assert from "node:assert"
 import { GatewayToken } from "./contracts";
-// eslint-disable-next-line unicorn/prefer-module
-require("dotenv/config");
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 const generateTokenId = (wallet: string, constrains: BigNumber): string => {
   const hexConstrains = utils.hexlify(constrains);
@@ -55,7 +52,7 @@ describe("Test GatewayTSBase class", function () {
     assert.equal(gatewayBase.contractAddresses, addresses[ropstenNetworkID]);
   });
 
-  it("Test getting gateway token address functions", async () => {
+  it("Test getting gateway token address functions", () => {
     let gatewayToken: GatewayToken = gatewayBase.getGatewayTokenContract();
     assert.equal(gatewayToken.contract.address, defaultGatewayToken);
 
@@ -175,7 +172,7 @@ describe("Test GatewayTSBase class", function () {
     assert.deepEqual(data, targetData);
 
     // expect to throw error on non-existing token
-    await rejects(gatewayBase.getTokenData(sampleTokenId));
+    await assert.rejects(gatewayBase.getTokenData(sampleTokenId));
   }).timeout(10_000);
 
   it("Test token bitmask get functions", async () => {
