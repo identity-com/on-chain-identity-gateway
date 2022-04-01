@@ -63,7 +63,7 @@ export const currentGasPrices = async (
   oracle?: GasPriceOracle,
   fallbackGasPrices?: GasPrices
 ): Promise<GasPrices> => {
-  if (oracle === null) {
+  if (!oracle) {
     oracle = new GasPriceOracle(options);
   }
 
