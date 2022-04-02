@@ -14,6 +14,7 @@
     "node/no-missing-import": ["error", {
       "tryExtensions": [".js", ".ts", ".node"]
     }],
-    "unicorn/filename-case": "off"
+    "unicorn/filename-case": "off",
+    "no-warning-comments": "off"
   }
 }

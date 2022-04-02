@@ -4,7 +4,7 @@
   "description": "Adapter library for Identity.com gateway token system on Ethereum",
   "main": "dist/index.js",
   "scripts": {
-    "precompile": "rm -rf dist && yarn gen-contracts",
+    "precompile": "rm -rf dist",
     "compile": "tsc -p tsconfig.json",
     "lint": "eslint src/ --ext .ts",
     "build": "yarn compile && tsc -b && oclif-dev manifest && oclif-dev readme",

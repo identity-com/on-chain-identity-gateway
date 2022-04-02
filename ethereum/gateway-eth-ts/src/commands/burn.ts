@@ -42,7 +42,7 @@ export default class BurnToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(BurnToken);
 
-    const tokenID: BigNumber = args.tokenID;
+    const tokenID = args.tokenID as BigNumber;
     const pk = flags.privateKey;
     const provider: BaseProvider = flags.network;
     const confirmations = flags.confirmations;
@@ -61,7 +61,7 @@ export default class BurnToken extends Command {
 			for owner ${owner}
 			on GatewayToken ${gatewayTokenAddress} contract`);
 
-    const gasPrice = await flags.gasPriceFee;
+    const gasPrice = flags.gasPriceFee;
     const gasLimit = await gatewayToken.contract.estimateGas.burn(tokenID);
 
     const txParams: TxBase = {
@@ -69,14 +69,14 @@ export default class BurnToken extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx: any = await (confirmations > 0
-      ? (await gatewayToken.burn(tokenID, txParams)).wait(confirmations)
-      : gatewayToken.burn(tokenID, txParams));
+    const tx = await gatewayToken.burn(tokenID, txParams);
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Burned existing token with TokenID: ${tokenID.toString()} TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Burned existing token with TokenID: ${tokenID.toString()} TxHash: ${hash}`
     );
   }
 }

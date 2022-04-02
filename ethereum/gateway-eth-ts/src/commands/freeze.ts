@@ -50,7 +50,7 @@ export default class FreezeToken extends Command {
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const tokenID: BigNumber = args.tokenID;
+    const tokenID = args.tokenID as BigNumber;
     const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
     this.log(`Freezing existing token with TokenID:
@@ -67,14 +67,14 @@ export default class FreezeToken extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx: any = await (confirmations > 0
-      ? (await gatewayToken.freeze(tokenID, txParams)).wait(confirmations)
-      : gatewayToken.freeze(tokenID, txParams));
+    const tx = await gatewayToken.freeze(tokenID, txParams);
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Freezed existing token with TokenID: ${tokenID.toString()} TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Freezed existing token with TokenID: ${tokenID.toString()} TxHash: ${hash}`
     );
   }
 }

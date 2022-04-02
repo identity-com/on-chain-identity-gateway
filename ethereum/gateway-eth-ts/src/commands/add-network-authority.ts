@@ -79,6 +79,5 @@ export default class AddNetworkAuthority extends Command {
     this.log(
       `Added gatekeeper to Gateway Token contract. TxHash: ${hash}`
     );
-
   }
 }

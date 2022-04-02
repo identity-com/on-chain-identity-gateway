@@ -35,8 +35,14 @@ export default class RemoveNetworkAuthority extends Command {
       required: true,
       description:
         "Network authority address to remove to the GatewayToken contract",
-      parse: async (input: string): Promise<string> =>
-        utils.isAddress(input) ? input : null,
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
+
+        return input;
+      }
     },
   ];
 
@@ -52,7 +58,7 @@ export default class RemoveNetworkAuthority extends Command {
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const authority: string = args.address;
+    const authority = args.address as string;
 
     signer = signer.connect(provider);
 
@@ -64,7 +70,7 @@ export default class RemoveNetworkAuthority extends Command {
 
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-    const gasPrice = await flags.gasPriceFee;
+    const gasPrice = flags.gasPriceFee;
     const gasLimit =
       await gatewayToken.contract.estimateGas.removeNetworkAuthority(authority);
 
@@ -73,16 +79,14 @@ export default class RemoveNetworkAuthority extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx: any = await (confirmations > 0
-      ? (
-          await gatewayToken.removeNetworkAuthority(authority, txParams)
-        ).wait(confirmations)
-      : gatewayToken.removeNetworkAuthority(authority, txParams));
+    const tx = await gatewayToken.removeNetworkAuthority(authority, txParams)
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Removed network authority on Gateway Token contract. TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Removed network authority on Gateway Token contract. TxHash: ${hash}`
     );
   }
 }
