@@ -10,7 +10,6 @@ import { addFlagsToBitmask } from "./utils/bitmask_flags";
 import { BytesLike, hexDataSlice, id } from "ethers/lib/utils";
 import { generateId } from "./utils/tokenId";
 import assert = require("assert");
-import { GatewayToken } from "./contracts";
 import * as dotenv from 'dotenv'
 dotenv.config()
 
@@ -18,18 +17,13 @@ const computeCallData = (
   sigHash: string | utils.BytesLike,
   argsTypes: Array<string>,
   args: Array<any>
-) => {
-  const data = utils.hexConcat([
+) => utils.hexConcat([
     sigHash,
     utils.defaultAbiCoder.encode(argsTypes, args),
   ]);
-  return data;
-};
 
-const computeSigHash = (fragment: FunctionFragment): BytesLike => {
-  const sigHash = hexDataSlice(id(fragment.format()), 0, 4);
-  return sigHash;
-};
+const computeSigHash = (fragment: FunctionFragment): BytesLike =>
+  hexDataSlice(id(fragment.format()), 0, 4);
 
 describe("Test GatewayTSCallData class", function () {
   const ropstenNetworkID = 3;
@@ -220,7 +214,7 @@ describe("Test GatewayTSCallData class", function () {
       "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be"
     );
 
-    const gatewayToken: GatewayToken = gatewayLib.getGatewayTokenContract();
+    const gatewayToken = gatewayLib.getGatewayTokenContract();
     assert.equal(
       gatewayToken.contract.address,
       gatewayTokenAddresses[ropstenNetworkID][0].address
