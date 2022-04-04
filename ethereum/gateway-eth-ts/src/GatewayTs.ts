@@ -69,10 +69,14 @@ export class GatewayTs extends GatewayTsBase {
   // eslint-disable-next-line max-params
   async issue(
     owner: string,
-    tokenId: number | BigNumber,
-    expiration: number | BigNumber,
-    bitmask: BigNumber,
-    constrains: BigNumber,
+    // eslint-disable-next-line default-param-last
+    tokenId: number | BigNumber = null,
+    // eslint-disable-next-line default-param-last
+    expiration: number | BigNumber = 0,
+    // eslint-disable-next-line default-param-last
+    bitmask: BigNumber = BigNumber.from("0"),
+    // eslint-disable-next-line default-param-last
+    constrains: BigNumber = BigNumber.from("0"),
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<string> {
