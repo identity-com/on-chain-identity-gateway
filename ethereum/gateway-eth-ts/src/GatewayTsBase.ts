@@ -40,7 +40,7 @@ export class GatewayTsBase {
 
   gatewayTokens: GatewayTokenItems = {};
 
-  defaultGatewayToken: string;
+  defaultGatewayToken: string | undefined;
 
   constructor(
     provider: BaseProvider,
@@ -73,7 +73,7 @@ export class GatewayTsBase {
     for (const gatewayToken of gatewayTokenAddresses[this.networkId]) {
       const tokenAddress: string = gatewayToken.address;
       if (
-        defaultGatewayToken !== null &&
+        defaultGatewayToken !== undefined &&
         tokenAddress === defaultGatewayToken
       ) {
         this.defaultGatewayToken = defaultGatewayToken;
@@ -113,7 +113,7 @@ export class GatewayTsBase {
   }
 
   defaultGatewayTokenContract(): GatewayToken {
-    if (this.defaultGatewayToken !== null) {
+    if (this.defaultGatewayToken) {
       return this.gatewayTokens[this.defaultGatewayToken].tokenInstance;
     }
 
