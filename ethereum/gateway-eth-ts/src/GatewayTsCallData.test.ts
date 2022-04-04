@@ -151,13 +151,13 @@ describe("Test GatewayTSCallData class", function () {
 
   it("Try to freeze non-existing token, expect revert", async () => {
     await assert.rejects(gatewayLib.freeze(sampleTokenId));
-  }).timeout(4000);
+  }).timeout(10_000);
 
   it("Try to freeze token with FROZEN state, expect revert", async () => {
     const constrains = BigNumber.from("2");
     const tokenId = generateId(sampleWalletAddress, constrains);
     await assert.rejects(gatewayLib.freeze(tokenId));
-  }).timeout(4000);
+  }).timeout(10_000);
 
   it("Test unfreeze token function, should pass calldata checks", async () => {
     const constrains = BigNumber.from("2");
