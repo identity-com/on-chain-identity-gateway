@@ -83,7 +83,7 @@ describe("Test GatewayTSCallData class", function () {
     await assert.rejects(
       gatewayLib.issue(sampleWalletAddress, tokenId, 0, ZERO_BN)
     );
-  }).timeout(4000);
+  }).timeout(10_000);
 
   it("Try to mint token with invalid bitmask, expect revert", async () => {
     const tokenId = await gatewayLib.generateTokenId(sampleWalletAddress);
