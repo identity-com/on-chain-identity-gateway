@@ -11,7 +11,7 @@ describe("Test token state checks", function () {
     bitmask: "",
   };
 
-  it("Test token state checks", async () => {
+  it("Test token state checks", () => {
     let state = checkTokenState(0);
     assert.equal(state, "ACTIVE");
 
@@ -25,7 +25,7 @@ describe("Test token state checks", function () {
     assert.equal(state, "");
   });
 
-  it("Test token state parsing from TokenData", async () => {
+  it("Test token state parsing from TokenData", () => {
     let state = parseTokenState(defaultTokenData);
     assert.equal(state.state, "ACTIVE");
 

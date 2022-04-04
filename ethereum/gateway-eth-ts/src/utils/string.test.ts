@@ -6,7 +6,7 @@ describe("Check string conversions", function () {
   const sampleString = "SampleString";
   const invalidString = "ThisStringIsTooLongToPassConversionToBytes32";
 
-  it("Try to convert string to bytes32 hex string", async () => {
+  it("Try to convert string to bytes32 hex string", () => {
     const result = toBytes32(sampleString);
     assert.equal(utils.parseBytes32String(result), sampleString);
     assert.throws(() => {
