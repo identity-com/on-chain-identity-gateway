@@ -20,7 +20,7 @@ use cruiser::account_list::AccountList;
 use cruiser::instruction_list::InstructionList;
 use cruiser::on_chain_size::{OnChainSize, OnChainStaticSize};
 use cruiser::solana_program::program_memory::sol_memcmp;
-use cruiser::{AccountInfo, Pubkey, UnixTimestamp};
+use cruiser::{AccountInfo, CruiserResult, GenericError, Pubkey, UnixTimestamp};
 use std::num::NonZeroU64;
 
 #[derive(InstructionList, Copy, Clone, Debug)]
@@ -89,7 +89,8 @@ pub struct GatekeeperNetwork {
     pub auth_threshold: u8,
     pub network_fees: Fees,
     pub pass_expire_time: UnixTimestamp,
-    pub network_data_len: u32,
+    /// Changing this justifies a new network as all old passes will become invalid
+    pub network_data_len: u16,
     pub signer_bump: u8,
     pub valid_mints: Vec<OptionalNonSystemPubkey>,
     pub auth_keys: Vec<(NetworkKeyFlags, Pubkey)>,
@@ -143,6 +144,7 @@ pub struct Gatekeeper {
     pub addresses: Pubkey,
     pub staking_account: Pubkey,
     pub gatekeeper_state: GatekeeperState,
+    pub signer_bump: u8,
     pub auth_keys: Vec<(GatekeeperKeyFlags, Pubkey)>,
 }
 
@@ -156,6 +158,11 @@ pub enum PassState {
     /// Pass invalid, cannot be reactivated without network approval
     Revoked,
 }
+impl OnChainSize<()> for PassState {
+    fn on_chain_max_size(_arg: ()) -> usize {
+        1
+    }
+}
 
 #[derive(Debug)]
 pub struct Pass {
@@ -167,4 +174,183 @@ pub struct Pass {
     pub state: PassState,
     pub network_data: Vec<u8>,
     pub gatekeeper_data: Vec<u8>,
+}
+
+#[derive(Debug)]
+pub struct PassAccess<'a> {
+    data: &'a mut [u8],
+    network_data_len: u16,
+}
+impl<'a> PassAccess<'a> {
+    const VERSION_OFFSET: usize = 0;
+    const ISSUE_TIME_OFFSET: usize = Self::VERSION_OFFSET + 1;
+    const NETWORK_OFFSET: usize = Self::ISSUE_TIME_OFFSET + 8;
+    const ISSUING_GATEKEEPER_OFFSET: usize = Self::NETWORK_OFFSET + 32;
+    const OWNER_WALLET_OFFSET: usize = Self::ISSUING_GATEKEEPER_OFFSET + 32;
+    const STATE_OFFSET: usize = Self::OWNER_WALLET_OFFSET + 32;
+    const DYNAMIC_DATA_OFFSET: usize = Self::STATE_OFFSET + 1;
+
+    pub fn new(data: &'a mut [u8], network_data_len: u16) -> CruiserResult<Self> {
+        let needed_data = Self::on_chain_size(network_data_len, 0);
+        let data_len = data.len();
+        if data_len < needed_data {
+            Err(GenericError::Custom {
+                error: format!(
+                    "Not enough pass data, needed {}, got {}",
+                    needed_data, data_len
+                ),
+            }
+            .into())
+        } else {
+            Ok(Self {
+                data,
+                network_data_len,
+            })
+        }
+    }
+
+    #[must_use]
+    pub fn version(&self) -> u8 {
+        self.data[Self::VERSION_OFFSET]
+    }
+
+    #[must_use]
+    pub fn version_mut(&mut self) -> &mut u8 {
+        &mut self.data[Self::VERSION_OFFSET]
+    }
+
+    #[must_use]
+    pub fn issue_time(&self) -> &UnixTimestamp {
+        // This has alignment issues, will need to fix that
+        unsafe {
+            &*self
+                .data
+                .as_ptr()
+                .add(Self::ISSUE_TIME_OFFSET)
+                .cast::<UnixTimestamp>()
+        }
+    }
+
+    #[must_use]
+    pub fn issue_time_mut(&mut self) -> &mut UnixTimestamp {
+        // This has alignment issues, will need to fix that
+        unsafe {
+            &mut *self
+                .data
+                .as_mut_ptr()
+                .add(Self::ISSUE_TIME_OFFSET)
+                .cast::<UnixTimestamp>()
+        }
+    }
+
+    #[must_use]
+    pub fn network(&self) -> &Pubkey {
+        unsafe {
+            &*self
+                .data
+                .as_ptr()
+                .add(Self::NETWORK_OFFSET)
+                .cast::<Pubkey>()
+        }
+    }
+
+    #[must_use]
+    pub fn network_mut(&mut self) -> &mut Pubkey {
+        unsafe {
+            &mut *self
+                .data
+                .as_mut_ptr()
+                .add(Self::NETWORK_OFFSET)
+                .cast::<Pubkey>()
+        }
+    }
+
+    #[must_use]
+    pub fn issuing_gatekeeper(&self) -> &Pubkey {
+        unsafe {
+            &*self
+                .data
+                .as_ptr()
+                .add(Self::ISSUING_GATEKEEPER_OFFSET)
+                .cast::<Pubkey>()
+        }
+    }
+
+    #[must_use]
+    pub fn issuing_gatekeeper_mut(&mut self) -> &mut Pubkey {
+        unsafe {
+            &mut *self
+                .data
+                .as_mut_ptr()
+                .add(Self::ISSUING_GATEKEEPER_OFFSET)
+                .cast::<Pubkey>()
+        }
+    }
+
+    #[must_use]
+    pub fn owner_wallet(&self) -> &Pubkey {
+        unsafe {
+            &*self
+                .data
+                .as_ptr()
+                .add(Self::OWNER_WALLET_OFFSET)
+                .cast::<Pubkey>()
+        }
+    }
+
+    #[must_use]
+    pub fn owner_wallet_mut(&mut self) -> &mut Pubkey {
+        unsafe {
+            &mut *self
+                .data
+                .as_mut_ptr()
+                .add(Self::OWNER_WALLET_OFFSET)
+                .cast::<Pubkey>()
+        }
+    }
+
+    #[must_use]
+    pub fn state(&self) -> PassState {
+        match self.data[Self::STATE_OFFSET] {
+            0 => PassState::Active,
+            1 => PassState::Frozen,
+            2 => PassState::Revoked,
+            _ => unreachable!(),
+        }
+    }
+
+    #[must_use]
+    pub fn state_mut(&mut self) -> &mut PassState {
+        todo!()
+    }
+
+    #[must_use]
+    pub fn network_data(&self) -> &[u8] {
+        &self.data[Self::DYNAMIC_DATA_OFFSET..][..self.network_data_len as usize]
+    }
+
+    #[must_use]
+    pub fn network_data_mut(&mut self) -> &mut [u8] {
+        &mut self.data[Self::DYNAMIC_DATA_OFFSET..][..self.network_data_len as usize]
+    }
+
+    #[must_use]
+    pub fn gatekeeper_data(&self) -> &[u8] {
+        &self.data[Self::DYNAMIC_DATA_OFFSET + self.network_data_len as usize..]
+    }
+
+    #[must_use]
+    pub fn gatekeeper_data_mut(&mut self) -> &mut [u8] {
+        &mut self.data[Self::DYNAMIC_DATA_OFFSET + self.network_data_len as usize..]
+    }
+
+    #[must_use]
+    fn on_chain_size(network_data_len: u16, gatekeeper_data_len: u16) -> usize {
+        u8::on_chain_static_size()
+            + UnixTimestamp::on_chain_static_size()
+            + Pubkey::on_chain_static_size() * 3
+            + PassState::on_chain_static_size()
+            + network_data_len as usize
+            + gatekeeper_data_len as usize
+    }
 }
