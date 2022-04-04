@@ -43,13 +43,20 @@ export default class IssueToken extends Command {
       name: "address",
       required: true,
       description: "Owner ethereum address to tokenID for",
-      parse: async (input: string): Promise<string> =>
-        utils.isAddress(input) ? input : null,
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
+
+        return input;
+      }
     },
     {
       name: "expiration",
       required: false,
       description: "Expiration timestamp for newly issued token",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: any): Promise<BigNumber> => BigNumber.from(input),
       default: 0,
     },
@@ -57,6 +64,7 @@ export default class IssueToken extends Command {
       name: "constrains",
       required: false,
       description: "Constrains to generate tokenId",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: any): Promise<BigNumber> => BigNumber.from(input),
       default: BigNumber.from("0"),
     },
@@ -76,9 +84,9 @@ export default class IssueToken extends Command {
     let tokenID: BigNumber = flags.tokenID;
     const generateTokenId: boolean = flags.generateTokenId;
     const bitmask: BigNumber = flags.bitmask;
-    const ownerAddress: string = args.address;
-    let expiration: BigNumber = args.expiration;
-    const constrains: BigNumber = args.constrains;
+    const ownerAddress = args.address as string;
+    let expiration = args.expiration as BigNumber;
+    const constrains = args.constrains as BigNumber;
     const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
@@ -87,7 +95,7 @@ export default class IssueToken extends Command {
       tokenID = generateId(ownerAddress, constrains);
     }
 
-    const gasPrice = await flags.gasPriceFee;
+    const gasPrice = flags.gasPriceFee;
 
     if (expiration.gt(0)) {
       expiration = getExpirationTime(expiration);
@@ -106,32 +114,24 @@ export default class IssueToken extends Command {
     };
 
     this.log(`Issuing new token with TokenID:
-			${tokenID} 
+			${tokenID.toString()} 
 			for owner ${ownerAddress}
 			on GatewayToken ${gatewayTokenAddress} contract`);
 
-    const tx: any = await (confirmations > 0
-      ? (
-          await gatewayToken.mint(
-            ownerAddress,
-            tokenID,
-            expiration,
-            bitmask,
-            txParams
-          )
-        ).wait(confirmations)
-      : gatewayToken.mint(
-          ownerAddress,
-          tokenID,
-          expiration,
-          bitmask,
-          txParams
-        ));
+    const tx = await gatewayToken.mint(
+      ownerAddress,
+      tokenID,
+      expiration,
+      bitmask,
+      txParams
+    );
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Issued new token with TokenID: ${tokenID} to ${ownerAddress} TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Issued new token with TokenID: ${tokenID.toString()} to ${ownerAddress} TxHash: ${hash}`
     );
   }
 }

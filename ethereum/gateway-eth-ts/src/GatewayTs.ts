@@ -14,6 +14,7 @@ export class GatewayTs extends GatewayTsBase {
   ) {
     super(provider, wallet, options);
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     super.setGasLimit();
   }
 
@@ -65,12 +66,17 @@ export class GatewayTs extends GatewayTsBase {
     return ethTransaction(contract, "removeNetworkAuthority", args, options);
   }
 
+  // eslint-disable-next-line max-params
   async issue(
     owner: string,
-    tokenId: number | BigNumber,
-    expiration: number | BigNumber,
-    bitmask: BigNumber,
-    constrains: BigNumber,
+    // eslint-disable-next-line default-param-last
+    tokenId: number | BigNumber = null,
+    // eslint-disable-next-line default-param-last
+    expiration: number | BigNumber = 0,
+    // eslint-disable-next-line default-param-last
+    bitmask: BigNumber = BigNumber.from("0"),
+    // eslint-disable-next-line default-param-last
+    constrains: BigNumber = BigNumber.from("0"),
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<string> {

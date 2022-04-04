@@ -11,6 +11,8 @@
       "strictNullChecks": false,
       "allowJs": true,
       "checkJs": true,
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
     },
     "include": [
       "src/**/*"
