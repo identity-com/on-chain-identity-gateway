@@ -34,6 +34,7 @@ export default class AddGatekeeper extends Command {
       name: "address",
       required: true,
       description: "Gatekeeper address to add to the GatewayToken contract",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<string | null> =>
         utils.isAddress(input) ? input : null,
     },
@@ -43,7 +44,7 @@ export default class AddGatekeeper extends Command {
     const { args, flags } = await this.parse(AddGatekeeper);
 
     const pk = flags.privateKey;
-    const gatekeeper: string = args.address;
+    const gatekeeper: string = args.address as string;
     const provider: BaseProvider = flags.network;
 
     const confirmations = flags.confirmations;
@@ -60,8 +61,8 @@ export default class AddGatekeeper extends Command {
 
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-    const gasPrice = await flags.gasPriceFee;
-    const gasLimit = await gatewayToken.contract.estimateGas.addGatekeeper(
+    const gasPrice = flags.gasPriceFee;
+    const gasLimit: BigNumber = await gatewayToken.contract.estimateGas.addGatekeeper(
       gatekeeper
     );
 
@@ -70,16 +71,15 @@ export default class AddGatekeeper extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx: any = await (confirmations > 0
-      ? (
-          await gatewayToken.addGatekeeper(gatekeeper, txParams)
-        ).wait(confirmations)
-      : gatewayToken.addGatekeeper(gatekeeper, txParams));
+
+    const tx = await gatewayToken.addGatekeeper(gatekeeper, txParams)
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Added gatekeeper to Gateway Token contract. TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Added gatekeeper to Gateway Token contract. TxHash: ${hash}`
     );
   }
 }
