@@ -1,3 +1,4 @@
+// eslint-disable-next-line unicorn/prefer-node-protocol
 import { Buffer } from "buffer";
 import { Connection, PublicKey } from "@solana/web3.js";
 import {
@@ -21,12 +22,13 @@ export const gatewayTokenInfo = async (
     throw new Error("Not an SPL Token");
   }
 
-  if (info.data.length != AccountLayout.span) {
+  if (info.data.length !== AccountLayout.span) {
     throw new Error("Invalid account size");
   }
 
-  const data = Buffer.from(info.data);
-  const accountInfo = AccountLayout.decode(data);
+  // ? Is accountInfo NOT of type AccountInfo? I'm confused as to why state does not exist on
+  const data: Buffer = Buffer.from(info.data);
+  const accountInfo = AccountLayout.decode(data) as AccountInfo;
   accountInfo.address = tokenAccount;
   accountInfo.mint = new PublicKey(accountInfo.mint);
   accountInfo.owner = new PublicKey(accountInfo.owner);
@@ -36,7 +38,7 @@ export const gatewayTokenInfo = async (
   return accountInfo;
 };
 
-export const prettyPrint = (token: GatewayToken) =>
+export const prettyPrint = (token: GatewayToken): string =>
   JSON.stringify(
     {
       issuingGatekeeper: token.issuingGatekeeper.toBase58(),

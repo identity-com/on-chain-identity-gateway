@@ -26,6 +26,7 @@ export class GatekeeperNetworkService {
    * @param connection A solana connection object
    * @param gatekeeperNetwork The network authority's key
    */
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     private readonly connection: Connection,
     private gatekeeperNetwork: Keypair
@@ -54,8 +55,10 @@ export class GatekeeperNetworkService {
 
   /**
    * Add a gatekeeper to the network
-   * @param gatekeeperAuthority
-   * @param options
+   * @param gatekeeperAuthority PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<SendableDataTransaction<PublicKey>>
    */
   async addGatekeeper(
     gatekeeperAuthority: PublicKey,
@@ -111,7 +114,9 @@ export class GatekeeperNetworkService {
 
   /**
    * Check if the gatekeeper already belongs to the network
-   * @param gatekeeperAuthority
+   * @param gatekeeperAuthority PublicKey
+   *
+   * @returns Promise<boolean>
    */
   async hasGatekeeper(gatekeeperAuthority: PublicKey): Promise<boolean> {
     const gatekeeperAccount = await getGatekeeperAccountAddress(
@@ -122,12 +127,16 @@ export class GatekeeperNetworkService {
       gatekeeperAccount
     );
 
-    return !!gatekeeperAccountInfo;
+    return Boolean(gatekeeperAccountInfo);
   }
 
   /**
    * Add Network Feature to Network
-   * @param feature
+   * @param hashOrNonce HashOrNonce
+   * @param feature NetworkFeature
+   * @param options TransactionOptions
+   *
+   * @returns Promise<SendableDataTransaction<PublicKey>>
    */
   async addNetworkFeature(
     hashOrNonce: HashOrNonce,
@@ -153,7 +162,11 @@ export class GatekeeperNetworkService {
 
   /**
    * Remove Network Feature from Network
-   * @param feature
+   * @param hashOrNonce HashOrNonce
+   * @param feature NetworkFeature
+   * @param options TransactionOptions
+   *
+   * @returns Promise<SendableDataTransaction<PublicKey>>
    */
   async removeNetworkFeature(
     hashOrNonce: HashOrNonce,
@@ -180,7 +193,9 @@ export class GatekeeperNetworkService {
 
   /**
    * Check if the feature is set for the network
-   * @param feature
+   * @param feature NetworkFeature
+   *
+   * @returns Promise<boolean>
    */
   async hasNetworkFeature(feature: NetworkFeature): Promise<boolean> {
     return featureExists(
@@ -195,17 +210,19 @@ export class SimpleGatekeeperNetworkService {
   gns: GatekeeperNetworkService;
   /**
    * Simpler version of the GatekeeperNetworkService class. The functions in here send and confirm the results from those in GatekeeperNetworkService, returning a PublicKey rather than a SendableDataTransaction
-   * @param connection
-   * @param gatekeeperNetwork
+   * @param connection Connection
+   * @param gatekeeperNetwork Keypair
    */
   constructor(connection: Connection, gatekeeperNetwork: Keypair) {
     this.gns = new GatekeeperNetworkService(connection, gatekeeperNetwork);
   }
+
   /**
    * Sends and Confirms results from the GatekeeperNetworkService "addGatekeeper" function
-   * @param gatekeeperAuthority
-   * @param options
-   * @returns
+   * @param gatekeeperAuthority PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<PublicKey | null>
    */
   async addGatekeeper(
     gatekeeperAuthority: PublicKey,
@@ -216,11 +233,13 @@ export class SimpleGatekeeperNetworkService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+
   /**
    * Sends and Confirms results from the GatekeeperNetworkService "revokeGatekeeper" function
-   * @param gatekeeperAuthority
-   * @param options
-   * @returns
+   * @param gatekeeperAuthority PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<PublicKey | null>
    */
   async revokeGatekeeper(
     gatekeeperAuthority: PublicKey,
@@ -231,12 +250,14 @@ export class SimpleGatekeeperNetworkService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+
   /**
    * Sends and Confirms results from the GatekeeperNetworkService "addNetworkFeature" function
-   * @param hashOrNonce
-   * @param feature
-   * @param options
-   * @returns
+   * @param hashOrNonce HashOrNonce
+   * @param feature NetworkFeature
+   * @param options TransactionOptions
+   *
+   * @returns Promise<PublicKey | null>
    */
   async addNetworkFeature(
     hashOrNonce: HashOrNonce,
@@ -248,12 +269,14 @@ export class SimpleGatekeeperNetworkService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+
   /**
    * Sends and Confirms results from the GatekeeperNetworkService "removeNetworkFeature" function
-   * @param hashOrNonce
-   * @param feature
-   * @param options
-   * @returns
+   * @param hashOrNonce HashOrNonce
+   * @param feature NetworkFeature
+   * @param options TransactionOptions
+   *
+   * @returns Promise<PublicKey | null>
    */
   async removeNetworkFeature(
     hashOrNonce: HashOrNonce,

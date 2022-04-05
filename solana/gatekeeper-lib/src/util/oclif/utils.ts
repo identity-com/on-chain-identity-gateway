@@ -11,8 +11,12 @@ export const getTokenUpdateProperties = async (
     cluster: ExtendedCluster | undefined;
     gatekeeperKey: Keypair | undefined;
   }
-) => {
-  const gatewayToken: PublicKey = args.gatewayToken;
+): Promise<{
+  gatewayToken: PublicKey;
+  gatekeeper: Keypair;
+  service: GatekeeperService;
+}> => {
+  const gatewayToken: PublicKey = args.gatewayToken as PublicKey;
   const gatekeeper = flags.gatekeeperKey as Keypair;
   const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
 
@@ -29,7 +33,9 @@ export const getTokenUpdateProperties = async (
 /**
  * If SOLANA_CLUSTER_URL is set, create a connection to it
  * Otherwise, create a connection to the passed-in cluster
- * @param cluster
+ * @param cluster ExtendedCluster
+ *
+ * @returns Connection
  */
 export const getConnectionFromEnv = (cluster?: ExtendedCluster): Connection => {
   if (process.env.SOLANA_CLUSTER_URL)
