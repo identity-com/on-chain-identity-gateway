@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Contract, Signer } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import abis from "../lib/abis";
@@ -16,6 +15,7 @@ export class Forwarder {
   }
 
   execute = (request: EIP712Message, signature: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
     return this.contract.execute(request, signature);
   };
 }

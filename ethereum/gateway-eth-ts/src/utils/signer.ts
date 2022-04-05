@@ -127,9 +127,12 @@ const buildRequest = async (
   forwarder: Contract,
   input: Input
 ): Promise<EIP712Message> => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
   const nonce = await forwarder
     .getNonce(input.from)
     .then((nonce: BigNumber) => nonce.toString());
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   return { value: 0, gas: 2e6, nonce, ...input };
 };
 
