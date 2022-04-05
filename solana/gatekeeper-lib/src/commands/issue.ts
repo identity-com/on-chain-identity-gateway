@@ -25,6 +25,7 @@ export default class Issue extends Command {
       char: "e",
       description:
         "The expiry time in seconds for the gateway token (default none)",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string) => Number(input),
     }),
     gatekeeperKey: gatekeeperKeyFlag(),
@@ -37,14 +38,15 @@ export default class Issue extends Command {
       name: "address",
       required: true,
       description: "The address to issue the token to",
-      parse: async (input: string) => new PublicKey(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(Issue);
 
-    const address: PublicKey = args.address;
+    const address: PublicKey = args.address as PublicKey;
     const gatekeeper = flags.gatekeeperKey as Keypair;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
     this.log(`Issuing:
