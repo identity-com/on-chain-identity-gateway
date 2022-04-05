@@ -31,6 +31,7 @@ export default class GetToken extends Command {
       name: "tokenID",
       required: true,
       description: "Owner address to verify identity token for",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
   ];
@@ -40,7 +41,7 @@ export default class GetToken extends Command {
 
     const pk = flags.privateKey;
     const provider: BaseProvider = flags.network;
-    const tokenID: BigNumber = args.tokenID;
+    const tokenID = args.tokenID as BigNumber;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
       ? mnemonicSigner(pk, provider)
@@ -55,7 +56,7 @@ export default class GetToken extends Command {
     this.log(
       `Gateway token information:
 
-            Gateway TokenID: ${tokenID}
+            Gateway TokenID: ${tokenID.toString()}
             Owner: ${token?.owner} 
             State: ${checkTokenState(token?.state)}
             Identity: ${token?.identity} 

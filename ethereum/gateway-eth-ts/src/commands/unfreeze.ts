@@ -34,6 +34,7 @@ export default class UnfreezeToken extends Command {
       name: "tokenID",
       required: true,
       description: "Token ID number to unfreeze",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
   ];
@@ -49,8 +50,8 @@ export default class UnfreezeToken extends Command {
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const tokenID: BigNumber = args.tokenID;
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const tokenID = args.tokenID as BigNumber;
+    const gatewayTokenAddress = flags.gatewayTokenAddress;
 
     this.log(`Unfreezing existing token with TokenID:
 			${tokenID.toString()} 
@@ -58,7 +59,7 @@ export default class UnfreezeToken extends Command {
 
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-    const gasPrice = await flags.gasPriceFee;
+    const gasPrice = flags.gasPriceFee;
     const gasLimit = await gatewayToken.contract.estimateGas.unfreeze(tokenID);
 
     const txParams: TxBase = {
@@ -66,14 +67,14 @@ export default class UnfreezeToken extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx: any = await (confirmations > 0
-      ? (await gatewayToken.unfreeze(tokenID, txParams)).wait(confirmations)
-      : gatewayToken.unfreeze(tokenID, txParams));
+    const tx = await gatewayToken.unfreeze(tokenID, txParams)
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Unfreezed existing token with TokenID: ${tokenID.toString()} TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Unfreezed existing token with TokenID: ${tokenID.toString()} TxHash: ${hash}`
     );
   }
 }
