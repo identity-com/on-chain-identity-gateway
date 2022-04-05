@@ -11,7 +11,7 @@ export const getExpirationTime = (
     expiration = BigNumber.from(expiration.toString());
   }
 
-  if (expiration !== null && expiration.gt(ZERO_BN)) {
+  if (expiration && expiration.gt(ZERO_BN)) {
     return bnTime.add(expiration);
   }
 

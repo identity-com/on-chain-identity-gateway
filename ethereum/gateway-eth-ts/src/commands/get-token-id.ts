@@ -1,5 +1,5 @@
 import { Command, Flags } from "@oclif/core";
-import { BigNumber, utils, Wallet } from "ethers";
+import { utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
 import {
@@ -29,8 +29,14 @@ export default class GetTokenID extends Command {
       name: "address",
       required: true,
       description: "Owner address to verify identity token for",
-      parse: async (input: string): Promise<string> =>
-        utils.isAddress(input) ? input : null,
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
+
+        return input;
+      }
     },
   ];
 
@@ -44,12 +50,12 @@ export default class GetTokenID extends Command {
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const ownerAddress: string = args.address;
+    const ownerAddress = args.address as string;
     const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-    const tokenId: number | BigNumber = await gatewayToken.getTokenId(
+    const tokenId = await gatewayToken.getTokenId(
       ownerAddress
     );
 

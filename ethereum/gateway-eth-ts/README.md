@@ -7,8 +7,7 @@
 
 <!-- toc -->
 
-- [Usage](#usage)
-- [Commands](#commands)
+- [gateway-eth-ts](#gateway-eth-ts)
 <!-- tocstop -->
 
 ## Usage
@@ -48,12 +47,13 @@ USAGE
 - [`gateway-eth-ts revoke TOKENID`](#gateway-eth-ts-revoke-tokenid)
 - [`gateway-eth-ts unfreeze TOKENID`](#gateway-eth-ts-unfreeze-tokenid)
 - [`gateway-eth-ts verify ADDRESS [TOKENID]`](#gateway-eth-ts-verify-address-tokenid)
+- [`gateway-eth-ts version`](#gateway-eth-ts-version)
 
 ## `gateway-eth-ts add-gatekeeper ADDRESS`
 
 Add a gatekeeper to a GatewayToken contract
 
-```shell
+```
 USAGE
   $ gateway-eth-ts add-gatekeeper ADDRESS
 
@@ -66,12 +66,12 @@ OPTIONS
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -86,7 +86,7 @@ _See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-
 
 Add a network authority to a GatewayToken contract
 
-```shell
+```
 USAGE
   $ gateway-eth-ts add-network-authority ADDRESS
 
@@ -99,12 +99,12 @@ OPTIONS
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -119,7 +119,7 @@ _See code: [dist/commands/add-network-authority.ts](https://github.com/identity-
 
 Blacklist user globaly in the gateway token system
 
-```shell
+```
 USAGE
   $ gateway-eth-ts blacklist ADDRESS
 
@@ -132,12 +132,11 @@ OPTIONS
   -f, --gasPriceFee=gasPriceFee      [default: [object Object]] Gas Price level to execute transaction with. For
                                      example: instant, fast, standard, slow
 
-  -h, --help                         show CLI help
+  -h, --help                         Show CLI help.
 
   -n, --network=network              [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey        [default: test test test test test test test test test test test junk] The ethereum
-                                     address private key for signing messages
+  -p, --privateKey=privateKey        [default: [object Object]] The ethereum address private key for signing messages
 
 EXAMPLE
   $ gateway blacklist 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -149,7 +148,7 @@ _See code: [dist/commands/blacklist.ts](https://github.com/identity-com/on-chain
 
 Burn existing identity token using TokenID
 
-```shell
+```
 USAGE
   $ gateway-eth-ts burn TOKENID
 
@@ -162,12 +161,12 @@ OPTIONS
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -182,7 +181,7 @@ _See code: [dist/commands/burn.ts](https://github.com/identity-com/on-chain-iden
 
 Freeze existing identity token using TokenID
 
-```shell
+```
 USAGE
   $ gateway-eth-ts freeze TOKENID
 
@@ -195,12 +194,12 @@ OPTIONS
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -215,7 +214,7 @@ _See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-id
 
 Get information related to gateway token by tokenID
 
-```shell
+```
 USAGE
   $ gateway-eth-ts get-token TOKENID
 
@@ -223,11 +222,11 @@ ARGUMENTS
   TOKENID  Owner address to verify identity token for
 
 OPTIONS
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -242,7 +241,7 @@ _See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain
 
 Get default gateway token ID by owner's address
 
-```shell
+```
 USAGE
   $ gateway-eth-ts get-token-id ADDRESS
 
@@ -250,11 +249,11 @@ ARGUMENTS
   ADDRESS  Owner address to verify identity token for
 
 OPTIONS
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -269,7 +268,7 @@ _See code: [dist/commands/get-token-id.ts](https://github.com/identity-com/on-ch
 
 display help for gateway-eth-ts
 
-```shell
+```
 USAGE
   $ gateway-eth-ts help [COMMAND]
 
@@ -286,7 +285,7 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.1
 
 Issue new identity token with TokenID for Ethereum address
 
-```shell
+```
 USAGE
   $ gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]
 
@@ -306,14 +305,14 @@ OPTIONS
 
   -g, --[no-]generateTokenId                     Identifier used to determine wether tokenId has to be generated
 
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
 
   -i, --tokenID=tokenID                          Token ID number to issue
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -330,7 +329,7 @@ _See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-ide
 
 Refresh existing identity token with TokenID for Ethereum address
 
-```shell
+```
 USAGE
   $ gateway-eth-ts refresh TOKENID [EXPIRY]
 
@@ -344,12 +343,12 @@ OPTIONS
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -364,7 +363,7 @@ _See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-i
 
 Remove gatekeeper to a GatewayToken contract
 
-```shell
+```
 USAGE
   $ gateway-eth-ts remove-gatekeeper ADDRESS
 
@@ -377,12 +376,12 @@ OPTIONS
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -397,7 +396,7 @@ _See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/
 
 Remove network authority to a GatewayToken contract
 
-```shell
+```
 USAGE
   $ gateway-eth-ts remove-network-authority ADDRESS
 
@@ -410,12 +409,12 @@ OPTIONS
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -430,7 +429,7 @@ _See code: [dist/commands/remove-network-authority.ts](https://github.com/identi
 
 Revoke existing identity token by TokenID
 
-```shell
+```
 USAGE
   $ gateway-eth-ts revoke TOKENID
 
@@ -443,12 +442,12 @@ OPTIONS
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -463,7 +462,7 @@ _See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-id
 
 Unfreeze existing identity token using TokenID
 
-```shell
+```
 USAGE
   $ gateway-eth-ts unfreeze TOKENID
 
@@ -476,12 +475,12 @@ OPTIONS
   -f, --gasPriceFee=gasPriceFee                  [default: [object Object]] Gas Price level to execute transaction with.
                                                  For example: instant, fast, standard, slow
 
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
 
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -496,7 +495,7 @@ _See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-
 
 Verify existing identity using token owner address
 
-```shell
+```
 USAGE
   $ gateway-eth-ts verify ADDRESS [TOKENID]
 
@@ -505,11 +504,11 @@ ARGUMENTS
   TOKENID  Token ID to verify identity for
 
 OPTIONS
-  -h, --help                                     show CLI help
+  -h, --help                                     Show CLI help.
   -n, --network=network                          [default: [object Object]] Specify target network to work with
 
-  -p, --privateKey=privateKey                    [default: test test test test test test test test test test test junk]
-                                                 The ethereum address private key for signing messages
+  -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
+                                                 messages
 
   -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
                                                  address to target
@@ -519,6 +518,15 @@ EXAMPLE
 ```
 
 _See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/verify.ts)_
+
+## `gateway-eth-ts version`
+
+```
+USAGE
+  $ gateway-eth-ts version
+```
+
+_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.0.4/src/commands/version.ts)_
 
 <!-- commandsstop -->
 
