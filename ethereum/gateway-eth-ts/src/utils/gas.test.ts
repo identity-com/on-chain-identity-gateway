@@ -5,8 +5,7 @@ import {
   GasPrices,
 } from "./gas";
 import assert = require("assert");
-// eslint-disable-next-line unicorn/prefer-module
-const { should } = require("chai");
+import { should } from "chai";
 import { utils } from "ethers/lib/ethers";
 import { GasPriceOracle } from "gas-price-oracle";
 should();
@@ -38,25 +37,25 @@ describe("Test gas prices oracle", function () {
     gasOracle = getDefaultOracle(ropstenNetworkID);
 
     let gasPrice = await estimateGasPrice("fast", gasOracle, fallbackGasPrices);
-    await assert.equal(
+    assert.equal(
       gasPrice.toString(),
       parseGwei(fallbackGasPrices.fast.toString())
     );
 
     gasPrice = await estimateGasPrice("low", gasOracle, fallbackGasPrices);
-    await assert.equal(
+    assert.equal(
       gasPrice.toString(),
       parseGwei(fallbackGasPrices.low.toString())
     );
 
     gasPrice = await estimateGasPrice("standard", gasOracle, fallbackGasPrices);
-    await assert.equal(
+    assert.equal(
       gasPrice.toString(),
       parseGwei(fallbackGasPrices.standard.toString())
     );
 
     gasPrice = await estimateGasPrice("instant", gasOracle, fallbackGasPrices);
-    await assert.equal(
+    assert.equal(
       gasPrice.toString(),
       parseGwei(fallbackGasPrices.instant.toString())
     );

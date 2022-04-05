@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/require-await */
+
 import { Flags } from "@oclif/core";
 import { BigNumber, utils } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";

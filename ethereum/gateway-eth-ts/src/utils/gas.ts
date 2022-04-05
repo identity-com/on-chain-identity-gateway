@@ -1,4 +1,4 @@
-import { BigNumber, utils, Wallet } from "ethers";
+import { BigNumber, BytesLike, utils, Wallet } from "ethers";
 import { GasPriceOracle } from "gas-price-oracle";
 import { DEFAULT_CHAIN_ID } from "./constants";
 import { getProvider } from "./providers";
@@ -63,7 +63,7 @@ export const currentGasPrices = async (
   oracle?: GasPriceOracle,
   fallbackGasPrices?: GasPrices
 ): Promise<GasPrices> => {
-  if (oracle === null) {
+  if (!oracle) {
     oracle = new GasPriceOracle(options);
   }
 
@@ -94,7 +94,7 @@ export const estimateGasPrice = async (
 export const estimateGasLimit = async (
   toAddress: string,
   value?: number,
-  data?: any,
+  data?: BytesLike,
   signer?: Wallet
 ): Promise<number | BigNumber> => {
   if (!signer) {

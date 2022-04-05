@@ -17,7 +17,7 @@ describe("Check ethers signers", function () {
   const invalidMnemonic =
     "test test test test test test test test test invalid mnemonic phrase";
 
-  it("Try to generate wallet from private key, should throw an error on invalid private key or mnemonic", async () => {
+  it("Try to generate wallet from private key, should throw an error on invalid private key or mnemonic", () => {
     wallet = privateKeySigner(samplePrivateKey);
     assert.equal(wallet.address, privateKeyAddr);
 
@@ -32,7 +32,7 @@ describe("Check ethers signers", function () {
     }, Error);
   });
 
-  it("Try to generate wallet from mnemonic phrase, should throw an error on invalid mnemonic or private key", async () => {
+  it("Try to generate wallet from mnemonic phrase, should throw an error on invalid mnemonic or private key", () => {
     wallet = mnemonicSigner(sampleMnemonic);
     assert.equal(wallet.address, mnemonicAddr);
 

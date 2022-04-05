@@ -5,11 +5,10 @@ import { gatewayTokenAddresses } from "./lib/gatewaytokens";
 import { addresses } from "./lib/addresses";
 import { ONE_BN, ZERO_BN } from "./utils/constants";
 import { TokenData } from "./utils/types";
-import { rejects } from "assert";
-import assert = require("assert");
+import * as assert from "node:assert"
 import { GatewayToken } from "./contracts";
-// eslint-disable-next-line unicorn/prefer-module
-require("dotenv/config");
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 const generateTokenId = (wallet: string, constrains: BigNumber): string => {
   const hexConstrains = utils.hexlify(constrains);
@@ -43,7 +42,7 @@ describe("Test GatewayTSBase class", function () {
     gatewayBase = new GatewayTsBase(provider, wallet);
 
     await gatewayBase.init(defaultGatewayToken);
-    const networkId = await (await gatewayBase.provider.getNetwork()).chainId;
+    const networkId = (await gatewayBase.provider.getNetwork()).chainId;
 
     assert.equal(gatewayBase.defaultGatewayToken, defaultGatewayToken);
     assert.equal(gatewayBase.wallet, wallet);
@@ -53,14 +52,11 @@ describe("Test GatewayTSBase class", function () {
     assert.equal(gatewayBase.contractAddresses, addresses[ropstenNetworkID]);
   });
 
-  it("Test getting gateway token address functions", async () => {
-    let gatewayToken: GatewayToken =
-      await gatewayBase.getGatewayTokenContract();
+  it("Test getting gateway token address functions", () => {
+    let gatewayToken: GatewayToken = gatewayBase.getGatewayTokenContract();
     assert.equal(gatewayToken.contract.address, defaultGatewayToken);
 
-    gatewayToken = await gatewayBase.getGatewayTokenContract(
-      defaultGatewayToken
-    );
+    gatewayToken = gatewayBase.getGatewayTokenContract(defaultGatewayToken);
     assert.equal(gatewayToken.contract.address, defaultGatewayToken);
 
     assert.throws(
@@ -176,7 +172,7 @@ describe("Test GatewayTSBase class", function () {
     assert.deepEqual(data, targetData);
 
     // expect to throw error on non-existing token
-    await rejects(gatewayBase.getTokenData(sampleTokenId));
+    await assert.rejects(gatewayBase.getTokenData(sampleTokenId));
   }).timeout(10_000);
 
   it("Test token bitmask get functions", async () => {
