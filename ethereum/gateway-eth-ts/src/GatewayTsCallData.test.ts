@@ -34,7 +34,7 @@ describe("Test GatewayTSCallData class", function () {
   const defaultGas: number | BigNumber = 6_000_000;
   const defaultGasPrice: number | BigNumber = 1_000_000_000_000;
 
-  const sampleWalletAddress = "0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28";
+  const sampleWalletAddress = "0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f";
   const sampleTokenId = 124_678;
 
   before("Initialize GatewayTSBase class", async () => {
@@ -117,7 +117,7 @@ describe("Test GatewayTSCallData class", function () {
   // }).timeout(4000);
 
   // TODO: Reenable fixed test
-  it.skip("Test burn token function, should pass calldata checks", async () => {
+  it("Test burn token function, should pass calldata checks", async () => {
     const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
     const args = [tokenId];
     const argsTypes = ["uint256"];

@@ -5,9 +5,8 @@ import { gatewayTokenAddresses } from "./lib/gatewaytokens";
 import { addresses } from "./lib/addresses";
 import { ONE_BN, ZERO_BN } from "./utils/constants";
 import { TokenData } from "./utils/types";
-import * as assert from "node:assert"
-import { GatewayToken } from "./contracts";
-import * as dotenv from 'dotenv'
+import * as assert from "node:assert";
+import * as dotenv from 'dotenv';
 dotenv.config()
 
 const generateTokenId = (wallet: string, constrains: BigNumber): string => {
@@ -25,7 +24,7 @@ describe("Test GatewayTSBase class", function () {
   let defaultGatewayToken: string;
   const defaultGas: number | BigNumber = 6_000_000;
 
-  const sampleWalletAddress = "0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28";
+  const sampleWalletAddress = "0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f";
   const defaultGasPrice: number | BigNumber = 1_000_000_000_000;
   const dummyPrivateKey =
     "16cf319b463e6e8db6fc525ad2cb300963a0f0661dbb94b5209073e29b43abfe";
@@ -51,22 +50,6 @@ describe("Test GatewayTSBase class", function () {
     assert.equal(gatewayBase.defaultGasPrice, defaultGasPrice);
     assert.equal(gatewayBase.contractAddresses, addresses[ropstenNetworkID]);
   });
-
-  it("Test getting gateway token address functions", () => {
-    let gatewayToken: GatewayToken = gatewayBase.getGatewayTokenContract();
-    assert.equal(gatewayToken.contract.address, defaultGatewayToken);
-
-    gatewayToken = gatewayBase.getGatewayTokenContract(defaultGatewayToken);
-    assert.equal(gatewayToken.contract.address, defaultGatewayToken);
-
-    assert.throws(
-      () =>
-        gatewayBase.getGatewayTokenContract(
-          "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be"
-        ),
-      Error
-    );
-  }).timeout(10_000);
 
   it("Verify gateway tokens for multiple addresses", async () => {
     let result = await gatewayBase.verify(sampleWalletAddress);
