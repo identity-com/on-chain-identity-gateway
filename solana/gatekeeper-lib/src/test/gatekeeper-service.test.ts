@@ -11,7 +11,7 @@ import {
   SystemProgram,
 } from "@solana/web3.js";
 import sinon from "sinon";
-import { PROGRAM_ID } from "../src/util/constants";
+import { PROGRAM_ID } from "../util/constants";
 import {
   GatewayToken,
   GatewayTokenData,
@@ -25,7 +25,7 @@ import {
   SendableTransaction,
   SentTransaction,
   SimpleGatekeeperService,
-} from "../src";
+} from "..";
 import { Active } from "@identity.com/solana-gateway-ts/dist/lib/GatewayTokenData";
 // import { isContext } from "vm";
 
