@@ -1,5 +1,5 @@
 export {
   GatekeeperService,
   SimpleGatekeeperService,
-} from "./GatekeeperService";
-export { GatekeeperNetworkService } from "./GatekeeperNetworkService";
+} from "./gatekeeper-service";
+export { GatekeeperNetworkService } from "./gatekeeper-network-service";

@@ -13,9 +13,7 @@
     "@typescript-eslint/no-implicit-any-catch": "error",
     "node/no-missing-import": ["error", {
       "tryExtensions": [".js", ".ts", ".node"]
-    }],
-    "unicorn/filename-case": "off",
-    "no-warning-comments": "off"
+    }]
   }
 }
 
