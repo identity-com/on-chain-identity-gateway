@@ -13,7 +13,7 @@ import {
   tokenIdFlag,
   forwardTransactionFlag,
 } from "../utils/flags";
-import { TxBase, TxOptions } from "../utils/tx";
+import { TxOptions } from "../utils/tx";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 import { generateId } from "../utils/tokenId";
 import { getExpirationTime } from "../utils/time";
@@ -111,6 +111,7 @@ export default class IssueToken extends Command {
     if (expiration.gt(0)) {
       expiration = getExpirationTime(expiration);
     }
+
     const txParams: TxOptions = {
       gasLimit: gasLimit,
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
@@ -138,14 +139,16 @@ export default class IssueToken extends Command {
     if (confirmations > 0) {
       const tx = (await sendableTransaction.send()).confirm();
       this.log(
-        `Issued new token with TokenID: ${tokenID} to ${ownerAddress} TxHash: ${
+        `Issued new token with TokenID: ${tokenID.toString()} to ${ownerAddress} TxHash: ${
           (await tx).transactionHash
         }}`
       );
     } else {
       const tx: SentTransaction = await sendableTransaction.send();
       this.log(
-        `Issued new token with TokenID: ${tokenID} to ${ownerAddress} TxHash: ${tx.response.hash}}`
+        `Issued new token with TokenID: ${tokenID.toString()} to ${ownerAddress} TxHash: ${
+          tx.response.hash
+        }}`
       );
     }
   }

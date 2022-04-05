@@ -64,7 +64,10 @@ export class GatewayTsBase {
     this.networkId = network.chainId;
     this.network = NETWORKS[this.networkId];
     this.contractAddresses = addresses[this.networkId];
-    this.forwarder = new Forwarder(this.wallet || this.provider, addresses[this.networkId].forwarder);
+    this.forwarder = new Forwarder(
+      this.wallet || this.provider,
+      addresses[this.networkId].forwarder
+    );
 
     this.gatewayTokenController = new GatewayTokenController(
       this.wallet || this.provider,
@@ -104,9 +107,9 @@ export class GatewayTsBase {
     let gatewayToken: GatewayToken;
 
     if (gatewayTokenAddress) {
-      gatewayToken = this.gatewayTokens[gatewayTokenAddress]?.tokenInstance
+      gatewayToken = this.gatewayTokens[gatewayTokenAddress]?.tokenInstance;
 
-      if (!gatewayToken) {
+      if (gatewayToken === null) {
         gatewayToken = this.defaultGatewayTokenContract();
       }
     } else {
@@ -132,9 +135,9 @@ export class GatewayTsBase {
   ): Promise<boolean> {
     const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
-    const result = await (tokenId
+    const result = (await (tokenId
       ? gatewayToken.verifyTokenByTokenID(owner, tokenId)
-      : gatewayToken.verifyToken(owner)) as unknown as boolean[];
+      : gatewayToken.verifyToken(owner))) as unknown as boolean[];
 
     // TODO: Not sure why boolean is wrapped in an array here.
     return result[0];
@@ -153,7 +156,7 @@ export class GatewayTsBase {
   async generateTokenId(
     address: string,
     // eslint-disable-next-line default-param-last
-    constrains: BigNumber = BigNumber.from('0'), // TODO: fix linting
+    constrains: BigNumber = BigNumber.from("0"), // TODO: fix linting
     gatewayToken?: GatewayToken
   ): Promise<BigNumber> {
     if (constrains.eq(BigNumber.from("0"))) {
@@ -165,9 +168,9 @@ export class GatewayTsBase {
 
       // TODO: This line was simplified because balance is ALWAYS BigNumber
       constrains = balance.add(BigNumber.from("1"));
-        // typeof balance === "number"
-        //   ? BigNumber.from(balance.toString()).add(BigNumber.from("1"))
-        //   : balance.add(BigNumber.from("1"));
+      // typeof balance === "number"
+      //   ? BigNumber.from(balance.toString()).add(BigNumber.from("1"))
+      //   : balance.add(BigNumber.from("1"));
     }
 
     return generateId(address, constrains);
