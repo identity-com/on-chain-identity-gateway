@@ -1,24 +1,13 @@
 {
-    "compilerOptions": {
-        "esModuleInterop": true,
-        "declaration": true,
-        "importHelpers": true,
-        "module": "commonjs",
-        "outDir": "dist",
-        "rootDir": "test",
-        "strict": true,
-        "target": "es2017",
-        "skipLibCheck": true
-  },
-    "include": [
-      "test/**/*"
-    ],
-    "exclude": [
-    "node_modules/**/*"
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "dist"
   ],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "commonjs"
-    }
+  "include": [
+    "**/*.ts",
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
   }
-  }
+}
