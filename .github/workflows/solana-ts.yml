@@ -41,11 +41,11 @@ jobs:
       - name: Install
         run: yarn install
 
-      - name: Lint
-        run: yarn workspaces run lint
-
       - name: Build
         run: yarn workspaces run build
+
+      - name: Lint
+        run: yarn workspaces run lint
 
   solana-ts-tests:
     name: Test the solana typescript
@@ -112,7 +112,7 @@ jobs:
 
       - name: Install dependencies
         run: yarn
-      
+
       - name: Build dependencies
         run: yarn workspaces run build
 
