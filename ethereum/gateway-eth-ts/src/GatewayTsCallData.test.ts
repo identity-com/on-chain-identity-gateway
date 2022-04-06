@@ -161,8 +161,7 @@ describe("Test GatewayTSCallData class", function () {
   }).timeout(10_000);
 
   it("Test unfreeze token function, should pass calldata checks", async () => {
-    const constrains = BigNumber.from("2");
-    const tokenId = generateId(sampleWalletAddress, constrains);
+    const tokenId = await gatewayLib.getDefaultTokenId('0xCE2d6E7426D95AA206775fd86DBde00Ae621bE14');
     const transaction = await gatewayLib.unfreeze(tokenId);
 
     const args = [tokenId];
