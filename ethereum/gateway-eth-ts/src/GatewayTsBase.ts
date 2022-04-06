@@ -166,11 +166,7 @@ export class GatewayTsBase {
 
       const balance = await gatewayToken.getBalance(address);
 
-      // TODO: This line was simplified because balance is ALWAYS BigNumber
       constrains = balance.add(BigNumber.from("1"));
-      // typeof balance === "number"
-      //   ? BigNumber.from(balance.toString()).add(BigNumber.from("1"))
-      //   : balance.add(BigNumber.from("1"));
     }
 
     return generateId(address, constrains);
