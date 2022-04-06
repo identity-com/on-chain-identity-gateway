@@ -60,6 +60,14 @@ export const confirmationsFlag = Flags.build<number>({
   description: "The amount of blocks to wait mined transaction",
 });
 
+export const forwardTransactionFlag = Flags.boolean<boolean>({
+  required: false,
+  parse: async (input: boolean) => input,
+  default: false,
+  allowNo: true,
+  description: "Whether the transaction will be sent via the Forwarder contract",
+})
+
 export const generateTokenIdFlag = Flags.boolean<boolean>({
   char: "g",
   required: false,

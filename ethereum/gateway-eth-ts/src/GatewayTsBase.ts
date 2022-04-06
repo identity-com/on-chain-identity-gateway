@@ -14,6 +14,7 @@ import { checkTokenState, parseTokenState } from "./utils/token-state";
 import { TokenData } from "./utils/types";
 import { generateId } from "./utils/tokenId";
 import { toBytes32 } from "./utils/string";
+import { Forwarder } from "./contracts/Forwarder";
 
 export class GatewayTsBase {
   provider: BaseProvider;
@@ -42,6 +43,8 @@ export class GatewayTsBase {
 
   defaultGatewayToken: string | undefined;
 
+  forwarder: Forwarder;
+
   constructor(
     provider: BaseProvider,
     signer?: Wallet,
@@ -61,6 +64,10 @@ export class GatewayTsBase {
     this.networkId = network.chainId;
     this.network = NETWORKS[this.networkId];
     this.contractAddresses = addresses[this.networkId];
+    this.forwarder = new Forwarder(
+      this.wallet || this.provider,
+      addresses[this.networkId].forwarder
+    );
 
     this.gatewayTokenController = new GatewayTokenController(
       this.wallet || this.provider,
@@ -128,9 +135,9 @@ export class GatewayTsBase {
   ): Promise<boolean> {
     const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
-    const result = await (tokenId
+    const result = (await (tokenId
       ? gatewayToken.verifyTokenByTokenID(owner, tokenId)
-      : gatewayToken.verifyToken(owner)) as unknown as boolean[];
+      : gatewayToken.verifyToken(owner))) as unknown as boolean[];
 
     // TODO: Not sure why boolean is wrapped in an array here.
     return result[0];
@@ -148,10 +155,10 @@ export class GatewayTsBase {
 
   async generateTokenId(
     address: string,
-    // eslint-disable-next-line default-param-last
-    constrains: BigNumber = BigNumber.from('0'), // TODO: fix linting
+    constrains?: BigNumber,
     gatewayToken?: GatewayToken
   ): Promise<BigNumber> {
+    constrains = constrains || BigNumber.from("0");
     if (constrains.eq(BigNumber.from("0"))) {
       if (gatewayToken === undefined) {
         gatewayToken = this.getGatewayTokenContract(this.defaultGatewayToken);
