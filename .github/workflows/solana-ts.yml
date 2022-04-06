@@ -2,8 +2,8 @@ name: Solana Typescript
 on:
   push:
     paths:
-      - 'solana/**'
-      - '.github/**'
+      - "solana/**"
+      - ".github/**"
   pull_request:
 jobs:
   solana-build:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: ['15.x']
+        node: ["16.x"]
         os: [ubuntu-latest]
 
     defaults:
@@ -53,9 +53,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [ '1.58' ]
-        node: ['15.x']
-        solana: ['stable']
+        rust: ["1.58"]
+        node: ["16.x"]
+        solana: ["stable"]
         os: [ubuntu-latest]
 
     defaults:
