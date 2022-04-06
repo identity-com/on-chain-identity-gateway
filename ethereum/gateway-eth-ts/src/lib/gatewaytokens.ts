@@ -1,4 +1,5 @@
 import { GatewayToken } from "../contracts";
+import { DEFAULT_GATEWAY_TOKEN } from "../utils/constants";
 
 export interface GatewayTokenItem {
   name: string;
@@ -19,7 +20,7 @@ const ROPSTEN_GATEWAY_TOKENS: GatewayTokenItem[] = [
     {
       name: 'Test Gateway Token',
       symbol: 'tKYC',
-      address: '0xa3894BbA27f4Be571fFA319D02c122E021024cF2',
+      address: DEFAULT_GATEWAY_TOKEN,
     }
 ];
 

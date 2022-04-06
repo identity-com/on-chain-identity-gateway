@@ -10,17 +10,15 @@ import { addFlagsToBitmask } from "./utils/bitmask_flags";
 import { BytesLike, hexDataSlice, id } from "ethers/lib/utils";
 import { generateId } from "./utils/tokenId";
 import assert = require("assert");
-import * as dotenv from 'dotenv'
-dotenv.config()
+import * as dotenv from "dotenv";
+import { SAMPLE_WALLET_ADDRESS } from "./utils/constants_test";
+dotenv.config();
 
 const computeCallData = (
   sigHash: string | utils.BytesLike,
   argsTypes: Array<string>,
   args: Array<any>
-) => utils.hexConcat([
-    sigHash,
-    utils.defaultAbiCoder.encode(argsTypes, args),
-  ]);
+) => utils.hexConcat([sigHash, utils.defaultAbiCoder.encode(argsTypes, args)]);
 
 const computeSigHash = (fragment: FunctionFragment): BytesLike =>
   hexDataSlice(id(fragment.format()), 0, 4);
@@ -34,7 +32,7 @@ describe("Test GatewayTSCallData class", function () {
   const defaultGas: number | BigNumber = 6_000_000;
   const defaultGasPrice: number | BigNumber = 1_000_000_000_000;
 
-  const sampleWalletAddress = "0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28";
+  const sampleWalletAddress = SAMPLE_WALLET_ADDRESS;
   const sampleTokenId = 124_678;
 
   before("Initialize GatewayTSBase class", async () => {
@@ -116,8 +114,7 @@ describe("Test GatewayTSCallData class", function () {
   //     await assert.rejects(gatewayLib.revoke(sampleTokenId));
   // }).timeout(4000);
 
-  // TODO: Reenable fixed test
-  it.skip("Test burn token function, should pass calldata checks", async () => {
+  it("Test burn token function, should pass calldata checks", async () => {
     const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
     const args = [tokenId];
     const argsTypes = ["uint256"];
@@ -161,8 +158,9 @@ describe("Test GatewayTSCallData class", function () {
   }).timeout(10_000);
 
   it("Test unfreeze token function, should pass calldata checks", async () => {
-    const constrains = BigNumber.from("2");
-    const tokenId = generateId(sampleWalletAddress, constrains);
+    const tokenId = await gatewayLib.getDefaultTokenId(
+      "0xCE2d6E7426D95AA206775fd86DBde00Ae621bE14"
+    );
     const transaction = await gatewayLib.unfreeze(tokenId);
 
     const args = [tokenId];

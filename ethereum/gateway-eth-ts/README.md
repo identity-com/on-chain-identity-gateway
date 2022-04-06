@@ -6,44 +6,48 @@
 [![License](https://img.shields.io/npm/l/gateway-eth-ts.svg)](https://github.com/Secured-Finance/gateway-eth-ts/blob/master/package.json)
 
 <!-- toc -->
-* [gateway-eth-ts](#gateway-eth-ts)
+
+- [gateway-eth-ts](#gateway-eth-ts)
 <!-- tocstop -->
 
 ## Usage
 
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @identity.com/gateway-eth-ts
 $ gateway-eth-ts COMMAND
 running command...
 $ gateway-eth-ts (-v|--version|version)
-@identity.com/gateway-eth-ts/0.0.12 darwin-arm64 node-v16.13.0
+@identity.com/gateway-eth-ts/0.0.12 darwin-arm64 node-v14.18.3
 $ gateway-eth-ts --help [COMMAND]
 USAGE
   $ gateway-eth-ts COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 ## Commands
 
 <!-- commands -->
-* [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
-* [`gateway-eth-ts add-network-authority ADDRESS`](#gateway-eth-ts-add-network-authority-address)
-* [`gateway-eth-ts blacklist ADDRESS`](#gateway-eth-ts-blacklist-address)
-* [`gateway-eth-ts burn TOKENID`](#gateway-eth-ts-burn-tokenid)
-* [`gateway-eth-ts freeze TOKENID`](#gateway-eth-ts-freeze-tokenid)
-* [`gateway-eth-ts get-token TOKENID`](#gateway-eth-ts-get-token-tokenid)
-* [`gateway-eth-ts get-token-id ADDRESS`](#gateway-eth-ts-get-token-id-address)
-* [`gateway-eth-ts help [COMMAND]`](#gateway-eth-ts-help-command)
-* [`gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]`](#gateway-eth-ts-issue-address-expiration-constrains)
-* [`gateway-eth-ts refresh TOKENID [EXPIRY]`](#gateway-eth-ts-refresh-tokenid-expiry)
-* [`gateway-eth-ts remove-gatekeeper ADDRESS`](#gateway-eth-ts-remove-gatekeeper-address)
-* [`gateway-eth-ts remove-network-authority ADDRESS`](#gateway-eth-ts-remove-network-authority-address)
-* [`gateway-eth-ts revoke TOKENID`](#gateway-eth-ts-revoke-tokenid)
-* [`gateway-eth-ts unfreeze TOKENID`](#gateway-eth-ts-unfreeze-tokenid)
-* [`gateway-eth-ts verify ADDRESS [TOKENID]`](#gateway-eth-ts-verify-address-tokenid)
-* [`gateway-eth-ts version`](#gateway-eth-ts-version)
+
+- [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
+- [`gateway-eth-ts add-network-authority ADDRESS`](#gateway-eth-ts-add-network-authority-address)
+- [`gateway-eth-ts blacklist ADDRESS`](#gateway-eth-ts-blacklist-address)
+- [`gateway-eth-ts burn TOKENID`](#gateway-eth-ts-burn-tokenid)
+- [`gateway-eth-ts freeze TOKENID`](#gateway-eth-ts-freeze-tokenid)
+- [`gateway-eth-ts get-token TOKENID`](#gateway-eth-ts-get-token-tokenid)
+- [`gateway-eth-ts get-token-id ADDRESS`](#gateway-eth-ts-get-token-id-address)
+- [`gateway-eth-ts help [COMMAND]`](#gateway-eth-ts-help-command)
+- [`gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]`](#gateway-eth-ts-issue-address-expiration-constrains)
+- [`gateway-eth-ts refresh TOKENID [EXPIRY]`](#gateway-eth-ts-refresh-tokenid-expiry)
+- [`gateway-eth-ts remove-gatekeeper ADDRESS`](#gateway-eth-ts-remove-gatekeeper-address)
+- [`gateway-eth-ts remove-network-authority ADDRESS`](#gateway-eth-ts-remove-network-authority-address)
+- [`gateway-eth-ts revoke TOKENID`](#gateway-eth-ts-revoke-tokenid)
+- [`gateway-eth-ts unfreeze TOKENID`](#gateway-eth-ts-unfreeze-tokenid)
+- [`gateway-eth-ts verify ADDRESS [TOKENID]`](#gateway-eth-ts-verify-address-tokenid)
+- [`gateway-eth-ts version`](#gateway-eth-ts-version)
 
 ## `gateway-eth-ts add-gatekeeper ADDRESS`
 
@@ -69,7 +73,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -101,7 +106,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -162,7 +168,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway burn 10
@@ -194,7 +201,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway freeze 10
@@ -220,7 +228,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway get-token 10
@@ -246,7 +255,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway get-token-id 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -304,7 +314,10 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
+
+  --[no-]forwardTransaction                      Whether the transaction will be sent via the Forwarder contract
 
 EXAMPLE
   $ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -i <TokenID>
@@ -337,7 +350,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway refresh 10 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -369,7 +383,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -401,7 +416,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -433,7 +449,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway revoke 10
@@ -465,7 +482,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway unfreeze 10
@@ -492,7 +510,8 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
+                                                 address to target
 
 EXAMPLE
   $ gateway verify 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -508,6 +527,7 @@ USAGE
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.0.4/src/commands/version.ts)_
+
 <!-- commandsstop -->
 
 - [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)

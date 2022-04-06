@@ -11,11 +11,14 @@ import {
   generateTokenIdFlag,
   bitmaskFlag,
   tokenIdFlag,
+  forwardTransactionFlag,
 } from "../utils/flags";
-import { TxBase } from "../utils/tx";
+import { TxOptions } from "../utils/tx";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 import { generateId } from "../utils/tokenId";
 import { getExpirationTime } from "../utils/time";
+import { GatewayETH } from "..";
+import { SentTransaction } from "../utils/types";
 
 export default class IssueToken extends Command {
   static description =
@@ -36,6 +39,7 @@ export default class IssueToken extends Command {
     generateTokenId: generateTokenIdFlag,
     bitmask: bitmaskFlag(),
     tokenID: tokenIdFlag(),
+    forwardTransaction: forwardTransactionFlag,
   };
 
   static args = [
@@ -50,7 +54,7 @@ export default class IssueToken extends Command {
         }
 
         return input;
-      }
+      },
     },
     {
       name: "expiration",
@@ -88,19 +92,15 @@ export default class IssueToken extends Command {
     let expiration = args.expiration as BigNumber;
     const constrains = args.constrains as BigNumber;
     const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const forwardTransaction = flags.forwardTransaction;
 
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-    if (generateTokenId && tokenID === null) {
+    if (generateTokenId && tokenID) {
       tokenID = generateId(ownerAddress, constrains);
     }
 
     const gasPrice = flags.gasPriceFee;
-
-    if (expiration.gt(0)) {
-      expiration = getExpirationTime(expiration);
-    }
-
     const gasLimit: BigNumber = await gatewayToken.contract.estimateGas.mint(
       ownerAddress,
       tokenID,
@@ -108,30 +108,48 @@ export default class IssueToken extends Command {
       bitmask
     );
 
-    const txParams: TxBase = {
+    if (expiration.gt(0)) {
+      expiration = getExpirationTime(expiration);
+    }
+
+    const txParams: TxOptions = {
       gasLimit: gasLimit,
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
+      confirmations,
+      forwardTransaction,
     };
+
+    const gateway = new GatewayETH(provider, signer);
+    await gateway.init();
+    const sendableTransaction = await gateway.issue(
+      ownerAddress,
+      tokenID,
+      expiration,
+      bitmask,
+      null,
+      gatewayTokenAddress,
+      txParams
+    );
 
     this.log(`Issuing new token with TokenID:
 			${tokenID.toString()} 
 			for owner ${ownerAddress}
 			on GatewayToken ${gatewayTokenAddress} contract`);
 
-    const tx = await gatewayToken.mint(
-      ownerAddress,
-      tokenID,
-      expiration,
-      bitmask,
-      txParams
-    );
-    let hash = tx.hash;
     if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
+      const tx = (await sendableTransaction.send()).confirm();
+      this.log(
+        `Issued new token with TokenID: ${tokenID.toString()} to ${ownerAddress} TxHash: ${
+          (await tx).transactionHash
+        }}`
+      );
+    } else {
+      const tx: SentTransaction = await sendableTransaction.send();
+      this.log(
+        `Issued new token with TokenID: ${tokenID.toString()} to ${ownerAddress} TxHash: ${
+          tx.response.hash
+        }}`
+      );
     }
-
-    this.log(
-      `Issued new token with TokenID: ${tokenID.toString()} to ${ownerAddress} TxHash: ${hash}`
-    );
   }
 }

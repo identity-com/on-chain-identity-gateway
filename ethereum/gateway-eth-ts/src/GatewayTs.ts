@@ -1,10 +1,12 @@
-import { BigNumber, Wallet } from "ethers";
+import { BigNumber, PopulatedTransaction, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 
-import { ethTransaction, TxOptions } from "./utils/tx";
+import { ethTransaction, populateTx, TxOptions } from "./utils/tx";
 import { getExpirationTime } from "./utils/time";
 import { toBytes32 } from "./utils/string";
 import { GatewayTsBase } from "./GatewayTsBase";
+import { SendableTransaction } from "./utils/types";
+import { signMetaTxRequest } from "./utils/signer";
 
 export class GatewayTs extends GatewayTsBase {
   constructor(
@@ -79,63 +81,119 @@ export class GatewayTs extends GatewayTsBase {
     constrains: BigNumber = BigNumber.from("0"),
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+  ): Promise<SendableTransaction> {
+    const gatewayTokenContract =
+      this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = gatewayTokenContract;
 
     if (tokenId === null) {
-      tokenId = await this.generateTokenId(owner, constrains, gatewayToken);
+      tokenId = await this.generateTokenId(
+        owner,
+        constrains,
+        gatewayTokenContract
+      );
     }
 
     if (expiration > 0) {
       expiration = getExpirationTime(expiration);
     }
 
-    const args: any[] = [owner, tokenId, expiration, bitmask];
-    return ethTransaction(gatewayToken.contract, "mint", args, options);
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "mint",
+      [owner, tokenId, expiration, bitmask],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async revoke(
     tokenId: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "revoke",
+      [tokenId],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "revoke", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async burn(
     tokenId: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "burn",
+      [tokenId],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "burn", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async freeze(
     tokenId: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "freeze",
+      [tokenId],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "freeze", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async unfreeze(
     tokenId: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "unfreeze",
+      [tokenId],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "unfreeze", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async refresh(
@@ -143,39 +201,71 @@ export class GatewayTs extends GatewayTsBase {
     expiry?: number,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
     const expirationDate = getExpirationTime(expiry);
-    const args: any[] = [tokenId, expirationDate];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "refresh",
+      [tokenId, expirationDate],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "setExpiration", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
-  async blacklist(user: string, options?: TxOptions): Promise<string> {
+  async blacklist(
+    user: string,
+    options?: TxOptions
+  ): Promise<SendableTransaction> {
     const { contract } = this.gatewayTokenController;
-    const args: any[] = [user];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "blacklist",
+      [user],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "blacklist", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async addFlag(
     flag: string,
     index: number | BigNumber,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.flagsStorage;
-
     const bytes32 = toBytes32(flag);
-    const args: any[] = [bytes32, index];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "addFlag",
+      [bytes32, index],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "addFlag", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async addFlags(
     flags: string[],
     indexes: number[] | BigNumber[],
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.flagsStorage;
 
     let bytes32Array: string[];
@@ -185,21 +275,47 @@ export class GatewayTs extends GatewayTsBase {
       bytes32Array.push(bytes32);
     }
 
-    const args: any[] = [bytes32Array, indexes];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "addFlags",
+      [bytes32Array, indexes],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "addFlags", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
-  async removeFlag(flag: string, options?: TxOptions): Promise<string> {
+  async removeFlag(
+    flag: string,
+    options?: TxOptions
+  ): Promise<SendableTransaction> {
     const { contract } = this.flagsStorage;
 
     const bytes32 = toBytes32(flag);
-    const args: any[] = [bytes32];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "removeFlag",
+      [bytes32],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "removeFlag", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
-  async removeFlags(flags: string[], options?: TxOptions): Promise<string> {
+  async removeFlags(
+    flags: string[],
+    options?: TxOptions
+  ): Promise<SendableTransaction> {
     const { contract } = this.flagsStorage;
 
     let bytes32Array: string[];
@@ -209,19 +325,39 @@ export class GatewayTs extends GatewayTsBase {
       bytes32Array.push(bytes32);
     }
 
-    const args: any[] = [bytes32Array];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "removeFlags",
+      [bytes32Array],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "removeFlags", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async updateDAOManagerAtFlagsStorage(
     controller: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.flagsStorage;
-    const args: any[] = [controller];
 
-    return ethTransaction(contract, "updateDAOManager", args, options);
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "updateDAOManager",
+      [controller],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async setBitmask(
@@ -229,11 +365,21 @@ export class GatewayTs extends GatewayTsBase {
     bitmask: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, bitmask];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "setBitmask",
+      [tokenId, bitmask],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "setBitmask", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async addBitmask(
@@ -241,11 +387,21 @@ export class GatewayTs extends GatewayTsBase {
     bitmask: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, bitmask];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "addBitmask",
+      [tokenId, bitmask],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "addBitmask", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async addBit(
@@ -253,11 +409,21 @@ export class GatewayTs extends GatewayTsBase {
     index: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, index];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "addBit",
+      [tokenId, index],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "addBit", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async removeBitmask(
@@ -265,11 +431,21 @@ export class GatewayTs extends GatewayTsBase {
     bitmask: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, bitmask];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "removeBitmask",
+      [tokenId, bitmask],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "removeBitmask", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async removeBit(
@@ -277,33 +453,63 @@ export class GatewayTs extends GatewayTsBase {
     index: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, index];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "removeBit",
+      [tokenId, index],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "removeBit", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async removeUnsupportedBits(
     tokenId: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "removeUnsupportedBits",
+      [tokenId],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "removeUnsupportedBits", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async clearBitmask(
     tokenId: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "clearBitmask",
+      [tokenId],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "clearBitmask", args, options);
+    return new SendableTransaction(contract, txRequest, options);
   }
 
   async checkAnyHighRiskBits(
@@ -311,10 +517,47 @@ export class GatewayTs extends GatewayTsBase {
     highRiskBitmask: number | BigNumber,
     gatewayTokenAddress?: string,
     options?: TxOptions
-  ): Promise<string> {
+  ): Promise<SendableTransaction> {
     const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const args: any[] = [tokenId, highRiskBitmask];
+    const gatewayTxRequest = await populateTx(
+      contract,
+      "anyHighRiskBits",
+      [tokenId, highRiskBitmask],
+      options
+    );
+    const txRequest = await this.wrapTxIfForwarded(
+      gatewayTxRequest,
+      contract.address,
+      options
+    );
 
-    return ethTransaction(contract, "anyHighRiskBits", args, options);
+    return new SendableTransaction(contract, txRequest, options);
+  }
+
+  private async wrapTxIfForwarded(
+    tx: PopulatedTransaction,
+    contractAddress: string,
+    options?: TxOptions
+  ): Promise<PopulatedTransaction> {
+    if (options?.forwardTransaction) {
+      const { request, signature } = await signMetaTxRequest(
+        this.wallet,
+        this.forwarder.contract,
+        {
+          from: this.wallet.address,
+          to: contractAddress,
+          data: tx.data,
+        }
+      );
+
+      return populateTx(
+        this.forwarder.contract,
+        "execute",
+        [request, signature],
+        options
+      );
+    }
+
+    return tx;
   }
 }

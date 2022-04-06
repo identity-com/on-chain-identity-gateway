@@ -10,7 +10,7 @@ export const DEFAULT_CHAIN_ID = 3;
 export const DEFAULT_NETWORK = "ropsten";
 
 export const DEFAULT_GATEWAY_TOKEN =
-  "0xfD745e67635A8c394C5644E676D2B507d60380DF";
+  "0x67306284Fb127E9baF713Ebf793d741cE763F81A";
 export const DEFAULT_MNEMONIC =
   "test test test test test test test test test test test junk";
 export const DEFAULT_GATEWAY_TOKEN_CONTROLLER =

@@ -28,6 +28,7 @@ export declare type TxBase = {
 
 export interface TxOptions extends TxBase {
   confirmations?: number;
+  forwardTransaction?: boolean;
 }
 
 export const populateTx = async (
