@@ -114,7 +114,6 @@ describe("Test GatewayTSCallData class", function () {
   //     await assert.rejects(gatewayLib.revoke(sampleTokenId));
   // }).timeout(4000);
 
-  // TODO: Reenable fixed test
   it("Test burn token function, should pass calldata checks", async () => {
     const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
     const args = [tokenId];
