@@ -105,15 +105,13 @@ export default class AddGatekeeper extends Command {
     // ? Why are the featureAddress variables unused? What are they doing here?
 
     if (featureOperation === "add" && !hasNetworkFeature) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const featureAddress = await networkService
+      await networkService
         .addNetworkFeature("find", networkFeature)
         .then((t) => t.send())
         .then((t) => t.confirm());
     } else if (featureOperation === "remove" && hasNetworkFeature) {
       // remove case
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const featureAddress = await networkService
+      await networkService
         .removeNetworkFeature("find", networkFeature)
         .then((t) => t.send())
         .then((t) => t.confirm());

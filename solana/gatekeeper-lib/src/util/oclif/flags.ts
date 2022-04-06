@@ -3,18 +3,19 @@ import { Flags } from "@oclif/core";
 import { readKey } from "../account";
 import { ExtendedCluster } from "../connection";
 
+// eslint-disable-next-line unicorn/prefer-module
+const DIRNAME = __dirname;
+
 export const gatekeeperKeyFlag = Flags.build<Keypair>({
   char: "g",
   parse: readKey,
-  // eslint-disable-next-line unicorn/prefer-module
-  default: async () => readKey(`${__dirname}/test-gatekeeper.json`),
+  default: async () => readKey(`${DIRNAME}/test-gatekeeper.json`),
   description: "The private key file for the gatekeeper authority",
 });
 export const gatekeeperNetworkKeyFlag = Flags.build<Keypair>({
   char: "n",
   parse: readKey,
-  // eslint-disable-next-line unicorn/prefer-module
-  default: async () => readKey(`${__dirname}/test-gatekeeper-network.json`),
+  default: async () => readKey(`${DIRNAME}/test-gatekeeper-network.json`),
   description: "The private key file for the gatekeeper authority",
 });
 export const gatekeeperNetworkPubkeyFlag = Flags.build<PublicKey>({
@@ -22,8 +23,7 @@ export const gatekeeperNetworkPubkeyFlag = Flags.build<PublicKey>({
   // eslint-disable-next-line @typescript-eslint/require-await
   parse: async (pubkey: string) => new PublicKey(pubkey),
   default: async () =>
-    // eslint-disable-next-line unicorn/prefer-module
-    (await readKey(`${__dirname}/test-gatekeeper-network.json`)).publicKey,
+    (await readKey(`${DIRNAME}/test-gatekeeper-network.json`)).publicKey,
   description:
     "The public key (in base 58) of the gatekeeper network that the gatekeeper belongs to.",
 });

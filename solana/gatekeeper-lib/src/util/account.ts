@@ -1,11 +1,11 @@
 import { Keypair, Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
-// eslint-disable-next-line unicorn/prefer-node-protocol
-import * as fs from "fs";
+import fs from "node:fs";
 
 export const MIN_AIRDROP_BALANCE = 100_000_000;
 const sleep = (ms: number): Promise<void> =>
-  // eslint-disable-next-line no-promise-executor-return
-  new Promise((resolve) => setTimeout(resolve, ms));
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 export const airdropTo = async (
   connection: Connection,
