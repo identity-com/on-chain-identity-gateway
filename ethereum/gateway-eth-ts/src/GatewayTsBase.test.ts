@@ -6,8 +6,12 @@ import { addresses } from "./lib/addresses";
 import { ONE_BN, ZERO_BN } from "./utils/constants";
 import { TokenData } from "./utils/types";
 import * as assert from "node:assert";
-import * as dotenv from 'dotenv';
-dotenv.config()
+import * as dotenv from "dotenv";
+import {
+  SAMPLE_PRIVATE_KEY,
+  SAMPLE_WALLET_ADDRESS,
+} from "./utils/constants_test";
+dotenv.config();
 
 const generateTokenId = (wallet: string, constrains: BigNumber): string => {
   const hexConstrains = utils.hexlify(constrains);
@@ -24,10 +28,9 @@ describe("Test GatewayTSBase class", function () {
   let defaultGatewayToken: string;
   const defaultGas: number | BigNumber = 6_000_000;
 
-  const sampleWalletAddress = "0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f";
+  const sampleWalletAddress = SAMPLE_WALLET_ADDRESS;
   const defaultGasPrice: number | BigNumber = 1_000_000_000_000;
-  const dummyPrivateKey =
-    "16cf319b463e6e8db6fc525ad2cb300963a0f0661dbb94b5209073e29b43abfe";
+
   const dummyWalletAddress = "0x2de1EFea6044b44432aedBC9f29861296695AF0C";
   const sampleTokenId = 124_678;
 
@@ -56,7 +59,7 @@ describe("Test GatewayTSBase class", function () {
     assert.equal(result, true);
 
     // expect FALSE on validation if user doesn't have any token
-    const dummyWallet = new Wallet(dummyPrivateKey);
+    const dummyWallet = new Wallet(SAMPLE_PRIVATE_KEY);
     result = await gatewayBase.verify(dummyWallet.address);
     assert.equal(result, false);
   }).timeout(10_000);
@@ -69,7 +72,7 @@ describe("Test GatewayTSBase class", function () {
     assert.equal(result.toString(), actualResult.toString());
 
     // expect balance to be 0 on wallet without tokens
-    const dummyWallet = new Wallet(dummyPrivateKey);
+    const dummyWallet = new Wallet(SAMPLE_PRIVATE_KEY);
     result = await gatewayBase.getTokenBalance(dummyWallet.address);
     assert.equal(result.toString(), "0");
   }).timeout(10_000);
