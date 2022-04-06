@@ -68,8 +68,17 @@ const ForwardRequest = [
   { name: "data", type: "bytes" },
 ];
 
+export interface ForwarderContract extends Contract {
+  getNonce(from: string): Promise<BigNumber>;
+  execute(message: EIP712Message, signature: string): Promise<boolean>;
+}
 export interface EIP712Message {
-  [key: string]: any;
+  from: string;
+  to: string;
+  value: BigNumber;
+  gas: BigNumber;
+  nonce: BigNumber;
+  data: string;
 }
 
 interface SignedMetaTxRequest {
@@ -124,16 +133,17 @@ async function signTypedData(signer: Wallet, data: EIP712TypedData) {
 }
 
 const buildRequest = async (
-  forwarder: Contract,
+  forwarder: ForwarderContract,
   input: Input
 ): Promise<EIP712Message> => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
-  const nonce = await forwarder
-    .getNonce(input.from)
-    .then((nonce: BigNumber) => nonce.toString());
+  const nonce = await forwarder.getNonce(input.from);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  return { value: 0, gas: 2e6, nonce, ...input };
+  return {
+    value: BigNumber.from(0),
+    gas: BigNumber.from(2e6),
+    nonce,
+    ...input,
+  };
 };
 
 const buildTypedData = async (
@@ -147,7 +157,7 @@ const buildTypedData = async (
 
 export const signMetaTxRequest = async (
   signer: Wallet,
-  forwarder: Contract,
+  forwarder: ForwarderContract,
   input: Input
 ): Promise<SignedMetaTxRequest> => {
   const request = await buildRequest(forwarder, input);
