@@ -28,8 +28,8 @@ Unfrozen
       name: "gatewayToken",
       required: true,
       description: "The gateway token to unfreeze",
-      // eslint-disable-next-line @typescript-eslint/require-await
-      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
+      parse: (input: string): Promise<PublicKey> =>
+        Promise.resolve(new PublicKey(input)),
     },
   ];
 
