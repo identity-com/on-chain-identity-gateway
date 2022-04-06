@@ -107,7 +107,7 @@ export class GatewayTsBase {
     let gatewayToken: GatewayToken;
 
     if (gatewayTokenAddress) {
-      gatewayToken = this.gatewayTokens[gatewayTokenAddress]?.tokenInstance;
+      gatewayToken = this.gatewayTokens[gatewayTokenAddress].tokenInstance;
 
       if (gatewayToken === null) {
         gatewayToken = this.defaultGatewayTokenContract();
@@ -155,10 +155,10 @@ export class GatewayTsBase {
 
   async generateTokenId(
     address: string,
-    // eslint-disable-next-line default-param-last
-    constrains: BigNumber = BigNumber.from("0"), // TODO: fix linting
+    constrains?: BigNumber,
     gatewayToken?: GatewayToken
   ): Promise<BigNumber> {
+    constrains = constrains || BigNumber.from("0");
     if (constrains.eq(BigNumber.from("0"))) {
       if (gatewayToken === undefined) {
         gatewayToken = this.getGatewayTokenContract(this.defaultGatewayToken);
