@@ -2,7 +2,8 @@ import { Wallet, getDefaultProvider, Contract, BigNumber } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { DEFAULT_CHAIN_ID, NETWORKS } from "./constants";
 import { TypedDataField } from "@ethersproject/abstract-signer";
-import * as fs from "node:fs";
+// eslint-disable-next-line unicorn/prefer-node-protocol
+import * as fs from "fs";
 import { getProvider } from "./providers";
 
 export const privateKeySigner = function (
