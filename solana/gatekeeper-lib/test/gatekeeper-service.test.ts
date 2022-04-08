@@ -1,8 +1,8 @@
 import chai from "chai";
+import mocha from "mocha";
 import chaiSubset from "chai-subset";
 import sinonChai from "sinon-chai";
 import chaiAsPromised from "chai-as-promised";
-
 import {
   Keypair,
   Connection,
@@ -22,40 +22,44 @@ import {
 import * as GatewayTs from "@identity.com/solana-gateway-ts";
 import {
   GatekeeperService,
+  SendableDataTransaction,
   SendableTransaction,
   SentTransaction,
   SimpleGatekeeperService,
 } from "../src";
 import { Active } from "@identity.com/solana-gateway-ts/dist/lib/GatewayTokenData";
-// import { isContext } from "vm";
 
 chai.use(sinonChai);
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 const { expect } = chai;
-
+const { describe } = mocha;
 const sandbox = sinon.createSandbox();
 
 export const dummyBlockhash = "AvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
+
+const sendAndConfirm = async (
+  transaction: SendableDataTransaction<GatewayToken>
+) => {
+  const send = await transaction.send();
+  const result = await send.confirm();
+  return result;
+};
 
 describe("GatekeeperService", () => {
   let gatekeeperService: GatekeeperService;
   let simpleGatekeeperService: SimpleGatekeeperService;
   let connection: Connection;
-  let payer: Keypair;
   let tokenOwner: Keypair;
   let gatekeeperNetwork: Keypair;
   let gatekeeperAuthority: Keypair;
   let activeGatewayToken: GatewayToken;
-  let frozenGatewayToken: GatewayToken;
   let revokedGatewayToken: GatewayToken;
   let gatewayTokenAddress: PublicKey;
-  let gatekeeperAccountAddress: PublicKey;
 
-  afterEach(sandbox.restore);
+  afterEach(() => sandbox.restore());
 
   beforeEach(async () => {
-    payer = Keypair.generate();
     tokenOwner = Keypair.generate();
     gatekeeperNetwork = Keypair.generate();
     gatekeeperAuthority = Keypair.generate();
@@ -65,7 +69,6 @@ describe("GatekeeperService", () => {
         tokenOwner.publicKey,
         gatekeeperNetwork.publicKey
       );
-    gatekeeperAccountAddress = Keypair.generate().publicKey;
 
     activeGatewayToken = new GatewayToken(
       Keypair.generate().publicKey, // Gatekeeper account
@@ -77,17 +80,18 @@ describe("GatekeeperService", () => {
     );
     connection = {
       getRecentBlockhash: async () => {
-        return { blockhash: dummyBlockhash };
+        return Promise.resolve({ blockhash: dummyBlockhash });
       },
       sendRawTransaction: async () => {
-        return "5cuE6h5EdvCHbhdgPYitnZLSrnWrH82nzisNG3AAAoa1T3A3GyYbWgoUShCgAD68Jd283jFLxR95FmrS7fXXvEHm";
+        return Promise.resolve(
+          "5cuE6h5EdvCHbhdgPYitnZLSrnWrH82nzisNG3AAAoa1T3A3GyYbWgoUShCgAD68Jd283jFLxR95FmrS7fXXvEHm"
+        );
       },
       confirmTransaction: async () => {
-        return { value: { err: null } };
+        return Promise.resolve({ value: { err: null } });
       },
       getAccountInfo: async () => {
-        // throw new Error("Called Get Account Info");
-        return {
+        return Promise.resolve({
           data: new GatewayTokenData({
             owner: GatewayTs.AssignablePublicKey.fromPublicKey(
               activeGatewayToken.owner
@@ -104,10 +108,9 @@ describe("GatekeeperService", () => {
             ownerIdentity: null,
             expiry: null,
           }).encode(),
-        };
+        });
       },
     } as unknown as Connection; // The connection won't be called as we're stubbing at a higher level.
-    frozenGatewayToken = activeGatewayToken.update({ state: State.FROZEN });
     revokedGatewayToken = activeGatewayToken.update({ state: State.REVOKED });
     gatekeeperService = new GatekeeperService(
       connection,
@@ -202,7 +205,7 @@ describe("GatekeeperService", () => {
             ...activeGatewayToken,
             state: State.FROZEN,
           });
-          const result = await transaction.send().then((t) => t.confirm());
+          const result = await sendAndConfirm(transaction);
           return expect(result).to.containSubset({
             state: State.FROZEN,
             publicKey: activeGatewayToken.publicKey,
@@ -236,7 +239,7 @@ describe("GatekeeperService", () => {
             ...activeGatewayToken,
             state: State.ACTIVE,
           });
-          const result = await transaction.send().then((t) => t.confirm());
+          const result = await sendAndConfirm(transaction);
           return expect(result).to.containSubset({
             state: State.ACTIVE,
             publicKey: activeGatewayToken.publicKey,
@@ -273,7 +276,7 @@ describe("GatekeeperService", () => {
             ...activeGatewayToken,
             state: State.REVOKED,
           });
-          const result = await transaction.send().then((t) => t.confirm());
+          const result = await sendAndConfirm(transaction);
           return expect(result).to.containSubset({
             state: State.REVOKED,
             publicKey: revokedGatewayToken.publicKey,
@@ -312,7 +315,7 @@ describe("GatekeeperService", () => {
   context("updateExpiry", () => {
     context("with a previously Active token existing on-chain", () => {
       context("with the update blockchain call succeeding", () => {
-        const newExpiry = 123456;
+        const newExpiry = 123_456;
         it("should resolve with the updated expiry token", async () => {
           const transaction = await gatekeeperService.updateExpiry(
             revokedGatewayToken.publicKey,
@@ -322,7 +325,7 @@ describe("GatekeeperService", () => {
             ...activeGatewayToken,
             expiryTime: newExpiry,
           });
-          const result = await transaction.send().then((t) => t.confirm());
+          const result = await sendAndConfirm(transaction);
           return expect(result).to.containSubset({
             state: State.ACTIVE,
             publicKey: activeGatewayToken.publicKey,
@@ -331,28 +334,33 @@ describe("GatekeeperService", () => {
         });
       });
       context("with the update blockchain call failing", () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         it("should resolve with the ACTIVE token with the updated expiry", async () => {
-          it("should throw an error", async () => {
-            const transaction = await gatekeeperService.updateExpiry(
-              tokenOwner.publicKey,
-              123456
-            );
-            sandbox
-              .stub(transaction, "send")
-              .rejects(new Error("Transaction simulation failed"));
-            return expect(transaction.send()).to.be.rejectedWith(
-              /Transaction simulation failed/
-            );
-          });
+          return activeTokenResolution();
         });
       });
     });
   });
 
+  const activeTokenResolution = () => {
+    it("should throw an error", async () => {
+      const transaction = await gatekeeperService.updateExpiry(
+        tokenOwner.publicKey,
+        123_456
+      );
+      sandbox
+        .stub(transaction, "send")
+        .rejects(new Error("Transaction simulation failed"));
+      return expect(transaction.send()).to.be.rejectedWith(
+        /Transaction simulation failed/
+      );
+    });
+  };
+
   context("sendUpdateExpiry", () => {
     context("with a previously Active token existing on-chain", () => {
       context("with the update blockchain call succeeding", () => {
-        const newExpiry = 123456;
+        const newExpiry = 123_456;
         it("should resolve with the updated expiry token", async () => {
           const transaction = await simpleGatekeeperService.updateExpiry(
             revokedGatewayToken.publicKey,
@@ -364,6 +372,7 @@ describe("GatekeeperService", () => {
     });
   });
 
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   const expectValidGatewayTransaction = (transaction: Transaction) => {
     expect(transaction).to.be.an.instanceOf(Transaction);
     expect(transaction.instructions[0].programId.toBase58()).to.eq(
@@ -382,7 +391,7 @@ describe("GatekeeperService", () => {
 
   context("buildUpdateExpiryTransaction", () => {
     context("with the update blockchain call succeeding", () => {
-      const newExpiry = 123456;
+      const newExpiry = 123_456;
 
       it("should return a valid unserialized transaction", async () => {
         const buildResponse = await gatekeeperService.updateExpiry(
@@ -395,8 +404,7 @@ describe("GatekeeperService", () => {
   });
 
   context("updateTransactionBlockhash", () => {
-    let recentBlockhash: string =
-      "BvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
+    const recentBlockhash = "BvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
 
     it("should error if not validly signed by gatekeeper", async () => {
       const transaction = await gatekeeperService.issue(tokenOwner.publicKey);
