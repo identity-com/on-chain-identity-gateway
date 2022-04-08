@@ -32,19 +32,23 @@ export default class Verify extends Command {
       name: "owner",
       required: true,
       description: "The gateway token to revoke",
-      parse: async (input: string) => new PublicKey(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(Verify);
 
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
 
     const connection = getConnectionFromEnv(flags.cluster);
 
+    // ? Would this be the correct type for owner?
+    const owner: PublicKey = args.owner as PublicKey;
+
     this.log(
-      `Verifying wallet ${args.owner.toBase58()} has a gateway token in the network ${gatekeeperNetwork.toBase58()}`
+      `Verifying wallet ${owner.toBase58()} has a gateway token in the network ${gatekeeperNetwork.toBase58()}`
     );
     const token = await findGatewayToken(
       connection,
@@ -53,7 +57,7 @@ export default class Verify extends Command {
     );
 
     if (!token) {
-      this.log("No token found for " + args.owner.toBase58());
+      this.log("No token found for " + owner.toBase58());
       return;
     }
 

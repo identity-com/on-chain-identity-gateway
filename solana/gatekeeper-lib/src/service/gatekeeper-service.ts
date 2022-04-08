@@ -19,13 +19,12 @@ import {
 } from "@identity.com/solana-gateway-ts";
 
 import { SendableDataTransaction, SendableTransaction } from "../util";
-import { HashOrNonce, TransactionHolder } from "../util/connection";
+import { TransactionHolder } from "../util/connection";
 import { SOLANA_COMMITMENT } from "../util/constants";
 import {
   getOrCreateBlockhashOrNonce,
   TransactionOptions,
 } from "../util/transaction";
-import { Commitment } from "@solana/web3.js";
 
 /**
  * Global default configuration for the gatekeeper
@@ -45,6 +44,7 @@ export class GatekeeperService {
    * @param gatekeeperAuthority The gatekeeper's key
    * @param config Global default configuration for the gatekeeper
    */
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     private readonly connection: Connection,
     private gatekeeperNetwork: PublicKey,
@@ -93,7 +93,9 @@ export class GatekeeperService {
       (gatewayToken: GatewayToken | null) => {
         if (!gatewayToken)
           throw new Error(
-            "Error retrieving gateway token at address " + gatewayToken
+            `Error retrieving gateway token at address ${
+              gatewayToken ? gatewayToken : "null"
+            } `
           );
         return gatewayToken;
       }
@@ -142,8 +144,10 @@ export class GatekeeperService {
 
   /**
    * Issue a token to this recipient
-   * @param recipient
-   * @param options
+   * @param recipient PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<SendableDataTransaction<GatewayToken | null>>
    */
   issue(
     recipient: PublicKey,
@@ -151,12 +155,15 @@ export class GatekeeperService {
   ): Promise<SendableDataTransaction<GatewayToken | null>> {
     return this.issueVanilla(recipient, undefined, options);
   }
+
   /**
    * Updates a GatewayToken by building a transaction with the given txBuilder function,
    * and returning the existing token with the given updated state value and (optional) expiryTime.
-   * @param gatewayTokenKey
-   * @param instruction
-   * @param options
+   * @param gatewayTokenKey PublicKey
+   * @param instruction TransactionInstruction
+   * @param options TransactionOptions
+   *
+   * @returns Promise<SendableDataTransaction<GatewayToken>>
    */
   private async updateToken(
     gatewayTokenKey: PublicKey,
@@ -175,8 +182,10 @@ export class GatekeeperService {
 
   /**
    * Revoke the gateway token. The token must have been issued by a gatekeeper in the same network
-   * @param gatewayTokenKey
-   * @param options
+   * @param gatewayTokenKey PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<SendableDataTransaction<GatewayToken>>
    */
   async revoke(
     gatewayTokenKey: PublicKey,
@@ -199,8 +208,10 @@ export class GatekeeperService {
 
   /**
    * Freeze the gateway token. The token must have been issued by this gatekeeper.
-   * @param gatewayTokenKey
-   * @param options
+   * @param gatewayTokenKey PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<SendableDataTransaction<GatewayToken>>
    */
   async freeze(
     gatewayTokenKey: PublicKey,
@@ -216,8 +227,10 @@ export class GatekeeperService {
 
   /**
    * Unfreeze the gateway token. The token must have been issued by this gatekeeper.
-   * @param gatewayTokenKey
-   * @param options
+   * @param gatewayTokenKey PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<SendableDataTransaction<GatewayToken>>
    */
   async unfreeze(
     gatewayTokenKey: PublicKey,
@@ -233,7 +246,9 @@ export class GatekeeperService {
 
   /**
    * Returns a gateway token owned by this owner, if it exists
-   * @param owner
+   * @param owner PublicKey
+   *
+   * @returns Promise<GatewayToken | null>
    */
   async findGatewayTokenForOwner(
     owner: PublicKey
@@ -243,9 +258,11 @@ export class GatekeeperService {
 
   /**
    * Update the expiry time of the gateway token. The token must have been issued by this gatekeeper.
-   * @param gatewayTokenKey
-   * @param expireTime
-   * @param options
+   * @param gatewayTokenKey PublicKey
+   * @param expireTime number
+   * @param options TransactionOptions
+   *
+   * @returns Promise<SendableDataTransaction<GatewayToken>>
    */
   async updateExpiry(
     gatewayTokenKey: PublicKey,
@@ -271,26 +288,29 @@ export class GatekeeperService {
       gatekeeperAccount
     );
 
-    return !!gatekeeperAccountInfo;
+    return Boolean(gatekeeperAccountInfo);
   }
 
   async updateTransactionBlockhash(
     transaction: TransactionHolder,
     options?: TransactionOptions
-  ) {
+  ): Promise<void> {
     const normalizedOptions = await this.optionsWithDefaults(options);
-    const transactionSignedByGatekeeper =
-      !!transaction.transaction.signatures.find((sig) =>
+    const transactionSignedByGatekeeper = Boolean(
+      transaction.transaction.signatures.some((sig) =>
         sig.publicKey.equals(this.gatekeeperAuthority.publicKey)
-      );
-    const transactionSignedByPayer = !!transaction.transaction.signatures.find(
-      (sig) => sig.publicKey.equals(normalizedOptions.rentPayer)
+      )
+    );
+    const transactionSignedByPayer = Boolean(
+      transaction.transaction.signatures.some((sig) =>
+        sig.publicKey.equals(normalizedOptions.rentPayer)
+      )
     );
     if (
       (transactionSignedByGatekeeper || transactionSignedByPayer) &&
       !transaction.transaction.verifySignatures()
     ) {
-      throw Error("Transaction is not validly signed by gatekeeper");
+      throw new Error("Transaction is not validly signed by gatekeeper");
     }
 
     await transaction.addHashOrNonce(normalizedOptions.blockhashOrNonce);
@@ -305,10 +325,10 @@ export class SimpleGatekeeperService {
 
   /**
    * Simpler version of the GatekeeperService class. The functions in here send and confirm the results from those in GatekeeperService, returning a GatewayToken rather than a SendableDataTransaction
-   * @param connection
-   * @param gatekeeperNetwork
-   * @param gatekeeperAuthority
-   * @param config
+   * @param connection Connection
+   * @param gatekeeperNetwork PublicKey
+   * @param gatekeeperAuthority Keypair
+   * @param config GatekeeperConfig
    */
   constructor(
     connection: Connection,
@@ -323,11 +343,13 @@ export class SimpleGatekeeperService {
       config
     );
   }
+
   /**
    * Sends and Confirms results from the GatekeeperService "issue" function
-   * @param recipient
-   * @param options
-   * @returns
+   * @param recipient PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<GatewayToken | null>
    */
   async issue(
     recipient: PublicKey,
@@ -338,11 +360,13 @@ export class SimpleGatekeeperService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+
   /**
    * Sends and Confirms results from the GatekeeperService "revoke" function
-   * @param gatewayTokenKey
-   * @param options
-   * @returns
+   * @param gatewayTokenKey PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<GatewayToken | null>
    */
   async revoke(
     gatewayTokenKey: PublicKey,
@@ -353,11 +377,13 @@ export class SimpleGatekeeperService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+
   /**
    * Sends and Confirms results from the GatekeeperService "freeze" function
-   * @param gatewayTokenKey
-   * @param options
-   * @returns
+   * @param gatewayTokenKey PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<GatewayToken | null>
    */
   async freeze(
     gatewayTokenKey: PublicKey,
@@ -368,11 +394,13 @@ export class SimpleGatekeeperService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+
   /**
    * Sends and Confirms results from the GatekeeperService "unfreeze" function
-   * @param gatewayTokenKey
-   * @param options
-   * @returns
+   * @param gatewayTokenKey PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<GatewayToken | null>
    */
   async unfreeze(
     gatewayTokenKey: PublicKey,
@@ -383,12 +411,14 @@ export class SimpleGatekeeperService {
       .then((result) => result.send())
       .then((result) => result.confirm());
   }
+
   /**
    * Sends and Confirms results from the GatekeeperService "updateExpiry" function
-   * @param gatewayTokenKey
-   * @param expireTime
-   * @param options
-   * @returns
+   * @param gatewayTokenKey PublicKey
+   * @param expireTime number
+   * @param options TransactionOptions
+   *
+   * @returns Promise<GatewayToken | null>
    */
   async updateExpiry(
     gatewayTokenKey: PublicKey,
