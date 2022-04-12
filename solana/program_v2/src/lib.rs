@@ -15,113 +15,118 @@
     clippy::too_many_lines
 )]
 
+pub mod util;
+
+use crate::util::OptionalNonSystemPubkey;
 use bitflags::bitflags;
 use cruiser::account_list::AccountList;
 use cruiser::instruction_list::InstructionList;
 use cruiser::on_chain_size::{OnChainSize, OnChainStaticSize};
-use cruiser::solana_program::program_memory::sol_memcmp;
 use cruiser::{AccountInfo, CruiserResult, GenericError, Pubkey, UnixTimestamp};
-use std::num::NonZeroU64;
 
+/// Instructions for the gateway v2 program
 #[derive(InstructionList, Copy, Clone, Debug)]
 #[instruction_list(account_list = GatewayAccountList, account_info = [<AI> AI where AI: AccountInfo])]
 pub enum GatewayInstructions {}
 
+/// Accounts for the gateway v2 program
+#[allow(clippy::large_enum_variant)]
 #[derive(AccountList, Debug)]
 pub enum GatewayAccountList {
+    /// A network which manages many [`Gatekeepers`].
     GatekeeperNetwork(GatekeeperNetwork),
+    /// A gatekeeper who can issue [`Pass`]es and is manged by a [`GatekeeperNetwork`].
     Gatekeeper(Gatekeeper),
+    /// A pass issued by a [`Gatekeeper`] to a user.
     Pass(Pass),
 }
 
 /// The fees a gatekeeper/network can take
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Fees {
+    /// The token for these fees. None value for this means native SOL price
+    pub token: OptionalNonSystemPubkey,
     /// Fees taken at issuance of a new pass
-    pub issue: Fee,
+    pub issue: u64,
     /// Fees taken when a pass is refreshed
-    pub refresh: Fee,
+    pub refresh: u64,
     /// The fee taken when a pass is expired.
     /// This should only be used where pass value comes from one-time use.
-    pub expire: Fee,
+    pub expire: u64,
     /// The fee taken when a pass is verified.
     /// This should only be used where pass value comes from proper use
-    pub verify: Fee,
+    pub verify: u64,
 }
-
-/// A fee for the gatekeeper/network
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum Fee {
-    /// Takes no fee
-    None,
-    /// Takes SOL as a fee
-    SOL(NonZeroU64),
-    /// Takes a token as a fee
-    Token {
-        /// The mint for the fee
-        mint: Pubkey,
-        /// The amount of the token in its decimals
-        amount: NonZeroU64,
-    },
-}
-impl OnChainSize<()> for Fee {
+impl OnChainSize<()> for Fees {
     fn on_chain_max_size(_arg: ()) -> usize {
-        1 + [
-            0,
-            NonZeroU64::on_chain_static_size(),
-            Pubkey::on_chain_static_size() + NonZeroU64::on_chain_static_size(),
-        ]
-        .into_iter()
-        .max()
-        .unwrap()
+        OptionalNonSystemPubkey::on_chain_static_size() + u64::on_chain_static_size() * 4
     }
 }
 
 bitflags! {
-    pub struct NetworkKeyFlags: u8{}
-    pub struct GatekeeperKeyFlags: u8{}
+    /// The flags for a key on a network
+    pub struct NetworkKeyFlags: u16{
+        /// Key can change keys
+        const AUTH = 1 << 0;
+        /// Key can set network features (User expiry, did issuance, etc.)
+        const SET_FEATURES = 1 << 1;
+        /// Key can create new gatekeepers
+        const CREATE_GATEKEEPER = 1 << 2;
+        /// Key can freeze gatekeepers
+        const FREEZE_GATEKEEPER = 1 << 3;
+        /// Key can unfreeze gatekeepers
+        const UNFREEZE_GATEKEEPER = 1 << 4;
+        /// Key can halt gatekeepers
+        const HALT_GATEKEEPER = 1 << 5;
+        /// Key can un-halt gatekeepers
+        const UNHALT_GATEKEEPER = 1 << 6;
+        /// Key can un-revoke passes with gatekeepers
+        const UNREVOKE_PASS = 1 << 7;
+        /// Key can adjust fees
+        const ADJUST_FEES = 1 << 8;
+    }
+    /// The flags for a key on a gatekeeper
+    pub struct GatekeeperKeyFlags: u16{
+        /// Key can change keys
+        const AUTH = 1 << 0;
+        /// Key can issue passes
+        const ISSUE = 1 << 1;
+        /// Key can refresh passes
+        const REFRESH = 1 << 2;
+        /// Key can freeze passes
+        const FREEZE = 1 << 3;
+        /// Key can unfreeze passes
+        const UNFREEZE = 1 << 4;
+        /// Key can revoke passes
+        const REVOKE = 1 << 5;
+        /// Key can adjust gatekeeper fees
+        const ADJUST_FEES = 1 << 6;
+        /// Key can set gatekeeper addresses key
+        const SET_ADDRESSES = 1 << 7;
+        /// Key can set data on passes
+        const SET_PASS_DATA = 1 << 8;
+    }
 }
 
+/// A gatekeeper network which manages many [`Gatekeeper`]s.
 #[derive(Debug)]
 pub struct GatekeeperNetwork {
+    /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
-    pub network_features: [(); 128],
+    /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
+    pub network_features: [Option<[u8; 32]>; 128],
+    /// The number of auth keys needed to change the `auth_keys`
     pub auth_threshold: u8,
-    pub network_fees: Fees,
+    /// The length of time a pass lasts in seconds. `0` means does not expire.
     pub pass_expire_time: UnixTimestamp,
     /// Changing this justifies a new network as all old passes will become invalid
     pub network_data_len: u16,
+    /// The bump for the signer
     pub signer_bump: u8,
-    pub valid_mints: Vec<OptionalNonSystemPubkey>,
+    /// The fees for this network
+    pub fees: Vec<(OptionalNonSystemPubkey, Fees)>,
+    /// Keys with permissions on the network
     pub auth_keys: Vec<(NetworkKeyFlags, Pubkey)>,
-}
-
-#[derive(Debug)]
-pub struct GatekeeperNetworkWalletSeeder {
-    pub network: Pubkey,
-    pub wallet_index: u16,
-}
-
-#[derive(Debug, Clone)]
-pub struct OptionalNonSystemPubkey(Pubkey);
-impl From<OptionalNonSystemPubkey> for Option<Pubkey> {
-    fn from(from: OptionalNonSystemPubkey) -> Self {
-        if sol_memcmp(from.0.as_ref(), &[0; 32], 32) == 0 {
-            None
-        } else {
-            Some(from.0)
-        }
-    }
-}
-impl From<Pubkey> for OptionalNonSystemPubkey {
-    fn from(from: Pubkey) -> Self {
-        Self(from)
-    }
-}
-impl OnChainSize<()> for OptionalNonSystemPubkey {
-    fn on_chain_max_size(arg: ()) -> usize {
-        Pubkey::on_chain_max_size(arg)
-    }
 }
 
 /// The state of a [`Gatekeeper`]
@@ -135,16 +140,26 @@ pub enum GatekeeperState {
     Halted,
 }
 
+/// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
 #[derive(Debug)]
 pub struct Gatekeeper {
+    /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
-    pub fees: Fees,
+    /// The number of keys needed to change the `auth_keys`
     pub auth_threshold: u8,
+    /// The [`GatekeeperNetwork`] this gatekeeper is on
     pub gatekeeper_network: Pubkey,
+    /// A pointer to the addresses this gatekeeper uses for discoverability
     pub addresses: Pubkey,
+    /// The staking account of this gatekeeper
     pub staking_account: Pubkey,
+    /// The state of this gatekeeper
     pub gatekeeper_state: GatekeeperState,
+    /// The bump for the signer of this gatekeeper
     pub signer_bump: u8,
+    /// The fees for this gatekeeper
+    pub fees: Vec<(OptionalNonSystemPubkey, Fees)>,
+    /// The keys with permissions on this gatekeeper
     pub auth_keys: Vec<(GatekeeperKeyFlags, Pubkey)>,
 }
 
@@ -163,19 +178,72 @@ impl OnChainSize<()> for PassState {
         1
     }
 }
-
+/// Mutable access to a pass state
 #[derive(Debug)]
-pub struct Pass {
-    pub version: u8,
-    pub issue_time: UnixTimestamp,
-    pub network: Pubkey,
-    pub issuing_gatekeeper: Pubkey,
-    pub owner_wallet: Pubkey,
-    pub state: PassState,
-    pub network_data: Vec<u8>,
-    pub gatekeeper_data: Vec<u8>,
+pub struct PassStateMut<'a>(&'a mut u8);
+impl<'a> PassStateMut<'a> {
+    /// Gets the current state
+    #[must_use]
+    pub fn get(&self) -> PassState {
+        match self.0 {
+            0 => PassState::Active,
+            1 => PassState::Frozen,
+            2 => PassState::Revoked,
+            _ => unreachable!("Invalid pass state"),
+        }
+    }
+
+    /// Sets the state
+    pub fn set(&mut self, state: PassState) {
+        *self.0 = match state {
+            PassState::Active => 0,
+            PassState::Frozen => 1,
+            PassState::Revoked => 2,
+        }
+    }
 }
 
+/// A pass that can be issued by a [`Gatekeeper`]
+#[derive(Debug)]
+pub struct Pass {
+    /// The version of this struct, should be 0 until a new version is released
+    pub version: u8,
+    /// The issue time of this pass, used for expiry
+    pub issue_time: UnixTimestamp,
+    /// The network this pass belongs to
+    pub network: Pubkey,
+    /// The gatekeeper that issued this pass
+    pub issuing_gatekeeper: Pubkey,
+    /// The wallet this pass belongs to
+    pub owner_wallet: Pubkey,
+    /// The state of this pass
+    pub state: PassState,
+    /// Additional data from the network
+    pub network_data: Vec<u8>,
+    /// Additional data from the gatekeeper
+    pub gatekeeper_data: Vec<u8>,
+}
+/// Size of a pass
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct PassSize {
+    /// The length of network data on a pass
+    pub network_data_len: u16,
+    /// The length of gatekeeper data on a pass
+    pub gatekeeper_data_len: u16,
+}
+impl OnChainSize<PassSize> for Pass {
+    fn on_chain_max_size(arg: PassSize) -> usize {
+        u8::on_chain_static_size()
+            + UnixTimestamp::on_chain_static_size()
+            + Pubkey::on_chain_static_size() * 3
+            + PassState::on_chain_static_size()
+            + arg.network_data_len as usize
+            + arg.gatekeeper_data_len as usize
+            + arg.gatekeeper_data_len as usize
+    }
+}
+
+/// In-place access to the [`Pass`] data
 #[derive(Debug)]
 pub struct PassAccess<'a> {
     data: &'a mut [u8],
@@ -190,8 +258,12 @@ impl<'a> PassAccess<'a> {
     const STATE_OFFSET: usize = Self::OWNER_WALLET_OFFSET + 32;
     const DYNAMIC_DATA_OFFSET: usize = Self::STATE_OFFSET + 1;
 
+    /// Creates a new [`PassAccess`]
     pub fn new(data: &'a mut [u8], network_data_len: u16) -> CruiserResult<Self> {
-        let needed_data = Self::on_chain_size(network_data_len, 0);
+        let needed_data = Pass::on_chain_max_size(PassSize {
+            network_data_len,
+            gatekeeper_data_len: 0,
+        });
         let data_len = data.len();
         if data_len < needed_data {
             Err(GenericError::Custom {
@@ -209,19 +281,23 @@ impl<'a> PassAccess<'a> {
         }
     }
 
+    /// Accesses [`Pass::version`]
     #[must_use]
     pub fn version(&self) -> u8 {
         self.data[Self::VERSION_OFFSET]
     }
 
+    /// Accesses [`Pass::version`] mutably
     #[must_use]
     pub fn version_mut(&mut self) -> &mut u8 {
         &mut self.data[Self::VERSION_OFFSET]
     }
 
+    /// Accesses [`Pass::issue_time`]
     #[must_use]
     pub fn issue_time(&self) -> &UnixTimestamp {
         // This has alignment issues, will need to fix that
+        #[allow(clippy::cast_ptr_alignment)]
         unsafe {
             &*self
                 .data
@@ -231,9 +307,11 @@ impl<'a> PassAccess<'a> {
         }
     }
 
+    /// Accesses [`Pass::issue_time`] mutably
     #[must_use]
     pub fn issue_time_mut(&mut self) -> &mut UnixTimestamp {
         // This has alignment issues, will need to fix that
+        #[allow(clippy::cast_ptr_alignment)]
         unsafe {
             &mut *self
                 .data
@@ -243,6 +321,7 @@ impl<'a> PassAccess<'a> {
         }
     }
 
+    /// Accesses [`Pass::network`]
     #[must_use]
     pub fn network(&self) -> &Pubkey {
         unsafe {
@@ -254,6 +333,7 @@ impl<'a> PassAccess<'a> {
         }
     }
 
+    /// Accesses [`Pass::network`] mutably
     #[must_use]
     pub fn network_mut(&mut self) -> &mut Pubkey {
         unsafe {
@@ -265,6 +345,7 @@ impl<'a> PassAccess<'a> {
         }
     }
 
+    /// Accesses [`Pass::issuing_gatekeeper`]
     #[must_use]
     pub fn issuing_gatekeeper(&self) -> &Pubkey {
         unsafe {
@@ -276,6 +357,7 @@ impl<'a> PassAccess<'a> {
         }
     }
 
+    /// Accesses [`Pass::issuing_gatekeeper`] mutably
     #[must_use]
     pub fn issuing_gatekeeper_mut(&mut self) -> &mut Pubkey {
         unsafe {
@@ -287,6 +369,7 @@ impl<'a> PassAccess<'a> {
         }
     }
 
+    /// Accesses [`Pass::owner_wallet`]
     #[must_use]
     pub fn owner_wallet(&self) -> &Pubkey {
         unsafe {
@@ -298,6 +381,7 @@ impl<'a> PassAccess<'a> {
         }
     }
 
+    /// Accesses [`Pass::owner_wallet`] mutably
     #[must_use]
     pub fn owner_wallet_mut(&mut self) -> &mut Pubkey {
         unsafe {
@@ -309,6 +393,7 @@ impl<'a> PassAccess<'a> {
         }
     }
 
+    /// Accesses [`Pass::state`]
     #[must_use]
     pub fn state(&self) -> PassState {
         match self.data[Self::STATE_OFFSET] {
@@ -319,38 +404,33 @@ impl<'a> PassAccess<'a> {
         }
     }
 
+    /// Accesses [`Pass::state`] mutably
     #[must_use]
-    pub fn state_mut(&mut self) -> &mut PassState {
-        todo!()
+    pub fn state_mut(&mut self) -> PassStateMut {
+        PassStateMut(&mut self.data[Self::STATE_OFFSET])
     }
 
+    /// Accesses [`Pass::network_data`]
     #[must_use]
     pub fn network_data(&self) -> &[u8] {
         &self.data[Self::DYNAMIC_DATA_OFFSET..][..self.network_data_len as usize]
     }
 
+    /// Accesses [`Pass::network_data`] mutably
     #[must_use]
     pub fn network_data_mut(&mut self) -> &mut [u8] {
         &mut self.data[Self::DYNAMIC_DATA_OFFSET..][..self.network_data_len as usize]
     }
 
+    /// Accesses [`Pass::gatekeeper_data`]
     #[must_use]
     pub fn gatekeeper_data(&self) -> &[u8] {
         &self.data[Self::DYNAMIC_DATA_OFFSET + self.network_data_len as usize..]
     }
 
+    /// Accesses [`Pass::gatekeeper_data`] mutably
     #[must_use]
     pub fn gatekeeper_data_mut(&mut self) -> &mut [u8] {
         &mut self.data[Self::DYNAMIC_DATA_OFFSET + self.network_data_len as usize..]
-    }
-
-    #[must_use]
-    fn on_chain_size(network_data_len: u16, gatekeeper_data_len: u16) -> usize {
-        u8::on_chain_static_size()
-            + UnixTimestamp::on_chain_static_size()
-            + Pubkey::on_chain_static_size() * 3
-            + PassState::on_chain_static_size()
-            + network_data_len as usize
-            + gatekeeper_data_len as usize
     }
 }
