@@ -2,11 +2,11 @@ require('dotenv').config();
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 
 const customProvider = (mnemonic, rpcEndpoint) => () => {
-  new HDWalletProvider(mnemonic, rpcEndpoint);
+  return new HDWalletProvider(mnemonic, rpcEndpoint);
 }
 
 const infuraProvider = (network) => {
-  customProvider(
+  return customProvider(
     process.env.MNEMONIC || process.env.PRIVATE_KEY || '',
     `wss://${network}.infura.io/ws/v3/${process.env.WEB3_INFURA_ID}`,
   );
@@ -35,6 +35,19 @@ module.exports = {
     //   networkCheckTimeout: 90000,
     // },
 
+      rinkeby: {
+       provider: infuraProvider('rinkeby'),
+       network_id: 4,
+       // gasPrice: 5000000000,
+       // gas: 4500000,
+       // gasPrice: 10000000000,
+       // confirmations: 0, // # of confs to wait between deployments. (default: 0)
+       skipDryRun: true,
+       gas: 8000000,
+       websockets: true,
+       networkCheckTimeout: 90000,
+     },
+
     // this is necessary for coverage
     coverage: {
         host: 'localhost',
@@ -52,7 +65,7 @@ module.exports = {
 
   compilers: {
     solc: {
-      version: '0.8.0',
+      version: '0.8.9',
       settings: {
         optimizer: {
           enabled: true, // Default: false
