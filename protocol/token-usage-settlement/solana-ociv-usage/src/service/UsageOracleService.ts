@@ -27,7 +27,7 @@ export class UsageOracleService {
     // const lastSlot = epochSchedule.getLastSlotInEpoch(epoch);
     const lastSlot = await this.connection.getSlot();
 
-    console.log(
+    console.warn(
       `Reading from Slot ${firstSlot} to ${lastSlot}. Total: ${
         lastSlot - firstSlot
       }`
@@ -46,16 +46,14 @@ export class UsageOracleService {
       if (currentEndSlot > lastSlot) {
         currentStartSlot = lastSlot;
       }
-      console.log(`Window: ${currentStartSlot} - ${currentEndSlot}`);
+      console.warn(`Window: ${currentStartSlot} - ${currentEndSlot}`);
 
       const sigs = await this.connection.getConfirmedSignaturesForAddress(
         this.config.program,
         currentStartSlot,
         currentEndSlot
       );
-      // console.log(sigs);
       signatures = signatures.concat(sigs);
-      // console.log(signatures)
       currentStartSlot = currentEndSlot;
     }
 

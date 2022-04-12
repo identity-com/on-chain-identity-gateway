@@ -23,7 +23,7 @@ describe("UsageOracleService", function () {
       epoch: 226,
     });
 
-    console.log(usage);
+    console.warn(usage);
 
     expect(usage.length).to.equal(1000);
   });

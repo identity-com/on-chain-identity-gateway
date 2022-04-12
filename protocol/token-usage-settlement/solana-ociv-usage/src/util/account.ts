@@ -16,7 +16,7 @@ export const airdropTo = async (
   if (clusterUrl === clusterApiUrl("mainnet-beta")) return;
 
   // eslint-disable-next-line no-console
-  console.log(`Airdropping to ${publicKey.toBase58()}...`);
+  console.warn(`Airdropping to ${publicKey.toBase58()}...`);
   let retries = 30;
   await connection.requestAirdrop(publicKey, lamports);
   for (;;) {
@@ -26,7 +26,7 @@ export const airdropTo = async (
     const balance = await connection.getBalance(publicKey);
     if (balance >= lamports) {
       // eslint-disable-next-line no-console
-      console.log("Airdrop done");
+      console.warn("Airdrop done");
       return;
     }
     if (--retries <= 0) {

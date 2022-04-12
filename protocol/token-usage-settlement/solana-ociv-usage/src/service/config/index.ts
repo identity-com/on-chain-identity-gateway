@@ -96,7 +96,7 @@ export class Config {
       if (!overwrite)
         throw new Error(`Config file at ${configPath} already exists.`);
     } else {
-      console.log(`Creating config at path ${path.dirname(configPath)}`);
+      console.warn(`Creating config at path ${path.dirname(configPath)}`);
       if (!fs.existsSync(path.dirname(configPath)))
         fs.mkdirSync(path.dirname(configPath));
     }

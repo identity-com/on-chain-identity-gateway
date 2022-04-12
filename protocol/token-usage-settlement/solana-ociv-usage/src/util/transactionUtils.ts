@@ -57,14 +57,6 @@ const matchInstruction = (
 ): InstructionConfig | undefined => {
   const data = Uint8Array.from(base58.decode(instruction.data));
 
-  // console.log(`matchInstruction Program: ${instruction.programId}`);
-  // console.log(`matchInstruction Data: ${data}`);
-  // console.log(
-  //   `matchInstruction Accounts: ${R.map((a: PublicKey) => a.toBase58())(
-  //     instruction.accounts
-  //   )}`
-  // );
-
   if (
     data.length < config.mask[1] ||
     !config.program.equals(instruction.programId)

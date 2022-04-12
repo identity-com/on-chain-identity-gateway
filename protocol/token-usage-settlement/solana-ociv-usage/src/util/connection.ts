@@ -32,7 +32,7 @@ export const getConnection = (
     ? process.env.CLUSTER_URL
     : getClusterUrl(cluster);
 
-  console.log(`Returning Connection with clusterURL: ${clusterUrl}`);
+  console.warn(`Returning Connection with clusterURL: ${clusterUrl}`);
   return new Connection(clusterUrl, commitment);
 };
 
