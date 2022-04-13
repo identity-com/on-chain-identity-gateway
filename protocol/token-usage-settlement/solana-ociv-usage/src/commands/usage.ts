@@ -37,16 +37,6 @@ export default class SolanaUsage extends Base {
   async run() {
     const { args, flags } = await this.parse(SolanaUsage);
 
-    this.usageConfig.config.configs.forEach((config) => {
-      // print all
-      this.log(config.name);
-      this.log(`${config.mask[0]}, ${config.mask[1]}`);
-      this.log(config.program.toBase58());
-      this.log(
-        `instructions: ${JSON.stringify(config.instructions["000a0000"])}`
-      );
-    });
-
     let matchedConfig: UsageConfig | undefined;
     this.usageConfig.config.configs.forEach((config) => {
       if (config.name === args.name) {
