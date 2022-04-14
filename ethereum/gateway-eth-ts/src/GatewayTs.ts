@@ -1,5 +1,6 @@
-import { BigNumber, PopulatedTransaction, Wallet } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
+import { BigNumber, PopulatedTransaction, Signer } from "ethers";
+import { Network } from '@ethersproject/providers';
+import { TypedDataSigner } from "@ethersproject/abstract-signer";
 
 import { ethTransaction, populateTx, TxOptions } from "./utils/tx";
 import { getExpirationTime } from "./utils/time";
@@ -10,14 +11,12 @@ import { signMetaTxRequest } from "./utils/signer";
 
 export class GatewayTs extends GatewayTsBase {
   constructor(
-    provider: BaseProvider,
-    wallet?: Wallet,
+    signer: Signer,
+    network: Network,
+    defaultGatewayToken?: string,
     options?: { defaultGas?: number; defaultGasPrice?: any }
   ) {
-    super(provider, wallet, options);
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    super.setGasLimit();
+    super(signer, network, defaultGatewayToken, options);
   }
 
   async addGatekeeper(
@@ -540,11 +539,13 @@ export class GatewayTs extends GatewayTsBase {
     options?: TxOptions
   ): Promise<PopulatedTransaction> {
     if (options?.forwardTransaction) {
+      const signer = this.providerOrSigner as Signer & TypedDataSigner;
+      const address = await signer.getAddress();
       const { request, signature } = await signMetaTxRequest(
-        this.wallet,
+        signer,
         this.forwarder.contract,
         {
-          from: this.wallet.address,
+          from: address,
           to: contractAddress,
           data: tx.data,
         }

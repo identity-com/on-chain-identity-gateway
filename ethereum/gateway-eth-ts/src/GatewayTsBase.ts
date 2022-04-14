@@ -1,9 +1,9 @@
 import { addresses, ContractAddresses } from "./lib/addresses";
 import { gatewayTokenAddresses } from "./lib/gatewaytokens";
-import { BigNumber, Wallet } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
+import { BigNumber, Signer } from "ethers";
+import { getDefaultProvider, Network, Provider } from "@ethersproject/providers";
 
-import { SUBTRACT_GAS_LIMIT, NETWORKS } from "./utils";
+import { NETWORKS } from "./utils";
 import { GatewayTokenItems } from "./utils/addresses";
 import {
   FlagsStorage,
@@ -17,19 +17,15 @@ import { toBytes32 } from "./utils/string";
 import { Forwarder } from "./contracts/Forwarder";
 
 export class GatewayTsBase {
-  provider: BaseProvider;
+  providerOrSigner: Provider | Signer;
 
   networkId: number;
-
-  blockGasLimit: BigNumber;
 
   defaultGas: number;
 
   defaultGasPrice: number;
 
   network: string;
-
-  wallet: Wallet;
 
   gatewayTokenAddresses: string[];
 
@@ -46,35 +42,30 @@ export class GatewayTsBase {
   forwarder: Forwarder;
 
   constructor(
-    provider: BaseProvider,
-    signer?: Wallet,
+    providerOrSigner: Provider | Signer,
+    network: Network,
+    defaultGatewayToken?: string,
     options?: { defaultGas?: number; defaultGasPrice?: number }
   ) {
     this.defaultGas = options?.defaultGas || 6_000_000;
     this.defaultGasPrice = options?.defaultGasPrice || 1_000_000_000_000;
 
-    this.wallet = signer;
-
-    this.provider = provider;
-  }
-
-  async init(defaultGatewayToken?: string): Promise<void> {
-    const network = await this.provider.getNetwork();
+    this.providerOrSigner = providerOrSigner || getDefaultProvider();
 
     this.networkId = network.chainId;
     this.network = NETWORKS[this.networkId];
     this.contractAddresses = addresses[this.networkId];
     this.forwarder = new Forwarder(
-      this.wallet || this.provider,
+      this.providerOrSigner,
       addresses[this.networkId].forwarder
     );
 
     this.gatewayTokenController = new GatewayTokenController(
-      this.wallet || this.provider,
+      this.providerOrSigner,
       addresses[this.networkId].gatewayTokenController
     );
     this.flagsStorage = new FlagsStorage(
-      this.wallet || this.provider,
+      this.providerOrSigner,
       addresses[this.networkId].flagsStorage
     );
     for (const gatewayToken of gatewayTokenAddresses[this.networkId]) {
@@ -91,16 +82,11 @@ export class GatewayTsBase {
         symbol: gatewayToken.symbol,
         address: gatewayToken.address,
         tokenInstance: new GatewayToken(
-          this.wallet || this.provider,
+          this.providerOrSigner,
           gatewayToken.address
         ),
       };
     }
-  }
-
-  async setGasLimit(): Promise<void> {
-    const block = await this.provider.getBlock("latest");
-    this.blockGasLimit = block.gasLimit.sub(BigNumber.from(SUBTRACT_GAS_LIMIT));
   }
 
   getGatewayTokenContract(gatewayTokenAddress?: string): GatewayToken {

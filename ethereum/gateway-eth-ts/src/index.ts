@@ -1,9 +1,10 @@
 import { GatewayTs } from "./GatewayTs";
-import { utils, Wallet } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
+import { Signer, utils } from "ethers";
+import { Network } from "@ethersproject/providers";
 export { GasPriceKey } from "./utils/gas";
 export { TokenData, SendableTransaction, SentTransaction } from "./utils/types";
 export { DEFAULT_GATEWAY_TOKEN } from "./utils/constants";
+export { GatewayTsCallData } from './GatewayTsCallData';
 
 export class GatewayETH extends GatewayTs {
   utils: any;
@@ -14,17 +15,19 @@ export class GatewayETH extends GatewayTs {
    * const {GatewayETH} = require('GatewayTS');
    * const gatewayTs = new GatewayETH();
    * @constructor
-   * @param provider {Ethers provider, default on mainnet}
-   * @param signer {Ethers wallet instance}
+   * @param signer {Ethers signer, gets default provider if there is no signer provided}
+   * @param network {Ethers network class}
+   * @param defaultGatewayToken {Address of default gateway token contract}
    * @param options {Gas, gasPrice}
    * @notice utils {Ethers utils}
    */
   constructor(
-    provider: BaseProvider,
-    signer?: Wallet,
+    signer: Signer,
+    network: Network,
+    defaultGatewayToken?: string,
     options?: { defaultGas?: number; defaultGasPrice?: any }
   ) {
-    super(provider, signer, options);
+    super(signer, network, defaultGatewayToken, options);
     this.utils = utils;
   }
 }

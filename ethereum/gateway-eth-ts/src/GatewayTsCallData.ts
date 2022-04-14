@@ -1,5 +1,5 @@
-import { BigNumber, Transaction, Wallet } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
+import { BigNumber, Signer, Transaction, Wallet } from "ethers";
+import { Network } from "@ethersproject/providers";
 
 import { signTranaction, TxOptions } from "./utils/tx";
 import { getExpirationTime } from "./utils/time";
@@ -7,14 +7,12 @@ import { GatewayTsBase } from "./GatewayTsBase";
 
 export class GatewayTsCallData extends GatewayTsBase {
   constructor(
-    provider: BaseProvider,
-    wallet?: Wallet,
+    provider: Signer,
+    network?: Network,
+    defaultGatewayToken?: string,
     options?: { defaultGas?: number; defaultGasPrice?: any }
   ) {
-    super(provider, wallet, options);
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    super.setGasLimit();
+    super(provider, network, defaultGatewayToken);
   }
 
   /* eslint-disable max-params */
