@@ -11,8 +11,9 @@ require("dotenv/config");
   let wallet = new Wallet(`0x${process.env.PRIVATE_KEY}`);
   wallet = wallet.connect(provider);
 
-  const gtCallDataLib = new GatewayTsCallData(provider, wallet);
-  await gtCallDataLib.init();
+  const network = await provider.getNetwork();
+
+  const gtCallDataLib = new GatewayTsCallData(wallet, network);
   const testUser = "0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28";
 
   let gatewayToken = await gtCallDataLib.gatewayTokens[DEFAULT_GATEWAY_TOKEN]
