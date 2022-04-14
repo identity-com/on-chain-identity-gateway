@@ -5,4 +5,4 @@ export {
     NETWORKS, SUBTRACT_GAS_LIMIT
 }
 
-export { onGatewayTokenChange } from './subscription';
+export { onGatewayTokenChange, removeGatewayTokenChangeListener } from './subscription';

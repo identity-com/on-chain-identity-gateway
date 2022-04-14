@@ -41,7 +41,7 @@ describe("Test GatewayTSCallData class", function () {
     });
     wallet = new Wallet(`0x${process.env.PRIVATE_KEY}`);
     wallet = wallet.connect(provider);
-    let network = await provider.getNetwork();
+    const network = await provider.getNetwork();
     defaultGatewayToken = gatewayTokenAddresses[ropstenNetworkID][0].address;
     gatewayLib = new GatewayTsCallData(wallet, network, defaultGatewayToken);
 
@@ -204,7 +204,7 @@ describe("Test GatewayTSCallData class", function () {
   }).timeout(4000);
 
   it("Try to initialize library with incorrect default token, expect default gateway token used with 0 index", async () => {
-    let network = await provider.getNetwork();
+    const network = await provider.getNetwork();
     gatewayLib = new GatewayTsCallData(wallet, network, "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be");
     assert.notEqual(
       gatewayLib.defaultGatewayToken,

@@ -1,4 +1,4 @@
-import { BigNumber, Signer, Transaction, Wallet } from "ethers";
+import { BigNumber, Signer, Transaction } from "ethers";
 import { Network } from "@ethersproject/providers";
 
 import { signTranaction, TxOptions } from "./utils/tx";
@@ -6,11 +6,11 @@ import { getExpirationTime } from "./utils/time";
 import { GatewayTsBase } from "./GatewayTsBase";
 
 export class GatewayTsCallData extends GatewayTsBase {
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     provider: Signer,
     network?: Network,
     defaultGatewayToken?: string,
-    options?: { defaultGas?: number; defaultGasPrice?: any }
   ) {
     super(provider, network, defaultGatewayToken);
   }
