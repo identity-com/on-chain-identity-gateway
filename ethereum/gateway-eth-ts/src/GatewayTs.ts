@@ -10,6 +10,7 @@ import { SendableTransaction } from "./utils/types";
 import { signMetaTxRequest } from "./utils/signer";
 
 export class GatewayTs extends GatewayTsBase {
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     signer: Signer,
     network: Network,
