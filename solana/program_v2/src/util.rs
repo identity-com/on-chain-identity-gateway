@@ -10,7 +10,7 @@ use std::num::NonZeroUsize;
 
 /// A public key that uses the system program as the [`None`] value
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OptionalNonSystemPubkey(Pubkey);
+pub struct OptionalNonSystemPubkey(pub(crate) Pubkey);
 impl OptionalNonSystemPubkey {
     /// Turns this into an optional pubkey
     #[must_use]
