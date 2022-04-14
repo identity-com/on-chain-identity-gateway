@@ -1,17 +1,29 @@
 //! In-place access for gateway types.
 
-use crate::util::{round_to_next, ConstEq};
+use crate::util::{round_to_next, ConstEq, GatekeeperNetworkSize};
 use crate::{
-    Fees, GatekeeperNetwork, NetworkKeyFlags, OptionalNonSystemPubkey, Pubkey, UnixTimestamp,
+    Fees, GatekeeperNetwork, GatewayAccountList, NetworkKeyFlags, OptionalNonSystemPubkey, Pubkey,
+    UnixTimestamp,
 };
+use cruiser::account_argument::{AccountArgument, MultiIndexable, Single, SingleIndexable};
+use cruiser::account_list::AccountListItem;
+use cruiser::account_types::in_place_account::{Create, InPlaceAccount};
 use cruiser::account_types::system_program::SystemProgram;
+use cruiser::compressed_numbers::CompressedNumber;
 use cruiser::in_place::{
-    InPlace, InPlaceCreate, InPlaceGet, InPlaceRead, InPlaceSet, InPlaceUnitRead, InPlaceWrite,
+    InPlace, InPlaceCreate, InPlaceGet, InPlaceRead, InPlaceSet, InPlaceUnitRead, InPlaceUnitWrite,
+    InPlaceWrite,
 };
 use cruiser::on_chain_size::{OnChainSize, OnChainStaticSize};
+use cruiser::pda_seeds::PDASeedSet;
 use cruiser::program::ProgramKey;
+use cruiser::solana_program::program_memory::sol_memcpy;
+use cruiser::solana_program::rent::Rent;
+use cruiser::solana_program::sysvar::Sysvar;
 use cruiser::util::Advance;
-use cruiser::CruiserResult;
+use cruiser::{AccountInfo, CPIMethod, CruiserResult, ToSolanaAccountInfo};
+use std::borrow::Cow;
+use std::cmp::Ordering;
 use std::num::NonZeroUsize;
 
 #[derive(Debug)]
@@ -46,12 +58,14 @@ impl<'a> InPlace<'a> for OptionalNonSystemPubkey {
     type Access = OptionalNonSystemPubkeyAccess<'a>;
     type AccessMut = OptionalNonSystemPubkeyAccessMut<'a>;
 }
-impl<'a, C> InPlaceCreate<'a, C> for OptionalNonSystemPubkey
-where
-    Pubkey: InPlaceCreate<'a, C>,
-{
-    fn create_with_arg(data: &mut [u8], arg: C) -> CruiserResult {
+impl<'a> InPlaceCreate<'a, ()> for OptionalNonSystemPubkey {
+    fn create_with_arg(data: &mut [u8], arg: ()) -> CruiserResult {
         Pubkey::create_with_arg(data, arg)
+    }
+}
+impl<'a, 'b> InPlaceCreate<'a, &'b OptionalNonSystemPubkey> for OptionalNonSystemPubkey {
+    fn create_with_arg(data: &mut [u8], arg: &'b OptionalNonSystemPubkey) -> CruiserResult {
+        Pubkey::create_with_arg(data, &arg.0)
     }
 }
 impl<'a, R> InPlaceRead<'a, R> for OptionalNonSystemPubkey
@@ -102,6 +116,16 @@ impl<'a> InPlaceCreate<'a, ()> for Fees {
         create::<u64, _, _>(&mut data, (), ())?;
         create::<u64, _, _>(&mut data, (), ())?;
         create::<u64, _, _>(&mut data, (), ())?;
+        Ok(())
+    }
+}
+impl<'a, 'b> InPlaceCreate<'a, &'b Fees> for Fees {
+    fn create_with_arg(mut data: &mut [u8], arg: &'b Fees) -> CruiserResult {
+        create::<OptionalNonSystemPubkey, _, _>(&mut data, &arg.token, ())?;
+        create::<u64, _, _>(&mut data, arg.issue, ())?;
+        create::<u64, _, _>(&mut data, arg.refresh, ())?;
+        create::<u64, _, _>(&mut data, arg.expire, ())?;
+        create::<u64, _, _>(&mut data, arg.verify, ())?;
         Ok(())
     }
 }
@@ -173,6 +197,153 @@ impl<'a> InPlaceWrite<'a, ()> for NetworkKeyFlags {
     }
 }
 
+pub struct GatewayNetworkCreate<'a, AI, CPI> {
+    pub system_program: &'a SystemProgram<AI>,
+    pub rent: Option<Rent>,
+    pub funder: &'a AI,
+    pub funder_seeds: Option<&'a PDASeedSet<'a>>,
+    pub cpi: CPI,
+}
+
+#[cfg(not(feature = "realloc"))]
+const INITIAL_NETWORK_SPACE: usize = 10 * (1 << 10);
+#[cfg(feature = "realloc")]
+const INITIAL_NETWORK_SPACE: usize =
+    GatekeeperNetwork::on_chain_max_size(crate::util::GatekeeperNetworkSize {
+        fees_count: 0,
+        auth_keys: 1,
+    });
+
+/// Account argument for [`GatekeeperNetwork`].
+#[derive(Debug, AccountArgument)]
+#[account_argument(account_info = AI, generics = [where AI: AccountInfo])]
+#[validate(data = ())]
+#[validate(id = create, data = (create: GatewayNetworkCreate<'a, AI, CPI>), generics = [<'a, CPI> where CPI: CPIMethod, AI: ToSolanaAccountInfo<'a>])]
+pub struct GatewayNetworkAccount<AI>(
+    #[validate(id = create, data = Create{
+        data: (),
+        system_program: create.system_program,
+        rent: create.rent,
+        funder: create.funder,
+        funder_seeds: create.funder_seeds,
+        cpi: create.cpi,
+        account_seeds: None,
+        space: INITIAL_NETWORK_SPACE,
+    })]
+    InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>,
+);
+impl<AI> GatewayNetworkAccount<AI> {
+    /// Pushes a new fee to the network.
+    pub fn push_fees<'a>(
+        &self,
+        fees: impl ExactSizeIterator<Item = &'a Fees>,
+        funds: &AI,
+        funder_seeds: Option<&'a PDASeedSet<'a>>,
+        rent: Option<&Rent>,
+        system_program: &SystemProgram<AI>,
+        cpi: impl CPIMethod,
+    ) -> CruiserResult
+    where
+        AI: ToSolanaAccountInfo<'a>,
+    {
+        let mut data = self.0.info().data_mut();
+        let mut network = GatekeeperNetwork::write(&mut *data)?;
+        let fee_count = network.fees_count.get_in_place();
+        let new_fees_count = fee_count + u16::try_from(fees.len()).expect("too many fees");
+        #[cfg(feature = "realloc")]
+        unsafe {
+            let auth_keys_count = network.auth_keys_count.get_in_place();
+            drop(network);
+            drop(data);
+
+            let new_length =
+                <GatewayAccountList as AccountListItem<GatekeeperNetwork>>::compressed_discriminant(
+                )
+                .num_bytes()
+                    + GatekeeperNetwork::on_chain_max_size(GatekeeperNetworkSize {
+                        fees_count: new_fees_count,
+                        auth_keys: auth_keys_count,
+                    });
+            self.0.info().realloc_unsafe(new_length, false)?;
+
+            let current_rent: u64 = *self.0.info().lamports();
+            let new_rent = match rent {
+                None => Cow::Owned(Rent::get()?),
+                Some(rent) => Cow::Borrowed(rent),
+            }
+            .minimum_balance(new_length);
+            match current_rent.cmp(&new_rent) {
+                Ordering::Greater => {
+                    *self.0.info().lamports_mut() = new_rent;
+                    *funds.lamports_mut() += current_rent - new_rent;
+                }
+                Ordering::Less => {
+                    system_program.transfer(
+                        cpi,
+                        funds,
+                        self.0.info(),
+                        new_rent - current_rent,
+                        funder_seeds,
+                    )?;
+                }
+                Ordering::Equal => {}
+            }
+
+            data = self.0.info().data_mut();
+            network = GatekeeperNetwork::write(&mut *data)?;
+        }
+        let initial_offset = GatekeeperNetwork::auth_keys_offset(fee_count);
+        let new_offset = GatekeeperNetwork::auth_keys_offset(new_fees_count);
+        let offset_change = new_offset - initial_offset;
+        if offset_change != 0 {
+            let mut remaining_data = &mut *network.remaining_data;
+            remaining_data.try_advance(initial_offset)?;
+            let source = remaining_data.try_advance(offset_change)?;
+            remaining_data.try_advance(
+                GatekeeperNetwork::auth_keys_end_offset(
+                    fee_count,
+                    network.auth_keys_count.get_in_place(),
+                ) - offset_change
+                    - initial_offset,
+            )?;
+            let destination = remaining_data.try_advance(offset_change)?;
+            sol_memcpy(destination, source, offset_change);
+        }
+        let mut remaining_data = &mut *network.remaining_data;
+        remaining_data.try_advance(GatekeeperNetwork::fees_end_offset(fee_count))?;
+        for fee in fees {
+            Fees::create_with_arg(
+                remaining_data.try_advance(Fees::on_chain_static_size())?,
+                fee,
+            )?;
+        }
+        network.fees_count.set_in_place(new_fees_count);
+        Ok(())
+    }
+}
+impl<AI, I> MultiIndexable<I> for GatewayNetworkAccount<AI>
+where
+    AI: MultiIndexable<I> + AccountInfo,
+{
+    fn index_is_signer(&self, indexer: I) -> CruiserResult<bool> {
+        self.0.index_is_signer(indexer)
+    }
+    fn index_is_writable(&self, indexer: I) -> CruiserResult<bool> {
+        self.0.index_is_writable(indexer)
+    }
+    fn index_is_owner(&self, owner: &Pubkey, indexer: I) -> CruiserResult<bool> {
+        self.0.index_is_owner(owner, indexer)
+    }
+}
+impl<AI, I> SingleIndexable<I> for GatewayNetworkAccount<AI>
+where
+    AI: SingleIndexable<I> + AccountInfo,
+{
+    fn index_info(&self, indexer: I) -> CruiserResult<&Self::AccountInfo> {
+        self.0.index_info(indexer)
+    }
+}
+
 #[derive(Debug)]
 pub struct GatekeeperNetworkAccess<'a> {
     pub version: <u8 as InPlace<'a>>::Access,
@@ -206,11 +377,16 @@ impl GatekeeperNetwork {
         round_to_next(0, Self::FEE_SLOT_SIZE)
     }
 
+    const fn fees_end_offset(fees_count: u16) -> usize {
+        Self::fees_offset() + fees_count as usize * Self::FEE_SLOT_SIZE.get()
+    }
+
     const fn auth_keys_offset(fees_count: u16) -> usize {
-        round_to_next(
-            Self::fees_offset() + fees_count as usize * Self::FEE_SLOT_SIZE.get(),
-            Self::AUTH_SLOT_SIZE,
-        )
+        round_to_next(Self::fees_end_offset(fees_count), Self::AUTH_SLOT_SIZE)
+    }
+
+    const fn auth_keys_end_offset(fees_count: u16, auth_keys_count: u16) -> usize {
+        Self::auth_keys_offset(fees_count) + auth_keys_count as usize * Self::AUTH_SLOT_SIZE.get()
     }
 }
 pub trait GatekeeperNetworkSlotVectors<'a> {
