@@ -1,12 +1,12 @@
 import { Contract, Signer } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
+import { Provider } from "@ethersproject/providers";
 import abis from "../lib/abis";
 import { EIP712Message, ForwarderContract } from "../utils/signer";
 
 export class Forwarder {
   contract: ForwarderContract;
 
-  constructor(signerOrProvider: Signer | BaseProvider, addressOrName: string) {
+  constructor(signerOrProvider: Signer | Provider, addressOrName: string) {
     this.contract = new Contract(
       addressOrName,
       abis.Forwarder,

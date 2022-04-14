@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Contract, ContractTransaction, Signer } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
+import { Provider } from "@ethersproject/providers";
 import abis from "../lib/abis";
 import { TxBase } from "../utils/tx";
 
 export class GatewayTokenController {
   contract: Contract;
 
-  constructor(signerOrProvider: Signer | BaseProvider, addressOrName: string) {
+  constructor(signerOrProvider: Signer | Provider, addressOrName: string) {
     this.contract = new Contract(
       addressOrName,
       abis.GatewayTokenController,

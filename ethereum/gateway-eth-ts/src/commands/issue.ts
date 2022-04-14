@@ -119,8 +119,8 @@ export default class IssueToken extends Command {
       forwardTransaction,
     };
 
-    const gateway = new GatewayETH(provider, signer);
-    await gateway.init();
+    const network = await provider.getNetwork();
+    const gateway = new GatewayETH(signer, network);
     const sendableTransaction = await gateway.issue(
       ownerAddress,
       tokenID,

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { BigNumber, BigNumberish, Contract, ContractTransaction, Signer } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
+import { Provider } from "@ethersproject/providers";
 import abis from "../lib/abis";
 import { TokenData } from "../utils/types";
 import { TxBase } from "../utils/tx";
@@ -8,7 +8,7 @@ import { TxBase } from "../utils/tx";
 export class GatewayToken {
   contract: Contract;
 
-  constructor(signerOrProvider: Signer | BaseProvider, addressOrName: string) {
+  constructor(signerOrProvider: Signer | Provider, addressOrName: string) {
     this.contract = new Contract(
       addressOrName,
       abis.GatewayToken,

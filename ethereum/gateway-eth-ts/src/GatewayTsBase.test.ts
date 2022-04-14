@@ -38,17 +38,13 @@ describe("Test GatewayTSBase class", function () {
     provider = getDefaultProvider("ropsten", {
       infura: process.env.INFURA_KEY,
     });
-    wallet = new Wallet(`0x${process.env.PRIVATE_KEY}`);
-    wallet = wallet.connect(provider);
+    let network = await provider.getNetwork();
     defaultGatewayToken = gatewayTokenAddresses[ropstenNetworkID][0].address;
-    gatewayBase = new GatewayTsBase(provider, wallet);
-
-    await gatewayBase.init(defaultGatewayToken);
-    const networkId = (await gatewayBase.provider.getNetwork()).chainId;
+    gatewayBase = new GatewayTsBase(provider, network, defaultGatewayToken);
 
     assert.equal(gatewayBase.defaultGatewayToken, defaultGatewayToken);
-    assert.equal(gatewayBase.wallet, wallet);
-    assert.equal(networkId, ropstenNetworkID);
+    assert.equal(gatewayBase.providerOrSigner, provider);
+    assert.equal(network.chainId, ropstenNetworkID);
     assert.equal(gatewayBase.defaultGas, defaultGas);
     assert.equal(gatewayBase.defaultGasPrice, defaultGasPrice);
     assert.equal(gatewayBase.contractAddresses, addresses[ropstenNetworkID]);
