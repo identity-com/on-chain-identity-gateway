@@ -1,19 +1,18 @@
-import { Provider } from "@ethersproject/providers";
+import { BaseProvider, Provider } from "@ethersproject/providers";
 import { BigNumber } from "ethers";
 import { TokenData } from "..";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { parseTokenState } from "./token-state";
 
 export const onGatewayTokenChange = async (
-    provider: Provider, 
+    provider: Provider | BaseProvider, 
     tokenId: BigNumber | string,
     gatewayToken: GatewayToken,
     callback: (gatewayToken: TokenData) => void
-): Promise<number> => {
-	let block = await provider.getBlockNumber();
-    
+): Promise<ReturnType<typeof setInterval>> => {
+    let block = await provider.getBlockNumber();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    return window.setInterval(async () => {
+    return setInterval(async () => {
         const latestBlockNumber = await provider.getBlockNumber();
         if (block !== latestBlockNumber) {
             block = latestBlockNumber;
@@ -25,5 +24,5 @@ export const onGatewayTokenChange = async (
 }
 
 export const removeGatewayTokenChangeListener = (listenerId: number): void => {
-    return window.clearInterval(listenerId);
+    return clearInterval(listenerId);
 }

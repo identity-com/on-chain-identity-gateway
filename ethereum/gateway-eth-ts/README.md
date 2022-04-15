@@ -1,17 +1,81 @@
 # gateway-eth-ts
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/gateway-eth-ts.svg)](https://npmjs.org/package/gateway-eth-ts)
-[![Downloads/week](https://img.shields.io/npm/dw/gateway-eth-ts.svg)](https://npmjs.org/package/gateway-eth-ts)
-[![License](https://img.shields.io/npm/l/gateway-eth-ts.svg)](https://github.com/Secured-Finance/gateway-eth-ts/blob/master/package.json)
+[![Version](https://img.shields.io/npm/v/gateway-eth-ts.svg)](https://www.npmjs.com/package/@identity.com/gateway-eth-ts)
+[![Downloads/week](https://img.shields.io/npm/dw/gateway-eth-ts.svg)](https://www.npmjs.com/package/@identity.com/gateway-eth-ts)
+[![License](https://img.shields.io/npm/l/gateway-eth-ts.svg)](https://github.com/identity-com/on-chain-identity-gateway/blob/main/ethereum/gateway-eth-ts/package.json)
 
-<!-- toc -->
-* [gateway-eth-ts](#gateway-eth-ts)
-<!-- tocstop -->
+# Gateway ETH TS library
+
+This client library allows JS/TS applications to communicate with Gateway token system on Ethereum blockchain. Common methods include validation of existing tokens, new identity token issuance, token freezing/unfreezing and revokation.
+
+## Installation
+
+`yarn add @identity.com/gateway-eth-ts`
+
+## Metamask integration example
+
+```
+import {
+  GatewayETH,
+  getGatekeeperAccountKeyFromGatekeeperAuthority,
+  getGatewayTokenKeyForOwner,
+  issueVanilla,
+  findGatewayTokens,
+} from "@identity.com/gateway-eth-ts";
+import {
+  getDefaultProvider,
+  Wallet,
+  providers
+} = from 'ethers';
+import { useWallet } from 'use-wallet';
+
+
+(async function() {
+  const { ethereum } = useWallet();
+  const chainId = Number(ethereum.chainId);
+  const provider = new ethers.providers.Web3Provider(
+      ethereum,
+      chainId
+  );
+  const signer = provider.getSigner();
+  const network = await provider.getNetwork();
+  const gatewayLib = new GatewayETH(signer, network);
+  const testUser = '0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f';
+  const tokenId = await gtLib.getDefaultTokenId(testUser);
+  const tx = await gtLib.getTokenState(tokenId);
+})();
+```
+
+## Utility functions
+
+### Token ID generation
+
+To issue a new token a library prepares a token ID for user, based on user's ETH address and additional constrains. The first 20 bytes of address are concateneted to a bytes32 string on the right side. Constrains concateneted to the left side, those constrains are limited to 12 bytes.
+
+Typically constrains are reflected as the number of identity tokens created for user.
+
+For example for `0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f` address identity token ids would be generated in a following sequence:
+
+> 0x**01**d42ef952f2ea1e77a8b771884f15bf20e35cf85f =>
+> 0x**02**d42ef952f2ea1e77a8b771884f15bf20e35cf85f =>
+> 0x**03**d42ef952f2ea1e77a8b771884f15bf20e35cf85f ...
+
+### Token bitmask construction
+
+The easiest way to associate certain flags with the identity token is by using list of supported KYC flags, and `addFlagsToBitmask` function.
+
+```
+  flags = [KYCFlags.IDCOM_1];
+  bitmask = addFlagsToBitmask(bitmask, flags);
+```
+
+# Gateway ETH TS library CLI
 
 ## Usage
 
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @identity.com/gateway-eth-ts
 $ gateway-eth-ts COMMAND
@@ -23,27 +87,29 @@ USAGE
   $ gateway-eth-ts COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 ## Commands
 
 <!-- commands -->
-* [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
-* [`gateway-eth-ts add-network-authority ADDRESS`](#gateway-eth-ts-add-network-authority-address)
-* [`gateway-eth-ts blacklist ADDRESS`](#gateway-eth-ts-blacklist-address)
-* [`gateway-eth-ts burn TOKENID`](#gateway-eth-ts-burn-tokenid)
-* [`gateway-eth-ts freeze TOKENID`](#gateway-eth-ts-freeze-tokenid)
-* [`gateway-eth-ts get-token TOKENID`](#gateway-eth-ts-get-token-tokenid)
-* [`gateway-eth-ts get-token-id ADDRESS`](#gateway-eth-ts-get-token-id-address)
-* [`gateway-eth-ts help [COMMAND]`](#gateway-eth-ts-help-command)
-* [`gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]`](#gateway-eth-ts-issue-address-expiration-constrains)
-* [`gateway-eth-ts refresh TOKENID [EXPIRY]`](#gateway-eth-ts-refresh-tokenid-expiry)
-* [`gateway-eth-ts remove-gatekeeper ADDRESS`](#gateway-eth-ts-remove-gatekeeper-address)
-* [`gateway-eth-ts remove-network-authority ADDRESS`](#gateway-eth-ts-remove-network-authority-address)
-* [`gateway-eth-ts revoke TOKENID`](#gateway-eth-ts-revoke-tokenid)
-* [`gateway-eth-ts unfreeze TOKENID`](#gateway-eth-ts-unfreeze-tokenid)
-* [`gateway-eth-ts verify ADDRESS [TOKENID]`](#gateway-eth-ts-verify-address-tokenid)
-* [`gateway-eth-ts version`](#gateway-eth-ts-version)
+
+- [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
+- [`gateway-eth-ts add-network-authority ADDRESS`](#gateway-eth-ts-add-network-authority-address)
+- [`gateway-eth-ts blacklist ADDRESS`](#gateway-eth-ts-blacklist-address)
+- [`gateway-eth-ts burn TOKENID`](#gateway-eth-ts-burn-tokenid)
+- [`gateway-eth-ts freeze TOKENID`](#gateway-eth-ts-freeze-tokenid)
+- [`gateway-eth-ts get-token TOKENID`](#gateway-eth-ts-get-token-tokenid)
+- [`gateway-eth-ts get-token-id ADDRESS`](#gateway-eth-ts-get-token-id-address)
+- [`gateway-eth-ts help [COMMAND]`](#gateway-eth-ts-help-command)
+- [`gateway-eth-ts issue ADDRESS [EXPIRATION] [CONSTRAINS]`](#gateway-eth-ts-issue-address-expiration-constrains)
+- [`gateway-eth-ts refresh TOKENID [EXPIRY]`](#gateway-eth-ts-refresh-tokenid-expiry)
+- [`gateway-eth-ts remove-gatekeeper ADDRESS`](#gateway-eth-ts-remove-gatekeeper-address)
+- [`gateway-eth-ts remove-network-authority ADDRESS`](#gateway-eth-ts-remove-network-authority-address)
+- [`gateway-eth-ts revoke TOKENID`](#gateway-eth-ts-revoke-tokenid)
+- [`gateway-eth-ts unfreeze TOKENID`](#gateway-eth-ts-unfreeze-tokenid)
+- [`gateway-eth-ts verify ADDRESS [TOKENID]`](#gateway-eth-ts-verify-address-tokenid)
+- [`gateway-eth-ts version`](#gateway-eth-ts-version)
 
 ## `gateway-eth-ts add-gatekeeper ADDRESS`
 
@@ -510,6 +576,7 @@ USAGE
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.0.4/src/commands/version.ts)_
+
 <!-- commandsstop -->
 
 - [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
