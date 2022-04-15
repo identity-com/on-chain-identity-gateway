@@ -3,7 +3,7 @@ import { gatewayTokenAddresses } from "./lib/gatewaytokens";
 import { BigNumber, Signer } from "ethers";
 import { getDefaultProvider, Network, Provider } from "@ethersproject/providers";
 
-import { NETWORKS } from "./utils";
+import { NETWORKS, onGatewayTokenChange, removeGatewayTokenChangeListener } from "./utils";
 import { GatewayTokenItems } from "./utils/addresses";
 import {
   FlagsStorage,
@@ -15,6 +15,7 @@ import { TokenData } from "./utils/types";
 import { generateId } from "./utils/tokenId";
 import { toBytes32 } from "./utils/string";
 import { Forwarder } from "./contracts/Forwarder";
+import { ZERO_BN } from "./utils/constants";
 
 export class GatewayTsBase {
   providerOrSigner: Provider | Signer;
@@ -144,8 +145,8 @@ export class GatewayTsBase {
     constrains?: BigNumber,
     gatewayToken?: GatewayToken
   ): Promise<BigNumber> {
-    constrains = constrains || BigNumber.from("0");
-    if (constrains.eq(BigNumber.from("0"))) {
+    constrains = constrains || ZERO_BN;
+    if (constrains.eq(ZERO_BN)) {
       if (gatewayToken === undefined) {
         gatewayToken = this.getGatewayTokenContract(this.defaultGatewayToken);
       }
@@ -203,5 +204,31 @@ export class GatewayTsBase {
     const bytes32 = toBytes32(flag);
 
     return this.flagsStorage.getFlagIndex(bytes32);
+  }
+
+  async subscribeOnGatewayTokenChange(
+    tokenId: BigNumber | string,
+    callback: (gatewayToken: TokenData) => void,
+    gatewayTokenAddress?: string,
+  ): Promise<ReturnType<typeof setInterval>> {
+    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    let provider: Provider;
+
+    if (Signer.isSigner(this.providerOrSigner)) {
+      provider = this.providerOrSigner.provider;
+    } else if (Provider.isProvider(this.providerOrSigner)) {
+      provider = this.providerOrSigner;
+    }
+
+    return onGatewayTokenChange(
+      provider,
+      tokenId,
+      gatewayToken,
+      callback
+    );
+  }
+
+  unsubscribeOnGatewayTokenChange(listenerId: number): void {
+    return removeGatewayTokenChangeListener(listenerId);
   }
 }
