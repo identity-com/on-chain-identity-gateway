@@ -87,3 +87,9 @@ function borrow(uint256 amount) {
 
 ## Licence
 This project is licensed under the MIT license, Copyright (c) 2021 Secured Finance. For more information see LICENSE.
+
+## Creating a GKN
+
+...
+
+### Adding a Gatekeeper to the GKN
