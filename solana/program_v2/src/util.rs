@@ -1,6 +1,6 @@
 //! Utility functions and types.
 
-use crate::{Fees, GatekeeperNetwork, NetworkKeyFlags};
+use crate::{GatekeeperFees, GatekeeperNetwork, NetworkKeyFlags};
 use cruiser::account_types::system_program::SystemProgram;
 use cruiser::on_chain_size::{OnChainSize, OnChainStaticSize};
 use cruiser::program::ProgramKey;
@@ -45,14 +45,16 @@ impl const OnChainSize<()> for OptionalNonSystemPubkey {
 /// Size for [`GatekeeperNetwork`]
 #[derive(Debug, Copy, Clone)]
 pub struct GatekeeperNetworkSize {
+    /// The number of fee tokens
     pub fees_count: u16,
+    /// The number of auth keys
     pub auth_keys: u16,
 }
 impl const OnChainSize<GatekeeperNetworkSize> for GatekeeperNetwork {
     fn on_chain_max_size(arg: GatekeeperNetworkSize) -> usize {
         let auth_key_size = <(NetworkKeyFlags, Pubkey)>::on_chain_static_size();
         let auth_keys_slot_size = auth_key_size;
-        let fee_size = Fees::on_chain_static_size();
+        let fee_size = GatekeeperFees::on_chain_static_size();
         let fees_slot_size = max(fee_size, auth_keys_slot_size);
 
         u8::on_chain_static_size()
