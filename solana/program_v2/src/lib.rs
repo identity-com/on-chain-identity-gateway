@@ -53,28 +53,6 @@ pub enum GatewayAccountList {
     Pass(Pass),
 }
 
-/// The fees a gatekeeper/network can take
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Fees {
-    /// The token for these fees. None value for this means native SOL price
-    pub token: OptionalNonSystemPubkey,
-    /// Fees taken at issuance of a new pass
-    pub issue: u64,
-    /// Fees taken when a pass is refreshed
-    pub refresh: u64,
-    /// The fee taken when a pass is expired.
-    /// This should only be used where pass value comes from one-time use.
-    pub expire: u64,
-    /// The fee taken when a pass is verified.
-    /// This should only be used where pass value comes from proper use
-    pub verify: u64,
-}
-impl const OnChainSize<()> for Fees {
-    fn on_chain_max_size(_arg: ()) -> usize {
-        OptionalNonSystemPubkey::on_chain_static_size() + u64::on_chain_static_size() * 4
-    }
-}
-
 bitflags! {
     /// The flags for a key on a network
     pub struct NetworkKeyFlags: u16{
@@ -130,6 +108,26 @@ impl const OnChainSize<()> for GatekeeperKeyFlags {
     }
 }
 
+/// Fees that a [`GatekeeperNetwork`] can charge
+#[derive(Clone, Debug)]
+pub struct NetworkFees {
+    /// The token for the fee
+    pub token: OptionalNonSystemPubkey,
+    /// Percentage taken on issue. In Hundredths of a percent (0.01% or 0.0001).
+    pub issue: u16,
+    /// Percentage taken on refresh. In Hundredths of a percent (0.01% or 0.0001).
+    pub refresh: u16,
+    /// Percentage taken on expire. In Hundredths of a percent (0.01% or 0.0001).
+    pub expire: u16,
+    /// Percentage taken on verify. In Hundredths of a percent (0.01% or 0.0001).
+    pub verify: u16,
+}
+impl const OnChainSize<()> for NetworkFees {
+    fn on_chain_max_size(_arg: ()) -> usize {
+        OptionalNonSystemPubkey::on_chain_static_size() + u16::on_chain_static_size() * 4
+    }
+}
+
 /// A gatekeeper network which manages many [`Gatekeeper`]s.
 #[derive(Debug)]
 pub struct GatekeeperNetwork {
@@ -150,7 +148,7 @@ pub struct GatekeeperNetwork {
     /// Number of auth keys
     pub auth_keys_count: u16,
     /// The fees for this network
-    pub fees: Vec<Fees>,
+    pub fees: Vec<GatekeeperFees>,
     /// Keys with permissions on the network
     pub auth_keys: Vec<(NetworkKeyFlags, Pubkey)>,
 }
@@ -168,6 +166,28 @@ pub enum GatekeeperState {
 impl const OnChainSize<()> for GatekeeperState {
     fn on_chain_max_size(_arg: ()) -> usize {
         1
+    }
+}
+
+/// The fees a gatekeeper/network can take
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct GatekeeperFees {
+    /// The token for these fees. None value for this means native SOL price
+    pub token: OptionalNonSystemPubkey,
+    /// Fees taken at issuance of a new pass
+    pub issue: u64,
+    /// Fees taken when a pass is refreshed
+    pub refresh: u64,
+    /// The fee taken when a pass is expired.
+    /// This should only be used where pass value comes from one-time use.
+    pub expire: u64,
+    /// The fee taken when a pass is verified.
+    /// This should only be used where pass value comes from proper use
+    pub verify: u64,
+}
+impl const OnChainSize<()> for GatekeeperFees {
+    fn on_chain_max_size(_arg: ()) -> usize {
+        OptionalNonSystemPubkey::on_chain_static_size() + u64::on_chain_static_size() * 4
     }
 }
 
@@ -189,7 +209,7 @@ pub struct Gatekeeper {
     /// The bump for the signer of this gatekeeper
     pub signer_bump: u8,
     /// The fees for this gatekeeper
-    pub fees: Vec<(OptionalNonSystemPubkey, Fees)>,
+    pub fees: Vec<(OptionalNonSystemPubkey, GatekeeperFees)>,
     /// The keys with permissions on this gatekeeper
     pub auth_keys: Vec<(GatekeeperKeyFlags, Pubkey)>,
 }

@@ -2,8 +2,8 @@
 
 use crate::util::{round_to_next, ConstEq, GatekeeperNetworkSize};
 use crate::{
-    Fees, GatekeeperNetwork, GatewayAccountList, NetworkKeyFlags, OptionalNonSystemPubkey, Pubkey,
-    UnixTimestamp,
+    GatekeeperFees, GatekeeperNetwork, GatewayAccountList, NetworkFees, NetworkKeyFlags,
+    OptionalNonSystemPubkey, Pubkey, UnixTimestamp,
 };
 use cruiser::account_argument::{AccountArgument, MultiIndexable, Single, SingleIndexable};
 use cruiser::account_list::AccountListItem;
@@ -26,9 +26,11 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::num::NonZeroUsize;
 
+/// [`InPlace::Access`] for [`OptionalNonSystemPubkey`]
 #[derive(Debug)]
 pub struct OptionalNonSystemPubkeyAccess<'a>(<Pubkey as InPlace<'a>>::Access);
 impl<'a> OptionalNonSystemPubkeyAccess<'a> {
+    /// Gets this as an optional public key
     #[must_use]
     pub const fn get(&self) -> Option<&Pubkey> {
         if self.0.const_eq(&SystemProgram::<()>::KEY) {
@@ -38,9 +40,11 @@ impl<'a> OptionalNonSystemPubkeyAccess<'a> {
         }
     }
 }
+/// [`InPlace::AccessMut`] for [`OptionalNonSystemPubkey`]
 #[derive(Debug)]
 pub struct OptionalNonSystemPubkeyAccessMut<'a>(<Pubkey as InPlace<'a>>::AccessMut);
 impl<'a> OptionalNonSystemPubkeyAccessMut<'a> {
+    /// Gets this as an optional public key
     #[must_use]
     pub const fn get(&self) -> Option<&Pubkey> {
         if self.0.const_eq(&SystemProgram::<()>::KEY) {
@@ -50,6 +54,7 @@ impl<'a> OptionalNonSystemPubkeyAccessMut<'a> {
         }
     }
 
+    /// Sets this to the provided public key
     pub const fn set(&mut self, val: Option<Pubkey>) {
         *self.0 = val.unwrap_or(SystemProgram::<()>::KEY);
     }
@@ -89,27 +94,39 @@ where
     }
 }
 
+/// [`InPlace::Access`] for [`GatekeeperFees`]
 #[derive(Debug)]
-pub struct FeesAccess<'a> {
+pub struct GatekeeperFeesAccess<'a> {
+    /// The token for this fee
     pub token: <OptionalNonSystemPubkey as InPlace<'a>>::Access,
+    /// The fee taken on issue
     pub issue: <u64 as InPlace<'a>>::Access,
+    /// The fee taken on refresh
     pub refresh: <u64 as InPlace<'a>>::Access,
+    /// The fee taken on expire
     pub expire: <u64 as InPlace<'a>>::Access,
+    /// The fee taken on verify
     pub verify: <u64 as InPlace<'a>>::Access,
 }
+/// [`InPlace::AccessMut`] for [`GatekeeperFees`]
 #[derive(Debug)]
-pub struct FeesAccessMut<'a> {
+pub struct GatekeeperFeesAccessMut<'a> {
+    /// The token for this fee
     pub token: <OptionalNonSystemPubkey as InPlace<'a>>::AccessMut,
+    /// The fee taken on issue
     pub issue: <u64 as InPlace<'a>>::AccessMut,
+    /// The fee taken on refresh
     pub refresh: <u64 as InPlace<'a>>::AccessMut,
+    /// The fee taken on expire
     pub expire: <u64 as InPlace<'a>>::AccessMut,
+    /// The fee taken on verify
     pub verify: <u64 as InPlace<'a>>::AccessMut,
 }
-impl<'a> InPlace<'a> for Fees {
-    type Access = FeesAccess<'a>;
-    type AccessMut = FeesAccessMut<'a>;
+impl<'a> InPlace<'a> for GatekeeperFees {
+    type Access = GatekeeperFeesAccess<'a>;
+    type AccessMut = GatekeeperFeesAccessMut<'a>;
 }
-impl<'a> InPlaceCreate<'a, ()> for Fees {
+impl<'a> InPlaceCreate<'a, ()> for GatekeeperFees {
     fn create_with_arg(mut data: &mut [u8], _arg: ()) -> CruiserResult {
         create::<OptionalNonSystemPubkey, _, _>(&mut data, (), ())?;
         create::<u64, _, _>(&mut data, (), ())?;
@@ -119,8 +136,8 @@ impl<'a> InPlaceCreate<'a, ()> for Fees {
         Ok(())
     }
 }
-impl<'a, 'b> InPlaceCreate<'a, &'b Fees> for Fees {
-    fn create_with_arg(mut data: &mut [u8], arg: &'b Fees) -> CruiserResult {
+impl<'a, 'b> InPlaceCreate<'a, &'b GatekeeperFees> for GatekeeperFees {
+    fn create_with_arg(mut data: &mut [u8], arg: &'b GatekeeperFees) -> CruiserResult {
         create::<OptionalNonSystemPubkey, _, _>(&mut data, &arg.token, ())?;
         create::<u64, _, _>(&mut data, arg.issue, ())?;
         create::<u64, _, _>(&mut data, arg.refresh, ())?;
@@ -129,9 +146,9 @@ impl<'a, 'b> InPlaceCreate<'a, &'b Fees> for Fees {
         Ok(())
     }
 }
-impl<'a> InPlaceRead<'a, ()> for Fees {
+impl<'a> InPlaceRead<'a, ()> for GatekeeperFees {
     fn read_with_arg(mut data: &'a [u8], arg: ()) -> CruiserResult<Self::Access> {
-        Ok(FeesAccess {
+        Ok(GatekeeperFeesAccess {
             token: read::<OptionalNonSystemPubkey, _, _>(&mut data, arg, arg)?,
             issue: read::<u64, _, _>(&mut data, arg, arg)?,
             refresh: read::<u64, _, _>(&mut data, arg, arg)?,
@@ -140,9 +157,9 @@ impl<'a> InPlaceRead<'a, ()> for Fees {
         })
     }
 }
-impl<'a> InPlaceWrite<'a, ()> for Fees {
+impl<'a> InPlaceWrite<'a, ()> for GatekeeperFees {
     fn write_with_arg(mut data: &'a mut [u8], arg: ()) -> CruiserResult<Self::AccessMut> {
-        Ok(FeesAccessMut {
+        Ok(GatekeeperFeesAccessMut {
             token: write::<OptionalNonSystemPubkey, _, _>(&mut data, arg, arg)?,
             issue: write::<u64, _, _>(&mut data, arg, arg)?,
             refresh: write::<u64, _, _>(&mut data, arg, arg)?,
@@ -152,22 +169,102 @@ impl<'a> InPlaceWrite<'a, ()> for Fees {
     }
 }
 
+/// [`InPlace::Access`] for [`NetworkFees`]
+#[derive(Debug)]
+pub struct NetworkFeesAccess<'a> {
+    /// The token for this fee
+    pub token: <OptionalNonSystemPubkey as InPlace<'a>>::Access,
+    /// The fee taken on issue
+    pub issue: <u16 as InPlace<'a>>::Access,
+    /// The fee taken on refresh
+    pub refresh: <u16 as InPlace<'a>>::Access,
+    /// The fee taken on expire
+    pub expire: <u16 as InPlace<'a>>::Access,
+    /// The fee taken on verify
+    pub verify: <u16 as InPlace<'a>>::Access,
+}
+/// [`InPlace::AccessMut`] for [`NetworkFees`]
+#[derive(Debug)]
+pub struct NetworkFeesAccessMut<'a> {
+    /// The token for this fee
+    pub token: <OptionalNonSystemPubkey as InPlace<'a>>::AccessMut,
+    /// The fee taken on issue
+    pub issue: <u16 as InPlace<'a>>::AccessMut,
+    /// The fee taken on refresh
+    pub refresh: <u16 as InPlace<'a>>::AccessMut,
+    /// The fee taken on expire
+    pub expire: <u16 as InPlace<'a>>::AccessMut,
+    /// The fee taken on verify
+    pub verify: <u16 as InPlace<'a>>::AccessMut,
+}
+impl<'a> InPlace<'a> for NetworkFees {
+    type Access = NetworkFeesAccess<'a>;
+    type AccessMut = NetworkFeesAccessMut<'a>;
+}
+impl<'a> InPlaceCreate<'a, ()> for NetworkFees {
+    fn create_with_arg(mut data: &mut [u8], _arg: ()) -> CruiserResult {
+        create::<OptionalNonSystemPubkey, _, _>(&mut data, (), ())?;
+        create::<u16, _, _>(&mut data, (), ())?;
+        create::<u16, _, _>(&mut data, (), ())?;
+        create::<u16, _, _>(&mut data, (), ())?;
+        create::<u16, _, _>(&mut data, (), ())?;
+        Ok(())
+    }
+}
+impl<'a, 'b> InPlaceCreate<'a, &'b NetworkFees> for NetworkFees {
+    fn create_with_arg(mut data: &mut [u8], arg: &'b NetworkFees) -> CruiserResult {
+        create::<OptionalNonSystemPubkey, _, _>(&mut data, &arg.token, ())?;
+        create::<u16, _, _>(&mut data, arg.issue, ())?;
+        create::<u16, _, _>(&mut data, arg.refresh, ())?;
+        create::<u16, _, _>(&mut data, arg.expire, ())?;
+        create::<u16, _, _>(&mut data, arg.verify, ())?;
+        Ok(())
+    }
+}
+impl<'a> InPlaceRead<'a, ()> for NetworkFees {
+    fn read_with_arg(mut data: &'a [u8], arg: ()) -> CruiserResult<Self::Access> {
+        Ok(NetworkFeesAccess {
+            token: read::<OptionalNonSystemPubkey, _, _>(&mut data, arg, arg)?,
+            issue: read::<u16, _, _>(&mut data, arg, arg)?,
+            refresh: read::<u16, _, _>(&mut data, arg, arg)?,
+            expire: read::<u16, _, _>(&mut data, arg, arg)?,
+            verify: read::<u16, _, _>(&mut data, arg, arg)?,
+        })
+    }
+}
+impl<'a> InPlaceWrite<'a, ()> for NetworkFees {
+    fn write_with_arg(mut data: &'a mut [u8], arg: ()) -> CruiserResult<Self::AccessMut> {
+        Ok(NetworkFeesAccessMut {
+            token: write::<OptionalNonSystemPubkey, _, _>(&mut data, arg, arg)?,
+            issue: write::<u16, _, _>(&mut data, arg, arg)?,
+            refresh: write::<u16, _, _>(&mut data, arg, arg)?,
+            expire: write::<u16, _, _>(&mut data, arg, arg)?,
+            verify: write::<u16, _, _>(&mut data, arg, arg)?,
+        })
+    }
+}
+
+/// [`InPlace::Access`] for [`NetworkKeyFlags`]
 #[derive(Debug)]
 pub struct NetworkKeyFlagsAccess<'a>(<u16 as InPlace<'a>>::Access);
 impl<'a> NetworkKeyFlagsAccess<'a> {
+    /// Gets the flags
     #[must_use]
     pub fn get(&self) -> NetworkKeyFlags {
         NetworkKeyFlags::from_bits(self.0.get_in_place()).expect("invalid network key flags")
     }
 }
+/// [`InPlace::AccessMut`] for [`NetworkKeyFlags`]
 #[derive(Debug)]
 pub struct NetworkKeyFlagsAccessMut<'a>(<u16 as InPlace<'a>>::AccessMut);
 impl<'a> NetworkKeyFlagsAccessMut<'a> {
+    /// Gets the flags
     #[must_use]
     pub fn get(&self) -> NetworkKeyFlags {
         NetworkKeyFlags::from_bits(self.0.get_in_place()).expect("invalid network key flags")
     }
 
+    /// Sets the flags
     pub fn set(&mut self, flags: NetworkKeyFlags) {
         self.0.set_in_place(flags.bits());
     }
@@ -197,11 +294,18 @@ impl<'a> InPlaceWrite<'a, ()> for NetworkKeyFlags {
     }
 }
 
+/// Argument for creating a gatekeeper network
+#[derive(Debug)]
 pub struct GatewayNetworkCreate<'a, AI, CPI> {
+    /// The system program
     pub system_program: &'a SystemProgram<AI>,
+    /// The rent, defaults to [`Rent::get`]
     pub rent: Option<Rent>,
+    /// The funder of the account
     pub funder: &'a AI,
+    /// The seeds for the funder if pda
     pub funder_seeds: Option<&'a PDASeedSet<'a>>,
+    /// The CPI method to use
     pub cpi: CPI,
 }
 
@@ -236,7 +340,7 @@ impl<AI> GatewayNetworkAccount<AI> {
     /// Pushes a new fee to the network.
     pub fn push_fees<'a>(
         &self,
-        fees: impl ExactSizeIterator<Item = &'a Fees>,
+        fees: impl ExactSizeIterator<Item = &'a NetworkFees>,
         funds: &AI,
         funder_seeds: Option<&'a PDASeedSet<'a>>,
         rent: Option<&Rent>,
@@ -312,8 +416,8 @@ impl<AI> GatewayNetworkAccount<AI> {
         let mut remaining_data = &mut *network.remaining_data;
         remaining_data.try_advance(GatekeeperNetwork::fees_end_offset(fee_count))?;
         for fee in fees {
-            Fees::create_with_arg(
-                remaining_data.try_advance(Fees::on_chain_static_size())?,
+            NetworkFees::create_with_arg(
+                remaining_data.try_advance(GatekeeperFees::on_chain_static_size())?,
                 fee,
             )?;
         }
@@ -344,32 +448,51 @@ where
     }
 }
 
+/// [`InPlace::Access`] for [`GatekeeperNetwork`]
 #[derive(Debug)]
 pub struct GatekeeperNetworkAccess<'a> {
+    /// The version of the gatekeeper network
     pub version: <u8 as InPlace<'a>>::Access,
+    /// The features of the gatekeeper network
     pub network_features: <[[u8; 32]; 128] as InPlace<'a>>::Access,
+    /// The auth threshold of the gatekeeper network
     pub auth_threshold: <u8 as InPlace<'a>>::Access,
+    /// The pass expire time of the gatekeeper network
     pub pass_expire_time: <UnixTimestamp as InPlace<'a>>::Access,
+    /// The length of network data on passes
     pub network_data_len: <u16 as InPlace<'a>>::Access,
+    /// The bump of the signer
     pub signer_bump: <u8 as InPlace<'a>>::Access,
+    /// The number of fees
     pub fees_count: <u16 as InPlace<'a>>::Access,
+    /// The number of auth keys
     pub auth_keys_count: <u16 as InPlace<'a>>::Access,
-    pub remaining_data: &'a [u8],
+    remaining_data: &'a [u8],
 }
+/// [`InPlace::AccessMut`] for [`GatekeeperNetwork`]
 #[derive(Debug)]
 pub struct GatekeeperNetworkAccessMut<'a> {
+    /// The version of the gatekeeper network
     pub version: <u8 as InPlace<'a>>::AccessMut,
+    /// The features of the gatekeeper network
     pub network_features: <[[u8; 32]; 128] as InPlace<'a>>::AccessMut,
+    /// The auth threshold of the gatekeeper network
     pub auth_threshold: <u8 as InPlace<'a>>::AccessMut,
+    /// The pass expire time of the gatekeeper network
     pub pass_expire_time: <UnixTimestamp as InPlace<'a>>::AccessMut,
+    /// The length of network data on passes
     pub network_data_len: <u16 as InPlace<'a>>::AccessMut,
+    /// The bump of the signer
     pub signer_bump: <u8 as InPlace<'a>>::AccessMut,
+    /// The number of fees
     pub fees_count: <u16 as InPlace<'a>>::AccessMut,
+    /// The number of auth keys
     pub auth_keys_count: <u16 as InPlace<'a>>::AccessMut,
-    pub remaining_data: &'a mut [u8],
+    remaining_data: &'a mut [u8],
 }
 impl GatekeeperNetwork {
-    const FEE_SLOT_SIZE: NonZeroUsize = NonZeroUsize::new(<Fees>::on_chain_static_size()).unwrap();
+    const FEE_SLOT_SIZE: NonZeroUsize =
+        NonZeroUsize::new(<NetworkFees>::on_chain_static_size()).unwrap();
     const AUTH_SLOT_SIZE: NonZeroUsize =
         NonZeroUsize::new(<(NetworkKeyFlags, Pubkey)>::on_chain_static_size()).unwrap();
 
@@ -389,15 +512,43 @@ impl GatekeeperNetwork {
         Self::auth_keys_offset(fees_count) + auth_keys_count as usize * Self::AUTH_SLOT_SIZE.get()
     }
 }
-pub trait GatekeeperNetworkSlotVectors<'a> {
-    fn fees_count(&self) -> u16;
-    fn auth_keys_count(&self) -> u16;
-    fn remaining_data(&self) -> &'a [u8];
+mod sealed {
+    #[allow(clippy::wildcard_imports)]
+    use super::*;
 
+    pub trait GatekeeperNetworkSlotVectorsPriv<'a> {
+        fn fees_count(&self) -> u16;
+        fn auth_keys_count(&self) -> u16;
+        fn remaining_data(&self) -> &'a [u8];
+    }
+    impl<'a> GatekeeperNetworkSlotVectorsPriv<'a> for GatekeeperNetworkAccess<'a> {
+        fn fees_count(&self) -> u16 {
+            self.fees_count.get_in_place()
+        }
+        fn auth_keys_count(&self) -> u16 {
+            self.auth_keys_count.get_in_place()
+        }
+        fn remaining_data(&self) -> &'a [u8] {
+            self.remaining_data
+        }
+    }
+    pub trait GatekeeperNetworkSlotVectorsMut<'a> {
+        fn remaining_data_mut(&mut self) -> &mut &'a mut [u8];
+    }
+    impl<'a> GatekeeperNetworkSlotVectorsMut<'a> for GatekeeperNetworkAccessMut<'a> {
+        fn remaining_data_mut(&mut self) -> &mut &'a mut [u8] {
+            &mut self.remaining_data
+        }
+    }
+}
+
+/// Slot vector access for [`GatekeeperNetwork`]
+pub trait GatekeeperNetworkSlotVectors<'a>: sealed::GatekeeperNetworkSlotVectorsPriv<'a> {
+    /// Gets the fees struct at an index
     fn get_fees_at_index(
         &self,
         index: u16,
-    ) -> CruiserResult<Option<<Fees as InPlace<'a>>::Access>> {
+    ) -> CruiserResult<Option<<NetworkFees as InPlace<'a>>::Access>> {
         if index >= self.fees_count() {
             return Ok(None);
         }
@@ -405,8 +556,9 @@ pub trait GatekeeperNetworkSlotVectors<'a> {
             + index as usize * GatekeeperNetwork::FEE_SLOT_SIZE.get();
         let data = &mut self.remaining_data();
         data.try_advance(offset)?;
-        Ok(Some(Fees::read(data)?))
+        Ok(Some(NetworkFees::read(data)?))
     }
+    /// Gets the auth keys at an index
     fn get_auth_keys_at_index(
         &self,
         index: u16,
@@ -419,26 +571,6 @@ pub trait GatekeeperNetworkSlotVectors<'a> {
         let data = &mut self.remaining_data();
         data.try_advance(offset)?;
         Ok(Some(<(NetworkKeyFlags, Pubkey)>::read(data)?))
-    }
-}
-pub trait GatekeeperNetworkSlotVectorsMut<'a> {
-    fn remaining_data_mut(&mut self) -> &mut &'a mut [u8];
-}
-
-impl<'a> GatekeeperNetworkSlotVectors<'a> for GatekeeperNetworkAccess<'a> {
-    fn fees_count(&self) -> u16 {
-        self.fees_count.get_in_place()
-    }
-    fn auth_keys_count(&self) -> u16 {
-        self.auth_keys_count.get_in_place()
-    }
-    fn remaining_data(&self) -> &'a [u8] {
-        self.remaining_data
-    }
-}
-impl<'a> GatekeeperNetworkSlotVectorsMut<'a> for GatekeeperNetworkAccessMut<'a> {
-    fn remaining_data_mut(&mut self) -> &mut &'a mut [u8] {
-        &mut self.remaining_data
     }
 }
 
