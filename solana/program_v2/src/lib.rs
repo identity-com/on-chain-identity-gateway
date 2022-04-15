@@ -148,7 +148,7 @@ pub struct GatekeeperNetwork {
     /// Number of auth keys
     pub auth_keys_count: u16,
     /// The fees for this network
-    pub fees: Vec<GatekeeperFees>,
+    pub fees: Vec<NetworkFees>,
     /// Keys with permissions on the network
     pub auth_keys: Vec<(NetworkKeyFlags, Pubkey)>,
 }
@@ -209,7 +209,7 @@ pub struct Gatekeeper {
     /// The bump for the signer of this gatekeeper
     pub signer_bump: u8,
     /// The fees for this gatekeeper
-    pub fees: Vec<(OptionalNonSystemPubkey, GatekeeperFees)>,
+    pub fees: Vec<GatekeeperFees>,
     /// The keys with permissions on this gatekeeper
     pub auth_keys: Vec<(GatekeeperKeyFlags, Pubkey)>,
 }
