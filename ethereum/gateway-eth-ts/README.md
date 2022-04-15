@@ -1,14 +1,76 @@
 # gateway-eth-ts
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/gateway-eth-ts.svg)](https://npmjs.org/package/gateway-eth-ts)
-[![Downloads/week](https://img.shields.io/npm/dw/gateway-eth-ts.svg)](https://npmjs.org/package/gateway-eth-ts)
-[![License](https://img.shields.io/npm/l/gateway-eth-ts.svg)](https://github.com/Secured-Finance/gateway-eth-ts/blob/master/package.json)
+[![Version](https://img.shields.io/npm/v/gateway-eth-ts.svg)](https://www.npmjs.com/package/@identity.com/gateway-eth-ts)
+[![Downloads/week](https://img.shields.io/npm/dw/gateway-eth-ts.svg)](https://www.npmjs.com/package/@identity.com/gateway-eth-ts)
+[![License](https://img.shields.io/npm/l/gateway-eth-ts.svg)](https://github.com/identity-com/on-chain-identity-gateway/blob/main/ethereum/gateway-eth-ts/package.json)
 
-<!-- toc -->
+# Gateway ETH TS library
 
-- [gateway-eth-ts](#gateway-eth-ts)
-<!-- tocstop -->
+This client library allows JS/TS applications to communicate with Gateway token system on Ethereum blockchain. Common methods include validation of existing tokens, new identity token issuance, token freezing/unfreezing and revokation.
+
+## Installation
+
+`yarn add @identity.com/gateway-eth-ts`
+
+## Metamask integration example
+
+```
+import {
+  GatewayETH,
+  getGatekeeperAccountKeyFromGatekeeperAuthority,
+  getGatewayTokenKeyForOwner,
+  issueVanilla,
+  findGatewayTokens,
+} from "@identity.com/gateway-eth-ts";
+import {
+  getDefaultProvider,
+  Wallet,
+  providers
+} = from 'ethers';
+import { useWallet } from 'use-wallet';
+
+
+(async function() {
+  const { ethereum } = useWallet();
+  const chainId = Number(ethereum.chainId);
+  const provider = new ethers.providers.Web3Provider(
+      ethereum,
+      chainId
+  );
+  const signer = provider.getSigner();
+  const network = await provider.getNetwork();
+  const gatewayLib = new GatewayETH(signer, network);
+  const testUser = '0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f';
+  const tokenId = await gtLib.getDefaultTokenId(testUser);
+  const tx = await gtLib.getTokenState(tokenId);
+})();
+```
+
+## Utility functions
+
+### Token ID generation
+
+To issue a new token a library prepares a token ID for user, based on user's ETH address and additional constrains. The first 20 bytes of address are concateneted to a bytes32 string on the right side. Constrains concateneted to the left side, those constrains are limited to 12 bytes.
+
+Typically constrains are reflected as the number of identity tokens created for user.
+
+For example for `0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f` address identity token ids would be generated in a following sequence:
+
+> 0x**01**d42ef952f2ea1e77a8b771884f15bf20e35cf85f =>
+> 0x**02**d42ef952f2ea1e77a8b771884f15bf20e35cf85f =>
+> 0x**03**d42ef952f2ea1e77a8b771884f15bf20e35cf85f ...
+
+### Token bitmask construction
+
+The easiest way to associate certain flags with the identity token is by using list of supported KYC flags, and `addFlagsToBitmask` function.
+
+```
+  flags = [KYCFlags.IDCOM_1];
+  bitmask = addFlagsToBitmask(bitmask, flags);
+```
+
+# Gateway ETH TS library CLI
 
 ## Usage
 
@@ -19,7 +81,7 @@ $ npm install -g @identity.com/gateway-eth-ts
 $ gateway-eth-ts COMMAND
 running command...
 $ gateway-eth-ts (-v|--version|version)
-@identity.com/gateway-eth-ts/0.0.12 darwin-arm64 node-v14.18.3
+@identity.com/gateway-eth-ts/0.1.2 darwin-x64 node-v14.18.2
 $ gateway-eth-ts --help [COMMAND]
 USAGE
   $ gateway-eth-ts COMMAND
@@ -73,14 +135,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway-eth-ts add-network-authority ADDRESS`
 
@@ -106,14 +167,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/add-network-authority.ts)_
+_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/add-network-authority.ts)_
 
 ## `gateway-eth-ts blacklist ADDRESS`
 
@@ -142,7 +202,7 @@ EXAMPLE
   $ gateway blacklist 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/blacklist.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/blacklist.ts)_
+_See code: [dist/commands/blacklist.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/blacklist.ts)_
 
 ## `gateway-eth-ts burn TOKENID`
 
@@ -168,14 +228,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway burn 10
 ```
 
-_See code: [dist/commands/burn.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/burn.ts)_
+_See code: [dist/commands/burn.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/burn.ts)_
 
 ## `gateway-eth-ts freeze TOKENID`
 
@@ -201,14 +260,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway freeze 10
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/freeze.ts)_
 
 ## `gateway-eth-ts get-token TOKENID`
 
@@ -228,14 +286,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway get-token 10
 ```
 
-_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/get-token.ts)_
+_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/get-token.ts)_
 
 ## `gateway-eth-ts get-token-id ADDRESS`
 
@@ -255,14 +312,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway get-token-id 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/get-token-id.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/get-token-id.ts)_
+_See code: [dist/commands/get-token-id.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/get-token-id.ts)_
 
 ## `gateway-eth-ts help [COMMAND]`
 
@@ -314,8 +370,7 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
   --[no-]forwardTransaction                      Whether the transaction will be sent via the Forwarder contract
 
@@ -323,7 +378,7 @@ EXAMPLE
   $ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -i <TokenID>
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/issue.ts)_
 
 ## `gateway-eth-ts refresh TOKENID [EXPIRY]`
 
@@ -350,14 +405,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway refresh 10 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/refresh.ts)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/refresh.ts)_
 
 ## `gateway-eth-ts remove-gatekeeper ADDRESS`
 
@@ -383,14 +437,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/remove-gatekeeper.ts)_
+_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/remove-gatekeeper.ts)_
 
 ## `gateway-eth-ts remove-network-authority ADDRESS`
 
@@ -416,14 +469,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/remove-network-authority.ts)_
+_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/remove-network-authority.ts)_
 
 ## `gateway-eth-ts revoke TOKENID`
 
@@ -449,14 +501,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway revoke 10
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/revoke.ts)_
 
 ## `gateway-eth-ts unfreeze TOKENID`
 
@@ -482,14 +533,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway unfreeze 10
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/unfreeze.ts)_
 
 ## `gateway-eth-ts verify ADDRESS [TOKENID]`
 
@@ -510,14 +560,13 @@ OPTIONS
   -p, --privateKey=privateKey                    [default: [object Object]] The ethereum address private key for signing
                                                  messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: 0x67306284Fb127E9baF713Ebf793d741cE763F81A] GatewayToken
-                                                 address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress  [default: [object Object]] GatewayToken address to target
 
 EXAMPLE
   $ gateway verify 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.12/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.1.2/dist/commands/verify.ts)_
 
 ## `gateway-eth-ts version`
 

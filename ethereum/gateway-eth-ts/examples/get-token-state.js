@@ -6,14 +6,11 @@ require("dotenv/config");
     const provider = getDefaultProvider('ropsten', {infura: process.env.INFURA_KEY});
     let wallet = new Wallet(`0x${process.env.PRIVATE_KEY}`);
     wallet = wallet.connect(provider);
+    const network = await provider.getNetwork();
 
-    const gtLib = new GatewayETH(
-        provider,
-        wallet
-    );
-    await gtLib.init()
+    const gtLib = new GatewayETH(wallet, network);
 
-    const testUser = '0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28';
+    const testUser = '0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f';
     let tokenId = await gtLib.getDefaultTokenId(testUser);
     let tx = await gtLib.getTokenState(tokenId);
     
