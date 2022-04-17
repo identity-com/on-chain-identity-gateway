@@ -1,7 +1,6 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {BigNumber, BytesLike, utils, Wallet} from "ethers";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-const { abi } = require("../build/contracts/GatewayToken.sol/GatewayToken.json");
 
 export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const {ethers} = hre;
@@ -12,7 +11,11 @@ export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
 
   const account = ethers.utils.getAddress(args.address);
 
-  const gatewayToken = new ethers.Contract(gatekeeperNetwork, abi, owner);
+  const gatewayToken = await ethers.getContractAt(
+    'GatewayToken',
+    gatekeeperNetwork,
+  );
+
   const hasToken = await gatewayToken.balanceOf(account)
   console.log({hasToken});
   

@@ -17,5 +17,6 @@ build/
 coverage/
 coverage.json
 abi/
+typechain-types/
 
 **/deployments/localhost/
