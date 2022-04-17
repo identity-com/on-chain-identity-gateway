@@ -1,5 +1,6 @@
-import { Wallet, getDefaultProvider, Contract, BigNumber } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
+import { Wallet, getDefaultProvider, Contract, BigNumber, Signer } from "ethers";
+import { Provider } from "@ethersproject/providers";
+import type { TypedDataSigner } from "@ethersproject/abstract-signer";
 import { DEFAULT_CHAIN_ID, NETWORKS } from "./constants";
 import { TypedDataField } from "@ethersproject/abstract-signer";
 // eslint-disable-next-line unicorn/prefer-node-protocol
@@ -8,7 +9,7 @@ import { getProvider } from "./providers";
 
 export const privateKeySigner = function (
   privateKey: string,
-  provider?: BaseProvider,
+  provider?: Provider,
   networkId?: number
 ): Wallet {
   if (!provider && networkId) {
@@ -32,7 +33,7 @@ export const readPrivateKey = (
 
 export const mnemonicSigner = function (
   mnemonic: string,
-  provider?: BaseProvider,
+  provider?: Provider,
   networkId?: number
 ): Wallet {
   let signer = Wallet.fromMnemonic(mnemonic);
@@ -128,7 +129,7 @@ const getMetaTxTypeData = (
   primaryType: "ForwardRequest",
 });
 
-async function signTypedData(signer: Wallet, data: EIP712TypedData) {
+async function signTypedData(signer: Signer & TypedDataSigner, data: EIP712TypedData) {
   const types = { ForwardRequest } as Record<string, Array<TypedDataField>>;
   return signer._signTypedData(data.domain, types, data.message);
 }
@@ -157,7 +158,7 @@ const buildTypedData = async (
 };
 
 export const signMetaTxRequest = async (
-  signer: Wallet,
+  signer: Signer & TypedDataSigner,
   forwarder: ForwarderContract,
   input: Input
 ): Promise<SignedMetaTxRequest> => {
