@@ -11,5 +11,5 @@ lto = true
 [profile.test]
 opt-level = 2
 
-[patch."https://github.com/identity-com/cruiser"]
-cruiser = { path = "../../cruiser" }
+#[patch."https://github.com/identity-com/cruiser"]
+#cruiser = { path = "../../cruiser" }
