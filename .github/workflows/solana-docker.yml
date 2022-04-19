@@ -29,6 +29,6 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ./protocol/token-usage-settlement/solana-ociv-usage
           push: true
           tags: ghcr.io/identity-com/on-chain-identity-gateway/solana-ociv-usage:latest
