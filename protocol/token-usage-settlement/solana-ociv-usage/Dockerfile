@@ -11,7 +11,7 @@ COPY src ./src
 # RUN yarn build
 
 # Add the cron job
-RUN crontab -l | { cat; echo "* * * * * /bin/sh echo test"; } | crontab -
+RUN crontab -l | { cat; echo "* * * * * /bin/echo test test test"; } | crontab -
 
 # Run the command on container startup
 CMD ["/usr/sbin/crond", "-f"]

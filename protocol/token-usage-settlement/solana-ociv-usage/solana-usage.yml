@@ -1,5 +1,6 @@
+# TODO: Remove
 cluster: https://rough-misty-night.solana-mainnet.quiknode.pro/b57300ff234c12e95763e9b8cda67e9d86772a0d/
-#cluster: mainnet
+# cluster: mainnet
 configs:
   - name: Solrise
     program: D3z8BLmMnPD1LaKwCkyCisM7iDyw9PsXXmvatUwjCuqT
