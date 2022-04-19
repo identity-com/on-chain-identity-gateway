@@ -28,6 +28,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           components: rustfmt, clippy
+          override: true
 
       - name: Cache build dependencies
         uses: actions/cache@v3
@@ -68,6 +69,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          override: true
 
       - name: Cache build dependencies
         uses: actions/cache@v3
