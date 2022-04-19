@@ -39,14 +39,14 @@ module.exports = {
       chainId: 3,
     },
     rinkeby: {
-      url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
       accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
       chainId: 4,
     },
   },
   solidity: {
-    version: "0.8.0",
+    version: "0.8.9",
     settings: {
       optimizer: {
         enabled: true,

@@ -1,30 +1,39 @@
+const hardhat = require('hardhat');
 const { abi } = require("../build/contracts/GatewayToken.sol/GatewayToken.json");
 const {toBytes32} = require('../test/utils').strings;
 
-module.exports = async function ({ ethers, deployments, getNamedAccounts, getUnnamedAccounts }) {
+async function main() {
+  console.log("Running script 1_deploy_gateway_token_controller.js");
+  const { getNamedAccounts, deployments } = hardhat;
   const { deploy } = deployments
   
-  const { deployer } = await getNamedAccounts()
+  const { deployer } = await getNamedAccounts();
   const signer = await ethers.getSigner(deployer);
   
-  let authorityAddr = "0x9b4525aefEDA97b78559012ddA8163eF90B3dF21";
+  // Zambezi pass network authority:
+  let gkNetworkAuthorityAddr = "0xF32b1CAABFbaEe9173635433BCC9F43eD25d8Afc";
+  let gatekeeperAuthorityAddr = "0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688";
   let hexRetailFlag = toBytes32("Retail");
   let hexInstitutionFlag = toBytes32("Institution");
   let hexAccreditedInvestorFlag = toBytes32("AccreditedInvestor");
 
-  const { address } = await deploy("FlagsStorage", {
+  
+  const { address: flagsStorageAddress } = await deploy("FlagsStorage", {
     from: deployer,
     args: [deployer],
     log: true,
     deterministicDeployment: false
   });
 
-  await deploy("GatewayTokenController", {
+  console.log('Deployed FlagsStorage at address', flagsStorageAddress);
+
+  const { address: controllerAddress} = await deploy("GatewayTokenController", {
     from: deployer,
-    args: [address],
+    args: [flagsStorageAddress],
     log: true,
     deterministicDeployment: false
   });
+  console.log('Deployed GatewayTokenController at address', controllerAddress);
 
   const flagsStorage = await ethers.getContract("FlagsStorage");
   const tokenController = await ethers.getContract("GatewayTokenController");
@@ -33,6 +42,7 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts, getUnn
   let flagCodes = [hexRetailFlag, hexInstitutionFlag, hexAccreditedInvestorFlag];
   let indexArray = [0, 1, 2];
 
+  console.log('Adding flags into flag storage...');
   let tx = await (await flagsStorage.addFlags(flagCodes, indexArray, {from: deployer})).wait();
   console.log("Added " + tx.events.length +  " flags into FlagsStorage with " + tx.gasUsed.toNumber() + " gas");
 
@@ -43,12 +53,17 @@ module.exports = async function ({ ethers, deployments, getNamedAccounts, getUnn
 
   let token = new ethers.Contract(gatewayTokenAddress, abi, signer);
 
-  tx = await (await token.addNetworkAuthority(authorityAddr, {from: deployer})).wait();
-  console.log("added new network authority with " + authorityAddr + " into Gateway Token at " + gatewayTokenAddress + " using " + tx.gasUsed.toNumber() + " gas");
+  tx = await (await token.addNetworkAuthority(gkNetworkAuthorityAddr, {from: deployer})).wait();
+  console.log("added new network authority with address" + gkNetworkAuthorityAddr + " into Gateway Token at " + gatewayTokenAddress + " using " + tx.gasUsed.toNumber() + " gas");
 
-  tx = await (await token.addGatekeeper(authorityAddr, {from: deployer})).wait();
-  console.log("added new gatekeeper with " + authorityAddr + " address into Gateway Token at " + gatewayTokenAddress + " using " + tx.gasUsed.toNumber() + " gas");
+  console.log('Adding gatekeeper to network ', { gatekeeperAuthorityAddr });
+  tx = await (await token.addGatekeeper(gatekeeperAuthorityAddr, {from: deployer})).wait();
+  console.log("added new gatekeeper with address " + gatekeeperAuthorityAddr + " into Gateway Token at " + gatewayTokenAddress + " using " + tx.gasUsed.toNumber() + " gas");
 }
 
-module.exports.tags = ["GatewayTokenController", "FlagsStorage"]
-module.exports.dependencies = ["GatewayToken, Forwarder"]
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
