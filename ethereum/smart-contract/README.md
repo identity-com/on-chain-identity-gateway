@@ -7,9 +7,13 @@ Gateway tokens allows Ethereum DeFi projects validate their users who succesfull
 
 ## Deploying the contracts and publishing the addresses
 
-1. Ensure you have the following strings handy:
+1. Prerequisites:
+
+a) Ensure you have the following strings handy:
 - Eth private key for the Gatekeeper Network Authority ( the one that signs adding new gatekeepers to the network. For e.g. the Zambezi network ).
 Referred to as `gk_network_key` below.
+
+b) If you're using infura ITX, ensure there's enough funds in the Infura gas tanks for both the Gatekeeper Network Authority and Gatekeeper Authority you're planning to use.
 
 - Eth address of the Gatekeeper Authority ( the first Gatekeeper you want to add to the network after contract deployment ).
 Referred to as `gk_authority_address` below.
