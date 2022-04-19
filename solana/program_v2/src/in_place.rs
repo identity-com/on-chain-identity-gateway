@@ -1,15 +1,13 @@
 //! In-place access for gateway types.
 
-use crate::util::{round_to_next, ConstEq, GatekeeperNetworkSize};
+use crate::util::{round_to_next, ConstEq};
 use crate::{
     GatekeeperFees, GatekeeperNetwork, GatewayAccountList, NetworkFees, NetworkKeyFlags,
     OptionalNonSystemPubkey, Pubkey, UnixTimestamp,
 };
 use cruiser::account_argument::{AccountArgument, MultiIndexable, Single, SingleIndexable};
-use cruiser::account_list::AccountListItem;
 use cruiser::account_types::in_place_account::{Create, InPlaceAccount};
 use cruiser::account_types::system_program::SystemProgram;
-use cruiser::compressed_numbers::CompressedNumber;
 use cruiser::in_place::{
     InPlace, InPlaceCreate, InPlaceGet, InPlaceRead, InPlaceSet, InPlaceUnitRead, InPlaceUnitWrite,
     InPlaceWrite,
@@ -19,34 +17,21 @@ use cruiser::pda_seeds::PDASeedSet;
 use cruiser::program::ProgramKey;
 use cruiser::solana_program::program_memory::sol_memcpy;
 use cruiser::solana_program::rent::Rent;
-use cruiser::solana_program::sysvar::Sysvar;
 use cruiser::util::Advance;
 use cruiser::{AccountInfo, CPIMethod, CruiserResult, ToSolanaAccountInfo};
-use std::borrow::Cow;
-use std::cmp::Ordering;
 use std::num::NonZeroUsize;
+use std::ops::{Deref, DerefMut};
 
 /// [`InPlace::Access`] for [`OptionalNonSystemPubkey`]
 #[derive(Debug)]
-pub struct OptionalNonSystemPubkeyAccess<'a>(<Pubkey as InPlace<'a>>::Access);
-impl<'a> OptionalNonSystemPubkeyAccess<'a> {
+pub struct OptionalNonSystemPubkeyAccess<T>(T);
+impl<T> OptionalNonSystemPubkeyAccess<T> {
     /// Gets this as an optional public key
     #[must_use]
-    pub const fn get(&self) -> Option<&Pubkey> {
-        if self.0.const_eq(&SystemProgram::<()>::KEY) {
-            None
-        } else {
-            Some(self.0)
-        }
-    }
-}
-/// [`InPlace::AccessMut`] for [`OptionalNonSystemPubkey`]
-#[derive(Debug)]
-pub struct OptionalNonSystemPubkeyAccessMut<'a>(<Pubkey as InPlace<'a>>::AccessMut);
-impl<'a> OptionalNonSystemPubkeyAccessMut<'a> {
-    /// Gets this as an optional public key
-    #[must_use]
-    pub const fn get(&self) -> Option<&Pubkey> {
+    pub const fn get(&self) -> Option<&Pubkey>
+    where
+        T: ~const Deref<Target = Pubkey>,
+    {
         if self.0.const_eq(&SystemProgram::<()>::KEY) {
             None
         } else {
@@ -55,13 +40,16 @@ impl<'a> OptionalNonSystemPubkeyAccessMut<'a> {
     }
 
     /// Sets this to the provided public key
-    pub const fn set(&mut self, val: Option<Pubkey>) {
+    pub const fn set(&mut self, val: Option<Pubkey>)
+    where
+        T: ~const DerefMut<Target = Pubkey>,
+    {
         *self.0 = val.unwrap_or(SystemProgram::<()>::KEY);
     }
 }
 impl<'a> InPlace<'a> for OptionalNonSystemPubkey {
-    type Access = OptionalNonSystemPubkeyAccess<'a>;
-    type AccessMut = OptionalNonSystemPubkeyAccessMut<'a>;
+    type Access = OptionalNonSystemPubkeyAccess<<Pubkey as InPlace<'a>>::Access>;
+    type AccessMut = OptionalNonSystemPubkeyAccess<<Pubkey as InPlace<'a>>::AccessMut>;
 }
 impl<'a> InPlaceCreate<'a, ()> for OptionalNonSystemPubkey {
     fn create_with_arg(data: &mut [u8], arg: ()) -> CruiserResult {
@@ -88,7 +76,7 @@ where
     Pubkey: InPlaceWrite<'a, W>,
 {
     fn write_with_arg(data: &'a mut [u8], arg: W) -> CruiserResult<Self::AccessMut> {
-        Ok(OptionalNonSystemPubkeyAccessMut(Pubkey::write_with_arg(
+        Ok(OptionalNonSystemPubkeyAccess(Pubkey::write_with_arg(
             data, arg,
         )?))
     }
@@ -96,35 +84,27 @@ where
 
 /// [`InPlace::Access`] for [`GatekeeperFees`]
 #[derive(Debug)]
-pub struct GatekeeperFeesAccess<'a> {
+pub struct GatekeeperFeesAccess<Token, Fee> {
     /// The token for this fee
-    pub token: <OptionalNonSystemPubkey as InPlace<'a>>::Access,
+    pub token: Token,
     /// The fee taken on issue
-    pub issue: <u64 as InPlace<'a>>::Access,
+    pub issue: Fee,
     /// The fee taken on refresh
-    pub refresh: <u64 as InPlace<'a>>::Access,
+    pub refresh: Fee,
     /// The fee taken on expire
-    pub expire: <u64 as InPlace<'a>>::Access,
+    pub expire: Fee,
     /// The fee taken on verify
-    pub verify: <u64 as InPlace<'a>>::Access,
-}
-/// [`InPlace::AccessMut`] for [`GatekeeperFees`]
-#[derive(Debug)]
-pub struct GatekeeperFeesAccessMut<'a> {
-    /// The token for this fee
-    pub token: <OptionalNonSystemPubkey as InPlace<'a>>::AccessMut,
-    /// The fee taken on issue
-    pub issue: <u64 as InPlace<'a>>::AccessMut,
-    /// The fee taken on refresh
-    pub refresh: <u64 as InPlace<'a>>::AccessMut,
-    /// The fee taken on expire
-    pub expire: <u64 as InPlace<'a>>::AccessMut,
-    /// The fee taken on verify
-    pub verify: <u64 as InPlace<'a>>::AccessMut,
+    pub verify: Fee,
 }
 impl<'a> InPlace<'a> for GatekeeperFees {
-    type Access = GatekeeperFeesAccess<'a>;
-    type AccessMut = GatekeeperFeesAccessMut<'a>;
+    type Access = GatekeeperFeesAccess<
+        <OptionalNonSystemPubkey as InPlace<'a>>::Access,
+        <u64 as InPlace<'a>>::Access,
+    >;
+    type AccessMut = GatekeeperFeesAccess<
+        <OptionalNonSystemPubkey as InPlace<'a>>::AccessMut,
+        <u64 as InPlace<'a>>::AccessMut,
+    >;
 }
 impl<'a> InPlaceCreate<'a, ()> for GatekeeperFees {
     fn create_with_arg(mut data: &mut [u8], _arg: ()) -> CruiserResult {
@@ -159,7 +139,7 @@ impl<'a> InPlaceRead<'a, ()> for GatekeeperFees {
 }
 impl<'a> InPlaceWrite<'a, ()> for GatekeeperFees {
     fn write_with_arg(mut data: &'a mut [u8], arg: ()) -> CruiserResult<Self::AccessMut> {
-        Ok(GatekeeperFeesAccessMut {
+        Ok(GatekeeperFeesAccess {
             token: write::<OptionalNonSystemPubkey, _, _>(&mut data, arg, arg)?,
             issue: write::<u64, _, _>(&mut data, arg, arg)?,
             refresh: write::<u64, _, _>(&mut data, arg, arg)?,
@@ -171,35 +151,27 @@ impl<'a> InPlaceWrite<'a, ()> for GatekeeperFees {
 
 /// [`InPlace::Access`] for [`NetworkFees`]
 #[derive(Debug)]
-pub struct NetworkFeesAccess<'a> {
+pub struct NetworkFeesAccess<Token, Fee> {
     /// The token for this fee
-    pub token: <OptionalNonSystemPubkey as InPlace<'a>>::Access,
+    pub token: Token,
     /// The fee taken on issue
-    pub issue: <u16 as InPlace<'a>>::Access,
+    pub issue: Fee,
     /// The fee taken on refresh
-    pub refresh: <u16 as InPlace<'a>>::Access,
+    pub refresh: Fee,
     /// The fee taken on expire
-    pub expire: <u16 as InPlace<'a>>::Access,
+    pub expire: Fee,
     /// The fee taken on verify
-    pub verify: <u16 as InPlace<'a>>::Access,
-}
-/// [`InPlace::AccessMut`] for [`NetworkFees`]
-#[derive(Debug)]
-pub struct NetworkFeesAccessMut<'a> {
-    /// The token for this fee
-    pub token: <OptionalNonSystemPubkey as InPlace<'a>>::AccessMut,
-    /// The fee taken on issue
-    pub issue: <u16 as InPlace<'a>>::AccessMut,
-    /// The fee taken on refresh
-    pub refresh: <u16 as InPlace<'a>>::AccessMut,
-    /// The fee taken on expire
-    pub expire: <u16 as InPlace<'a>>::AccessMut,
-    /// The fee taken on verify
-    pub verify: <u16 as InPlace<'a>>::AccessMut,
+    pub verify: Fee,
 }
 impl<'a> InPlace<'a> for NetworkFees {
-    type Access = NetworkFeesAccess<'a>;
-    type AccessMut = NetworkFeesAccessMut<'a>;
+    type Access = NetworkFeesAccess<
+        <OptionalNonSystemPubkey as InPlace<'a>>::Access,
+        <u16 as InPlace<'a>>::Access,
+    >;
+    type AccessMut = NetworkFeesAccess<
+        <OptionalNonSystemPubkey as InPlace<'a>>::AccessMut,
+        <u16 as InPlace<'a>>::AccessMut,
+    >;
 }
 impl<'a> InPlaceCreate<'a, ()> for NetworkFees {
     fn create_with_arg(mut data: &mut [u8], _arg: ()) -> CruiserResult {
@@ -234,7 +206,7 @@ impl<'a> InPlaceRead<'a, ()> for NetworkFees {
 }
 impl<'a> InPlaceWrite<'a, ()> for NetworkFees {
     fn write_with_arg(mut data: &'a mut [u8], arg: ()) -> CruiserResult<Self::AccessMut> {
-        Ok(NetworkFeesAccessMut {
+        Ok(NetworkFeesAccess {
             token: write::<OptionalNonSystemPubkey, _, _>(&mut data, arg, arg)?,
             issue: write::<u16, _, _>(&mut data, arg, arg)?,
             refresh: write::<u16, _, _>(&mut data, arg, arg)?,
@@ -338,14 +310,18 @@ pub struct GatewayNetworkAccount<AI>(
 );
 impl<AI> GatewayNetworkAccount<AI> {
     /// Pushes a new fee to the network.
+    #[cfg_attr(not(feature = "realloc"), allow(clippy::needless_pass_by_value))]
     pub fn push_fees<'a>(
         &self,
         fees: impl ExactSizeIterator<Item = &'a NetworkFees>,
-        funds: &AI,
-        funder_seeds: Option<&'a PDASeedSet<'a>>,
-        rent: Option<&Rent>,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] funds: &AI,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] funder_seeds: Option<
+            &'a PDASeedSet<'a>,
+        >,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] rent: Option<&Rent>,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))]
         system_program: &SystemProgram<AI>,
-        cpi: impl CPIMethod,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] cpi: impl CPIMethod,
     ) -> CruiserResult
     where
         AI: ToSolanaAccountInfo<'a>,
@@ -356,6 +332,13 @@ impl<AI> GatewayNetworkAccount<AI> {
         let new_fees_count = fee_count + u16::try_from(fees.len()).expect("too many fees");
         #[cfg(feature = "realloc")]
         unsafe {
+            use crate::util::GatekeeperNetworkSize;
+            use cruiser::account_list::AccountListItem;
+            use cruiser::compressed_numbers::CompressedNumber;
+            use cruiser::solana_program::sysvar::Sysvar;
+            use std::borrow::Cow;
+            use std::cmp::Ordering;
+
             let auth_keys_count = network.auth_keys_count.get_in_place();
             drop(network);
             drop(data);
@@ -372,7 +355,7 @@ impl<AI> GatewayNetworkAccount<AI> {
 
             let current_rent: u64 = *self.0.info().lamports();
             let new_rent = match rent {
-                None => Cow::Owned(Rent::get()?),
+                None => Cow::Owned(Sysvar::get()?),
                 Some(rent) => Cow::Borrowed(rent),
             }
             .minimum_balance(new_length);
