@@ -5,7 +5,6 @@
 #![feature(const_option_ext)]
 #![feature(const_mut_refs)]
 #![feature(const_ptr_offset)]
-#![feature(const_slice_index)]
 
 //! The gateway v2 program from Identity.com
 
@@ -464,25 +463,25 @@ impl<'a> PassAccess<'a> {
 
     /// Accesses [`Pass::network_data`]
     #[must_use]
-    pub const fn network_data(&self) -> &[u8] {
+    pub fn network_data(&self) -> &[u8] {
         &self.data[Self::DYNAMIC_DATA_OFFSET..][..self.network_data_len as usize]
     }
 
     /// Accesses [`Pass::network_data`] mutably
     #[must_use]
-    pub const fn network_data_mut(&mut self) -> &mut [u8] {
+    pub fn network_data_mut(&mut self) -> &mut [u8] {
         &mut self.data[Self::DYNAMIC_DATA_OFFSET..][..self.network_data_len as usize]
     }
 
     /// Accesses [`Pass::gatekeeper_data`]
     #[must_use]
-    pub const fn gatekeeper_data(&self) -> &[u8] {
+    pub fn gatekeeper_data(&self) -> &[u8] {
         &self.data[Self::DYNAMIC_DATA_OFFSET + self.network_data_len as usize..]
     }
 
     /// Accesses [`Pass::gatekeeper_data`] mutably
     #[must_use]
-    pub const fn gatekeeper_data_mut(&mut self) -> &mut [u8] {
+    pub fn gatekeeper_data_mut(&mut self) -> &mut [u8] {
         &mut self.data[Self::DYNAMIC_DATA_OFFSET + self.network_data_len as usize..]
     }
 }
