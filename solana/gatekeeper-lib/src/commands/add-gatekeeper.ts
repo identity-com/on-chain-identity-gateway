@@ -1,7 +1,11 @@
 import { Command, Flags } from "@oclif/core";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
-import { airdropTo } from "../util";
+import {
+  airdropTo,
+  SendableDataTransaction,
+  SentDataTransaction,
+} from "../util";
 import { GatekeeperNetworkService } from "../service";
 import {
   clusterFlag,
@@ -57,8 +61,8 @@ export default class AddGatekeeper extends Command {
     );
     const gatekeeperAccount = await networkService
       .addGatekeeper(gatekeeper)
-      .then((t) => t.send())
-      .then((t) => t.confirm());
+      .then((t: SendableDataTransaction<PublicKey>) => t.send())
+      .then((t: SentDataTransaction<PublicKey>) => t.confirm());
     this.log(
       `Added gatekeeper to network. Gatekeeper account: ${gatekeeperAccount?.toBase58()}`
     );
