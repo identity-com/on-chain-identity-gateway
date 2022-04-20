@@ -1,6 +1,6 @@
 import {
   Connection,
-  ParsedConfirmedTransaction,
+  ParsedTransactionWithMeta,
   ParsedInstruction,
   PartiallyDecodedInstruction,
   PublicKey,
@@ -18,7 +18,7 @@ export type BillableInstruction = {
   instructionName: string;
   instructionIndex: number;
   rawInstruction: PartiallyDecodedInstruction;
-  rawTransaction: ParsedConfirmedTransaction;
+  rawTransaction: ParsedTransactionWithMeta;
   gatewayToken: PublicKey;
   ownerAddress: PublicKey;
 };
@@ -34,7 +34,7 @@ export const buildBillableInstruction = (
   instructionName: string,
   instructionIndex: number,
   rawInstruction: PartiallyDecodedInstruction,
-  rawTransaction: ParsedConfirmedTransaction,
+  rawTransaction: ParsedTransactionWithMeta,
   gatewayToken: PublicKey,
   ownerAddress: PublicKey
 ): BillableInstruction => ({
@@ -79,8 +79,8 @@ const matchInstruction = (
 };
 
 interface Strategy {
-  matches(transaction: ParsedConfirmedTransaction): boolean;
-  build(transaction: ParsedConfirmedTransaction): BillableInstruction[];
+  matches(transaction: ParsedTransactionWithMeta): boolean;
+  build(transaction: ParsedTransactionWithMeta): BillableInstruction[];
 }
 
 export class ConfigBasedStrategy implements Strategy {
@@ -90,7 +90,7 @@ export class ConfigBasedStrategy implements Strategy {
     this.config = config;
   }
 
-  matches(transaction: ParsedConfirmedTransaction): boolean {
+  matches(transaction: ParsedTransactionWithMeta): boolean {
     return R.pipe(
       R.filter(
         (i: ParsedInstruction | PartiallyDecodedInstruction): boolean =>
@@ -103,15 +103,15 @@ export class ConfigBasedStrategy implements Strategy {
     )(transaction.transaction.message.instructions);
   }
 
-  build(transaction: ParsedConfirmedTransaction): BillableInstruction[] {
+  build(transaction: ParsedTransactionWithMeta): BillableInstruction[] {
     return R.pipe(
       // Add Index
       R.addIndex(R.map)((val, idx) => [val, idx]),
       // Filter out ParsedInstruction
       R.filter(
-        ([i]: [ParsedInstruction | PartiallyDecodedInstruction]): boolean =>
-          "data" in i
-      ),
+        ([item]: [ParsedInstruction | PartiallyDecodedInstruction]): boolean =>
+          "data" in item
+      ) as any,
       // Find matching InstructionConfig (or undefined)
       R.map(([i, idx]: [PartiallyDecodedInstruction, number]) => [
         matchInstruction(i, this.config),
@@ -119,7 +119,7 @@ export class ConfigBasedStrategy implements Strategy {
         idx,
       ]),
       // Filter undefined InstructionConfig
-      R.filter(([match]) => isNotNil(match)),
+      R.filter(([match]) => isNotNil(match)) as any,
       // Build BillableInstruction
       R.map(
         ([match, i, idx]: [
@@ -141,7 +141,7 @@ export class ConfigBasedStrategy implements Strategy {
             i.accounts[match.ownerPosition]
           )
       )
-    )(transaction.transaction.message.instructions);
+    )(transaction.transaction.message.instructions) as BillableInstruction[];
   }
 }
 
@@ -155,7 +155,7 @@ export const loadTransactions = async (
   );
 
   const buildFromStrategies = (
-    transaction: ParsedConfirmedTransaction | null
+    transaction: ParsedTransactionWithMeta | null
   ): BillableInstruction[] => {
     if (!transaction) return [];
     const strategy = strategies.find((strategy) =>
