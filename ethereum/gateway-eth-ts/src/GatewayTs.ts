@@ -1,5 +1,5 @@
 import { BigNumber, PopulatedTransaction, Signer } from "ethers";
-import { Network } from '@ethersproject/providers';
+import { Network, Provider } from '@ethersproject/providers';
 import { TypedDataSigner } from "@ethersproject/abstract-signer";
 
 import { ethTransaction, populateTx, TxOptions } from "./utils/tx";
@@ -12,12 +12,12 @@ import { signMetaTxRequest } from "./utils/signer";
 export class GatewayTs extends GatewayTsBase {
   // eslint-disable-next-line no-useless-constructor
   constructor(
-    signer: Signer,
+    providerOrSigner: Provider | Signer,
     network: Network,
     defaultGatewayToken?: string,
     options?: { defaultGas?: number; defaultGasPrice?: any }
   ) {
-    super(signer, network, defaultGatewayToken, options);
+    super(providerOrSigner, network, defaultGatewayToken, options);
   }
 
   async addGatekeeper(
