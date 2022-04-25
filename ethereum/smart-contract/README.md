@@ -6,13 +6,31 @@ Gateway tokens allows Ethereum DeFi projects validate their users who succesfull
 
 ## Deployed contracts
 
+### Ropsten
+#### Zambezi network
+
 [GatewayTokenController](https://ropsten.etherscan.io/address/0x560691424bCEF5ceF4D5076C8ACA7B38B7b1f9A0)
 
 [FlagsStorage](https://ropsten.etherscan.io/address/0xC4ED3F939754f43555932AD2A2Ec1301d0848C07)
 
 [GatewayToken](https://ropsten.etherscan.io/address/0xa3894BbA27f4Be571fFA319D02c122E021024cF2)
 
+[Gatekeeper network authority](https://ropsten.etherscan.io/address/0xF32b1CAABFbaEe9173635433BCC9F43eD25d8Afc)
+
 [Forwarder](https://ropsten.etherscan.io/address/0x79C2bDD404e629828E3702a5f2cdd01FD5De8808)
+
+### Rinkeby
+#### Zambezi network
+
+[GatewayTokenController](https://rinkeby.etherscan.io/address/0x8769145499e1f97049e0099aF3d14283663C4Cf2)
+
+[FlagsStorage](https://rinkeby.etherscan.io/address/0xf85d72EF898EbF82Ac1d7597CBb68a4d2898cE46)
+
+[GatewayToken](https://rinkeby.etherscan.io/address/0x182ae55852ffE71CaCA87aF3CFa8b4eF895dd051)
+
+[Gatekeeper network authority](https://rinkeby.etherscan.io/address/0x9b4525aefEDA97b78559012ddA8163eF90B3dF21)
+
+[Forwarder](https://rinkeby.etherscan.io/address/0x2AaA24BaC2a41050dBA2474d6D9C4eaa1cdf9159)
 
 ## Quick Start
 
