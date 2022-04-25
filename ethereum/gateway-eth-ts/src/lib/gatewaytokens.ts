@@ -24,6 +24,14 @@ const ROPSTEN_GATEWAY_TOKENS: GatewayTokenItem[] = [
     }
 ];
 
+const RINKEBY_GATEWAY_TOKENS: GatewayTokenItem[] = [
+  {
+    name: 'Test Gateway Token',
+    symbol: 'tKYC',
+    address: '0x182ae55852ffE71CaCA87aF3CFa8b4eF895dd051',
+  }
+];
+
 const LOCALHOST_GATEWAY_TOKENS: GatewayTokenItem[] = [
   {
     name: 'Test-KYC',
@@ -35,5 +43,6 @@ const LOCALHOST_GATEWAY_TOKENS: GatewayTokenItem[] = [
 export const gatewayTokenAddresses: {[key: number]: GatewayTokenItem[]} = {
   1: MAINNET_GATEWAY_TOKENS,
   3: ROPSTEN_GATEWAY_TOKENS,
+  4: RINKEBY_GATEWAY_TOKENS,
   1337: LOCALHOST_GATEWAY_TOKENS,
 }
