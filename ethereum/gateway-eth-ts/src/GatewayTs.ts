@@ -206,7 +206,7 @@ export class GatewayTs extends GatewayTsBase {
     const expirationDate = getExpirationTime(expiry);
     const gatewayTxRequest = await populateTx(
       contract,
-      "refresh",
+      "setExpiration",
       [tokenId, expirationDate],
       options
     );
