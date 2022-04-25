@@ -10,11 +10,11 @@ import {
 } from "../util/oclif/flags";
 import { getConnectionFromEnv } from "../util/oclif/utils";
 
-export default class AddGatekeeper extends Command {
-  static description = "Add a gatekeeper to a network";
+export default class RemoveNetworkAuthority extends Command {
+  static description = "Remove a network authority";
 
   static examples = [
-    `$ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+    `$ gateway remove-network-authority tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 `,
   ];
 
@@ -29,14 +29,16 @@ export default class AddGatekeeper extends Command {
     {
       name: "address",
       required: true,
-      description: "The address of the gatekeeper to add to the network",
+      description: "The public key of the network authority to remove",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
   ];
 
+  // eslint-disable-next-line no-warning-comments
+  // TODO: Change this to align with expected command functionality
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(AddGatekeeper);
+    const { args, flags } = await this.parse(RemoveNetworkAuthority);
 
     const gatekeeper: PublicKey = args.address as PublicKey;
     const gatekeeperNetwork = flags.authorityKeypair as Keypair;

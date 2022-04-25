@@ -5,8 +5,8 @@ import { airdropTo } from "../util";
 import { GatekeeperService } from "../service";
 import {
   clusterFlag,
-  gatekeeperKeyFlag,
-  gatekeeperNetworkPubkeyFlag,
+  authorityKeypairFlag,
+  gatekeeperPublicKeyFlag,
 } from "../util/oclif/flags";
 import { prettyPrint } from "../util/token";
 import { getConnectionFromEnv } from "../util/oclif/utils";
@@ -28,8 +28,8 @@ export default class Issue extends Command {
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string) => Number(input),
     }),
-    gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 
@@ -37,7 +37,7 @@ export default class Issue extends Command {
     {
       name: "address",
       required: true,
-      description: "The address to issue the token to",
+      description: "The address to which a token will be issued",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
@@ -47,8 +47,8 @@ export default class Issue extends Command {
     const { args, flags } = await this.parse(Issue);
 
     const address: PublicKey = args.address as PublicKey;
-    const gatekeeper = flags.gatekeeperKey as Keypair;
-    const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
+    const gatekeeper = flags.authorityKeypair as Keypair;
+    const gatekeeperNetwork = flags.gatekeeperPublicKey as PublicKey;
     this.log(`Issuing:
       to ${address.toBase58()} 
       from gatekeeper ${gatekeeper.publicKey.toBase58()}

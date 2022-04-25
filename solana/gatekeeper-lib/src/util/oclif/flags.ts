@@ -12,13 +12,13 @@ export const gatekeeperKeyFlag = Flags.build<Keypair>({
   default: async () => readKey(`${DIRNAME}/test-gatekeeper.json`),
   description: "The private key file for the gatekeeper authority",
 });
-export const gatekeeperNetworkKeyFlag = Flags.build<Keypair>({
+export const authorityKeypairFlag = Flags.build<Keypair>({
   char: "n",
   parse: readKey,
   default: async () => readKey(`${DIRNAME}/test-gatekeeper-network.json`),
   description: "The private key file for the gatekeeper authority",
 });
-export const gatekeeperNetworkPubkeyFlag = Flags.build<PublicKey>({
+export const gatekeeperPublicKeyFlag = Flags.build<PublicKey>({
   char: "n",
   // eslint-disable-next-line @typescript-eslint/require-await
   parse: async (pubkey: string) => new PublicKey(pubkey),

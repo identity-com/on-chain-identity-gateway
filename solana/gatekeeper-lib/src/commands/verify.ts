@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import { PublicKey } from "@solana/web3.js";
-import { clusterFlag, gatekeeperNetworkPubkeyFlag } from "../util/oclif/flags";
+import { clusterFlag, gatekeeperPublicKeyFlag } from "../util/oclif/flags";
 import { prettyPrint } from "../util/token";
 import { getConnectionFromEnv } from "../util/oclif/utils";
 import { findGatewayToken } from "@identity.com/solana-gateway-ts";
@@ -23,7 +23,7 @@ export default class Verify extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
+    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 
@@ -40,7 +40,7 @@ export default class Verify extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Verify);
 
-    const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
+    const gatekeeperNetwork = flags.gatekeeperPublicKey as PublicKey;
 
     const connection = getConnectionFromEnv(flags.cluster);
 
