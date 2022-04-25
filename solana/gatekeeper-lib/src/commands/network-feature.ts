@@ -3,7 +3,11 @@ import { Keypair } from "@solana/web3.js";
 
 import { airdropTo } from "../util";
 import { GatekeeperNetworkService } from "../service";
-import { clusterFlag, gatekeeperNetworkKeyFlag } from "../util/oclif/flags";
+import {
+  clusterFlag,
+  authorityKeypairFlag,
+  gatekeeperPublicKeyFlag,
+} from "../util/oclif/flags";
 import {
   NetworkFeature,
   UserTokenExpiry,
@@ -37,7 +41,8 @@ export default class AddGatekeeper extends Command {
   static flags = {
     help: Flags.help({ char: "h" }),
     featureOperation: featureOperation(),
-    gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 
@@ -62,7 +67,7 @@ export default class AddGatekeeper extends Command {
     const { args, flags } = await this.parse(AddGatekeeper);
 
     const networkFeature: NetworkFeature = args.feature as NetworkFeature;
-    const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
+    const gatekeeperNetwork = flags.authorityKeypair as Keypair;
     const featureOperation = flags.featureOperation;
     this.log(`Performing ${
       featureOperation ? featureOperation : "//Undefined//"

@@ -1,9 +1,9 @@
 import { Command, Flags } from "@oclif/core";
 import { PublicKey } from "@solana/web3.js";
 import {
+  authorityKeypairFlag,
   clusterFlag,
-  gatekeeperKeyFlag,
-  gatekeeperNetworkPubkeyFlag,
+  gatekeeperPublicKeyFlag,
 } from "../util/oclif/flags";
 import { getTokenUpdateProperties } from "../util/oclif/utils";
 
@@ -18,8 +18,8 @@ Refreshed
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 
@@ -27,7 +27,7 @@ Refreshed
     {
       name: "gatewayToken",
       required: true,
-      description: "The gateway token to freeze",
+      description: "The gateway token to refresh",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
@@ -44,6 +44,7 @@ Refreshed
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Refresh);
 
+    // ? Error here with flags in getTokenUpdateProperties()?
     const { gatewayToken, gatekeeper, service } =
       await getTokenUpdateProperties(args, flags);
 

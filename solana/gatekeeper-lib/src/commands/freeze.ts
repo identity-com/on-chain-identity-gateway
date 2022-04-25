@@ -1,9 +1,9 @@
 import { Command, Flags } from "@oclif/core";
 import { PublicKey } from "@solana/web3.js";
 import {
+  authorityKeypairFlag,
   clusterFlag,
-  gatekeeperKeyFlag,
-  gatekeeperNetworkPubkeyFlag,
+  gatekeeperPublicKeyFlag,
 } from "../util/oclif/flags";
 import { getTokenUpdateProperties } from "../util/oclif/utils";
 
@@ -18,8 +18,8 @@ Frozen
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 
@@ -36,6 +36,7 @@ Frozen
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Freeze);
 
+    // ? Error here with flags in getTokenUpdateProperties()?
     const { gatewayToken, gatekeeper, service } =
       await getTokenUpdateProperties(args, flags);
 
