@@ -6,12 +6,8 @@ COPY package.json .
 COPY yarn.lock .
 COPY tsconfig* .
 COPY src ./src
+COPY bin ./bin
+COPY solana-usage.yml .
 
-# RUN yarn --pure-lockfile
-# RUN yarn build
-
-# Add the cron job
-RUN crontab -l | { cat; echo "* * * * * /bin/echo test test test"; } | crontab -
-
-# Run the command on container startup
-CMD ["/usr/sbin/crond", "-f"]
+RUN yarn --pure-lockfile
+RUN yarn build
