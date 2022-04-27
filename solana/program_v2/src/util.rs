@@ -1,15 +1,19 @@
 //! Utility functions and types.
 
+use crate::in_place::GatekeeperNetworkAccess;
 use crate::{GatekeeperFees, GatekeeperNetwork, NetworkKeyFlags};
 use cruiser::account_types::system_program::SystemProgram;
+use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
 use cruiser::on_chain_size::{OnChainSize, OnChainStaticSize};
 use cruiser::program::ProgramKey;
 use cruiser::solana_program::program_memory::sol_memcmp;
 use cruiser::{Pubkey, UnixTimestamp};
 use std::num::NonZeroUsize;
 
+impl<'a> GatekeeperNetworkAccess<'a> {}
+
 /// A public key that uses the system program as the [`None`] value
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, BorshSerialize, BorshDeserialize)]
 pub struct OptionalNonSystemPubkey(pub(crate) Pubkey);
 impl OptionalNonSystemPubkey {
     /// Turns this into an optional pubkey

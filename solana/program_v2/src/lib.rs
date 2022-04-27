@@ -21,18 +21,22 @@
     clippy::module_name_repetitions,
     clippy::missing_errors_doc,
     clippy::too_many_lines,
-    clippy::mut_mut
+    clippy::mut_mut,
+    clippy::wildcard_imports
 )]
 
 extern crate core;
 pub mod in_place;
+pub mod instructions;
 pub mod util;
 
 use crate::util::OptionalNonSystemPubkey;
 use bitflags::bitflags;
 use cruiser::account_list::AccountList;
+use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
 use cruiser::instruction_list::InstructionList;
 use cruiser::on_chain_size::{OnChainSize, OnChainStaticSize};
+use cruiser::pda_seeds::{PDASeed, PDASeeder};
 use cruiser::{AccountInfo, CruiserResult, GenericError, Pubkey, UnixTimestamp};
 
 /// Instructions for the gateway v2 program
@@ -54,6 +58,7 @@ pub enum GatewayAccountList {
 
 bitflags! {
     /// The flags for a key on a network
+    #[derive(BorshDeserialize, BorshSerialize)]
     pub struct NetworkKeyFlags: u16{
         /// Key can change keys
         const AUTH = 1 << 0;
@@ -73,8 +78,11 @@ bitflags! {
         const UNREVOKE_PASS = 1 << 7;
         /// Key can adjust fees
         const ADJUST_FEES = 1 << 8;
+        /// Key can add new fee types to a network
+        const ADD_FEES = 1 << 9;
     }
     /// The flags for a key on a gatekeeper
+    #[derive(BorshDeserialize, BorshSerialize)]
     pub struct GatekeeperKeyFlags: u16{
         /// Key can change keys
         const AUTH = 1 << 0;
@@ -108,7 +116,7 @@ impl const OnChainSize<()> for GatekeeperKeyFlags {
 }
 
 /// Fees that a [`GatekeeperNetwork`] can charge
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize)]
 pub struct NetworkFees {
     /// The token for the fee
     pub token: OptionalNonSystemPubkey,
@@ -150,6 +158,17 @@ pub struct GatekeeperNetwork {
     pub fees: Vec<NetworkFees>,
     /// Keys with permissions on the network
     pub auth_keys: Vec<(NetworkKeyFlags, Pubkey)>,
+}
+/// Seeder for the network signer
+#[derive(Debug)]
+pub struct NetworkSignerSeeder {
+    /// The network the signer is for
+    pub network: Pubkey,
+}
+impl PDASeeder for NetworkSignerSeeder {
+    fn seeds<'a>(&'a self) -> Box<dyn Iterator<Item = &'a dyn PDASeed> + 'a> {
+        Box::new([&"network" as &dyn PDASeed, &self.network].into_iter())
+    }
 }
 
 /// The state of a [`Gatekeeper`]
