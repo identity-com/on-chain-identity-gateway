@@ -5,7 +5,9 @@ use crate::{
     GatekeeperFees, GatekeeperNetwork, GatewayAccountList, NetworkFees, NetworkKeyFlags,
     OptionalNonSystemPubkey, Pubkey, UnixTimestamp,
 };
-use cruiser::account_argument::{AccountArgument, MultiIndexable, Single, SingleIndexable};
+use cruiser::account_argument::{
+    AccountArgument, MultiIndexable, Single, SingleIndexable, ValidateArgument,
+};
 use cruiser::account_types::in_place_account::{Create, InPlaceAccount};
 use cruiser::account_types::system_program::SystemProgram;
 use cruiser::in_place::{
@@ -19,6 +21,7 @@ use cruiser::solana_program::program_memory::sol_memcpy;
 use cruiser::solana_program::rent::Rent;
 use cruiser::util::Advance;
 use cruiser::{AccountInfo, CPIMethod, CruiserResult, ToSolanaAccountInfo};
+use std::iter::empty;
 use std::num::NonZeroUsize;
 use std::ops::{Deref, DerefMut};
 
@@ -251,6 +254,12 @@ impl<'a> InPlaceCreate<'a, ()> for NetworkKeyFlags {
         Ok(())
     }
 }
+impl<'a> InPlaceCreate<'a, NetworkKeyFlags> for NetworkKeyFlags {
+    fn create_with_arg(mut data: &mut [u8], arg: NetworkKeyFlags) -> CruiserResult {
+        create::<u16, _, _>(&mut data, arg.bits(), ())?;
+        Ok(())
+    }
+}
 impl<'a> InPlaceRead<'a, ()> for NetworkKeyFlags {
     fn read_with_arg(mut data: &'a [u8], arg: ()) -> CruiserResult<Self::Access> {
         Ok(NetworkKeyFlagsAccess(read::<u16, _, _>(
@@ -282,19 +291,20 @@ pub struct GatewayNetworkCreate<'a, AI, CPI> {
 }
 
 #[cfg(not(feature = "realloc"))]
-const INITIAL_NETWORK_SPACE: usize = 10 * (1 << 10);
+const INITIAL_NETWORK_SPACE: usize =
+    cruiser::solana_program::entrypoint::MAX_PERMITTED_DATA_INCREASE;
 #[cfg(feature = "realloc")]
 const INITIAL_NETWORK_SPACE: usize =
     GatekeeperNetwork::on_chain_max_size(crate::util::GatekeeperNetworkSize {
         fees_count: 0,
-        auth_keys: 1,
+        auth_keys: 0,
     });
 
 /// Account argument for [`GatekeeperNetwork`].
 #[derive(Debug, AccountArgument)]
 #[account_argument(account_info = AI, generics = [where AI: AccountInfo])]
 #[validate(data = ())]
-#[validate(id = create, data = (create: GatewayNetworkCreate<'a, AI, CPI>), generics = [<'a, CPI> where CPI: CPIMethod, AI: ToSolanaAccountInfo<'a>])]
+#[validate(id = create, data = (create: GatewayNetworkCreate<'a, AI, CPI>), generics = [<'a, 'b, CPI> where CPI: CPIMethod, AI: ToSolanaAccountInfo<'b>])]
 pub struct GatewayNetworkAccount<AI>(
     #[validate(id = create, data = Create{
         data: (),
@@ -308,24 +318,215 @@ pub struct GatewayNetworkAccount<AI>(
     })]
     InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>,
 );
+impl<AI> Deref for GatewayNetworkAccount<AI> {
+    type Target = InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl<AI> DerefMut for GatewayNetworkAccount<AI> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+/// Verifies a given key is valid for the given permissions
+#[derive(Debug)]
+pub struct NetworkKeyVerification<'a, AI> {
+    /// The key to verify
+    pub key: &'a AI,
+    /// The index of the key
+    pub key_index: u16,
+    /// The permissions to verify
+    pub network_key_flags: NetworkKeyFlags,
+}
+impl<'a, AI> ValidateArgument<(&'a AI, NetworkKeyFlags)> for GatewayNetworkAccount<AI>
+where
+    AI: AccountInfo,
+{
+    fn validate(
+        &mut self,
+        program_id: &Pubkey,
+        arg: (&'a AI, NetworkKeyFlags),
+    ) -> CruiserResult<()> {
+        let data = self.info().data_mut();
+        let network = GatekeeperNetwork::read(&*data)?;
+        todo!()
+    }
+}
+impl<AI, Arg> MultiIndexable<Arg> for GatewayNetworkAccount<AI>
+where
+    AI: AccountInfo,
+    InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>: MultiIndexable<Arg>,
+{
+    fn index_is_signer(&self, indexer: Arg) -> CruiserResult<bool> {
+        self.0.index_is_signer(indexer)
+    }
+
+    fn index_is_writable(&self, indexer: Arg) -> CruiserResult<bool> {
+        self.0.index_is_writable(indexer)
+    }
+
+    fn index_is_owner(&self, owner: &Pubkey, indexer: Arg) -> CruiserResult<bool> {
+        self.0.index_is_owner(owner, indexer)
+    }
+}
+impl<AI, Arg> SingleIndexable<Arg> for GatewayNetworkAccount<AI>
+where
+    AI: AccountInfo,
+    InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>:
+        SingleIndexable<Arg, AccountInfo = AI>,
+{
+    fn index_info(&self, indexer: Arg) -> CruiserResult<&Self::AccountInfo> {
+        self.0.index_info(indexer)
+    }
+}
 impl<AI> GatewayNetworkAccount<AI> {
-    /// Pushes a new fee to the network.
-    #[cfg_attr(not(feature = "realloc"), allow(clippy::needless_pass_by_value))]
-    pub fn push_fees<'a>(
-        &self,
-        fees: impl ExactSizeIterator<Item = &'a NetworkFees>,
+    /// Pushes both fees and auth keys to the account
+    #[allow(clippy::too_many_arguments, clippy::missing_panics_doc)]
+    pub fn push_multiple<'a, IF, IAK>(
+        &mut self,
+        fees: IF,
+        auth_keys: IAK,
         #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] funds: &AI,
         #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] funder_seeds: Option<
-            &'a PDASeedSet<'a>,
+            &PDASeedSet,
         >,
-        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] rent: Option<&Rent>,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] rent: Option<Rent>,
         #[cfg_attr(not(feature = "realloc"), allow(unused_variables))]
         system_program: &SystemProgram<AI>,
         #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] cpi: impl CPIMethod,
     ) -> CruiserResult
     where
         AI: ToSolanaAccountInfo<'a>,
+        IF: IntoIterator<Item = NetworkFees>,
+        IF::IntoIter: ExactSizeIterator,
+        IAK: IntoIterator<Item = (NetworkKeyFlags, Pubkey)>,
+        IAK::IntoIter: ExactSizeIterator,
     {
+        let self_info: &AI = self.0.info();
+        let fees = fees.into_iter();
+        let auth_keys = auth_keys.into_iter();
+
+        let mut data = self_info.data_mut();
+        let mut network = GatekeeperNetwork::write(&mut *data)?;
+        let old_fee_count: u16 = network.fees_count.get_in_place();
+        let old_auth_count: u16 = network.auth_keys_count.get_in_place();
+        let new_fee_count = old_fee_count + u16::try_from(fees.len()).expect("too many fees");
+        let new_auth_count =
+            old_auth_count + u16::try_from(auth_keys.len()).expect("too many auth keys");
+        #[cfg(feature = "realloc")]
+        unsafe {
+            use crate::util::GatekeeperNetworkSize;
+            use cruiser::account_list::AccountListItem;
+            use cruiser::compressed_numbers::CompressedNumber;
+            use cruiser::solana_program::sysvar::Sysvar;
+            use std::cmp::Ordering;
+
+            drop(network);
+            drop(data);
+
+            let new_data_length =
+                <GatewayAccountList as AccountListItem<GatekeeperNetwork>>::compressed_discriminant(
+                )
+                .num_bytes()
+                    + GatekeeperNetwork::on_chain_max_size(GatekeeperNetworkSize {
+                        fees_count: new_fee_count,
+                        auth_keys: new_auth_count,
+                    });
+
+            self_info.realloc_unsafe(new_data_length, false)?;
+
+            let mut current_rent = self_info.lamports_mut();
+            let new_rent = match rent {
+                None => Rent::get()?,
+                Some(rent) => rent,
+            }
+            .minimum_balance(new_data_length);
+            match current_rent.cmp(&new_rent) {
+                Ordering::Less => {
+                    system_program.transfer(cpi, funds, self_info, new_rent, funder_seeds)?;
+                }
+                Ordering::Greater => {
+                    let mut funds = funds.lamports_mut();
+                    *funds = funds
+                        .checked_add(*current_rent - new_rent)
+                        .expect("overflow");
+                    *current_rent = new_rent;
+                }
+                Ordering::Equal => {}
+            }
+
+            data = self_info.data_mut();
+            network = GatekeeperNetwork::write(&mut *data)?;
+        }
+
+        if old_auth_count != new_auth_count {
+            let mut remaining_data = &mut *network.remaining_data;
+            remaining_data.try_advance(GatekeeperNetwork::auth_keys_end_offset(
+                old_fee_count,
+                old_auth_count,
+            ))?;
+            for auth_key in auth_keys {
+                <(NetworkKeyFlags, Pubkey)>::create_with_arg(
+                    remaining_data
+                        .try_advance(<(NetworkKeyFlags, Pubkey)>::on_chain_static_size())?,
+                    (auth_key.0, &auth_key.1),
+                )?;
+            }
+            network.auth_keys_count.set_in_place(new_auth_count);
+        }
+        if old_fee_count != new_fee_count {
+            let old_auth_key_offset = GatekeeperNetwork::auth_keys_offset(old_fee_count);
+            let new_auth_key_offset = GatekeeperNetwork::auth_keys_offset(new_fee_count);
+            let offset_change = new_auth_key_offset - old_auth_key_offset;
+            if offset_change != 0 {
+                let mut remaining_data = &mut *network.remaining_data;
+                remaining_data.try_advance(old_auth_key_offset)?;
+                let source = remaining_data.try_advance(offset_change)?;
+                remaining_data.try_advance(
+                    GatekeeperNetwork::auth_keys_end_offset(new_fee_count, new_auth_count)
+                        - offset_change
+                        - old_auth_key_offset,
+                )?;
+                let destination = remaining_data.try_advance(offset_change)?;
+                sol_memcpy(destination, source, offset_change);
+            }
+
+            let mut remaining_data = &mut *network.remaining_data;
+            remaining_data.try_advance(GatekeeperNetwork::fees_end_offset(old_fee_count))?;
+            for fee in fees {
+                <NetworkFees>::create_with_arg(
+                    remaining_data.try_advance(<NetworkFees>::on_chain_static_size())?,
+                    &fee,
+                )?;
+            }
+            network.fees_count.set_in_place(new_fee_count);
+        }
+
+        Ok(())
+    }
+
+    /// Pushes a new fee to the network.
+    #[cfg_attr(not(feature = "realloc"), allow(clippy::needless_pass_by_value))]
+    pub fn push_fees<'a, I>(
+        &mut self,
+        fees: I,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] funds: &AI,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] funder_seeds: Option<
+            &PDASeedSet,
+        >,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] rent: Option<Rent>,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))]
+        system_program: &SystemProgram<AI>,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] cpi: impl CPIMethod,
+    ) -> CruiserResult
+    where
+        AI: ToSolanaAccountInfo<'a>,
+        I: IntoIterator<Item = NetworkFees>,
+        I::IntoIter: ExactSizeIterator,
+    {
+        let fees = fees.into_iter();
         let mut data = self.0.info().data_mut();
         let mut network = GatekeeperNetwork::write(&mut *data)?;
         let fee_count = network.fees_count.get_in_place();
@@ -336,7 +537,6 @@ impl<AI> GatewayNetworkAccount<AI> {
             use cruiser::account_list::AccountListItem;
             use cruiser::compressed_numbers::CompressedNumber;
             use cruiser::solana_program::sysvar::Sysvar;
-            use std::borrow::Cow;
             use std::cmp::Ordering;
 
             let auth_keys_count = network.auth_keys_count.get_in_place();
@@ -355,8 +555,8 @@ impl<AI> GatewayNetworkAccount<AI> {
 
             let current_rent: u64 = *self.0.info().lamports();
             let new_rent = match rent {
-                None => Cow::Owned(Sysvar::get()?),
-                Some(rent) => Cow::Borrowed(rent),
+                Some(rent) => rent,
+                None => Rent::get()?,
             }
             .minimum_balance(new_length);
             match current_rent.cmp(&new_rent) {
@@ -401,33 +601,40 @@ impl<AI> GatewayNetworkAccount<AI> {
         for fee in fees {
             NetworkFees::create_with_arg(
                 remaining_data.try_advance(GatekeeperFees::on_chain_static_size())?,
-                fee,
+                &fee,
             )?;
         }
         network.fees_count.set_in_place(new_fees_count);
         Ok(())
     }
-}
-impl<AI, I> MultiIndexable<I> for GatewayNetworkAccount<AI>
-where
-    AI: MultiIndexable<I> + AccountInfo,
-{
-    fn index_is_signer(&self, indexer: I) -> CruiserResult<bool> {
-        self.0.index_is_signer(indexer)
-    }
-    fn index_is_writable(&self, indexer: I) -> CruiserResult<bool> {
-        self.0.index_is_writable(indexer)
-    }
-    fn index_is_owner(&self, owner: &Pubkey, indexer: I) -> CruiserResult<bool> {
-        self.0.index_is_owner(owner, indexer)
-    }
-}
-impl<AI, I> SingleIndexable<I> for GatewayNetworkAccount<AI>
-where
-    AI: SingleIndexable<I> + AccountInfo,
-{
-    fn index_info(&self, indexer: I) -> CruiserResult<&Self::AccountInfo> {
-        self.0.index_info(indexer)
+
+    /// Pushes more auth keys to the network.
+    pub fn push_auth_keys<'a, I>(
+        &mut self,
+        auth_keys: I,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] funds: &AI,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] funder_seeds: Option<
+            &PDASeedSet,
+        >,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] rent: Option<Rent>,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))]
+        system_program: &SystemProgram<AI>,
+        #[cfg_attr(not(feature = "realloc"), allow(unused_variables))] cpi: impl CPIMethod,
+    ) -> CruiserResult
+    where
+        AI: ToSolanaAccountInfo<'a>,
+        I: IntoIterator<Item = (NetworkKeyFlags, Pubkey)>,
+        I::IntoIter: ExactSizeIterator,
+    {
+        self.push_multiple(
+            empty(),
+            auth_keys,
+            funds,
+            funder_seeds,
+            rent,
+            system_program,
+            cpi,
+        )
     }
 }
 
