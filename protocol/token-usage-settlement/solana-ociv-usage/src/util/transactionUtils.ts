@@ -104,13 +104,13 @@ export class ConfigBasedStrategy implements Strategy {
   }
 
   build(transaction: ParsedConfirmedTransaction): BillableInstruction[] {
-    // TODO: (temp) William remove
+    // TODO: ignored due to typing issues
     // @ts-ignore
     return R.pipe(
       // Add Index
       R.addIndex(R.map)((val, idx) => [val, idx]),
       // Filter out ParsedInstruction
-      // TODO: (temp) William remove
+      // TODO: ignored due to typing issues
       // @ts-ignore
       R.filter(
         ([i]: [ParsedInstruction | PartiallyDecodedInstruction]): boolean =>
