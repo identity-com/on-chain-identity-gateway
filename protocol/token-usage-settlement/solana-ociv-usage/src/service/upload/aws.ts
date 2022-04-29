@@ -35,7 +35,7 @@ export default {
     // extract the last slot numbers from the file, sort and get the latest
     return objects?.Contents?.map((object) => {
       const match = object?.Key?.match(
-        /^([^_]+)_([^_]+)_([^_]+)_([^.]+).\csv\.gz$/
+        /^([^_]+)_([^_]+)_([^_]+)_([^.]+)\.csv\.gz$/
       );
 
       return match ? parseInt(match[4]) : undefined;
