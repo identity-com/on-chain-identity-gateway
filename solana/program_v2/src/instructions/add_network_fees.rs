@@ -1,6 +1,6 @@
-use cruiser::instruction::Instruction;
-use cruiser::account_argument::AccountArgument;
 use crate::in_place::GatewayNetworkAccount;
+use cruiser::account_argument::AccountArgument;
+use cruiser::instruction::Instruction;
 use cruiser::ToSolanaAccountInfo;
 
 /// Adds fees to a network
