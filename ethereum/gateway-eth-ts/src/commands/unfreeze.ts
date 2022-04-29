@@ -2,9 +2,9 @@ import { Command, Flags } from "@oclif/core";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperPublicKeyFlag,
+  clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
 } from "../utils/flags";
@@ -22,9 +22,9 @@ export default class UnfreezeToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
   };
@@ -33,7 +33,7 @@ export default class UnfreezeToken extends Command {
     {
       name: "tokenID",
       required: true,
-      description: "Token ID number to unfreeze",
+      description: "The gateway token to unfreeze",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
@@ -42,8 +42,8 @@ export default class UnfreezeToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(UnfreezeToken);
 
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
+    const pk = flags.authorityKeypair;
+    const provider: BaseProvider = flags.cluster;
     const confirmations = flags.confirmations;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
@@ -51,13 +51,13 @@ export default class UnfreezeToken extends Command {
       : privateKeySigner(pk, provider);
 
     const tokenID = args.tokenID as BigNumber;
-    const gatewayTokenAddress = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey = flags.gatekeeperPublicKey;
 
     this.log(`Unfreezing existing token with TokenID:
 			${tokenID.toString()} 
-			on GatewayToken ${gatewayTokenAddress} contract`);
+			on GatewayToken ${gatekeeperPublicKey} contract`);
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
 
     const gasPrice = flags.gasPriceFee;
     const gasLimit = await gatewayToken.contract.estimateGas.unfreeze(tokenID);
@@ -67,10 +67,10 @@ export default class UnfreezeToken extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx = await gatewayToken.unfreeze(tokenID, txParams)
+    const tx = await gatewayToken.unfreeze(tokenID, txParams);
     let hash = tx.hash;
     if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
+      hash = (await tx.wait(confirmations)).transactionHash;
     }
 
     this.log(

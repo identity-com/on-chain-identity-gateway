@@ -3,9 +3,9 @@ import { BigNumber, utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperPublicKeyFlag,
+  clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
 } from "../utils/flags";
@@ -22,9 +22,9 @@ export default class FreezeToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
   };
@@ -33,7 +33,7 @@ export default class FreezeToken extends Command {
     {
       name: "tokenID",
       required: true,
-      description: "Token ID number to freeze",
+      description: "The gateway token to freeze",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
@@ -42,8 +42,8 @@ export default class FreezeToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(FreezeToken);
 
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
+    const pk = flags.authorityKeypair;
+    const provider: BaseProvider = flags.cluster;
     const confirmations = flags.confirmations;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
@@ -51,13 +51,13 @@ export default class FreezeToken extends Command {
       : privateKeySigner(pk, provider);
 
     const tokenID = args.tokenID as BigNumber;
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey: string = flags.gatekeeperPublicKey;
 
     this.log(`Freezing existing token with TokenID:
 			${tokenID.toString()} 
-			on GatewayToken ${gatewayTokenAddress} contract`);
+			on GatewayToken ${gatekeeperPublicKey} contract`);
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
 
     const gasPrice = flags.gasPriceFee;
     const gasLimit = await gatewayToken.contract.estimateGas.freeze(tokenID);
@@ -70,7 +70,7 @@ export default class FreezeToken extends Command {
     const tx = await gatewayToken.freeze(tokenID, txParams);
     let hash = tx.hash;
     if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
+      hash = (await tx.wait(confirmations)).transactionHash;
     }
 
     this.log(

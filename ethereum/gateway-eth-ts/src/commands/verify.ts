@@ -3,9 +3,9 @@ import { BigNumber, utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperPublicKeyFlag,
+  clusterFlag,
 } from "../utils/flags";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 
@@ -19,16 +19,17 @@ export default class VerifyToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    cluster: clusterFlag(),
   };
 
   static args = [
     {
       name: "address",
       required: true,
-      description: "Owner address to verify identity token for",
+      description:
+        "The public key of the user for which to identify token ownership",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<string> => {
         if (!utils.isAddress(input)) {
@@ -36,7 +37,7 @@ export default class VerifyToken extends Command {
         }
 
         return input;
-      }
+      },
     },
 
     {
@@ -51,26 +52,26 @@ export default class VerifyToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(VerifyToken);
 
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
+    const pk = flags.authorityKeypair;
+    const provider: BaseProvider = flags.cluster;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
     const ownerAddress = args.address as string;
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey: string = flags.gatekeeperPublicKey;
     const tokenId = args.tokenId as BigNumber;
 
     this.log(`Verifying existing identity token using owner address:
 			${ownerAddress} 
-			on GatewayToken ${gatewayTokenAddress} contract`);
+			on GatewayToken ${gatekeeperPublicKey} contract`);
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
 
-    const tx = await (tokenId
+    const tx = (await (tokenId
       ? gatewayToken.verifyTokenByTokenID(ownerAddress, tokenId)
-      : gatewayToken.verifyToken(ownerAddress)) as unknown as boolean[]; // TODO: fix type
+      : gatewayToken.verifyToken(ownerAddress))) as unknown as boolean[]; // TODO: fix type
 
     this.log(
       tx[0]
