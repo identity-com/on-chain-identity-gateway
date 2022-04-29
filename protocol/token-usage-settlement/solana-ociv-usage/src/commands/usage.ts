@@ -8,6 +8,7 @@ import { ExtendedCluster } from "../util/connection";
 import Base from "./base";
 import { UsageConfig } from "../service/config";
 import { printCSV } from "../service/CsvWriter";
+import { getUploader } from "../service/upload";
 
 export default class SolanaUsage extends Base {
   static description = "Read usage based on a configuration.";
@@ -22,6 +23,21 @@ export default class SolanaUsage extends Base {
       char: "e",
       description: "The epoch or period that the usage refers to",
       required: true,
+    }),
+    upload: Flags.string({
+      char: "u",
+      required: false,
+      description: "The method to use for uploading the file",
+    }),
+    bucket: Flags.string({
+      char: "b",
+      required: false,
+      description: "The name of the bucket to upload to",
+    }),
+    folder: Flags.string({
+      char: "f",
+      required: false,
+      description: "The name of the folder to upload to",
     }),
   };
 
@@ -58,6 +74,16 @@ export default class SolanaUsage extends Base {
       throw new Error(`No config found for ${args.name}`);
     }
 
+    const uploader = getUploader(flags.upload);
+
+    const previousSlot = await uploader.getLastSlot(
+      flags,
+      matchedConfig.program,
+      matchedConfig.network
+    );
+
+    console.log(`Found previous slot ${previousSlot ?? "<none>"}`);
+
     // const lookupProgram: PublicKey = args.address;
     // const oracleKey = flags.oracleKey as Keypair;
     // this.log(`Reading Usage:
@@ -79,11 +105,19 @@ export default class SolanaUsage extends Base {
       matchedConfig
     );
 
-    const result = await usageOracleService.readUsage({
-      epoch,
-    });
+    const { billableTx, firstSlot, lastSlot } =
+      await usageOracleService.readUsage({
+        epoch,
+        previousSlot,
+      });
 
-    printCSV(result);
+    const filename = `${matchedConfig.program.toBase58()}_${matchedConfig.network.toBase58()}_${firstSlot}_${lastSlot}.csv.gz`;
+
+    const output = uploader.createUploadStream(flags, filename);
+
+    printCSV(output, billableTx);
+
+    output.end();
 
     // this.log(`Read Usage: ${result.length}`);
 

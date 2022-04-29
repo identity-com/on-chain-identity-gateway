@@ -7,6 +7,7 @@ import { UsageConfig } from "./config";
 
 type GetUsageParams = {
   epoch: number;
+  previousSlot: number | undefined;
 };
 
 export class UsageOracleService {
@@ -19,11 +20,15 @@ export class UsageOracleService {
   //   });
   // };
 
-  private async getTransactionSignaturesForEpoch(epoch: number) {
+  private async getTransactionSignaturesForEpoch(
+    epoch: number,
+    previousSlot: number | undefined
+  ) {
     const epochSchedule = await this.connection.getEpochSchedule();
 
     // TODO we need to make sure that we only consider FINALIZED Epochs here
-    const firstSlot = epochSchedule.getFirstSlotInEpoch(epoch);
+    const firstSlot = previousSlot ?? epochSchedule.getFirstSlotInEpoch(epoch);
+    // const firstSlot = 50_000_000;
     // const lastSlot = epochSchedule.getLastSlotInEpoch(epoch);
     const lastSlot = await this.connection.getSlot();
 
@@ -40,11 +45,11 @@ export class UsageOracleService {
 
     // TODO: Parallelize
     // Currently has a Max of 5k, e.g. 5 runthroughs
-    currentStartSlot = lastSlot - SLOT_WINDOW;
+    currentStartSlot = previousSlot ? firstSlot : lastSlot - SLOT_WINDOW;
     while (currentStartSlot < lastSlot) {
       let currentEndSlot = currentStartSlot + SLOT_WINDOW;
       if (currentEndSlot > lastSlot) {
-        currentStartSlot = lastSlot;
+        currentEndSlot = lastSlot;
       }
       console.log(`Window: ${currentStartSlot} - ${currentEndSlot}`);
 
@@ -59,15 +64,20 @@ export class UsageOracleService {
       currentStartSlot = currentEndSlot;
     }
 
-    return signatures;
+    return { signatures, firstSlot, lastSlot };
   }
 
-  async readUsage({ epoch }: GetUsageParams) {
-    const fetched = await this.getTransactionSignaturesForEpoch(epoch);
-    const billableTx = await loadTransactions(this.connection, fetched, [
+  async readUsage({ epoch, previousSlot }: GetUsageParams) {
+    const { signatures, firstSlot, lastSlot } =
+      await this.getTransactionSignaturesForEpoch(
+        epoch,
+        previousSlot ? previousSlot + 1 : undefined
+      );
+
+    const billableTx = await loadTransactions(this.connection, signatures, [
       new ConfigBasedStrategy(this.config),
     ]);
-    return billableTx;
+    return { billableTx, firstSlot, lastSlot };
   }
 
   // writeUsage({
