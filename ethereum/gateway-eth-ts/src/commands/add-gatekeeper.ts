@@ -3,9 +3,9 @@ import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperPublicKeyFlag,
+  clusterFlag,
   confirmationsFlag,
   gasPriceFeeFlag,
 } from "../utils/flags";
@@ -22,9 +22,9 @@ export default class AddGatekeeper extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
   };
@@ -33,8 +33,9 @@ export default class AddGatekeeper extends Command {
     {
       name: "address",
       required: true,
-      description: "Gatekeeper address to add to the GatewayToken contract",
+      description: "The public key of the gatekeeper to add to the network",
       // eslint-disable-next-line @typescript-eslint/require-await
+      // ? Should this be changed to Promise<PublicKey> similarly to in gatekeeper-lib?
       parse: async (input: string): Promise<string | null> =>
         utils.isAddress(input) ? input : null,
     },
@@ -43,9 +44,9 @@ export default class AddGatekeeper extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(AddGatekeeper);
 
-    const pk = flags.privateKey;
+    const pk = flags.authorityKeypair;
     const gatekeeper: string = args.address as string;
-    const provider: BaseProvider = flags.network;
+    const provider: BaseProvider = flags.cluster;
 
     const confirmations = flags.confirmations;
 
@@ -53,33 +54,29 @@ export default class AddGatekeeper extends Command {
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey: string = flags.gatekeeperPublicKey;
 
     this.log(`Adding:
 			gatekeeper ${gatekeeper} 
-			to GatewayToken ${gatewayTokenAddress}`);
+			to GatewayToken ${gatekeeperPublicKey}`);
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
 
     const gasPrice = flags.gasPriceFee;
-    const gasLimit: BigNumber = await gatewayToken.contract.estimateGas.addGatekeeper(
-      gatekeeper
-    );
+    const gasLimit: BigNumber =
+      await gatewayToken.contract.estimateGas.addGatekeeper(gatekeeper);
 
     const txParams: TxBase = {
       gasLimit: gasLimit,
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-
-    const tx = await gatewayToken.addGatekeeper(gatekeeper, txParams)
+    const tx = await gatewayToken.addGatekeeper(gatekeeper, txParams);
     let hash = tx.hash;
     if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
+      hash = (await tx.wait(confirmations)).transactionHash;
     }
 
-    this.log(
-      `Added gatekeeper to Gateway Token contract. TxHash: ${hash}`
-    );
+    this.log(`Added gatekeeper to Gateway Token contract. TxHash: ${hash}`);
   }
 }
