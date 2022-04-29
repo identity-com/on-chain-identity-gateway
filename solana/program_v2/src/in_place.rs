@@ -10,6 +10,7 @@ use cruiser::account_argument::{
 use cruiser::account_types::in_place_account::{Create, InPlaceAccount};
 use cruiser::account_types::system_program::SystemProgram;
 use cruiser::in_place::{GetNum, InPlace, InPlaceCreate, InPlaceRead, InPlaceWrite, SetNum};
+#[cfg(feature = "realloc")]
 use cruiser::on_chain_size::OnChainSizeWithArg;
 use cruiser::pda_seeds::PDASeedSet;
 use cruiser::program::ProgramKey;
@@ -216,10 +217,12 @@ impl<A> NetworkKeyFlagsAccess<A>
 where
     A: GetNum<Num = u16>,
 {
+    /// Gets flags
     pub fn get_flags(&self) -> Option<NetworkKeyFlags> {
         NetworkKeyFlags::from_bits(self.0.get_num())
     }
 
+    /// Sets flags
     pub fn set_flags(&mut self, flags: NetworkKeyFlags)
     where
         A: SetNum,
