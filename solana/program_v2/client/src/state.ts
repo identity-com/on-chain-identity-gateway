@@ -202,7 +202,7 @@ class GatekeeperNetwork{
 }
 
 
-async function getNetworkAccount(connection: Connection, key: PublicKey): GatekeeperNetwork{
+async function getNetworkAccount(connection: Connection, key: PublicKey): Promise<GatekeeperNetwork>{
   const info = await connection.getAccountInfo(key);
   return GatekeeperNetwork.read(info.data, { offset: 0 });
 }
