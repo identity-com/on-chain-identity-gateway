@@ -1,10 +1,12 @@
 #![allow(stable_features)]
+#![allow(deprecated_where_clause_location)]
 #![feature(const_trait_impl)]
 #![feature(const_fn_trait_bound)]
 #![feature(const_option)]
 #![feature(const_option_ext)]
 #![feature(const_mut_refs)]
 #![feature(const_ptr_offset)]
+#![feature(generic_associated_types)]
 
 //! The gateway v2 program from Identity.com
 
@@ -34,10 +36,12 @@ use crate::util::OptionalNonSystemPubkey;
 use bitflags::bitflags;
 use cruiser::account_list::AccountList;
 use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
+use cruiser::in_place::InPlace;
 use cruiser::instruction_list::InstructionList;
-use cruiser::on_chain_size::{OnChainSize, OnChainStaticSize};
+use cruiser::on_chain_size::{OnChainSize, OnChainSizeWithArg};
 use cruiser::pda_seeds::{PDASeed, PDASeeder};
 use cruiser::{AccountInfo, CruiserResult, GenericError, Pubkey, UnixTimestamp};
+use std::num::NonZeroU8;
 
 /// Instructions for the gateway v2 program
 #[derive(InstructionList, Copy, Clone, Debug)]
@@ -47,6 +51,7 @@ pub enum GatewayInstructions {}
 /// Accounts for the gateway v2 program
 #[allow(clippy::large_enum_variant)]
 #[derive(AccountList, Debug)]
+#[account_list(discriminant_type = NonZeroU8)]
 pub enum GatewayAccountList {
     /// A network which manages many [`Gatekeepers`].
     GatekeeperNetwork(GatekeeperNetwork),
@@ -80,6 +85,8 @@ bitflags! {
         const ADJUST_FEES = 1 << 8;
         /// Key can add new fee types to a network
         const ADD_FEES = 1 << 9;
+        /// Key can access the network's vault
+        const ACCESS_VAULT = 1 << 10;
     }
     /// The flags for a key on a gatekeeper
     #[derive(BorshDeserialize, BorshSerialize)]
@@ -102,23 +109,23 @@ bitflags! {
         const SET_ADDRESSES = 1 << 7;
         /// Key can set data on passes
         const SET_PASS_DATA = 1 << 8;
+        /// Key can add new fee types to a gatekeeper
+        const ADD_FEES = 1 << 9;
+        /// Key can access the gatekeeper's vault
+        const ACCESS_VAULT = 1 << 10;
     }
 }
-impl const OnChainSize<()> for NetworkKeyFlags {
-    fn on_chain_max_size(_arg: ()) -> usize {
-        u16::on_chain_static_size()
-    }
+impl const OnChainSize for NetworkKeyFlags {
+    const ON_CHAIN_SIZE: usize = u16::ON_CHAIN_SIZE;
 }
-impl const OnChainSize<()> for GatekeeperKeyFlags {
-    fn on_chain_max_size(_arg: ()) -> usize {
-        u16::on_chain_static_size()
-    }
+impl const OnChainSize for GatekeeperKeyFlags {
+    const ON_CHAIN_SIZE: usize = u16::ON_CHAIN_SIZE;
 }
 
 /// Fees that a [`GatekeeperNetwork`] can charge
-#[derive(Clone, Debug, BorshSerialize, BorshDeserialize)]
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, InPlace)]
 pub struct NetworkFees {
-    /// The token for the fee
+    /// The token for the fee, `None` means fee is invalid
     pub token: OptionalNonSystemPubkey,
     /// Percentage taken on issue. In Hundredths of a percent (0.01% or 0.0001).
     pub issue: u16,
@@ -129,14 +136,12 @@ pub struct NetworkFees {
     /// Percentage taken on verify. In Hundredths of a percent (0.01% or 0.0001).
     pub verify: u16,
 }
-impl const OnChainSize<()> for NetworkFees {
-    fn on_chain_max_size(_arg: ()) -> usize {
-        OptionalNonSystemPubkey::on_chain_static_size() + u16::on_chain_static_size() * 4
-    }
+impl const OnChainSize for NetworkFees {
+    const ON_CHAIN_SIZE: usize = OptionalNonSystemPubkey::ON_CHAIN_SIZE + u16::ON_CHAIN_SIZE * 4;
 }
 
 /// A gatekeeper network which manages many [`Gatekeeper`]s.
-#[derive(Debug)]
+#[derive(Debug, InPlace)]
 pub struct GatekeeperNetwork {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
@@ -155,10 +160,23 @@ pub struct GatekeeperNetwork {
     /// Number of auth keys
     pub auth_keys_count: u16,
     /// The fees for this network
-    pub fees: Vec<NetworkFees>,
+    pub fees: [NetworkFees; 128],
     /// Keys with permissions on the network
-    pub auth_keys: Vec<(NetworkKeyFlags, Pubkey)>,
+    pub auth_keys: [NetworkAuthKey; 128],
 }
+
+/// The authority key for a [`GatekeeperNetwork`]
+#[derive(Debug, InPlace)]
+pub struct NetworkAuthKey {
+    /// The permissions this key has
+    pub flags: NetworkKeyFlags,
+    /// The key
+    pub key: Pubkey,
+}
+impl OnChainSize for NetworkAuthKey {
+    const ON_CHAIN_SIZE: usize = NetworkKeyFlags::ON_CHAIN_SIZE + Pubkey::ON_CHAIN_SIZE;
+}
+
 /// Seeder for the network signer
 #[derive(Debug)]
 pub struct NetworkSignerSeeder {
@@ -181,14 +199,12 @@ pub enum GatekeeperState {
     /// Gatekeeper may not issue passes and all passes invalid
     Halted,
 }
-impl const OnChainSize<()> for GatekeeperState {
-    fn on_chain_max_size(_arg: ()) -> usize {
-        1
-    }
+impl const OnChainSize for GatekeeperState {
+    const ON_CHAIN_SIZE: usize = 1;
 }
 
 /// The fees a gatekeeper/network can take
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, InPlace)]
 pub struct GatekeeperFees {
     /// The token for these fees. None value for this means native SOL price
     pub token: OptionalNonSystemPubkey,
@@ -203,10 +219,8 @@ pub struct GatekeeperFees {
     /// This should only be used where pass value comes from proper use
     pub verify: u64,
 }
-impl const OnChainSize<()> for GatekeeperFees {
-    fn on_chain_max_size(_arg: ()) -> usize {
-        OptionalNonSystemPubkey::on_chain_static_size() + u64::on_chain_static_size() * 4
-    }
+impl const OnChainSize for GatekeeperFees {
+    const ON_CHAIN_SIZE: usize = OptionalNonSystemPubkey::ON_CHAIN_SIZE + u64::ON_CHAIN_SIZE * 4;
 }
 
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
@@ -242,10 +256,8 @@ pub enum PassState {
     /// Pass invalid, cannot be reactivated without network approval
     Revoked,
 }
-impl const OnChainSize<()> for PassState {
-    fn on_chain_max_size(_arg: ()) -> usize {
-        1
-    }
+impl const OnChainSize for PassState {
+    const ON_CHAIN_SIZE: usize = 1;
 }
 /// Mutable access to a pass state
 #[derive(Debug)]
@@ -301,12 +313,12 @@ pub struct PassSize {
     /// The length of gatekeeper data on a pass
     pub gatekeeper_data_len: u16,
 }
-impl const OnChainSize<PassSize> for Pass {
-    fn on_chain_max_size(arg: PassSize) -> usize {
-        u8::on_chain_static_size()
-            + UnixTimestamp::on_chain_static_size()
-            + Pubkey::on_chain_static_size() * 3
-            + PassState::on_chain_static_size()
+impl const OnChainSizeWithArg<PassSize> for Pass {
+    fn on_chain_size_with_arg(arg: PassSize) -> usize {
+        u8::ON_CHAIN_SIZE
+            + UnixTimestamp::ON_CHAIN_SIZE
+            + Pubkey::ON_CHAIN_SIZE * 3
+            + PassState::ON_CHAIN_SIZE
             + arg.network_data_len as usize
             + arg.gatekeeper_data_len as usize
             + arg.gatekeeper_data_len as usize
@@ -330,7 +342,7 @@ impl<'a> PassAccess<'a> {
 
     /// Creates a new [`PassAccess`]
     pub fn new(data: &'a mut [u8], network_data_len: u16) -> CruiserResult<Self> {
-        let needed_data = Pass::on_chain_max_size(PassSize {
+        let needed_data = Pass::on_chain_size_with_arg(PassSize {
             network_data_len,
             gatekeeper_data_len: 0,
         });

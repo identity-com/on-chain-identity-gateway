@@ -1,16 +1,13 @@
 //! Utility functions and types.
 
-use crate::in_place::GatekeeperNetworkAccess;
 use crate::{GatekeeperFees, GatekeeperNetwork, NetworkKeyFlags};
 use cruiser::account_types::system_program::SystemProgram;
 use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
-use cruiser::on_chain_size::{OnChainSize, OnChainStaticSize};
+use cruiser::on_chain_size::{OnChainSize, OnChainSizeWithArg};
 use cruiser::program::ProgramKey;
 use cruiser::solana_program::program_memory::sol_memcmp;
 use cruiser::{Pubkey, UnixTimestamp};
 use std::num::NonZeroUsize;
-
-impl<'a> GatekeeperNetworkAccess<'a> {}
 
 /// A public key that uses the system program as the [`None`] value
 #[derive(Debug, Clone, PartialEq, Eq, BorshSerialize, BorshDeserialize)]
@@ -40,10 +37,8 @@ impl const From<Pubkey> for OptionalNonSystemPubkey {
         Self(from)
     }
 }
-impl const OnChainSize<()> for OptionalNonSystemPubkey {
-    fn on_chain_max_size(arg: ()) -> usize {
-        Pubkey::on_chain_max_size(arg)
-    }
+impl const OnChainSize for OptionalNonSystemPubkey {
+    const ON_CHAIN_SIZE: usize = Pubkey::ON_CHAIN_SIZE;
 }
 
 /// Size for [`GatekeeperNetwork`]
@@ -54,21 +49,21 @@ pub struct GatekeeperNetworkSize {
     /// The number of auth keys
     pub auth_keys: u16,
 }
-impl const OnChainSize<GatekeeperNetworkSize> for GatekeeperNetwork {
-    fn on_chain_max_size(arg: GatekeeperNetworkSize) -> usize {
-        let auth_key_size = <(NetworkKeyFlags, Pubkey)>::on_chain_static_size();
+impl const OnChainSizeWithArg<GatekeeperNetworkSize> for GatekeeperNetwork {
+    fn on_chain_size_with_arg(arg: GatekeeperNetworkSize) -> usize {
+        let auth_key_size = <(NetworkKeyFlags, Pubkey)>::ON_CHAIN_SIZE;
         let auth_keys_slot_size = auth_key_size;
-        let fee_size = GatekeeperFees::on_chain_static_size();
+        let fee_size = GatekeeperFees::ON_CHAIN_SIZE;
         let fees_slot_size = max(fee_size, auth_keys_slot_size);
 
-        u8::on_chain_static_size()
-            + <[u8; 33]>::on_chain_static_size()
-            + u16::on_chain_static_size()
-            + u8::on_chain_static_size()
-            + UnixTimestamp::on_chain_static_size()
-            + u16::on_chain_static_size()
-            + u8::on_chain_static_size()
-            + u16::on_chain_static_size()
+        u8::ON_CHAIN_SIZE
+            + <[u8; 33]>::ON_CHAIN_SIZE
+            + u16::ON_CHAIN_SIZE
+            + u8::ON_CHAIN_SIZE
+            + UnixTimestamp::ON_CHAIN_SIZE
+            + u16::ON_CHAIN_SIZE
+            + u8::ON_CHAIN_SIZE
+            + u16::ON_CHAIN_SIZE
             + round_to_next(
                 arg.fees_count as usize * fee_size,
                 NonZeroUsize::new(fees_slot_size).unwrap_or(NonZeroUsize::new(1).unwrap()),
