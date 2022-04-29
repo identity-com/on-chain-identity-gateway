@@ -4,6 +4,7 @@ use cruiser::account_argument::{AccountArgument, Single};
 use cruiser::account_types::seeds::Seeds;
 use cruiser::account_types::system_program::SystemProgram;
 use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
+use cruiser::in_place::SetNum;
 use cruiser::instruction::{Instruction, InstructionProcessor};
 use cruiser::solana_program::rent::Rent;
 use cruiser::ToSolanaAccountInfo;
@@ -52,7 +53,7 @@ mod processor {
     use super::*;
     use crate::instructions::CreateNetwork;
     use cruiser::account_argument::Single;
-    use cruiser::in_place::{InPlaceSet, InPlaceUnitWrite};
+    use cruiser::in_place::{get_properties_mut, InPlaceUnitWrite};
     use cruiser::solana_program::sysvar::Sysvar;
     use cruiser::{CruiserResult, GenericError};
 
@@ -80,7 +81,7 @@ mod processor {
             data: Self::InstructionData,
             accounts: &mut <CreateNetwork as Instruction<AI>>::Accounts,
         ) -> CruiserResult<<CreateNetwork as Instruction<AI>>::ReturnType> {
-            let (data, rent) = data;
+            let (data, _rent) = data;
 
             if data.auth_keys.is_empty() {
                 return Err(GenericError::Custom {
@@ -101,24 +102,22 @@ mod processor {
                 .into());
             }
 
-            let mut network_data = accounts.network.info().data_mut();
-            let mut network = GatekeeperNetwork::write(&mut *network_data)?;
-            *network.auth_threshold = 1;
-            network.pass_expire_time.set_in_place(data.pass_expire_time);
-            network.network_data_len.set_in_place(data.network_data_len);
-            *network.signer_bump = data.signer_bump;
-            drop(network_data);
-            accounts.network.push_multiple(
-                data.fees,
-                data.auth_keys,
-                &accounts.funder,
-                None,
-                Some(rent),
-                &accounts.system_program,
-                CPIChecked,
-            )?;
-
-            Ok(())
+            let mut network = GatekeeperNetwork::write(accounts.network.info().data_mut())?;
+            let (mut auth_threshold, mut pass_expire_time, mut network_data_len, mut signer_bump) =
+                get_properties_mut!(
+                    &mut network,
+                    GatekeeperNetwork {
+                        auth_threshold,
+                        pass_expire_time,
+                        network_data_len,
+                        signer_bump,
+                    }
+                )?;
+            auth_threshold.set_num(1);
+            pass_expire_time.set_num(data.pass_expire_time);
+            network_data_len.set_num(data.network_data_len);
+            signer_bump.set_num(data.signer_bump);
+            todo!("Add fees and auth_keys")
         }
     }
 }
