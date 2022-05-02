@@ -2,11 +2,10 @@
 
 use crate::util::ConstEq;
 use crate::{
-    GatekeeperNetwork, GatewayAccountList, NetworkKeyFlags, OptionalNonSystemPubkey, Pubkey,
+    GatekeeperKeyFlags, GatekeeperNetwork, GatekeeperState, GatewayAccountList, NetworkKeyFlags,
+    OptionalNonSystemPubkey, Pubkey,
 };
-use cruiser::account_argument::{
-    AccountArgument, MultiIndexable, SingleIndexable, ValidateArgument,
-};
+use cruiser::account_argument::{AccountArgument, MultiIndexable, SingleIndexable};
 use cruiser::account_types::in_place_account::{Create, InPlaceAccount};
 use cruiser::account_types::system_program::SystemProgram;
 use cruiser::in_place::{GetNum, InPlace, InPlaceCreate, InPlaceRead, InPlaceWrite, SetNum};
@@ -20,7 +19,7 @@ use cruiser::{AccountInfo, CPIMethod, CruiserResult, ToSolanaAccountInfo};
 use std::ops::{Deref, DerefMut};
 
 /// [`InPlace::Access`] for [`OptionalNonSystemPubkey`]
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct OptionalNonSystemPubkeyAccess<A>(A);
 impl<A> OptionalNonSystemPubkeyAccess<A> {
     /// Gets this as an optional public key
@@ -135,7 +134,7 @@ const INITIAL_NETWORK_SPACE: usize =
 #[account_argument(account_info = AI, generics = [where AI: AccountInfo])]
 #[validate(data = ())]
 #[validate(id = create, data = (create: GatewayNetworkCreate<'a, AI, CPI>), generics = [<'a, 'b, CPI> where CPI: CPIMethod, AI: ToSolanaAccountInfo<'b>])]
-pub struct GatewayNetworkAccount<AI>(
+pub struct GatekeeperNetworkAccount<AI>(
     #[validate(id = create, data = Create{
         data: (),
         system_program: create.system_program,
@@ -148,41 +147,19 @@ pub struct GatewayNetworkAccount<AI>(
     })]
     InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>,
 );
-impl<AI> Deref for GatewayNetworkAccount<AI> {
+impl<AI> Deref for GatekeeperNetworkAccount<AI> {
     type Target = InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
-impl<AI> DerefMut for GatewayNetworkAccount<AI> {
+impl<AI> DerefMut for GatekeeperNetworkAccount<AI> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
-/// Verifies a given key is valid for the given permissions
-#[derive(Debug)]
-pub struct NetworkKeyVerification<'a, AI> {
-    /// The key to verify
-    pub key: &'a AI,
-    /// The index of the key
-    pub key_index: u16,
-    /// The permissions to verify
-    pub network_key_flags: NetworkKeyFlags,
-}
-impl<'a, AI> ValidateArgument<NetworkKeyVerification<'a, AI>> for GatewayNetworkAccount<AI>
-where
-    AI: AccountInfo,
-{
-    fn validate(
-        &mut self,
-        _program_id: &Pubkey,
-        _arg: NetworkKeyVerification<'a, AI>,
-    ) -> CruiserResult<()> {
-        todo!()
-    }
-}
-impl<AI, Arg> MultiIndexable<Arg> for GatewayNetworkAccount<AI>
+impl<AI, Arg> MultiIndexable<Arg> for GatekeeperNetworkAccount<AI>
 where
     AI: AccountInfo,
     InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>: MultiIndexable<Arg>,
@@ -199,7 +176,7 @@ where
         self.0.index_is_owner(owner, indexer)
     }
 }
-impl<AI, Arg> SingleIndexable<Arg> for GatewayNetworkAccount<AI>
+impl<AI, Arg> SingleIndexable<Arg> for GatekeeperNetworkAccount<AI>
 where
     AI: AccountInfo,
     InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>:
@@ -273,5 +250,147 @@ impl InPlaceWrite for NetworkKeyFlags {
             + TryMappableRefMut,
     {
         Ok(NetworkKeyFlagsAccess(u16::write_with_arg(data, arg)?))
+    }
+}
+
+/// [`InPlace::Access`] for [`GatekeeperKeyFlags`]
+#[derive(Debug)]
+pub struct GatekeeperKeyFlagsAccess<A>(A);
+impl<A> GatekeeperKeyFlagsAccess<A>
+where
+    A: GetNum<Num = u16>,
+{
+    /// Gets flags
+    pub fn get_flags(&self) -> Option<GatekeeperKeyFlags> {
+        GatekeeperKeyFlags::from_bits(self.0.get_num())
+    }
+
+    /// Sets flags
+    pub fn set_flags(&mut self, flags: GatekeeperKeyFlags)
+    where
+        A: SetNum,
+    {
+        self.0.set_num(flags.bits());
+    }
+}
+impl InPlace for GatekeeperKeyFlags {
+    type Access<'a, A>
+    where
+        Self: 'a,
+        A: 'a + MappableRef + TryMappableRef,
+    = GatekeeperKeyFlagsAccess<<u16 as InPlace>::Access<'a, A>>;
+    type AccessMut<'a, A>
+    where
+        Self: 'a,
+        A: 'a + MappableRef + TryMappableRef + MappableRefMut + TryMappableRefMut,
+    = GatekeeperKeyFlagsAccess<<u16 as InPlace>::AccessMut<'a, A>>;
+}
+impl InPlaceCreate for GatekeeperKeyFlags {
+    fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: ()) -> CruiserResult {
+        u16::create_with_arg(data, arg)
+    }
+}
+impl InPlaceCreate<GatekeeperKeyFlags> for GatekeeperKeyFlags {
+    fn create_with_arg<A: DerefMut<Target = [u8]>>(
+        data: A,
+        arg: GatekeeperKeyFlags,
+    ) -> CruiserResult {
+        u16::create_with_arg(data, arg.bits())
+    }
+}
+impl InPlaceRead for GatekeeperKeyFlags {
+    fn read_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::Access<'a, A>>
+    where
+        Self: 'a,
+        A: 'a + Deref<Target = [u8]> + MappableRef + TryMappableRef,
+    {
+        Ok(GatekeeperKeyFlagsAccess(u16::read_with_arg(data, arg)?))
+    }
+}
+impl InPlaceWrite for GatekeeperKeyFlags {
+    fn write_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::AccessMut<'a, A>>
+    where
+        Self: 'a,
+        A: 'a
+            + DerefMut<Target = [u8]>
+            + MappableRef
+            + TryMappableRef
+            + MappableRefMut
+            + TryMappableRefMut,
+    {
+        Ok(GatekeeperKeyFlagsAccess(u16::write_with_arg(data, arg)?))
+    }
+}
+
+/// [`InPlace::Access`] for [`GatekeeperKeyFlags`]
+#[derive(Copy, Clone, Debug)]
+pub struct GatekeeperStateAccess<A>(A);
+impl<A> GatekeeperStateAccess<A>
+where
+    A: GetNum<Num = u8>,
+{
+    /// Gets the current state
+    #[inline]
+    pub fn get_state(&self) -> Option<GatekeeperState> {
+        match self.0.get_num() {
+            0 => Some(GatekeeperState::Active),
+            1 => Some(GatekeeperState::Frozen),
+            2 => Some(GatekeeperState::Halted),
+            _ => None,
+        }
+    }
+
+    /// Sets the state
+    #[inline]
+    pub fn set_state(&mut self, state: GatekeeperState)
+    where
+        A: SetNum,
+    {
+        self.0.set_num(state as u8);
+    }
+}
+impl InPlace for GatekeeperState {
+    type Access<'a, A>
+    where
+        Self: 'a,
+        A: 'a + MappableRef + TryMappableRef,
+    = GatekeeperStateAccess<<u8 as InPlace>::Access<'a, A>>;
+    type AccessMut<'a, A>
+    where
+        Self: 'a,
+        A: 'a + MappableRef + TryMappableRef + MappableRefMut + TryMappableRefMut,
+    = GatekeeperStateAccess<<u8 as InPlace>::AccessMut<'a, A>>;
+}
+impl InPlaceCreate for GatekeeperState {
+    fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: ()) -> CruiserResult {
+        u8::create_with_arg(data, arg)
+    }
+}
+impl InPlaceCreate<GatekeeperState> for GatekeeperState {
+    fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: GatekeeperState) -> CruiserResult {
+        u8::create_with_arg(data, arg as u8)
+    }
+}
+impl InPlaceRead for GatekeeperState {
+    fn read_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::Access<'a, A>>
+    where
+        Self: 'a,
+        A: 'a + Deref<Target = [u8]> + MappableRef + TryMappableRef,
+    {
+        Ok(GatekeeperStateAccess(u8::read_with_arg(data, arg)?))
+    }
+}
+impl InPlaceWrite for GatekeeperState {
+    fn write_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::AccessMut<'a, A>>
+    where
+        Self: 'a,
+        A: 'a
+            + DerefMut<Target = [u8]>
+            + MappableRef
+            + TryMappableRef
+            + MappableRefMut
+            + TryMappableRefMut,
+    {
+        Ok(GatekeeperStateAccess(u8::write_with_arg(data, arg)?))
     }
 }

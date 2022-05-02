@@ -1,7 +1,4 @@
-#![allow(stable_features)]
-#![allow(deprecated_where_clause_location)]
 #![feature(const_trait_impl)]
-#![feature(const_fn_trait_bound)]
 #![feature(const_option)]
 #![feature(const_option_ext)]
 #![feature(const_mut_refs)]
@@ -10,6 +7,9 @@
 
 //! The gateway v2 program from Identity.com
 
+// Solana is on 1.59 currently, this requires the now deprecated where clause position
+#![cfg_attr(VERSION_GREATER_THAN_59, allow(deprecated_where_clause_location))]
+#![cfg_attr(not(VERSION_GREATER_THAN_59), feature(const_fn_trait_bound))]
 #![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_auto_cfg))]
 #![warn(
     unused_import_braces,
@@ -30,6 +30,7 @@
 extern crate core;
 pub mod in_place;
 pub mod instructions;
+pub mod payment_accounts;
 pub mod util;
 
 use crate::util::OptionalNonSystemPubkey;
@@ -40,13 +41,44 @@ use cruiser::in_place::InPlace;
 use cruiser::instruction_list::InstructionList;
 use cruiser::on_chain_size::{OnChainSize, OnChainSizeWithArg};
 use cruiser::pda_seeds::{PDASeed, PDASeeder};
-use cruiser::{AccountInfo, CruiserResult, GenericError, Pubkey, UnixTimestamp};
+use cruiser::{
+    entrypoint_list, CruiserResult, GenericError, Pubkey, ToSolanaAccountInfo, UnixTimestamp,
+};
 use std::num::NonZeroU8;
+
+entrypoint_list!(GatewayInstructions, GatewayInstructions);
 
 /// Instructions for the gateway v2 program
 #[derive(InstructionList, Copy, Clone, Debug)]
-#[instruction_list(account_list = GatewayAccountList, account_info = [<AI> AI where AI: AccountInfo])]
-pub enum GatewayInstructions {}
+#[instruction_list(account_list = GatewayAccountList, account_info = [<'a, AI> AI where AI: ToSolanaAccountInfo<'a>])]
+pub enum GatewayInstructions {
+    /// Creates a new network.
+    #[instruction(instruction_type = instructions::CreateNetwork)]
+    CreateNetwork,
+    /// Updates a network.
+    #[instruction(instruction_type = instructions::UpdateNetwork)]
+    UpdateNetwork,
+    /// Closes a network.
+    /// TODO: Do we need this?
+    #[instruction(instruction_type = instructions::CloseNetwork)]
+    CloseNetwork,
+    /// Creates a new gatekeeper
+    #[instruction(instruction_type = instructions::CreateGatekeeper)]
+    CreateGatekeeper,
+    /// Updates a gatekeeper's data.
+    #[instruction(instruction_type = instructions::UpdateGatekeeper)]
+    UpdateGatekeeper,
+    //TODO: Do we need a close gatekeeper instruction?
+    /// Sets the state of a gatekeeper
+    #[instruction(instruction_type = instructions::SetGatekeeperState)]
+    SetGatekeeperState,
+    /// Issues a pass from a gatekeeper
+    #[instruction(instruction_type = instructions::IssuePass)]
+    IssuePass,
+    /// Refreshes a pass from a gatekeeper
+    #[instruction(instruction_type = instructions::RefreshPass)]
+    RefreshPass,
+}
 
 /// Accounts for the gateway v2 program
 #[allow(clippy::large_enum_variant)]
@@ -67,7 +99,7 @@ bitflags! {
     pub struct NetworkKeyFlags: u16{
         /// Key can change keys
         const AUTH = 1 << 0;
-        /// Key can set network features (User expiry, did issuance, etc.)
+        /// Key can set [`GatekeeperNetwork::network_features`] (User expiry, did issuance, etc.)
         const SET_FEATURES = 1 << 1;
         /// Key can create new gatekeepers
         const CREATE_GATEKEEPER = 1 << 2;
@@ -81,12 +113,16 @@ bitflags! {
         const UNHALT_GATEKEEPER = 1 << 6;
         /// Key can un-revoke passes with gatekeepers
         const UNREVOKE_PASS = 1 << 7;
-        /// Key can adjust fees
+        /// Key can adjust fees in [`GatekeeperNetwork::fees`]
         const ADJUST_FEES = 1 << 8;
-        /// Key can add new fee types to a network
+        /// Key can add new fee types to [`GatekeeperNetwork::fees`]
         const ADD_FEES = 1 << 9;
+        /// Key can remove fee types from [`GatekeeperNetwork::fees`]
+        const REMOVE_FEES = 1 << 10;
         /// Key can access the network's vault
-        const ACCESS_VAULT = 1 << 10;
+        const ACCESS_VAULT = 1 << 11;
+        /// Key can set [`GatekeeperNetwork::pass_expire_time`]
+        const SET_EXPIRE_TIME = 1 << 12;
     }
     /// The flags for a key on a gatekeeper
     #[derive(BorshDeserialize, BorshSerialize)]
@@ -111,8 +147,12 @@ bitflags! {
         const SET_PASS_DATA = 1 << 8;
         /// Key can add new fee types to a gatekeeper
         const ADD_FEES = 1 << 9;
+        /// Key can remove fee types from a gatekeeper
+        const REMOVE_FEES = 1 << 10;
         /// Key can access the gatekeeper's vault
-        const ACCESS_VAULT = 1 << 10;
+        const ACCESS_VAULT = 1 << 11;
+        /// Key can unrevoke a pass with network concurrence.
+        const UNREVOKE_PASS = 1 << 12;
     }
 }
 impl const OnChainSize for NetworkKeyFlags {
@@ -166,7 +206,7 @@ pub struct GatekeeperNetwork {
 }
 
 /// The authority key for a [`GatekeeperNetwork`]
-#[derive(Debug, InPlace)]
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, InPlace)]
 pub struct NetworkAuthKey {
     /// The permissions this key has
     pub flags: NetworkKeyFlags,
@@ -190,7 +230,7 @@ impl PDASeeder for NetworkSignerSeeder {
 }
 
 /// The state of a [`Gatekeeper`]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, BorshSerialize, BorshDeserialize)]
 pub enum GatekeeperState {
     /// Functional gatekeeper
     Active,
@@ -204,18 +244,18 @@ impl const OnChainSize for GatekeeperState {
 }
 
 /// The fees a gatekeeper/network can take
-#[derive(Debug, Clone, Eq, PartialEq, InPlace)]
+#[derive(Debug, Clone, Eq, PartialEq, BorshSerialize, BorshDeserialize, InPlace)]
 pub struct GatekeeperFees {
     /// The token for these fees. None value for this means native SOL price
     pub token: OptionalNonSystemPubkey,
-    /// Fees taken at issuance of a new pass
+    /// Fees taken at issuance of a new pass in token units or lamports for SOL.
     pub issue: u64,
-    /// Fees taken when a pass is refreshed
+    /// Fees taken when a pass is refreshed in token units or lamports for SOL.
     pub refresh: u64,
-    /// The fee taken when a pass is expired.
+    /// The fee taken when a pass is expired in token units or lamports for SOL.
     /// This should only be used where pass value comes from one-time use.
     pub expire: u64,
-    /// The fee taken when a pass is verified.
+    /// The fee taken when a pass is verified in token units or lamports for SOL.
     /// This should only be used where pass value comes from proper use
     pub verify: u64,
 }
@@ -224,7 +264,7 @@ impl const OnChainSize for GatekeeperFees {
 }
 
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
-#[derive(Debug)]
+#[derive(Debug, InPlace)]
 pub struct Gatekeeper {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
@@ -241,13 +281,37 @@ pub struct Gatekeeper {
     /// The bump for the signer of this gatekeeper
     pub signer_bump: u8,
     /// The fees for this gatekeeper
-    pub fees: Vec<GatekeeperFees>,
+    pub fees: [GatekeeperFees; 128],
     /// The keys with permissions on this gatekeeper
-    pub auth_keys: Vec<(GatekeeperKeyFlags, Pubkey)>,
+    pub auth_keys: [GatekeeperAuthKey; 128],
+}
+
+/// The authority key for a [`Gatekeeper`]
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, InPlace)]
+pub struct GatekeeperAuthKey {
+    /// The permissions this key has
+    pub flags: GatekeeperKeyFlags,
+    /// The key
+    pub key: Pubkey,
+}
+impl OnChainSize for GatekeeperAuthKey {
+    const ON_CHAIN_SIZE: usize = GatekeeperKeyFlags::ON_CHAIN_SIZE + Pubkey::ON_CHAIN_SIZE;
+}
+
+/// Seeder for the gatekeeper signer
+#[derive(Debug)]
+pub struct GatekeeperSignerSeeder {
+    /// The gatekeeper the signer is for
+    pub gatekeeper: Pubkey,
+}
+impl PDASeeder for GatekeeperSignerSeeder {
+    fn seeds<'a>(&'a self) -> Box<dyn Iterator<Item = &'a dyn PDASeed> + 'a> {
+        Box::new([&"gatekeeper" as &dyn PDASeed, &self.gatekeeper].into_iter())
+    }
 }
 
 /// The state of a [`Pass`].
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, BorshSerialize, BorshDeserialize)]
 pub enum PassState {
     /// Functional pass
     Active,

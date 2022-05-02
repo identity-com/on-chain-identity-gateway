@@ -1,12 +1,16 @@
-use crate::in_place::{GatewayNetworkAccount, GatewayNetworkCreate};
-use crate::{GatekeeperNetwork, NetworkFees, NetworkKeyFlags, NetworkSignerSeeder, Pubkey};
+use crate::in_place::{GatekeeperNetworkAccount, GatewayNetworkCreate};
+use crate::{
+    GatekeeperNetwork, NetworkAuthKey, NetworkFees, NetworkKeyFlags, NetworkSignerSeeder, Pubkey,
+};
 use cruiser::account_argument::{AccountArgument, Single};
 use cruiser::account_types::seeds::Seeds;
 use cruiser::account_types::system_program::SystemProgram;
 use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
+use cruiser::impls::option::IfSome;
 use cruiser::in_place::SetNum;
 use cruiser::instruction::{Instruction, InstructionProcessor};
 use cruiser::solana_program::rent::Rent;
+use cruiser::types::small_vec::Vec8;
 use cruiser::ToSolanaAccountInfo;
 use cruiser::{CPIChecked, UnixTimestamp};
 
@@ -24,28 +28,40 @@ impl<AI> Instruction<AI> for CreateNetwork {
 #[account_argument(account_info = AI, generics = [<'a> where AI: ToSolanaAccountInfo<'a>])]
 #[validate(data = (signer_bump: u8, rent: Rent))]
 pub struct CreateNetworkAccounts<AI> {
+    /// The network to create.
     #[validate(data = GatewayNetworkCreate{
         system_program: &self.system_program,
         rent: Some(rent),
-        funder: &self.funder,
+        // TODO: Make this allow the optional value
+        funder: self.funder.as_ref().unwrap(),
         funder_seeds: None,
         cpi: CPIChecked,
     })]
-    network: GatewayNetworkAccount<AI>,
-    system_program: SystemProgram<AI>,
-    funder: AI,
+    pub network: GatekeeperNetworkAccount<AI>,
+    /// The system program
+    pub system_program: SystemProgram<AI>,
+    /// The signer for the network.
     #[validate(data = (NetworkSignerSeeder{ network: *self.network.info().key()}, signer_bump))]
-    network_signer: Seeds<AI, NetworkSignerSeeder>,
+    pub network_signer: Seeds<AI, NetworkSignerSeeder>,
+    /// The funder for the network if needed.
+    #[validate(signer(IfSome), writable(IfSome))]
+    pub funder: Option<AI>,
 }
 /// Data for [`CreateNetwork`].
 #[derive(Debug, BorshSerialize, BorshDeserialize)]
 pub struct CreateNetworkData {
-    auth_threshold: u8,
-    pass_expire_time: UnixTimestamp,
-    network_data_len: u16,
-    signer_bump: u8,
-    fees: Vec<NetworkFees>,
-    auth_keys: Vec<(NetworkKeyFlags, Pubkey)>,
+    /// The [`GatekeeperNetwork::auth_threshold`].
+    pub auth_threshold: u8,
+    /// The [`GatekeeperNetwork::pass_expire_time`].
+    pub pass_expire_time: UnixTimestamp,
+    /// The [`GatekeeperNetwork::network_data_len`].
+    pub network_data_len: u16,
+    /// The [`GatekeeperNetwork::signer_bump`].
+    pub signer_bump: u8,
+    /// The [`GatekeeperNetwork::fees`].
+    pub fees: Vec8<NetworkFees>,
+    /// The [`GatekeeperNetwork::auth_keys`].
+    pub auth_keys: Vec8<NetworkAuthKey>,
 }
 
 #[cfg(feature = "processor")]
@@ -92,7 +108,7 @@ mod processor {
             if data
                 .auth_keys
                 .iter()
-                .filter(|(flag, _)| flag.contains(NetworkKeyFlags::AUTH))
+                .filter(|key| key.flags.contains(NetworkKeyFlags::AUTH))
                 .count()
                 < data.auth_threshold as usize
             {
