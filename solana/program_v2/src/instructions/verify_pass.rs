@@ -4,6 +4,7 @@ use crate::util::{GatekeeperAccount, Operation, PassAccount};
 use crate::UnixTimestamp;
 use cruiser::account_argument::AccountArgument;
 use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
+use cruiser::impls::option::IfSome;
 use cruiser::instruction::Instruction;
 use cruiser::types::small_vec::{Vec16, Vec8};
 use cruiser::AccountInfo;
@@ -31,6 +32,7 @@ pub struct VerifyPassAccounts<AI> {
     pub pass: PassAccount<AI>,
     /// Pass owner in case of user expiry
     #[from(data = expire)]
+    #[validate(signer(IfSome))]
     pub owner: Option<AI>,
     /// Accounts handling payments
     #[from(data = PaymentsFrom{

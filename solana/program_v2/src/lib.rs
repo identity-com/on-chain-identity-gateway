@@ -78,6 +78,21 @@ pub enum GatewayInstructions {
     /// Refreshes a pass from a gatekeeper
     #[instruction(instruction_type = instructions::RefreshPass)]
     RefreshPass,
+    /// Verifies a pass from a gatekeeper
+    #[instruction(instruction_type = instructions::VerifyPass)]
+    VerifyPass,
+    /// Sets a given pass's state
+    #[instruction(instruction_type = instructions::SetPassState)]
+    SetPassState,
+    /// Sets a given pass's data
+    #[instruction(instruction_type = instructions::SetPassData)]
+    SetPassData,
+    /// Withdraws funds from a network
+    #[instruction(instruction_type = instructions::NetworkWithdraw)]
+    NetworkWithdraw,
+    /// Withdraws funds from a gatekeeper
+    #[instruction(instruction_type = instructions::GatekeeperWithdraw)]
+    GatekeeperWithdraw,
 }
 
 /// Accounts for the gateway v2 program
