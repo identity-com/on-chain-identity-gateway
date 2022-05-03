@@ -33,6 +33,8 @@ pub struct IssuePassAccounts<AI> {
     /// Must have [`GatekeeperKeyFlags::ISSUE`] permission.
     #[validate(signer)]
     pub key: AI,
+    #[validate(signer)]
+    pub funder: AI,
     /// Accounts handling payment
     #[from(data = PaymentsFrom{
         operation: Operation::Issue,
@@ -47,10 +49,16 @@ pub struct IssuePassAccounts<AI> {
 /// Data for [`IssuePass`]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize)]
 pub struct IssuePassData {
-    gatekeeper_fee_index: u16,
-    network_fee_index: u16,
-    pass_network_data: Vec16<u8>,
-    pass_gatekeeper_data: Vec16<u8>,
+    /// The index of the gatekeeper fee
+    pub gatekeeper_fee_index: u16,
+    /// The index of the network fee
+    pub network_fee_index: u16,
+    /// The pass's network data.
+    /// If not the same length as the network's data length will be truncated or zero-filled.
+    pub pass_network_data: Vec16<u8>,
+    /// Extra data added by the gatekeeper.
+    /// Before realloc is enabled this lock the length of this pass.
+    pub pass_gatekeeper_data: Vec16<u8>,
 }
 
 #[cfg(feature = "processor")]

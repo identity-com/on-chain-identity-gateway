@@ -1,9 +1,12 @@
-use crate::util::{GatekeeperAccount, TokenAccountOrWallet};
-use cruiser::account_argument::AccountArgument;
+use crate::util::GatekeeperAccount;
+use crate::{Gatekeeper, GatekeeperSignerSeeder};
+use cruiser::account_argument::{AccountArgument, Single};
 use cruiser::account_types::rest::Rest;
+use cruiser::account_types::seeds::Seeds;
 use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
+use cruiser::in_place::{get_properties, GetNum};
 use cruiser::instruction::Instruction;
-use cruiser::spl::token::TokenAccount;
+use cruiser::spl::token::{Owner, TokenAccount};
 use cruiser::AccountInfo;
 
 /// Withdraws funds from a gatekeeper.
@@ -23,9 +26,15 @@ impl<AI> Instruction<AI> for GatekeeperWithdraw {
 #[from(data = (withdraw_sol: bool, withdraw_tokens: bool))]
 pub struct GatekeeperWithdrawAccounts<AI> {
     /// The network to withdraw from
-    pub network: GatekeeperAccount<AI>,
+    pub gatekeeper: GatekeeperAccount<AI>,
     /// The key on the network. Needs [`GatekeeperKeyFlags::ACCESS_VAULT`] permission.
     pub key: AI,
+    /// The gatekeeper's signer
+    #[validate(data = (
+    GatekeeperSignerSeeder{ gatekeeper: *self.gatekeeper.info().key()},
+        get_properties!(&self.gatekeeper.read()?, Gatekeeper{ signer_bump })?.get_num(),
+    ))]
+    pub signer: Seeds<AI, GatekeeperSignerSeeder>,
     /// Destination if withdrawing sol
     #[from(data = withdraw_sol)]
     pub sol_destination: Option<AI>,
@@ -33,16 +42,21 @@ pub struct GatekeeperWithdrawAccounts<AI> {
     #[from(data = withdraw_tokens)]
     pub token_destination: Option<TokenAccount<AI>>,
     /// Accounts to withdraw from
-    pub withdraw_from: Rest<TokenAccountOrWallet<AI>>,
+    #[validate(data = (Owner(self.signer.info().key()),))]
+    pub withdraw_from: Rest<TokenAccount<AI>>,
 }
 
 /// Data for [`GatekeeperWithdraw`]
 #[derive(Clone, Debug, BorshSerialize, BorshDeserialize)]
 pub struct GatekeeperWithdrawData {
-    withdraw_sol: bool,
-    withdraw_tokens: bool,
-    sol_withdraw_limit: Option<u64>,
-    token_withdraw_limit: Option<u64>,
+    /// Whether to withdraw sol
+    pub withdraw_sol: bool,
+    /// Whether to withdraw tokens
+    pub withdraw_tokens: bool,
+    /// Sol withdraw limit if withdrawing sol
+    pub sol_withdraw_limit: Option<u64>,
+    /// Token withdraw limit if withdrawing tokens
+    pub token_withdraw_limit: Option<u64>,
 }
 
 #[cfg(feature = "processor")]

@@ -4,9 +4,6 @@ use crate::{
     Gatekeeper, GatekeeperFees, GatekeeperNetwork, GatewayAccountList, NetworkFees,
     NetworkKeyFlags, Pass,
 };
-use cruiser::account_argument::{
-    AccountArgument, AccountInfoIterator, FromAccounts, ValidateArgument,
-};
 use cruiser::account_types::in_place_account::InPlaceAccount;
 use cruiser::account_types::system_program::SystemProgram;
 use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
@@ -15,10 +12,8 @@ use cruiser::in_place::{get_properties, InPlace};
 use cruiser::on_chain_size::{OnChainSize, OnChainSizeWithArg};
 use cruiser::program::ProgramKey;
 use cruiser::solana_program::program_memory::sol_memcmp;
-use cruiser::spl::token::{TokenAccount, TokenProgram};
 use cruiser::util::{MappableRef, TryMappableRef};
-use cruiser::{AccountInfo, CruiserResult, Pubkey, UnixTimestamp};
-use std::iter::once;
+use cruiser::{CruiserResult, Pubkey, UnixTimestamp};
 use std::num::NonZeroUsize;
 use std::ops::Deref;
 
@@ -72,75 +67,6 @@ impl Operation {
             Operation::Verify => get_properties!(fees, NetworkFees { token, verify })?,
         };
         Ok((out.0.get().copied(), out.1.get_num()))
-    }
-}
-
-/// A normal sol wallet or a token account
-#[derive(Debug)]
-pub enum TokenAccountOrWallet<AI> {
-    /// A token wallet
-    TokenAccount(TokenAccount<AI>),
-    /// A normal sol wallet (not owned by token program)
-    Wallet(AI),
-}
-impl<AI> AccountArgument for TokenAccountOrWallet<AI>
-where
-    AI: AccountInfo,
-{
-    type AccountInfo = AI;
-
-    fn write_back(self, program_id: &Pubkey) -> CruiserResult<()> {
-        match self {
-            TokenAccountOrWallet::TokenAccount(token_account) => {
-                token_account.write_back(program_id)
-            }
-            TokenAccountOrWallet::Wallet(wallet) => wallet.write_back(program_id),
-        }
-    }
-
-    fn add_keys(&self, add: impl FnMut(Pubkey) -> CruiserResult<()>) -> CruiserResult<()> {
-        match self {
-            TokenAccountOrWallet::TokenAccount(token_account) => token_account.add_keys(add),
-            TokenAccountOrWallet::Wallet(wallet) => wallet.add_keys(add),
-        }
-    }
-}
-impl<AI> FromAccounts for TokenAccountOrWallet<AI>
-where
-    AI: AccountInfo,
-{
-    fn from_accounts(
-        program_id: &Pubkey,
-        infos: &mut impl AccountInfoIterator<Item = Self::AccountInfo>,
-        arg: (),
-    ) -> CruiserResult<Self> {
-        let info = AI::from_accounts(program_id, infos, arg)?;
-        if *info.owner() == TokenProgram::<()>::KEY {
-            Ok(Self::TokenAccount(TokenAccount::from_accounts(
-                program_id,
-                &mut once(info),
-                arg,
-            )?))
-        } else {
-            Ok(Self::Wallet(info))
-        }
-    }
-
-    fn accounts_usage_hint(_arg: &()) -> (usize, Option<usize>) {
-        (1, Some(1))
-    }
-}
-impl<AI> ValidateArgument for TokenAccountOrWallet<AI>
-where
-    AI: AccountInfo,
-{
-    fn validate(&mut self, program_id: &Pubkey, arg: ()) -> CruiserResult<()> {
-        match self {
-            TokenAccountOrWallet::TokenAccount(token_account) => {
-                token_account.validate(program_id, arg)
-            }
-            TokenAccountOrWallet::Wallet(wallet) => wallet.validate(program_id, arg),
-        }
     }
 }
 
