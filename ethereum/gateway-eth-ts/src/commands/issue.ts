@@ -4,7 +4,7 @@ import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
 import {
   authorityKeypairFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
   clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
@@ -31,8 +31,8 @@ export default class IssueToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
@@ -78,7 +78,7 @@ export default class IssueToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(IssueToken);
 
-    const pk = flags.authorityKeypair;
+    const pk = flags.gatekeeperKeypair;
     const provider: BaseProvider = flags.cluster;
     const confirmations = flags.confirmations;
 
@@ -92,7 +92,7 @@ export default class IssueToken extends Command {
     const ownerAddress = args.address as string;
     let expiration = args.expiration as BigNumber;
     const constrains = args.constrains as BigNumber;
-    const gatekeeperPublicKey: string = flags.gatekeeperPublicKey;
+    const gatekeeperPublicKey: string = flags.gatekeeperNetworkPublicKey;
     const forwardTransaction = flags.forwardTransaction;
 
     const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);

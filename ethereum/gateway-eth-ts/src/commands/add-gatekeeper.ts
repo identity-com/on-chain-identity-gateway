@@ -4,7 +4,7 @@ import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
   authorityKeypairFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
   clusterFlag,
   confirmationsFlag,
   gasPriceFeeFlag,
@@ -23,7 +23,7 @@ export default class AddGatekeeper extends Command {
   static flags = {
     help: Flags.help({ char: "h" }),
     authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
@@ -34,8 +34,8 @@ export default class AddGatekeeper extends Command {
       name: "address",
       required: true,
       description: "The public key of the gatekeeper to add to the network",
-      // eslint-disable-next-line @typescript-eslint/require-await
       // ? Should this be changed to Promise<PublicKey> similarly to in gatekeeper-lib?
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<string | null> =>
         utils.isAddress(input) ? input : null,
     },
@@ -54,7 +54,7 @@ export default class AddGatekeeper extends Command {
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const gatekeeperPublicKey: string = flags.gatekeeperPublicKey;
+    const gatekeeperPublicKey: string = flags.gatekeeperNetworkPublicKey;
 
     this.log(`Adding:
 			gatekeeper ${gatekeeper} 

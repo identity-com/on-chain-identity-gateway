@@ -3,7 +3,7 @@ import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
   authorityKeypairFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
   clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
@@ -24,8 +24,8 @@ export default class RefreshToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
@@ -53,7 +53,7 @@ export default class RefreshToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(RefreshToken);
 
-    const pk = flags.authorityKeypair;
+    const pk = flags.gatekeeperKeypair;
     const provider: BaseProvider = flags.cluster;
     const confirmations = flags.confirmations;
 

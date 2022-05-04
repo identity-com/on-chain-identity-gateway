@@ -20,7 +20,7 @@ export const authorityKeypairFlag = Flags.build<string>({
   description: "The ethereum address private key for signing messages",
 });
 
-export const gatekeeperPublicKeyFlag = Flags.build<string>({
+export const gatekeeperNetworkPublicKeyFlag = Flags.build<string>({
   char: "t",
   env: "GATEWAY_TOKEN",
   parse: async (input: string) => (utils.isAddress(input) ? input : null),
