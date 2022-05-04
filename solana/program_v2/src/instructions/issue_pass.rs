@@ -3,6 +3,7 @@ use crate::payment_accounts::{PaymentAccounts, PaymentsFrom};
 use crate::util::{GatekeeperAccount, Operation, PassAccount};
 use cruiser::account_argument::AccountArgument;
 use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
+use cruiser::impls::option::IfSome;
 use cruiser::instruction::Instruction;
 use cruiser::types::small_vec::Vec16;
 use cruiser::AccountInfo;
@@ -33,8 +34,6 @@ pub struct IssuePassAccounts<AI> {
     /// Must have [`GatekeeperKeyFlags::ISSUE`] permission.
     #[validate(signer)]
     pub key: AI,
-    #[validate(signer)]
-    pub funder: AI,
     /// Accounts handling payment
     #[from(data = PaymentsFrom{
         operation: Operation::Issue,
@@ -44,6 +43,9 @@ pub struct IssuePassAccounts<AI> {
         network_fee_index,
     })]
     pub payment_accounts: PaymentAccounts<AI>,
+    /// The funder for the new pass if needed.
+    #[validate(signer(IfSome))]
+    pub funder: Option<AI>,
 }
 
 /// Data for [`IssuePass`]
