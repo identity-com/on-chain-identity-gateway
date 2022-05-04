@@ -6,8 +6,8 @@ import {
 import { UsageConfig } from "./config";
 
 type GetUsageParams = {
-  epoch: number;
-  previousSlot: number | undefined;
+  startSlot: number;
+  previousSlot?: number;
 };
 
 export class UsageOracleService {
@@ -20,16 +20,12 @@ export class UsageOracleService {
   //   });
   // };
 
-  private async getTransactionSignaturesForEpoch(
-    epoch: number,
+  private async getTransactionSignatures(
+    startSlot: number,
     previousSlot: number | undefined
   ) {
-    const epochSchedule = await this.connection.getEpochSchedule();
-
     // TODO we need to make sure that we only consider FINALIZED Epochs here
-    const firstSlot = previousSlot ?? epochSchedule.getFirstSlotInEpoch(epoch);
-    // const firstSlot = 50_000_000;
-    // const lastSlot = epochSchedule.getLastSlotInEpoch(epoch);
+    const firstSlot = previousSlot ?? startSlot;
     const lastSlot = await this.connection.getSlot();
 
     console.log(
@@ -67,10 +63,10 @@ export class UsageOracleService {
     return { signatures, firstSlot, lastSlot };
   }
 
-  async readUsage({ epoch, previousSlot }: GetUsageParams) {
+  async readUsage({ startSlot, previousSlot }: GetUsageParams) {
     const { signatures, firstSlot, lastSlot } =
-      await this.getTransactionSignaturesForEpoch(
-        epoch,
+      await this.getTransactionSignatures(
+        startSlot,
         previousSlot ? previousSlot + 1 : undefined
       );
 

@@ -20,11 +20,11 @@ describe("UsageOracleService", function () {
     const usageOracleService = new UsageOracleService(connection, oracle);
 
     const usage = await usageOracleService.readUsage({
-      epoch: 226,
+      startSlot: 226,
     });
 
     console.log(usage);
 
-    expect(usage.length).to.equal(1000);
+    expect(usage.billableTx.length).to.equal(1000);
   });
 });

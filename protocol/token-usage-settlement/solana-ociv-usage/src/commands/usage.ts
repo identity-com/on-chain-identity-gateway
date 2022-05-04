@@ -19,20 +19,21 @@ export default class SolanaUsage extends Base {
     ...commonFlags.common,
     oracleKey: oracleKeyFlag(),
     cluster: clusterFlag(),
-    epoch: Flags.integer({
-      char: "e",
-      description: "The epoch or period that the usage refers to",
+    startSlot: Flags.integer({
+      char: "s",
+      description: "The starting slot to use when first run",
       required: true,
     }),
     upload: Flags.string({
       char: "u",
       required: false,
       description: "The method to use for uploading the file",
+      options: ["aws", "console"],
     }),
     bucket: Flags.string({
       char: "b",
       required: false,
-      description: "The name of the bucket to upload to",
+      description: "The name of the AWS bucket to upload to",
     }),
     folder: Flags.string({
       char: "f",
@@ -90,7 +91,7 @@ export default class SolanaUsage extends Base {
     //   oracle ${oracleKey.publicKey.toBase58()}
     //   program ${lookupProgram}`);
     //
-    const epoch = flags.epoch as number;
+    const epoch = flags.startSlot as number;
     //
     const connection = getConnection(flags.cluster as ExtendedCluster);
     //
@@ -107,7 +108,7 @@ export default class SolanaUsage extends Base {
 
     const { billableTx, firstSlot, lastSlot } =
       await usageOracleService.readUsage({
-        epoch,
+        startSlot: epoch,
         previousSlot,
       });
 
