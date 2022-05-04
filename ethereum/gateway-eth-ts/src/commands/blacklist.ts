@@ -22,7 +22,7 @@ export default class Blacklist extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
     gatewayTokenController: gatewayTokenControllerFlag(),
     cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
@@ -39,6 +39,7 @@ export default class Blacklist extends Command {
         if (!utils.isAddress(input)) {
           throw new Error("Invalid address");
         }
+
         return input;
       },
     },
@@ -46,7 +47,7 @@ export default class Blacklist extends Command {
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Blacklist);
-    const pk = flags.authorityKeypair;
+    const pk = flags.gatekeeperKeypair;
     const provider: BaseProvider = flags.cluster;
     const user = args.address as string;
     const confirmations = flags.confirmations;

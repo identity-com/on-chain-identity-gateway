@@ -3,7 +3,7 @@ import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
 import {
   authorityKeypairFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
   clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
@@ -22,8 +22,8 @@ export default class UnfreezeToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
@@ -42,7 +42,7 @@ export default class UnfreezeToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(UnfreezeToken);
 
-    const pk = flags.authorityKeypair;
+    const pk = flags.gatekeeperKeypair;
     const provider: BaseProvider = flags.cluster;
     const confirmations = flags.confirmations;
 
@@ -51,7 +51,7 @@ export default class UnfreezeToken extends Command {
       : privateKeySigner(pk, provider);
 
     const tokenID = args.tokenID as BigNumber;
-    const gatekeeperPublicKey = flags.gatekeeperPublicKey;
+    const gatekeeperPublicKey = flags.gatekeeperNetworkPublicKey;
 
     this.log(`Unfreezing existing token with TokenID:
 			${tokenID.toString()} 

@@ -4,7 +4,7 @@ import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
   authorityKeypairFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
   clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
@@ -22,8 +22,8 @@ export default class RevokeToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
@@ -43,7 +43,7 @@ export default class RevokeToken extends Command {
     const { args, flags } = await this.parse(RevokeToken);
 
     const tokenID = args.tokenID as BigNumber;
-    const pk = flags.authorityKeypair;
+    const pk = flags.gatekeeperKeypair;
     const provider: BaseProvider = flags.cluster;
     const confirmations = flags.confirmations;
 
@@ -51,7 +51,7 @@ export default class RevokeToken extends Command {
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const gatekeeperPublicKey: string = flags.gatekeeperPublicKey;
+    const gatekeeperPublicKey: string = flags.gatekeeperNetworkPublicKey;
 
     const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
     const owner = await gatewayToken.getTokenOwner(tokenID);

@@ -4,7 +4,7 @@ import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
   authorityKeypairFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
   clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
@@ -23,7 +23,7 @@ export default class RemoveNetworkAuthority extends Command {
   static flags = {
     help: Flags.help({ char: "h" }),
     authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
@@ -63,7 +63,7 @@ export default class RemoveNetworkAuthority extends Command {
 
     signer = signer.connect(provider);
 
-    const gatekeeperPublicKey: string = flags.gatekeeperPublicKey;
+    const gatekeeperPublicKey: string = flags.gatekeeperNetworkPublicKey;
 
     this.log(`Removing:
 			network authority ${authority} 
