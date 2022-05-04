@@ -2,7 +2,7 @@ import { Command, Flags } from "@oclif/core";
 import {
   authorityKeypairFlag,
   clusterFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
 } from "../util/oclif/flags";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { airdropTo } from "../util";
@@ -20,7 +20,7 @@ export default class RevokeGatekeeper extends Command {
   static flags = {
     help: Flags.help({ char: "h" }),
     authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 

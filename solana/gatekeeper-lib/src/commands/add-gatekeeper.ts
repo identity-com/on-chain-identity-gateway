@@ -6,7 +6,7 @@ import { GatekeeperNetworkService } from "../service";
 import {
   clusterFlag,
   authorityKeypairFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
 } from "../util/oclif/flags";
 import { getConnectionFromEnv } from "../util/oclif/utils";
 
@@ -21,7 +21,7 @@ export default class AddGatekeeper extends Command {
   static flags = {
     help: Flags.help({ char: "h" }),
     authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 

@@ -6,7 +6,7 @@ import { GatekeeperNetworkService } from "../service";
 import {
   clusterFlag,
   authorityKeypairFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
 } from "../util/oclif/flags";
 import {
   NetworkFeature,
@@ -41,8 +41,8 @@ export default class AddGatekeeper extends Command {
   static flags = {
     help: Flags.help({ char: "h" }),
     featureOperation: featureOperation(),
-    authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 
@@ -67,7 +67,7 @@ export default class AddGatekeeper extends Command {
     const { args, flags } = await this.parse(AddGatekeeper);
 
     const networkFeature: NetworkFeature = args.feature as NetworkFeature;
-    const gatekeeperNetwork = flags.authorityKeypair as Keypair;
+    const gatekeeperNetwork = flags.gatekeeperKeypair as Keypair;
     const featureOperation = flags.featureOperation;
     this.log(`Performing ${
       featureOperation ? featureOperation : "//Undefined//"

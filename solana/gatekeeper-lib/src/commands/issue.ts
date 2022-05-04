@@ -6,7 +6,7 @@ import { GatekeeperService } from "../service";
 import {
   clusterFlag,
   authorityKeypairFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
 } from "../util/oclif/flags";
 import { prettyPrint } from "../util/token";
 import { getConnectionFromEnv } from "../util/oclif/utils";
@@ -28,8 +28,8 @@ export default class Issue extends Command {
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string) => Number(input),
     }),
-    authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 
@@ -47,8 +47,8 @@ export default class Issue extends Command {
     const { args, flags } = await this.parse(Issue);
 
     const address: PublicKey = args.address as PublicKey;
-    const gatekeeper = flags.authorityKeypair as Keypair;
-    const gatekeeperNetwork = flags.gatekeeperPublicKey as PublicKey;
+    const gatekeeper = flags.gatekeeperKeypair as Keypair;
+    const gatekeeperNetwork = flags.gatekeeperNetworkPublicKey as PublicKey;
     this.log(`Issuing:
       to ${address.toBase58()} 
       from gatekeeper ${gatekeeper.publicKey.toBase58()}
