@@ -3,7 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 import {
   authorityKeypairFlag,
   clusterFlag,
-  gatekeeperPublicKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
 } from "../util/oclif/flags";
 import { getTokenUpdateProperties } from "../util/oclif/utils";
 
@@ -18,8 +18,8 @@ Revoked
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    authorityKeypair: authorityKeypairFlag(),
-    gatekeeperPublicKey: gatekeeperPublicKeyFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 

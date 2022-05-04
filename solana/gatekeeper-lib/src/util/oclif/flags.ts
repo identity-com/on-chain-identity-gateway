@@ -18,7 +18,7 @@ export const authorityKeypairFlag = Flags.build<Keypair>({
   default: async () => readKey(`${DIRNAME}/test-gatekeeper-network.json`),
   description: "The private key file for the gatekeeper authority",
 });
-export const gatekeeperPublicKeyFlag = Flags.build<PublicKey>({
+export const gatekeeperNetworkPublicKeyFlag = Flags.build<PublicKey>({
   char: "n",
   // eslint-disable-next-line @typescript-eslint/require-await
   parse: async (pubkey: string) => new PublicKey(pubkey),

@@ -6,10 +6,10 @@ import { GatekeeperService } from "../../service";
 export const getTokenUpdateProperties = async (
   args: { [p: string]: any },
   flags: {
-    gatekeeperNetworkKey: PublicKey | undefined;
+    gatekeeperNetworkPublicKey: PublicKey | undefined;
     help: void;
     cluster: ExtendedCluster | undefined;
-    gatekeeperKey: Keypair | undefined;
+    gatekeeperKeypair: Keypair | undefined;
   }
 ): Promise<{
   gatewayToken: PublicKey;
@@ -17,8 +17,8 @@ export const getTokenUpdateProperties = async (
   service: GatekeeperService;
 }> => {
   const gatewayToken: PublicKey = args.gatewayToken as PublicKey;
-  const gatekeeper = flags.gatekeeperKey as Keypair;
-  const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
+  const gatekeeper = flags.gatekeeperKeypair as Keypair;
+  const gatekeeperNetwork = flags.gatekeeperNetworkPublicKey as PublicKey;
 
   const connection = getConnectionFromEnv(flags.cluster);
   await airdropTo(connection, gatekeeper.publicKey, flags.cluster as string);

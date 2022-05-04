@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/4.0.1-beta2 darwin-arm64 node-v16.14.0
+@identity.com/solana-gatekeeper-lib/4.0.1-beta2 darwin-arm64 node-v17.8.0
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -29,15 +29,27 @@ USAGE
 # Commands
 <!-- commands -->
 * [`gateway add-gatekeeper ADDRESS`](#gateway-add-gatekeeper-address)
+* [`gateway add-network-authority ADDRESS`](#gateway-add-network-authority-address)
+* [`gateway blacklist ADDRESS`](#gateway-blacklist-address)
+* [`gateway burn ADDRESS`](#gateway-burn-address)
 * [`gateway freeze GATEWAYTOKEN`](#gateway-freeze-gatewaytoken)
+* [`gateway get-token-id ADDRESS`](#gateway-get-token-id-address)
 * [`gateway help [COMMAND]`](#gateway-help-command)
 * [`gateway issue ADDRESS`](#gateway-issue-address)
 * [`gateway network-feature FEATURE`](#gateway-network-feature-feature)
+* [`gateway plugins`](#gateway-plugins)
+* [`gateway plugins:inspect PLUGIN...`](#gateway-pluginsinspect-plugin)
+* [`gateway plugins:install PLUGIN...`](#gateway-pluginsinstall-plugin)
+* [`gateway plugins:link PLUGIN`](#gateway-pluginslink-plugin)
+* [`gateway plugins:uninstall PLUGIN...`](#gateway-pluginsuninstall-plugin)
+* [`gateway plugins:update`](#gateway-pluginsupdate)
 * [`gateway refresh GATEWAYTOKEN [EXPIRY]`](#gateway-refresh-gatewaytoken-expiry)
+* [`gateway remove-network-authority ADDRESS`](#gateway-remove-network-authority-address)
 * [`gateway revoke GATEWAYTOKEN`](#gateway-revoke-gatewaytoken)
 * [`gateway revoke-gatekeeper ADDRESS`](#gateway-revoke-gatekeeper-address)
 * [`gateway unfreeze GATEWAYTOKEN`](#gateway-unfreeze-gatewaytoken)
 * [`gateway verify OWNER`](#gateway-verify-owner)
+* [`gateway version`](#gateway-version)
 
 ## `gateway add-gatekeeper ADDRESS`
 
@@ -56,19 +68,107 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
-                                                               gatekeeper authority
-
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The private key file for the
+  -n, --authorityKeypair=authorityKeypair                      [default: [object Object]] The private key file for the
                                                                gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
 _See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/add-gatekeeper.ts)_
+
+## `gateway add-network-authority ADDRESS`
+
+Add a gatekeeper to the network
+
+```
+USAGE
+  $ gateway add-network-authority ADDRESS
+
+ARGUMENTS
+  ADDRESS  The public key of the gatekeeper to add to the network
+
+OPTIONS
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
+
+  -h, --help                                                   Show CLI help.
+
+  -n, --authorityKeypair=authorityKeypair                      [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -n, --gatekeepeNetworkPublicKey=gatekeepeNetworkPublicKey    [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
+
+EXAMPLE
+  $ gateway add-network-authority tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+```
+
+_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/add-network-authority.ts)_
+
+## `gateway blacklist ADDRESS`
+
+Blacklist a user's public key
+
+```
+USAGE
+  $ gateway blacklist ADDRESS
+
+ARGUMENTS
+  ADDRESS  The public key of the user to blacklist
+
+OPTIONS
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
+
+  -h, --help                                                   Show CLI help.
+
+  -n, --gatekeeperKeypair=gatekeeperKeypair                    [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
+
+EXAMPLE
+  $ gateway blacklist tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+```
+
+_See code: [dist/commands/blacklist.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/blacklist.ts)_
+
+## `gateway burn ADDRESS`
+
+```
+USAGE
+  $ gateway burn ADDRESS
+
+OPTIONS
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
+
+  -h, --help                                                   Show CLI help.
+
+  -n, --gatekeeperKeypair=gatekeeperKeypair                    [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
+
+EXAMPLE
+  $ gateway burn tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+```
+
+_See code: [dist/commands/burn.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/burn.ts)_
 
 ## `gateway freeze GATEWAYTOKEN`
 
@@ -87,12 +187,12 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
-                                                               gatekeeper authority
-
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+  -n, --gatekeeperKeypair=gatekeeperKeypair                    [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
@@ -102,22 +202,53 @@ EXAMPLE
 
 _See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/freeze.ts)_
 
+## `gateway get-token-id ADDRESS`
+
+Verify a user's identity token
+
+```
+USAGE
+  $ gateway get-token-id ADDRESS
+
+ARGUMENTS
+  ADDRESS  The public key of the owner for which to verify identity token
+
+OPTIONS
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
+
+  -h, --help                                                   Show CLI help.
+
+  -n, --gatekeeperKeypair=gatekeeperKeypair                    [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
+
+EXAMPLE
+  $ gateway get-token-id tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+```
+
+_See code: [dist/commands/get-token-id.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/get-token-id.ts)_
+
 ## `gateway help [COMMAND]`
 
-display help for gateway
+Display help for gateway.
 
 ```
 USAGE
   $ gateway help [COMMAND]
 
 ARGUMENTS
-  COMMAND  command to show help for
+  COMMAND  Command to show help for.
 
 OPTIONS
-  --all  see all commands in CLI
+  -n, --nested-commands  Include all nested commands in the output.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.3.1/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.12/src/commands/help.ts)_
 
 ## `gateway issue ADDRESS`
 
@@ -128,7 +259,7 @@ USAGE
   $ gateway issue ADDRESS
 
 ARGUMENTS
-  ADDRESS  The address to issue the token to
+  ADDRESS  The address to which a token will be issued
 
 OPTIONS
   -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
@@ -139,12 +270,12 @@ OPTIONS
   -e, --expiry=expiry                                          The expiry time in seconds for the gateway token (default
                                                                none)
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
-                                                               gatekeeper authority
-
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+  -n, --gatekeeperKeypair=gatekeeperKeypair                    [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
@@ -172,8 +303,11 @@ OPTIONS
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The private key file for the
+  -n, --gatekeeperKeypair=gatekeeperKeypair                    [default: [object Object]] The private key file for the
                                                                gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
 
   -o, --featureOperation=add|remove|get                        [default: get] add, remove, or get a network feature
 
@@ -182,6 +316,144 @@ EXAMPLE
 ```
 
 _See code: [dist/commands/network-feature.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/network-feature.ts)_
+
+## `gateway plugins`
+
+List installed plugins.
+
+```
+USAGE
+  $ gateway plugins
+
+OPTIONS
+  --core  Show core plugins.
+
+EXAMPLE
+  $ gateway plugins
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/index.ts)_
+
+## `gateway plugins:inspect PLUGIN...`
+
+Displays installation properties of a plugin.
+
+```
+USAGE
+  $ gateway plugins:inspect PLUGIN...
+
+ARGUMENTS
+  PLUGIN  [default: .] Plugin to inspect.
+
+OPTIONS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+EXAMPLE
+  $ gateway plugins:inspect myplugin
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/inspect.ts)_
+
+## `gateway plugins:install PLUGIN...`
+
+Installs a plugin into the CLI.
+
+```
+USAGE
+  $ gateway plugins:install PLUGIN...
+
+ARGUMENTS
+  PLUGIN  Plugin to install.
+
+OPTIONS
+  -f, --force    Run yarn install with force flag.
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Can be installed from npm or a git url.
+
+  Installation of a user-installed plugin will override a core plugin.
+
+  e.g. If you have a core plugin that has a 'hello' command, installing a user-installed plugin with a 'hello' command 
+  will override the core plugin implementation. This is useful if a user needs to update core plugin functionality in 
+  the CLI without the need to patch and update the whole CLI.
+
+ALIASES
+  $ gateway plugins:add
+
+EXAMPLES
+  $ gateway plugins:install myplugin 
+  $ gateway plugins:install https://github.com/someuser/someplugin
+  $ gateway plugins:install someuser/someplugin
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/install.ts)_
+
+## `gateway plugins:link PLUGIN`
+
+Links a plugin into the CLI for development.
+
+```
+USAGE
+  $ gateway plugins:link PLUGIN
+
+ARGUMENTS
+  PATH  [default: .] path to plugin
+
+OPTIONS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Installation of a linked plugin will override a user-installed or core plugin.
+
+  e.g. If you have a user-installed or core plugin that has a 'hello' command, installing a linked plugin with a 'hello'
+   command will override the user-installed or core plugin implementation. This is useful for development work.
+
+EXAMPLE
+  $ gateway plugins:link myplugin
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/link.ts)_
+
+## `gateway plugins:uninstall PLUGIN...`
+
+Removes a plugin from the CLI.
+
+```
+USAGE
+  $ gateway plugins:uninstall PLUGIN...
+
+ARGUMENTS
+  PLUGIN  plugin to uninstall
+
+OPTIONS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+ALIASES
+  $ gateway plugins:unlink
+  $ gateway plugins:remove
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/uninstall.ts)_
+
+## `gateway plugins:update`
+
+Update installed plugins.
+
+```
+USAGE
+  $ gateway plugins:update
+
+OPTIONS
+  -h, --help     Show CLI help.
+  -v, --verbose
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/update.ts)_
 
 ## `gateway refresh GATEWAYTOKEN [EXPIRY]`
 
@@ -192,7 +464,7 @@ USAGE
   $ gateway refresh GATEWAYTOKEN [EXPIRY]
 
 ARGUMENTS
-  GATEWAYTOKEN  The gateway token to freeze
+  GATEWAYTOKEN  The gateway token to refresh
   EXPIRY        [default: 54000] The new expiry time in seconds for the gateway token (default 15 minutes)
 
 OPTIONS
@@ -201,12 +473,12 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
-                                                               gatekeeper authority
-
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+  -n, --gatekeeperKeypair=gatekeeperKeypair                    [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
@@ -215,6 +487,37 @@ EXAMPLE
 ```
 
 _See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/refresh.ts)_
+
+## `gateway remove-network-authority ADDRESS`
+
+Remove a network authority
+
+```
+USAGE
+  $ gateway remove-network-authority ADDRESS
+
+ARGUMENTS
+  ADDRESS  The public key of the network authority to remove
+
+OPTIONS
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
+
+  -h, --help                                                   Show CLI help.
+
+  -n, --authorityKeypair=authorityKeypair                      [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
+
+EXAMPLE
+  $ gateway remove-network-authority tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+```
+
+_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/remove-network-authority.ts)_
 
 ## `gateway revoke GATEWAYTOKEN`
 
@@ -233,12 +536,12 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
-                                                               gatekeeper authority
-
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+  -n, --gatekeeperKeypair=gatekeeperKeypair                    [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
@@ -265,13 +568,13 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
-                                                               gatekeeper authority
-
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The private key file for the
+  -n, --authorityKeypair=authorityKeypair                      [default: [object Object]] The private key file for the
                                                                gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway revoke-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
@@ -296,12 +599,12 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
-                                                               gatekeeper authority
-
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+  -n, --gatekeeperKeypair=gatekeeperKeypair                    [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
@@ -330,7 +633,7 @@ OPTIONS
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+  -n, --gatekeeperNetworkPublicKey=gatekeeperNetworkPublicKey  [default: [object Object]] The public key (in base 58) of
                                                                the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
@@ -346,4 +649,13 @@ EXAMPLE
 ```
 
 _See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/verify.ts)_
+
+## `gateway version`
+
+```
+USAGE
+  $ gateway version
+```
+
+_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.0.4/src/commands/version.ts)_
 <!-- commandsstop -->
