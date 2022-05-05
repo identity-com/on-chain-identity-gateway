@@ -1,13 +1,74 @@
 //! Utility functions and types.
 
-use crate::{GatekeeperFees, GatekeeperNetwork, NetworkKeyFlags};
+use crate::{
+    Gatekeeper, GatekeeperFees, GatekeeperNetwork, GatewayAccountList, NetworkFees,
+    NetworkKeyFlags, Pass,
+};
+use cruiser::account_types::in_place_account::InPlaceAccount;
 use cruiser::account_types::system_program::SystemProgram;
 use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
+use cruiser::in_place::GetNum;
+use cruiser::in_place::{get_properties, InPlace};
 use cruiser::on_chain_size::{OnChainSize, OnChainSizeWithArg};
 use cruiser::program::ProgramKey;
 use cruiser::solana_program::program_memory::sol_memcmp;
-use cruiser::{Pubkey, UnixTimestamp};
+use cruiser::util::{MappableRef, TryMappableRef};
+use cruiser::{CruiserResult, Pubkey, UnixTimestamp};
 use std::num::NonZeroUsize;
+use std::ops::Deref;
+
+/// A [`Gatekeeper`] account
+pub type GatekeeperAccount<AI> = InPlaceAccount<AI, GatewayAccountList, Gatekeeper>;
+/// A [`Pass`] account
+pub type PassAccount<AI> = InPlaceAccount<AI, GatewayAccountList, Pass>;
+
+/// A Possible operation on a pass
+#[derive(Debug, Copy, Clone, PartialEq, Eq, BorshDeserialize, BorshSerialize)]
+pub enum Operation {
+    /// Issue a new pass
+    Issue,
+    /// Refresh an existing pass
+    Refresh,
+    /// Expire a pass
+    Expire,
+    /// Verify a pass
+    Verify,
+}
+impl Operation {
+    /// TODO: make this return a `Option<&Pubkey>` somehow
+    pub(crate) fn get_gatekeeper_fee<'a, 'b, A>(
+        self,
+        fees: &'a <GatekeeperFees as InPlace>::Access<'b, A>,
+    ) -> CruiserResult<(Option<Pubkey>, u64)>
+    where
+        A: 'b + MappableRef + TryMappableRef + Deref<Target = [u8]>,
+    {
+        let out = match self {
+            Operation::Issue => get_properties!(fees, GatekeeperFees { token, issue })?,
+            Operation::Refresh => get_properties!(fees, GatekeeperFees { token, refresh })?,
+            Operation::Expire => get_properties!(fees, GatekeeperFees { token, expire })?,
+            Operation::Verify => get_properties!(fees, GatekeeperFees { token, verify })?,
+        };
+        Ok((out.0.get().copied(), out.1.get_num()))
+    }
+
+    /// TODO: make this return a `Option<&Pubkey>` somehow
+    pub(crate) fn get_network_fee<'a, 'b, A>(
+        self,
+        fees: &'a <NetworkFees as InPlace>::Access<'b, A>,
+    ) -> CruiserResult<(Option<Pubkey>, u16)>
+    where
+        A: 'b + MappableRef + TryMappableRef + Deref<Target = [u8]>,
+    {
+        let out = match self {
+            Operation::Issue => get_properties!(fees, NetworkFees { token, issue })?,
+            Operation::Refresh => get_properties!(fees, NetworkFees { token, refresh })?,
+            Operation::Expire => get_properties!(fees, NetworkFees { token, expire })?,
+            Operation::Verify => get_properties!(fees, NetworkFees { token, verify })?,
+        };
+        Ok((out.0.get().copied(), out.1.get_num()))
+    }
+}
 
 /// A public key that uses the system program as the [`None`] value
 #[derive(Debug, Clone, PartialEq, Eq, BorshSerialize, BorshDeserialize)]
