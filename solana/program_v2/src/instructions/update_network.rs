@@ -1,11 +1,7 @@
-use crate::in_place::GatekeeperNetworkAccount;
-use crate::{NetworkAuthKey, NetworkFees, NetworkKeyFlags, UnixTimestamp};
-use cruiser::account_argument::AccountArgument;
-use cruiser::account_types::rest::Rest;
-use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
-use cruiser::instruction::Instruction;
-use cruiser::types::small_vec::Vec8;
-use cruiser::AccountInfo;
+use crate::accounts::NetworkAuthKey;
+use crate::arguments::GatekeeperNetworkAccount;
+use crate::types::{NetworkFees, NetworkKeyFlags};
+use cruiser::prelude::*;
 
 /// Updates the data of a network
 #[derive(Debug)]
@@ -113,9 +109,8 @@ pub enum UpdateAuthKeys {
 #[cfg(feature = "processor")]
 mod processor {
     use crate::instructions::UpdateNetwork;
-    use crate::Pubkey;
     use cruiser::instruction::{Instruction, InstructionProcessor};
-    use cruiser::{AccountInfo, CruiserResult};
+    use cruiser::{AccountInfo, CruiserResult, Pubkey};
 
     impl<AI> InstructionProcessor<AI, UpdateNetwork> for UpdateNetwork
     where

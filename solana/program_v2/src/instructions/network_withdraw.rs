@@ -1,13 +1,7 @@
-use crate::in_place::GatekeeperNetworkAccount;
-use crate::{GatekeeperNetwork, NetworkSignerSeeder};
-use cruiser::account_argument::{AccountArgument, Single};
-use cruiser::account_types::rest::Rest;
-use cruiser::account_types::seeds::Seeds;
-use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
-use cruiser::in_place::{get_properties, GetNum};
-use cruiser::instruction::Instruction;
-use cruiser::spl::token::{Owner, TokenAccount};
-use cruiser::AccountInfo;
+use crate::accounts::GatekeeperNetwork;
+use crate::arguments::GatekeeperNetworkAccount;
+use crate::pda::NetworkSignerSeeder;
+use cruiser::prelude::*;
 
 /// Withdraws funds from a network
 #[derive(Debug)]
@@ -41,7 +35,7 @@ pub struct NetworkWithdrawAccounts<AI> {
     #[from(data = withdraw_tokens)]
     pub token_destination: Option<TokenAccount<AI>>,
     /// Accounts to withdraw from
-    #[validate(data = (Owner(self.signer.info().key()),))]
+    #[validate(data = (TokenAccountOwner(self.signer.info().key()),))]
     pub withdraw_from: Rest<TokenAccount<AI>>,
 }
 

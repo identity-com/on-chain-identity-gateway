@@ -1,10 +1,6 @@
-use crate::in_place::GatekeeperNetworkAccount;
-use crate::util::{GatekeeperAccount, PassAccount};
-use crate::PassState;
-use cruiser::account_argument::AccountArgument;
-use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
-use cruiser::instruction::Instruction;
-use cruiser::AccountInfo;
+use crate::accounts::PassState;
+use crate::arguments::{GatekeeperAccount, GatekeeperNetworkAccount, PassAccount};
+use cruiser::prelude::*;
 
 /// Sets the state of a pass
 #[derive(Debug)]

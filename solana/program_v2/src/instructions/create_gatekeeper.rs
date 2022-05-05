@@ -1,14 +1,6 @@
-use crate::in_place::GatekeeperNetworkAccount;
-use crate::util::GatekeeperAccount;
-use crate::{GatekeeperSignerSeeder, Pubkey};
-use cruiser::account_argument::{AccountArgument, Single};
-use cruiser::account_types::seeds::Seeds;
-use cruiser::account_types::system_program::SystemProgram;
-use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
-use cruiser::impls::option::IfSome;
-use cruiser::instruction::Instruction;
-use cruiser::solana_program::rent::Rent;
-use cruiser::ToSolanaAccountInfo;
+use crate::arguments::{GatekeeperAccount, GatekeeperNetworkAccount};
+use crate::pda::GatekeeperSignerSeeder;
+use cruiser::prelude::*;
 
 /// Creates a new gatekeeper
 #[derive(Debug)]

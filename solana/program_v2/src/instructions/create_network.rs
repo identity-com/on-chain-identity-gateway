@@ -1,18 +1,8 @@
-use crate::in_place::{GatekeeperNetworkAccount, GatewayNetworkCreate};
-use crate::{
-    GatekeeperNetwork, NetworkAuthKey, NetworkFees, NetworkKeyFlags, NetworkSignerSeeder, Pubkey,
-};
-use cruiser::account_argument::{AccountArgument, Single};
-use cruiser::account_types::seeds::Seeds;
-use cruiser::account_types::system_program::SystemProgram;
-use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
-use cruiser::impls::option::IfSome;
-use cruiser::in_place::SetNum;
-use cruiser::instruction::{Instruction, InstructionProcessor};
-use cruiser::solana_program::rent::Rent;
-use cruiser::types::small_vec::Vec8;
-use cruiser::ToSolanaAccountInfo;
-use cruiser::{CPIChecked, UnixTimestamp};
+use crate::accounts::{GatekeeperNetwork, NetworkAuthKey};
+use crate::arguments::{GatekeeperNetworkAccount, GatewayNetworkCreate};
+use crate::pda::NetworkSignerSeeder;
+use crate::types::{NetworkFees, NetworkKeyFlags};
+use cruiser::prelude::*;
 
 /// Creates a new network.
 #[derive(Debug)]
@@ -67,10 +57,6 @@ pub struct CreateNetworkData {
 mod processor {
     use super::*;
     use crate::instructions::CreateNetwork;
-    use cruiser::account_argument::Single;
-    use cruiser::in_place::{get_properties_mut, InPlaceUnitWrite};
-    use cruiser::solana_program::sysvar::Sysvar;
-    use cruiser::{CruiserResult, GenericError};
 
     impl<'a, AI> InstructionProcessor<AI, CreateNetwork> for CreateNetwork
     where
