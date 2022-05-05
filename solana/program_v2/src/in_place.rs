@@ -112,7 +112,7 @@ pub struct GatewayNetworkCreate<'a, AI, CPI> {
     /// The rent, defaults to [`Rent::get`]
     pub rent: Option<Rent>,
     /// The funder of the account
-    pub funder: &'a AI,
+    pub funder: Option<&'a AI>,
     /// The seeds for the funder if pda
     pub funder_seeds: Option<&'a PDASeedSet<'a>>,
     /// The CPI method to use
