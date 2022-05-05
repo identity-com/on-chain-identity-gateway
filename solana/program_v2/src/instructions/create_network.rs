@@ -32,7 +32,6 @@ pub struct CreateNetworkAccounts<AI> {
     #[validate(data = GatewayNetworkCreate{
         system_program: &self.system_program,
         rent: Some(rent),
-        // TODO: Make this allow the optional value
         funder: self.funder.as_ref(),
         funder_seeds: None,
         cpi: CPIChecked,
