@@ -7,41 +7,29 @@ import { UsageConfig } from "./config";
 
 type GetUsageParams = {
   startSlot: number;
-  previousSlot?: number;
+  maxSlots: number;
 };
 
 export class UsageOracleService {
   constructor(private connection: Connection, private config: UsageConfig) {}
 
-  // private getProvider = () => {
-  //   const wallet = new Wallet(this.oracle);
-  //   return new Provider(this.connection, wallet, {
-  //     commitment: SOLANA_COMMITMENT,
-  //   });
-  // };
+  private async getTransactionSignatures(startSlot: number, maxSlots: number) {
+    const currentSlot = await this.connection.getSlot();
 
-  private async getTransactionSignatures(
-    startSlot: number,
-    previousSlot: number | undefined
-  ) {
-    // TODO we need to make sure that we only consider FINALIZED Epochs here
-    const firstSlot = previousSlot ?? startSlot;
-    const lastSlot = await this.connection.getSlot();
+    const lastSlot = Math.min(startSlot + maxSlots, currentSlot);
 
     console.log(
-      `Reading from Slot ${firstSlot} to ${lastSlot}. Total: ${
-        lastSlot - firstSlot
+      `Reading from Slot ${startSlot} to ${lastSlot}. Total: ${
+        lastSlot - startSlot
       }`
     );
 
     // Split and Join into 1000 tx window
     let signatures: string[] = [];
-    let currentStartSlot = firstSlot;
-    const SLOT_WINDOW = 1000;
+    let currentStartSlot = startSlot;
+    const SLOT_WINDOW = 10_000;
 
     // TODO: Parallelize
-    // Currently has a Max of 5k, e.g. 5 runthroughs
-    currentStartSlot = previousSlot ? firstSlot : lastSlot - SLOT_WINDOW;
     while (currentStartSlot < lastSlot) {
       let currentEndSlot = currentStartSlot + SLOT_WINDOW;
       if (currentEndSlot > lastSlot) {
@@ -60,15 +48,12 @@ export class UsageOracleService {
       currentStartSlot = currentEndSlot;
     }
 
-    return { signatures, firstSlot, lastSlot };
+    return { signatures, firstSlot: startSlot, lastSlot };
   }
 
-  async readUsage({ startSlot, previousSlot }: GetUsageParams) {
+  async readUsage({ startSlot, maxSlots }: GetUsageParams) {
     const { signatures, firstSlot, lastSlot } =
-      await this.getTransactionSignatures(
-        startSlot,
-        previousSlot ? previousSlot + 1 : undefined
-      );
+      await this.getTransactionSignatures(startSlot, maxSlots);
 
     const billableTx = await loadTransactions(this.connection, signatures, [
       new ConfigBasedStrategy(this.config),

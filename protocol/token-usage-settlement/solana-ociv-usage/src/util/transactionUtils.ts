@@ -162,8 +162,8 @@ export const loadTransactions = async (
     transaction: ParsedConfirmedTransaction | null
   ): BillableInstruction[] => {
     if (!transaction) return [];
-    const strategy = strategies.find((strategy) =>
-      strategy.matches(transaction)
+    const strategy = strategies.find(
+      (strategy) => strategy.matches(transaction) && !transaction.meta?.err
     );
     if (!strategy) return [];
     return strategy.build(transaction);

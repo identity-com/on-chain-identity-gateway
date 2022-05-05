@@ -24,6 +24,12 @@ export default class SolanaUsage extends Base {
       description: "The starting slot to use when first run",
       required: true,
     }),
+    maxSlots: Flags.integer({
+      char: "m",
+      description: "The maximum number of slots to run",
+      required: false,
+      default: 200_000,
+    }),
     upload: Flags.string({
       char: "u",
       required: false,
@@ -84,6 +90,9 @@ export default class SolanaUsage extends Base {
     );
 
     console.log(`Found previous slot ${previousSlot ?? "<none>"}`);
+    const startSlot = previousSlot
+      ? previousSlot + 1
+      : (flags.startSlot as number);
 
     // const lookupProgram: PublicKey = args.address;
     // const oracleKey = flags.oracleKey as Keypair;
@@ -91,7 +100,6 @@ export default class SolanaUsage extends Base {
     //   oracle ${oracleKey.publicKey.toBase58()}
     //   program ${lookupProgram}`);
     //
-    const epoch = flags.startSlot as number;
     //
     const connection = getConnection(flags.cluster as ExtendedCluster);
     //
@@ -108,8 +116,8 @@ export default class SolanaUsage extends Base {
 
     const { billableTx, firstSlot, lastSlot } =
       await usageOracleService.readUsage({
-        startSlot: epoch,
-        previousSlot,
+        startSlot,
+        maxSlots: flags.maxSlots as number,
       });
 
     const filename = `${matchedConfig.program.toBase58()}_${matchedConfig.network.toBase58()}_${firstSlot}_${lastSlot}.csv.gz`;

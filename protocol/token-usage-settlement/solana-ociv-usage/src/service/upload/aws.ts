@@ -28,21 +28,37 @@ export default {
       config.folder
     }/${program.toBase58()}_${network.toBase58()}_`;
 
-    const objects = await s3
-      .listObjects({ Bucket: config.bucket as string, Prefix: prefix })
-      .promise();
+    let lastSlot: number | undefined;
 
-    // extract the last slot numbers from the file, sort and get the latest
-    return objects?.Contents?.map((object) => {
-      const match = object?.Key?.match(
-        /^([^_]+)_([^_]+)_([^_]+)_([^.]+)\.csv\.gz$/
-      );
+    // loop through the listObject results. continuationToken will store the "paging" parameter required
+    let continuationToken: string | undefined;
+    do {
+      const objects = await s3
+        .listObjectsV2({
+          Bucket: config.bucket as string,
+          Prefix: prefix,
+          ContinuationToken: continuationToken,
+        })
+        .promise();
 
-      return match ? parseInt(match[4]) : undefined;
-    })
-      .filter((slot) => slot)
-      .sort((a, b) => (b as number) - (a as number))
-      .find((slot, index) => index === 0);
+      objects.Contents?.forEach((object) => {
+        const match = object?.Key?.match(
+          /^[^_]+_[^_]+_[^_]+_([^.]+)\.csv\.gz$/
+        );
+
+        if (match) {
+          const foundSlot = parseInt(match[1]);
+
+          if (!lastSlot || lastSlot < foundSlot) {
+            lastSlot = foundSlot;
+          }
+        }
+      });
+
+      continuationToken = objects.NextContinuationToken;
+    } while (continuationToken);
+
+    return lastSlot;
   },
   /**
    * Creates an upload stream for writing directly to S3
