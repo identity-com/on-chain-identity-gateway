@@ -27,7 +27,6 @@
     clippy::wildcard_imports
 )]
 
-extern crate core;
 pub mod accounts;
 pub mod arguments;
 pub mod instructions;
