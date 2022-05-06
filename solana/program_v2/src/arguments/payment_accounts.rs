@@ -192,7 +192,7 @@ where
 
     fn accounts_usage_hint(_arg: &PaymentsFrom<'a, AI>) -> (usize, Option<usize>) {
         // TODO: actually do this
-        (0, None)
+        (0, Some(4))
     }
 }
 impl<AI> ValidateArgument for PaymentAccounts<AI>
