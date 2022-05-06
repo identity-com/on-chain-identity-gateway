@@ -30,7 +30,7 @@ pub struct CreateNetworkAccounts<AI> {
     /// The system program
     pub system_program: SystemProgram<AI>,
     /// The signer for the network.
-    #[validate(data = (NetworkSignerSeeder{ network: *self.network.info().key()}, signer_bump))]
+    #[validate(data = (NetworkSignerSeeder{ network: *self.network.info().key() }, signer_bump))]
     pub network_signer: Seeds<AI, NetworkSignerSeeder>,
     /// The funder for the network if needed.
     #[validate(signer(IfSome), writable(IfSome))]
@@ -103,7 +103,7 @@ mod processor {
                 .into());
             }
 
-            let mut network = GatekeeperNetwork::write(accounts.network.info().data_mut())?;
+            let mut network = accounts.network.write()?;
             let (mut auth_threshold, mut pass_expire_time, mut network_data_len, mut signer_bump) =
                 get_properties_mut!(
                     &mut network,
@@ -114,11 +114,109 @@ mod processor {
                         signer_bump,
                     }
                 )?;
-            auth_threshold.set_num(1);
+            auth_threshold.set_num(data.auth_threshold);
             pass_expire_time.set_num(data.pass_expire_time);
             network_data_len.set_num(data.network_data_len);
             signer_bump.set_num(data.signer_bump);
-            todo!("Add fees and auth_keys")
+            // todo!("Add fees and auth_keys")
+            Ok(())
         }
+    }
+}
+#[cfg(feature = "cpi")]
+mod cpi {
+    use super::*;
+    use crate::GatewayInstructions;
+
+    pub struct CreateNetworkCPI<'a, AI> {
+        accounts: Vec<MaybeOwned<'a, AI>>,
+        data: Option<Vec<u8>>,
+    }
+    impl<'a, AI> CreateNetworkCPI<'a, AI> {
+        #[allow(clippy::needless_pass_by_value)]
+        pub fn new(
+            network: impl Into<MaybeOwned<'a, AI>>,
+            system_program: impl Into<MaybeOwned<'a, AI>>,
+            network_signer: impl Into<MaybeOwned<'a, AI>>,
+            funder: Option<impl Into<MaybeOwned<'a, AI>>>,
+            instruction_data: CreateNetworkData,
+        ) -> CruiserResult<Self> {
+            let mut data = Vec::new();
+            <GatewayInstructions as InstructionListItem<CreateNetwork>>::discriminant_compressed()
+                .serialize(&mut data)?;
+            instruction_data.serialize(&mut data)?;
+            let mut accounts = vec![network.into(), system_program.into(), network_signer.into()];
+            accounts.extend(funder.map(Into::into));
+            Ok(Self {
+                accounts,
+                data: Some(data),
+            })
+        }
+    }
+
+    impl<'a, AI> InstructionListCPI for CreateNetworkCPI<'a, AI>
+    where
+        AI: ToSolanaAccountMeta,
+    {
+        type InstructionList = GatewayInstructions;
+        type Instruction = CreateNetwork;
+        type AccountInfo = AI;
+
+        fn instruction(&mut self, program_id: &Pubkey) -> SolanaInstruction {
+            SolanaInstruction {
+                program_id: *program_id,
+                accounts: self
+                    .accounts
+                    .iter()
+                    .map(MaybeOwned::as_ref)
+                    .map(AI::to_solana_account_meta)
+                    .collect(),
+                data: self.data.take().unwrap(),
+            }
+        }
+    }
+}
+
+#[cfg(feature = "client")]
+pub mod client {
+    use super::*;
+    use crate::instructions::create_network::cpi::CreateNetworkCPI;
+    use std::iter::once;
+
+    /// TODO: Docs
+    #[allow(clippy::missing_panics_doc)]
+    pub fn create_network<'a>(
+        program_id: &Pubkey,
+        network: impl Into<HashedSigner<'a>>,
+        funder: Option<impl Into<HashedSigner<'a>>>,
+        mut create_data: CreateNetworkData,
+    ) -> (
+        impl IntoIterator<Item = SolanaInstruction>,
+        impl IntoIterator<Item = HashedSigner<'a>>,
+    ) {
+        let network = network.into();
+        let funder = funder.map(Into::into);
+        let (network_signer, signer_bump) = NetworkSignerSeeder {
+            network: network.pubkey(),
+        }
+        .find_address(program_id);
+
+        create_data.signer_bump = signer_bump;
+        (
+            once(
+                CreateNetworkCPI::new(
+                    SolanaAccountMeta::new(network.pubkey(), true),
+                    SolanaAccountMeta::new_readonly(SystemProgram::<()>::KEY, false),
+                    SolanaAccountMeta::new_readonly(network_signer, false),
+                    funder
+                        .as_ref()
+                        .map(|funder| SolanaAccountMeta::new(funder.pubkey(), true)),
+                    create_data,
+                )
+                .unwrap()
+                .instruction(program_id),
+            ),
+            once(network).chain(funder),
+        )
     }
 }

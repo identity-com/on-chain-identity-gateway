@@ -3,15 +3,8 @@ use crate::GatewayAccountList;
 use cruiser::prelude::*;
 use cruiser::solana_program::rent::Rent;
 
-#[cfg(not(feature = "realloc"))]
 const INITIAL_NETWORK_SPACE: usize =
     cruiser::solana_program::entrypoint::MAX_PERMITTED_DATA_INCREASE;
-#[cfg(feature = "realloc")]
-const INITIAL_NETWORK_SPACE: usize =
-    GatekeeperNetwork::on_chain_size_with_arg(crate::util::GatekeeperNetworkSize {
-        fees_count: 0,
-        auth_keys: 0,
-    });
 
 /// Argument for creating a gatekeeper network
 #[derive(Debug)]

@@ -14,7 +14,7 @@ impl<AI> Instruction<AI> for CreateGatekeeper {
 
 /// Accounts for [`CreateGatekeeper`]
 #[derive(AccountArgument, Debug)]
-#[account_argument(account_info = AI, generics = [<'a> where AI: ToSolanaAccountInfo<'a>])]
+#[account_argument(account_info = AI, generics = [<'info> where AI: ToSolanaAccountInfo<'info>])]
 #[validate(data = (signer_bump: u8, rent: Rent))]
 pub struct CreateGatekeeperAccounts<AI> {
     /// The network for the new gatekeeper
