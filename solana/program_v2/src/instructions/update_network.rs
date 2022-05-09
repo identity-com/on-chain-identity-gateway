@@ -20,7 +20,7 @@ pub struct UpdateNetworkAccounts<AI> {
     #[validate(writable)]
     pub network: GatekeeperNetworkAccount<AI>,
     /// The key with proper permissions to update the network
-    #[validate(signer)]
+    #[validate(signer(all))]
     pub keys: Rest<AI>,
 }
 

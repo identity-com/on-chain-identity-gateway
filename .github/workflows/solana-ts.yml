@@ -1,10 +1,8 @@
 name: Solana Typescript
 on:
-  push:
+  pull_request:
     paths:
       - 'solana/**'
-      - '.github/**'
-  pull_request:
 jobs:
   solana-build:
     name: Build, lint the solana libraries on ${{ matrix.os }}
@@ -79,6 +77,12 @@ jobs:
             ~/.cargo/git
             ./solana/target
           key: cargo-build-v2-${{ hashFiles('solana/Cargo.lock') }}
+
+      - name: Update dependencies
+        uses: actions-rs/cargo@v1
+        with:
+          command: update
+          args: --manifest-path solana/Cargo.toml
 
       - name: Cache Solana version
         uses: actions/cache@v2
