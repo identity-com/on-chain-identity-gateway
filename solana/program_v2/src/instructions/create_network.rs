@@ -194,12 +194,15 @@ pub mod client {
         impl IntoIterator<Item = SolanaInstruction>,
         impl IntoIterator<Item = HashedSigner<'a>>,
     ) {
+        cruiser::msg!("Creating network");
         let network = network.into();
         let funder = funder.map(Into::into);
         let (network_signer, signer_bump) = NetworkSignerSeeder {
             network: network.pubkey(),
         }
         .find_address(program_id);
+
+        let create_account
 
         create_data.signer_bump = signer_bump;
         (
