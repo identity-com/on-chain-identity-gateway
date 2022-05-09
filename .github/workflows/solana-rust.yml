@@ -39,6 +39,12 @@ jobs:
             ./solana/target
           key: cargo-lint-${{ hashFiles('solana/Cargo.lock') }}
 
+      - name: Update dependencies
+        uses: actions-rs/cargo@v1
+        with:
+          command: update
+          args: --manifest-path solana/Cargo.toml
+
       - name: Run fmt
         uses: actions-rs/cargo@v1
         with:
