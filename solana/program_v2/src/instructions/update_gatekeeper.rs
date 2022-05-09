@@ -22,7 +22,7 @@ pub struct UpdateGatekeeperAccounts<AI> {
     /// The network for the gatekeeper
     pub network: GatekeeperNetworkAccount<AI>,
     /// The keys for updating the gatekeeper
-    #[validate(signer)]
+    #[validate(signer(all))]
     pub keys: Rest<AI>,
 }
 
