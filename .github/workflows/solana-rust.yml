@@ -102,13 +102,13 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path solana/Cargo.toml
+          args: --manifest-path solana/Cargo.toml -p solana-gateway-program
 
       - name: Build the program and run functional tests
         uses: actions-rs/cargo@v1
         with:
           command: test-bpf
-          args: --manifest-path solana/Cargo.toml
+          args: --manifest-path solana/Cargo.toml -- -p solana-gateway-program
 
   solana-gateway-program-v2-build:
     name: Build the v2 solana rust code on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
