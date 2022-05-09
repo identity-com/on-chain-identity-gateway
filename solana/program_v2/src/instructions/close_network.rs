@@ -19,7 +19,7 @@ pub struct CloseNetworkAccounts<AI> {
     /// Where the funds go to
     pub to: AI,
     /// Requires set to have [`NetworkKeyFlags::AUTH`] and meet current [`GatekeeperNetwork::auth_threshold`].
-    #[validate(signer)]
+    #[validate(signer(all))]
     pub keys: Rest<AI>,
 }
 /// Data for [`CloseNetwork`]

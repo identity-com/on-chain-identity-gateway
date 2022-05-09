@@ -1,9 +1,8 @@
-name: Solana Rust
+name: Solana v2 Rust
 on:
   pull_request:
     paths:
-      - 'solana/program/**'
-      - 'solana/integration-lib/**'
+      - 'solana/program_v2/**'
       - 'solana/Cargo.toml'
       - 'solana/Cargo.lock'
 jobs:
@@ -13,13 +12,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['nightly-2022-03-22']
-        os: [ubuntu-latest]
+        rust: [ 'nightly-2022-03-22' ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-        
+
       - name: Use Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
@@ -52,17 +51,17 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --tests --features test-bpf --manifest-path solana/Cargo.toml -- --deny=warnings
+          args: --tests -p gateway_program_v2 --all-features --manifest-path solana/Cargo.toml -- --deny=warnings
 
-  solana-gateway-program-build:
-    name: Build and test the solana rust code on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
+  solana-gateway-program-v2-build:
+    name: Build the v2 solana rust code on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['nightly-2022-03-22']
-        solana: ['stable']
-        os: [ubuntu-latest]
+        rust: [ 'nightly-2022-03-22' ]
+        solana: [ 'stable' ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Checkout repo
@@ -81,7 +80,13 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             ./solana/target
-          key: cargo-build-v1-${{ hashFiles('solana/Cargo.lock') }}
+          key: cargo-build-v2-${{ hashFiles('solana/Cargo.lock') }}
+
+      - name: Update dependencies
+        uses: actions-rs/cargo@v1
+        with:
+          command: update
+          args: --manifest-path solana/Cargo.toml
 
       - name: Cache Solana version
         uses: actions/cache@v2
@@ -89,7 +94,7 @@ jobs:
           path: |
             ~/.cache
           key: solana-${{ matrix.solana }}
-          
+
       - name: Install Solana
         run: |
           sh -c "$(curl -sSfL https://release.solana.com/${{ matrix.solana }}/install)"
@@ -99,10 +104,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path solana/Cargo.toml -p solana-gateway-program
+          args: --manifest-path solana/Cargo.toml --features client -p gateway_program_v2
 
       - name: Build the program and run functional tests
         uses: actions-rs/cargo@v1
         with:
-          command: test-bpf
-          args: --manifest-path solana/Cargo.toml -- -p solana-gateway-program
+          command: build-bpf
+          args: --manifest-path solana/Cargo.toml -- -p gateway_program_v2

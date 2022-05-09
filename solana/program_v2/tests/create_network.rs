@@ -1,4 +1,3 @@
-use cruiser::client::system_program;
 use cruiser::client::{ConfirmationResult, TransactionBuilder};
 use cruiser::prelude::*;
 use cruiser::solana_client::client_error::reqwest::Client;
@@ -115,11 +114,10 @@ async fn create_network_test() -> Result<(), Box<dyn Error>> {
 
             let network = Keypair::new();
             let (sig, result) = TransactionBuilder::new(&funder)
-                .signed_instructions()
                 .signed_instructions(create_network(
                     &program_id,
                     &network,
-                    Some(&funder),
+                    &funder,
                     CreateNetworkData {
                         auth_threshold: 1,
                         pass_expire_time: 60 * 60,
