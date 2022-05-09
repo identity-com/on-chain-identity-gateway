@@ -78,6 +78,12 @@ jobs:
             ./solana/target
           key: cargo-build-v2-${{ hashFiles('solana/Cargo.lock') }}
 
+      - name: Update dependencies
+        uses: actions-rs/cargo@v1
+        with:
+          command: update
+          args: --manifest-path solana/Cargo.toml
+
       - name: Cache Solana version
         uses: actions/cache@v2
         with:
