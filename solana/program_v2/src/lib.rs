@@ -35,16 +35,18 @@ pub mod types;
 pub mod util;
 
 use crate::accounts::{Gatekeeper, GatekeeperNetwork, Pass};
-use cruiser::account_list::AccountList;
-use cruiser::instruction_list::InstructionList;
-use cruiser::{entrypoint_list, ToSolanaAccountInfo};
-use std::num::NonZeroU8;
+use cruiser::prelude::*;
 
+#[cfg(feature = "entrypoint")]
 entrypoint_list!(GatewayInstructions, GatewayInstructions);
 
 /// Instructions for the gateway v2 program
 #[derive(InstructionList, Copy, Clone, Debug)]
-#[instruction_list(account_list = GatewayAccountList, account_info = [<'a, AI> AI where AI: ToSolanaAccountInfo<'a>])]
+#[instruction_list(
+    account_list = GatewayAccountList,
+    account_info = [<'a, AI> AI where AI: ToSolanaAccountInfo<'a>],
+    discriminant_type = u8,
+)]
 pub enum GatewayInstructions {
     /// Creates a new network.
     #[instruction(instruction_type = instructions::CreateNetwork)]

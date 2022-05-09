@@ -134,21 +134,18 @@ mod cpi {
     }
     impl<'a, AI> CreateNetworkCPI<'a, AI> {
         #[allow(clippy::needless_pass_by_value)]
-        pub fn new(
+        pub fn new_from_zeroed(
             network: impl Into<MaybeOwned<'a, AI>>,
             system_program: impl Into<MaybeOwned<'a, AI>>,
             network_signer: impl Into<MaybeOwned<'a, AI>>,
-            funder: Option<impl Into<MaybeOwned<'a, AI>>>,
             instruction_data: CreateNetworkData,
         ) -> CruiserResult<Self> {
             let mut data = Vec::new();
             <GatewayInstructions as InstructionListItem<CreateNetwork>>::discriminant_compressed()
                 .serialize(&mut data)?;
             instruction_data.serialize(&mut data)?;
-            let mut accounts = vec![network.into(), system_program.into(), network_signer.into()];
-            accounts.extend(funder.map(Into::into));
             Ok(Self {
-                accounts,
+                accounts: vec![network.into(), system_program.into(), network_signer.into()],
                 data: Some(data),
             })
         }
@@ -179,8 +176,10 @@ mod cpi {
 
 #[cfg(feature = "client")]
 pub mod client {
+    //! Client functions for [`CreateNetwork`]
     use super::*;
     use crate::instructions::create_network::cpi::CreateNetworkCPI;
+    use cruiser::solana_sdk::native_token::LAMPORTS_PER_SOL;
     use std::iter::once;
 
     /// TODO: Docs
@@ -188,7 +187,7 @@ pub mod client {
     pub fn create_network<'a>(
         program_id: &Pubkey,
         network: impl Into<HashedSigner<'a>>,
-        funder: Option<impl Into<HashedSigner<'a>>>,
+        funder: impl Into<HashedSigner<'a>>,
         mut create_data: CreateNetworkData,
     ) -> (
         impl IntoIterator<Item = SolanaInstruction>,
@@ -196,30 +195,28 @@ pub mod client {
     ) {
         cruiser::msg!("Creating network");
         let network = network.into();
-        let funder = funder.map(Into::into);
+        let network_key = network.pubkey();
         let (network_signer, signer_bump) = NetworkSignerSeeder {
-            network: network.pubkey(),
+            network: network_key,
         }
         .find_address(program_id);
 
-        let create_account
+        let create_account =
+            system_program::create_account(funder, network, LAMPORTS_PER_SOL, 15000, *program_id);
 
         create_data.signer_bump = signer_bump;
         (
             once(
-                CreateNetworkCPI::new(
-                    SolanaAccountMeta::new(network.pubkey(), true),
+                CreateNetworkCPI::new_from_zeroed(
+                    SolanaAccountMeta::new(network_key, true),
                     SolanaAccountMeta::new_readonly(SystemProgram::<()>::KEY, false),
                     SolanaAccountMeta::new_readonly(network_signer, false),
-                    funder
-                        .as_ref()
-                        .map(|funder| SolanaAccountMeta::new(funder.pubkey(), true)),
                     create_data,
                 )
                 .unwrap()
                 .instruction(program_id),
             ),
-            once(network).chain(funder),
+            create_account.1,
         )
     }
 }
