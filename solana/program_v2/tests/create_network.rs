@@ -1,3 +1,4 @@
+use cruiser::client::system_program;
 use cruiser::client::{ConfirmationResult, TransactionBuilder};
 use cruiser::prelude::*;
 use cruiser::solana_client::client_error::reqwest::Client;
@@ -8,8 +9,10 @@ use cruiser::solana_sdk::native_token::LAMPORTS_PER_SOL;
 use futures::executor::block_on;
 use futures::select_biased;
 use futures::FutureExt;
+use gateway_program_v2::accounts::{GatekeeperNetwork, NetworkAuthKey};
 use gateway_program_v2::instructions::client::create_network;
 use gateway_program_v2::instructions::CreateNetworkData;
+use gateway_program_v2::types::NetworkKeyFlags;
 use std::error::Error;
 use std::panic;
 use std::path::Path;
@@ -67,6 +70,8 @@ async fn create_network_test() -> Result<(), Box<dyn Error>> {
         hook(panic_info);
     }));
 
+    println!("Data len: {}", GatekeeperNetwork::ON_CHAIN_SIZE);
+
     let test_func = {
         let local_validator = local_validator.clone();
         async move {
@@ -103,16 +108,17 @@ async fn create_network_test() -> Result<(), Box<dyn Error>> {
             let funder = Keypair::new();
             let blockhash = rpc.get_latest_blockhash().await?;
             let sig = rpc
-                .request_airdrop_with_blockhash(&funder.pubkey(), LAMPORTS_PER_SOL, &blockhash)
+                .request_airdrop_with_blockhash(&funder.pubkey(), LAMPORTS_PER_SOL * 10, &blockhash)
                 .await?;
             rpc.confirm_transaction_with_spinner(&sig, &blockhash, CommitmentConfig::confirmed())
                 .await?;
 
             let network = Keypair::new();
             let (sig, result) = TransactionBuilder::new(&funder)
+                .signed_instructions()
                 .signed_instructions(create_network(
                     &program_id,
-                    network,
+                    &network,
                     Some(&funder),
                     CreateNetworkData {
                         auth_threshold: 1,
@@ -120,7 +126,12 @@ async fn create_network_test() -> Result<(), Box<dyn Error>> {
                         network_data_len: 16,
                         signer_bump: 3,
                         fees: Default::default(),
-                        auth_keys: Default::default(),
+                        auth_keys: vec![NetworkAuthKey {
+                            key: Keypair::new().pubkey(),
+                            flags: NetworkKeyFlags::all(),
+                        }]
+                        .try_into()
+                        .unwrap(),
                     },
                 ))
                 .send_and_confirm_transaction(

@@ -34,6 +34,18 @@ pub struct GatekeeperNetworkSize {
     /// The number of auth keys
     pub auth_keys: u16,
 }
+impl OnChainSize for GatekeeperNetwork {
+    const ON_CHAIN_SIZE: usize = u8::ON_CHAIN_SIZE
+        + <[[u8; 32]; 128]>::ON_CHAIN_SIZE
+        + u8::ON_CHAIN_SIZE
+        + UnixTimestamp::ON_CHAIN_SIZE
+        + u16::ON_CHAIN_SIZE
+        + u8::ON_CHAIN_SIZE
+        + u16::ON_CHAIN_SIZE
+        + u16::ON_CHAIN_SIZE
+        + <[NetworkFees; 128]>::ON_CHAIN_SIZE
+        + <[NetworkAuthKey; 128]>::ON_CHAIN_SIZE;
+}
 impl const OnChainSizeWithArg<GatekeeperNetworkSize> for GatekeeperNetwork {
     fn on_chain_size_with_arg(arg: GatekeeperNetworkSize) -> usize {
         let auth_key_size = NetworkAuthKey::ON_CHAIN_SIZE;
