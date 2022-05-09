@@ -7,7 +7,6 @@ on:
       - 'solana/Cargo.toml'
       - 'solana/Cargo.lock'
       - 'solana/Xargo.toml'
-      - '.github/**'
 jobs:
   solana-gateway-program-lint:
     name: Lint the solana rust code on ${{ matrix.rust }} and ${{ matrix.os }}

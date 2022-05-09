@@ -3,7 +3,6 @@ on:
   pull_request:
     paths:
       - 'solana/**'
-      - '.github/**'
 jobs:
   solana-build:
     name: Build, lint the solana libraries on ${{ matrix.os }}
