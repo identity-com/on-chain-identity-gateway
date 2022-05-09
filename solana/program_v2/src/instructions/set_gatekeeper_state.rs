@@ -1,10 +1,6 @@
-use crate::in_place::GatekeeperNetworkAccount;
-use crate::util::GatekeeperAccount;
-use crate::GatekeeperState;
-use cruiser::account_argument::AccountArgument;
-use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
-use cruiser::instruction::Instruction;
-use cruiser::AccountInfo;
+use crate::accounts::GatekeeperState;
+use crate::arguments::{GatekeeperAccount, GatekeeperNetworkAccount};
+use cruiser::prelude::*;
 
 /// Sets the state of a gatekeeper.
 #[derive(Debug)]
@@ -42,8 +38,8 @@ pub struct SetGatekeeperStateData {
 #[cfg(feature = "processor")]
 mod processor {
     use super::SetGatekeeperState;
+    use crate::accounts::Gatekeeper;
     use crate::instructions::SetGatekeeperStateData;
-    use crate::Gatekeeper;
     use cruiser::in_place::get_properties_mut;
     use cruiser::instruction::{Instruction, InstructionProcessor};
     use cruiser::{AccountInfo, CruiserResult, Pubkey};

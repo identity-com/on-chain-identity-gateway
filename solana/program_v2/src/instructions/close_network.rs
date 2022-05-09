@@ -1,10 +1,5 @@
-use crate::in_place::GatekeeperNetworkAccount;
-use cruiser::account_argument::AccountArgument;
-use cruiser::account_types::close_account::CloseAccount;
-use cruiser::account_types::rest::Rest;
-use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
-use cruiser::instruction::Instruction;
-use cruiser::AccountInfo;
+use crate::arguments::GatekeeperNetworkAccount;
+use cruiser::prelude::*;
 
 /// Closes a [`GatekeeperNetwork`]
 #[derive(Debug)]
@@ -34,9 +29,8 @@ pub struct CloseNetworkData {}
 #[cfg(feature = "processor")]
 mod processor {
     use crate::instructions::CloseNetwork;
-    use crate::Pubkey;
     use cruiser::instruction::{Instruction, InstructionProcessor};
-    use cruiser::{AccountInfo, CruiserResult};
+    use cruiser::{AccountInfo, CruiserResult, Pubkey};
 
     impl<AI> InstructionProcessor<AI, CloseNetwork> for CloseNetwork
     where

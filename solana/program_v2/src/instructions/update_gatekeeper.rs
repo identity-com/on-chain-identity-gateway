@@ -1,12 +1,7 @@
-use crate::in_place::GatekeeperNetworkAccount;
-use crate::util::GatekeeperAccount;
-use crate::{GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, Pubkey};
-use cruiser::account_argument::AccountArgument;
-use cruiser::account_types::rest::Rest;
-use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
-use cruiser::instruction::Instruction;
-use cruiser::types::small_vec::Vec8;
-use cruiser::AccountInfo;
+use crate::accounts::GatekeeperAuthKey;
+use crate::arguments::{GatekeeperAccount, GatekeeperNetworkAccount};
+use crate::types::{GatekeeperFees, GatekeeperKeyFlags};
+use cruiser::prelude::*;
 
 /// Updates a gatekeeper
 #[derive(Debug)]

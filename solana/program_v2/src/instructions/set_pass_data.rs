@@ -1,9 +1,5 @@
-use crate::util::{GatekeeperAccount, PassAccount};
-use cruiser::account_argument::AccountArgument;
-use cruiser::borsh::{self, BorshDeserialize, BorshSerialize};
-use cruiser::instruction::Instruction;
-use cruiser::types::small_vec::Vec16;
-use cruiser::AccountInfo;
+use crate::arguments::{GatekeeperAccount, PassAccount};
+use cruiser::prelude::*;
 
 /// Sets the data on a pass.
 #[derive(Debug)]
