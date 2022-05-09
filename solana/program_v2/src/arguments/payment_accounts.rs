@@ -1,16 +1,11 @@
 //! Accounts for collecting payments.
 
-use crate::in_place::GatekeeperNetworkAccount;
-use crate::util::{GatekeeperAccount, Operation};
-use crate::{Gatekeeper, GatekeeperNetwork, GatekeeperSignerSeeder, NetworkSignerSeeder, Pubkey};
-use cruiser::account_argument::{
-    AccountArgument, AccountInfoIterator, FromAccounts, Single, ValidateArgument,
-};
-use cruiser::impls::option::IfSome;
-use cruiser::in_place::{get_properties, GetNum};
-use cruiser::pda_seeds::PDASeedSet;
-use cruiser::spl::token::{Owner, TokenAccount};
-use cruiser::{AccountInfo, CruiserResult, GenericError};
+use crate::accounts::{Gatekeeper, GatekeeperNetwork};
+use crate::arguments::gatekeeper_account::GatekeeperAccount;
+use crate::arguments::GatekeeperNetworkAccount;
+use crate::pda::{GatekeeperSignerSeeder, NetworkSignerSeeder};
+use crate::types::Operation;
+use cruiser::prelude::*;
 
 /// The accounts needed for payment
 #[derive(Debug)]
@@ -197,7 +192,7 @@ where
 
     fn accounts_usage_hint(_arg: &PaymentsFrom<'a, AI>) -> (usize, Option<usize>) {
         // TODO: actually do this
-        (0, None)
+        (0, Some(4))
     }
 }
 impl<AI> ValidateArgument for PaymentAccounts<AI>
@@ -236,7 +231,7 @@ pub struct TokenPaymentAccounts<AI> {
     #[validate(signer)]
     pub owner_wallet: AI,
     /// The account that pays the fee
-    #[validate(data = Owner(self.owner_wallet.key()))]
+    #[validate(data = TokenAccountOwner(self.owner_wallet.key()))]
     pub payment_account: TokenAccount<AI>,
     /// The gatekeeper account that receives the fee
     pub gatekeeper_receiver_account: TokenAccount<AI>,
