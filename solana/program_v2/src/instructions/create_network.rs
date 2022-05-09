@@ -186,12 +186,12 @@ pub mod client {
     #[allow(clippy::missing_panics_doc)]
     pub fn create_network<'a>(
         program_id: &Pubkey,
-        network: impl Into<HashedSigner<'a>>,
-        funder: impl Into<HashedSigner<'a>>,
+        network: impl Into<HashedSigner<'a>> + 'a,
+        funder: impl Into<HashedSigner<'a>> + 'a,
         mut create_data: CreateNetworkData,
     ) -> (
-        impl IntoIterator<Item = SolanaInstruction>,
-        impl IntoIterator<Item = HashedSigner<'a>>,
+        impl IntoIterator<Item = SolanaInstruction> + 'a,
+        impl IntoIterator<Item = HashedSigner<'a>> + 'a,
     ) {
         cruiser::msg!("Creating network");
         let network = network.into();
@@ -206,7 +206,7 @@ pub mod client {
 
         create_data.signer_bump = signer_bump;
         (
-            once(
+            create_account.0.into_iter().chain(once(
                 CreateNetworkCPI::new_from_zeroed(
                     SolanaAccountMeta::new(network_key, true),
                     SolanaAccountMeta::new_readonly(SystemProgram::<()>::KEY, false),
@@ -215,7 +215,7 @@ pub mod client {
                 )
                 .unwrap()
                 .instruction(program_id),
-            ),
+            )),
             create_account.1,
         )
     }
