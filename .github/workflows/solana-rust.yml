@@ -1,6 +1,6 @@
 name: Solana Rust
 on:
-  push:
+  pull_request:
     paths:
       - 'solana/program/**'
       - 'solana/integration-lib/**'
@@ -8,7 +8,6 @@ on:
       - 'solana/Cargo.lock'
       - 'solana/Xargo.toml'
       - '.github/**'
-  pull_request:
 jobs:
   solana-gateway-program-lint:
     name: Lint the solana rust code on ${{ matrix.rust }} and ${{ matrix.os }}

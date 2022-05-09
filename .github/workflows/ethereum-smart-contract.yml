@@ -1,8 +1,5 @@
 name: Ethereum Smart Contract
 on:
-  push:
-    paths:
-      - 'ethereum/smart-contract/**'
   pull_request:
     paths:
       - 'ethereum/smart-contract/**'
