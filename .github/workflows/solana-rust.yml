@@ -155,7 +155,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path solana/Cargo.toml
+          args: --manifest-path solana/Cargo.toml --features client -p gateway_program_v2
 
       - name: Build the program and run functional tests
         uses: actions-rs/cargo@v1
