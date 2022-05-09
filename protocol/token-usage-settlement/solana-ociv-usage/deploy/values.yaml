@@ -22,12 +22,15 @@ jobs:
           secretKeyRef:
             name: solana-ociv-usage
             key: AWS_SECRET_ACCESS_KEY
-    schedule: "*/15 * * * *"
+    resources:
+      requests:
+        memory: 1G
+    schedule: "0 * * * *"
     command: ["/bin/sh"]
     args:
       - "-c"
-      - "/opt/app/bin/run usage -e 1 Solrise -c solana-usage.yml --upload=aws -b civic-redshift-data-import-dev -f chain-data"
+      - "/opt/app/bin/run usage Solrise -c solana-usage.yml -s 133000000 --upload=aws -b civic-redshift-data-import-prod -f chain-data"
     failedJobsHistoryLimit: 1
-    successfulJobsHistoryLimit: 1
+    successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
     restartPolicy: OnFailure
