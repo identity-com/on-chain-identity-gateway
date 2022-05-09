@@ -1,7 +1,9 @@
-import {Connection, PublicKey} from '@solana/web3.js';
+import { Connection, PublicKey } from "@solana/web3.js";
 
 function readPublicKey(buffer: Buffer, offset: { offset: number }): PublicKey {
-  const public_key = new PublicKey(buffer.slice(offset.offset, offset.offset + 32));
+  const public_key = new PublicKey(
+    buffer.slice(offset.offset, offset.offset + 32)
+  );
   offset.offset += 32;
   return public_key;
 }
@@ -10,7 +12,7 @@ function readArray<T>(
   buffer: Buffer,
   offset: { offset: number },
   length: number,
-  readInner: (buffer: Buffer, offset: { offset: number }) => T,
+  readInner: (buffer: Buffer, offset: { offset: number }) => T
 ): T[] {
   const result = [];
   for (let i = 0; i < length; i++) {
@@ -27,25 +29,24 @@ class u8 {
     return new u8(value);
   }
 }
-class u16{
-  constructor(public value: number){}
-  static read(buffer: Buffer, offset: { offset: number }): u16{
+class u16 {
+  constructor(public value: number) {}
+  static read(buffer: Buffer, offset: { offset: number }): u16 {
     const value = buffer.readUInt16LE(offset.offset);
     offset.offset += 2;
     return new u16(value);
   }
 }
-class u32{
-  constructor(public value: number){}
-  static read(buffer: Buffer, offset: { offset: number }): u32{
+class u32 {
+  constructor(public value: number) {}
+  static read(buffer: Buffer, offset: { offset: number }): u32 {
     const value = buffer.readUInt32LE(offset.offset);
     offset.offset += 4;
     return new u32(value);
   }
 }
 class u64 {
-  constructor(public value: bigint) {
-  }
+  constructor(public value: bigint) {}
   static read(buffer: Buffer, offset: { offset: number }): u64 {
     const value = buffer.readBigUInt64LE(offset.offset);
     offset.offset += 8;
@@ -61,19 +62,19 @@ class i64 {
   }
 }
 
-class NetworkFees{
+class NetworkFees {
   constructor(
     public token: PublicKey,
     public issue: u16,
     public refresh: u16,
     public expire: u16,
-    public verify: u16,
-  ){}
+    public verify: u16
+  ) {}
 
-  static size(): number{
+  static size(): number {
     return 32 + 4 * 2;
   }
-  static read(buffer: Buffer, offset: { offset: number }): NetworkFees{
+  static read(buffer: Buffer, offset: { offset: number }): NetworkFees {
     const token = readPublicKey(buffer, offset);
     const issue = u16.read(buffer, offset);
     const refresh = u16.read(buffer, offset);
@@ -84,11 +85,11 @@ class NetworkFees{
   }
 }
 
-function roundToNext(x: number, multiple: number): number{
-  return (x + multiple - 1) / multiple * multiple;
+function roundToNext(x: number, multiple: number): number {
+  return ((x + multiple - 1) / multiple) * multiple;
 }
 
-enum NetworkKeyFlagsValues{
+enum NetworkKeyFlagsValues {
   /** Key can change keys */
   AUTH = 1 << 0,
   /** Key can set network features (User expiry, did issuance, etc.) */
@@ -126,26 +127,26 @@ const networkKeyFlagsArray = [
   NetworkKeyFlagsValues.ACCESS_VAULT,
 ];
 
-class NetworkKeyFlags{
-  constructor(public value: u16){}
+class NetworkKeyFlags {
+  constructor(public value: u16) {}
 
-  static size(): number{
+  static size(): number {
     return 2;
   }
 
-  static read(buffer: Buffer, offset: { offset: number }): NetworkKeyFlags{
+  static read(buffer: Buffer, offset: { offset: number }): NetworkKeyFlags {
     const value = u16.read(buffer, offset);
     return new NetworkKeyFlags(value);
   }
 
-  hasFlag(flag: NetworkKeyFlagsValues): boolean{
+  hasFlag(flag: NetworkKeyFlagsValues): boolean {
     return (this.value.value & flag) === flag;
   }
 
-  toFlagsArray(): NetworkKeyFlagsValues[]{
+  toFlagsArray(): NetworkKeyFlagsValues[] {
     const flags: NetworkKeyFlagsValues[] = [];
-    for(const flag of networkKeyFlagsArray){
-      if(this.hasFlag(flag)){
+    for (const flag of networkKeyFlagsArray) {
+      if (this.hasFlag(flag)) {
         flags.push(flag);
       }
     }
@@ -153,8 +154,7 @@ class NetworkKeyFlags{
   }
 }
 
-
-class GatekeeperNetwork{
+class GatekeeperNetwork {
   constructor(
     public version: u8,
     public networkFeatures: u8[][],
@@ -163,10 +163,10 @@ class GatekeeperNetwork{
     public networkDataLength: u16,
     public signerBump: u8,
     public fees: NetworkFees[],
-    public authKeys: [NetworkKeyFlags, PublicKey][],
+    public authKeys: [NetworkKeyFlags, PublicKey][]
   ) {}
 
-  static read(buffer: Buffer, offset: { offset: number }): GatekeeperNetwork{
+  static read(buffer: Buffer, offset: { offset: number }): GatekeeperNetwork {
     const version = u8.read(buffer, offset);
     const networkFeatures = readArray(buffer, offset, 128, (buffer, offset) => {
       return readArray(buffer, offset, 32, (buffer, offset) => {
@@ -181,12 +181,20 @@ class GatekeeperNetwork{
     const authKeysCount = u16.read(buffer, offset);
     const startOffset = offset.offset;
     const fees = readArray(buffer, offset, feesCount.value, NetworkFees.read);
-    const authKeysOffset = roundToNext(startOffset + feesCount.value * NetworkFees.size(), NetworkKeyFlags.size() + 32);
-    const authKeys: [NetworkKeyFlags, PublicKey][] = readArray(buffer, { offset: authKeysOffset }, authKeysCount.value, (buffer, offset) => {
-      const flags = NetworkKeyFlags.read(buffer, offset);
-      const key = readPublicKey(buffer, offset);
-      return [flags, key];
-    });
+    const authKeysOffset = roundToNext(
+      startOffset + feesCount.value * NetworkFees.size(),
+      NetworkKeyFlags.size() + 32
+    );
+    const authKeys: [NetworkKeyFlags, PublicKey][] = readArray(
+      buffer,
+      { offset: authKeysOffset },
+      authKeysCount.value,
+      (buffer, offset) => {
+        const flags = NetworkKeyFlags.read(buffer, offset);
+        const key = readPublicKey(buffer, offset);
+        return [flags, key];
+      }
+    );
 
     return new GatekeeperNetwork(
       version,
@@ -196,13 +204,15 @@ class GatekeeperNetwork{
       networkDataLength,
       signerBump,
       fees,
-      authKeys,
+      authKeys
     );
   }
 }
 
-
-async function getNetworkAccount(connection: Connection, key: PublicKey): Promise<GatekeeperNetwork>{
+async function getNetworkAccount(
+  connection: Connection,
+  key: PublicKey
+): Promise<GatekeeperNetwork> {
   const info = await connection.getAccountInfo(key);
   return GatekeeperNetwork.read(info.data, { offset: 1 });
 }
