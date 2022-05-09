@@ -1,6 +1,9 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 
-function readPublicKey(buffer: Buffer, offset: { offset: number }): PublicKey {
+export function readPublicKey(
+  buffer: Buffer,
+  offset: { offset: number }
+): PublicKey {
   const public_key = new PublicKey(
     buffer.slice(offset.offset, offset.offset + 32)
   );
@@ -8,7 +11,7 @@ function readPublicKey(buffer: Buffer, offset: { offset: number }): PublicKey {
   return public_key;
 }
 
-function readArray<T>(
+export function readArray<T>(
   buffer: Buffer,
   offset: { offset: number },
   length: number,
@@ -21,7 +24,7 @@ function readArray<T>(
   return result;
 }
 
-class u8 {
+export class u8 {
   constructor(public value: number) {}
   static read(buffer: Buffer, offset: { offset: number }): u8 {
     const value = buffer.readUInt8(offset.offset);
@@ -29,7 +32,7 @@ class u8 {
     return new u8(value);
   }
 }
-class u16 {
+export class u16 {
   constructor(public value: number) {}
   static read(buffer: Buffer, offset: { offset: number }): u16 {
     const value = buffer.readUInt16LE(offset.offset);
@@ -37,7 +40,7 @@ class u16 {
     return new u16(value);
   }
 }
-class u32 {
+export class u32 {
   constructor(public value: number) {}
   static read(buffer: Buffer, offset: { offset: number }): u32 {
     const value = buffer.readUInt32LE(offset.offset);
@@ -45,7 +48,7 @@ class u32 {
     return new u32(value);
   }
 }
-class u64 {
+export class u64 {
   constructor(public value: bigint) {}
   static read(buffer: Buffer, offset: { offset: number }): u64 {
     const value = buffer.readBigUInt64LE(offset.offset);
@@ -53,7 +56,7 @@ class u64 {
     return new u64(value);
   }
 }
-class i64 {
+export class i64 {
   constructor(public value: bigint) {}
   static read(buffer: Buffer, offset: { offset: number }): i64 {
     const value = buffer.readBigInt64LE(offset.offset);
@@ -62,7 +65,7 @@ class i64 {
   }
 }
 
-class NetworkFees {
+export class NetworkFees {
   constructor(
     public token: PublicKey,
     public issue: u16,
@@ -85,11 +88,7 @@ class NetworkFees {
   }
 }
 
-function roundToNext(x: number, multiple: number): number {
-  return ((x + multiple - 1) / multiple) * multiple;
-}
-
-enum NetworkKeyFlagsValues {
+export enum NetworkKeyFlagsValues {
   /** Key can change keys */
   AUTH = 1 << 0,
   /** Key can set network features (User expiry, did issuance, etc.) */
@@ -113,7 +112,7 @@ enum NetworkKeyFlagsValues {
   /** Key can access the network's vault */
   ACCESS_VAULT = 1 << 10,
 }
-const networkKeyFlagsArray = [
+export const networkKeyFlagsArray = [
   NetworkKeyFlagsValues.AUTH,
   NetworkKeyFlagsValues.SET_FEATURES,
   NetworkKeyFlagsValues.CREATE_GATEKEEPER,
@@ -127,7 +126,7 @@ const networkKeyFlagsArray = [
   NetworkKeyFlagsValues.ACCESS_VAULT,
 ];
 
-class NetworkKeyFlags {
+export class NetworkKeyFlags {
   constructor(public value: u16) {}
 
   static size(): number {
@@ -154,7 +153,23 @@ class NetworkKeyFlags {
   }
 }
 
-class GatekeeperNetwork {
+const maxNetworkFees = 128;
+const maxAuthKeys = 128;
+export class NetworkAuthKey {
+  constructor(public flags: NetworkKeyFlags, public key: PublicKey) {}
+
+  static read(buffer: Buffer, offset: { offset: number }): NetworkAuthKey {
+    const flags = NetworkKeyFlags.read(buffer, offset);
+    const key = readPublicKey(buffer, offset);
+    return new NetworkAuthKey(flags, key);
+  }
+
+  static size(): number {
+    return NetworkKeyFlags.size() + 32;
+  }
+}
+
+export class GatekeeperNetwork {
   constructor(
     public version: u8,
     public networkFeatures: u8[][],
@@ -163,7 +178,7 @@ class GatekeeperNetwork {
     public networkDataLength: u16,
     public signerBump: u8,
     public fees: NetworkFees[],
-    public authKeys: [NetworkKeyFlags, PublicKey][]
+    public authKeys: NetworkAuthKey[]
   ) {}
 
   static read(buffer: Buffer, offset: { offset: number }): GatekeeperNetwork {
@@ -179,22 +194,20 @@ class GatekeeperNetwork {
     const signerBump = u8.read(buffer, offset);
     const feesCount = u16.read(buffer, offset);
     const authKeysCount = u16.read(buffer, offset);
-    const startOffset = offset.offset;
-    const fees = readArray(buffer, offset, feesCount.value, NetworkFees.read);
-    const authKeysOffset = roundToNext(
-      startOffset + feesCount.value * NetworkFees.size(),
-      NetworkKeyFlags.size() + 32
-    );
-    const authKeys: [NetworkKeyFlags, PublicKey][] = readArray(
+    const fees = readArray(
       buffer,
-      { offset: authKeysOffset },
-      authKeysCount.value,
-      (buffer, offset) => {
-        const flags = NetworkKeyFlags.read(buffer, offset);
-        const key = readPublicKey(buffer, offset);
-        return [flags, key];
-      }
+      { offset: offset.offset },
+      feesCount.value,
+      NetworkFees.read
     );
+    offset.offset += maxNetworkFees * NetworkFees.size();
+    const authKeys = readArray(
+      buffer,
+      { offset: offset.offset },
+      authKeysCount.value,
+      NetworkAuthKey.read
+    );
+    offset.offset += maxAuthKeys * NetworkAuthKey.size();
 
     return new GatekeeperNetwork(
       version,
@@ -209,10 +222,16 @@ class GatekeeperNetwork {
   }
 }
 
-async function getNetworkAccount(
+export async function getNetworkAccount(
   connection: Connection,
   key: PublicKey
-): Promise<GatekeeperNetwork> {
+): Promise<GatekeeperNetwork | null> {
   const info = await connection.getAccountInfo(key);
+  if (!info) {
+    return null;
+  }
+  if (info.data.at(0) !== 1) {
+    return null;
+  }
   return GatekeeperNetwork.read(info.data, { offset: 1 });
 }
