@@ -56,6 +56,14 @@ export class u64 {
     return new u64(value);
   }
 }
+export class i8 {
+  constructor(public value: number) {}
+  static read(buffer: Buffer, offset: { offset: number }): i8 {
+    const value = buffer.readInt8(offset.offset);
+    offset.offset += 1;
+    return new i8(value);
+  }
+}
 export class i64 {
   constructor(public value: bigint) {}
   static read(buffer: Buffer, offset: { offset: number }): i64 {
