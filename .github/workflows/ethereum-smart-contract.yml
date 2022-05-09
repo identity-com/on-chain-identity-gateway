@@ -3,8 +3,9 @@ on:
   push:
     paths:
       - 'ethereum/smart-contract/**'
-      - '.github/**'
   pull_request:
+    paths:
+      - 'ethereum/smart-contract/**'
 jobs:
   ethereum-gateway-smart-contract-test:
     name: Build and test the ethereum smart-contract code on ${{ matrix.node }} and ${{ matrix.os }}
