@@ -51,7 +51,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --tests -p gateway_program_v2 --features test-bpf --manifest-path solana/Cargo.toml -- --deny=warnings
+          args: --tests -p gateway_program_v2 --all-features --manifest-path solana/Cargo.toml -- --deny=warnings
 
   solana-gateway-program-v2-build:
     name: Build the v2 solana rust code on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
