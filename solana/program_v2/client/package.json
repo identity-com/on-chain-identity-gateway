@@ -14,7 +14,7 @@
     "compile": "tsc -p tsconfig.build.json",
     "prepare": "yarn build",
     "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'test/**/*.ts'",
-    "lint": "eslint src/ test/ scripts/ --ext .ts",
+    "lint": "eslint src/ --ext .ts",
     "lint:fix": "yarn lint --fix",
     "doc": "yarn typedoc src/index.ts --readme none"
   },
