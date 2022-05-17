@@ -118,7 +118,9 @@ impl GatewayContext {
         self.context
             .banks_client
             .process_transaction(transaction)
-            .await
+            .await?;
+
+        Ok(())
     }
 
     pub async fn issue_gateway_token_transaction(
@@ -146,7 +148,9 @@ impl GatewayContext {
         self.context
             .banks_client
             .process_transaction(transaction)
-            .await
+            .await?;
+
+        Ok(())
     }
 
     pub async fn update_gateway_token_expiry_transaction(
@@ -175,7 +179,9 @@ impl GatewayContext {
         self.context
             .banks_client
             .process_transaction(transaction)
-            .await
+            .await?;
+
+        Ok(())
     }
 
     pub async fn set_gateway_token_state_transaction(
@@ -199,7 +205,9 @@ impl GatewayContext {
         self.context
             .banks_client
             .process_transaction(transaction)
-            .await
+            .await?;
+
+        Ok(())
     }
 
     pub async fn attempt_add_gatekeeper_without_network_signature(
@@ -231,7 +239,9 @@ impl GatewayContext {
         self.context
             .banks_client
             .process_transaction(transaction)
-            .await
+            .await?;
+
+        Ok(())
     }
 
     pub async fn add_gatekeeper(&mut self) -> Pubkey {
