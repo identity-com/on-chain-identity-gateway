@@ -130,20 +130,23 @@ describe("Test GatewayTSCallData class", function () {
     await assert.rejects(gatewayLib.burn(sampleTokenId));
   }).timeout(4000);
 
-  it("Test freeze token function, should pass calldata checks", async () => {
-    const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
-    const transaction = await gatewayLib.freeze(tokenId);
+  it.skip(
+    "Test freeze token function, should pass calldata checks",
+    async () => {
+      const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
+      const transaction = await gatewayLib.freeze(tokenId);
 
-    const args = [tokenId];
-    const argsTypes = ["uint256"];
-    const fragment: FunctionFragment =
-      gatewayLib.gatewayTokens[defaultGatewayToken].tokenInstance.contract
-        .interface.functions["freeze(uint256)"];
-    const sigHash = computeSigHash(fragment);
-    const calldata = computeCallData(sigHash, argsTypes, args);
+      const args = [tokenId];
+      const argsTypes = ["uint256"];
+      const fragment: FunctionFragment =
+        gatewayLib.gatewayTokens[defaultGatewayToken].tokenInstance.contract
+          .interface.functions["freeze(uint256)"];
+      const sigHash = computeSigHash(fragment);
+      const calldata = computeCallData(sigHash, argsTypes, args);
 
-    assert.equal(transaction.data, calldata);
-  }).timeout(10_000);
+      assert.equal(transaction.data, calldata);
+    }
+  ).timeout(10_000);
 
   it("Try to freeze non-existing token, expect revert", async () => {
     await assert.rejects(gatewayLib.freeze(sampleTokenId));
@@ -181,22 +184,25 @@ describe("Test GatewayTSCallData class", function () {
     await assert.rejects(gatewayLib.unfreeze(sampleTokenId));
   }).timeout(4000);
 
-  it("Test refresh token function, should pass calldata checks", async () => {
-    const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
-    const argsTypes = ["uint256", "uint256"];
-    const fragment: FunctionFragment =
-      gatewayLib.gatewayTokens[defaultGatewayToken].tokenInstance.contract
-        .interface.functions["setExpiration(uint256,uint256)"];
+  it.skip(
+    "Test refresh token function, should pass calldata checks",
+    async () => {
+      const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
+      const argsTypes = ["uint256", "uint256"];
+      const fragment: FunctionFragment =
+        gatewayLib.gatewayTokens[defaultGatewayToken].tokenInstance.contract
+          .interface.functions["setExpiration(uint256,uint256)"];
 
-    const expiry = DEFAULT_EXPIRATION_BN.mul(BigNumber.from("2")); // 28 days
-    const expiration = getExpirationTime(expiry);
-    const transaction = await gatewayLib.refresh(tokenId, expiry);
+      const expiry = DEFAULT_EXPIRATION_BN.mul(BigNumber.from("2")); // 28 days
+      const expiration = getExpirationTime(expiry);
+      const transaction = await gatewayLib.refresh(tokenId, expiry);
 
-    const args = [tokenId, expiration];
-    const sigHash = computeSigHash(fragment);
-    const calldata = computeCallData(sigHash, argsTypes, args);
-    assert.equal(transaction.data, calldata);
-  }).timeout(10_000);
+      const args = [tokenId, expiration];
+      const sigHash = computeSigHash(fragment);
+      const calldata = computeCallData(sigHash, argsTypes, args);
+      assert.equal(transaction.data, calldata);
+    }
+  ).timeout(10_000);
 
   it("Try to refresh non-existing token, expect revert", async () => {
     const expiration = getExpirationTime();
@@ -205,7 +211,11 @@ describe("Test GatewayTSCallData class", function () {
 
   it("Try to initialize library with incorrect default token, expect default gateway token used with 0 index", async () => {
     const network = await provider.getNetwork();
-    gatewayLib = new GatewayTsCallData(wallet, network, "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be");
+    gatewayLib = new GatewayTsCallData(
+      wallet,
+      network,
+      "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be"
+    );
     assert.notEqual(
       gatewayLib.defaultGatewayToken,
       "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be"
