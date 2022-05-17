@@ -2,6 +2,7 @@ use crate::accounts::{GatekeeperNetwork, NetworkAuthKey};
 use crate::arguments::{GatekeeperNetworkAccount, GatewayNetworkCreate};
 use crate::pda::NetworkSignerSeeder;
 use crate::types::{NetworkFees, NetworkKeyFlags};
+use cruiser::msg;
 use cruiser::prelude::*;
 
 /// Creates a new network.
@@ -74,6 +75,7 @@ mod processor {
             Self::InstructionData,
         )> {
             let rent = Rent::get()?;
+            msg!("Data: {:#?}", data);
             Ok(((), (data.signer_bump, rent), (data, rent)))
         }
 
