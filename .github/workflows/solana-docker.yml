@@ -1,0 +1,34 @@
+name: Build solana-ociv-usage
+
+on:
+  push:
+    branches:
+      - 'feature/IDCOM-1414__Usage_oracle'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./protocol/token-usage-settlement/solana-ociv-usage
+          push: true
+          tags: ghcr.io/identity-com/on-chain-identity-gateway/solana-ociv-usage:latest
