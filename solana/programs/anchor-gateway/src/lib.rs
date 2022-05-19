@@ -2,11 +2,12 @@ use anchor_lang::prelude::*;
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
-// #[program]
-pub mod program_v_two {
+#[program]
+pub mod anchor_gateway {
     use super::*;
-    pub fn initialize() -> String {
-        String::from("initialize")
+
+    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
+        Ok(())
     }
 }
 

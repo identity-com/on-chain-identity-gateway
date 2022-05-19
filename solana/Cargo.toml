@@ -2,6 +2,7 @@
 members = [
     "integration-lib",
     "program",
+    "programs/*"
 ]
 
 [profile.release]
