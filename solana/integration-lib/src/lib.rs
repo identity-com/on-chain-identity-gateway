@@ -20,7 +20,7 @@ use crate::{
 };
 use num_traits::AsPrimitive;
 use solana_program::entrypoint_deprecated::ProgramResult;
-use solana_program::program::invoke;
+use solana_program::program::invoke_unchecked;
 use solana_program::program_error::ProgramError;
 use solana_program::{account_info::AccountInfo, msg, pubkey::Pubkey};
 use std::str::FromStr;
@@ -156,6 +156,7 @@ impl Gateway {
         options: Option<VerificationOptions>,
     ) -> Result<(), GatewayError> {
         if gateway_token_info.owner.ne(&Gateway::program_id()) {
+            msg!("Gateway token is not owned by gateway program");
             return Err(GatewayError::IncorrectProgramId);
         }
 
@@ -173,6 +174,32 @@ impl Gateway {
         }
     }
 
+    pub fn verify_gateway_token_with_eval(
+        gateway_token_info: &AccountInfo,
+        expected_owner: &Pubkey,
+        expected_gatekeeper_key: &Pubkey,
+        options: Option<VerificationOptions>,
+        eval_function: impl FnOnce(&InPlaceGatewayToken<&[u8]>) -> ProgramResult,
+    ) -> ProgramResult {
+        if gateway_token_info.owner.ne(&Gateway::program_id()) {
+            msg!("Gateway token is not owned by gateway program");
+            return Err(GatewayError::IncorrectProgramId.into());
+        }
+
+        let data = gateway_token_info.data.borrow();
+        let gateway_token = InPlaceGatewayToken::new(&**data)?;
+
+        eval_function(&gateway_token)?;
+
+        Ok(Gateway::verify_gateway_token(
+            &gateway_token,
+            expected_owner,
+            expected_gatekeeper_key,
+            gateway_token_info.lamports.borrow().as_(),
+            options,
+        )?)
+    }
+
     /// Verifies a given token and then expires it. Only works on networks that support this feature.
     pub fn verify_and_expire_token<'a>(
         gateway_program: AccountInfo<'a>,
@@ -181,12 +208,34 @@ impl Gateway {
         gatekeeper_network: &Pubkey,
         expire_feature_account: AccountInfo<'a>,
     ) -> ProgramResult {
-        if gateway_program.key != &Self::program_id() {
-            return Err(ProgramError::IncorrectProgramId);
-        }
+        Self::verify_and_expire_token_with_eval(
+            gateway_program,
+            gateway_token_info,
+            owner,
+            gatekeeper_network,
+            expire_feature_account,
+            |_| Ok(()),
+        )
+    }
 
+    /// Verifies a given token, followed by a given evaluation function and then expires it. Only works on networks that support this feature.
+    pub fn verify_and_expire_token_with_eval<'a>(
+        gateway_program: AccountInfo<'a>,
+        gateway_token_info: AccountInfo<'a>,
+        owner: AccountInfo<'a>,
+        gatekeeper_network: &Pubkey,
+        expire_feature_account: AccountInfo<'a>,
+        eval_function: impl FnOnce(&InPlaceGatewayToken<&[u8]>) -> ProgramResult,
+    ) -> ProgramResult {
         let borrow = gateway_token_info.data.borrow();
         let gateway_token = InPlaceGatewayToken::new(&**borrow)?;
+
+        eval_function(&gateway_token)?;
+
+        if gateway_program.key != &Self::program_id() {
+            msg!("Gateway token passed is not owned by gateway program");
+            return Err(ProgramError::IncorrectProgramId);
+        }
 
         if !gateway_token.is_valid() {
             msg!("Gateway token is invalid. It has either been revoked or frozen, or has expired");
@@ -194,7 +243,7 @@ impl Gateway {
         }
         drop(borrow);
 
-        invoke(
+        invoke_unchecked(
             &expire_token(*gateway_token_info.key, *owner.key, *gatekeeper_network),
             &[
                 gateway_token_info,
@@ -210,7 +259,9 @@ impl Gateway {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use crate::state::{get_expire_address_with_seed, get_gateway_token_address_with_seed};
     use crate::test_utils::test_utils_stubs::{init, now};
+    use ::borsh::{BorshDeserialize, BorshSerialize};
     use std::{cell::RefCell, rc::Rc};
 
     fn expired_gateway_token() -> GatewayToken {
@@ -304,5 +355,92 @@ pub mod tests {
         );
 
         assert!(matches!(verify_result, Ok(())))
+    }
+
+    struct EvalOut {
+        result: ProgramResult,
+        data: GatewayToken,
+    }
+    fn run_eval(
+        mut token: GatewayToken,
+        eval: impl FnOnce(&InPlaceGatewayToken<&[u8]>) -> ProgramResult,
+    ) -> EvalOut {
+        let owner = Pubkey::new_unique();
+        token.owner_wallet = owner;
+        let network = Pubkey::new_unique();
+        token.gatekeeper_network = network;
+        let gateway_token = get_gateway_token_address_with_seed(&owner, &None, &network);
+        let expire = get_expire_address_with_seed(&network);
+        let mut token_data = token.try_to_vec().unwrap();
+        let result = Gateway::verify_and_expire_token_with_eval(
+            AccountInfo::new(
+                &Gateway::program_id(),
+                false,
+                false,
+                &mut 1_000_000,
+                &mut [],
+                &Pubkey::new_from_array([0; 32]),
+                true,
+                0,
+            ),
+            AccountInfo::new(
+                &gateway_token.0,
+                false,
+                true,
+                &mut 1_000_000,
+                &mut token_data,
+                &Gateway::program_id(),
+                false,
+                0,
+            ),
+            AccountInfo::new(
+                &owner,
+                true,
+                false,
+                &mut 1_000_000,
+                &mut [],
+                &Pubkey::new_from_array([0; 32]),
+                false,
+                0,
+            ),
+            &network,
+            AccountInfo::new(
+                &expire.0,
+                false,
+                false,
+                &mut 1_000_000,
+                &mut [],
+                &Gateway::program_id(),
+                false,
+                0,
+            ),
+            eval,
+        );
+        EvalOut {
+            result,
+            data: GatewayToken::deserialize(&mut token_data.as_slice()).unwrap(),
+        }
+    }
+
+    #[test]
+    fn verify_and_expire_gateway_token_with_func_should_fail() {
+        init();
+        let mut token = expired_gateway_token();
+        token.expire_time = Some(now() + (1 << 10));
+
+        const ERROR_CODE: u32 = 123456;
+        let result = run_eval(token, |_| Err(ProgramError::Custom(ERROR_CODE)));
+        assert_eq!(result.result, Err(ProgramError::Custom(ERROR_CODE)));
+    }
+
+    #[test]
+    fn verify_and_expire_gateway_token_with_func_should_succeed() {
+        init();
+        let mut token = expired_gateway_token();
+        token.expire_time = Some(now() + (1 << 10));
+
+        let result = run_eval(token, |_| Ok(()));
+        result.result.expect("Could not verify");
+        assert!(result.data.expire_time.unwrap() < now());
     }
 }

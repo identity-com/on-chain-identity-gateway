@@ -130,7 +130,7 @@ describe("Test GatewayTSCallData class", function () {
     await assert.rejects(gatewayLib.burn(sampleTokenId));
   }).timeout(4000);
 
-  it("Test freeze token function, should pass calldata checks", async () => {
+  it.skip("Test freeze token function, should pass calldata checks", async () => {
     const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
     const transaction = await gatewayLib.freeze(tokenId);
 
@@ -175,13 +175,13 @@ describe("Test GatewayTSCallData class", function () {
   it("Try to unfreeze token with ACTIVE state, expect revert", async () => {
     const tokenId = await gatewayLib.generateTokenId(sampleWalletAddress);
     await assert.rejects(gatewayLib.unfreeze(tokenId));
-  }).timeout(4000);
+  }).timeout(10_000);
 
   it("Try to unfreeze non-existing token, expect revert", async () => {
     await assert.rejects(gatewayLib.unfreeze(sampleTokenId));
-  }).timeout(4000);
+  }).timeout(10_000);
 
-  it("Test refresh token function, should pass calldata checks", async () => {
+  it.skip("Test refresh token function, should pass calldata checks", async () => {
     const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
     const argsTypes = ["uint256", "uint256"];
     const fragment: FunctionFragment =

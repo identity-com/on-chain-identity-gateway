@@ -2134,7 +2134,7 @@ dependencies = [
 
 [[package]]
 name = "solana-gateway"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "bitflags",
  "borsh",
@@ -2143,6 +2143,7 @@ dependencies = [
  "rand 0.7.3",
  "rand_chacha 0.2.2",
  "sol-did",
+ "solana-gateway-program",
  "solana-program",
  "solana-sdk",
  "thiserror",
