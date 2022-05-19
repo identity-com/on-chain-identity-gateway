@@ -1,12 +1,15 @@
-require("dotenv/config");
-require("@nomiclabs/hardhat-truffle5");
-require("hardhat-gas-reporter");
-require("solidity-coverage");
-require('hardhat-contract-sizer');
-require('hardhat-abi-exporter');
-require("@nomiclabs/hardhat-etherscan");
-require('hardhat-deploy');
-require('@nomiclabs/hardhat-ethers');
+import {task} from "hardhat/config";
+import '@nomiclabs/hardhat-waffle';
+import '@typechain/hardhat'
+import 'hardhat-deploy';
+import 'hardhat-contract-sizer'
+import * as dotenv from 'dotenv'
+
+import { checkGT } from "./tasks/checkGT";
+import { addGatekeeper } from "./tasks/addGatekeeper";
+import {issueGT} from "./tasks/issueGT";
+
+dotenv.config();
 
 const accounts = {
   mnemonic: process.env.MNEMONIC || "test test test test test test test test test test test junk",
@@ -14,6 +17,19 @@ const accounts = {
   initialIndex: 0,
   count: 20,
 }
+
+task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
+  .addParam('address', 'The wallet to check')
+  .setAction(checkGT)
+task('add-gatekeeper', 'check if a wallet has a gateway token for a particular gatekeeper network')
+  .addParam('gatekeeper', 'The gatekeeper to add')
+  .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to add the gatekeeper to')
+  .setAction(addGatekeeper)
+task('issue-gt', 'issue a gateway token')
+  .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to issue the token against')
+  .addParam('address', 'The wallet to issue the gateway token for')
+  .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
+  .setAction(issueGT)
 
 module.exports = {
   defaultNetwork: "hardhat",
@@ -37,6 +53,12 @@ module.exports = {
       saveDeployments: true,
       accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
       chainId: 3,
+    },
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
+      chainId: 4,
     },
   },
   solidity: {
