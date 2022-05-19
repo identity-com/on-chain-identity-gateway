@@ -49,7 +49,7 @@ describe("Test GatewayTSBase class", function () {
     assert.equal(gatewayBase.contractAddresses, addresses[ropstenNetworkID]);
   });
 
-  it("Verify gateway tokens for multiple addresses", async () => {
+  it.skip("Verify gateway tokens for multiple addresses", async () => {
     let result = await gatewayBase.verify(sampleWalletAddress);
     assert.equal(result, true);
 
