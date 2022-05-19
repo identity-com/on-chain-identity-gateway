@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
 import {
+  authorityKeypairFlag,
   clusterFlag,
-  gatekeeperKeyFlag,
-  gatekeeperNetworkKeyFlag,
+  gatekeeperNetworkPublicKeyFlag,
 } from "../util/oclif/flags";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { airdropTo } from "../util";
@@ -19,8 +19,8 @@ export default class RevokeGatekeeper extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 
@@ -38,7 +38,7 @@ export default class RevokeGatekeeper extends Command {
     const { args, flags } = await this.parse(RevokeGatekeeper);
 
     const gatekeeper: PublicKey = args.address as PublicKey;
-    const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
+    const gatekeeperNetwork = flags.authorityKeypair as Keypair;
     this.log(`Revoking: 
       gatekeeper ${gatekeeper.toBase58()}
       from network ${gatekeeperNetwork.publicKey.toBase58()}`);

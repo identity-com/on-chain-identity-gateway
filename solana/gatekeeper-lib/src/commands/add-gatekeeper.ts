@@ -5,8 +5,8 @@ import { airdropTo } from "../util";
 import { GatekeeperNetworkService } from "../service";
 import {
   clusterFlag,
-  gatekeeperKeyFlag,
-  gatekeeperNetworkKeyFlag,
+  authorityKeypairFlag,
+  gatekeeperNetworkPublicKeyFlag,
 } from "../util/oclif/flags";
 import { getConnectionFromEnv } from "../util/oclif/utils";
 
@@ -20,8 +20,8 @@ export default class AddGatekeeper extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    gatekeeperKey: gatekeeperKeyFlag(),
-    gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
     cluster: clusterFlag(),
   };
 
@@ -39,7 +39,7 @@ export default class AddGatekeeper extends Command {
     const { args, flags } = await this.parse(AddGatekeeper);
 
     const gatekeeper: PublicKey = args.address as PublicKey;
-    const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
+    const gatekeeperNetwork = flags.authorityKeypair as Keypair;
     this.log(`Adding:
       gatekeeper ${gatekeeper.toBase58()} 
       to network ${gatekeeperNetwork.publicKey.toBase58()}`);
