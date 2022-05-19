@@ -3,9 +3,9 @@ import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperNetworkPublicKeyFlag,
+  clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
 } from "../utils/flags";
@@ -22,9 +22,9 @@ export default class RevokeToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
+    cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
   };
@@ -33,7 +33,7 @@ export default class RevokeToken extends Command {
     {
       name: "tokenID",
       required: true,
-      description: "Token ID number to revoke",
+      description: "The gateway token to revoke",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
@@ -43,23 +43,23 @@ export default class RevokeToken extends Command {
     const { args, flags } = await this.parse(RevokeToken);
 
     const tokenID = args.tokenID as BigNumber;
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
+    const pk = flags.gatekeeperKeypair;
+    const provider: BaseProvider = flags.cluster;
     const confirmations = flags.confirmations;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey: string = flags.gatekeeperNetworkPublicKey;
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
     const owner = await gatewayToken.getTokenOwner(tokenID);
 
     this.log(`Revoking existing token with TokenID:
 			${tokenID.toString()} 
 			for owner ${owner}
-			on GatewayToken ${gatewayTokenAddress} contract`);
+			on GatewayToken ${gatekeeperPublicKey} contract`);
 
     const gasPrice = flags.gasPriceFee;
     const gasLimit = await gatewayToken.contract.estimateGas.revoke(tokenID);
@@ -69,10 +69,10 @@ export default class RevokeToken extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx = await gatewayToken.revoke(tokenID, txParams)
+    const tx = await gatewayToken.revoke(tokenID, txParams);
     let hash = tx.hash;
     if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
+      hash = (await tx.wait(confirmations)).transactionHash;
     }
 
     this.log(

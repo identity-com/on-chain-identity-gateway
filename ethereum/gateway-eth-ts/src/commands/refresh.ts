@@ -2,9 +2,9 @@ import { Command, Flags } from "@oclif/core";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperNetworkPublicKeyFlag,
+  clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
 } from "../utils/flags";
@@ -24,9 +24,9 @@ export default class RefreshToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperPublicKey: gatekeeperNetworkPublicKeyFlag(),
+    cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
   };
@@ -35,6 +35,7 @@ export default class RefreshToken extends Command {
     {
       name: "tokenID",
       required: true,
+      // ? Maybe this should be "Gateway Token to refresh"? Not sure...
       description: "Token ID number to refresh",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
@@ -52,8 +53,8 @@ export default class RefreshToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(RefreshToken);
 
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
+    const pk = flags.gatekeeperKeypair;
+    const provider: BaseProvider = flags.cluster;
     const confirmations = flags.confirmations;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
@@ -67,14 +68,14 @@ export default class RefreshToken extends Command {
     const expirationDate = getExpirationTime(expiry);
     const days = Math.floor(expirationDate.sub(now).div(86_400).toNumber());
 
-    const gatewayTokenAddress = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey = flags.gatekeeperPublicKey;
 
     this.log(`Refreshing existing token with TokenID:
 			${tokenID.toString()} 
 			for ${days} days
-			on GatewayToken ${gatewayTokenAddress} contract`);
+			on GatewayToken ${gatekeeperPublicKey} contract`);
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
 
     const gasPrice = flags.gasPriceFee;
     const gasLimit = await gatewayToken.contract.estimateGas.setExpiration(
@@ -87,10 +88,14 @@ export default class RefreshToken extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx = await gatewayToken.setExpiration(tokenID, expirationDate, txParams)
+    const tx = await gatewayToken.setExpiration(
+      tokenID,
+      expirationDate,
+      txParams
+    );
     let hash = tx.hash;
     if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
+      hash = (await tx.wait(confirmations)).transactionHash;
     }
 
     this.log(

@@ -3,9 +3,9 @@ import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperNetworkPublicKeyFlag,
+  clusterFlag,
   confirmationsFlag,
   gasPriceFeeFlag,
 } from "../utils/flags";
@@ -22,9 +22,9 @@ export default class AddNetworkAuthority extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
+    cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
   };
@@ -33,8 +33,8 @@ export default class AddNetworkAuthority extends Command {
     {
       name: "address",
       required: true,
-      description:
-        "Network authority address to add to the GatewayToken contract",
+      description: "The public key of the gatekeeper to add to the network",
+      // ? Same as in add-gatekeeper... and same for most remaining commands
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<string> =>
         utils.isAddress(input) ? input : null,
@@ -44,22 +44,22 @@ export default class AddNetworkAuthority extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(AddNetworkAuthority);
 
-    const pk = flags.privateKey;
+    const pk = flags.authorityKeypair;
     const authority: string = args.address as string;
-    const provider: BaseProvider = flags.network;
+    const provider: BaseProvider = flags.cluster;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey: string = flags.gatekeeperNetworkPublicKey;
     const confirmations = flags.confirmations;
 
     this.log(`Adding:
 			network authority ${authority} 
-			to GatewayToken ${gatewayTokenAddress}`);
+			to GatewayToken ${gatekeeperPublicKey}`);
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
 
     const gasPrice = flags.gasPriceFee;
     const gasLimit =
@@ -70,14 +70,12 @@ export default class AddNetworkAuthority extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx = await gatewayToken.addNetworkAuthority(authority, txParams)
+    const tx = await gatewayToken.addNetworkAuthority(authority, txParams);
     let hash = tx.hash;
     if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
+      hash = (await tx.wait(confirmations)).transactionHash;
     }
 
-    this.log(
-      `Added gatekeeper to Gateway Token contract. TxHash: ${hash}`
-    );
+    this.log(`Added gatekeeper to Gateway Token contract. TxHash: ${hash}`);
   }
 }

@@ -3,9 +3,9 @@ import { BigNumber, utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperNetworkPublicKeyFlag,
+  clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
   generateTokenIdFlag,
@@ -31,9 +31,9 @@ export default class IssueToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
+    cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
     generateTokenId: generateTokenIdFlag,
@@ -46,7 +46,8 @@ export default class IssueToken extends Command {
     {
       name: "address",
       required: true,
-      description: "Owner ethereum address to tokenID for",
+      description:
+        "The public address of the owner to which a token shall be issued",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<string> => {
         if (!utils.isAddress(input)) {
@@ -77,8 +78,8 @@ export default class IssueToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(IssueToken);
 
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
+    const pk = flags.gatekeeperKeypair;
+    const provider: BaseProvider = flags.cluster;
     const confirmations = flags.confirmations;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
@@ -91,10 +92,10 @@ export default class IssueToken extends Command {
     const ownerAddress = args.address as string;
     let expiration = args.expiration as BigNumber;
     const constrains = args.constrains as BigNumber;
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey: string = flags.gatekeeperNetworkPublicKey;
     const forwardTransaction = flags.forwardTransaction;
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
 
     if (generateTokenId && tokenID) {
       tokenID = generateId(ownerAddress, constrains);
@@ -127,14 +128,14 @@ export default class IssueToken extends Command {
       expiration,
       bitmask,
       null,
-      gatewayTokenAddress,
+      gatekeeperPublicKey,
       txParams
     );
 
     this.log(`Issuing new token with TokenID:
 			${tokenID.toString()} 
 			for owner ${ownerAddress}
-			on GatewayToken ${gatewayTokenAddress} contract`);
+			on GatewayToken ${gatekeeperPublicKey} contract`);
 
     if (confirmations > 0) {
       const tx = (await sendableTransaction.send()).confirm();

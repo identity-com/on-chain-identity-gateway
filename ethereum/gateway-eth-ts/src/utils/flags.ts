@@ -12,7 +12,7 @@ import {
 import { getProvider } from "./providers";
 import { estimateGasPrice, GasPriceKey } from "./gas";
 
-export const privateKeyFlag = Flags.build<string>({
+export const authorityKeypairFlag = Flags.build<string>({
   char: "p",
   env: "PRIVATE_KEY",
   parse: async (input: string) => input,
@@ -20,7 +20,7 @@ export const privateKeyFlag = Flags.build<string>({
   description: "The ethereum address private key for signing messages",
 });
 
-export const gatewayTokenAddressFlag = Flags.build<string>({
+export const gatekeeperNetworkPublicKeyFlag = Flags.build<string>({
   char: "t",
   env: "GATEWAY_TOKEN",
   parse: async (input: string) => (utils.isAddress(input) ? input : null),
@@ -37,7 +37,7 @@ export const gatewayTokenControllerFlag = Flags.build<string>({
   description: "GatewayTokenController address to target",
 });
 
-export const networkFlag = Flags.build<BaseProvider>({
+export const clusterFlag = Flags.build<BaseProvider>({
   char: "n",
   env: "GTS_DEFAULT_NETWORK",
   parse: async (input: string) => getProvider(input),
@@ -65,8 +65,9 @@ export const forwardTransactionFlag = Flags.boolean<boolean>({
   parse: async (input: boolean) => input,
   default: false,
   allowNo: true,
-  description: "Whether the transaction will be sent via the Forwarder contract",
-})
+  description:
+    "Whether the transaction will be sent via the Forwarder contract",
+});
 
 export const generateTokenIdFlag = Flags.boolean<boolean>({
   char: "g",

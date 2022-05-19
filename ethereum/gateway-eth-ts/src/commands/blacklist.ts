@@ -3,8 +3,8 @@ import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayTokenController } from "../contracts";
 import {
-  privateKeyFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  clusterFlag,
   gasPriceFeeFlag,
   gatewayTokenControllerFlag,
   confirmationsFlag,
@@ -22,9 +22,9 @@ export default class Blacklist extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
     gatewayTokenController: gatewayTokenControllerFlag(),
-    network: networkFlag(),
+    cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
   };
@@ -33,7 +33,7 @@ export default class Blacklist extends Command {
     {
       name: "address",
       required: true,
-      description: "User ETH address to blacklist",
+      description: "The public key of the user to blacklist",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<string> => {
         if (!utils.isAddress(input)) {
@@ -41,14 +41,14 @@ export default class Blacklist extends Command {
         }
 
         return input;
-      }
+      },
     },
   ];
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Blacklist);
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
+    const pk = flags.gatekeeperKeypair;
+    const provider: BaseProvider = flags.cluster;
     const user = args.address as string;
     const confirmations = flags.confirmations;
 
@@ -56,8 +56,8 @@ export default class Blacklist extends Command {
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const gatewayTokenAddress: string = flags.gatewayTokenController;
-    const controller = new GatewayTokenController(signer, gatewayTokenAddress);
+    const gatekeeperPublicKey: string = flags.gatewayTokenController;
+    const controller = new GatewayTokenController(signer, gatekeeperPublicKey);
 
     this.log(`Blacklisting user: ${user}`);
 
@@ -69,14 +69,12 @@ export default class Blacklist extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx = await controller.blacklist(user, txParams)
+    const tx = await controller.blacklist(user, txParams);
     let hash = tx.hash;
     if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
+      hash = (await tx.wait(confirmations)).transactionHash;
     }
 
-    this.log(
-      `Blacklisted user with ${user} address. TxHash: ${hash}`
-    );
+    this.log(`Blacklisted user with ${user} address. TxHash: ${hash}`);
   }
 }

@@ -3,9 +3,9 @@ import { utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperNetworkPublicKeyFlag,
+  clusterFlag,
 } from "../utils/flags";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 
@@ -19,16 +19,17 @@ export default class GetTokenID extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
+    cluster: clusterFlag(),
   };
 
   static args = [
     {
       name: "address",
       required: true,
-      description: "Owner address to verify identity token for",
+      description:
+        "The public key of the owner for which to verify identity token",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<string> => {
         if (!utils.isAddress(input)) {
@@ -36,32 +37,30 @@ export default class GetTokenID extends Command {
         }
 
         return input;
-      }
+      },
     },
   ];
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(GetTokenID);
 
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
+    const pk = flags.gatekeeperKeypair;
+    const provider: BaseProvider = flags.cluster;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
     const ownerAddress = args.address as string;
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey: string = flags.gatekeeperNetworkPublicKey;
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
 
-    const tokenId = await gatewayToken.getTokenId(
-      ownerAddress
-    );
+    const tokenId = await gatewayToken.getTokenId(ownerAddress);
 
     this.log(
       `Default gateway token ID  for owner address: ${ownerAddress} 
-            is ${tokenId.toString()} on GatewayToken ${gatewayTokenAddress} contract
+            is ${tokenId.toString()} on GatewayToken ${gatekeeperPublicKey} contract
 			`
     );
   }

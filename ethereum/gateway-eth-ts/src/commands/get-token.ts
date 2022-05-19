@@ -3,9 +3,9 @@ import { BigNumber, utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import { BaseProvider } from "@ethersproject/providers";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperNetworkPublicKeyFlag,
+  clusterFlag,
 } from "../utils/flags";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 import { TokenData } from "../utils/types";
@@ -21,16 +21,17 @@ export default class GetToken extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    gatekeeperKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
+    cluster: clusterFlag(),
   };
 
   static args = [
     {
       name: "tokenID",
       required: true,
-      description: "Owner address to verify identity token for",
+      description:
+        "The public key of the owner for which to verify identity token",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
@@ -39,17 +40,17 @@ export default class GetToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(GetToken);
 
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
+    const pk = flags.gatekeeperKeypair;
+    const provider: BaseProvider = flags.cluster;
     const tokenID = args.tokenID as BigNumber;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey: string = flags.gatekeeperNetworkPublicKey;
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
 
     const token: TokenData = await gatewayToken.getToken(tokenID);
 
@@ -62,7 +63,7 @@ export default class GetToken extends Command {
             Identity: ${token?.identity} 
             Expiration: ${token?.expiration.toString()} 
             Bitmask: ${token?.bitmask.toString()}
-            on GatewayToken ${gatewayTokenAddress} contract
+            on GatewayToken ${gatekeeperPublicKey} contract
 			`
     );
   }

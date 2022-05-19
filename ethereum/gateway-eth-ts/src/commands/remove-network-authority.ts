@@ -3,9 +3,9 @@ import { BigNumber, utils, Wallet } from "ethers";
 import { BaseProvider } from "@ethersproject/providers";
 import { GatewayToken } from "../contracts/GatewayToken";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
+  authorityKeypairFlag,
+  gatekeeperNetworkPublicKeyFlag,
+  clusterFlag,
   gasPriceFeeFlag,
   confirmationsFlag,
 } from "../utils/flags";
@@ -22,9 +22,9 @@ export default class RemoveNetworkAuthority extends Command {
 
   static flags = {
     help: Flags.help({ char: "h" }),
-    privateKey: privateKeyFlag(),
-    gatewayTokenAddress: gatewayTokenAddressFlag(),
-    network: networkFlag(),
+    authorityKeypair: authorityKeypairFlag(),
+    gatekeeperNetworkPublicKey: gatekeeperNetworkPublicKeyFlag(),
+    cluster: clusterFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
   };
@@ -34,6 +34,7 @@ export default class RemoveNetworkAuthority extends Command {
       name: "address",
       required: true,
       description:
+        // ? Unclear to me what this means... Would like to change it but not sure how to describe
         "Network authority address to remove to the GatewayToken contract",
       // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<string> => {
@@ -42,15 +43,15 @@ export default class RemoveNetworkAuthority extends Command {
         }
 
         return input;
-      }
+      },
     },
   ];
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(RemoveNetworkAuthority);
 
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
+    const pk = flags.authorityKeypair;
+    const provider: BaseProvider = flags.cluster;
     let signer: Wallet;
     const confirmations = flags.confirmations;
 
@@ -62,13 +63,13 @@ export default class RemoveNetworkAuthority extends Command {
 
     signer = signer.connect(provider);
 
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const gatekeeperPublicKey: string = flags.gatekeeperNetworkPublicKey;
 
     this.log(`Removing:
 			network authority ${authority} 
-			to GatewayToken ${gatewayTokenAddress}`);
+			to GatewayToken ${gatekeeperPublicKey}`);
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayToken = new GatewayToken(signer, gatekeeperPublicKey);
 
     const gasPrice = flags.gasPriceFee;
     const gasLimit =
@@ -79,10 +80,10 @@ export default class RemoveNetworkAuthority extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx = await gatewayToken.removeNetworkAuthority(authority, txParams)
+    const tx = await gatewayToken.removeNetworkAuthority(authority, txParams);
     let hash = tx.hash;
     if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
+      hash = (await tx.wait(confirmations)).transactionHash;
     }
 
     this.log(
