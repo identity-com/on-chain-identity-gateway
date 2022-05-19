@@ -1,60 +1,72 @@
-import { BigNumber, BytesLike, Contract, Signer} from 'ethers';
-import { BaseProvider } from '@ethersproject/providers';
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+import { BigNumber, BytesLike, Contract, ContractTransaction, Overrides, Signer } from "ethers";
+import { Provider } from "@ethersproject/providers";
 import abis from "../lib/abis";
-import { TxBase } from '../utils/tx';
+import { TxBase } from "../utils/tx";
 
 export class FlagsStorage {
-    contract: Contract;
+  contract: Contract;
 
-    constructor(signerOrProvider: Signer | BaseProvider, addressOrName: string) {
-        this.contract = new Contract(
-            addressOrName,
-            abis.FlagsStorage,
-            signerOrProvider,
-          );      
-    }
+  constructor(signerOrProvider: Signer | Provider, addressOrName: string) {
+    this.contract = new Contract(
+      addressOrName,
+      abis.FlagsStorage,
+      signerOrProvider
+    );
+  }
 
-    addFlag = async (flag: BytesLike, index: number | BigNumber, txParams?: TxBase) => {
-        return await this.contract.addFlag(flag, index, txParams);
-    }
+  addFlag = async (
+    flag: BytesLike,
+    index: number | BigNumber,
+    txParams?: Overrides
+  ): Promise<ContractTransaction> => {
+    return this.contract.addFlag(flag, index, txParams) as Promise<ContractTransaction>;
+  };
 
-    addFlags = async (flags: BytesLike[], indexes: number[] | BigNumber[], txParams?: TxBase) => {
-        return await this.contract.addFlags(flags, indexes, txParams);
-    }
+  addFlags = async (
+    flags: BytesLike[],
+    indexes: number[] | BigNumber[],
+    txParams?: TxBase
+  ): Promise<ContractTransaction> => {
+    return this.contract.addFlags(flags, indexes, txParams) as Promise<ContractTransaction>;
+  };
 
-    getDAOControllerAddress = async () => {
-        return await this.contract.daoController();
-    }
+  getDAOControllerAddress = async (): Promise<string> => {
+    return this.contract.daoController() as Promise<string>;
+  };
 
-    getFlagIndex = async (flag: BytesLike):Promise<BigNumber> => {
-        return await this.contract.flagIndexes(flag);
-    }
+  getFlagIndex = async (flag: BytesLike): Promise<number> => {
+    return this.contract.flagIndexes(flag) as Promise<number>;
+  };
 
-    isFlagSupported = async (flag: BytesLike):Promise<boolean> =>  {
-        return await this.contract.isFlagSupported(flag);
-    }
+  isFlagSupported = async (flag: BytesLike): Promise<boolean> => {
+    return this.contract.isFlagSupported(flag) as Promise<boolean>;
+  };
 
-    isFlagsSupported = async (flags: BytesLike[]):Promise<boolean[]> => {
-        return await this.contract.isFlagsSupported(flags);
-    }
+  isFlagsSupported = async (flags: BytesLike[]): Promise<boolean[]> => {
+    return this.contract.isFlagsSupported(flags) as Promise<boolean[]>;
+  };
 
-    removeFlag = async (flag: BytesLike, txParams?: TxBase) => {
-        return await this.contract.removeFlag(flag, txParams);
-    }
+  removeFlag = async (flag: BytesLike, txParams?: TxBase): Promise<ContractTransaction> => {
+    return this.contract.removeFlag(flag, txParams) as Promise<ContractTransaction>;
+  };
 
-    removeFlags = async (flags: BytesLike[], txParams?: TxBase) => {
-        return await this.contract.removeFlags(flags, txParams);
-    }
+  removeFlags = async (
+    flags: BytesLike[],
+    txParams?: TxBase
+  ): Promise<ContractTransaction> => {
+    return this.contract.removeFlags(flags, txParams) as Promise<ContractTransaction>;
+  };
 
-    getSupportedBitmask = async ():Promise<BigNumber> => {
-        return await this.contract.supportedFlagsMask();
-    }
+  getSupportedBitmask = async (): Promise<BigNumber> => {
+    return this.contract.supportedFlagsMask() as Promise<BigNumber>;
+  };
 
-    getUnsupportedBitmask = async ():Promise<BigNumber> => {
-        return await this.contract.unsupportedFlagsMask();
-    }
+  getUnsupportedBitmask = async (): Promise<BigNumber> => {
+    return this.contract.unsupportedFlagsMask() as Promise<BigNumber>;
+  };
 
-    updateDAOManager = async (daoController: string) => {
-        return await this.contract.updateDAOManager(daoController);
-    }
+  updateDAOManager = async (daoController: string): Promise<ContractTransaction> => {
+    return this.contract.updateDAOManager(daoController) as Promise<ContractTransaction>;
+  };
 }

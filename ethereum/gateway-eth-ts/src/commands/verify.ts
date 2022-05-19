@@ -1,83 +1,83 @@
-import { Command, flags } from "@oclif/command";
+import { Command, Flags } from "@oclif/core";
 import { BigNumber, utils, Wallet } from "ethers";
 import { GatewayToken } from "../contracts/GatewayToken";
-import { BaseProvider } from '@ethersproject/providers';
+import { BaseProvider } from "@ethersproject/providers";
 import {
-	privateKeyFlag,
-	gatewayTokenAddressFlag,
-	networkFlag,
+  privateKeyFlag,
+  gatewayTokenAddressFlag,
+  networkFlag,
 } from "../utils/flags";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 
 export default class VerifyToken extends Command {
-	static description = "Verify existing identity using token owner address";
+  static description = "Verify existing identity using token owner address";
 
-	static examples = [
-		`$ gateway verify 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
+  static examples = [
+    `$ gateway verify 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 		`,
-	];
+  ];
 
-	static flags = {
-		help: flags.help({ char: "h" }),
-		privateKey: privateKeyFlag(),
-		gatewayTokenAddress: gatewayTokenAddressFlag(),
-		network: networkFlag(),
-	};
+  static flags = {
+    help: Flags.help({ char: "h" }),
+    privateKey: privateKeyFlag(),
+    gatewayTokenAddress: gatewayTokenAddressFlag(),
+    network: networkFlag(),
+  };
 
-	static args = [
-		{
-			name: "address",
-			required: true,
-			description: "Owner address to verify identity token for",
-			parse: (input: string) => utils.isAddress(input) ? input : null,
-		},
+  static args = [
+    {
+      name: "address",
+      required: true,
+      description: "Owner address to verify identity token for",
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
 
-		{
-			name: "tokenId",
-			required: false,
-			description: "Token ID to verify identity for",
-			parse: (input: string) => BigNumber.from(input),
-		},
-	];
+        return input;
+      }
+    },
 
-	async run() {
-		const { args, flags } = this.parse(VerifyToken);
+    {
+      name: "tokenId",
+      required: false,
+      description: "Token ID to verify identity for",
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
+    },
+  ];
 
-		const pk = flags.privateKey;
-		const provider:BaseProvider = flags.network;
-		let signer: Wallet
+  async run(): Promise<void> {
+    const { args, flags } = await this.parse(VerifyToken);
 
-		if (utils.isValidMnemonic(pk)) {
-			signer = mnemonicSigner(pk, provider)
-		} else {
-			signer = privateKeySigner(pk, provider)
-		}
+    const pk = flags.privateKey;
+    const provider: BaseProvider = flags.network;
 
-		const ownerAddress: string = args.address;
-		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
-		const tokenId: BigNumber = args.tokenId;
+    const signer: Wallet = utils.isValidMnemonic(pk)
+      ? mnemonicSigner(pk, provider)
+      : privateKeySigner(pk, provider);
 
-		this.log(`Verifying existing identity token using owner address:
+    const ownerAddress = args.address as string;
+    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const tokenId = args.tokenId as BigNumber;
+
+    this.log(`Verifying existing identity token using owner address:
 			${ownerAddress} 
 			on GatewayToken ${gatewayTokenAddress} contract`);
-		
-		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		let tx: any;
+    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		if (tokenId) {
-			tx = await gatewayToken.verifyTokenByTokenID(ownerAddress, tokenId);
-		} else  {
-			tx = await gatewayToken.verifyToken(ownerAddress);
-		}
+    const tx = await (tokenId
+      ? gatewayToken.verifyTokenByTokenID(ownerAddress, tokenId)
+      : gatewayToken.verifyToken(ownerAddress)) as unknown as boolean[]; // TODO: fix type
 
-		this.log(
-			tx[0] ? 
-			`Verified existing token for owner address: ${ownerAddress}
+    this.log(
+      tx[0]
+        ? `Verified existing token for owner address: ${ownerAddress}
 			`
-			:
-			`Unable to verify identity token for owner address: ${ownerAddress}
+        : `Unable to verify identity token for owner address: ${ownerAddress}
 			`
-		);
-	}
+    );
+  }
 }
