@@ -167,6 +167,8 @@ name = "anchor-gateway"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "bitflags",
+ "solana-program",
 ]
 
 [[package]]
