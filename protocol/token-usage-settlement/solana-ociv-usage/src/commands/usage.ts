@@ -120,7 +120,12 @@ export default class SolanaUsage extends Base {
         maxSlots: flags.maxSlots as number,
       });
 
-    const filename = `${matchedConfig.program.toBase58()}_${matchedConfig.network.toBase58()}_${firstSlot}_${lastSlot}.csv.gz`;
+    let filename;
+    if (matchedConfig.network) {
+      filename = `${matchedConfig.program.toBase58()}_${matchedConfig.network.toBase58()}_${firstSlot}_${lastSlot}.csv.gz`;
+    } else {
+      filename = `${matchedConfig.program.toBase58()}_${firstSlot}_${lastSlot}.csv.gz`;
+    }
 
     const output = uploader.createUploadStream(flags, filename);
 

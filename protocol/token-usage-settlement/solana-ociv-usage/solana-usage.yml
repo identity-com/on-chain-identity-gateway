@@ -1,4 +1,40 @@
 configs:
+  - name: GatewayV1
+    program: gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs
+    mask: [ 0, 1 ] # [start, end]
+    instructions:
+      - name: AddGatekeeper
+        mask: '00'
+        gatekeeperPosition: 2
+        gatekeeperNetworkPosition: 3
+      - name: IssueVanilla
+        mask: '01'
+        gatewayTokenPosition: 1
+        ownerPosition: 2
+        gatekeeperPosition: 4
+        gatekeeperNetworkPosition: 5
+      - name: SetState
+        mask: '02'
+        gatewayTokenPosition: 0
+        gatekeeperPosition: 1
+      - name: UpdateExpiry
+        mask: '03'
+        gatewayTokenPosition: 0
+        gatekeeperPosition: 1
+      - name: RemoveGatekeeper
+        mask: '04'
+        gatekeeperPosition: 2
+        gatekeeperNetworkPosition: 3
+      - name: ExpireToken
+        mask: '05'
+        gatewayTokenPosition: 0
+        ownerPosition: 1
+      - name: AddFeatureToNetwork
+        mask: '06'
+        gatekeeperNetworkPosition: 1
+      - name: RemoveFeatureFromNetwork
+        mask: '07'
+        gatekeeperNetworkPosition: 1
   - name: Solrise
     program: D3z8BLmMnPD1LaKwCkyCisM7iDyw9PsXXmvatUwjCuqT
     network: gatbGF9DvLAw3kWyn1EmH5Nh1Sqp8sTukF7yaQpSc71
