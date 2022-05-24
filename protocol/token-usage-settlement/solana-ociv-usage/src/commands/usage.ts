@@ -129,7 +129,7 @@ export default class SolanaUsage extends Base {
 
     const output = uploader.createUploadStream(flags, filename);
 
-    printCSV(output, billableTx);
+    printCSV(output, billableTx, matchedConfig.hasGatekeeperColumn);
 
     output.end();
 
