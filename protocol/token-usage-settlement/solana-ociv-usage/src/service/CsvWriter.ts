@@ -13,7 +13,7 @@ export const printCSV = (
   // write output
   // header
   output.write(
-    `Identifier,Timestamp,Program Name,Program Address,Gatekeeper Network Address,Instruction Name,Signature,Result,Gateway Token Address,Wallet Address,Total Instructions,Instruction Position\n`
+    `Identifier,Timestamp,Program Name,Program Address,Gatekeeper Network Address,Instruction Name,Signature,Result,Gateway Token Address,Wallet Address,Total Instructions,Instruction Position,Gatekeeper Address\n`
   );
 
   // data
@@ -23,14 +23,15 @@ export const printCSV = (
       `${format_time(row.rawTransaction.blockTime)},` +
       `${row.progamName},` +
       `${row.programAddress.toBase58()},` +
-      `${row.networkAddress.toBase58()},` +
+      `${row.networkAddress?.toBase58() || ""},` +
       `${row.instructionName},` +
       `${row.txSignature},` +
       `${row.rawTransaction.meta?.err ? "ERROR" : "SUCCESS"},` +
-      `${row.gatewayToken.toBase58()},` +
-      `${row.ownerAddress.toBase58()},` +
+      `${row.gatewayToken?.toBase58() || ""},` +
+      `${row.ownerAddress?.toBase58() || ""},` +
       `${row.rawTransaction.transaction.message.instructions.length},` +
-      `${row.instructionIndex}\n`;
+      `${row.instructionIndex},` +
+      `${row.gatekeeperAddress?.toBase58() || ""}\n`;
 
     output.write(string);
   });
