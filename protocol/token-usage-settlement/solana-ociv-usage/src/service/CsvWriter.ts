@@ -8,17 +8,23 @@ export const format_time = (s: number | null | undefined): string => {
 
 export const printCSV = (
   output: NodeJS.WritableStream,
-  instructions: BillableInstruction[]
+  instructions: BillableInstruction[],
+  hasGatekeeperColumn: boolean
 ) => {
   // write output
   // header
-  output.write(
-    `Identifier,Timestamp,Program Name,Program Address,Gatekeeper Network Address,Instruction Name,Signature,Result,Gateway Token Address,Wallet Address,Total Instructions,Instruction Position,Gatekeeper Address\n`
-  );
+  let header =
+    "Identifier,Timestamp,Program Name,Program Address,Gatekeeper Network Address,Instruction Name,Signature,Result,Gateway Token Address,Wallet Address,Total Instructions,Instruction Position";
+  if (hasGatekeeperColumn) {
+    header += ",Gatekeeper Address";
+  }
+  header += "\n";
+
+  output.write(header);
 
   // data
   instructions.forEach((row) => {
-    const string =
+    let line =
       `${row.txSignature}-${row.instructionIndex},` +
       `${format_time(row.rawTransaction.blockTime)},` +
       `${row.progamName},` +
@@ -30,9 +36,13 @@ export const printCSV = (
       `${row.gatewayToken?.toBase58() || ""},` +
       `${row.ownerAddress?.toBase58() || ""},` +
       `${row.rawTransaction.transaction.message.instructions.length},` +
-      `${row.instructionIndex},` +
-      `${row.gatekeeperAddress?.toBase58() || ""}\n`;
+      `${row.instructionIndex}`;
 
-    output.write(string);
+    if (hasGatekeeperColumn) {
+      line += `,${row.gatekeeperAddress?.toBase58() || ""}`;
+    }
+    line += "\n";
+
+    output.write(line);
   });
 };

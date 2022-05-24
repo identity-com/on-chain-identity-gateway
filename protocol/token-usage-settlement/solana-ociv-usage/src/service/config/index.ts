@@ -29,6 +29,7 @@ export type UsageConfig = {
   program: PublicKey;
   network: PublicKey | undefined;
   mask: [number, number]; // [start, end]
+  hasGatekeeperColumn: boolean;
   instructions: { [key: string]: InstructionConfig | undefined }; // keyed by mask
 };
 
@@ -51,11 +52,15 @@ const parseRawConfig = (rawConfig: any): ConfigFile => {
         ownerPosition: instruction.ownerPosition,
       };
     });
+    const hasGatekeeperColumn: boolean = config.instructions.some(
+      (i: any) => i.gatekeeperPosition !== undefined
+    );
     return {
       name: config.name,
       program: new PublicKey(config.program),
       network: config.network ? new PublicKey(config.network) : undefined,
       mask: config.mask,
+      hasGatekeeperColumn,
       instructions,
     };
   });
