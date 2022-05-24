@@ -15,10 +15,10 @@ import { u8, u16, i64, NetworkAuthKey, NetworkKeyFlags } from "../src/state";
 describe("Gateway v2 Client", () => {
   describe("Create Network", () => {
     it("should be equivalent", async function () {
-      this.timeout(120_000);
+      this.timeout(30_000);
       let connection = new Connection("http://localhost:8899", "confirmed");
       const programId = new PublicKey(
-        "gatdxSHk5D1dBYpEHV4MjVd2BshCVTmKuYZHxwdwUWh"
+        "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
       );
       const network = Keypair.generate();
       const funder = Keypair.generate();
@@ -36,18 +36,26 @@ describe("Gateway v2 Client", () => {
           ),
         ]
       );
+      console.log("network auth key");
       const transactionInstructions = await createNetwork(
         programId,
         network,
         funder,
         networkData
       );
+      const latestBlockHash = await connection.getLatestBlockhash();
 
       await connection
         .requestAirdrop(funder.publicKey, LAMPORTS_PER_SOL * 10)
         .then((res) => {
-          return connection.confirmTransaction(res, "confirmed");
+          return connection.confirmTransaction({
+            blockhash: latestBlockHash.blockhash,
+            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+            signature: res,
+          });
         });
+
+      console.log("airdropped");
       const transaction = new Transaction();
       transaction.add(transactionInstructions[0]);
       transaction.add(transactionInstructions[1]);
@@ -60,15 +68,18 @@ describe("Gateway v2 Client", () => {
         [network, funder],
         { skipPreflight: true }
       );
-      const confirmation = await connection.confirmTransaction(
-        transactionSignature
-      );
+      const latestBlockHash2 = await connection.getLatestBlockhash();
+
+      const confirmation = await connection.confirmTransaction({
+        blockhash: latestBlockHash2.blockhash,
+        lastValidBlockHeight: latestBlockHash2.lastValidBlockHeight,
+        signature: transactionSignature,
+      });
+      console.log("confirmation: ", confirmation);
       if (confirmation.value.err) {
         console.error(
           await connection.getTransaction(transactionSignature).then((res) => {
-            if (res && res.meta) {
-              return res.meta.logMessages;
-            }
+            return res?.meta?.logMessages;
           })
         );
         throw confirmation.value.err;
