@@ -1,8 +1,6 @@
-use crate::types::{NetworkKeyFlags, NetworkFees};
+use crate::types::{NetworkFees, NetworkKeyFlags};
 use anchor_lang::prelude::*;
-pub use solana_program:: {
-    clock::UnixTimestamp
-};
+pub use solana_program::clock::UnixTimestamp;
 
 #[derive(Debug)]
 pub struct GatekeeperNetwork {
@@ -41,5 +39,5 @@ pub struct NetworkAuthKey {
     /// The permissions this key has
     pub flags: NetworkKeyFlags,
     /// The key
-    pub key: Pubkey
+    pub key: Pubkey,
 }

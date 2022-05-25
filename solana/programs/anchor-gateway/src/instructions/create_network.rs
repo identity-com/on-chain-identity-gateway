@@ -5,7 +5,8 @@ use solana_program::clock::UnixTimestamp;
 // use cruiser::msg;
 // use cruiser::prelude::*;
 
-/// Creates a new network.
+// TODO: Instruction and CreateNetworkAccounts are not recognized and I don't know what to do with them
+// Creates a new network.
 // #[derive(Debug)]
 // pub struct CreateNetwork;
 // impl<AI> Instruction<AI> for CreateNetwork {
@@ -14,12 +15,13 @@ use solana_program::clock::UnixTimestamp;
 //     type ReturnType = ();
 // }
 
-// / Accounts for [`CreateNetwork`].
-// #[derive(AccountArgument, Debug)]
-// #[account_argument(account_info = AI, generics = [<'a> where AI: ToSolanaAccountInfo<'a>])]
-// #[validate(data = (signer_bump: u8, rent: Rent))]
+// TODO: AccountArgument is unknown and don't know how to resolve. account_argument and validate macros are unknown
+// Accounts for [`CreateNetwork`].
+#[derive(AccountArgument, Debug)]
+#[account_argument(account_info = AI, generics = [<'a> where AI: ToSolanaAccountInfo<'a>])]
+#[validate(data = (signer_bump: u8, rent: Rent))]
 // pub struct CreateNetworkAccounts<AI> {
-//     /// The network to create.
+/// The network to create.
 //     #[validate(data = GatewayNetworkCreate{
 //         system_program: &self.system_program,
 //         rent: Some(rent),
@@ -27,32 +29,35 @@ use solana_program::clock::UnixTimestamp;
 //         funder_seeds: None,
 //         cpi: CPIChecked,
 //     })]
+// TODO: NetworkSignerSeeder and Seeds are unknown
 //     pub network: GatekeeperNetworkAccount<AI>,
-//     /// The system program
+/// The system program
 //     pub system_program: SystemProgram<AI>,
-//     /// The signer for the network.
+/// The signer for the network.
 //     #[validate(data = (NetworkSignerSeeder{ network: *self.network.info().key() }, signer_bump))]
 //     pub network_signer: Seeds<AI, NetworkSignerSeeder>,
-//     /// The funder for the network if needed.
+/// The funder for the network if needed.
 //     #[validate(signer(IfSome), writable(IfSome))]
 //     pub funder: Option<AI>,
 // }
 /// Data for [`CreateNetwork`].
-#[derive(Debug, AnchorSerialize, AnchorDeserialize)]
-pub struct CreateNetworkData {
-    /// The [`GatekeeperNetwork::auth_threshold`].
-    pub auth_threshold: u8,
-    /// The [`GatekeeperNetwork::pass_expire_time`].
-    pub pass_expire_time: UnixTimestamp,
-    /// The [`GatekeeperNetwork::network_data_len`].
-    pub network_data_len: u16,
-    /// The [`GatekeeperNetwork::signer_bump`].
-    pub signer_bump: u8,
-    /// The [`GatekeeperNetwork::fees`].
-    pub fees: Vec<NetworkFees>,
-    /// The [`GatekeeperNetwork::auth_keys`].
-    pub auth_keys: Vec<NetworkAuthKey>,
-}
+
+// TODO: Conflicting implementation of Debug
+// #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
+// pub struct CreateNetworkData {
+/// The [`GatekeeperNetwork::auth_threshold`].
+//     pub auth_threshold: u8,
+/// The [`GatekeeperNetwork::pass_expire_time`].
+//     pub pass_expire_time: UnixTimestamp,
+/// The [`GatekeeperNetwork::network_data_len`].
+//     pub network_data_len: u16,
+/// The [`GatekeeperNetwork::signer_bump`].
+//     pub signer_bump: u8,
+/// The [`GatekeeperNetwork::fees`].
+//     pub fees: Vec<NetworkFees>,
+/// The [`GatekeeperNetwork::auth_keys`].
+//     pub auth_keys: Vec<NetworkAuthKey>,
+// }
 
 #[cfg(feature = "processor")]
 mod processor {

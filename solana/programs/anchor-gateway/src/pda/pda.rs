@@ -11,6 +11,7 @@ pub struct NetworkSignerSeeder {
     /// The network the signer is for
     pub network: Pubkey,
 }
+// TODO: PDASeeder and PDASeed not recognized
 // impl PDASeeder for NetworkSignerSeeder {
 //     fn seeds<'a>(&'a self) -> Box<dyn Iterator<Item = &'a dyn PDASeed> + 'a> {
 //         Box::new([&NETWORK_SIGNER_SEED as &dyn PDASeed, &self.network].into_iter())
@@ -23,6 +24,7 @@ pub struct GatekeeperSignerSeeder {
     /// The gatekeeper the signer is for
     pub gatekeeper: Pubkey,
 }
+// TODO: PDASeeder and PDASeed not recognized
 // impl PDASeeder for GatekeeperSignerSeeder {
 //     fn seeds<'a>(&'a self) -> Box<dyn Iterator<Item = &'a dyn PDASeed> + 'a> {
 //         Box::new([&GATEKEEPER_SIGNER_SEED as &dyn PDASeed, &self.gatekeeper].into_iter())

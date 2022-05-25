@@ -1,13 +1,12 @@
 // use crate::util::{ConstEq};
 use anchor_lang::prelude::*;
 
-pub use solana_program:: {
-    program_memory::sol_memcmp
-};
+pub use solana_program::program_memory::sol_memcmp;
 
 /// A public key that uses the system program as the [`None`] value
 #[derive(Debug, Clone, PartialEq, Eq, AnchorSerialize, AnchorDeserialize)]
 pub struct OptionalNonSystemPubkey(pub(crate) Pubkey);
+// TODO: const_eq and &SystemProgram not recognized
 // impl OptionalNonSystemPubkey {
 //     /// Turns this into an optional pubkey
 //     #[must_use]
@@ -19,15 +18,16 @@ pub struct OptionalNonSystemPubkey(pub(crate) Pubkey);
 //         }
 //     }
 // }
-impl From<OptionalNonSystemPubkey> for Option<Pubkey> {
-    fn from(from: OptionalNonSystemPubkey) -> Self {
-        if sol_memcmp(from.0.as_ref(), &[0; 32], 32) == 0 {
-            None
-        } else {
-            Some(from.0)
-        }
-    }
-}
+// impl From<OptionalNonSystemPubkey> for Option<Pubkey> {
+//     fn from(from: OptionalNonSystemPubkey) -> Self {
+//         if sol_memcmp(from.0.as_ref(), &[0; 32], 32) == 0 {
+//             None
+//         } else {
+//             Some(from.0)
+//         }
+//     }
+// }
+// TODO: const not valid for next two impl, OnChainSize not recognized
 // impl const From<Pubkey> for OptionalNonSystemPubkey {
 //     fn from(from: Pubkey) -> Self {
 //         Self(from)
@@ -36,9 +36,10 @@ impl From<OptionalNonSystemPubkey> for Option<Pubkey> {
 // impl const OnChainSize for OptionalNonSystemPubkey {
 //     const ON_CHAIN_SIZE: usize = Pubkey::ON_CHAIN_SIZE;
 // }
-// / [`InPlace::Access`] for [`OptionalNonSystemPubkey`]
-// #[derive(Debug, Copy, Clone)]
-// pub struct OptionalNonSystemPubkeyAccess<A>(A);
+// [`InPlace::Access`] for [`OptionalNonSystemPubkey`]
+#[derive(Debug, Copy, Clone)]
+// TODO: const not valid, Deref and &SystemProgram not recognized
+pub struct OptionalNonSystemPubkeyAccess<A>(A);
 // impl<A> OptionalNonSystemPubkeyAccess<A> {
 //     /// Gets this as an optional public key
 //     #[must_use]
@@ -52,7 +53,7 @@ impl From<OptionalNonSystemPubkey> for Option<Pubkey> {
 //             Some(&*self.0)
 //         }
 //     }
-
+//     // TODO: Again, const not valid, DerefMut and SystemProgram not recognized
 //     /// Sets this to the provided public key
 //     pub const fn set(&mut self, val: Option<Pubkey>)
 //     where
@@ -61,6 +62,7 @@ impl From<OptionalNonSystemPubkey> for Option<Pubkey> {
 //         *self.0 = val.unwrap_or(SystemProgram::<()>::KEY);
 //     }
 // }
+// TODO: This whole impl is red for me. Tons to change here but don't know where to start
 // impl InPlace for OptionalNonSystemPubkey {
 //     type Access<'a, A>
 //     where
@@ -73,6 +75,8 @@ impl From<OptionalNonSystemPubkey> for Option<Pubkey> {
 //         A: 'a + MappableRef + TryMappableRef + MappableRefMut + TryMappableRefMut,
 //     = OptionalNonSystemPubkeyAccess<<Pubkey as InPlace>::AccessMut<'a, A>>;
 // }
+
+// TODO: Next four impl have various keywords and variables from Cruiser that are not recognized. Not sure what to replace them with yet
 // impl InPlaceCreate for OptionalNonSystemPubkey {
 //     #[inline]
 //     fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: ()) -> CruiserResult {

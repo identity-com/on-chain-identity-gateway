@@ -1,8 +1,5 @@
 use anchor_lang::prelude::*;
-pub use solana_program:: {
-    clock::UnixTimestamp
-};
-
+pub use solana_program::clock::UnixTimestamp;
 
 /// A pass that can be issued by a [`Gatekeeper`]
 #[derive(Debug)]
@@ -35,6 +32,7 @@ pub struct PassSize {
     /// The length of gatekeeper data on a pass
     pub gatekeeper_data_len: u16,
 }
+// TODO: const not valid, OnChainSizeWithArg not recognized
 // impl const OnChainSizeWithArg<PassSize> for Pass {
 //     fn on_chain_size_with_arg(arg: PassSize) -> usize {
 //         u8::ON_CHAIN_SIZE
@@ -57,14 +55,16 @@ pub enum PassState {
     /// Pass invalid, cannot be reactivated without network approval
     Revoked,
 }
+// TODO: const not valid, OnChainSize not recognized
 // impl const OnChainSize for PassState {
 //     const ON_CHAIN_SIZE: usize = 1;
 // }
-// / [`InPlace::Access`] for [`PassState`]
+// // [`InPlace::Access`] for [`PassState`]
 // #[derive(Copy, Clone, Debug)]
 // pub struct PassStateAccess<A>(A);
 // impl<A> PassStateAccess<A>
 // where
+//     // TODO: GetNum not recognized, SetNum not recognized
 //     A: GetNum<Num = u8>,
 // {
 //     /// Gets the current state
@@ -87,6 +87,8 @@ pub enum PassState {
 //         self.0.set_num(state as u8);
 //     }
 // }
+
+// TODO: again the whole impl here is red for me... not sure what to do to fix
 // impl InPlace for PassState {
 //     type Access<'a, A>
 //     where
@@ -99,6 +101,8 @@ pub enum PassState {
 //         A: 'a + MappableRef + TryMappableRef + MappableRefMut + TryMappableRefMut,
 //     = PassStateAccess<<u8 as InPlace>::AccessMut<'a, A>>;
 // }
+
+// TODO: For the next four impl, several errors for Types and Variable keywords, probably from Cruiser mostly
 // impl InPlaceCreate for PassState {
 //     fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: ()) -> CruiserResult {
 //         u8::create_with_arg(data, arg)

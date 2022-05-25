@@ -1,7 +1,7 @@
 use crate::types::{GatekeeperFees, GatekeeperKeyFlags};
 use anchor_lang::prelude::*;
 
-/// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
+// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
 #[derive(Debug)]
 pub struct Gatekeeper {
     /// The version of this struct, should be 0 until a new version is released
@@ -34,17 +34,20 @@ pub enum GatekeeperState {
     /// Gatekeeper may not issue passes and all passes invalid
     Halted,
 }
+// TODO: const not valid(?), onChainSize not recognized
 // impl const OnChainSize for GatekeeperState {
 //     const ON_CHAIN_SIZE: usize = 1;
 // }
-// / [`InPlace::Access`] for [`GatekeeperState`]
+// [`InPlace::Access`] for [`GatekeeperState`]
+
+// TODO: GetNum and SetNum not recognized
 // #[derive(Copy, Clone, Debug)]
 // pub struct GatekeeperStateAccess<A>(A);
 // impl<A> GatekeeperStateAccess<A>
 // where
 //     A: GetNum<Num = u8>,
 // {
-//     /// Gets the current state
+//     // Gets the current state
 //     #[inline]
 //     pub fn get_state(&self) -> Option<GatekeeperState> {
 //         match self.0.get_num() {
@@ -55,7 +58,7 @@ pub enum GatekeeperState {
 //         }
 //     }
 
-//     /// Sets the state
+//     // Sets the state
 //     #[inline]
 //     pub fn set_state(&mut self, state: GatekeeperState)
 //     where
@@ -64,6 +67,7 @@ pub enum GatekeeperState {
 //         self.0.set_num(state as u8);
 //     }
 // }
+// TODO: Lots of warnings here. this whole impl is red for me
 // impl InPlace for GatekeeperState {
 //     type Access<'a, A>
 //     where
@@ -76,6 +80,7 @@ pub enum GatekeeperState {
 //         A: 'a + MappableRef + TryMappableRef + MappableRefMut + TryMappableRefMut,
 //     = GatekeeperStateAccess<<u8 as InPlace>::AccessMut<'a, A>>;
 // }
+// TODO: for next four impl, many type or variable keywords not recognized, I'm assuming from Cruiser.
 // impl InPlaceCreate for GatekeeperState {
 //     fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: ()) -> CruiserResult {
 //         u8::create_with_arg(data, arg)
@@ -118,6 +123,7 @@ pub struct GatekeeperAuthKey {
     /// The key
     pub key: Pubkey,
 }
+// TODO: OnChainSize not recognized
 // impl OnChainSize for GatekeeperAuthKey {
 //     const ON_CHAIN_SIZE: usize = GatekeeperKeyFlags::ON_CHAIN_SIZE + Pubkey::ON_CHAIN_SIZE;
 // }

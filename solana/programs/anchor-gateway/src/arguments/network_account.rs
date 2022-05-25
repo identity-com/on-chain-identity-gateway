@@ -23,13 +23,15 @@ pub struct GatewayNetworkCreate<'a, AI, CPI> {
     pub cpi: CPI,
 }
 
+// TODO: These macros are not recognized
 // / Account argument for [`GatekeeperNetwork`].
 // #[derive(Debug, AccountArgument)]
 // #[account_argument(account_info = AI, generics = [where AI: AccountInfo])]
 // #[validate(data = ())]
 // #[validate(id = create, data = (create: GatewayNetworkCreate<'a, AI, CPI>), generics = [<'a, 'b, CPI> where CPI: CPIMethod, AI: ToSolanaAccountInfo<'b>])]
-pub struct GatekeeperNetworkAccount(
-    // #[validate(id = create, data = CreateInPlace{
+// pub struct GatekeeperNetworkAccount(
+// TODO: validate macro is unknown
+//     #[validate(id = create, data = CreateInPlace{
 //     data: (),
 //     system_program: create.system_program,
 //     rent: create.rent,
@@ -39,8 +41,12 @@ pub struct GatekeeperNetworkAccount(
 //     account_seeds: None,
 //     space: INITIAL_NETWORK_SPACE,
 // })]
-// InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>,
-);
+// TODO: Next line has several issues with unknown references
+//     InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>,
+// );
+
+// TODO: Need to resolve anchor implementations of the cruiser references
+
 // impl<AI> Deref for GatekeeperNetworkAccount<AI> {
 //     type Target = InPlaceAccount<AI, GatewayAccountList, GatekeeperNetwork>;
 

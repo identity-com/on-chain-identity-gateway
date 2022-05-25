@@ -13,8 +13,9 @@ pub enum Operation {
     /// Verify a pass
     Verify,
 }
+// TODO: This impl has several Cruiser functions and keywords that aren't recognized. Still need to work around with Anchor
 // impl Operation {
-//     /// TODO: make this return a `Option<&Pubkey>` somehow
+//     // TODO: make this return a `Option<&Pubkey>` somehow
 //     pub(crate) fn get_gatekeeper_fee<'a, 'b, A>(
 //         self,
 //         fees: &'a <GatekeeperFees as InPlace>::Access<'b, A>,
