@@ -14,13 +14,14 @@ export type BillableInstruction = {
   programId: PublicKey;
   progamName: string;
   programAddress: PublicKey;
-  networkAddress: PublicKey;
+  networkAddress: PublicKey | undefined;
   instructionName: string;
   instructionIndex: number;
   rawInstruction: PartiallyDecodedInstruction;
   rawTransaction: ParsedConfirmedTransaction;
-  gatewayToken: PublicKey;
-  ownerAddress: PublicKey;
+  gatewayToken: PublicKey | undefined;
+  ownerAddress: PublicKey | undefined;
+  gatekeeperAddress: PublicKey | undefined; // optional
 };
 
 const isNotNil = R.complement(R.isNil);
@@ -30,25 +31,28 @@ export const buildBillableInstruction = (
   programId: PublicKey,
   progamName: string,
   programAddress: PublicKey,
-  networkAddress: PublicKey,
+  globalNetworkAddress: PublicKey | undefined,
   instructionName: string,
   instructionIndex: number,
   rawInstruction: PartiallyDecodedInstruction,
   rawTransaction: ParsedConfirmedTransaction,
-  gatewayToken: PublicKey,
-  ownerAddress: PublicKey
+  gatewayToken: PublicKey | undefined,
+  ownerAddress: PublicKey | undefined,
+  gatekeeperAddress: PublicKey | undefined,
+  instructionNetworkAddress: PublicKey | undefined
 ): BillableInstruction => ({
   txSignature,
   programId,
   progamName,
   programAddress,
-  networkAddress,
+  networkAddress: globalNetworkAddress || instructionNetworkAddress,
   instructionName,
   instructionIndex,
   rawInstruction,
   rawTransaction,
   gatewayToken,
   ownerAddress,
+  gatekeeperAddress,
 });
 
 const matchInstruction = (
@@ -141,8 +145,18 @@ export class ConfigBasedStrategy implements Strategy {
             idx,
             i,
             transaction,
-            i.accounts[match.gatewayTokenPosition],
-            i.accounts[match.ownerPosition]
+            match.gatewayTokenPosition !== undefined
+              ? i.accounts[match.gatewayTokenPosition]
+              : undefined,
+            match.ownerPosition !== undefined
+              ? i.accounts[match.ownerPosition]
+              : undefined,
+            match.gatekeeperPosition !== undefined
+              ? i.accounts[match.gatekeeperPosition]
+              : undefined,
+            match.gatekeeperNetworkPosition !== undefined
+              ? i.accounts[match.gatekeeperNetworkPosition]
+              : undefined
           )
       )
     )(transaction.transaction.message.instructions);

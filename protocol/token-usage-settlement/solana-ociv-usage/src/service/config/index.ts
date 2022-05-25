@@ -18,15 +18,18 @@ const DEFAULT_COMMITMENT: Commitment = "confirmed";
 export type InstructionConfig = {
   name: string;
   mask: Uint8Array;
-  gatewayTokenPosition: number;
-  ownerPosition: number;
+  gatewayTokenPosition: number | undefined; // optional
+  ownerPosition: number | undefined; // optional
+  gatekeeperPosition: number | undefined; // optional
+  gatekeeperNetworkPosition: number | undefined; // optional
 };
 
 export type UsageConfig = {
   name: string;
   program: PublicKey;
-  network: PublicKey;
+  network: PublicKey | undefined;
   mask: [number, number]; // [start, end]
+  hasGatekeeperColumn: boolean;
   instructions: { [key: string]: InstructionConfig | undefined }; // keyed by mask
 };
 
@@ -43,15 +46,21 @@ const parseRawConfig = (rawConfig: any): ConfigFile => {
       instructions[instruction.mask] = {
         name: instruction.name,
         mask,
+        gatekeeperPosition: instruction.gatekeeperPosition,
+        gatekeeperNetworkPosition: instruction.gatekeeperNetworkPosition,
         gatewayTokenPosition: instruction.gatewayTokenPosition,
         ownerPosition: instruction.ownerPosition,
       };
     });
+    const hasGatekeeperColumn: boolean = config.instructions.some(
+      (i: any) => i.gatekeeperPosition !== undefined
+    );
     return {
       name: config.name,
       program: new PublicKey(config.program),
-      network: new PublicKey(config.network),
+      network: config.network ? new PublicKey(config.network) : undefined,
       mask: config.mask,
+      hasGatekeeperColumn,
       instructions,
     };
   });
