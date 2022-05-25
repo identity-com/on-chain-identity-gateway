@@ -20,13 +20,16 @@ export default {
   getLastSlot: async (
     config: AWSConfig,
     program: PublicKey,
-    network: PublicKey
+    network?: PublicKey
   ): Promise<number | undefined> => {
     validateConfig(config);
 
-    const prefix = `${
-      config.folder
-    }/${program.toBase58()}_${network.toBase58()}_`;
+    let prefix;
+    if (network) {
+      prefix = `${config.folder}/${program.toBase58()}_${network.toBase58()}_`;
+    } else {
+      prefix = `${config.folder}/${program.toBase58()}_`;
+    }
 
     let lastSlot: number | undefined;
 

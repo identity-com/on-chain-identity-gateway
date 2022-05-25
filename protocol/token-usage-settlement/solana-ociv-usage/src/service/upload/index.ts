@@ -13,7 +13,7 @@ export interface Uploader {
   getLastSlot(
     config: any,
     program: PublicKey,
-    network: PublicKey
+    network?: PublicKey
   ): Promise<number | undefined>;
 
   createUploadStream(config: any, filename: string): NodeJS.WritableStream;
