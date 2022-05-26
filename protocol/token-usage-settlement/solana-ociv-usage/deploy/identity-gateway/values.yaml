@@ -1,5 +1,5 @@
 jobs:
-  - name: solana-ociv-usage
+  - name: identity-gateway-usage
     image:
       repository: ghcr.io/identity-com/on-chain-identity-gateway/solana-ociv-usage
       tag: latest
@@ -8,28 +8,28 @@ jobs:
       - name: CLUSTER_URL
         valueFrom:
           secretKeyRef:
-            name: solana-ociv-usage
+            name: identity-chain-data
             key: CLUSTER_URL
       - name: AWS_ACCESS_KEY_ID
         valueFrom:
           secretKeyRef:
-            name: solana-ociv-usage
+            name: identity-chain-data
             key: AWS_ACCESS_KEY_ID
       - name: AWS_REGION
-        value: us-east-1
+        value: us-east-2
       - name: AWS_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
-            name: solana-ociv-usage
+            name: identity-chain-data
             key: AWS_SECRET_ACCESS_KEY
     resources:
       requests:
         memory: 1G
-    schedule: "*/15 * * * *"
+    schedule: "0 */6 * * *"
     command: ["/bin/sh"]
     args:
       - "-c"
-      - "/opt/app/bin/run usage Solrise -c solana-usage.yml -s 114100000 --upload=aws -b civic-redshift-data-import-prod -f chain-data"
+      - "/opt/app/bin/run usage GatewayV1 -c solana-usage.yml -s 114100000 --upload=aws -b on-chain-data -f chain-data"
     failedJobsHistoryLimit: 1
     successfulJobsHistoryLimit: 3
     concurrencyPolicy: Forbid
