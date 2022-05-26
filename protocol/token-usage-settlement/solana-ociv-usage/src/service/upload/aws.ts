@@ -46,8 +46,12 @@ export default {
 
       objects.Contents?.forEach((object) => {
         const match = object?.Key?.match(
-          /^[^_]+_[^_]+_[^_]+_([^.]+)\.csv\.gz$/
+          network
+            ? /^[^_]+_[^_]+_[^_]+_([^.]+)\.csv\.gz$/
+            : /^[^_]+_[^_]+_([^.]+)\.csv\.gz$/
         );
+
+        console.log(match);
 
         if (match) {
           const foundSlot = parseInt(match[1]);
