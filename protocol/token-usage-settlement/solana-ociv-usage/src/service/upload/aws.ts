@@ -51,8 +51,6 @@ export default {
             : /^[^_]+_[^_]+_([^.]+)\.csv\.gz$/
         );
 
-        console.log(match);
-
         if (match) {
           const foundSlot = parseInt(match[1]);
 
