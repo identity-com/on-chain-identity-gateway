@@ -3,7 +3,7 @@ name: Build solana-ociv-usage
 on:
   push:
     branches:
-      - 'feature/IDCOM-1414__Usage_oracle'
+      - 'feature/IDCOM-1985__gateway_analytics_pipeline'
 
 jobs:
   docker:
