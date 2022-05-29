@@ -8,4 +8,6 @@ export {
   SentDataTransaction,
   SendableTransaction,
   SendableDataTransaction,
+  ChargeOptions,
+  Action
 } from "./util";
