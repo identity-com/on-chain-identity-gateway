@@ -1,17 +1,12 @@
 import chai from "chai";
 import mocha from "mocha";
-import chaiSubset from "chai-subset";
-import sinonChai from "sinon-chai";
-import chaiAsPromised from "chai-as-promised";
-import {
-  Keypair,
-  Connection,
-  PublicKey,
-  Transaction,
-  SystemProgram,
-} from "@solana/web3.js";
 import sinon from "sinon";
-import { PROGRAM_ID } from "../src/util/constants";
+import sinonChai from "sinon-chai";
+import chaiSubset from "chai-subset";
+import chaiAsPromised from "chai-as-promised";
+import {Connection, Keypair, PublicKey, SystemProgram, Transaction, TransactionInstruction,} from "@solana/web3.js";
+import {PROGRAM_ID} from "../src/util/constants";
+import * as GatewayTs from "@identity.com/solana-gateway-ts";
 import {
   GatewayToken,
   GatewayTokenData,
@@ -19,15 +14,16 @@ import {
   getGatewayTokenAddressForOwnerAndGatekeeperNetwork,
   State,
 } from "@identity.com/solana-gateway-ts";
-import * as GatewayTs from "@identity.com/solana-gateway-ts";
 import {
   GatekeeperService,
   SendableDataTransaction,
   SendableTransaction,
   SentTransaction,
   SimpleGatekeeperService,
+  Action
 } from "../src";
-import { Active } from "@identity.com/solana-gateway-ts/dist/lib/GatewayTokenData";
+import {Active} from "@identity.com/solana-gateway-ts/dist/lib/GatewayTokenData";
+import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 chai.use(sinonChai);
 chai.use(chaiSubset);
@@ -42,8 +38,7 @@ const sendAndConfirm = async (
   transaction: SendableDataTransaction<GatewayToken>
 ) => {
   const send = await transaction.send();
-  const result = await send.confirm();
-  return result;
+  return send.confirm();
 };
 
 describe("GatekeeperService", () => {
@@ -124,6 +119,9 @@ describe("GatekeeperService", () => {
     );
   });
 
+  const instructionSigner = (instruction: TransactionInstruction):PublicKey | undefined => 
+    instruction.keys.find(k => k.isSigner)?.pubkey
+
   const stubSend = <T>(sendableTransaction: SendableTransaction, result: T) => {
     const sentTransaction = new SentTransaction(connection, "");
     const dataTransaction = sentTransaction.withData(result);
@@ -181,6 +179,131 @@ describe("GatekeeperService", () => {
         );
       });
     });
+    
+    context("with a charge",() => {
+      it("should charge the fee payer in lamports", async () => {
+        const expectedChargeRecipient = Keypair.generate();
+        const gatekeeperServiceWithCharge =
+          new GatekeeperService(
+            connection,
+            gatekeeperNetwork.publicKey,
+            gatekeeperAuthority,
+            {
+              feePayer: expectedChargeRecipient.publicKey,
+              chargeOptions: {
+                [Action.ISSUE]: {
+                  amount: 10,
+                  chargePayer: 'FEE_PAYER',
+                  recipient: gatekeeperAuthority.publicKey,
+                }
+              }
+            }
+          );
+
+        const tx = await gatekeeperServiceWithCharge.issue(tokenOwner.publicKey);
+        const chargeInstruction = tx.transaction.instructions[1];
+        
+        expect(instructionSigner(chargeInstruction)?.toBase58()).to.equal(expectedChargeRecipient.publicKey.toBase58());
+      });
+
+      it("should not charge the fee payer if the fee payer is the gatekeeper", async () => {
+        const gatekeeperServiceWithCharge =
+          new GatekeeperService(
+            connection,
+            gatekeeperNetwork.publicKey,
+            gatekeeperAuthority,
+            {
+              // no configured fee payer
+              chargeOptions: {
+                [Action.ISSUE]: {
+                  amount: 10,
+                  chargePayer: 'FEE_PAYER',
+                  recipient: gatekeeperAuthority.publicKey,
+                }
+              }
+            }
+          );
+
+        const tx = await gatekeeperServiceWithCharge.issue(tokenOwner.publicKey);
+        expect(tx.transaction.instructions.length).to.equal(1);
+      });
+
+      it("should charge the rent payer in lamports", async () => {
+        const expectedChargeRecipient = Keypair.generate();
+        const gatekeeperServiceWithCharge =
+          new GatekeeperService(
+            connection,
+            gatekeeperNetwork.publicKey,
+            gatekeeperAuthority,
+            {
+              rentPayer: expectedChargeRecipient.publicKey,
+              chargeOptions: {
+                [Action.ISSUE]: {
+                  amount: 10,
+                  chargePayer: 'RENT_PAYER',
+                  recipient: gatekeeperAuthority.publicKey,
+                }
+              }
+            }
+          );
+
+        const tx = await gatekeeperServiceWithCharge.issue(tokenOwner.publicKey);
+        const chargeInstruction = tx.transaction.instructions[1];
+
+        expect(instructionSigner(chargeInstruction)?.toBase58()).to.equal(expectedChargeRecipient.publicKey.toBase58());
+      });
+
+      it("should not charge the rent payer if the rent payer is the gatekeeper", async () => {
+        const gatekeeperServiceWithCharge =
+          new GatekeeperService(
+            connection,
+            gatekeeperNetwork.publicKey,
+            gatekeeperAuthority,
+            {
+              // no configured rent payer
+              chargeOptions: {
+                [Action.ISSUE]: {
+                  amount: 10,
+                  chargePayer: 'RENT_PAYER',
+                  recipient: gatekeeperAuthority.publicKey,
+                }
+              }
+            }
+          );
+
+        const tx = await gatekeeperServiceWithCharge.issue(tokenOwner.publicKey);
+        expect(tx.transaction.instructions.length).to.equal(1);
+      });
+
+      it("should charge the fee payer in SPL Token", async () => {
+        const expectedChargeRecipient = Keypair.generate();
+        const splTokenMint = Keypair.generate().publicKey;
+        
+        const gatekeeperServiceWithCharge =
+          new GatekeeperService(
+            connection,
+            gatekeeperNetwork.publicKey,
+            gatekeeperAuthority,
+            {
+              feePayer: expectedChargeRecipient.publicKey,
+              chargeOptions: {
+                [Action.ISSUE]: {
+                  amount: 10,
+                  chargePayer: 'FEE_PAYER',
+                  recipient: gatekeeperAuthority.publicKey,
+                  splTokenMint
+                }
+              }
+            }
+          );
+
+        const tx = await gatekeeperServiceWithCharge.issue(tokenOwner.publicKey);
+        const chargeInstruction = tx.transaction.instructions[1];
+        
+        expect(chargeInstruction.programId.toBase58()).to.equal(TOKEN_PROGRAM_ID.toBase58());
+        expect(instructionSigner(chargeInstruction)?.toBase58()).to.equal(expectedChargeRecipient.publicKey.toBase58());
+      });
+    })
   });
 
   context("sendIssue", () => {
