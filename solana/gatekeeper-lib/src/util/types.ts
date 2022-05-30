@@ -1,4 +1,4 @@
-import {TransactionOptions} from "../util/transaction";
+import {TransactionOptions} from "./transaction";
 import {PublicKey} from "@solana/web3.js";
 
 /**
@@ -11,6 +11,9 @@ export type ChargeOption = {
   recipient: PublicKey;
 }
 
+/***
+ * Configuration for the charge the gatekeeper may make to the token recipient, per action
+ */
 export type ChargeOptions = { [k in Action]?: ChargeOption };
 
 /**

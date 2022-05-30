@@ -9,5 +9,6 @@ export {
   SendableTransaction,
   SendableDataTransaction,
   ChargeOptions,
-  Action
+  Action,
+  GatekeeperConfig
 } from "./util";

@@ -8,4 +8,4 @@ export {
 } from "./connection";
 export * as constants from "./constants";
 export * as token from "./token";
-export { ChargeOptions, Action } from "./types";
+export { ChargeOptions, Action, GatekeeperConfig } from "./types";

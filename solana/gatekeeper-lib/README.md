@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/4.0.1-beta2 darwin-arm64 node-v16.14.0
+@identity.com/solana-gatekeeper-lib/4.0.1-beta3 darwin-x64 node-v16.14.2
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -33,11 +33,18 @@ USAGE
 * [`gateway help [COMMAND]`](#gateway-help-command)
 * [`gateway issue ADDRESS`](#gateway-issue-address)
 * [`gateway network-feature FEATURE`](#gateway-network-feature-feature)
+* [`gateway plugins`](#gateway-plugins)
+* [`gateway plugins:inspect PLUGIN...`](#gateway-pluginsinspect-plugin)
+* [`gateway plugins:install PLUGIN...`](#gateway-pluginsinstall-plugin)
+* [`gateway plugins:link PLUGIN`](#gateway-pluginslink-plugin)
+* [`gateway plugins:uninstall PLUGIN...`](#gateway-pluginsuninstall-plugin)
+* [`gateway plugins:update`](#gateway-pluginsupdate)
 * [`gateway refresh GATEWAYTOKEN [EXPIRY]`](#gateway-refresh-gatewaytoken-expiry)
 * [`gateway revoke GATEWAYTOKEN`](#gateway-revoke-gatewaytoken)
 * [`gateway revoke-gatekeeper ADDRESS`](#gateway-revoke-gatekeeper-address)
 * [`gateway unfreeze GATEWAYTOKEN`](#gateway-unfreeze-gatewaytoken)
 * [`gateway verify OWNER`](#gateway-verify-owner)
+* [`gateway version`](#gateway-version)
 
 ## `gateway add-gatekeeper ADDRESS`
 
@@ -68,7 +75,7 @@ EXAMPLE
   $ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta3/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway freeze GATEWAYTOKEN`
 
@@ -100,24 +107,24 @@ EXAMPLE
   Frozen
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta3/dist/commands/freeze.ts)_
 
 ## `gateway help [COMMAND]`
 
-display help for gateway
+Display help for gateway.
 
 ```
 USAGE
   $ gateway help [COMMAND]
 
 ARGUMENTS
-  COMMAND  command to show help for
+  COMMAND  Command to show help for.
 
 OPTIONS
-  --all  see all commands in CLI
+  -n, --nested-commands  Include all nested commands in the output.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.3.1/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.12/src/commands/help.ts)_
 
 ## `gateway issue ADDRESS`
 
@@ -151,7 +158,7 @@ EXAMPLE
   $ gateway issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta3/dist/commands/issue.ts)_
 
 ## `gateway network-feature FEATURE`
 
@@ -181,7 +188,145 @@ EXAMPLE
   $ gateway network-feature userTokenExpiry
 ```
 
-_See code: [dist/commands/network-feature.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/network-feature.ts)_
+_See code: [dist/commands/network-feature.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta3/dist/commands/network-feature.ts)_
+
+## `gateway plugins`
+
+List installed plugins.
+
+```
+USAGE
+  $ gateway plugins
+
+OPTIONS
+  --core  Show core plugins.
+
+EXAMPLE
+  $ gateway plugins
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/index.ts)_
+
+## `gateway plugins:inspect PLUGIN...`
+
+Displays installation properties of a plugin.
+
+```
+USAGE
+  $ gateway plugins:inspect PLUGIN...
+
+ARGUMENTS
+  PLUGIN  [default: .] Plugin to inspect.
+
+OPTIONS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+EXAMPLE
+  $ gateway plugins:inspect myplugin
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/inspect.ts)_
+
+## `gateway plugins:install PLUGIN...`
+
+Installs a plugin into the CLI.
+
+```
+USAGE
+  $ gateway plugins:install PLUGIN...
+
+ARGUMENTS
+  PLUGIN  Plugin to install.
+
+OPTIONS
+  -f, --force    Run yarn install with force flag.
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Can be installed from npm or a git url.
+
+  Installation of a user-installed plugin will override a core plugin.
+
+  e.g. If you have a core plugin that has a 'hello' command, installing a user-installed plugin with a 'hello' command 
+  will override the core plugin implementation. This is useful if a user needs to update core plugin functionality in 
+  the CLI without the need to patch and update the whole CLI.
+
+ALIASES
+  $ gateway plugins:add
+
+EXAMPLES
+  $ gateway plugins:install myplugin 
+  $ gateway plugins:install https://github.com/someuser/someplugin
+  $ gateway plugins:install someuser/someplugin
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/install.ts)_
+
+## `gateway plugins:link PLUGIN`
+
+Links a plugin into the CLI for development.
+
+```
+USAGE
+  $ gateway plugins:link PLUGIN
+
+ARGUMENTS
+  PATH  [default: .] path to plugin
+
+OPTIONS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Installation of a linked plugin will override a user-installed or core plugin.
+
+  e.g. If you have a user-installed or core plugin that has a 'hello' command, installing a linked plugin with a 'hello'
+   command will override the user-installed or core plugin implementation. This is useful for development work.
+
+EXAMPLE
+  $ gateway plugins:link myplugin
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/link.ts)_
+
+## `gateway plugins:uninstall PLUGIN...`
+
+Removes a plugin from the CLI.
+
+```
+USAGE
+  $ gateway plugins:uninstall PLUGIN...
+
+ARGUMENTS
+  PLUGIN  plugin to uninstall
+
+OPTIONS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+ALIASES
+  $ gateway plugins:unlink
+  $ gateway plugins:remove
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/uninstall.ts)_
+
+## `gateway plugins:update`
+
+Update installed plugins.
+
+```
+USAGE
+  $ gateway plugins:update
+
+OPTIONS
+  -h, --help     Show CLI help.
+  -v, --verbose
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.0/src/commands/plugins/update.ts)_
 
 ## `gateway refresh GATEWAYTOKEN [EXPIRY]`
 
@@ -214,7 +359,7 @@ EXAMPLE
   Refreshed
 ```
 
-_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/refresh.ts)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta3/dist/commands/refresh.ts)_
 
 ## `gateway revoke GATEWAYTOKEN`
 
@@ -246,7 +391,7 @@ EXAMPLE
   Revoked
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta3/dist/commands/revoke.ts)_
 
 ## `gateway revoke-gatekeeper ADDRESS`
 
@@ -277,7 +422,7 @@ EXAMPLE
   $ gateway revoke-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/revoke-gatekeeper.ts)_
+_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta3/dist/commands/revoke-gatekeeper.ts)_
 
 ## `gateway unfreeze GATEWAYTOKEN`
 
@@ -309,7 +454,7 @@ EXAMPLE
   Unfrozen
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta3/dist/commands/unfreeze.ts)_
 
 ## `gateway verify OWNER`
 
@@ -345,5 +490,14 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta2/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.0.1-beta3/dist/commands/verify.ts)_
+
+## `gateway version`
+
+```
+USAGE
+  $ gateway version
+```
+
+_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.0.4/src/commands/version.ts)_
 <!-- commandsstop -->
