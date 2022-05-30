@@ -1,7 +1,6 @@
-import {Action, ChargeOption, ChargeOptions} from "./types";
+import {Action, ChargeOption, ChargeOptions, TransactionOptions} from "./types";
 import {PublicKey, SystemProgram, TransactionInstruction} from "@solana/web3.js";
 import { createTransferInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
-import {TransactionOptions} from "./transaction";
 
 /***
  * If the configuration mandates a charge for the given action, create the charge instruction
