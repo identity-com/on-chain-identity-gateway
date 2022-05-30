@@ -5,7 +5,9 @@ import { gatewayTokenAddresses } from "./lib/gatewaytokens";
 import { addresses } from "./lib/addresses";
 import { ONE_BN, ZERO_BN } from "./utils/constants";
 import { TokenData } from "./utils/types";
-import * as assert from "node:assert";
+// Not supported before v18
+// eslint-disable-next-line unicorn/prefer-node-protocol
+import * as assert from "assert";
 import * as dotenv from "dotenv";
 import {
   SAMPLE_PRIVATE_KEY,
