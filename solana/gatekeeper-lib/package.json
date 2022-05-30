@@ -1,7 +1,7 @@
 {
   "name": "@identity.com/solana-gatekeeper-lib",
   "description": "Library and CLI to manage Gateway Tokens",
-  "version": "4.0.1-beta4",
+  "version": "4.0.1-beta5",
   "author": "dankelleher @dankelleher",
   "bin": {
     "gateway": "./bin/run"
