@@ -13,9 +13,10 @@ import { SendableDataTransaction, SendableTransaction } from "../util";
 import { HashOrNonce } from "../util/connection";
 import {
   getOrCreateBlockhashOrNonce,
-  TransactionOptions,
+  
 } from "../util/transaction";
 import { SOLANA_COMMITMENT } from "../util/constants";
+import {TransactionOptions} from "../util/types";
 
 /**
  * Encapsulates the actions performed by a gatekeeper network authority

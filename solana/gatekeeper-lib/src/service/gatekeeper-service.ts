@@ -15,8 +15,8 @@ import {
 import {Action, SendableDataTransaction, SendableTransaction} from "../util";
 import {TransactionHolder} from "../util/connection";
 import {SOLANA_COMMITMENT} from "../util/constants";
-import {getOrCreateBlockhashOrNonce, TransactionOptions,} from "../util/transaction";
-import {GatekeeperConfig} from "../util/types";
+import {getOrCreateBlockhashOrNonce } from "../util/transaction";
+import {GatekeeperConfig, TransactionOptions} from "../util/types";
 import {generateChargeInstruction} from "../util/charge";
 
 /**
