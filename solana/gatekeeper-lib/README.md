@@ -63,12 +63,12 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Promise]] The private key file for the
+  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Promise]] The private key file for the
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
 EXAMPLE
@@ -94,13 +94,13 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Promise]] The private key file for the
+  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Promise]] The public key (in base 58)
-                                                               of the gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway freeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
@@ -146,13 +146,13 @@ OPTIONS
   -e, --expiry=expiry                                          The expiry time in seconds for the gateway token (default
                                                                none)
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Promise]] The private key file for the
+  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Promise]] The public key (in base 58)
-                                                               of the gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
@@ -179,7 +179,7 @@ OPTIONS
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Promise]] The private key file for the
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
   -o, --featureOperation=add|remove|get                        [default: get] add, remove, or get a network feature
@@ -346,13 +346,13 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Promise]] The private key file for the
+  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Promise]] The public key (in base 58)
-                                                               of the gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway refresh EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv 54000
@@ -378,13 +378,13 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Promise]] The private key file for the
+  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Promise]] The public key (in base 58)
-                                                               of the gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway revoke EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
@@ -410,12 +410,12 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Promise]] The private key file for the
+  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Promise]] The private key file for the
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
 EXAMPLE
@@ -441,13 +441,13 @@ OPTIONS
                                                                SOLANA_CLUSTER. To override this property with a specific
                                                                endpoint url, set SOLANA_CLUSTER_URL
 
-  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Promise]] The private key file for the
+  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
                                                                gatekeeper authority
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Promise]] The public key (in base 58)
-                                                               of the gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway unfreeze EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
@@ -475,8 +475,8 @@ OPTIONS
 
   -h, --help                                                   Show CLI help.
 
-  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Promise]] The public key (in base 58)
-                                                               of the gatekeeper network that the gatekeeper belongs to.
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
 
 EXAMPLE
   $ gateway verify EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
