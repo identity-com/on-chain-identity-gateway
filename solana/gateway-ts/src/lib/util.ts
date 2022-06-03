@@ -2,7 +2,6 @@ import {
   AccountInfo,
   Commitment,
   Connection,
-  GetProgramAccountsConfig,
   PublicKey,
 } from "@solana/web3.js";
 import {
@@ -114,20 +113,59 @@ export const findGatewayTokens = async (
   owner: PublicKey,
   gatekeeperNetwork: PublicKey,
   includeRevoked = false
+): Promise<GatewayToken[]> =>
+  findGatewayTokensForOwner(
+    connection,
+    owner,
+    gatekeeperNetwork,
+    includeRevoked
+  );
+
+/**
+ * Find all gateway tokens for a user across all gatekeeper networks, optionally filtering out revoked tokens.
+ *
+ * Warning - this uses the Solana getProgramAccounts RPC endpoint, which is inefficient and may be
+ * blocked by some RPC services.
+ *
+ * @param connection A solana connection object
+ * @param owner The token owner
+ * @param {boolean=false} includeRevoked If false (default), filter out revoked tokens
+ * @returns {Promise<GatewayToken[]>} All tokens for the owner
+ */
+export const findAllGatewayTokens = async (
+  connection: Connection,
+  owner: PublicKey,
+  includeRevoked = false
+): Promise<GatewayToken[]> =>
+  findGatewayTokensForOwner(connection, owner, undefined, includeRevoked);
+
+const findGatewayTokensForOwner = async (
+  connection: Connection,
+  owner: PublicKey,
+  gatekeeperNetwork?: PublicKey,
+  includeRevoked = false
 ): Promise<GatewayToken[]> => {
+  let filters = [];
   const ownerFilter = {
     memcmp: {
       offset: GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET,
       bytes: owner.toBase58(),
     },
   };
-  const gatekeeperNetworkFilter = {
-    memcmp: {
-      offset: GATEWAY_TOKEN_ACCOUNT_GATEKEEPER_NETWORK_FIELD_OFFSET,
-      bytes: gatekeeperNetwork?.toBase58(),
-    },
-  };
-  const filters = [ownerFilter, gatekeeperNetworkFilter];
+
+  filters.push(ownerFilter);
+
+  if (gatekeeperNetwork) {
+    const gatekeeperNetworkFilter = {
+      memcmp: {
+        offset: GATEWAY_TOKEN_ACCOUNT_GATEKEEPER_NETWORK_FIELD_OFFSET,
+        bytes: gatekeeperNetwork.toBase58(),
+      },
+    };
+
+    filters.push(gatekeeperNetworkFilter);
+  }
+
   const accountsResponse = await connection.getProgramAccounts(PROGRAM_ID, {
     filters,
   });

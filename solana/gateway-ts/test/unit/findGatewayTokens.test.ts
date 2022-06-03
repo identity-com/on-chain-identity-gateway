@@ -2,7 +2,7 @@ import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
-import { findGatewayTokens, State } from "../../src";
+import { findAllGatewayTokens, findGatewayTokens, State } from "../../src";
 import { PROGRAM_ID } from "../../src/lib/constants";
 import {
   Active,
@@ -188,6 +188,47 @@ describe("findGatewayTokens", () => {
           ]);
         });
       });
+    });
+  });
+
+  context("when providing a gatekeeper network", () => {
+    it("should filter on the owners public key and the gatekeeper network address", async () => {
+      getProgramAccountsStub.resolves([]);
+      await findGatewayTokens(connection, owner, gatekeeperNetworkKey);
+      const { filters } = getProgramAccountsStub.getCalls()[0].args[1];
+      const ownerFilter = filters[0].memcmp.bytes;
+      const gknFilter = filters[1].memcmp.bytes;
+
+      expect(filters.length).to.eq(2);
+      expect(ownerFilter).to.eq(owner.toBase58());
+      expect(gknFilter).to.eq(gatekeeperNetworkKey.toBase58());
+    });
+  });
+});
+
+describe("findAllGatewayTokens", () => {
+  let connection: Connection;
+  let owner: PublicKey;
+  let getProgramAccountsStub: sinon.SinonStub;
+
+  beforeEach(() => {
+    connection = new Connection(VALIDATOR_URL);
+    owner = Keypair.generate().publicKey;
+    getProgramAccountsStub = sandbox
+      .stub(connection, "getProgramAccounts")
+      .withArgs(PROGRAM_ID);
+  });
+  afterEach(sandbox.restore);
+
+  context("without providing a gatekeeper network", () => {
+    it("should only filter on the owners public key", async () => {
+      getProgramAccountsStub.resolves([]);
+      await findAllGatewayTokens(connection, owner);
+      const { filters } = getProgramAccountsStub.getCalls()[0].args[1];
+      const result = filters[0].memcmp.bytes;
+
+      expect(filters.length).to.eq(1);
+      expect(result).to.eq(owner.toBase58());
     });
   });
 });
