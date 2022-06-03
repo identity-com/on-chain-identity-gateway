@@ -221,7 +221,7 @@ describe("findAllGatewayTokens", () => {
   afterEach(sandbox.restore);
 
   context("without providing a gatekeeper network", () => {
-    it.only("should only filter on the owners public key", async () => {
+    it("should only filter on the owners public key", async () => {
       getProgramAccountsStub.resolves([]);
       await findAllGatewayTokens(connection, owner);
       const { filters } = getProgramAccountsStub.getCalls()[0].args[1];
