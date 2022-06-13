@@ -1,9 +1,10 @@
 use bitflags::bitflags;
-use cruiser::prelude::*;
+use crate::util::{OC_SIZE_U16, OnChainSize};
+use anchor_lang::{AnchorSerialize, AnchorDeserialize};
 
 bitflags! {
     /// The flags for a key on a network
-    #[derive(BorshDeserialize, BorshSerialize)]
+    #[derive(AnchorSerialize, AnchorDeserialize, Default)]
     pub struct NetworkKeyFlags: u16{
         /// Key can change keys
         const AUTH = 1 << 0;
@@ -33,7 +34,7 @@ bitflags! {
         const SET_EXPIRE_TIME = 1 << 12;
     }
     /// The flags for a key on a gatekeeper
-    #[derive(BorshDeserialize, BorshSerialize)]
+    #[derive(AnchorSerialize, AnchorDeserialize)]
     pub struct GatekeeperKeyFlags: u16{
         /// Key can change keys
         const AUTH = 1 << 0;
@@ -63,144 +64,146 @@ bitflags! {
         const UNREVOKE_PASS = 1 << 12;
     }
 }
-impl const OnChainSize for NetworkKeyFlags {
-    const ON_CHAIN_SIZE: usize = u16::ON_CHAIN_SIZE;
-}
-impl const OnChainSize for GatekeeperKeyFlags {
-    const ON_CHAIN_SIZE: usize = u16::ON_CHAIN_SIZE;
+impl OnChainSize for NetworkKeyFlags {
+    const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
 }
 
-/// [`InPlace::Access`] for [`NetworkKeyFlags`]
-#[derive(Debug)]
-pub struct NetworkKeyFlagsAccess<A>(A);
-impl<A> NetworkKeyFlagsAccess<A>
-where
-    A: GetNum<Num = u16>,
-{
-    /// Gets flags
-    pub fn get_flags(&self) -> Option<NetworkKeyFlags> {
-        NetworkKeyFlags::from_bits(self.0.get_num())
-    }
-
-    /// Sets flags
-    pub fn set_flags(&mut self, flags: NetworkKeyFlags)
-    where
-        A: SetNum,
-    {
-        self.0.set_num(flags.bits());
-    }
-}
-impl InPlace for NetworkKeyFlags {
-    type Access<'a, A>
-    where
-        Self: 'a,
-        A: 'a + MappableRef + TryMappableRef,
-    = NetworkKeyFlagsAccess<<u16 as InPlace>::Access<'a, A>>;
-    type AccessMut<'a, A>
-    where
-        Self: 'a,
-        A: 'a + MappableRef + TryMappableRef + MappableRefMut + TryMappableRefMut,
-    = NetworkKeyFlagsAccess<<u16 as InPlace>::AccessMut<'a, A>>;
-}
-impl InPlaceCreate for NetworkKeyFlags {
-    fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: ()) -> CruiserResult {
-        u16::create_with_arg(data, arg)
-    }
-}
-impl InPlaceCreate<NetworkKeyFlags> for NetworkKeyFlags {
-    fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: NetworkKeyFlags) -> CruiserResult {
-        u16::create_with_arg(data, arg.bits())
-    }
-}
-impl InPlaceRead for NetworkKeyFlags {
-    fn read_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::Access<'a, A>>
-    where
-        Self: 'a,
-        A: 'a + Deref<Target = [u8]> + MappableRef + TryMappableRef,
-    {
-        Ok(NetworkKeyFlagsAccess(u16::read_with_arg(data, arg)?))
-    }
-}
-impl InPlaceWrite for NetworkKeyFlags {
-    fn write_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::AccessMut<'a, A>>
-    where
-        Self: 'a,
-        A: 'a
-            + DerefMut<Target = [u8]>
-            + MappableRef
-            + TryMappableRef
-            + MappableRefMut
-            + TryMappableRefMut,
-    {
-        Ok(NetworkKeyFlagsAccess(u16::write_with_arg(data, arg)?))
-    }
+impl OnChainSize for GatekeeperKeyFlags {
+    const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
 }
 
-/// [`InPlace::Access`] for [`GatekeeperKeyFlags`]
-#[derive(Debug)]
-pub struct GatekeeperKeyFlagsAccess<A>(A);
-impl<A> GatekeeperKeyFlagsAccess<A>
-where
-    A: GetNum<Num = u16>,
-{
-    /// Gets flags
-    pub fn get_flags(&self) -> Option<GatekeeperKeyFlags> {
-        GatekeeperKeyFlags::from_bits(self.0.get_num())
-    }
-
-    /// Sets flags
-    pub fn set_flags(&mut self, flags: GatekeeperKeyFlags)
-    where
-        A: SetNum,
-    {
-        self.0.set_num(flags.bits());
-    }
-}
-impl InPlace for GatekeeperKeyFlags {
-    type Access<'a, A>
-    where
-        Self: 'a,
-        A: 'a + MappableRef + TryMappableRef,
-    = GatekeeperKeyFlagsAccess<<u16 as InPlace>::Access<'a, A>>;
-    type AccessMut<'a, A>
-    where
-        Self: 'a,
-        A: 'a + MappableRef + TryMappableRef + MappableRefMut + TryMappableRefMut,
-    = GatekeeperKeyFlagsAccess<<u16 as InPlace>::AccessMut<'a, A>>;
-}
-impl InPlaceCreate for GatekeeperKeyFlags {
-    fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: ()) -> CruiserResult {
-        u16::create_with_arg(data, arg)
-    }
-}
-impl InPlaceCreate<GatekeeperKeyFlags> for GatekeeperKeyFlags {
-    fn create_with_arg<A: DerefMut<Target = [u8]>>(
-        data: A,
-        arg: GatekeeperKeyFlags,
-    ) -> CruiserResult {
-        u16::create_with_arg(data, arg.bits())
-    }
-}
-impl InPlaceRead for GatekeeperKeyFlags {
-    fn read_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::Access<'a, A>>
-    where
-        Self: 'a,
-        A: 'a + Deref<Target = [u8]> + MappableRef + TryMappableRef,
-    {
-        Ok(GatekeeperKeyFlagsAccess(u16::read_with_arg(data, arg)?))
-    }
-}
-impl InPlaceWrite for GatekeeperKeyFlags {
-    fn write_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::AccessMut<'a, A>>
-    where
-        Self: 'a,
-        A: 'a
-            + DerefMut<Target = [u8]>
-            + MappableRef
-            + TryMappableRef
-            + MappableRefMut
-            + TryMappableRefMut,
-    {
-        Ok(GatekeeperKeyFlagsAccess(u16::write_with_arg(data, arg)?))
-    }
-}
+//
+// /// [`InPlace::Access`] for [`NetworkKeyFlags`]
+// #[derive(Debug)]
+// pub struct NetworkKeyFlagsAccess<A>(A);
+// impl<A> NetworkKeyFlagsAccess<A>
+// where
+//     A: GetNum<Num = u16>,
+// {
+//     /// Gets flags
+//     pub fn get_flags(&self) -> Option<NetworkKeyFlags> {
+//         NetworkKeyFlags::from_bits(self.0.get_num())
+//     }
+//
+//     /// Sets flags
+//     pub fn set_flags(&mut self, flags: NetworkKeyFlags)
+//     where
+//         A: SetNum,
+//     {
+//         self.0.set_num(flags.bits());
+//     }
+// }
+// impl InPlace for NetworkKeyFlags {
+//     type Access<'a, A>
+//     where
+//         Self: 'a,
+//         A: 'a + MappableRef + TryMappableRef,
+//     = NetworkKeyFlagsAccess<<u16 as InPlace>::Access<'a, A>>;
+//     type AccessMut<'a, A>
+//     where
+//         Self: 'a,
+//         A: 'a + MappableRef + TryMappableRef + MappableRefMut + TryMappableRefMut,
+//     = NetworkKeyFlagsAccess<<u16 as InPlace>::AccessMut<'a, A>>;
+// }
+// impl InPlaceCreate for NetworkKeyFlags {
+//     fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: ()) -> CruiserResult {
+//         u16::create_with_arg(data, arg)
+//     }
+// }
+// impl InPlaceCreate<NetworkKeyFlags> for NetworkKeyFlags {
+//     fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: NetworkKeyFlags) -> CruiserResult {
+//         u16::create_with_arg(data, arg.bits())
+//     }
+// }
+// impl InPlaceRead for NetworkKeyFlags {
+//     fn read_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::Access<'a, A>>
+//     where
+//         Self: 'a,
+//         A: 'a + Deref<Target = [u8]> + MappableRef + TryMappableRef,
+//     {
+//         Ok(NetworkKeyFlagsAccess(u16::read_with_arg(data, arg)?))
+//     }
+// }
+// impl InPlaceWrite for NetworkKeyFlags {
+//     fn write_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::AccessMut<'a, A>>
+//     where
+//         Self: 'a,
+//         A: 'a
+//             + DerefMut<Target = [u8]>
+//             + MappableRef
+//             + TryMappableRef
+//             + MappableRefMut
+//             + TryMappableRefMut,
+//     {
+//         Ok(NetworkKeyFlagsAccess(u16::write_with_arg(data, arg)?))
+//     }
+// }
+//
+// /// [`InPlace::Access`] for [`GatekeeperKeyFlags`]
+// #[derive(Debug)]
+// pub struct GatekeeperKeyFlagsAccess<A>(A);
+// impl<A> GatekeeperKeyFlagsAccess<A>
+// where
+//     A: GetNum<Num = u16>,
+// {
+//     /// Gets flags
+//     pub fn get_flags(&self) -> Option<GatekeeperKeyFlags> {
+//         GatekeeperKeyFlags::from_bits(self.0.get_num())
+//     }
+//
+//     /// Sets flags
+//     pub fn set_flags(&mut self, flags: GatekeeperKeyFlags)
+//     where
+//         A: SetNum,
+//     {
+//         self.0.set_num(flags.bits());
+//     }
+// }
+// impl InPlace for GatekeeperKeyFlags {
+//     type Access<'a, A>
+//     where
+//         Self: 'a,
+//         A: 'a + MappableRef + TryMappableRef,
+//     = GatekeeperKeyFlagsAccess<<u16 as InPlace>::Access<'a, A>>;
+//     type AccessMut<'a, A>
+//     where
+//         Self: 'a,
+//         A: 'a + MappableRef + TryMappableRef + MappableRefMut + TryMappableRefMut,
+//     = GatekeeperKeyFlagsAccess<<u16 as InPlace>::AccessMut<'a, A>>;
+// }
+// impl InPlaceCreate for GatekeeperKeyFlags {
+//     fn create_with_arg<A: DerefMut<Target = [u8]>>(data: A, arg: ()) -> CruiserResult {
+//         u16::create_with_arg(data, arg)
+//     }
+// }
+// impl InPlaceCreate<GatekeeperKeyFlags> for GatekeeperKeyFlags {
+//     fn create_with_arg<A: DerefMut<Target = [u8]>>(
+//         data: A,
+//         arg: GatekeeperKeyFlags,
+//     ) -> CruiserResult {
+//         u16::create_with_arg(data, arg.bits())
+//     }
+// }
+// impl InPlaceRead for GatekeeperKeyFlags {
+//     fn read_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::Access<'a, A>>
+//     where
+//         Self: 'a,
+//         A: 'a + Deref<Target = [u8]> + MappableRef + TryMappableRef,
+//     {
+//         Ok(GatekeeperKeyFlagsAccess(u16::read_with_arg(data, arg)?))
+//     }
+// }
+// impl InPlaceWrite for GatekeeperKeyFlags {
+//     fn write_with_arg<'a, A>(data: A, arg: ()) -> CruiserResult<Self::AccessMut<'a, A>>
+//     where
+//         Self: 'a,
+//         A: 'a
+//             + DerefMut<Target = [u8]>
+//             + MappableRef
+//             + TryMappableRef
+//             + MappableRefMut
+//             + TryMappableRefMut,
+//     {
+//         Ok(GatekeeperKeyFlagsAccess(u16::write_with_arg(data, arg)?))
+//     }
+// }

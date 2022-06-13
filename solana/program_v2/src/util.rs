@@ -1,87 +1,25 @@
 //! Utility functions and types.
 
-use cruiser::Pubkey;
-use std::num::NonZeroUsize;
+pub const OC_SIZE_BOOL: usize = 1;
+pub const OC_SIZE_U8: usize = 1;
+pub const OC_SIZE_U16: usize = 2;
+pub const OC_SIZE_U32: usize = 4;
+pub const OC_SIZE_U64: usize = 8;
+pub const OC_SIZE_U128: usize = 16;
+pub const OC_SIZE_PUBKEY: usize = 32;
+pub const OC_SIZE_VEC_PREFIX: usize = 4;
+pub const OC_SIZE_STRING_PREFIX: usize = 4;
+pub const OC_SIZE_DISCRIMINATOR: usize = 8;
+pub const OC_SIZE_TIMESTAMP: usize = 8;
 
-pub(crate) const fn max(a: usize, b: usize) -> usize {
-    if a > b {
-        a
-    } else {
-        b
-    }
-}
-pub(crate) const fn round_to_next(x: usize, multiple: NonZeroUsize) -> usize {
-    (x + multiple.get() - 1) / multiple.get() * multiple.get()
+/// This value has as static size on-chain
+pub trait OnChainSize {
+    /// The size on-chain
+    const ON_CHAIN_SIZE: usize;
 }
 
-/// Constant equality implementations
-pub trait ConstEq {
-    /// Constant equality
-    fn const_eq(&self, other: &Self) -> bool;
-}
-/// Constant inequality implementations
-pub trait ConstNe {
-    /// Constant inequality
-    fn const_ne(&self, other: &Self) -> bool;
-}
-impl<T> const ConstNe for T
-where
-    T: ~const ConstEq,
-{
-    fn const_ne(&self, other: &Self) -> bool {
-        !self.const_eq(other)
-    }
-}
-impl<'a, T> const ConstEq for &'a T
-where
-    T: ~const ConstEq,
-{
-    fn const_eq(&self, other: &Self) -> bool {
-        T::const_eq(self, other)
-    }
-}
-impl const ConstEq for u8 {
-    fn const_eq(&self, other: &Self) -> bool {
-        *self == *other
-    }
-}
-impl const ConstEq for Pubkey {
-    fn const_eq(&self, other: &Self) -> bool {
-        let own = unsafe { &*(self as *const Pubkey).cast::<[u8; 32]>() };
-        let other = unsafe { &*(other as *const Pubkey).cast::<[u8; 32]>() };
-        own.const_eq(other)
-    }
-}
-impl<'a, T> const ConstEq for &'a [T]
-where
-    T: ~const ConstEq,
-{
-    fn const_eq(&self, other: &Self) -> bool {
-        if self.len() != other.len() {
-            return false;
-        }
-        let mut index = 0;
-        while index < self.len() {
-            if self[index].const_ne(&other[index]) {
-                return false;
-            }
-            index += 1;
-        }
-        true
-    }
-}
-impl<T, const N: usize> const ConstEq for [T; N]
-where
-    T: ~const ConstEq,
-{
-    fn const_eq(&self, other: &Self) -> bool {
-        let mut index = 0;
-        while index < self.len() {
-            if self[index].const_ne(&other[index]) {
-                return false;
-            }
-            index += 1;
-        }
-        true
-    }
+/// Theis value can be sized with a given argument
+pub trait OnChainSizeWithArg<Arg> {
+    /// Gets the size with an argument
+    fn on_chain_size_with_arg(arg: Arg) -> usize;
 }
