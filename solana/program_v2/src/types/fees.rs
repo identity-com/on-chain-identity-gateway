@@ -1,11 +1,13 @@
-use crate::types::OptionalNonSystemPubkey;
-use cruiser::prelude::*;
+use anchor_lang::prelude::Pubkey;
+use crate::util::{OC_SIZE_PUBKEY, OC_SIZE_U16, OnChainSize};
+use anchor_lang::{AnchorSerialize, AnchorDeserialize};
+
 
 /// Fees that a [`GatekeeperNetwork`] can charge
-#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, InPlace)]
+#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Default, Copy)]
 pub struct NetworkFees {
     /// The token for the fee, `None` means fee is invalid
-    pub token: OptionalNonSystemPubkey,
+    pub token: Pubkey,
     /// Percentage taken on issue. In Hundredths of a percent (0.01% or 0.0001).
     pub issue: u16,
     /// Percentage taken on refresh. In Hundredths of a percent (0.01% or 0.0001).
@@ -15,15 +17,16 @@ pub struct NetworkFees {
     /// Percentage taken on verify. In Hundredths of a percent (0.01% or 0.0001).
     pub verify: u16,
 }
-impl const OnChainSize for NetworkFees {
-    const ON_CHAIN_SIZE: usize = OptionalNonSystemPubkey::ON_CHAIN_SIZE + u16::ON_CHAIN_SIZE * 4;
+
+impl OnChainSize for NetworkFees {
+    const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + OC_SIZE_U16 * 4;
 }
 
 /// The fees a gatekeeper/network can take
-#[derive(Debug, Clone, Eq, PartialEq, BorshSerialize, BorshDeserialize, InPlace)]
+#[derive(Debug, Clone, Eq, PartialEq, AnchorSerialize, AnchorDeserialize, Copy)]
 pub struct GatekeeperFees {
     /// The token for these fees. None value for this means native SOL price
-    pub token: OptionalNonSystemPubkey,
+    pub token: Pubkey,
     /// Fees taken at issuance of a new pass in token units or lamports for SOL.
     pub issue: u64,
     /// Fees taken when a pass is refreshed in token units or lamports for SOL.
@@ -35,6 +38,7 @@ pub struct GatekeeperFees {
     /// This should only be used where pass value comes from proper use
     pub verify: u64,
 }
-impl const OnChainSize for GatekeeperFees {
-    const ON_CHAIN_SIZE: usize = OptionalNonSystemPubkey::ON_CHAIN_SIZE + u64::ON_CHAIN_SIZE * 4;
+
+impl OnChainSize for GatekeeperFees {
+    const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + OC_SIZE_U16 * 4;
 }

@@ -1,20 +1,7 @@
-#![feature(const_trait_impl)]
-#![feature(const_option)]
-#![feature(const_option_ext)]
-#![feature(const_mut_refs)]
-#![feature(const_ptr_offset)]
-#![feature(generic_associated_types)]
-
-//! The gateway v2 program from Identity.com
-
-// Solana is on 1.59 currently, this requires the now deprecated where clause position
-#![cfg_attr(VERSION_GREATER_THAN_59, allow(deprecated_where_clause_location))]
-#![cfg_attr(not(VERSION_GREATER_THAN_59), feature(const_fn_trait_bound))]
-#![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_auto_cfg))]
 #![warn(
     unused_import_braces,
     unused_imports,
-    missing_docs,
+    // missing_docs,
     missing_debug_implementations,
     clippy::pedantic
 )]
@@ -27,79 +14,110 @@
     clippy::wildcard_imports
 )]
 
-pub mod accounts;
-pub mod arguments;
+use anchor_lang::prelude::*;
+use crate::account::{GatekeeperNetwork, NetworkAuthKey};
+
+declare_id!("9aYjKhEJd3ZoGe1TWASXw645gexZfLeQcm6W8vgF7BxH");
+
+pub mod account;
 pub mod instructions;
-pub mod pda;
 pub mod types;
 pub mod util;
 
-use crate::accounts::{Gatekeeper, GatekeeperNetwork, Pass};
-use cruiser::prelude::*;
+use crate::account::*;
+use crate::instructions::Network;
+use crate::types::NetworkFees;
+use crate::types::NetworkKeyFlags;
 
-#[cfg(feature = "entrypoint")]
-entrypoint_list!(GatewayInstructions, GatewayInstructions);
+#[program]
+pub mod gateway_v2 {
+    use super::*;
 
-/// Instructions for the gateway v2 program
-#[derive(InstructionList, Copy, Clone, Debug)]
-#[instruction_list(
-    account_list = GatewayAccountList,
-    account_info = [<'a, AI> AI where AI: ToSolanaAccountInfo<'a>],
-    discriminant_type = u8,
-)]
-pub enum GatewayInstructions {
-    /// Creates a new network.
-    #[instruction(instruction_type = instructions::CreateNetwork)]
-    CreateNetwork,
-    /// Updates a network.
-    #[instruction(instruction_type = instructions::UpdateNetwork)]
-    UpdateNetwork,
-    /// Closes a network.
-    /// TODO: Do we need this?
-    #[instruction(instruction_type = instructions::CloseNetwork)]
-    CloseNetwork,
-    /// Creates a new gatekeeper
-    #[instruction(instruction_type = instructions::CreateGatekeeper)]
-    CreateGatekeeper,
-    /// Updates a gatekeeper's data.
-    #[instruction(instruction_type = instructions::UpdateGatekeeper)]
-    UpdateGatekeeper,
-    //TODO: Do we need a close gatekeeper instruction?
-    /// Sets the state of a gatekeeper
-    #[instruction(instruction_type = instructions::SetGatekeeperState)]
-    SetGatekeeperState,
-    /// Issues a pass from a gatekeeper
-    #[instruction(instruction_type = instructions::IssuePass)]
-    IssuePass,
-    /// Refreshes a pass from a gatekeeper
-    #[instruction(instruction_type = instructions::RefreshPass)]
-    RefreshPass,
-    /// Verifies a pass from a gatekeeper
-    #[instruction(instruction_type = instructions::VerifyPass)]
-    VerifyPass,
-    /// Sets a given pass's state
-    #[instruction(instruction_type = instructions::SetPassState)]
-    SetPassState,
-    /// Sets a given pass's data
-    #[instruction(instruction_type = instructions::SetPassData)]
-    SetPassData,
-    /// Withdraws funds from a network
-    #[instruction(instruction_type = instructions::NetworkWithdraw)]
-    NetworkWithdraw,
-    /// Withdraws funds from a gatekeeper
-    #[instruction(instruction_type = instructions::GatekeeperWithdraw)]
-    GatekeeperWithdraw,
+    pub fn create_network(ctx: Context<CreateNetwork>, data: CreateNetworkData) -> Result<()> {
+        Network::create(data, &mut ctx.accounts.network)
+    }
+
+    pub fn update_network(ctx: Context<UpdateNetwork>, data: UpdateNetworkData) -> Result<()> {
+        Network::update(data, &mut ctx.accounts.network)
+    }
 }
 
-/// Accounts for the gateway v2 program
-#[allow(clippy::large_enum_variant)]
-#[derive(AccountList, Debug)]
-#[account_list(discriminant_type = NonZeroU8)]
-pub enum GatewayAccountList {
-    /// A network which manages many [`Gatekeepers`].
-    GatekeeperNetwork(GatekeeperNetwork),
-    /// A gatekeeper who can issue [`Pass`]es and is manged by a [`GatekeeperNetwork`].
-    Gatekeeper(Gatekeeper),
-    /// A pass issued by a [`Gatekeeper`] to a user.
-    Pass(Pass),
+#[derive(Accounts, Debug)]
+#[instruction(data: CreateNetworkData)]
+pub struct UpdateNetwork<'info> {
+    #[account(
+    )]
+    pub network: Account<'info, GatekeeperNetwork>,
+    // pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts, Debug)]
+#[instruction(data: CreateNetworkData)]
+pub struct CreateNetwork<'info> {
+    #[account(
+        init,
+        payer = payer,
+        space = GatekeeperNetwork::on_chain_size_with_arg(
+            GatekeeperNetworkSize{
+                fees_count: data.fees.len() as u16,
+                auth_keys: data.auth_keys.len() as u16,
+            }
+        ),
+    )]
+    pub network: Box<Account<'info, GatekeeperNetwork>>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+// /// Accounts for [`CreateNetwork`].
+// #[account]
+// pub struct CreateNetworkAccounts<AI> {
+//     /// The network to create.
+//     #[validate(data = GatewayNetworkCreate{
+//     system_program: &self.system_program,
+//     rent: Some(rent),
+//     funder: self.funder.as_ref(),
+//     funder_seeds: None,
+//     cpi: CPIChecked,
+//     })]
+//     pub network: GatekeeperNetworkAccount<AI>,
+//     /// The system program
+//     pub system_program: SystemProgram<AI>,
+//     /// The signer for the network.
+//     #[validate(data = (NetworkSignerSeeder{ network: *self.network.info().key() }, signer_bump))]
+//     pub network_signer: Seeds<AI, NetworkSignerSeeder>,
+//     /// The funder for the network if needed.
+//     #[validate(signer(IfSome), writable(IfSome))]
+//     pub funder: Option<AI>,
+// }
+// /// Data for [`CreateNetwork`].
+#[derive(Debug, AnchorSerialize, AnchorDeserialize)]
+pub struct CreateNetworkData {
+    /// The [`GatekeeperNetwork::auth_threshold`].
+    pub auth_threshold: u8,
+    /// The [`GatekeeperNetwork::pass_expire_time`].
+    pub pass_expire_time: i64,
+    /// The [`GatekeeperNetwork::network_data_len`].
+    pub network_data_len: u16,
+    /// The [`GatekeeperNetwork::signer_bump`].
+    pub signer_bump: u8,
+    /// The [`GatekeeperNetwork::fees`].
+    pub fees: Vec<NetworkFees>,
+    /// The [`GatekeeperNetwork::auth_keys`].
+    pub auth_keys: Vec<NetworkAuthKey>,
+}
+
+#[derive(Debug, AnchorSerialize, AnchorDeserialize)]
+pub struct UpdateNetworkData {
+    /// The [`GatekeeperNetwork::auth_threshold`].
+    pub auth_threshold: u8,
+    /// The [`GatekeeperNetwork::pass_expire_time`].
+    pub pass_expire_time: i64,
+    /// The [`GatekeeperNetwork::network_data_len`].
+    pub network_data_len: u16,
+    /// The [`GatekeeperNetwork::signer_bump`].
+    pub fees: Vec<NetworkFees>,
+    /// The [`GatekeeperNetwork::auth_keys`].
+    pub auth_keys: Vec<NetworkAuthKey>,
 }
