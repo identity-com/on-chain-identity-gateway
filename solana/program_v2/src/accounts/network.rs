@@ -7,8 +7,8 @@ use cruiser::prelude::*;
 pub struct GatekeeperNetwork {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
-    /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
-    pub network_features: [[u8; 32]; 128],
+    // /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
+    // pub network_features: [[u8; 32]; 128],
     /// The number of auth keys needed to change the `auth_keys`
     pub auth_threshold: u8,
     /// The length of time a pass lasts in seconds. `0` means does not expire.
@@ -21,8 +21,8 @@ pub struct GatekeeperNetwork {
     pub fees_count: u16,
     /// Number of auth keys
     pub auth_keys_count: u16,
-    /// The fees for this network
-    pub fees: [NetworkFees; 128],
+    // /// The fees for this network
+    // pub fees: [NetworkFees; 128],
     /// Keys with permissions on the network
     pub auth_keys: [NetworkAuthKey; 128],
 }

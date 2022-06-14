@@ -9,8 +9,8 @@ use crate::util::*;
 pub struct GatekeeperNetwork {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
-    /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
-    pub network_features: Vec<[u8; 32]>,
+    // /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
+    // pub network_features: Vec<[u8; 32]>,
     /// The number of auth keys needed to change the `auth_keys`
     pub auth_threshold: u8,
     /// The length of time a pass lasts in seconds. `0` means does not expire.
@@ -39,9 +39,8 @@ pub struct GatekeeperNetworkSize {
 }
 
 impl GatekeeperNetwork {
-    #[must_use]
     pub fn on_chain_size_with_arg(arg: GatekeeperNetworkSize) -> usize {
-        OC_SIZE_DISCRIMINATOR
+        let x : usize= OC_SIZE_DISCRIMINATOR
             + OC_SIZE_U8
             + OC_SIZE_U8 * 32 * 12
             + OC_SIZE_U8
@@ -51,7 +50,9 @@ impl GatekeeperNetwork {
             + OC_SIZE_U16
             + OC_SIZE_U16
             + NetworkFees::ON_CHAIN_SIZE * arg.fees_count as usize
-            + NetworkAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize
+            + NetworkAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize;
+        // msg!("Account size: {}", x);
+        x
     }
 }
 

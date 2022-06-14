@@ -11,7 +11,7 @@ mod create_network;
 // mod set_pass_data;
 // mod set_pass_state;
 // mod update_gatekeeper;
-// mod update_network;
+mod update_network;
 // mod verify_pass;
 
 // pub use close_network::*;
@@ -25,5 +25,5 @@ pub use create_network::*;
 // pub use set_pass_data::*;
 // pub use set_pass_state::*;
 // pub use update_gatekeeper::*;
-// pub use update_network::*;
+pub use update_network::*;
 // pub use verify_pass::*;
