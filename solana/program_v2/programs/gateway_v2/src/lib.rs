@@ -18,7 +18,7 @@ clippy::wildcard_imports
 use anchor_lang::prelude::*;
 use crate::account::{GatekeeperNetwork, NetworkAuthKey};
 
-declare_id!("ACFuMqpZ8bRXhhdJ2frtk62BS26D2fDgSCfw6v1er4C5");
+declare_id!("9NqxYNoTQGuh6odAMUuStpA3r9MnrSrBaifs7cxMDDth");
 
 pub mod account;
 pub mod instructions;

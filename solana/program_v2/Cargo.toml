@@ -1,28 +1,13 @@
-[package]
-name = "gateway_program_v2"
-version = "0.1.0"
-description = "Gateway Program v2"
-authors = ["Brett Etter <brett.etter@identity.com>"]
-repository = "https://github.com/identity-com/on-chain-identity-gateway"
-license = "Apache-2.0"
-edition = "2021"
-
-[lib]
-crate-type = ["cdylib", "lib"]
-name = "gateway_program_v2"
-
-[features]
-no-entrypoint = []
-no-idl = []
-no-log-ix-name = []
-cpi = ["no-entrypoint"]
-default = []
+[workspace]
+members = [
+    "programs/*"
+]
 
 [profile.release]
 overflow-checks = true
-
-[dependencies]
-#anchor-lang = "0.24.2"
-anchor-lang = { git = "https://github.com/project-serum/anchor", branch = "master" }
-bitflags = "1.3.2"
-borsh = "0.9.3"
+lto = "fat"
+codegen-units = 1
+[profile.release.build-override]
+opt-level = 3
+incremental = false
+codegen-units = 1
