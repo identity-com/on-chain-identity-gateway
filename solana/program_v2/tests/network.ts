@@ -13,7 +13,6 @@ describe("network operations", () => {
   anchor.setProvider(provider);
 
   const program = anchor.workspace.GatewayV2 as Program<GatewayV2>;
-
   const createAccount = async (baseAccount) => {
     await program.methods.createNetwork({
       authThreshold: new anchor.BN(1),
