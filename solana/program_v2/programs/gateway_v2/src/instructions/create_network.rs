@@ -1,16 +1,18 @@
-use anchor_lang::prelude::*;
 use crate::account::GatekeeperNetwork;
 use crate::{CreateNetworkData, NetworkKeyFlags};
+use anchor_lang::prelude::*;
 
 #[derive(Debug)]
 pub struct CreateNetwork {}
 
 impl CreateNetwork {
-    pub fn process(data: CreateNetworkData, network: &mut Account<GatekeeperNetwork>) -> Result<()> {
+    pub fn process(
+        data: CreateNetworkData,
+        network: &mut Account<GatekeeperNetwork>,
+    ) -> Result<()> {
         if data.auth_keys.is_empty() {
             return Err(error!(ErrorCode::NoAuthKeys));
         }
-
         if data
             .auth_keys
             .iter()
@@ -22,7 +24,6 @@ impl CreateNetwork {
         {
             return Err(error!(ErrorCode::InsufficientAuthKeys));
         }
-
         network.auth_threshold = data.auth_threshold;
         network.pass_expire_time = data.pass_expire_time;
         network.network_data_len = data.network_data_len;

@@ -1,20 +1,28 @@
-use anchor_lang::prelude::*;
 use crate::account::GatekeeperNetwork;
-use crate::{NetworkAuthKey, NetworkKeyFlags, UpdateNetworkData};
 use crate::types::GatekeeperKeyFlags;
+use crate::{NetworkAuthKey, NetworkKeyFlags, UpdateNetworkData};
+use anchor_lang::prelude::*;
 
 #[derive(Debug)]
 pub struct UpdateNetwork {}
 
 impl UpdateNetwork {
-    pub fn process(data: UpdateNetworkData, network: &mut Account<GatekeeperNetwork>, authority: &mut Signer<'info>) -> Result<()> {
+    pub fn process(
+        data: UpdateNetworkData,
+        network: &mut Account<GatekeeperNetwork>,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        Self::set_expire_time(&data, network, authority);
         Self::add_auth_keys(&data, network, authority)?;
-        Self::set_expire_time(&data, network, authority)?;
 
         Ok(())
     }
 
-    pub fn add_auth_keys(data: &UpdateNetworkData, network: &mut Account<GatekeeperNetwork>, authority: &mut Signer<'info>) -> Result<()> {
+    pub fn add_auth_keys(
+        data: &UpdateNetworkData,
+        network: &mut Account<GatekeeperNetwork>,
+        authority: &mut Signer,
+    ) -> Result<()> {
         if data.auth_keys.add.len() == 0 && data.auth_keys.remove.len() == 0 {
             // no auth keys to add/remove
             return Ok(());
@@ -56,8 +64,12 @@ impl UpdateNetwork {
             match index {
                 Some(x) => {
                     // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
-                    if network.auth_keys[x].key == *authority.key && !GatekeeperKeyFlags::contains(
-                        &GatekeeperKeyFlags::from_bits_truncate(key.flags), GatekeeperKeyFlags::AUTH) {
+                    if network.auth_keys[x].key == *authority.key
+                        && !GatekeeperKeyFlags::contains(
+                            &GatekeeperKeyFlags::from_bits_truncate(key.flags),
+                            GatekeeperKeyFlags::AUTH,
+                        )
+                    {
                         msg!("Not updating flag");
                         // TODO: Proper error here
                         panic!()
@@ -77,27 +89,41 @@ impl UpdateNetwork {
 
         Ok(())
     }
-
-    pub fn set_expire_time(data: &UpdateNetworkData, network: &mut Account<GatekeeperNetwork>, authority: &mut Signer<'info>) -> Result<()> {
+    pub fn set_expire_time(
+        data: &UpdateNetworkData,
+        network: &mut Account<GatekeeperNetwork>,
+        authority: &mut Signer,
+    ) -> Result<()> {
         // msg!(":::::: {} | {}" ,data.pass_expire_time, network.pass_expire_time );
         // if data.pass_expire_time == network.pass_expire_time {
         //     // No change
         //     return Ok(());
         // }
 
-        if !Self::can_access(&mut network.auth_keys, authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
-            // TODO
-            // return Err(error!(ErrorCode::InsufficientAccessExpiry));
+        if !Self::can_access(
+            &mut network.auth_keys,
+            authority,
+            NetworkKeyFlags::SET_EXPIRE_TIME,
+        ) {
+            return Err(error!(ErrorCode::InsufficientAccessExpiry));
+        } else {
+            network.pass_expire_time = data.pass_expire_time;
         }
 
         Ok(())
     }
-
-    pub fn can_access(keys: &mut Vec<NetworkAuthKey>, authority: &mut Signer, flag: NetworkKeyFlags) -> bool {
-        keys.iter().filter(|key|
-            NetworkKeyFlags::from_bits_truncate(key.flags).contains(flag)
-                && *authority.key == key.key
-        ).count() > 0
+    pub fn can_access(
+        keys: &mut Vec<NetworkAuthKey>,
+        authority: &mut Signer,
+        flag: NetworkKeyFlags,
+    ) -> bool {
+        keys.iter()
+            .filter(|key| {
+                NetworkKeyFlags::from_bits_truncate(key.flags).contains(flag)
+                    && *authority.key == key.key
+            })
+            .count()
+            > 0
     }
 }
 
