@@ -67,7 +67,7 @@ describe("Gateway v2 Client", () => {
         console.error(
           await connection
             .getTransaction(transactionSignature)
-            .then((res) => res.meta.logMessages)
+            .then((res) => res?.meta?.logMessages)
         );
         throw confirmation.value.err;
       }
