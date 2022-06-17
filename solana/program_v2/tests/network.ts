@@ -91,7 +91,7 @@ describe("network operations", () => {
           ],
           remove: [],
         },
-        passExpireTime: new anchor.BN(-1),
+        passExpireTime: null,
         fees: { add: [], remove: [] },
       })
       .accounts({

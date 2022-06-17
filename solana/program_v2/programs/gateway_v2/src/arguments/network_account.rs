@@ -80,7 +80,7 @@ pub struct UpdateNetworkData {
     /// The [`GatekeeperNetwork::auth_threshold`].
     pub auth_threshold: u8,
     /// The [`GatekeeperNetwork::pass_expire_time`].
-    pub pass_expire_time: i64,
+    pub pass_expire_time: Option<i64>,
     /// The [`GatekeeperNetwork::networkx_data_len`].
     pub network_data_len: u16,
     /// The [`GatekeeperNetwork::signer_bump`].
