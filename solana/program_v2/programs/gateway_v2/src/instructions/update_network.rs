@@ -66,9 +66,9 @@ impl UpdateNetwork {
                     // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                     if network.auth_keys[x].key == *authority.key
                         && !GatekeeperKeyFlags::contains(
-                            &GatekeeperKeyFlags::from_bits_truncate(key.flags),
-                            GatekeeperKeyFlags::AUTH,
-                        )
+                        &GatekeeperKeyFlags::from_bits_truncate(key.flags),
+                        GatekeeperKeyFlags::AUTH,
+                    )
                     {
                         msg!("Not updating flag");
                         // TODO: Proper error here
@@ -94,23 +94,20 @@ impl UpdateNetwork {
         network: &mut Account<GatekeeperNetwork>,
         authority: &mut Signer,
     ) -> Result<()> {
-        // msg!(":::::: {} | {}" ,data.pass_expire_time, network.pass_expire_time );
-        // if data.pass_expire_time == network.pass_expire_time {
-        //     // No change
-        //     return Ok(());
-        // }
+        match data.pass_expire_time {
+            Some(pass_expire_time) => {
+                if (pass_expire_time != network.pass_expire_time) {
+                    if(!Self::can_access(&mut network.auth_keys, authority, NetworkKeyFlags::SET_EXPIRE_TIME)) {
+                        return Err(error!(ErrorCode::InsufficientAccessExpiry))
+                    }
 
-        if !Self::can_access(
-            &mut network.auth_keys,
-            authority,
-            NetworkKeyFlags::SET_EXPIRE_TIME,
-        ) {
-            return Err(error!(ErrorCode::InsufficientAccessExpiry));
-        } else {
-            network.pass_expire_time = data.pass_expire_time;
+                    network.pass_expire_time = pass_expire_time;
+                }
+
+                Ok(())
+            },
+            None => Ok(())
         }
-
-        Ok(())
     }
     pub fn can_access(
         keys: &mut Vec<NetworkAuthKey>,
