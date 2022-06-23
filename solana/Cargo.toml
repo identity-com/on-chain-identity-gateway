@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "integration-lib",
-    "program",
+    "program"
 ]
 
 [profile.release]
