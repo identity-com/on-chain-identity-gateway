@@ -10,7 +10,6 @@
     "build": "yarn compile && tsc -b && oclif-dev manifest && oclif-dev readme",
     "postbuild": "rm -f oclif.manifest.json",
     "test": "ts-mocha src/*.test.ts src/**/*.test.ts",
-    "posttest": "eslint . --ext .ts --config .eslintrc",
     "version": "oclif-dev readme"
   },
   "repository": "git@github.com:identity-com/on-chain-identity-gateway.git",
@@ -39,6 +38,7 @@
     "@oclif/plugin-not-found": "^1.2.4",
     "@oclif/plugin-version": "^1.0.4",
     "bignumber.js": "^9.0.1",
+    "debug": "^4.3.4",
     "ethers": "^5.4.2",
     "gas-price-oracle": "^0.3.3"
   },
@@ -46,6 +46,7 @@
     "@oclif/dev-cli": "^1.26.0",
     "@oclif/test": "^1.2.8",
     "@types/chai": "^4.3.0",
+    "@types/debug": "^4.1.7",
     "@types/expect": "^24.3.0",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.4.7",
