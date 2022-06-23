@@ -24,8 +24,8 @@ const RINKEBY_ADDRESSES: ContractAddresses = {
 
 const LOCALHOST_ADDRESSES: ContractAddresses = {
     gatewayTokenController: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
-    flagsStorage: '0x0',
-    forwarder: '0x0',
+    flagsStorage: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+    forwarder: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
 };
 
 export const addresses:{[key: number]: ContractAddresses}  = {
@@ -33,4 +33,5 @@ export const addresses:{[key: number]: ContractAddresses}  = {
     3: ROPSTEN_ADDRESSES,
     4: RINKEBY_ADDRESSES,
     1337: LOCALHOST_ADDRESSES,
+  31_337: LOCALHOST_ADDRESSES,
 };

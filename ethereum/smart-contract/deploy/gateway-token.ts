@@ -3,10 +3,8 @@ import {DeployFunction} from 'hardhat-deploy/types';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, getNamedAccounts, ethers } = hre;
-    const { deployer } = await getNamedAccounts();
+    const { deployer, authority, gatekeeper } = await getNamedAccounts();
   
-    const authorityAddr = "0x9b4525aefEDA97b78559012ddA8163eF90B3dF21";
-
     const forwarder = await deployments.get('Forwarder');
     const trustedForwarder = await ethers.getContractAt("Forwarder", forwarder.address);
 
@@ -19,11 +17,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   
     let token = await ethers.getContractAt("GatewayToken", gatewayTokenAddress);
 
-    let tx = await (await token.addNetworkAuthority(authorityAddr, {from: deployer})).wait();
-    console.log("added new network authority with " + authorityAddr + " into Gateway Token at " + gatewayTokenAddress + " using " + tx.gasUsed.toNumber() + " gas");
+    let tx = await (await token.addNetworkAuthority(authority, {from: deployer})).wait();
+    console.log("added new network authority with " + authority + " into Gateway Token at " + gatewayTokenAddress + " using " + tx.gasUsed.toNumber() + " gas");
   
-    tx = await (await token.addGatekeeper(authorityAddr, {from: deployer})).wait();
-    console.log("added new gatekeeper with " + authorityAddr + " address into Gateway Token at " + gatewayTokenAddress + " using " + tx.gasUsed.toNumber() + " gas");
+    tx = await (await token.addGatekeeper(gatekeeper, {from: deployer})).wait();
+    console.log("added new gatekeeper with " + gatekeeper + " address into Gateway Token at " + gatewayTokenAddress + " using " + tx.gasUsed.toNumber() + " gas");
 };
 
 export default func;
