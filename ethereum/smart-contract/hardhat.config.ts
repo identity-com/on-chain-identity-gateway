@@ -60,6 +60,24 @@ module.exports = {
       accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
       chainId: 4,
     },
+    goerli: {
+      url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
+      chainId: 4,
+    },
+    polygonMumbai: {
+      url: `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
+      chainId: 1,
+    },
+    polygonMainnet: {
+      url: `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
+      chainId: 1,
+    },
   },
   solidity: {
     version: "0.8.9",
