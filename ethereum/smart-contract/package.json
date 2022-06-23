@@ -12,6 +12,7 @@
     "deploy:ropsten": "hardhat deploy --network ropsten",
     "deploy:rinkeby": "hardhat deploy --network rinkeby",
     "deploy:mainnet": "hardhat deploy --network mainnet",
+    "deploy:polygon": "hardhat deploy --network matic",
     "local": "hardhat node",
     "build": "hardhat compile"
   },
