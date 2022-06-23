@@ -41,9 +41,6 @@ jobs:
       - name: Install
         run: yarn
 
-#      - name: Lint
-#        run: yarn lint
-
       - name: Build
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
