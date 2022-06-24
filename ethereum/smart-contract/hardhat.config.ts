@@ -11,12 +11,13 @@ import {issueGT} from "./tasks/issueGT";
 
 dotenv.config();
 
-const accounts = {
+const derivedAccounts = {
   mnemonic: process.env.MNEMONIC || "test test test test test test test test test test test junk",
   path: process.env.MNEMONIC_PATH || "m/44'/60'/0'/0/",
   initialIndex: 0,
   count: 20,
 }
+const liveAccounts = [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`];
 
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
   .addParam('address', 'The wallet to check')
@@ -36,28 +37,28 @@ module.exports = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
-      accounts, 
+      accounts: derivedAccounts, 
     },
     localhost: {
       saveDeployments: true,
-      accounts,
+      accounts: derivedAccounts,
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
+      accounts: liveAccounts,
       chainId: 1,
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
+      accounts: liveAccounts,
       chainId: 3,
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
+      accounts: liveAccounts,
       chainId: 4,
     },
     goerli: {
@@ -120,6 +121,14 @@ module.exports = {
   namedAccounts: {
     deployer: {
       default: 0,
+    },
+    authority: {
+      default: 1,
+    },
+    gatekeeper: {
+      default: '0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688',
+      localhost: 2,
+      hardhat: 2
     },
   },
 }

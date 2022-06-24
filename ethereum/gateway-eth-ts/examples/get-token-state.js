@@ -11,7 +11,7 @@ require("dotenv/config");
     const gtLib = new GatewayETH(wallet, network);
 
     const testUser = '0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f';
-    let tokenId = await gtLib.getDefaultTokenId(testUser);
+    let tokenId = await gtLib.getTokenId(testUser);
     let tx = await gtLib.getTokenState(tokenId);
     
     console.log(tx);

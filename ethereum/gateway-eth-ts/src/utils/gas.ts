@@ -41,6 +41,12 @@ export const DEFAULT_GAS_PRICES: { [key: number]: GasPrices } = {
     standard: 1,
     low: 1,
   },
+  31_337: {
+    instant: 1,
+    fast: 1,
+    standard: 1,
+    low: 1,
+  },
 };
 
 const options: GasPriceOracleOptions = {
@@ -56,16 +62,20 @@ export const getDefaultOracle = (chainId = 1): GasPriceOracle => {
   options.defaultFallbackGasPrices = DEFAULT_GAS_PRICES[chainId];
   options.chainId = chainId;
 
-  return new GasPriceOracle(options);
+  return new GasPriceOracle({
+    defaultFallbackGasPrices: DEFAULT_GAS_PRICES[chainId],
+    chainId
+  });
 };
 
 export const currentGasPrices = async (
-  oracle?: GasPriceOracle,
-  fallbackGasPrices?: GasPrices
+  fallbackGasPrices?: GasPrices,
+  oracleOptions: Partial<GasPriceOracleOptions> = {},
 ): Promise<GasPrices> => {
-  if (!oracle) {
-    oracle = new GasPriceOracle(options);
-  }
+  const oracle = new GasPriceOracle({
+    ...options,
+    ...oracleOptions
+  });
 
   return oracle
     .gasPrices(fallbackGasPrices)
@@ -76,10 +86,10 @@ export const currentGasPrices = async (
 
 export const estimateGasPrice = async (
   priceKey: GasPriceKey,
-  oracle?: GasPriceOracle,
-  fallbackGasPrices?: GasPrices
+  fallbackGasPrices?: GasPrices,
+  oracleOptions: Partial<GasPriceOracleOptions> = {},
 ): Promise<number | BigNumber> => {
-  const prices = await currentGasPrices(oracle, fallbackGasPrices);
+  const prices = await currentGasPrices(fallbackGasPrices, oracleOptions);
 
   if (prices === null) {
     return DEFAULT_GAS_PRICES[DEFAULT_CHAIN_ID][priceKey];
