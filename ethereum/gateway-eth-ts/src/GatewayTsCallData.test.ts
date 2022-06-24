@@ -6,12 +6,11 @@ import { addresses } from "./lib/addresses";
 import { DEFAULT_EXPIRATION_BN, ZERO_BN } from "./utils/constants";
 import { FunctionFragment } from "@ethersproject/abi";
 import { getExpirationTime } from "./utils/time";
-import { addFlagsToBitmask } from "./utils/bitmask_flags";
 import { BytesLike, hexDataSlice, id } from "ethers/lib/utils";
 import { generateId } from "./utils/tokenId";
 import assert = require("assert");
 import * as dotenv from "dotenv";
-import { SAMPLE_WALLET_ADDRESS } from "./utils/constants_test";
+import {freezeTestToken, gatekeeperWallet, issueTestToken} from "./testUtils";
 dotenv.config();
 
 const computeCallData = (
@@ -24,7 +23,6 @@ const computeSigHash = (fragment: FunctionFragment): BytesLike =>
   hexDataSlice(id(fragment.format()), 0, 4);
 
 describe("Test GatewayTSCallData class", function () {
-  const ropstenNetworkID = 3;
   let gatewayLib: GatewayTsCallData;
   let provider: BaseProvider;
   let wallet: Wallet;
@@ -32,31 +30,30 @@ describe("Test GatewayTSCallData class", function () {
   const defaultGas: number | BigNumber = 6_000_000;
   const defaultGasPrice: number | BigNumber = 1_000_000_000_000;
 
-  const sampleWalletAddress = SAMPLE_WALLET_ADDRESS;
+  const sampleWalletAddress = Wallet.createRandom().address;
   const sampleTokenId = 124_678;
 
   before("Initialize GatewayTSBase class", async () => {
-    provider = getDefaultProvider("ropsten", {
-      infura: process.env.INFURA_KEY,
-    });
-    wallet = new Wallet(`0x${process.env.PRIVATE_KEY}`);
-    wallet = wallet.connect(provider);
+    provider = getDefaultProvider("http://localhost:8545");
+    wallet = gatekeeperWallet(provider);
     const network = await provider.getNetwork();
-    defaultGatewayToken = gatewayTokenAddresses[ropstenNetworkID][0].address;
+    defaultGatewayToken = gatewayTokenAddresses[network.chainId][0].address;
+    
     gatewayLib = new GatewayTsCallData(wallet, network, defaultGatewayToken);
 
-    assert.equal(gatewayLib.defaultGatewayToken, defaultGatewayToken);
+    assert.equal(gatewayLib.gatewayTokenContractAddress, defaultGatewayToken);
     assert.equal(gatewayLib.providerOrSigner, wallet);
-    assert.equal(network.chainId, ropstenNetworkID);
     assert.equal(gatewayLib.defaultGas, defaultGas);
     assert.equal(gatewayLib.defaultGasPrice, defaultGasPrice);
-    assert.equal(gatewayLib.contractAddresses, addresses[ropstenNetworkID]);
+    assert.equal(gatewayLib.contractAddresses, addresses[network.chainId]);
+
+    await issueTestToken(provider, network, defaultGatewayToken, sampleWalletAddress);
   });
 
   it("Test mint token functions, should pass calldata checks", async () => {
     const tokenId = await gatewayLib.generateTokenId(sampleWalletAddress);
-    const expiration = getExpirationTime(DEFAULT_EXPIRATION_BN);
-    const bitmask = addFlagsToBitmask(ZERO_BN, [0, 1]);
+    const expiration = 0;
+    const bitmask = ZERO_BN;
 
     const args = [sampleWalletAddress, tokenId, expiration, bitmask];
     const argsTypes = ["address", "uint256", "uint256", "uint256"];
@@ -67,7 +64,7 @@ describe("Test GatewayTSCallData class", function () {
     const transaction = await gatewayLib.issue(
       sampleWalletAddress,
       tokenId,
-      DEFAULT_EXPIRATION_BN,
+      expiration,
       bitmask
     );
     const calldata = computeCallData(sigHash, argsTypes, args);
@@ -75,7 +72,7 @@ describe("Test GatewayTSCallData class", function () {
   }).timeout(10_000);
 
   it("Try to mint token with existing tokenId, expect revert", async () => {
-    const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
+    const tokenId = await gatewayLib.getTokenId(sampleWalletAddress);
     await assert.rejects(
       gatewayLib.issue(sampleWalletAddress, tokenId, 0, ZERO_BN)
     );
@@ -94,7 +91,7 @@ describe("Test GatewayTSCallData class", function () {
   }).timeout(4000);
 
   it("Test revoke token function, should pass calldata checks", async () => {
-    const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
+    const tokenId = await gatewayLib.getTokenId(sampleWalletAddress);
     const transaction = await gatewayLib.revoke(tokenId);
 
     const args = [tokenId];
@@ -113,7 +110,7 @@ describe("Test GatewayTSCallData class", function () {
   // }).timeout(4000);
 
   it("Test burn token function, should pass calldata checks", async () => {
-    const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
+    const tokenId = await gatewayLib.getTokenId(sampleWalletAddress);
     const args = [tokenId];
     const argsTypes = ["uint256"];
     const fragment: FunctionFragment =
@@ -131,7 +128,7 @@ describe("Test GatewayTSCallData class", function () {
   }).timeout(4000);
 
   it.skip("Test freeze token function, should pass calldata checks", async () => {
-    const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
+    const tokenId = await gatewayLib.getTokenId(sampleWalletAddress);
     const transaction = await gatewayLib.freeze(tokenId);
 
     const args = [tokenId];
@@ -156,8 +153,10 @@ describe("Test GatewayTSCallData class", function () {
   }).timeout(10_000);
 
   it("Test unfreeze token function, should pass calldata checks", async () => {
-    const tokenId = await gatewayLib.getDefaultTokenId(
-      "0xCE2d6E7426D95AA206775fd86DBde00Ae621bE14"
+    const network = await provider.getNetwork();
+    await freezeTestToken(provider, network, defaultGatewayToken, sampleWalletAddress);
+    const tokenId = await gatewayLib.getTokenId(
+      sampleWalletAddress
     );
     const transaction = await gatewayLib.unfreeze(tokenId);
 
@@ -182,7 +181,7 @@ describe("Test GatewayTSCallData class", function () {
   }).timeout(10_000);
 
   it.skip("Test refresh token function, should pass calldata checks", async () => {
-    const tokenId = await gatewayLib.getDefaultTokenId(sampleWalletAddress);
+    const tokenId = await gatewayLib.getTokenId(sampleWalletAddress);
     const argsTypes = ["uint256", "uint256"];
     const fragment: FunctionFragment =
       gatewayLib.gatewayTokens[defaultGatewayToken].tokenInstance.contract
@@ -203,18 +202,16 @@ describe("Test GatewayTSCallData class", function () {
     await assert.rejects(gatewayLib.refresh(sampleTokenId, expiration));
   }).timeout(4000);
 
-  it("Try to initialize library with incorrect default token, expect default gateway token used with 0 index", async () => {
+  // TODO temporary. we want to be able to discover tokens on chain rather than have to register them
+  it("Try to initialize library with incorrect default token, expect error", async () => {
     const network = await provider.getNetwork();
-    gatewayLib = new GatewayTsCallData(wallet, network, "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be");
+    const gatewayLib = new GatewayTsCallData(wallet, network, "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be");
     assert.notEqual(
-      gatewayLib.defaultGatewayToken,
+      gatewayLib.gatewayTokenContractAddress,
       "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be"
     );
 
-    const gatewayToken = gatewayLib.getGatewayTokenContract();
-    assert.equal(
-      gatewayToken.contract.address,
-      gatewayTokenAddresses[ropstenNetworkID][0].address
-    );
+    const shouldFail = () => gatewayLib.getGatewayTokenContract();
+    assert.throws(shouldFail);
   });
 });
