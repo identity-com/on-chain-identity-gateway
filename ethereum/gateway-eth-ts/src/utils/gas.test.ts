@@ -34,27 +34,26 @@ describe("Test gas prices oracle", function () {
 
   it("Try to check ropsten gas prices", async () => {
     fallbackGasPrices = DEFAULT_GAS_PRICES[ropstenNetworkID];
-    gasOracle = getDefaultOracle(ropstenNetworkID);
 
-    let gasPrice = await estimateGasPrice("fast", gasOracle, fallbackGasPrices);
+    let gasPrice = await estimateGasPrice("fast", fallbackGasPrices, { chainId: ropstenNetworkID });
     assert.equal(
       gasPrice.toString(),
       parseGwei(fallbackGasPrices.fast.toString())
     );
 
-    gasPrice = await estimateGasPrice("low", gasOracle, fallbackGasPrices);
+    gasPrice = await estimateGasPrice("low", fallbackGasPrices, { chainId: ropstenNetworkID });
     assert.equal(
       gasPrice.toString(),
       parseGwei(fallbackGasPrices.low.toString())
     );
 
-    gasPrice = await estimateGasPrice("standard", gasOracle, fallbackGasPrices);
+    gasPrice = await estimateGasPrice("standard", fallbackGasPrices, { chainId: ropstenNetworkID });
     assert.equal(
       gasPrice.toString(),
       parseGwei(fallbackGasPrices.standard.toString())
     );
 
-    gasPrice = await estimateGasPrice("instant", gasOracle, fallbackGasPrices);
+    gasPrice = await estimateGasPrice("instant", fallbackGasPrices, { chainId: ropstenNetworkID });
     assert.equal(
       gasPrice.toString(),
       parseGwei(fallbackGasPrices.instant.toString())

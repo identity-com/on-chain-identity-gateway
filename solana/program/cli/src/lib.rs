@@ -6,7 +6,6 @@ use solana_client::{
     rpc_config::RpcSendTransactionConfig,
     client_error::ClientError
 };
-use solana_gateway_program::solana_program::program_error::ProgramError;
 use solana_gateway_program::instruction;
 use solana_sdk::{
     transaction::Transaction,
@@ -75,7 +74,7 @@ fn whole_shebang(client: &RpcClient, program_id: &Pubkey, payer: &Keypair) -> Re
     );
     let instructions = vec![add_gatekeeper_instruction];
 
-    let (recent_hash, _fee_calc) = client.get_recent_blockhash()?;
+    let (recent_hash, _fee_calc) = client.get_latest_blockhash()?;
     let signers = vec![payer, &gatekeeper_network];
     let txn = Transaction::new_signed_with_payer(
         &instructions,
