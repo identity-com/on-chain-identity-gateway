@@ -26,10 +26,9 @@ export class GatewayTsCallData extends GatewayTsBase {
     bitmask: BigNumber = BigNumber.from("0"),
     // eslint-disable-next-line default-param-last
     constrains: BigNumber = BigNumber.from("0"),
-    gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<Transaction> {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayToken = this.getGatewayTokenContract();
     if (tokenId === null) {
       tokenId = await this.generateTokenId(owner, constrains, gatewayToken);
     }
@@ -47,7 +46,7 @@ export class GatewayTsCallData extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<Transaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = this.getGatewayTokenContract();
     const args: any[] = [tokenId];
 
     return signTranaction(contract, "revoke", args, options);
@@ -58,7 +57,7 @@ export class GatewayTsCallData extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<Transaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = this.getGatewayTokenContract();
     const args: any[] = [tokenId];
 
     return signTranaction(contract, "burn", args, options);
@@ -69,7 +68,7 @@ export class GatewayTsCallData extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<Transaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = this.getGatewayTokenContract();
     const args: any[] = [tokenId];
 
     return signTranaction(contract, "freeze", args, options);
@@ -80,7 +79,7 @@ export class GatewayTsCallData extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<Transaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = this.getGatewayTokenContract();
     const args: any[] = [tokenId];
 
     return signTranaction(contract, "unfreeze", args, options);
@@ -92,7 +91,7 @@ export class GatewayTsCallData extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<Transaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = this.getGatewayTokenContract();
     const expirationDate = getExpirationTime(expiry);
     const args: any[] = [tokenId, expirationDate];
 

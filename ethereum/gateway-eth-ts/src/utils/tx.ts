@@ -29,6 +29,7 @@ export declare type TxBase = {
 export interface TxOptions extends TxBase {
   confirmations?: number;
   forwardTransaction?: boolean;
+  chainId?: number;
 }
 
 export const populateTx = async (
@@ -44,9 +45,9 @@ export const populateTx = async (
   };
 
   if (options?.gasPrice === undefined) {
-    overrides.gasPrice = await estimateGasPrice("fast");
+    overrides.gasPrice = await estimateGasPrice("fast", undefined, { chainId: options?.chainId });
   } else if (typeof options?.gasPrice === "string") {
-    overrides.gasPrice = await estimateGasPrice(options?.gasPrice);
+    overrides.gasPrice = await estimateGasPrice(options?.gasPrice, undefined, { chainId: options?.chainId });
   }
 
   if (options?.gasLimit === undefined) {

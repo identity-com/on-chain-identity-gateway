@@ -8,6 +8,11 @@ import { toBytes32 } from "./utils/string";
 import { GatewayTsBase } from "./GatewayTsBase";
 import { SendableTransaction } from "./utils/types";
 import { signMetaTxRequest } from "./utils/signer";
+import Debug from "debug";
+import {Contract} from "ethers/lib/ethers";
+
+// eslint-disable-next-line new-cap
+const debug = Debug('gateway-eth-ts:GatewayTs');
 
 export class GatewayTs extends GatewayTsBase {
   // eslint-disable-next-line no-useless-constructor
@@ -25,7 +30,7 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = this.getGatewayTokenContract();
 
     const args: any[] = [gatekeeper];
 
@@ -37,7 +42,7 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<string> => {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = this.getGatewayTokenContract();
 
     const args: any[] = [gatekeeper];
 
@@ -49,7 +54,7 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = this.getGatewayTokenContract();
 
     const args: any[] = [authority];
 
@@ -61,11 +66,23 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<string> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = this.getGatewayTokenContract();
 
     const args: any[] = [authority];
 
     return ethTransaction(contract, "removeNetworkAuthority", args, options);
+  }
+  
+  private createTransaction = async (
+  contract: Contract,
+  method: string,
+  args: unknown[],
+  options?: TxOptions
+): Promise<PopulatedTransaction> => {
+    return populateTx(contract, method, args, {
+      ...options,
+      chainId: this.networkId,
+    });
   }
 
   // eslint-disable-next-line max-params
@@ -83,7 +100,7 @@ export class GatewayTs extends GatewayTsBase {
     options?: TxOptions
   ): Promise<SendableTransaction> {
     const gatewayTokenContract =
-      this.getGatewayTokenContract(gatewayTokenAddress);
+      this.getGatewayTokenContract();
     const { contract } = gatewayTokenContract;
 
     if (tokenId === null) {
@@ -98,7 +115,8 @@ export class GatewayTs extends GatewayTsBase {
       expiration = getExpirationTime(expiration);
     }
 
-    const gatewayTxRequest = await populateTx(
+    debug("Populating tx");
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "mint",
       [owner, tokenId, expiration, bitmask],
@@ -117,8 +135,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "revoke",
       [tokenId],
@@ -138,8 +156,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "burn",
       [tokenId],
@@ -159,8 +177,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "freeze",
       [tokenId],
@@ -180,8 +198,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "unfreeze",
       [tokenId],
@@ -202,9 +220,9 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
+    const { contract } = this.getGatewayTokenContract();
     const expirationDate = getExpirationTime(expiry);
-    const gatewayTxRequest = await populateTx(
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "setExpiration",
       [tokenId, expirationDate],
@@ -224,7 +242,7 @@ export class GatewayTs extends GatewayTsBase {
     options?: TxOptions
   ): Promise<SendableTransaction> {
     const { contract } = this.gatewayTokenController;
-    const gatewayTxRequest = await populateTx(
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "blacklist",
       [user],
@@ -246,7 +264,7 @@ export class GatewayTs extends GatewayTsBase {
   ): Promise<SendableTransaction> {
     const { contract } = this.flagsStorage;
     const bytes32 = toBytes32(flag);
-    const gatewayTxRequest = await populateTx(
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "addFlag",
       [bytes32, index],
@@ -275,7 +293,7 @@ export class GatewayTs extends GatewayTsBase {
       bytes32Array.push(bytes32);
     }
 
-    const gatewayTxRequest = await populateTx(
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "addFlags",
       [bytes32Array, indexes],
@@ -297,7 +315,7 @@ export class GatewayTs extends GatewayTsBase {
     const { contract } = this.flagsStorage;
 
     const bytes32 = toBytes32(flag);
-    const gatewayTxRequest = await populateTx(
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "removeFlag",
       [bytes32],
@@ -325,7 +343,7 @@ export class GatewayTs extends GatewayTsBase {
       bytes32Array.push(bytes32);
     }
 
-    const gatewayTxRequest = await populateTx(
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "removeFlags",
       [bytes32Array],
@@ -346,7 +364,7 @@ export class GatewayTs extends GatewayTsBase {
   ): Promise<SendableTransaction> {
     const { contract } = this.flagsStorage;
 
-    const gatewayTxRequest = await populateTx(
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "updateDAOManager",
       [controller],
@@ -366,8 +384,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "setBitmask",
       [tokenId, bitmask],
@@ -388,8 +406,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "addBitmask",
       [tokenId, bitmask],
@@ -410,8 +428,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "addBit",
       [tokenId, index],
@@ -432,8 +450,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "removeBitmask",
       [tokenId, bitmask],
@@ -454,8 +472,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "removeBit",
       [tokenId, index],
@@ -475,8 +493,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "removeUnsupportedBits",
       [tokenId],
@@ -496,8 +514,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "clearBitmask",
       [tokenId],
@@ -518,8 +536,8 @@ export class GatewayTs extends GatewayTsBase {
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<SendableTransaction> {
-    const { contract } = this.getGatewayTokenContract(gatewayTokenAddress);
-    const gatewayTxRequest = await populateTx(
+    const { contract } = this.getGatewayTokenContract();
+    const gatewayTxRequest = await this.createTransaction(
       contract,
       "anyHighRiskBits",
       [tokenId, highRiskBitmask],

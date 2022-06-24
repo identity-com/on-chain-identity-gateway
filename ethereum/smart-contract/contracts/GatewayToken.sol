@@ -438,7 +438,8 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     * @dev Triggers to burn gateway token
     * @param tokenId Gateway token id
     */
-    function burn(uint256 tokenId) public virtual onlyIdentityAdmin {
+    function burn(uint256 tokenId) public virtual {
+        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
         _burn(tokenId);
     }
 
