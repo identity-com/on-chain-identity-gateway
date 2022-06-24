@@ -36,7 +36,7 @@ const LOCALHOST_GATEWAY_TOKENS: GatewayTokenItem[] = [
   {
     name: 'Test-KYC',
     symbol: 'tKYC',
-    address: '0xa16E02E87b7454126E5E10d957A927A7F5B5d2be',
+    address: '0xd8058efe0198ae9dD7D563e1b4938Dcbc86A1F81',
   }
 ];
 
@@ -45,4 +45,5 @@ export const gatewayTokenAddresses: {[key: number]: GatewayTokenItem[]} = {
   3: ROPSTEN_GATEWAY_TOKENS,
   4: RINKEBY_GATEWAY_TOKENS,
   1337: LOCALHOST_GATEWAY_TOKENS,
+  31_337: LOCALHOST_GATEWAY_TOKENS, // Hardhat
 }

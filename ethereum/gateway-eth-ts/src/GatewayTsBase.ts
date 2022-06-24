@@ -14,7 +14,7 @@ import { checkTokenState, parseTokenState } from "./utils/token-state";
 import { TokenData } from "./utils/types";
 import { generateId } from "./utils/tokenId";
 import { toBytes32 } from "./utils/string";
-import { Forwarder } from "./contracts/Forwarder";
+import { Forwarder } from "./contracts";
 import { ZERO_BN } from "./utils/constants";
 
 export class GatewayTsBase {
@@ -38,14 +38,14 @@ export class GatewayTsBase {
 
   gatewayTokens: GatewayTokenItems = {};
 
-  defaultGatewayToken: string | undefined;
+  gatewayTokenContractAddress: string;
 
   forwarder: Forwarder;
 
   constructor(
     providerOrSigner: Provider | Signer,
     network: Network,
-    defaultGatewayToken?: string,
+    gatewayTokenContractAddress: string,
     options?: { defaultGas?: number; defaultGasPrice?: number }
   ) {
     this.defaultGas = options?.defaultGas || 6_000_000;
@@ -72,10 +72,10 @@ export class GatewayTsBase {
     for (const gatewayToken of gatewayTokenAddresses[this.networkId]) {
       const tokenAddress: string = gatewayToken.address;
       if (
-        defaultGatewayToken !== undefined &&
-        tokenAddress === defaultGatewayToken
+        gatewayTokenContractAddress !== undefined &&
+        tokenAddress === gatewayTokenContractAddress
       ) {
-        this.defaultGatewayToken = defaultGatewayToken;
+        this.gatewayTokenContractAddress = gatewayTokenContractAddress;
       }
 
       this.gatewayTokens[tokenAddress] = {
@@ -90,37 +90,15 @@ export class GatewayTsBase {
     }
   }
 
-  getGatewayTokenContract(gatewayTokenAddress?: string): GatewayToken {
-    let gatewayToken: GatewayToken;
-
-    if (gatewayTokenAddress) {
-      gatewayToken = this.gatewayTokens[gatewayTokenAddress].tokenInstance;
-
-      if (gatewayToken === null) {
-        gatewayToken = this.defaultGatewayTokenContract();
-      }
-    } else {
-      gatewayToken = this.defaultGatewayTokenContract();
-    }
-
-    return gatewayToken;
+  getGatewayTokenContract(): GatewayToken | null {
+    return this.gatewayTokens[this.gatewayTokenContractAddress].tokenInstance;
   }
-
-  defaultGatewayTokenContract(): GatewayToken {
-    if (this.defaultGatewayToken) {
-      return this.gatewayTokens[this.defaultGatewayToken].tokenInstance;
-    }
-
-    const addr = gatewayTokenAddresses[this.networkId][0].address;
-    return this.gatewayTokens[addr].tokenInstance;
-  }
-
+  
   async verify(
     owner: string,
     tokenId?: number,
-    gatewayTokenAddress?: string
   ): Promise<boolean> {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayToken = this.getGatewayTokenContract();
 
     const result = (await (tokenId
       ? gatewayToken.verifyTokenByTokenID(owner, tokenId)
@@ -132,9 +110,8 @@ export class GatewayTsBase {
 
   async getTokenBalance(
     owner: string,
-    gatewayTokenAddress?: string
   ): Promise<BigNumber> {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayToken = this.getGatewayTokenContract();
     const balance: number | BigNumber = await gatewayToken.getBalance(owner);
 
     return BigNumber.from(balance);
@@ -148,7 +125,7 @@ export class GatewayTsBase {
     constrains = constrains || ZERO_BN;
     if (constrains.eq(ZERO_BN)) {
       if (gatewayToken === undefined) {
-        gatewayToken = this.getGatewayTokenContract(this.defaultGatewayToken);
+        gatewayToken = this.getGatewayTokenContract();
       }
 
       const balance = await gatewayToken.getBalance(address);
@@ -159,19 +136,17 @@ export class GatewayTsBase {
     return generateId(address, constrains);
   }
 
-  async getDefaultTokenId(
+  async getTokenId(
     owner: string,
-    gatewayTokenAddress?: string
   ): Promise<BigNumber> {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayToken = this.getGatewayTokenContract();
     return gatewayToken.getTokenId(owner);
   }
 
   async getTokenState(
     tokenId?: number | BigNumber,
-    gatewayTokenAddress?: string
   ): Promise<string> {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayToken = this.getGatewayTokenContract();
     const state: number = await gatewayToken.getTokenState(tokenId);
 
     return checkTokenState(state);
@@ -180,9 +155,8 @@ export class GatewayTsBase {
   async getTokenData(
     tokenId?: number | BigNumber,
     parsed?: boolean,
-    gatewayTokenAddress?: string
   ): Promise<TokenData> {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayToken = this.getGatewayTokenContract();
     const tokenData: TokenData = await gatewayToken.getToken(tokenId);
 
     if (parsed) {
@@ -194,9 +168,8 @@ export class GatewayTsBase {
 
   async getTokenBitmask(
     tokenId?: number | BigNumber,
-    gatewayTokenAddress?: string
   ): Promise<number | BigNumber> {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayToken = this.getGatewayTokenContract();
     return gatewayToken.getTokenBitmask(tokenId);
   }
 
@@ -209,9 +182,8 @@ export class GatewayTsBase {
   async subscribeOnGatewayTokenChange(
     tokenId: BigNumber | string,
     callback: (gatewayToken: TokenData) => void,
-    gatewayTokenAddress?: string,
   ): Promise<ReturnType<typeof setInterval>> {
-    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    const gatewayToken = this.getGatewayTokenContract();
     let provider: Provider;
 
     if (Signer.isSigner(this.providerOrSigner)) {

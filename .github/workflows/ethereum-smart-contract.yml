@@ -42,7 +42,13 @@ jobs:
         run: yarn
 
       - name: Build
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          INFURA_KEY: ${{ secrets.INFURA_KEY }}
         run: yarn build
 
       - name: Test
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          INFURA_KEY: ${{ secrets.INFURA_KEY }}
         run: yarn test
