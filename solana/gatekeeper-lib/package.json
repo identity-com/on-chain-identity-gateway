@@ -24,7 +24,6 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
     "@oclif/test": "^1.2.8",
-    "@solana/buffer-layout": "^4.0.0",
     "@types/async-retry": "^1.4.3",
     "@types/bn.js": "^5.1.0",
     "@types/bs58": "^4.0.1",
