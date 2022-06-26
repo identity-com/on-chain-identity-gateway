@@ -7,12 +7,7 @@
   },
   "scripts": {
     "test": "hardhat test",
-    "deploy:localhost": "hardhat deploy --network localhost",
-    "deploy:hardhat": "hardhat deploy --network hardhat",
-    "deploy:ropsten": "hardhat deploy --network ropsten",
-    "deploy:rinkeby": "hardhat deploy --network rinkeby",
-    "deploy:mainnet": "hardhat deploy --network mainnet",
-    "deploy:polygon": "hardhat deploy --network matic",
+    "deploy": "hardhat deploy --network $1",
     "local": "hardhat node",
     "build": "hardhat compile"
   },
