@@ -1,17 +1,14 @@
 import { Command, Flags } from "@oclif/core";
-import { BaseProvider } from "@ethersproject/providers";
-import { GatewayToken } from "../contracts/GatewayToken";
+import { utils} from "ethers";
+import { getExpirationTime } from "../utils/time";
 import {
-  privateKeyFlag,
+  confirmationsFlag,
+  gasPriceFeeFlag,
   gatewayTokenAddressFlag,
   networkFlag,
-  gasPriceFeeFlag,
-  confirmationsFlag,
-} from "../utils/flags";
-import { TxBase } from "../utils/tx";
-import { BigNumber, utils, Wallet } from "ethers";
-import { mnemonicSigner, privateKeySigner } from "../utils/signer";
-import { getExpirationTime } from "../utils/time";
+  privateKeyFlag, tokenIdFlag
+} from "../utils/oclif/flags";
+import {makeGatewayTs} from "../utils/oclif/utils";
 
 export default class RefreshToken extends Command {
   static description =
@@ -27,17 +24,24 @@ export default class RefreshToken extends Command {
     privateKey: privateKeyFlag(),
     gatewayTokenAddress: gatewayTokenAddressFlag(),
     network: networkFlag(),
+    tokenID: tokenIdFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
   };
 
   static args = [
     {
-      name: "tokenID",
+      name: "address",
       required: true,
-      description: "Token ID number to refresh",
+      description: "Owner ethereum address to refresh the token for",
       // eslint-disable-next-line @typescript-eslint/require-await
-      parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
+
+        return input;
+      },
     },
     {
       name: "expiry",
@@ -52,20 +56,14 @@ export default class RefreshToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(RefreshToken);
 
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
     const confirmations = flags.confirmations;
-
-    const signer: Wallet = utils.isValidMnemonic(pk)
-      ? mnemonicSigner(pk, provider)
-      : privateKeySigner(pk, provider);
-
-    const tokenID = args.tokenID as BigNumber;
+    const tokenID = flags.tokenID;
     const now = Math.floor(Date.now() / 1000);
     const expiry = args.expiry as number;
+    const ownerAddress = args.address as string;
 
-    const expirationDate = getExpirationTime(expiry);
-    const days = Math.floor(expirationDate.sub(now).div(86_400).toNumber());
+    const expiration = getExpirationTime(expiry);
+    const days = Math.floor(expiration.sub(now).div(86_400).toNumber());
 
     const gatewayTokenAddress = flags.gatewayTokenAddress;
 
@@ -74,27 +72,16 @@ export default class RefreshToken extends Command {
 			for ${days} days
 			on GatewayToken ${gatewayTokenAddress} contract`);
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gateway = await makeGatewayTs(flags.network, flags.privateKey, gatewayTokenAddress, flags.gasPriceFee);
 
-    const gasPrice = flags.gasPriceFee;
-    const gasLimit = await gatewayToken.contract.estimateGas.setExpiration(
-      tokenID,
-      expirationDate
+    const sendableTransaction = await gateway.refresh(
+      ownerAddress,
+      flags.tokenID,
+      expiration,
     );
 
-    const txParams: TxBase = {
-      gasLimit: gasLimit,
-      gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
-    };
+    const receipt = await sendableTransaction.wait(confirmations);
 
-    const tx = await gatewayToken.setExpiration(tokenID, expirationDate, txParams)
-    let hash = tx.hash;
-    if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
-    }
-
-    this.log(
-      `Refreshed token with: ${tokenID.toString()} tokenID for ${days} days. TxHash: ${hash}`
-    );
+    this.log(`Token refreshed. TxHash: ${receipt.transactionHash}`);
   }
 }
