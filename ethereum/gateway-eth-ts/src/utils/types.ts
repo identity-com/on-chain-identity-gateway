@@ -1,40 +1,45 @@
-import {
-  TransactionReceipt,
-  TransactionResponse,
-} from "@ethersproject/abstract-provider";
-import { BigNumber, Contract, PopulatedTransaction } from "ethers";
-import { TxOptions } from "../utils/tx";
+import { BigNumber} from "ethers";
+import {GatewayToken} from "../contracts/typechain-types";
+
+
+export enum TokenState {
+  'ACTIVE',
+  'FROZEN',
+  'REVOKED',
+}
+
 
 export declare type TokenData = {
   owner: string;
-  state: number | string;
-  identity: string;
-  expiration: number | BigNumber | string;
-  bitmask: number | BigNumber | string;
+  tokenId: BigNumber | number;
+  state: TokenState;
+  expiration: BigNumber | number;
+  bitmask: BigNumber | number;
 };
 
-export class SendableTransaction {
-  // eslint-disable-next-line no-useless-constructor
-  constructor(
-    readonly contract: Contract,
-    readonly transaction: PopulatedTransaction,
-    readonly options?: TxOptions
-  ) {}
+export type MappedOps = 'addGatekeeper'
+  | 'removeGatekeeper'
+  | 'addNetworkAuthority'
+  | 'removeNetworkAuthority'
+  | 'mint'
+  | 'setExpiration'
+  | 'freeze'
+  | 'unfreeze'
+  | 'revoke'
+  | 'burn'
+  | 'setBitmask'
+export const mappedOpNames = ['addGatekeeper', 'removeGatekeeper', 'addNetworkAuthority', 'removeNetworkAuthority', 'mint', 'setExpiration', 'freeze', 'unfreeze', 'revoke', 'burn', 'setBitmask'];
 
-  async send(): Promise<SentTransaction> {
-    const result = await this.contract.signer.sendTransaction(this.transaction);
-    return new SentTransaction(result, this.options);
-  }
-}
+type SubsetMappedOps = Pick<GatewayToken, MappedOps>
 
-export class SentTransaction {
-  // eslint-disable-next-line no-useless-constructor
-  constructor(
-    readonly response: TransactionResponse,
-    readonly options?: TxOptions
-  ) {}
+export type MappedOperation<O> = {
+  [Property in keyof SubsetMappedOps]: (...args: Parameters<SubsetMappedOps[Property]>) => Promise<O>
+};
 
-  async confirm(): Promise<TransactionReceipt> {
-    return this.response.wait(this.options?.confirmations);
-  }
-}
+export type RawOps = 'getTokenId' | 'getTokenState' | 'getToken' | 'verifyToken(address)';
+export const rawOpNames = ['getTokenId', 'getTokenState', 'getToken', 'verifyToken(address)'];
+
+type SubsetRawOps = Pick<GatewayToken, RawOps>
+export type RawOperation = {
+  [Property in keyof SubsetRawOps]: GatewayToken[Property]
+};

@@ -1,16 +1,13 @@
-import { Command, Flags } from "@oclif/core";
-import { BigNumber, utils, Wallet } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
-import { GatewayToken } from "../contracts/GatewayToken";
 import {
-  privateKeyFlag,
+  confirmationsFlag,
+  gasPriceFeeFlag,
   gatewayTokenAddressFlag,
   networkFlag,
-  gasPriceFeeFlag,
-  confirmationsFlag,
-} from "../utils/flags";
-import { TxBase } from "../utils/tx";
-import { mnemonicSigner, privateKeySigner } from "../utils/signer";
+  privateKeyFlag, tokenIdFlag
+} from "../utils/oclif/flags";
+import {Command, Flags} from "@oclif/core";
+import {makeGatewayTs} from "../utils/oclif/utils";
+import {utils} from "ethers";
 
 export default class RevokeToken extends Command {
   static description = "Revoke existing identity token by TokenID";
@@ -24,6 +21,7 @@ export default class RevokeToken extends Command {
     help: Flags.help({ char: "h" }),
     privateKey: privateKeyFlag(),
     gatewayTokenAddress: gatewayTokenAddressFlag(),
+    tokenID: tokenIdFlag(),
     network: networkFlag(),
     gasPriceFee: gasPriceFeeFlag(),
     confirmations: confirmationsFlag(),
@@ -31,52 +29,39 @@ export default class RevokeToken extends Command {
 
   static args = [
     {
-      name: "tokenID",
+      name: "address",
       required: true,
-      description: "Token ID number to revoke",
+      description: "Owner ethereum address to revoke the token for",
       // eslint-disable-next-line @typescript-eslint/require-await
-      parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
+
+        return input;
+      },
     },
   ];
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(RevokeToken);
 
-    const tokenID = args.tokenID as BigNumber;
-    const pk = flags.privateKey;
-    const provider: BaseProvider = flags.network;
     const confirmations = flags.confirmations;
+    const ownerAddress = args.address as string;
 
-    const signer: Wallet = utils.isValidMnemonic(pk)
-      ? mnemonicSigner(pk, provider)
-      : privateKeySigner(pk, provider);
+    const gatewayTokenAddress = flags.gatewayTokenAddress;
 
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    this.log(`Revoking token for ${ownerAddress}`);
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
-    const owner = await gatewayToken.getTokenOwner(tokenID);
+    const gateway = await makeGatewayTs(flags.network, flags.privateKey, gatewayTokenAddress, flags.gasPriceFee);
 
-    this.log(`Revoking existing token with TokenID:
-			${tokenID.toString()} 
-			for owner ${owner}
-			on GatewayToken ${gatewayTokenAddress} contract`);
-
-    const gasPrice = flags.gasPriceFee;
-    const gasLimit = await gatewayToken.contract.estimateGas.revoke(tokenID);
-
-    const txParams: TxBase = {
-      gasLimit: gasLimit,
-      gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
-    };
-
-    const tx = await gatewayToken.revoke(tokenID, txParams)
-    let hash = tx.hash;
-    if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
-    }
-
-    this.log(
-      `Revoked existing token with TokenID: ${tokenID.toString()} TxHash: ${hash}`
+    const sendableTransaction = await gateway.revoke(
+      ownerAddress,
+      flags.tokenID,
     );
+
+    const receipt = await sendableTransaction.wait(confirmations);
+
+    this.log(`Token revoked. TxHash: ${receipt.transactionHash}`);
   }
 }
