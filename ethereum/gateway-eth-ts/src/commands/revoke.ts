@@ -10,7 +10,7 @@ import {makeGatewayTs} from "../utils/oclif/utils";
 import {utils} from "ethers";
 
 export default class RevokeToken extends Command {
-  static description = "Revoke existing identity token by TokenID";
+  static description = "Revoke existing gateway token by TokenID";
 
   static examples = [
     `$ gateway revoke 10
@@ -59,6 +59,8 @@ export default class RevokeToken extends Command {
       ownerAddress,
       flags.tokenID,
     );
+
+    this.log(`Transaction hash: ${sendableTransaction.hash}`);
 
     const receipt = await sendableTransaction.wait(confirmations);
 

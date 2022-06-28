@@ -1,10 +1,10 @@
 import {Contract, Overrides, Wallet} from "ethers";
-import {Forwarder, GatewayToken} from "./contracts/typechain-types";
+import {Forwarder, GatewayToken} from "../contracts/typechain-types";
 import {GatewayTsInternal} from "./GatewayTsInternal";
-import {mappedOpNames, MappedOps, RawOperation, rawOpNames} from "./utils/types";
+import {mappedOpNames, MappedOps, RawOperation, rawOpNames} from "../utils/types";
 import {PopulatedTransaction} from "ethers/lib/ethers";
 import {mapObjIndexed, pick} from "ramda";
-import {signMetaTxRequest} from "./utils/metatx";
+import {signMetaTxRequest} from "../utils/metatx";
 import {Provider} from "@ethersproject/providers";
 
 type MappedGatewayToken = RawOperation & Pick<GatewayToken['populateTransaction'], MappedOps>

@@ -10,7 +10,7 @@ import {makeGatewayTs} from "../utils/oclif/utils";
 import {utils} from "ethers";
 
 export default class FreezeToken extends Command {
-  static description = "Freeze existing identity token";
+  static description = "Freeze existing gateway token";
 
   static examples = [
     `$ gateway freeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
@@ -59,6 +59,8 @@ export default class FreezeToken extends Command {
       ownerAddress,
       flags.tokenID,
     );
+
+    this.log(`Transaction hash: ${sendableTransaction.hash}`);
 
     const receipt = await sendableTransaction.wait(confirmations);
 

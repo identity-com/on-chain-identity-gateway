@@ -47,12 +47,14 @@ export default class RemoveNetworkAuthority extends Command {
     const authority = args.address as string;
     const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
-    this.log(`Removeing:
+    this.log(`Removing:
 			authority ${authority} 
 			to GatewayToken ${gatewayTokenAddress}`);
 
     const gateway = await makeGatewayTs(flags.network, flags.privateKey, gatewayTokenAddress, flags.gasPriceFee);
     const sendableTransaction = await gateway.removeNetworkAuthority(authority);
+
+    this.log(`Transaction hash: ${sendableTransaction.hash}`);
 
     const receipt = await sendableTransaction.wait(confirmations);
 

@@ -1,7 +1,7 @@
 import {
   BaseProvider,
   JsonRpcProvider,
-  getDefaultProvider,
+  getDefaultProvider, InfuraProvider,
 } from "@ethersproject/providers";
 
 export const getLocalhostProvider = (): JsonRpcProvider => {
@@ -11,10 +11,9 @@ export const getLocalhostProvider = (): JsonRpcProvider => {
 export const getProvider = function (
   network: string
 ): BaseProvider {
-  const provider: BaseProvider =
-    network === "localhost" || network === "hardhat"
-      ? getLocalhostProvider()
-      : getDefaultProvider(network);
-
-  return provider;
+  if (network === "localhost" || network === "hardhat") return getLocalhostProvider();
+  
+  if (process.env.INFURA_API_KEY) return new InfuraProvider(network, process.env.INFURA_API_KEY);
+  
+  return getDefaultProvider(network);
 };

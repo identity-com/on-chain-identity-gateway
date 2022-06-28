@@ -7,7 +7,7 @@
 
 # Gateway ETH TS library
 
-This client library allows JS/TS applications to communicate with Gateway token system on Ethereum blockchain. Common methods include validation of existing tokens, new identity token issuance, token freezing/unfreezing and revokation.
+This client library allows JS/TS applications to communicate with Gateway token system on Ethereum blockchain. Common methods include validation of existing tokens, new gateway token issuance, token freezing/unfreezing and revokation.
 
 ## Installation
 
@@ -17,11 +17,7 @@ This client library allows JS/TS applications to communicate with Gateway token 
 
 ```
 import {
-  GatewayETH,
-  getGatekeeperAccountKeyFromGatekeeperAuthority,
-  getGatewayTokenKeyForOwner,
-  issueVanilla,
-  findGatewayTokens,
+  GatewayTs,
 } from "@identity.com/gateway-eth-ts";
 import {
   getDefaultProvider,
@@ -40,36 +36,11 @@ import { useWallet } from 'use-wallet';
   );
   const signer = provider.getSigner();
   const network = await provider.getNetwork();
-  const gatewayLib = new GatewayETH(signer, network);
+  const gateway = new GatewayTs(gatekeeper, network, DEFAULT_GATEWAY_TOKEN_ADDRESS);
   const testUser = '0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f';
-  const tokenId = await gtLib.getDefaultTokenId(testUser);
-  const tx = await gtLib.getTokenState(tokenId);
+  await (await gateway.issue(testUser)).wait();
 })();
 ```
-
-## Utility functions
-
-### Token ID generation
-
-To issue a new token a library prepares a token ID for user, based on user's ETH address and additional constrains. The first 20 bytes of address are concateneted to a bytes32 string on the right side. Constrains concateneted to the left side, those constrains are limited to 12 bytes.
-
-Typically constrains are reflected as the number of identity tokens created for user.
-
-For example for `0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f` address identity token ids would be generated in a following sequence:
-
-> 0x**01**d42ef952f2ea1e77a8b771884f15bf20e35cf85f =>
-> 0x**02**d42ef952f2ea1e77a8b771884f15bf20e35cf85f =>
-> 0x**03**d42ef952f2ea1e77a8b771884f15bf20e35cf85f ...
-
-### Token bitmask construction
-
-The easiest way to associate certain flags with the identity token is by using list of supported KYC flags, and `addFlagsToBitmask` function.
-
-```
-  flags = [KYCFlags.IDCOM_1];
-  bitmask = addFlagsToBitmask(bitmask, flags);
-```
-
 # Gateway ETH TS library CLI
 
 ## Usage
@@ -169,7 +140,7 @@ _See code: [dist/commands/add-network-authority.ts](https://github.com/identity-
 
 ## `gateway-eth-ts burn ADDRESS`
 
-Burn existing identity token
+Burn existing gateway token
 
 ```
 USAGE
@@ -202,7 +173,7 @@ _See code: [dist/commands/burn.ts](https://github.com/identity-com/on-chain-iden
 
 ## `gateway-eth-ts freeze ADDRESS`
 
-Freeze existing identity token
+Freeze existing gateway token
 
 ```
 USAGE
@@ -235,7 +206,7 @@ _See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-id
 
 ## `gateway-eth-ts get-token ADDRESS`
 
-Get existing identity token
+Get existing gateway token
 
 ```
 USAGE
@@ -275,7 +246,7 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.1
 
 ## `gateway-eth-ts issue ADDRESS [EXPIRATION]`
 
-Issue new identity token with TokenID for Ethereum address
+Issue new gateway token with TokenID for Ethereum address
 
 ```
 USAGE
@@ -314,7 +285,7 @@ _See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-ide
 
 ## `gateway-eth-ts refresh ADDRESS [EXPIRY]`
 
-Refresh existing identity token with TokenID for Ethereum address
+Refresh existing gateway token with TokenID for Ethereum address
 
 ```
 USAGE
@@ -410,7 +381,7 @@ _See code: [dist/commands/remove-network-authority.ts](https://github.com/identi
 
 ## `gateway-eth-ts revoke ADDRESS`
 
-Revoke existing identity token by TokenID
+Revoke existing gateway token by TokenID
 
 ```
 USAGE
@@ -443,7 +414,7 @@ _See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-id
 
 ## `gateway-eth-ts unfreeze ADDRESS`
 
-Unfreeze existing identity token
+Unfreeze existing gateway token
 
 ```
 USAGE
@@ -485,3 +456,27 @@ _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/
 <!-- commandsstop -->
 
 - [`gateway-eth-ts add-gatekeeper ADDRESS`](#gateway-eth-ts-add-gatekeeper-address)
+
+## Utility functions
+
+### Token ID generation
+
+To issue a new token a library prepares a token ID for user, based on user's ETH address and additional constraints.
+The first 20 bytes of address are concatenated to a bytes32 string on the right side. Constraints concateneted to the left side, those constraints are limited to 12 bytes.
+
+Typically constraints are reflected as the number of gateway tokens created for user.
+
+For example for `0xD42Ef952F2EA1E77a8b771884f15Bf20e35cF85f` address gateway token ids would be generated in a following sequence:
+
+> 0x**01**d42ef952f2ea1e77a8b771884f15bf20e35cf85f =>
+> 0x**02**d42ef952f2ea1e77a8b771884f15bf20e35cf85f =>
+> 0x**03**d42ef952f2ea1e77a8b771884f15bf20e35cf85f ...
+
+### Token bitmask construction
+
+The easiest way to associate certain flags with the gateway token is by using list of supported KYC flags, and `addFlagsToBitmask` function.
+
+```
+  flags = [KYCFlags.IDCOM_1];
+  bitmask = addFlagsToBitmask(bitmask, flags);
+```

@@ -2,7 +2,7 @@ import { Command, Flags } from "@oclif/core";
 import { BigNumber, utils} from "ethers";
 import { getExpirationTime } from "../utils/time";
 import {
-  bitmaskFlag, confirmationsFlag, forwardTransactionFlag,
+  bitmaskFlag, confirmationsFlag,
   gasPriceFeeFlag, gatewayTokenAddressFlag,
   networkFlag,
   privateKeyFlag,
@@ -13,10 +13,10 @@ import {ZERO_BN} from "../utils/constants";
 
 export default class IssueToken extends Command {
   static description =
-    "Issue new identity token with TokenID for Ethereum address";
+    "Issue new gateway token with TokenID for Ethereum address";
 
   static examples = [
-    `$ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -i <TokenID>
+    `$ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 		`,
   ];
 
@@ -29,7 +29,6 @@ export default class IssueToken extends Command {
     confirmations: confirmationsFlag(),
     bitmask: bitmaskFlag(),
     tokenID: tokenIdFlag(),
-    forwardTransaction: forwardTransactionFlag,
   };
 
   static args = [
@@ -78,7 +77,9 @@ export default class IssueToken extends Command {
     );
 
     this.log(`Issuing new token for owner ${ownerAddress}
-			on GatewayToken ${gatewayTokenAddress} contract`);
+			on GatewayToken ${gatewayTokenAddress} contract.`);
+
+    this.log(`Transaction hash: ${sendableTransaction.hash}`);
 
     const receipt = await sendableTransaction.wait(confirmations);
     

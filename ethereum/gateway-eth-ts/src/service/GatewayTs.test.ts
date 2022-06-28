@@ -1,13 +1,13 @@
-import { BaseProvider, getDefaultProvider } from "@ethersproject/providers";
+import {BaseProvider, getDefaultProvider, Network} from "@ethersproject/providers";
 import { BigNumber, Wallet } from "ethers";
-import {TokenData, TokenState} from "./utils/types";
+import {TokenData, TokenState} from "../utils/types";
 // Not supported before v18
 // eslint-disable-next-line unicorn/prefer-node-protocol
 import * as assert from "assert";
 import * as dotenv from "dotenv";
 import {
   SAMPLE_PRIVATE_KEY,
-} from "./utils/constants_test";
+} from "../utils/constants_test";
 import {GatewayTs} from "./GatewayTs";
 import {DEFAULT_GATEWAY_TOKEN_ADDRESS, gatekeeperWallet} from "./testUtils";
 dotenv.config();
@@ -15,6 +15,8 @@ dotenv.config();
 describe("GatewayTS", function () {
   let gateway: GatewayTs;
   let provider: BaseProvider;
+  let network: Network;
+  let gatekeeper: Wallet;
 
   const sampleWalletAddress = Wallet.createRandom().address;
 
@@ -24,8 +26,8 @@ describe("GatewayTS", function () {
     this.timeout(20_000);
 
     provider = getDefaultProvider("http://localhost:8545");
-    const network = await provider.getNetwork();
-    const gatekeeper = gatekeeperWallet(provider);
+    network = await provider.getNetwork();
+    gatekeeper = gatekeeperWallet(provider);
     gateway = new GatewayTs(gatekeeper, network, DEFAULT_GATEWAY_TOKEN_ADDRESS);
   });
 
