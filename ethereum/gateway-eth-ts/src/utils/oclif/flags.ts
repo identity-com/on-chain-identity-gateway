@@ -26,6 +26,7 @@ export const networkFlag = Flags.build<BaseProvider>({
   env: "GTS_DEFAULT_NETWORK",
   parse: async (input: string) => getProvider(input),
   default: async () => getProvider("mainnet"),
+  options: ["mainnet", "rinkeby", "ropsten", "kovan", "goerli"],
   description: "Specify target network to work with",
 });
 
@@ -41,15 +42,8 @@ export const confirmationsFlag = Flags.build<number>({
   char: "c",
   parse: async (input: string) => Number(input),
   description: "The amount of blocks to wait for mined transaction",
+  default: async () => 1,
 });
-
-export const forwardTransactionFlag = Flags.boolean<boolean>({
-  required: false,
-  parse: async (input: boolean) => input,
-  default: false,
-  allowNo: true,
-  description: "Whether the transaction will be sent via the Forwarder contract",
-})
 
 export const bitmaskFlag = Flags.build<BigNumber>({
   char: "b",

@@ -1,1 +1,1 @@
-export { GatewayTs } from "./GatewayTs";
+export { GatewayTs } from "./service/GatewayTs";

@@ -5,15 +5,18 @@ import {
 } from "../utils/oclif/flags";
 import {Command, Flags} from "@oclif/core";
 import {utils} from "ethers";
-import {GatewayTs} from "../GatewayTs";
+import {GatewayTs} from "../service/GatewayTs";
+import {TokenState} from "../utils/types";
 
 export default class GetToken extends Command {
-  static description = "Get existing identity token";
+  static description = "Get existing gateway token";
 
   static examples = [
     `$ gateway get 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 		`,
   ];
+  
+  static aliases = ["verify"];
 
   static flags = {
     help: Flags.help({ char: "h" }),
@@ -56,6 +59,12 @@ export default class GetToken extends Command {
       flags.tokenID,
     );
 
-    this.log('Token:', token);
+    this.log('Token:', {
+      owner: token.owner,
+      state: TokenState[token.state],
+      tokenId: token.tokenId.toString(),
+      expiration: token.expiration.toString(),
+      bitmask: token.bitmask.toString(),
+    });
   }
 }

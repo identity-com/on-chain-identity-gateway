@@ -1,6 +1,6 @@
 import {BaseProvider, getDefaultProvider, TransactionReceipt} from "@ethersproject/providers";
 import { BigNumber, Wallet } from "ethers";
-import {TokenState} from "./utils/types";
+import {TokenState} from "../utils/types";
 // Not supported before v18
 // eslint-disable-next-line unicorn/prefer-node-protocol
 import * as assert from "assert";

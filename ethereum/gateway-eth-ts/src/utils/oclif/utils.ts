@@ -1,6 +1,6 @@
 import {Provider} from "@ethersproject/providers";
 import {getSigner} from "./signer";
-import {GatewayTs} from "../../GatewayTs";
+import {GatewayTs} from "../../service/GatewayTs";
 import {BigNumber} from "ethers";
 
 export const makeGatewayTs = async (provider: Provider, privateKey: string, gatewayTokenAddress: string, gasPrice: number | BigNumber):Promise<GatewayTs> => {

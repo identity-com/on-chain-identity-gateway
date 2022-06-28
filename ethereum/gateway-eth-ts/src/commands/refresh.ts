@@ -12,10 +12,10 @@ import {makeGatewayTs} from "../utils/oclif/utils";
 
 export default class RefreshToken extends Command {
   static description =
-    "Refresh existing identity token with TokenID for Ethereum address";
+    "Refresh existing gateway token for Ethereum address";
 
   static examples = [
-    `$ gateway refresh 10 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
+    `$ gateway refresh 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 60
 		`,
   ];
 
@@ -79,6 +79,8 @@ export default class RefreshToken extends Command {
       flags.tokenID,
       expiration,
     );
+
+    this.log(`Transaction hash: ${sendableTransaction.hash}`);
 
     const receipt = await sendableTransaction.wait(confirmations);
 

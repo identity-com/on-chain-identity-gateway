@@ -1,9 +1,9 @@
 import {BigNumber, Overrides} from "ethers";
 
-import { getExpirationTime } from "./utils/time";
-import {ZERO_BN} from "./utils/constants";
-import {generateId} from "./utils/tokenId";
-import {MappedOperation, RawOperation, TokenData, TokenState} from "./utils/types";
+import { getExpirationTime } from "../utils/time";
+import {ZERO_BN} from "../utils/constants";
+import {generateId} from "../utils/tokenId";
+import {MappedOperation, RawOperation, TokenData, TokenState} from "../utils/types";
 
 export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
   protected gatewayTokenContract: I;
@@ -65,7 +65,7 @@ export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
     const mintTokenId = tokenId || this.generateTokenId(owner);
     const expirationTime = expiration > 0 ? getExpirationTime(expiration) : 0;
 
-    return this.gatewayTokenContract.mint(owner, mintTokenId, expirationTime, bitmask);
+    return this.gatewayTokenContract.mint(owner, mintTokenId, expirationTime, bitmask, this.options);
   }
 
   revoke(
@@ -73,7 +73,7 @@ export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
     tokenId?: number | BigNumber,
   ): Promise<O> {
     const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.revoke(mintTokenId);
+    return this.gatewayTokenContract.revoke(mintTokenId, this.options);
   }
 
   burn(
@@ -81,7 +81,7 @@ export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
     tokenId?: number | BigNumber,
   ): Promise<O> {
     const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.burn(mintTokenId);
+    return this.gatewayTokenContract.burn(mintTokenId, this.options);
   }
 
   freeze(
@@ -89,7 +89,7 @@ export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
     tokenId?: number | BigNumber,
   ): Promise<O> {
     const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.freeze(mintTokenId);
+    return this.gatewayTokenContract.freeze(mintTokenId, this.options);
   }
 
   unfreeze(
@@ -97,7 +97,7 @@ export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
     tokenId?: number | BigNumber,
   ): Promise<O> {
     const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.unfreeze(mintTokenId);
+    return this.gatewayTokenContract.unfreeze(mintTokenId, this.options);
   }
 
   refresh(
@@ -107,7 +107,7 @@ export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
   ): Promise<O> {
     const mintTokenId = tokenId || this.generateTokenId(owner);
     const expirationTime = getExpirationTime(expiry);
-    return this.gatewayTokenContract.setExpiration(mintTokenId, expirationTime);
+    return this.gatewayTokenContract.setExpiration(mintTokenId, expirationTime, this.options);
   }
 
   setBitmask(
@@ -116,7 +116,7 @@ export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
     tokenId?: number | BigNumber,
   ): Promise<O> {
     const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.setBitmask(mintTokenId, bitmask);
+    return this.gatewayTokenContract.setBitmask(mintTokenId, bitmask, this.options);
   }
   
   verify(owner: string): Promise<boolean> {
@@ -136,6 +136,7 @@ export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
     tokenId?: number | BigNumber,
   ): Promise<TokenData> {
     const mintTokenId = tokenId || this.generateTokenId(owner);
+    console.log("mintTokenId", mintTokenId);
     const rawData = await this.gatewayTokenContract.getToken(mintTokenId);
     return {
       owner: rawData.owner,

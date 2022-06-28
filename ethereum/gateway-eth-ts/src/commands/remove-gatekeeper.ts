@@ -53,6 +53,8 @@ export default class RemoveGatekeeper extends Command {
     const gateway = await makeGatewayTs(flags.network, flags.privateKey, gatewayTokenAddress, flags.gasPriceFee);
     const sendableTransaction = await gateway.removeGatekeeper(gatekeeper);
 
+    this.log(`Transaction hash: ${sendableTransaction.hash}`);
+
     const receipt = await sendableTransaction.wait(confirmations);
 
     this.log(
