@@ -15,7 +15,6 @@ export class GatewayTs extends GatewayTsInternal<GatewayToken, ContractTransacti
     defaultGatewayToken: string,
     options: Overrides = {}
   ) {
-    console.log("gateway token", defaultGatewayToken);
     const gatewayTokenContract = GatewayToken__factory.connect(defaultGatewayToken, providerOrWallet);
     super(gatewayTokenContract, options)
 

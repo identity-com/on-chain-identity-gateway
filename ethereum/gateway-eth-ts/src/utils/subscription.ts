@@ -1,6 +1,6 @@
 import { BaseProvider, Provider } from "@ethersproject/providers";
 import { BigNumber } from "ethers";
-import {GatewayTs} from "../GatewayTs";
+import {GatewayTs} from "../service/GatewayTs";
 import {TokenData} from "./types";
 
 export const onGatewayTokenChange = async (

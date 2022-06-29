@@ -45,9 +45,7 @@ export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
     address: string,
     constraints?: BigNumber,
   ): BigNumber {
-    const constraintsWithDefault = constraints || ZERO_BN;
-
-    return generateId(address, constraintsWithDefault);
+    return generateId(address, constraints);
   }
 
   getTokenId(
