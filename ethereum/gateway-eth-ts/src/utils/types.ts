@@ -8,7 +8,6 @@ export enum TokenState {
   'REVOKED',
 }
 
-
 export declare type TokenData = {
   owner: string;
   tokenId: BigNumber | number;
@@ -17,7 +16,8 @@ export declare type TokenData = {
   bitmask: BigNumber | number;
 };
 
-export type MappedOps = 'addGatekeeper'
+// List of the write operations on the GatewayToken contract that are exposed via this library 
+export type WriteOps = 'addGatekeeper'
   | 'removeGatekeeper'
   | 'addNetworkAuthority'
   | 'removeNetworkAuthority'
@@ -30,16 +30,17 @@ export type MappedOps = 'addGatekeeper'
   | 'setBitmask'
 export const mappedOpNames = ['addGatekeeper', 'removeGatekeeper', 'addNetworkAuthority', 'removeNetworkAuthority', 'mint', 'setExpiration', 'freeze', 'unfreeze', 'revoke', 'burn', 'setBitmask'];
 
-type SubsetMappedOps = Pick<GatewayToken, MappedOps>
+type SubsetMappedWriteOps = Pick<GatewayToken, WriteOps>
 
-export type MappedOperation<O> = {
-  [Property in keyof SubsetMappedOps]: (...args: Parameters<SubsetMappedOps[Property]>) => Promise<O>
+// A GatewayToken contract instance with the write operations converted from their default
+// ethers.js return values to the type passed as O
+export type MappedWriteOperation<O> = {
+  [Property in keyof SubsetMappedWriteOps]: (...args: Parameters<SubsetMappedWriteOps[Property]>) => Promise<O>
 };
 
-export type RawOps = 'getTokenId' | 'getTokenState' | 'getToken' | 'verifyToken(address)';
-export const rawOpNames = ['getTokenId', 'getTokenState', 'getToken', 'verifyToken(address)'];
+// List of the read operations on the GatewayToken contract that are exposed via this library
+export type ReadOnlyOps = 'getTokenId' | 'getTokenState' | 'getToken' | 'verifyToken(address)';
+export const readOnlyOpNames = ['getTokenId', 'getTokenState', 'getToken', 'verifyToken(address)'];
 
-type SubsetRawOps = Pick<GatewayToken, RawOps>
-export type RawOperation = {
-  [Property in keyof SubsetRawOps]: GatewayToken[Property]
-};
+// A GatewayToken contract instance with the read operations exposed
+export type ReadOnlyOperation = Pick<GatewayToken, ReadOnlyOps>

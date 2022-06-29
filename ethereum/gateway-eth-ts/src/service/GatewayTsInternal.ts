@@ -3,9 +3,18 @@ import {BigNumber, Overrides} from "ethers";
 import { getExpirationTime } from "../utils/time";
 import {ZERO_BN} from "../utils/constants";
 import {generateId} from "../utils/tokenId";
-import {MappedOperation, RawOperation, TokenData, TokenState} from "../utils/types";
+import {MappedWriteOperation, ReadOnlyOperation, TokenData, TokenState} from "../utils/types";
 
-export class GatewayTsInternal<I extends MappedOperation<O> & RawOperation, O> {
+/**
+ * The main API of the Ethereum Gateway client library.
+ * This class expects a contract object, that contains the methods specified in the 
+ * GatewayToken smart contract, but is agnostic to the return values of those methods.
+ * 
+ * This allows it to be used with a contract object that returns a transaction receipt
+ * (i.e. creates, signs and sends the transaction) or a PopulatedTransaction, or others.
+ * 
+ */
+export class GatewayTsInternal<I extends MappedWriteOperation<O> & ReadOnlyOperation, O> {
   protected gatewayTokenContract: I;
   protected options: Overrides;
 
