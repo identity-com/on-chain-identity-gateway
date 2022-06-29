@@ -1,16 +1,27 @@
 import {Contract, Overrides, Wallet} from "ethers";
 import {Forwarder, GatewayToken} from "../contracts/typechain-types";
 import {GatewayTsInternal} from "./GatewayTsInternal";
-import {mappedOpNames, MappedOps, RawOperation, rawOpNames} from "../utils/types";
+import {mappedOpNames, WriteOps, ReadOnlyOperation, readOnlyOpNames} from "../utils/types";
 import {PopulatedTransaction} from "ethers/lib/ethers";
 import {mapObjIndexed, pick} from "ramda";
 import {signMetaTxRequest} from "../utils/metatx";
 import {Provider} from "@ethersproject/providers";
 
-type MappedGatewayToken = RawOperation & Pick<GatewayToken['populateTransaction'], MappedOps>
+// This is essentially the GatewayToken contract type, but with the write operations converted to returning PopulatedTransactions.
+// ethers.js contract.populateTransaction is a bit interesting, because it returns a PopulatedTransaction not just for
+// write operations (which we want), but also for read operations (which we don't want, because we want to just call those).
+// So this type changes that, by only converting the types for the write operations.
+// This requires the passed-in contract object to be reconstructed to match this type in the constructor of
+// GatewayTsForwarder.
+type MappedGatewayToken = ReadOnlyOperation & Pick<GatewayToken['populateTransaction'], WriteOps>
 
 type InferArgs<T> = T extends (...t: [...infer Arg]) => any ? Arg : never;
 
+// Given an ethers.js contract function that returns a PopulatedTransaction,
+// return a function that:
+// 1) signs the transaction as typedData according to ERC712
+// 2) wraps that populated transaction in an ERC2770 metatransaction
+// 3) creates a populatedTransaction pointing that metatx to the forwarder contracts
 const toMetaTx = (
   forwarderContract: Forwarder,
   toContract: Contract,
@@ -35,7 +46,10 @@ const toMetaTx = (
     delete populatedForwardedTransaction.from;
     return populatedForwardedTransaction;
   }
-
+  
+// A GatewayToken API that returns an unsigned metatransaction pointing to the Forwarder contract, rather than
+// a transaction directly on the GatewayToken contract. Use this for relaying. The resultant contract can be signed
+// and sent by any public key.
 export class GatewayTsForwarder extends GatewayTsInternal<MappedGatewayToken, PopulatedTransaction> {
   constructor(
     // ethers.js requires a Wallet instead of Signer for the _signTypedData function, until v6
@@ -46,8 +60,11 @@ export class GatewayTsForwarder extends GatewayTsInternal<MappedGatewayToken, Po
   ) {
     const wallet = '_signTypedData' in providerOrWallet ? providerOrWallet : undefined;
     const toMetaTxFn = toMetaTx(forwarderContract, gatewayTokenContract, wallet);
-    const raw: RawOperation = pick(rawOpNames, gatewayTokenContract);
-    const mapped: Pick<GatewayToken['populateTransaction'], MappedOps> 
+    
+    // construct a new mappedGatewayToken object comprising write operations that return PopulatedTransactions
+    // and read operations that don't. See the description of MappedGatewayToken above for more details.
+    const raw: ReadOnlyOperation = pick(readOnlyOpNames, gatewayTokenContract);
+    const mapped: Pick<GatewayToken['populateTransaction'], WriteOps> 
       = mapObjIndexed(toMetaTxFn, pick(mappedOpNames, gatewayTokenContract.populateTransaction));
     const mappedGatewayToken = {
       ...mapped,

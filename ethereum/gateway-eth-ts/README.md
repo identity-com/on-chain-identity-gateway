@@ -88,15 +88,15 @@ ARGUMENTS
   ADDRESS  Gatekeeper address to add to the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations                   [default: [object Promise]] The amount of blocks to wait for mined
+  -c, --confirmations=confirmations                   [default: [object Object]] The amount of blocks to wait for mined
                                                       transaction
 
-  -f, --gasPriceFee=gasPriceFee                       [default: [object Promise]] Gas Price level to execute transaction
+  -f, --gasPriceFee=gasPriceFee                       [default: [object Object]] Gas Price level to execute transaction
                                                       with. For example: instant, fast, standard, slow
 
   -h, --help                                          Show CLI help.
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                         The ethereum address private key for signing messages
 
@@ -120,15 +120,15 @@ ARGUMENTS
   ADDRESS  Network authority address to add to the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations                   [default: [object Promise]] The amount of blocks to wait for mined
+  -c, --confirmations=confirmations                   [default: [object Object]] The amount of blocks to wait for mined
                                                       transaction
 
-  -f, --gasPriceFee=gasPriceFee                       [default: [object Promise]] Gas Price level to execute transaction
+  -f, --gasPriceFee=gasPriceFee                       [default: [object Object]] Gas Price level to execute transaction
                                                       with. For example: instant, fast, standard, slow
 
   -h, --help                                          Show CLI help.
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                         The ethereum address private key for signing messages
 
@@ -152,17 +152,17 @@ ARGUMENTS
   ADDRESS  Owner ethereum address to burn the token for
 
 OPTIONS
-  -c, --confirmations=confirmations                   [default: [object Promise]] The amount of blocks to wait for mined
+  -c, --confirmations=confirmations                   [default: [object Object]] The amount of blocks to wait for mined
                                                       transaction
 
-  -f, --gasPriceFee=gasPriceFee                       [default: [object Promise]] Gas Price level to execute transaction
+  -f, --gasPriceFee=gasPriceFee                       [default: [object Object]] Gas Price level to execute transaction
                                                       with. For example: instant, fast, standard, slow
 
   -h, --help                                          Show CLI help.
 
   -i, --tokenID=tokenID                               Token ID number to issue
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                         The ethereum address private key for signing messages
 
@@ -186,17 +186,17 @@ ARGUMENTS
   ADDRESS  Owner ethereum address to freeze the token for
 
 OPTIONS
-  -c, --confirmations=confirmations                   [default: [object Promise]] The amount of blocks to wait for mined
+  -c, --confirmations=confirmations                   [default: [object Object]] The amount of blocks to wait for mined
                                                       transaction
 
-  -f, --gasPriceFee=gasPriceFee                       [default: [object Promise]] Gas Price level to execute transaction
+  -f, --gasPriceFee=gasPriceFee                       [default: [object Object]] Gas Price level to execute transaction
                                                       with. For example: instant, fast, standard, slow
 
   -h, --help                                          Show CLI help.
 
   -i, --tokenID=tokenID                               Token ID number to issue
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                         The ethereum address private key for signing messages
 
@@ -222,7 +222,7 @@ ARGUMENTS
 OPTIONS
   -h, --help                                          Show CLI help.
   -i, --tokenID=tokenID                               Token ID number to issue
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
   -t, --gatewayTokenAddress=gatewayTokenAddress       GatewayToken address to target
 
 ALIASES
@@ -261,23 +261,23 @@ USAGE
 
 ARGUMENTS
   ADDRESS     Owner ethereum address to issue the token to
-  EXPIRATION  [default: 0] Expiration timestamp for newly issued token
+  EXPIRATION  [default: [object Object]] Expiration timestamp for newly issued token
 
 OPTIONS
-  -b, --bitmask=bitmask                               [default: 0] Bitmask constraints to link with newly minting
-                                                      tokenID
+  -b, --bitmask=bitmask                               [default: [object Object]] Bitmask constraints to link with newly
+                                                      minting tokenID
 
-  -c, --confirmations=confirmations                   [default: [object Promise]] The amount of blocks to wait for mined
+  -c, --confirmations=confirmations                   [default: [object Object]] The amount of blocks to wait for mined
                                                       transaction
 
-  -f, --gasPriceFee=gasPriceFee                       [default: [object Promise]] Gas Price level to execute transaction
+  -f, --gasPriceFee=gasPriceFee                       [default: [object Object]] Gas Price level to execute transaction
                                                       with. For example: instant, fast, standard, slow
 
   -h, --help                                          Show CLI help.
 
   -i, --tokenID=tokenID                               Token ID number to issue
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                         The ethereum address private key for signing messages
 
@@ -302,17 +302,17 @@ ARGUMENTS
   EXPIRY   The new expiry time in seconds for the gateway token (default 14 days)
 
 OPTIONS
-  -c, --confirmations=confirmations                   [default: [object Promise]] The amount of blocks to wait for mined
+  -c, --confirmations=confirmations                   [default: [object Object]] The amount of blocks to wait for mined
                                                       transaction
 
-  -f, --gasPriceFee=gasPriceFee                       [default: [object Promise]] Gas Price level to execute transaction
+  -f, --gasPriceFee=gasPriceFee                       [default: [object Object]] Gas Price level to execute transaction
                                                       with. For example: instant, fast, standard, slow
 
   -h, --help                                          Show CLI help.
 
   -i, --tokenID=tokenID                               Token ID number to issue
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                         The ethereum address private key for signing messages
 
@@ -336,15 +336,15 @@ ARGUMENTS
   ADDRESS  Gatekeeper address to remove to the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations                   [default: [object Promise]] The amount of blocks to wait for mined
+  -c, --confirmations=confirmations                   [default: [object Object]] The amount of blocks to wait for mined
                                                       transaction
 
-  -f, --gasPriceFee=gasPriceFee                       [default: [object Promise]] Gas Price level to execute transaction
+  -f, --gasPriceFee=gasPriceFee                       [default: [object Object]] Gas Price level to execute transaction
                                                       with. For example: instant, fast, standard, slow
 
   -h, --help                                          Show CLI help.
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                         The ethereum address private key for signing messages
 
@@ -368,15 +368,15 @@ ARGUMENTS
   ADDRESS  Network authority address to remove from the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations                   [default: [object Promise]] The amount of blocks to wait for mined
+  -c, --confirmations=confirmations                   [default: [object Object]] The amount of blocks to wait for mined
                                                       transaction
 
-  -f, --gasPriceFee=gasPriceFee                       [default: [object Promise]] Gas Price level to execute transaction
+  -f, --gasPriceFee=gasPriceFee                       [default: [object Object]] Gas Price level to execute transaction
                                                       with. For example: instant, fast, standard, slow
 
   -h, --help                                          Show CLI help.
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                         The ethereum address private key for signing messages
 
@@ -400,17 +400,17 @@ ARGUMENTS
   ADDRESS  Owner ethereum address to revoke the token for
 
 OPTIONS
-  -c, --confirmations=confirmations                   [default: [object Promise]] The amount of blocks to wait for mined
+  -c, --confirmations=confirmations                   [default: [object Object]] The amount of blocks to wait for mined
                                                       transaction
 
-  -f, --gasPriceFee=gasPriceFee                       [default: [object Promise]] Gas Price level to execute transaction
+  -f, --gasPriceFee=gasPriceFee                       [default: [object Object]] Gas Price level to execute transaction
                                                       with. For example: instant, fast, standard, slow
 
   -h, --help                                          Show CLI help.
 
   -i, --tokenID=tokenID                               Token ID number to issue
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                         The ethereum address private key for signing messages
 
@@ -434,17 +434,17 @@ ARGUMENTS
   ADDRESS  Owner ethereum address to unfreeze the token for
 
 OPTIONS
-  -c, --confirmations=confirmations                   [default: [object Promise]] The amount of blocks to wait for mined
+  -c, --confirmations=confirmations                   [default: [object Object]] The amount of blocks to wait for mined
                                                       transaction
 
-  -f, --gasPriceFee=gasPriceFee                       [default: [object Promise]] Gas Price level to execute transaction
+  -f, --gasPriceFee=gasPriceFee                       [default: [object Object]] Gas Price level to execute transaction
                                                       with. For example: instant, fast, standard, slow
 
   -h, --help                                          Show CLI help.
 
   -i, --tokenID=tokenID                               Token ID number to issue
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Promise]] Specify target network to work with
+  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli  [default: [object Object]] Specify target network to work with
 
   -p, --privateKey=privateKey                         The ethereum address private key for signing messages
 
