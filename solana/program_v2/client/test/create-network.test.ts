@@ -18,7 +18,7 @@ describe("Gateway v2 Client", () => {
       this.timeout(120_000);
       let connection = new Connection("http://localhost:8899", "confirmed");
       const programId = new PublicKey(
-        "gatdxSHk5D1dBYpEHV4MjVd2BshCVTmKuYZHxwdwUWh"
+        "FtVtKsibAR1QGdc389JbgcomKLq34U9tY8HyWPWoYQY6"
       );
       const network = Keypair.generate();
       const funder = Keypair.generate();
