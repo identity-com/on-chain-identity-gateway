@@ -7,20 +7,12 @@ import {
 } from "@solana/web3.js";
 import { u8, NetworkData } from "./state";
 
-export const createNetwork = async (
+export const updateNetwork = async (
   programId: PublicKey,
   network: Keypair,
-  funder: Keypair,
+  payer: Keypair,
   networkData: NetworkData
-): Promise<TransactionInstruction[]> => {
-  const create = SystemProgram.createAccount({
-    fromPubkey: funder.publicKey,
-    newAccountPubkey: network.publicKey,
-    lamports: LAMPORTS_PER_SOL,
-    space: 15_000,
-    programId: programId,
-  });
-
+): Promise<TransactionInstruction> => {
   const [networkSigner, signerBump] = await PublicKey.findProgramAddress(
     [Buffer.from("network"), network.publicKey.toBuffer()],
     programId
@@ -30,15 +22,14 @@ export const createNetwork = async (
   const offset = { offset: 0 };
   new u8(0).write(data, offset);
   networkData.write(data, offset);
-  let createNetwork = new TransactionInstruction({
+  let updateNetwork = new TransactionInstruction({
     keys: [
       { pubkey: network.publicKey, isSigner: false, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-      { pubkey: networkSigner, isSigner: false, isWritable: false },
+      { pubkey: networkSigner, isSigner: true, isWritable: false },
     ],
     programId,
     data,
   });
-
-  return [create, createNetwork];
+  return updateNetwork;
 };

@@ -671,3 +671,34 @@ export async function getNetworkAccount(
   }
   return GatekeeperNetwork.read(info.data, { offset: 1 });
 }
+
+export class NetworkData {
+  constructor(
+    public authThreshold: u8,
+    public passExpireTime: i64,
+    public networkDataLen: u16,
+    public signerBump: u8,
+    public fees: NetworkFees[],
+    public authKeys: NetworkAuthKey[]
+  ) {}
+
+  size(): number {
+    return (
+      8 +
+      64 +
+      16 +
+      8 +
+      (1 + NetworkFees.size() * this.fees.length) +
+      (1 + NetworkAuthKey.size() * this.authKeys.length)
+    );
+  }
+
+  write(buffer: Buffer, offset: { offset: number }) {
+    this.authThreshold.write(buffer, offset);
+    this.passExpireTime.write(buffer, offset);
+    this.networkDataLen.write(buffer, offset);
+    this.signerBump.write(buffer, offset);
+    serializeArray(this.fees, u8, buffer, offset);
+    serializeArray(this.authKeys, u8, buffer, offset);
+  }
+}
