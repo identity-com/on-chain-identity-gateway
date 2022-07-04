@@ -52,11 +52,5 @@ jobs:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           INFURA_KEY: ${{ secrets.INFURA_KEY }}
         run: |
-          echo "Starting a localnet with hardhat"
-          cd ../smart-contract
-          yarn && yarn build
-          yarn local &
-          cd ../gateway-eth-ts
-          echo "Waiting for localnet to start"
-          sleep 20
+          (cd ../smart-contract && yarn && yarn build)
           yarn test
