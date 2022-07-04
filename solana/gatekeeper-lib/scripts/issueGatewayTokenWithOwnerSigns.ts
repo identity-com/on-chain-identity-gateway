@@ -46,7 +46,7 @@ console.log("Issuing gateway token for " + owner.publicKey);
     clusterApiUrl("devnet"),
     LAMPORTS_FOR_ISSUANCE
   );
-  const { blockhash } = await connection.getRecentBlockhash(SOLANA_COMMITMENT);
+  const { blockhash } = await connection.getLatestBlockhash(SOLANA_COMMITMENT);
 
   //  Creates a transaction signed by the gatekeeper only
   const sendableTx = await gatekeeperService.issue(owner.publicKey, {

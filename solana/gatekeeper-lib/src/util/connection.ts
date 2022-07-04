@@ -58,8 +58,8 @@ export async function addHashOrNonce(
 ): Promise<void> {
   if (hashOrNonce === "find") {
     transaction.transaction.recentBlockhash = await transaction.connection
-      .getRecentBlockhash()
-      .then((rbh) => rbh.blockhash);
+      .getLatestBlockhash()
+      .then((lbh) => lbh.blockhash);
   } else if ("recentBlockhash" in hashOrNonce) {
     transaction.transaction.recentBlockhash = hashOrNonce.recentBlockhash;
   } else {

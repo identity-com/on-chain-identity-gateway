@@ -20,7 +20,7 @@ setProvider(provider);
 const program = workspace.PythTest as Program<PythTest>;
 
 (async () => {
-  // const { blockhash: recentBlockhash }  = await connection.getRecentBlockhash();
+  // const { blockhash: recentBlockhash }  = await connection.getLatestBlockhash();
   // const instruction = new TransactionInstruction({
   //   keys
   // });

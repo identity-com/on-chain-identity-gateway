@@ -20,7 +20,7 @@ export type TransactionOptions = {
   feePayer?: PublicKey; // defaults to the gatekeeper
   rentPayer?: PublicKey; // defaults to the gatekeeper
   commitment?: Commitment; // defaults to SOLANA_COMMITMENT
-  blockhashOrNonce?: HashOrNonce; // if not set, calls connection.getRecentBlockhash to get a new blockhash
+  blockhashOrNonce?: HashOrNonce; // if not set, calls connection.getLatestBlockhash to get a new blockhash
 };
 
 /**
