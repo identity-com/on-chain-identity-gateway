@@ -13,12 +13,13 @@
       "checkJs": true,
       "resolveJsonModule": true,
       "esModuleInterop": true,
+      "noImplicitAny": false
     },
     "include": [
       "src/**/*"
     ],
     "exclude": [
-      "node_modules/**/*"
+      "node_modules/**/*", "src/contracts/typechain-types"
     ],
     "ts-node": {
       "compilerOptions": {

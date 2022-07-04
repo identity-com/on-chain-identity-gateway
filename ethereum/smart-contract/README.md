@@ -88,7 +88,8 @@ interface IGatewayTokenVerifier {
 }
 ```
 
-By sending user's tokenId and address as parameters system will validate if existing identity token is active and there is no KYC restrictions applied.
+By sending a user's address and optionally, token ID, as parameters,
+the system will validate if their gateway token is active.
 
 ## Integration example
 
