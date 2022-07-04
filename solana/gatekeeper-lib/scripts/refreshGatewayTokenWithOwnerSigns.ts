@@ -50,7 +50,7 @@ console.log("Refreshing gateway token for " + owner.publicKey);
     clusterApiUrl("devnet"),
     LAMPORTS_FOR_ISSUANCE
   );
-  let { blockhash } = await connection.getRecentBlockhash(SOLANA_COMMITMENT);
+  let { blockhash } = await connection.getLatestBlockhash(SOLANA_COMMITMENT);
 
   // issue first
   const { transaction: issueTx } = await gatekeeperService.issue(
@@ -66,7 +66,7 @@ console.log("Refreshing gateway token for " + owner.publicKey);
   await connection.confirmTransaction(issueTxSig);
   console.log("issue confirmed");
 
-  ({ blockhash } = await connection.getRecentBlockhash(SOLANA_COMMITMENT));
+  ({ blockhash } = await connection.getLatestBlockhash(SOLANA_COMMITMENT));
 
   const gt = await gatekeeperService.findGatewayTokenForOwner(owner.publicKey);
 
