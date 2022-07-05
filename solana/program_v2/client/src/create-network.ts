@@ -3,16 +3,20 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
+  Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
 import { u8, NetworkData } from "./state";
+import * as anchor from "@project-serum/anchor";
+import { IDL } from "./gateway_v2";
+import { AnchorProvider, Program } from "@project-serum/anchor";
 
 export const createNetwork = async (
   programId: PublicKey,
   network: Keypair,
   funder: Keypair,
   networkData: NetworkData
-): Promise<TransactionInstruction[]> => {
+): Promise<Transaction> => {
   const create = SystemProgram.createAccount({
     fromPubkey: funder.publicKey,
     newAccountPubkey: network.publicKey,
@@ -25,20 +29,36 @@ export const createNetwork = async (
     [Buffer.from("network"), network.publicKey.toBuffer()],
     programId
   );
-  networkData.signerBump = new u8(signerBump);
-  const data = Buffer.alloc(u8.staticSize() + networkData.size());
-  const offset = { offset: 0 };
-  new u8(0).write(data, offset);
-  networkData.write(data, offset);
-  let createNetwork = new TransactionInstruction({
-    keys: [
-      { pubkey: network.publicKey, isSigner: false, isWritable: true },
-      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-      { pubkey: networkSigner, isSigner: false, isWritable: false },
-    ],
-    programId,
-    data,
-  });
+  const program = new anchor.Program(IDL, programId);
 
-  return [create, createNetwork];
+  const createNetworkParams = {
+    authThreshold: networkData.authThreshold,
+    passExpireTime: networkData.passExpireTime,
+    networkDataLen: networkData.networkDataLen,
+    signerBump: networkData.signerBump,
+    fees: networkData.fees.map((data) => ({
+      token: data.token,
+      issue: data.issue,
+      refresh: data.refresh,
+      expire: data.expire,
+      verify: data.verify,
+    })),
+    authKeys: [
+      {
+        flags: new anchor.BN(1),
+        key: network.publicKey,
+      },
+    ],
+  };
+
+  const transaction = await program.methods
+    .createNetwork(createNetworkParams)
+    .accounts({
+      network: network.publicKey,
+      systemProgram: anchor.web3.SystemProgram.programId,
+    })
+    .signers([network])
+    .transaction();
+
+  return transaction;
 };

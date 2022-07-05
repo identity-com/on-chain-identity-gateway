@@ -56,8 +56,6 @@ describe("Gateway v2 Client", () => {
           return connection.confirmTransaction(res, "confirmed");
         });
       const transaction = new Transaction();
-      transaction.add(transactionInstructions[0]);
-      transaction.add(transactionInstructions[1]);
       transaction.feePayer = funder.publicKey;
       transaction.recentBlockhash = (
         await connection.getLatestBlockhash()
