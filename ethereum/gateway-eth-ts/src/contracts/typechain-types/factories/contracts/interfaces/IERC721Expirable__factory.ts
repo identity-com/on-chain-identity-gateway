@@ -60,6 +60,33 @@ const _abi = [
         name: "timestamp",
         type: "uint256",
       },
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "value",
+            type: "uint256",
+          },
+          {
+            internalType: "enum ChargeType",
+            name: "chargeType",
+            type: "uint8",
+          },
+          {
+            internalType: "address",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "recipient",
+            type: "address",
+          },
+        ],
+        internalType: "struct Charge",
+        name: "charge",
+        type: "tuple",
+      },
     ],
     name: "setExpiration",
     outputs: [],

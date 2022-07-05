@@ -17,27 +17,29 @@ const derivedAccounts = {
   initialIndex: 0,
   count: 20,
 }
-const liveAccounts = [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`];
+const liveAccounts = (process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY) ?
+    [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`]
+    : derivedAccounts;
 
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
-  .addParam('address', 'The wallet to check')
-  .setAction(checkGT)
+    .addParam('address', 'The wallet to check')
+    .setAction(checkGT)
 task('add-gatekeeper', 'check if a wallet has a gateway token for a particular gatekeeper network')
-  .addParam('gatekeeper', 'The gatekeeper to add')
-  .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to add the gatekeeper to')
-  .setAction(addGatekeeper)
+    .addParam('gatekeeper', 'The gatekeeper to add')
+    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to add the gatekeeper to')
+    .setAction(addGatekeeper)
 task('issue-gt', 'issue a gateway token')
-  .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to issue the token against')
-  .addParam('address', 'The wallet to issue the gateway token for')
-  .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
-  .setAction(issueGT)
+    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to issue the token against')
+    .addParam('address', 'The wallet to issue the gateway token for')
+    .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
+    .setAction(issueGT)
 
 module.exports = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
-      accounts: derivedAccounts, 
+      accounts: derivedAccounts,
     },
     localhost: {
       saveDeployments: true,
@@ -64,67 +66,67 @@ module.exports = {
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 5,
     },
     polygonMumbai: {
       url: `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 80001,
     },
     polygonMainnet: {
       url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 137,
     },
     auroraTestnet: {
       url: `https://aurora-testnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 1313161555,
     },
     auroraMainnet: {
       url: `https://aurora-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 1313161554,
     },
     optimismGoerli: {
       url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 300,
     },
     optimismMainnet: {
       url: `https://optimism-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 10,
     },
     palmTestnet: {
       url: `https://palm-testnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 11297108099,
     },
     palmMainnet: {
       url: `https://palm-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 11297108109,
     },
     arbitrumRinkeby: {
       url: `https://arbitrum-rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 421611,
     },
     arbitrumMainnet: {
       url: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : liveAccounts,
+      accounts: liveAccounts,
       chainId: 42161,
     },
   },

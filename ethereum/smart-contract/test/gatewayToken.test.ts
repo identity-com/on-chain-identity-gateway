@@ -8,6 +8,7 @@ import {
 } from './utils';
 
 import { expect } from 'chai';
+import {NULL_CHARGE, randomAddress} from "./utils/eth";
 
 describe('GatewayTokenController', async () => {
     let signers: SignerWithAddress[];
@@ -117,12 +118,12 @@ describe('GatewayTokenController', async () => {
             const gatewayTokenAddress = receipt.events[receipt.events.length - 1].args.tokenAddress;
 
             gatewayToken = await ethers.getContractAt('GatewayToken', gatewayTokenAddress);
-            await gatewayTokens.push(gatewayToken);
+            gatewayTokens.push(gatewayToken);
         });
 
         it('Try to mint GatewayToken by Bob, expect revert', async () => {
             await expect(
-                gatewayToken.connect(bob).mint(bob.address, 1, 0, 0)
+                gatewayToken.connect(bob).mint(bob.address, 1, 0, 0, NULL_CHARGE)
             ).to.be.revertedWith("MUST BE GATEKEEPER");
         });
 
@@ -137,7 +138,7 @@ describe('GatewayTokenController', async () => {
         });
 
         it('Successfully mint Gateway Token for Bob by Alice', async () => {
-            await gatewayToken.connect(alice).mint(bob.address, 1, 0, 0);
+            await gatewayToken.connect(alice).mint(bob.address, 1, 0, 0, NULL_CHARGE);
 
             let tokenOwner = await gatewayToken.ownerOf(1);
             expect(tokenOwner).to.equal(bob.address);
@@ -221,7 +222,7 @@ describe('GatewayTokenController', async () => {
 
     describe('Test gateway token transfers with restricted and accepted transfers for token owners', async () => {
         it('Successfully mint Gateway Token for Alice by admin with tokenID = 1', async () => {
-            await gatewayToken.connect(identityCom).mint(alice.address, 1, 0, 0);
+            await gatewayToken.connect(identityCom).mint(alice.address, 1, 0, 0, NULL_CHARGE);
 
             let tokenOwner = await gatewayToken.ownerOf(1);
             expect(tokenOwner).to.equal(alice.address);
@@ -234,7 +235,7 @@ describe('GatewayTokenController', async () => {
         });
 
         it('Successfully mint Gateway Token for Bob by Alice with tokenID = 2', async () => {
-            await gatewayToken.connect(alice).mint(bob.address, 2, 0, 0);
+            await gatewayToken.connect(alice).mint(bob.address, 2, 0, 0, NULL_CHARGE);
 
             let tokenID = await gatewayToken.getTokenId(bob.address);
             expect(tokenID.toString()).to.equal('2');
@@ -358,11 +359,11 @@ describe('GatewayTokenController', async () => {
             validity = await gatewayToken.functions['verifyToken(address)'](alice.address);
             expect(validity[0]).to.equal(false);
 
-            await gatewayToken.connect(alice).setExpiration(2, 12);
+            await gatewayToken.connect(alice).setExpiration(2, 12, NULL_CHARGE);
         });
 
         it('Mint token for Carol, verify first time and blacklist Carol globally', async () => {
-            await gatewayToken.connect(alice).mint(carol.address, 3, 0, 0);
+            await gatewayToken.connect(alice).mint(carol.address, 3, 0, 0, NULL_CHARGE);
 
             let tokenOwner = await gatewayToken.ownerOf(3);
             expect(tokenOwner).to.equal(carol.address);
@@ -395,7 +396,7 @@ describe('GatewayTokenController', async () => {
 
         it('Expect revert on minting additional tokens for Carol, freezing and setting expiration. Finally revoke and burn token', async () => {
             await expect(
-                gatewayToken.connect(alice).mint(carol.address, 4, 0, 0)
+                gatewayToken.connect(alice).mint(carol.address, 4, 0, 0, NULL_CHARGE)
             ).to.be.revertedWith("BLACKLISTED USER");
 
             await expect(
@@ -403,7 +404,7 @@ describe('GatewayTokenController', async () => {
             ).to.be.revertedWith("BLACKLISTED USER");
 
             await expect(
-                gatewayToken.connect(alice).setExpiration(3, 1000)
+                gatewayToken.connect(alice).setExpiration(3, 1000, NULL_CHARGE)
             ).to.be.revertedWith("BLACKLISTED USER");
 
             // Revoke Carol's token
@@ -422,7 +423,7 @@ describe('GatewayTokenController', async () => {
     describe('Test gateway token expiry date updates', async () => {
         it('Successfully mint Gateway Token for Alice by admin with tokenID = 10 and set the expiration for 1 day', async () => {
             let tokenExpiration = await getTimestampPlusDays(1);
-            await gatewayToken.connect(identityCom).mint(alice.address, 10, tokenExpiration, 0);
+            await gatewayToken.connect(identityCom).mint(alice.address, 10, tokenExpiration, 0, NULL_CHARGE);
 
             let tokenOwner = await gatewayToken.ownerOf(10);
             expect(tokenOwner).to.equal(alice.address);
@@ -514,6 +515,26 @@ describe('GatewayTokenController', async () => {
             await expect(
                 gatewayToken.connect(alice).addBit(10, 4)
             ).to.be.revertedWith("UNSUPPORTED BITS");
+        });
+    });
+
+    describe('Test gateway token forwarder functions', async () => {
+        it('Checks a forwarder exists', async () => {
+            expect(await gatewayToken.isTrustedForwarder(forwarder.address)).to.equal(true);
+        });
+        it('Successfully add a forwarder', async () => {
+            const newForwarder = randomAddress();
+            await gatewayToken.connect(identityCom).addForwarder(newForwarder);
+
+            expect(await gatewayToken.isTrustedForwarder(newForwarder)).to.equal(true);
+        });
+
+        it('Successfully removes a forwarder', async () => {
+            const newForwarder = randomAddress();
+            await gatewayToken.connect(identityCom).addForwarder(newForwarder);
+            await gatewayToken.connect(identityCom).removeForwarder(newForwarder);
+
+            expect(await gatewayToken.isTrustedForwarder(newForwarder)).to.equal(false);
         });
     });
 });

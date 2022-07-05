@@ -51,7 +51,7 @@ $ npm install -g @identity.com/gateway-eth-ts
 $ gateway-eth-ts COMMAND
 running command...
 $ gateway-eth-ts (-v|--version|version)
-@identity.com/gateway-eth-ts/0.2.0-alpha.6 darwin-x64 node-v16.14.2
+@identity.com/gateway-eth-ts/0.2.0-alpha.6 darwin-arm64 node-v16.15.1
 $ gateway-eth-ts --help [COMMAND]
 USAGE
   $ gateway-eth-ts COMMAND

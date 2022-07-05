@@ -137,14 +137,16 @@ contract GatewayTokenController is IGatewayTokenController {
     * @param _symbol Gateway Token symbol
     */
     function createGatekeeperNetwork(string memory _name, string memory _symbol, bool _isDAOGoverned, address _daoExecutor, address trustedForwarder) public override returns (address tokenAddress) {
-        tokenAddress = address(new GatewayToken(_name, _symbol, msg.sender, _isDAOGoverned, _daoExecutor, flagsStorage, trustedForwarder));
+        address[] memory forwarders = new address[](1);
+        forwarders[0] = trustedForwarder;
+        tokenAddress = address(new GatewayToken(_name, _symbol, msg.sender, _isDAOGoverned, _daoExecutor, flagsStorage, forwarders));
         gatewayTokens.add(tokenAddress);
 
         emit GatekeeperNetworkCreated(tokenAddress, _name, _symbol, msg.sender);
         return tokenAddress;
     }
 
-    // ===========  ACCESS CONTROLL SECTION ============
+    // ===========  ACCESS CONTROL SECTION ============
 
     /**
     * @dev Triggers to add multiple network authorities in gateway token contract. 
