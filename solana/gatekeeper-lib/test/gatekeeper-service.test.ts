@@ -74,7 +74,7 @@ describe("GatekeeperService", () => {
       PROGRAM_ID
     );
     connection = {
-      getRecentBlockhash: async () => {
+      getLatestBlockhash: async () => {
         return Promise.resolve({ blockhash: dummyBlockhash });
       },
       sendRawTransaction: async () => {
@@ -143,7 +143,7 @@ describe("GatekeeperService", () => {
     transaction.transaction.add(transfer);
     transaction.transaction.feePayer = keypair2.publicKey;
     transaction.transaction.recentBlockhash = await connection
-      .getRecentBlockhash("confirmed")
+      .getLatestBlockhash("confirmed")
       .then((rbh) => rbh.blockhash);
     transaction.partialSign(keypair1);
     const serialized = transaction.transaction.serialize({
@@ -527,14 +527,14 @@ describe("GatekeeperService", () => {
   });
 
   context("updateTransactionBlockhash", () => {
-    const recentBlockhash = "BvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X";
+    const latestBlockhash = { blockhash: "BvrGUhLXH2JTNA3AAsmhdXJTuHJYBUz5mgon26u8M85X", lastValidBlockHeight: 123 };
 
     it("should error if not validly signed by gatekeeper", async () => {
       const transaction = await gatekeeperService.issue(tokenOwner.publicKey);
       transaction.transaction.signatures = [];
       expect(() =>
         gatekeeperService.updateTransactionBlockhash(transaction, {
-          blockhashOrNonce: { recentBlockhash },
+          blockhashOrNonce: { latestBlockhash },
         })
       ).to.throw;
     });
@@ -542,9 +542,9 @@ describe("GatekeeperService", () => {
     it("should update blockhash and sign if validly signed", async () => {
       const transaction = await gatekeeperService.issue(tokenOwner.publicKey);
       await gatekeeperService.updateTransactionBlockhash(transaction, {
-        blockhashOrNonce: { recentBlockhash },
+        blockhashOrNonce: { latestBlockhash },
       });
-      expect(transaction.transaction.recentBlockhash).to.equal(recentBlockhash);
+      expect(transaction.transaction.recentBlockhash).to.equal(latestBlockhash.blockhash);
       expect(transaction.transaction.verifySignatures()).to.be.true;
     });
   });

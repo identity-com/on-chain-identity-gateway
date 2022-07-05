@@ -141,7 +141,7 @@ export class GatekeeperService {
     
     const hashOrNonce =
       normalizedOptions.blockhashOrNonce ||
-      (await this.connection.getRecentBlockhash());
+      (await this.connection.getLatestBlockhash());
     return new SendableTransaction(this.connection, transaction)
       .withData(() => getGatewayToken(this.connection, gatewayTokenAddress))
       .feePayer(normalizedOptions.feePayer)

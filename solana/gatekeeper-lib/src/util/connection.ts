@@ -1,5 +1,4 @@
 import {
-  Blockhash,
   Cluster,
   clusterApiUrl,
   Commitment,
@@ -47,8 +46,11 @@ export interface TransactionHolder {
 }
 
 export type HashOrNonce =
-  | {
-      recentBlockhash: Blockhash;
+   | {
+      latestBlockhash: {
+        blockhash: string;
+        lastValidBlockHeight: number;
+      }
     }
   | { nonce: NonceInformation }
   | "find";
@@ -58,10 +60,10 @@ export async function addHashOrNonce(
 ): Promise<void> {
   if (hashOrNonce === "find") {
     transaction.transaction.recentBlockhash = await transaction.connection
-      .getRecentBlockhash()
-      .then((rbh) => rbh.blockhash);
-  } else if ("recentBlockhash" in hashOrNonce) {
-    transaction.transaction.recentBlockhash = hashOrNonce.recentBlockhash;
+      .getLatestBlockhash()
+      .then((lbh) => lbh.blockhash);
+  } else if ("latestBlockhash" in hashOrNonce) {
+    transaction.transaction.recentBlockhash = hashOrNonce.latestBlockhash.blockhash;
   } else {
     transaction.transaction.nonceInfo = hashOrNonce.nonce;
   }

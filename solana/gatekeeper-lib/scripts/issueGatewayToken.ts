@@ -28,7 +28,7 @@ const gatekeeperService = new GatekeeperService(
 (async function () {
   const owner = Keypair.generate().publicKey;
 
-  const { blockhash } = await connection.getRecentBlockhash(SOLANA_COMMITMENT);
+  const { blockhash } = await connection.getLatestBlockhash(SOLANA_COMMITMENT);
   const issuedToken = await gatekeeperService.issue(owner, {
     blockhashOrNonce: { recentBlockhash: blockhash },
   });
