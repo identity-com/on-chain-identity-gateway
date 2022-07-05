@@ -16,6 +16,6 @@ export const getOrCreateBlockhashOrNonce = (
     connection
       .getLatestBlockhash()
       // convert the result to the structure required for HashOrNonce
-      .then(({ blockhash }) => ({ recentBlockhash: blockhash }))
+      .then((latestBlockhash) => ({ latestBlockhash }))
   );
 };
