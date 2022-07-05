@@ -1,5 +1,4 @@
 import {
-  Blockhash,
   Cluster,
   clusterApiUrl,
   Commitment,
