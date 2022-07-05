@@ -47,8 +47,11 @@ export interface TransactionHolder {
 }
 
 export type HashOrNonce =
-  | {
-      recentBlockhash: Blockhash;
+   | {
+      latestBlockhash: {
+        blockhash: string;
+        lastValidBlockHeight: number;
+      }
     }
   | { nonce: NonceInformation }
   | "find";
@@ -60,8 +63,8 @@ export async function addHashOrNonce(
     transaction.transaction.recentBlockhash = await transaction.connection
       .getLatestBlockhash()
       .then((lbh) => lbh.blockhash);
-  } else if ("recentBlockhash" in hashOrNonce) {
-    transaction.transaction.recentBlockhash = hashOrNonce.recentBlockhash;
+  } else if ("latestBlockhash" in hashOrNonce) {
+    transaction.transaction.recentBlockhash = hashOrNonce.latestBlockhash.blockhash;
   } else {
     transaction.transaction.nonceInfo = hashOrNonce.nonce;
   }
