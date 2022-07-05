@@ -91,6 +91,12 @@ describe("Gateway v2 Client", () => {
         network.publicKey
       );
 
+      await connection
+        .requestAirdrop(receiver.publicKey, LAMPORTS_PER_SOL * 10)
+        .then((res) => {
+          return connection.confirmTransaction(res, "confirmed");
+        });
+
       const closeNetworkTransactionInstructions = await closeNetwork(
         programId,
         network,
@@ -106,9 +112,8 @@ describe("Gateway v2 Client", () => {
 
       const closeNetworkTransactionSignature = await connection.sendTransaction(
         transaction2,
-        [receiver, signer]
+        [receiver]
       );
-      console.log(closeNetworkTransactionSignature);
 
       await getNetworkAccount(
         new Connection("http://127.0.0.1:8899"),
