@@ -20,6 +20,6 @@ overflow-checks = true
 
 [dependencies]
 #anchor-lang = "0.24.2"
-anchor-lang = { git = "https://github.com/project-serum/anchor", branch = "master" }
+anchor-lang = { git = "https://github.com/callensm/anchor", branch = "fix/realloc" }
 bitflags = "1.3.2"
 borsh = "0.9.3"

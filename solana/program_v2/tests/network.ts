@@ -77,7 +77,7 @@ describe("network operations", () => {
     });
   });
 
-  it.only("adds an auth key to an account", async () => {
+  it("adds an auth key to an account", async () => {
     const baseAccount = anchor.web3.Keypair.generate();
     await createAccount(baseAccount);
     await program.methods
@@ -135,7 +135,7 @@ describe("network operations", () => {
     });
   });
 
-  it("removes an auth key to an account", async () => {
+  it("removes an auth key from an account", async () => {
     const baseAccount = anchor.web3.Keypair.generate();
 
     await createAccount(baseAccount);
@@ -155,6 +155,7 @@ describe("network operations", () => {
           add: [],
           remove: [],
         },
+        passExpireTime: null
       })
       .accounts({
         network: baseAccount.publicKey,
@@ -172,6 +173,7 @@ describe("network operations", () => {
           add: [],
           remove: [],
         },
+        passExpireTime: null
       })
       .accounts({
         network: baseAccount.publicKey,
@@ -222,6 +224,7 @@ describe("network operations", () => {
             remove: [provider.wallet.publicKey],
           },
           fees: { add: [], remove: [] },
+          passExpireTime: null
         })
         .accounts({
           network: baseAccount.publicKey,
@@ -248,6 +251,7 @@ describe("network operations", () => {
           remove: [],
         },
         fees: { add: [], remove: [] },
+        passExpireTime: null
       })
       .accounts({
         network: baseAccount.publicKey,
@@ -329,6 +333,7 @@ describe("network operations", () => {
           remove: [],
         },
         fees: { add: [], remove: [] },
+        passExpireTime: null
       })
       .accounts({
         network: baseAccount.publicKey,

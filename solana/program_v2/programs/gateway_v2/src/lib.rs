@@ -18,7 +18,7 @@ clippy::pedantic
 use crate::account::{GatekeeperNetwork, NetworkAuthKey};
 use anchor_lang::prelude::*;
 
-declare_id!("9NqxYNoTQGuh6odAMUuStpA3r9MnrSrBaifs7cxMDDth");
+declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
 pub mod account;
 pub mod arguments;
