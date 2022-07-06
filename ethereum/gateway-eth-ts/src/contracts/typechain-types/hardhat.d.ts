@@ -21,10 +21,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IAccessControl__factory>;
     getContractFactory(
-      name: "ERC2771Context",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ERC2771Context__factory>;
-    getContractFactory(
       name: "MinimalForwarder",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MinimalForwarder__factory>;
@@ -93,6 +89,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IGatewayTokenVerifier__factory>;
     getContractFactory(
+      name: "MultiERC2771Context",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MultiERC2771Context__factory>;
+    getContractFactory(
       name: "TokenBitMask",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TokenBitMask__factory>;
@@ -107,11 +107,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IAccessControl>;
-    getContractAt(
-      name: "ERC2771Context",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.ERC2771Context>;
     getContractAt(
       name: "MinimalForwarder",
       address: string,
@@ -197,6 +192,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IGatewayTokenVerifier>;
+    getContractAt(
+      name: "MultiERC2771Context",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MultiERC2771Context>;
     getContractAt(
       name: "TokenBitMask",
       address: string,

@@ -27,10 +27,24 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
+export type ChargeStruct = {
+  value: PromiseOrValue<BigNumberish>;
+  chargeType: PromiseOrValue<BigNumberish>;
+  token: PromiseOrValue<string>;
+  recipient: PromiseOrValue<string>;
+};
+
+export type ChargeStructOutput = [BigNumber, number, string, string] & {
+  value: BigNumber;
+  chargeType: number;
+  token: string;
+  recipient: string;
+};
+
 export interface IERC721ExpirableInterface extends utils.Interface {
   functions: {
     "expiration(uint256)": FunctionFragment;
-    "setExpiration(uint256,uint256)": FunctionFragment;
+    "setExpiration(uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
   };
 
   getFunction(
@@ -43,7 +57,11 @@ export interface IERC721ExpirableInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setExpiration",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      ChargeStruct
+    ]
   ): string;
 
   decodeFunctionResult(functionFragment: "expiration", data: BytesLike): Result;
@@ -105,6 +123,7 @@ export interface IERC721Expirable extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -117,6 +136,7 @@ export interface IERC721Expirable extends BaseContract {
   setExpiration(
     tokenId: PromiseOrValue<BigNumberish>,
     timestamp: PromiseOrValue<BigNumberish>,
+    charge: ChargeStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -129,6 +149,7 @@ export interface IERC721Expirable extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -153,6 +174,7 @@ export interface IERC721Expirable extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -166,6 +188,7 @@ export interface IERC721Expirable extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

@@ -8,13 +8,14 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./TokenBitMask.sol";
 import "./interfaces/IERC721Freezeble.sol";
 import "./interfaces/IGatewayToken.sol";
 import "./interfaces/IGatewayTokenController.sol";
 import "./interfaces/IERC721Expirable.sol";
 import "./interfaces/IERC721Revokable.sol";
+import "./MultiERC2771Context.sol";
+import "./library/Charge.sol";
 
 
 /**
@@ -26,7 +27,7 @@ import "./interfaces/IERC721Revokable.sol";
  * Gatekeepers (Identity.com network parties who can mint/burn/freeze gateway tokens) and overall system Admin who can add
  * new Gatekeepers and Network Authorities
  */
-contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721Metadata, IERC721Freezeble, IERC721Expirable, IERC721Revokable, IGatewayToken, TokenBitMask {
+contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IERC721Metadata, IERC721Freezeble, IERC721Expirable, IERC721Revokable, IGatewayToken, TokenBitMask {
     using Address for address;
     using Strings for uint256;
 
@@ -112,7 +113,7 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
      * `NETWORK_AUTHORITY_ROLE` responsible for adding/removing Gatekeepers and 
      * `GATEKEEPER_ROLE` responsible for minting/burning/transfering tokens
      */
-    constructor(string memory _name, string memory _symbol, address _deployer, bool _isDAOGoverned, address _daoManager, address _flagsStorage, address trustedForwarder) ERC2771Context(trustedForwarder) public {
+    constructor(string memory _name, string memory _symbol, address _deployer, bool _isDAOGoverned, address _daoManager, address _flagsStorage, address[] memory trustedForwarders) MultiERC2771Context(trustedForwarders) public {
         name = _name;
         symbol = _symbol;
         controller = _msgSender();
@@ -143,12 +144,20 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
         }
     }
 
-    function _msgSender() internal view virtual override(ERC2771Context, Context) returns (address sender) {
-        return ERC2771Context._msgSender();
+    function _msgSender() internal view virtual override(MultiERC2771Context, Context) returns (address sender) {
+        return MultiERC2771Context._msgSender();
     }
 
-    function _msgData() internal view virtual override(ERC2771Context, Context) returns (bytes calldata) {
-        return ERC2771Context._msgData();
+    function _msgData() internal view virtual override(MultiERC2771Context, Context) returns (bytes calldata) {
+        return MultiERC2771Context._msgData();
+    }
+
+    function addForwarder(address forwarder) public override(MultiERC2771Context) onlyIdentityAdmin {
+        super.addForwarder(forwarder);
+    }
+
+    function removeForwarder(address forwarder) public override(MultiERC2771Context) onlyIdentityAdmin {
+        super.removeForwarder(forwarder);
     }
 
     /**
@@ -447,8 +456,9 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     * @dev Triggers to mint gateway token
     * @param to Gateway token owner
     * @param tokenId Gateway token id
+    * @param charge The charge details for token issuance (ignored here - handled if at all by the forwarding contract)
     */
-    function mint(address to, uint256 tokenId, uint256 expiration, uint256 mask) public virtual onlyNonBlacklistedUser(to) {
+    function mint(address to, uint256 tokenId, uint256 expiration, uint256 mask, Charge calldata charge) public virtual onlyNonBlacklistedUser(to) {
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
 
         _mint(to, tokenId, expiration, mask);
@@ -501,8 +511,9 @@ contract GatewayToken is ERC2771Context, ERC165, AccessControl, IERC721, IERC721
     /**
     * @dev Triggers to set expiration for tokenId
     * @param tokenId Gateway token id
+    * @param charge The charge details for token refresh (ignored here - handled if at all by the forwarding contract)
     */
-    function setExpiration(uint256 tokenId, uint256 timestamp) public virtual override {
+    function setExpiration(uint256 tokenId, uint256 timestamp, Charge calldata charge) public virtual override {
         require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
         address tokenOwner = ownerOf(tokenId);
         require(!_isBlacklisted(tokenOwner), "BLACKLISTED USER");
