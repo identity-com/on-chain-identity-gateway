@@ -1,5 +1,7 @@
 import * as anchor from "@project-serum/anchor";
+import { Wallet } from "@project-serum/anchor";
 import {
+  Connection,
   Keypair,
   PublicKey,
   Transaction,
@@ -13,7 +15,12 @@ export const closeNetwork = async (
   receiver: Keypair,
   signer: Keypair
 ): Promise<Transaction> => {
-  const program = new anchor.Program(IDL, programId);
+  const wallet = new Wallet(receiver);
+  const connection = new Connection("http://localhost:8899", "confirmed");
+  const provider = new anchor.AnchorProvider(connection, wallet, {
+    commitment: "confirmed",
+  });
+  const program = new anchor.Program(IDL, programId, provider);
 
   const transaction = await program.methods
     .closeNetwork()
