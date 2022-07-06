@@ -25,7 +25,7 @@ dependencies = [
 [[package]]
 name = "anchor-attribute-access-control"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anchor-syn",
  "anyhow",
@@ -38,7 +38,7 @@ dependencies = [
 [[package]]
 name = "anchor-attribute-account"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anchor-syn",
  "anyhow",
@@ -52,7 +52,7 @@ dependencies = [
 [[package]]
 name = "anchor-attribute-constant"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anchor-syn",
  "proc-macro2",
@@ -62,7 +62,7 @@ dependencies = [
 [[package]]
 name = "anchor-attribute-error"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anchor-syn",
  "proc-macro2",
@@ -73,7 +73,7 @@ dependencies = [
 [[package]]
 name = "anchor-attribute-event"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anchor-syn",
  "anyhow",
@@ -85,7 +85,7 @@ dependencies = [
 [[package]]
 name = "anchor-attribute-interface"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anchor-syn",
  "anyhow",
@@ -98,7 +98,7 @@ dependencies = [
 [[package]]
 name = "anchor-attribute-program"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anchor-syn",
  "anyhow",
@@ -110,7 +110,7 @@ dependencies = [
 [[package]]
 name = "anchor-attribute-state"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anchor-syn",
  "anyhow",
@@ -122,7 +122,7 @@ dependencies = [
 [[package]]
 name = "anchor-derive-accounts"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anchor-syn",
  "anyhow",
@@ -134,7 +134,7 @@ dependencies = [
 [[package]]
 name = "anchor-lang"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anchor-attribute-access-control",
  "anchor-attribute-account",
@@ -157,7 +157,7 @@ dependencies = [
 [[package]]
 name = "anchor-syn"
 version = "0.24.2"
-source = "git+https://github.com/project-serum/anchor?branch=master#179711baccdde51825fc075f9d12607a2cc76663"
+source = "git+https://github.com/callensm/anchor?branch=fix/realloc#36664a54026c3d3cd2f345b9b5e18a7033a4a7cb"
 dependencies = [
  "anyhow",
  "bs58 0.3.1",
