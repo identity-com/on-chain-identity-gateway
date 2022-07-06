@@ -1,4 +1,5 @@
 import {
+  Connection,
   Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
@@ -9,6 +10,7 @@ import {
 import { u8, NetworkData } from "./state";
 import * as anchor from "@project-serum/anchor";
 import { IDL } from "./gateway_v2";
+import { Wallet } from "@project-serum/anchor";
 
 export const updateNetwork = async (
   programId: PublicKey,
@@ -16,7 +18,12 @@ export const updateNetwork = async (
   payer: Keypair,
   networkData: NetworkData
 ): Promise<Transaction> => {
-  const program = new anchor.Program(IDL, programId);
+  const wallet = new Wallet(payer);
+  const connection = new Connection("http://localhost:8899", "confirmed");
+  const provider = new anchor.AnchorProvider(connection, wallet, {
+    commitment: "confirmed",
+  });
+  const program = new anchor.Program(IDL, programId, provider);
 
   const updateNetworkParams = {
     authKeys: {
@@ -33,7 +40,7 @@ export const updateNetwork = async (
   };
 
   const transaction = await program.methods
-    .updateNetwork(updateNetworkParams)
+    .updateNetwork(updateNetworkParams as any)
     .accounts({
       network: network.publicKey,
     })

@@ -20,6 +20,7 @@ import { u8, u16, i64, NetworkAuthKey, NetworkKeyFlags } from "../src/state";
 describe("Gateway v2 Client", () => {
   describe("Close Network", () => {
     it("should first create the network", async function () {
+      console.log("close network test working");
       this.timeout(120_000);
       let connection = new Connection("http://localhost:8899", "confirmed");
       console.log("connection confirmed");
@@ -44,12 +45,12 @@ describe("Gateway v2 Client", () => {
           ),
         ]
       );
-      const createNetworkTransactionInstructions = await createNetwork(
-        programId,
-        network,
-        funder,
-        networkData
-      );
+      // const createNetworkTransactionInstructions = await createNetwork(
+      //   programId,
+      //   network,
+      //   funder,
+      //   networkData
+      // );
 
       await connection
         .requestAirdrop(funder.publicKey, LAMPORTS_PER_SOL * 10)
@@ -63,14 +64,14 @@ describe("Gateway v2 Client", () => {
         });
       console.log("airdropped");
       const transaction = new Transaction();
-      transaction.add(createNetworkTransactionInstructions[0]);
-      transaction.add(createNetworkTransactionInstructions[1]);
+      // transaction.add(createNetworkTransactionInstructions[0]);
+      // transaction.add(createNetworkTransactionInstructions[1]);
       transaction.feePayer = funder.publicKey;
       transaction.recentBlockhash = (
         await connection.getLatestBlockhash()
       ).blockhash;
       const createNetworkTransactionSignature =
-        await connection.sendTransaction(transaction, [network, funder], {
+        await connection.sendTransaction(transaction, [signer], {
           skipPreflight: true,
         });
       console.log(createNetworkTransactionSignature);
@@ -91,34 +92,34 @@ describe("Gateway v2 Client", () => {
         network.publicKey
       );
 
-      await connection
-        .requestAirdrop(receiver.publicKey, LAMPORTS_PER_SOL * 10)
-        .then((res) => {
-          return connection.confirmTransaction(res, "confirmed");
-        });
+      // await connection
+      //   .requestAirdrop(receiver.publicKey, LAMPORTS_PER_SOL * 10)
+      //   .then((res) => {
+      //     return connection.confirmTransaction(res, "confirmed");
+      //   });
 
-      const closeNetworkTransactionInstructions = await closeNetwork(
-        programId,
-        network,
-        receiver,
-        signer
-      );
+      // const closeNetworkTransactionInstructions = await closeNetwork(
+      //   programId,
+      //   network,
+      //   receiver,
+      //   signer
+      // );
 
-      const transaction2 = new Transaction();
-      transaction2.add(closeNetworkTransactionInstructions);
-      transaction2.recentBlockhash = (
-        await connection.getLatestBlockhash()
-      ).blockhash;
+      // const transaction2 = new Transaction();
+      // transaction2.add(closeNetworkTransactionInstructions);
+      // transaction2.recentBlockhash = (
+      //   await connection.getLatestBlockhash()
+      // ).blockhash;
 
-      const closeNetworkTransactionSignature = await connection.sendTransaction(
-        transaction2,
-        [receiver]
-      );
+      // const closeNetworkTransactionSignature = await connection.sendTransaction(
+      //   transaction2,
+      //   [receiver]
+      // );
 
-      await getNetworkAccount(
-        new Connection("http://127.0.0.1:8899"),
-        network.publicKey
-      ).then((res) => console.log(res));
+      // await getNetworkAccount(
+      //   new Connection("http://127.0.0.1:8899"),
+      //   network.publicKey
+      // ).then((res) => console.log(res));
     });
   });
 });
