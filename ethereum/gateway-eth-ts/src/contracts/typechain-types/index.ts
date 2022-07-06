@@ -10,8 +10,6 @@ export type { AccessControl } from "./@openzeppelin/contracts/access/AccessContr
 export { AccessControl__factory } from "./factories/@openzeppelin/contracts/access/AccessControl__factory";
 export type { IAccessControl } from "./@openzeppelin/contracts/access/IAccessControl";
 export { IAccessControl__factory } from "./factories/@openzeppelin/contracts/access/IAccessControl__factory";
-export type { ERC2771Context } from "./@openzeppelin/contracts/metatx/ERC2771Context";
-export { ERC2771Context__factory } from "./factories/@openzeppelin/contracts/metatx/ERC2771Context__factory";
 export type { MinimalForwarder } from "./@openzeppelin/contracts/metatx/MinimalForwarder";
 export { MinimalForwarder__factory } from "./factories/@openzeppelin/contracts/metatx/MinimalForwarder__factory";
 export type { IERC721Metadata } from "./@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata";
@@ -46,5 +44,7 @@ export type { IGatewayTokenController } from "./contracts/interfaces/IGatewayTok
 export { IGatewayTokenController__factory } from "./factories/contracts/interfaces/IGatewayTokenController__factory";
 export type { IGatewayTokenVerifier } from "./contracts/interfaces/IGatewayTokenVerifier";
 export { IGatewayTokenVerifier__factory } from "./factories/contracts/interfaces/IGatewayTokenVerifier__factory";
+export type { MultiERC2771Context } from "./contracts/MultiERC2771Context";
+export { MultiERC2771Context__factory } from "./factories/contracts/MultiERC2771Context__factory";
 export type { TokenBitMask } from "./contracts/TokenBitMask";
 export { TokenBitMask__factory } from "./factories/contracts/TokenBitMask__factory";

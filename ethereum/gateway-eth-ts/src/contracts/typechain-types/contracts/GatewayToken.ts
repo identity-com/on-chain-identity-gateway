@@ -27,6 +27,20 @@ import type {
   PromiseOrValue,
 } from "../common";
 
+export type ChargeStruct = {
+  value: PromiseOrValue<BigNumberish>;
+  chargeType: PromiseOrValue<BigNumberish>;
+  token: PromiseOrValue<string>;
+  recipient: PromiseOrValue<string>;
+};
+
+export type ChargeStructOutput = [BigNumber, number, string, string] & {
+  value: BigNumber;
+  chargeType: number;
+  token: string;
+  recipient: string;
+};
+
 export interface GatewayTokenInterface extends utils.Interface {
   functions: {
     "DAO_MANAGER_ROLE()": FunctionFragment;
@@ -35,6 +49,7 @@ export interface GatewayTokenInterface extends utils.Interface {
     "NETWORK_AUTHORITY_ROLE()": FunctionFragment;
     "addBit(uint256,uint8)": FunctionFragment;
     "addBitmask(uint256,uint256)": FunctionFragment;
+    "addForwarder(address)": FunctionFragment;
     "addGatekeeper(address)": FunctionFragment;
     "addNetworkAuthority(address)": FunctionFragment;
     "allowTransfers()": FunctionFragment;
@@ -64,11 +79,12 @@ export interface GatewayTokenInterface extends utils.Interface {
     "isNetworkAuthority(address)": FunctionFragment;
     "isTransfersRestricted()": FunctionFragment;
     "isTrustedForwarder(address)": FunctionFragment;
-    "mint(address,uint256,uint256,uint256)": FunctionFragment;
+    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "removeBit(uint256,uint8)": FunctionFragment;
     "removeBitmask(uint256,uint8)": FunctionFragment;
+    "removeForwarder(address)": FunctionFragment;
     "removeGatekeeper(address)": FunctionFragment;
     "removeNetworkAuthority(address)": FunctionFragment;
     "removeUnsupportedBits(uint256)": FunctionFragment;
@@ -80,7 +96,7 @@ export interface GatewayTokenInterface extends utils.Interface {
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBitmask(uint256,uint256)": FunctionFragment;
     "setDefaultTokenId(address,uint256)": FunctionFragment;
-    "setExpiration(uint256,uint256)": FunctionFragment;
+    "setExpiration(uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
     "setTokenURI(uint256,string)": FunctionFragment;
     "stopTransfers()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -103,6 +119,7 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "NETWORK_AUTHORITY_ROLE"
       | "addBit"
       | "addBitmask"
+      | "addForwarder"
       | "addGatekeeper"
       | "addNetworkAuthority"
       | "allowTransfers"
@@ -137,6 +154,7 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "ownerOf"
       | "removeBit"
       | "removeBitmask"
+      | "removeForwarder"
       | "removeGatekeeper"
       | "removeNetworkAuthority"
       | "removeUnsupportedBits"
@@ -186,6 +204,10 @@ export interface GatewayTokenInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "addBitmask",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addForwarder",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "addGatekeeper",
@@ -306,7 +328,8 @@ export interface GatewayTokenInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      ChargeStruct
     ]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
@@ -321,6 +344,10 @@ export interface GatewayTokenInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "removeBitmask",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeForwarder",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "removeGatekeeper",
@@ -377,7 +404,11 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setExpiration",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      ChargeStruct
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "setTokenURI",
@@ -447,6 +478,10 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "addBit", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addBitmask", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "addForwarder",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "addGatekeeper",
     data: BytesLike
@@ -533,6 +568,10 @@ export interface GatewayTokenInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "removeBit", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "removeBitmask",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeForwarder",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -857,6 +896,11 @@ export interface GatewayToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    addForwarder(
+      forwarder: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     addGatekeeper(
       gatekeeper: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1001,6 +1045,7 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1020,6 +1065,11 @@ export interface GatewayToken extends BaseContract {
     removeBitmask(
       _tokenId: PromiseOrValue<BigNumberish>,
       _removingMask: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    removeForwarder(
+      forwarder: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1091,6 +1141,7 @@ export interface GatewayToken extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1169,6 +1220,11 @@ export interface GatewayToken extends BaseContract {
   addBitmask(
     _tokenId: PromiseOrValue<BigNumberish>,
     _mask: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  addForwarder(
+    forwarder: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1316,6 +1372,7 @@ export interface GatewayToken extends BaseContract {
     tokenId: PromiseOrValue<BigNumberish>,
     expiration: PromiseOrValue<BigNumberish>,
     mask: PromiseOrValue<BigNumberish>,
+    charge: ChargeStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1335,6 +1392,11 @@ export interface GatewayToken extends BaseContract {
   removeBitmask(
     _tokenId: PromiseOrValue<BigNumberish>,
     _removingMask: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  removeForwarder(
+    forwarder: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1406,6 +1468,7 @@ export interface GatewayToken extends BaseContract {
   setExpiration(
     tokenId: PromiseOrValue<BigNumberish>,
     timestamp: PromiseOrValue<BigNumberish>,
+    charge: ChargeStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1484,6 +1547,11 @@ export interface GatewayToken extends BaseContract {
     addBitmask(
       _tokenId: PromiseOrValue<BigNumberish>,
       _mask: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    addForwarder(
+      forwarder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1629,6 +1697,7 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1648,6 +1717,11 @@ export interface GatewayToken extends BaseContract {
     removeBitmask(
       _tokenId: PromiseOrValue<BigNumberish>,
       _removingMask: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    removeForwarder(
+      forwarder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1719,6 +1793,7 @@ export interface GatewayToken extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1921,6 +1996,11 @@ export interface GatewayToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    addForwarder(
+      forwarder: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     addGatekeeper(
       gatekeeper: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -2057,6 +2137,7 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2076,6 +2157,11 @@ export interface GatewayToken extends BaseContract {
     removeBitmask(
       _tokenId: PromiseOrValue<BigNumberish>,
       _removingMask: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    removeForwarder(
+      forwarder: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2147,6 +2233,7 @@ export interface GatewayToken extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2230,6 +2317,11 @@ export interface GatewayToken extends BaseContract {
     addBitmask(
       _tokenId: PromiseOrValue<BigNumberish>,
       _mask: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    addForwarder(
+      forwarder: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2371,6 +2463,7 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2390,6 +2483,11 @@ export interface GatewayToken extends BaseContract {
     removeBitmask(
       _tokenId: PromiseOrValue<BigNumberish>,
       _removingMask: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    removeForwarder(
+      forwarder: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2461,6 +2559,7 @@ export interface GatewayToken extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

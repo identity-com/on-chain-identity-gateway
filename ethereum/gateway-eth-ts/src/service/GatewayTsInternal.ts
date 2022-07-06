@@ -4,6 +4,7 @@ import { getExpirationTime } from "../utils/time";
 import {ZERO_BN} from "../utils/constants";
 import {generateId} from "../utils/tokenId";
 import {MappedWriteOperation, ReadOnlyOperation, TokenData, TokenState} from "../utils/types";
+import {NULL_CHARGE} from "../utils/charge";
 
 /**
  * The main API of the Ethereum Gateway client library.
@@ -72,7 +73,7 @@ export class GatewayTsInternal<I extends MappedWriteOperation<O> & ReadOnlyOpera
     const mintTokenId = tokenId || this.generateTokenId(owner);
     const expirationTime = expiration > 0 ? getExpirationTime(expiration) : 0;
 
-    return this.gatewayTokenContract.mint(owner, mintTokenId, expirationTime, bitmask, this.options);
+    return this.gatewayTokenContract.mint(owner, mintTokenId, expirationTime, bitmask, NULL_CHARGE, this.options);
   }
 
   revoke(
@@ -114,7 +115,7 @@ export class GatewayTsInternal<I extends MappedWriteOperation<O> & ReadOnlyOpera
   ): Promise<O> {
     const mintTokenId = tokenId || this.generateTokenId(owner);
     const expirationTime = getExpirationTime(expiry);
-    return this.gatewayTokenContract.setExpiration(mintTokenId, expirationTime, this.options);
+    return this.gatewayTokenContract.setExpiration(mintTokenId, expirationTime, NULL_CHARGE, this.options);
   }
 
   setBitmask(
