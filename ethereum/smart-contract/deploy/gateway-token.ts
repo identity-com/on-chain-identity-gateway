@@ -4,17 +4,19 @@ import {DeployFunction} from 'hardhat-deploy/types';
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, getNamedAccounts, ethers } = hre;
     const { deployer, authority, gatekeeper } = await getNamedAccounts();
-  
+
     const forwarder = await deployments.get('Forwarder');
     const trustedForwarder = await ethers.getContractAt("Forwarder", forwarder.address);
 
     const gatewayTokenController = await deployments.get('GatewayTokenController');
     const tokenController = await ethers.getContractAt("GatewayTokenController", gatewayTokenController.address);
 
-    let gatewayToken = await (await tokenController.createGatekeeperNetwork("Test-KYC", "tKYC", false, "0x0000000000000000000000000000000000000000", trustedForwarder.address, {from: deployer})).wait()
-    let gatewayTokenAddress = gatewayToken.events[gatewayToken.events.length - 1].args.tokenAddress;
-    console.log("deployed tKYC GatewayToken at " + gatewayTokenAddress + " with " + gatewayToken.gasUsed.toNumber() + " gas");
-  
+    let gatewayTokenTx = await (await tokenController.createGatekeeperNetwork("Test-KYC", "tKYC", false, "0x0000000000000000000000000000000000000000", trustedForwarder.address, {from: deployer})).wait()
+    let gatewayTokenAddress = gatewayTokenTx.events.find(e => e.args).args[0];
+    console.log("deployed tKYC GatewayToken at " + gatewayTokenAddress + " with " + gatewayTokenTx.gasUsed.toNumber() + " gas");
+
+    // let gatewayTokenAddress = '0x43760eeb3E970DCCa101fd08D7FAa89aFacc3B5d'
+
     let token = await ethers.getContractAt("GatewayToken", gatewayTokenAddress);
 
     let tx = await (await token.addNetworkAuthority(authority, {from: deployer})).wait();

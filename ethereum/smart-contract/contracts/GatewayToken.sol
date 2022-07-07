@@ -111,7 +111,7 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
      *
      * Initiates gateway token roles with main system admin `GATEWAY_TOKEN_CONTROLLER`,
      * `NETWORK_AUTHORITY_ROLE` responsible for adding/removing Gatekeepers and 
-     * `GATEKEEPER_ROLE` responsible for minting/burning/transfering tokens
+     * `GATEKEEPER_ROLE` responsible for minting/burning/transferring tokens
      */
     constructor(string memory _name, string memory _symbol, address _deployer, bool _isDAOGoverned, address _daoManager, address _flagsStorage, address[] memory trustedForwarders) MultiERC2771Context(trustedForwarders) public {
         name = _name;

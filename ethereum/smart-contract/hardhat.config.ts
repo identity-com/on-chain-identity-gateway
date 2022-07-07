@@ -21,6 +21,8 @@ const liveAccounts = (process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KE
     [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`]
     : derivedAccounts;
 
+console.log(liveAccounts);
+
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
     .addParam('address', 'The wallet to check')
     .setAction(checkGT)
@@ -69,6 +71,12 @@ module.exports = {
       accounts: liveAccounts,
       chainId: 5,
     },
+    kovan: {
+      url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 42,
+    },
     polygonMumbai: {
       url: `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
@@ -82,22 +90,22 @@ module.exports = {
       chainId: 137,
     },
     auroraTestnet: {
-      url: `https://aurora-testnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: `https://testnet.aurora.dev`,
       saveDeployments: true,
       accounts: liveAccounts,
       chainId: 1313161555,
     },
     auroraMainnet: {
-      url: `https://aurora-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: `https://mainnet.aurora.dev`,
       saveDeployments: true,
       accounts: liveAccounts,
       chainId: 1313161554,
     },
-    optimismGoerli: {
-      url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+    optimismKovan: {
+      url: `https://optimism-kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
       accounts: liveAccounts,
-      chainId: 300,
+      chainId: 69,
     },
     optimismMainnet: {
       url: `https://optimism-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -173,7 +181,7 @@ module.exports = {
       default: 0,
     },
     authority: {
-      default: 1,
+      default: 0,
     },
     gatekeeper: {
       default: '0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688',
