@@ -7,7 +7,7 @@
   },
   "scripts": {
     "test": "hardhat test",
-    "deploy": "hardhat deploy --network $1",
+    "deploy": "hardhat deploy --network",
     "local": "hardhat node",
     "build": "hardhat compile"
   },

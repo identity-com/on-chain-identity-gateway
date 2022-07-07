@@ -11,6 +11,7 @@
     "postbuild": "rm -f oclif.manifest.json",
     "pretest": "cd ../smart-contract && (yarn local &) && sleep 10",
     "test": "ts-mocha src/*.test.ts src/**/*.test.ts",
+    "posttest": "kill $(lsof -t -i:8545)",
     "version": "oclif-dev readme",
     "copy-contracts": "cp -r ../smart-contract/build/contracts/* src/contracts/abi/ && cp -r ../smart-contract/typechain-types src/contracts"
   },
