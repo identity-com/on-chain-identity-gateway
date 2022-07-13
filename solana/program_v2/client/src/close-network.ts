@@ -1,19 +1,34 @@
-import { Keypair, PublicKey, TransactionInstruction } from "@solana/web3.js";
-import {} from "./state";
+import * as anchor from "@project-serum/anchor";
+import { Wallet } from "@project-serum/anchor";
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from "@solana/web3.js";
+import { IDL } from "./gateway_v2";
 
 export const closeNetwork = async (
   programId: PublicKey,
   network: Keypair,
   receiver: Keypair,
   signer: Keypair
-): Promise<TransactionInstruction> => {
-  let closeNetwork = new TransactionInstruction({
-    keys: [
-      { pubkey: network.publicKey, isSigner: false, isWritable: true },
-      { pubkey: receiver.publicKey, isSigner: false, isWritable: true },
-      { pubkey: signer.publicKey, isSigner: true, isWritable: false },
-    ],
-    programId,
+): Promise<Transaction> => {
+  const wallet = new Wallet(receiver);
+  const connection = new Connection("http://localhost:8899", "confirmed");
+  const provider = new anchor.AnchorProvider(connection, wallet, {
+    commitment: "confirmed",
   });
-  return closeNetwork;
+  const program = new anchor.Program(IDL, programId, provider);
+
+  const transaction = await program.methods
+    .closeNetwork()
+    .accounts({
+      network: network.publicKey,
+      systemProgram: anchor.web3.SystemProgram.programId,
+    })
+    .signers([])
+    .transaction();
+  return transaction;
 };
