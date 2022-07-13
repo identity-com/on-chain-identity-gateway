@@ -3,6 +3,8 @@ node_modules
 
 .npm
 .env
+.env.dev
+.env.prod
 /dist
 
 *.bak

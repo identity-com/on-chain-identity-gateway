@@ -139,7 +139,11 @@ contract GatewayTokenController is IGatewayTokenController {
     function createGatekeeperNetwork(string memory _name, string memory _symbol, bool _isDAOGoverned, address _daoExecutor, address trustedForwarder) public override returns (address tokenAddress) {
         address[] memory forwarders = new address[](1);
         forwarders[0] = trustedForwarder;
-        tokenAddress = address(new GatewayToken(_name, _symbol, msg.sender, _isDAOGoverned, _daoExecutor, flagsStorage, forwarders));
+
+        // use create2 to deploy, to ensure that the contract is deployed to a predictable address on each chain
+        bytes32 salt = bytes32(bytes(_name));
+        GatewayToken token = new GatewayToken{salt: salt}(_name, _symbol, msg.sender, _isDAOGoverned, _daoExecutor, flagsStorage, forwarders);
+        tokenAddress = address(token);
         gatewayTokens.add(tokenAddress);
 
         emit GatekeeperNetworkCreated(tokenAddress, _name, _symbol, msg.sender);
