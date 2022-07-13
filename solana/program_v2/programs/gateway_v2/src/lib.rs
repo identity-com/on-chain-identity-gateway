@@ -39,14 +39,14 @@ pub mod gateway_v2 {
         ctx: Context<CreateNetworkAccount>,
         data: CreateNetworkData,
     ) -> Result<()> {
-        CreateNetwork::process(data, &mut ctx.accounts.network)
+        CreateNetwork::process(*ctx.accounts.authority.key, *ctx.bumps.get("network").unwrap(), data, &mut ctx.accounts.network)
     }
 
     pub fn update_network(
         ctx: Context<UpdateNetworkAccount>,
         data: UpdateNetworkData,
     ) -> Result<()> {
-        UpdateNetwork::process(data, &mut ctx.accounts.network, &mut ctx.accounts.payer)
+        UpdateNetwork::process(data, &mut ctx.accounts.network, &mut ctx.accounts.authority)
     }
 
     pub fn close_network(ctx: Context<CloseNetworkAccount>) -> Result<()> {

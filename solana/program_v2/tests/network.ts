@@ -3,17 +3,34 @@ import { Program } from "@project-serum/anchor";
 import { GatewayV2 } from "../target/types/gateway_v2";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
+import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 
 chai.use(chaiAsPromised);
 
 const expect = chai.expect;
+
 
 describe("network operations", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
   const program = anchor.workspace.GatewayV2 as Program<GatewayV2>;
-  const createAccount = async (baseAccount) => {
+
+  const createAccount = async () => {
+    const authority = Keypair.generate();
+
+    const airdropSig = await provider.connection.requestAirdrop(authority.publicKey, LAMPORTS_PER_SOL);
+    await provider.connection.confirmTransaction(airdropSig, "confirmed");
+
+    const [network, bump] = await PublicKey
+        .findProgramAddress(
+            [
+              anchor.utils.bytes.utf8.encode("gk-network"),
+              authority.publicKey.toBuffer()
+            ],
+            program.programId
+        );
+
     await program.methods
       .createNetwork({
         authThreshold: new anchor.BN(1),
@@ -22,7 +39,7 @@ describe("network operations", () => {
         signerBump: new anchor.BN(3),
         fees: [
           {
-            token: baseAccount.publicKey,
+            token: provider.wallet.publicKey,
             issue: new anchor.BN(100),
             refresh: new anchor.BN(100),
             expire: new anchor.BN(100),
@@ -37,31 +54,36 @@ describe("network operations", () => {
         ],
       })
       .accounts({
-        network: baseAccount.publicKey,
+        network: network,
         systemProgram: anchor.web3.SystemProgram.programId,
+        authority: authority.publicKey
       })
-      .signers([baseAccount])
+      .signers([authority])
       .rpc();
 
-    return program.account.gatekeeperNetwork.fetch(baseAccount.publicKey);
+    return {
+      account: await program.account.gatekeeperNetwork.fetch(network),
+      address: network,
+      bump,
+      authority
+    };
   };
 
   it("create an account", async () => {
-    const baseAccount = anchor.web3.Keypair.generate();
-
-    const account = await createAccount(baseAccount);
+    const {bump, account, authority} = await createAccount();
 
     expect(account).to.deep.equal({
       version: 0,
+      initialAuthority: authority.publicKey,
       authThreshold: 1,
       passExpireTime: new anchor.BN(360),
       networkDataLen: 16,
-      signerBump: 3,
+      signerBump: bump,
       feesCount: 1,
       authKeysCount: 1,
       fees: [
         {
-          token: baseAccount.publicKey,
+          token: provider.wallet.publicKey,
           issue: 100,
           refresh: 100,
           expire: 100,
@@ -78,15 +100,16 @@ describe("network operations", () => {
   });
 
   it("adds an auth key to an account", async () => {
-    const baseAccount = anchor.web3.Keypair.generate();
-    await createAccount(baseAccount);
+    const newKey = anchor.web3.Keypair.generate().publicKey;
+    const {address, bump, authority} = await createAccount();
+
     await program.methods
       .updateNetwork({
         authKeys: {
           add: [
             {
               flags: new anchor.BN(1),
-              key: baseAccount.publicKey,
+              key: newKey,
             },
           ],
           remove: [],
@@ -95,27 +118,27 @@ describe("network operations", () => {
         fees: { add: [], remove: [] },
       })
       .accounts({
-        network: baseAccount.publicKey,
+        network: address,
       })
-      .signers([])
       .rpc();
 
     const fetchAccount = await program.account.gatekeeperNetwork.fetch(
-      baseAccount.publicKey
+      address
     );
-    const passExpireTime = fetchAccount.passExpireTime;
+    // const passExpireTime = fetchAccount.passExpireTime;
 
     expect(fetchAccount).to.deep.equal({
       version: 0,
+      initialAuthority: authority.publicKey,
       authThreshold: 1,
-      passExpireTime: passExpireTime,
+      passExpireTime: new anchor.BN(360),
       networkDataLen: 16,
-      signerBump: 3,
+      signerBump: bump,
       feesCount: 1,
       authKeysCount: 2,
       fees: [
         {
-          token: baseAccount.publicKey,
+          token: provider.publicKey,
           issue: 100,
           refresh: 100,
           expire: 100,
@@ -129,16 +152,20 @@ describe("network operations", () => {
         },
         {
           flags: 1,
-          key: baseAccount.publicKey,
+          key: newKey,
         },
       ],
     });
+
+    // const rawUpdatedAccount = await provider.connection.getAccountInfo(baseAccount.publicKey);
+    // const accountSizeDiff = rawUpdatedAccount.data.length - rawInitialAccount.data.length;
+    // console.log(accountSizeDiff);
   });
 
   it("removes an auth key from an account", async () => {
-    const baseAccount = anchor.web3.Keypair.generate();
+    const newKey = anchor.web3.Keypair.generate();
 
-    await createAccount(baseAccount);
+    const {bump, address, authority} = await createAccount();
 
     await program.methods
       .updateNetwork({
@@ -146,28 +173,24 @@ describe("network operations", () => {
           add: [
             {
               flags: new anchor.BN(1),
-              key: baseAccount.publicKey,
+              key: newKey.publicKey,
             },
           ],
           remove: [],
         },
-        fees: {
-          add: [],
-          remove: [],
-        },
+        fees: { add: [], remove: [], },
         passExpireTime: null
       })
       .accounts({
-        network: baseAccount.publicKey,
+        network: address,
       })
-      .signers([])
       .rpc();
 
     await program.methods
       .updateNetwork({
         authKeys: {
           add: [],
-          remove: [baseAccount.publicKey],
+          remove: [newKey.publicKey],
         },
         fees: {
           add: [],
@@ -176,26 +199,24 @@ describe("network operations", () => {
         passExpireTime: null
       })
       .accounts({
-        network: baseAccount.publicKey,
+        network: address,
       })
-      .signers([])
       .rpc();
 
-    const account = await program.account.gatekeeperNetwork.fetch(
-      baseAccount.publicKey
-    );
+    const account = await program.account.gatekeeperNetwork.fetch(address);
 
     expect(account).to.deep.equal({
       version: 0,
+      initialAuthority: authority.publicKey,
       authThreshold: 1,
       passExpireTime: new anchor.BN(360),
       networkDataLen: 16,
-      signerBump: 3,
+      signerBump: bump,
       feesCount: 1,
       authKeysCount: 1,
       fees: [
         {
-          token: baseAccount.publicKey,
+          token: provider.publicKey,
           issue: 100,
           refresh: 100,
           expire: 100,
@@ -212,9 +233,7 @@ describe("network operations", () => {
   });
 
   it("cannot remove own account", async () => {
-    const baseAccount = anchor.web3.Keypair.generate();
-
-    await createAccount(baseAccount);
+    const {address} = await createAccount();
 
     return expect(
       program.methods
@@ -227,17 +246,15 @@ describe("network operations", () => {
           passExpireTime: null
         })
         .accounts({
-          network: baseAccount.publicKey,
+          network: address,
         })
-        .signers([])
         .rpc()
     ).to.eventually.be.rejected;
   });
 
   it("updates an auth key to an account", async () => {
-    const baseAccount = anchor.web3.Keypair.generate();
 
-    await createAccount(baseAccount);
+  const {bump, address, authority} = await createAccount();
 
     await program.methods
       .updateNetwork({
@@ -254,26 +271,25 @@ describe("network operations", () => {
         passExpireTime: null
       })
       .accounts({
-        network: baseAccount.publicKey,
+        network: address,
       })
       .signers([])
       .rpc();
 
-    const account = await program.account.gatekeeperNetwork.fetch(
-      baseAccount.publicKey
-    );
+    const account = await program.account.gatekeeperNetwork.fetch(address);
 
     expect(account).to.deep.equal({
       version: 0,
+      initialAuthority: authority.publicKey,
       authThreshold: 1,
       passExpireTime: new anchor.BN(360),
       networkDataLen: 16,
-      signerBump: 3,
+      signerBump: bump,
       feesCount: 1,
       authKeysCount: 1,
       fees: [
         {
-          token: baseAccount.publicKey,
+          token: provider.publicKey,
           issue: 100,
           refresh: 100,
           expire: 100,
@@ -290,9 +306,7 @@ describe("network operations", () => {
   });
 
   it("cannot update to remove auth flag from account", async () => {
-    const baseAccount = anchor.web3.Keypair.generate();
-
-    await createAccount(baseAccount);
+    const {address} = await createAccount();
 
     return expect(
       program.methods
@@ -309,7 +323,7 @@ describe("network operations", () => {
           fees: { add: [], remove: [] },
         })
         .accounts({
-          network: baseAccount.publicKey,
+          network: address,
         })
         .signers([])
         .rpc()
@@ -317,9 +331,9 @@ describe("network operations", () => {
   });
 
   it("adds an auth key to an account", async () => {
-    const baseAccount = anchor.web3.Keypair.generate();
+    const newKey = anchor.web3.Keypair.generate();
 
-    await createAccount(baseAccount);
+    const {address, bump, authority} = await createAccount();
 
     await program.methods
       .updateNetwork({
@@ -327,7 +341,7 @@ describe("network operations", () => {
           add: [
             {
               flags: new anchor.BN(1),
-              key: baseAccount.publicKey,
+              key: newKey.publicKey,
             },
           ],
           remove: [],
@@ -336,26 +350,27 @@ describe("network operations", () => {
         passExpireTime: null
       })
       .accounts({
-        network: baseAccount.publicKey,
+        network: address,
       })
       .signers([])
       .rpc();
 
     const account = await program.account.gatekeeperNetwork.fetch(
-      baseAccount.publicKey
+      address
     );
 
     expect(account).to.deep.equal({
       version: 0,
+      initialAuthority: authority.publicKey,
       authThreshold: 1,
       passExpireTime: new anchor.BN(360),
       networkDataLen: 16,
-      signerBump: 3,
+      signerBump: bump,
       feesCount: 1,
       authKeysCount: 2,
       fees: [
         {
-          token: baseAccount.publicKey,
+          token: provider.publicKey,
           issue: 100,
           refresh: 100,
           expire: 100,
@@ -369,34 +384,32 @@ describe("network operations", () => {
         },
         {
           flags: 1,
-          key: baseAccount.publicKey,
+          key: newKey.publicKey,
         },
       ],
     });
   });
+
   it("closes an account", async () => {
-    const baseAccount = anchor.web3.Keypair.generate();
-    await provider.connection
-      .getBalance(provider.wallet.publicKey)
-      .then((balance) => {
-        console.log(balance);
-      });
+    const initialBalance = await provider.connection
+      .getBalance(provider.wallet.publicKey);
 
     //! Check balance before run, then check balance after run... Find difference and calculate whether the fees are accurate
     //! Clean up lint errors
-    await createAccount(baseAccount);
+    const account = await createAccount();
 
     await program.methods
       .closeNetwork()
       .accounts({
-        network: baseAccount.publicKey,
+        network: account.address,
+        receiver: provider.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([])
       .rpc();
 
     return expect(
-      program.account.gatekeeperNetwork.fetch(baseAccount.publicKey)
+      program.account.gatekeeperNetwork.fetch(account.address)
     ).to.eventually.be.rejected;
   });
 });

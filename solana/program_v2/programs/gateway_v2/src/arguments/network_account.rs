@@ -6,6 +6,8 @@ use crate::types::NetworkFees;
 use crate::types::NetworkKeyFlags;
 use anchor_lang::prelude::*;
 
+const NETWORK_SEED: &[u8; 10] = b"gk-network";
+
 #[derive(Accounts, Debug)]
 #[instruction(data: UpdateNetworkData)]
 pub struct UpdateNetworkAccount<'info> {
@@ -17,12 +19,14 @@ pub struct UpdateNetworkAccount<'info> {
                 auth_keys: (network.auth_keys.len() + data.auth_keys.add.len() - data.auth_keys.remove.len()) as u16,
             }
         ),
-        realloc::payer = payer,
-        realloc::zero = false
+        realloc::payer = authority,
+        realloc::zero = false,
+        seeds = [NETWORK_SEED, network.initial_authority.key().as_ref()],
+        bump = network.signer_bump,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]
-    pub payer: Signer<'info>,
+    pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -31,25 +35,34 @@ pub struct UpdateNetworkAccount<'info> {
 pub struct CreateNetworkAccount<'info> {
     #[account(
         init,
-        payer = payer,
+        payer = authority,
         space = GatekeeperNetwork::on_chain_size_with_arg(
             GatekeeperNetworkSize{
                 fees_count: data.fees.len() as u16,
                 auth_keys: data.auth_keys.len() as u16,
             }
         ),
+        seeds = [NETWORK_SEED, authority.key().as_ref()],
+        bump
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]
-    pub payer: Signer<'info>,
+    pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 #[derive(Accounts, Debug)]
 pub struct CloseNetworkAccount<'info> {
-    #[account(mut, close = receiver)]
+    #[account(
+        mut,
+        close = receiver,
+        seeds = [NETWORK_SEED, network.initial_authority.key().as_ref()],
+        bump = network.signer_bump,
+    )]
     pub network: Account<'info, GatekeeperNetwork>,
+    /// CHECK: Rent destination account does not need to satisfy the any constraints.
     #[account(mut)]
-    pub receiver: Signer<'info>,
+    pub receiver: UncheckedAccount<'info>,
+    pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
