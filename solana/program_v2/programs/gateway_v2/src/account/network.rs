@@ -40,19 +40,17 @@ pub struct GatekeeperNetworkSize {
 
 impl GatekeeperNetwork {
     pub fn on_chain_size_with_arg(arg: GatekeeperNetworkSize) -> usize {
-        let x : usize= OC_SIZE_DISCRIMINATOR
-            + OC_SIZE_U8
-            + OC_SIZE_U8 * 32 * 12
-            + OC_SIZE_U8
-            + OC_SIZE_U64
-            + OC_SIZE_U16
-            + OC_SIZE_U8
-            + OC_SIZE_U16
-            + OC_SIZE_U16
-            + NetworkFees::ON_CHAIN_SIZE * arg.fees_count as usize
-            + NetworkAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize;
-        // msg!("Account size: {}", x);
-        x
+        OC_SIZE_DISCRIMINATOR
+            + OC_SIZE_U8 // version
+            // + OC_SIZE_U8 * 32 * 12 // network_features
+            + OC_SIZE_U8 // auth_threshold
+            + OC_SIZE_U64 // pass_expire_time
+            + OC_SIZE_U16 // network_data_len
+            + OC_SIZE_U8 // signer_bump
+            + OC_SIZE_U16 // fees_count
+            + OC_SIZE_U16 // auth_keys_count
+            + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * arg.fees_count as usize // fees
+            + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize // auth_keys
     }
 }
 
