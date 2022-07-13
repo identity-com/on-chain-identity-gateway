@@ -5,13 +5,20 @@ use crate::instructions::*;
 use crate::types::NetworkFees;
 use crate::types::NetworkKeyFlags;
 use anchor_lang::prelude::*;
+
 #[derive(Accounts, Debug)]
+#[instruction(data: UpdateNetworkData)]
 pub struct UpdateNetworkAccount<'info> {
     #[account(
-    mut,
-    realloc = (5000 as usize),
-    realloc::payer = payer,
-    realloc::zero = false
+        mut,
+        realloc = GatekeeperNetwork::on_chain_size_with_arg(
+            GatekeeperNetworkSize{
+                fees_count: (network.fees.len() + data.fees.add.len() - data.fees.remove.len()) as u16,
+                auth_keys: (network.auth_keys.len() + data.auth_keys.add.len() - data.auth_keys.remove.len()) as u16,
+            }
+        ),
+        realloc::payer = payer,
+        realloc::zero = false
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]
@@ -23,14 +30,14 @@ pub struct UpdateNetworkAccount<'info> {
 #[instruction(data: CreateNetworkData)]
 pub struct CreateNetworkAccount<'info> {
     #[account(
-    init,
-    payer = payer,
-    space = GatekeeperNetwork::on_chain_size_with_arg(
-    GatekeeperNetworkSize{
-    fees_count: data.fees.len() as u16,
-    auth_keys: data.auth_keys.len() as u16,
-    }
-    ),
+        init,
+        payer = payer,
+        space = GatekeeperNetwork::on_chain_size_with_arg(
+            GatekeeperNetworkSize{
+                fees_count: data.fees.len() as u16,
+                auth_keys: data.auth_keys.len() as u16,
+            }
+        ),
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]
