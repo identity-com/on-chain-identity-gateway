@@ -33,11 +33,8 @@ impl CreateNetwork {
         network.auth_threshold = data.auth_threshold;
         network.initial_authority = authority;
         network.pass_expire_time = data.pass_expire_time;
-        network.network_data_len = data.network_data_len;
         network.signer_bump = bump;
-        network.auth_keys_count = data.auth_keys.len() as u16;
         network.auth_keys = data.auth_keys;
-        network.fees_count = data.fees.len() as u16;
         network.fees = data.fees;
 
         Ok(())

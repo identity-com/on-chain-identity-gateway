@@ -46,10 +46,9 @@ impl UpdateNetwork {
             if network.auth_keys[some_index].key == *authority.key {
                 // TODO: Proper error here
                 msg!("Cannot remove own auth key");
-                panic!()
+                return Err(error!(ErrorCode::InvalidKey));
             } else {
                 network.auth_keys.remove(some_index);
-                network.auth_keys_count -= 1;
             }
         }
 
@@ -77,7 +76,6 @@ impl UpdateNetwork {
                 None => {
                     // add the new key
                     network.auth_keys.push(*key);
-                    network.auth_keys_count += 1;
                 }
             }
         });
@@ -125,6 +123,8 @@ pub enum ErrorCode {
     NoAuthKeys,
     #[msg("Not enough auth keys provided")]
     InsufficientAuthKeys,
+    #[msg("Invalid key provided")]
+    InvalidKey,
     #[msg("Insufficient access to update auth keys")]
     InsufficientAccessAuthKeys,
     #[msg("Insufficient access to set expiry time")]
