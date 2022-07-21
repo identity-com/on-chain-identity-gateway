@@ -17,14 +17,8 @@ pub struct GatekeeperNetwork {
     pub auth_threshold: u8,
     /// The length of time a pass lasts in seconds. `0` means does not expire.
     pub pass_expire_time: i64,
-    /// Changing this justifies a new network as all old passes will become invalid
-    pub network_data_len: u16,
     /// The bump for the signer
     pub signer_bump: u8,
-    /// Number of different token fees
-    pub fees_count: u16,
-    /// Number of auth keys
-    pub auth_keys_count: u16,
     /// The fees for this network
     pub fees: Vec<NetworkFees>,
     /// Keys with permissions on the network
@@ -48,10 +42,7 @@ impl GatekeeperNetwork {
             // + OC_SIZE_U8 * 32 * 12 // network_features
             + OC_SIZE_U8 // auth_threshold
             + OC_SIZE_U64 // pass_expire_time
-            + OC_SIZE_U16 // network_data_len
             + OC_SIZE_U8 // signer_bump
-            + OC_SIZE_U16 // fees_count
-            + OC_SIZE_U16 // auth_keys_count
             + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * arg.fees_count as usize // fees
             + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize // auth_keys
     }

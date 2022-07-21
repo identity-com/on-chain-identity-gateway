@@ -12,7 +12,7 @@ impl UpdateNetwork {
         network: &mut Account<GatekeeperNetwork>,
         authority: &mut Signer,
     ) -> Result<()> {
-        Self::set_expire_time(&data, network, authority);
+        Self::set_expire_time(&data, network, authority)?;
         Self::add_auth_keys(&data, network, authority)?;
 
         Ok(())
@@ -33,30 +33,25 @@ impl UpdateNetwork {
         }
 
         // remove the keys if they exist
-        data.auth_keys.remove.iter().for_each(|key| {
+        for key in data.auth_keys.remove.iter() {
             let index: Option<usize> = network.auth_keys.iter().position(|x| x.key == *key);
 
-            match index {
-                Some(x) => {
-                    // don't allow removing own key for now (TODO, check if other Auth keys exist)
-                    if network.auth_keys[x].key == *authority.key {
-                        // TODO: Proper error here
-                        msg!("Cannot remove own auth key");
-                        panic!()
-                    } else {
-                        network.auth_keys.remove(x);
-                        network.auth_keys_count -= 1;
-                    }
-                    // return Ok();
-                }
-                None => {
-                    msg!("Cannot remove auth key that doesn't exist");
-                    // TODO: Figure out how to error here
-                    // return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
-                    panic!()
-                }
+            if(index.is_none()) {
+                msg!("Cannot remove auth key that doesn't exist");
+                return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
             }
-        });
+
+            let some_index = index.unwrap();
+            // don't allow removing own key for now (TODO, check if other Auth keys exist)
+            if network.auth_keys[some_index].key == *authority.key {
+                // TODO: Proper error here
+                msg!("Cannot remove own auth key");
+                panic!()
+            } else {
+                network.auth_keys.remove(some_index);
+                network.auth_keys_count -= 1;
+            }
+        }
 
         // either add or update keys
         data.auth_keys.add.iter().for_each(|key| {
