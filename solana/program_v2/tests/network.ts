@@ -35,7 +35,6 @@ describe("network operations", () => {
       .createNetwork({
         authThreshold: new anchor.BN(1),
         passExpireTime: new anchor.BN(360),
-        networkDataLen: new anchor.BN(16),
         signerBump: new anchor.BN(3),
         fees: [
           {
@@ -77,10 +76,7 @@ describe("network operations", () => {
       initialAuthority: authority.publicKey,
       authThreshold: 1,
       passExpireTime: new anchor.BN(360),
-      networkDataLen: 16,
       signerBump: bump,
-      feesCount: 1,
-      authKeysCount: 1,
       fees: [
         {
           token: provider.wallet.publicKey,
@@ -132,10 +128,7 @@ describe("network operations", () => {
       initialAuthority: authority.publicKey,
       authThreshold: 1,
       passExpireTime: new anchor.BN(360),
-      networkDataLen: 16,
       signerBump: bump,
-      feesCount: 1,
-      authKeysCount: 2,
       fees: [
         {
           token: provider.publicKey,
@@ -210,10 +203,7 @@ describe("network operations", () => {
       initialAuthority: authority.publicKey,
       authThreshold: 1,
       passExpireTime: new anchor.BN(360),
-      networkDataLen: 16,
       signerBump: bump,
-      feesCount: 1,
-      authKeysCount: 1,
       fees: [
         {
           token: provider.publicKey,
@@ -283,10 +273,7 @@ describe("network operations", () => {
       initialAuthority: authority.publicKey,
       authThreshold: 1,
       passExpireTime: new anchor.BN(360),
-      networkDataLen: 16,
       signerBump: bump,
-      feesCount: 1,
-      authKeysCount: 1,
       fees: [
         {
           token: provider.publicKey,
@@ -364,10 +351,7 @@ describe("network operations", () => {
       initialAuthority: authority.publicKey,
       authThreshold: 1,
       passExpireTime: new anchor.BN(360),
-      networkDataLen: 16,
       signerBump: bump,
-      feesCount: 1,
-      authKeysCount: 2,
       fees: [
         {
           token: provider.publicKey,
