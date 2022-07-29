@@ -4,7 +4,7 @@
   "description": "Gateway V2 CLI",
   "author": "DiosAkhilleus",
   "bin": {
-    "cli": "./bin/run"
+    "gateway": "./bin/run"
   },
   "homepage": "https://github.com/identity-com/on-chain-identity-gateway",
   "license": "MIT",
@@ -39,8 +39,8 @@
     "typescript": "^4.4.3"
   },
   "oclif": {
-    "bin": "cli",
-    "dirname": "cli",
+    "bin": "gateway",
+    "dirname": "gateway",
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
