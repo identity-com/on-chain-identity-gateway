@@ -1,9 +1,6 @@
 use crate::account::*;
 use crate::account::{GatekeeperNetwork, NetworkAuthKey};
-use crate::arguments::*;
-use crate::instructions::*;
 use crate::types::NetworkFees;
-use crate::types::NetworkKeyFlags;
 use anchor_lang::prelude::*;
 
 const NETWORK_SEED: &[u8; 10] = b"gk-network";

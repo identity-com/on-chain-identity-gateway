@@ -17,8 +17,7 @@ clippy::pedantic
 
 declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
-use crate::account::{GatekeeperNetwork, NetworkAuthKey};
-use crate::account::*;
+use crate::account::NetworkAuthKey;
 use crate::arguments::*;
 use crate::instructions::{UpdateNetwork, CreateNetwork};
 use crate::types::NetworkKeyFlags;
@@ -51,7 +50,7 @@ pub mod gateway_v2 {
         //     !msg("{}", acc);
         // });
 
-        UpdateNetwork::process(data, &mut ctx.accounts.network, &mut ctx.accounts.authority)
+        UpdateNetwork::process(&data, &mut ctx.accounts.network, &mut ctx.accounts.authority)
     }
 
     pub fn close_network(_ctx: Context<CloseNetworkAccount>) -> Result<()> {
