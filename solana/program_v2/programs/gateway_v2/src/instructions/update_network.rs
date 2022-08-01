@@ -36,49 +36,71 @@ impl UpdateNetwork {
         for key in data.auth_keys.remove.iter() {
             let index: Option<usize> = network.auth_keys.iter().position(|x| x.key == *key);
 
-            if(index.is_none()) {
+            if index.is_none() {
                 msg!("Cannot remove auth key that doesn't exist");
                 return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
             }
 
-            let some_index = index.unwrap();
-            // don't allow removing own key for now (TODO, check if other Auth keys exist)
-            if network.auth_keys[some_index].key == *authority.key {
-                // TODO: Proper error here
-                msg!("Cannot remove own auth key");
+            let key_index = index.unwrap();
+            if network.auth_keys[key_index].key == *authority.key {
+                // Cannot remove own key (TODO?)
                 return Err(error!(ErrorCode::InvalidKey));
             } else {
-                network.auth_keys.remove(some_index);
+                network.auth_keys.remove(key_index);
             }
         }
 
-        // either add or update keys
-        data.auth_keys.add.iter().for_each(|key| {
+        for key in data.auth_keys.add.iter() {
             let index: Option<usize> = network.auth_keys.iter().position(|x| x.key == key.key);
-            match index {
-                Some(x) => {
-                    // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
-                    if network.auth_keys[x].key == *authority.key
-                        && !GatekeeperKeyFlags::contains(
-                        &GatekeeperKeyFlags::from_bits_truncate(key.flags),
-                        GatekeeperKeyFlags::AUTH,
-                    )
-                    {
-                        msg!("Not updating flag");
-                        // TODO: Proper error here
-                        panic!()
-                    } else {
-                        msg!("Updating flag");
-                        // update the key with the new flag if it exists
-                        network.auth_keys[x].flags = key.flags;
-                    }
-                }
-                None => {
-                    // add the new key
-                    network.auth_keys.push(*key);
+
+            if index.is_none() {
+                // add the key ifr it doesn't exist
+                network.auth_keys.push(*key);
+            } else {
+                let key_index = index.unwrap();
+
+                // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
+                if network.auth_keys[key_index].key == *authority.key
+                    && !GatekeeperKeyFlags::contains(
+                    &GatekeeperKeyFlags::from_bits_truncate(key.flags),
+                    GatekeeperKeyFlags::AUTH,
+                ) {
+                    return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
+                } else {
+                    // update the key with the new flag if it exists
+                    network.auth_keys[key_index].flags = key.flags;
                 }
             }
-        });
+        }
+
+        // // either add or update keys
+        // data.auth_keys.add.iter().for_each(|key| {
+        //     let index: Option<usize> = network.auth_keys.iter().position(|x| x.key == key.key);
+        //
+        //
+        //     match index {
+        //         Some(x) => {
+        //             // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
+        //             if network.auth_keys[x].key == *authority.key
+        //                 && !GatekeeperKeyFlags::contains(
+        //                 &GatekeeperKeyFlags::from_bits_truncate(key.flags),
+        //                 GatekeeperKeyFlags::AUTH,
+        //             )
+        //             {
+        //                 msg!("Not updating flag");
+        //                 // TODO: Proper error here
+        //                 panic!()
+        //             } else {
+        //                 // update the key with the new flag if it exists
+        //                 network.auth_keys[x].flags = key.flags;
+        //             }
+        //         }
+        //         None => {
+        //             // add the new key
+        //             network.auth_keys.push(*key);
+        //         }
+        //     }
+        // });
 
         Ok(())
     }
@@ -90,15 +112,15 @@ impl UpdateNetwork {
         match data.pass_expire_time {
             Some(pass_expire_time) => {
                 if (pass_expire_time != network.pass_expire_time) {
-                    if(!Self::can_access(&mut network.auth_keys, authority, NetworkKeyFlags::SET_EXPIRE_TIME)) {
-                        return Err(error!(ErrorCode::InsufficientAccessExpiry))
+                    if (!Self::can_access(&mut network.auth_keys, authority, NetworkKeyFlags::SET_EXPIRE_TIME)) {
+                        return Err(error!(ErrorCode::InsufficientAccessExpiry));
                     }
 
                     network.pass_expire_time = pass_expire_time;
                 }
 
                 Ok(())
-            },
+            }
             None => Ok(())
         }
     }
