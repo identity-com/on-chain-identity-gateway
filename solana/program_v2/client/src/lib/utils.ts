@@ -1,7 +1,6 @@
 import { Connection, Keypair } from "@solana/web3.js";
 import { AnchorProvider, Wallet, Program } from "@project-serum/anchor";
 import { IDL } from "../gateway_v2";
-
 import { PROGRAM_ID } from "./constants";
 
 /*
