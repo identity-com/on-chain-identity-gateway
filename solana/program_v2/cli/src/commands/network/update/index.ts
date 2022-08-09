@@ -2,7 +2,6 @@ import { Command, Flags } from "@oclif/core";
 import { Keypair } from "@solana/web3.js";
 // eslint-disable-next-line node/no-extraneous-import
 import { readJSONSync } from "fs-extra";
-import { createNetwork } from "../../../utils/create-network";
 import {
   i64,
   NetworkAuthKey,
@@ -12,11 +11,12 @@ import {
   u16,
   u8,
 } from "../../../utils/state";
-export default class Create extends Command {
-  static description = "Creates a gatekeeper network";
+import { updateNetwork } from "../../../utils/update-network";
+export default class Update extends Command {
+  static description = "Updates a gatekeeper network";
 
   static examples = [
-    `$ gateway network create --data ./network.json --key ./funder-key.json
+    `$ gateway network update --data ./network.json --key ./funder-key.json
 Latest Blockhash: [blockhash]
 `,
   ];
@@ -38,7 +38,7 @@ Latest Blockhash: [blockhash]
   static args = [];
 
   async run(): Promise<void> {
-    const { flags } = await this.parse(Create);
+    const { flags } = await this.parse(Update);
     const programId = Keypair.generate().publicKey;
     const network = Keypair.generate();
     const localSecretKey = readJSONSync(flags.key) as Uint8Array;
@@ -63,13 +63,13 @@ Latest Blockhash: [blockhash]
     this.log(`Network ID: ${network.publicKey.toString()}`);
     this.log(`Funder ID: ${funder.publicKey.toString()}`);
     this.log(`Network Data: ${JSON.stringify(networkData)}`);
-    const createdNetwork = await createNetwork(
+    const updatedNetwork = await updateNetwork(
       programId,
       network,
       funder,
       networkData
     );
     this.log("network created");
-    this.log(`Block Height: ${createdNetwork.lastValidBlockHeight}`);
+    this.log(`Block Height: ${updatedNetwork.lastValidBlockHeight}`);
   }
 }
