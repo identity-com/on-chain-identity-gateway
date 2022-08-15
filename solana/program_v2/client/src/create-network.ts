@@ -64,7 +64,7 @@ export const createNetwork = async (
       network: network.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
     })
-    .signers([network])
+    .signers([funder])
     .transaction();
 
   return transaction;
