@@ -38,32 +38,26 @@ describe("Gateway v2 Client", () => {
       let connection = new Connection("http://localhost:8899", "confirmed");
       console.log("connection confirmed");
       const programId = new PublicKey(
-        "FtVtKsibAR1QGdc389JbgcomKLq34U9tY8HyWPWoYQY6"
+        "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
       );
-      const network = Keypair.generate();
-      const funder = Keypair.generate();
-      const networkData = new NetworkData(
-        new u8(1),
-        new i64(BigInt(60) * BigInt(60)),
-        new u16(0),
-        new u8(0),
-        [],
-        [
-          new NetworkAuthKey(
-            NetworkKeyFlags.fromFlagsArray([NetworkKeyFlagsValues.AUTH]),
-            network.publicKey
-          ),
-        ]
-      );
-      const wallet = new anchor.Wallet(Keypair.generate());
 
-      let service = await GatewayService.buildFromAnchor(
-        IDL as unknown as Program<GatewayV2>,
+      const program = anchor.workspace.gateway_v2 as Program<GatewayV2>;
+      const programProvider = program.provider as anchor.AnchorProvider;
+      const authority = programProvider.wallet;
+      let service: GatewayService;
+      const nonAuthoritySigner = anchor.web3.Keypair.generate();
+      const nonAuthorityWallet = new anchor.Wallet(nonAuthoritySigner);
+
+      service = await GatewayService.buildFromAnchor(
+        program,
         "localnet",
-        new anchor.AnchorProvider(connection, wallet, {})
+        programProvider,
+        authority
       );
 
-      let createdNetwork = service.createNetwork(funder.publicKey).instruction;
+      let createdNetwork = service.createNetwork(
+        authority.publicKey
+      ).instruction;
       console.log("created network");
       // expect(createdNetwork.).to.not.be.null;
     });
