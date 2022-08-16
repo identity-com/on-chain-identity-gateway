@@ -12,9 +12,11 @@ import {
 } from "../src/state";
 import assert from "assert";
 import mocha from "mocha";
-
+import { Program } from "@project-serum/anchor";
 import { createNetwork } from "../src/create-network";
+import { GatewayService } from "../src/GatewayService";
 import { u8, u16, i64, NetworkAuthKey, NetworkKeyFlags } from "../src/state";
+import { GatewayV2, IDL } from "../src/gateway_v2";
 import * as anchor from "@project-serum/anchor";
 import { before } from "mocha";
 import chai from "chai";
@@ -40,7 +42,6 @@ describe("Gateway v2 Client", () => {
       );
       const network = Keypair.generate();
       const funder = Keypair.generate();
-      const randomKey = Keypair.generate().publicKey;
       const networkData = new NetworkData(
         new u8(1),
         new i64(BigInt(60) * BigInt(60)),
@@ -50,49 +51,75 @@ describe("Gateway v2 Client", () => {
         [
           new NetworkAuthKey(
             NetworkKeyFlags.fromFlagsArray([NetworkKeyFlagsValues.AUTH]),
-            randomKey
+            network.publicKey
           ),
         ]
       );
-      const transactionInstructions = createNetwork(
-        programId,
-        network,
-        funder,
-        networkData
-      );
-      console.log(`${network.publicKey} ${funder.publicKey}`);
+      const wallet = new anchor.Wallet(Keypair.generate());
 
-      await connection
-        .requestAirdrop(funder.publicKey, LAMPORTS_PER_SOL * 10)
-        .then((res) => {
-          return connection.confirmTransaction(res, "confirmed");
-        });
-      const transaction = new Transaction();
-      transaction.feePayer = funder.publicKey;
-      transaction.recentBlockhash = (
-        await connection.getLatestBlockhash()
-      ).blockhash;
-      const transactionSignature = await connection.sendTransaction(
-        transaction,
-        [funder],
-        { skipPreflight: true }
+      let service = await GatewayService.buildFromAnchor(
+        IDL as unknown as Program<GatewayV2>,
+        "localnet",
+        new anchor.AnchorProvider(connection, wallet, {})
       );
-      const confirmation = await connection.confirmTransaction(
-        transactionSignature
-      );
-      if (confirmation.value.err) {
-        console.error(
-          await connection
-            .getTransaction(transactionSignature)
-            .then((res) => res?.meta?.logMessages)
-        );
-        throw confirmation.value.err;
-      }
-      const networkAccount = await getNetworkAccount(
-        new Connection("http://127.0.0.1:8899"),
-        network.publicKey
-      );
-      expect(networkAccount?.authKeys).to.not.be.null;
+
+      let createdNetwork = service.createNetwork(funder.publicKey).instruction;
+      console.log("created network");
+      // expect(createdNetwork.).to.not.be.null;
     });
   });
 });
+
+// const network = Keypair.generate();
+// const funder = Keypair.generate();
+// const networkData = new NetworkData(
+//   new u8(1),
+//   new i64(BigInt(60) * BigInt(60)),
+//   new u16(0),
+//   new u8(0),
+//   [],
+//   [
+//     new NetworkAuthKey(
+//       NetworkKeyFlags.fromFlagsArray([NetworkKeyFlagsValues.AUTH]),
+//       wallet
+//     ),
+//   ]
+// );
+// const transactionInstructions = createNetwork(
+//   programId,
+//   network,
+//   funder,
+//   networkData
+// );
+// console.log(`${network.publicKey} ${funder.publicKey}`);
+
+// await connection
+//   .requestAirdrop(funder.publicKey, LAMPORTS_PER_SOL * 10)
+//   .then((res) => {
+//     return connection.confirmTransaction(res, "confirmed");
+//   });
+// const transaction = new Transaction();
+// transaction.feePayer = funder.publicKey;
+// transaction.recentBlockhash = (
+//   await connection.getLatestBlockhash()
+// ).blockhash;
+// const transactionSignature = await connection.sendTransaction(
+//   transaction,
+//   [funder],
+//   { skipPreflight: true }
+// );
+// const confirmation = await connection.confirmTransaction(
+//   transactionSignature
+// );
+// if (confirmation.value.err) {
+//   console.error(
+//     await connection
+//       .getTransaction(transactionSignature)
+//       .then((res) => res?.meta?.logMessages)
+//   );
+//   throw confirmation.value.err;
+// }
+// const networkAccount = await getNetworkAccount(
+//   new Connection("http://127.0.0.1:8899"),
+//   network.publicKey
+// );
