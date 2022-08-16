@@ -9,14 +9,12 @@ import {
   getNetworkAccount,
   NetworkKeyFlagsValues,
   NetworkData,
-} from "../src/state";
+} from "../../src/state";
 import assert from "assert";
 import mocha from "mocha";
 import { Program } from "@project-serum/anchor";
-import { createNetwork } from "../src/create-network";
-import { GatewayService } from "../src/GatewayService";
-import { u8, u16, i64, NetworkAuthKey, NetworkKeyFlags } from "../src/state";
-import { GatewayV2, IDL } from "../src/gateway_v2";
+import { GatewayService } from "../../src/GatewayService";
+import { GatewayV2, IDL } from "../../src/gateway_v2";
 import * as anchor from "@project-serum/anchor";
 import { before } from "mocha";
 import chai from "chai";
