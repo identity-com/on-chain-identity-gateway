@@ -9,13 +9,13 @@ import {
   getNetworkAccount,
   NetworkKeyFlagsValues,
   NetworkData,
-} from "../src/state";
+} from "../../src/state";
 import assert from "assert";
 import mocha from "mocha";
 
-import { closeNetwork } from "../src/close-network";
-import { createNetwork } from "../src/create-network";
-import { u8, u16, i64, NetworkAuthKey, NetworkKeyFlags } from "../src/state";
+import { closeNetwork } from "../../src/close-network";
+import { createNetwork } from "../../src/create-network";
+import { u8, u16, i64, NetworkAuthKey, NetworkKeyFlags } from "../../src/state";
 
 describe("Gateway v2 Client", () => {
   describe("Close Network", () => {
