@@ -1,4 +1,4 @@
-import { GatewayV2 } from "./gateway_v2";
+import {GatewayV2} from "./gateway_v2";
 import {
   AnchorProvider,
   Program,
@@ -17,19 +17,21 @@ import {
   TransactionInstruction,
 } from "@solana/web3.js";
 
-import { Wallet } from "./lib/types";
+import {Wallet} from "./lib/types";
 
-import { ExtendedCluster } from "./lib/connection";
+import {ExtendedCluster} from "./lib/connection";
 
 export class GatewayService {
   static async buildFromAnchor(
     program: Program<GatewayV2>,
+    dataAccount: PublicKey,
     cluster: ExtendedCluster,
     provider: AnchorProvider,
     wallet?: Wallet
   ): Promise<GatewayService> {
     return new GatewayService(
       program,
+      dataAccount,
       cluster,
       wallet ? wallet : provider.wallet,
       provider.opts
@@ -38,6 +40,7 @@ export class GatewayService {
 
   private constructor(
     private _program: Program<GatewayV2>,
+    private _dataAccount: PublicKey,
     private _cluster: ExtendedCluster = "mainnet-beta",
     private _wallet: Wallet = new DummyWallet(),
     private _opts: ConfirmOptions = AnchorProvider.defaultOptions()
@@ -83,14 +86,17 @@ export class GatewayService {
     });
   }
 
+
   createNetwork(payer: PublicKey): GatewayServiceBuilder {
-    const authority = this._program.provider.publicKey as PublicKey;
+    const authority = this._wallet.publicKey;
+
     const instructionPromise = this._program.methods
       .createNetwork({
         authThreshold: 1,
         passExpireTime: new anchor.BN(360),
         networkDataLen: 0,
-        signerBump: 3,
+        // TODO: I think this is ignored and stored on chain ?
+        signerBump: 0,
         fees: [
           {
             token: this._wallet.publicKey,
@@ -108,10 +114,9 @@ export class GatewayService {
         ],
       })
       .accounts({
-        network: Keypair.generate().publicKey,
+        network: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
-        //authority,
-        payer,
+        payer: authority,
       })
       .instruction();
 
@@ -120,6 +125,7 @@ export class GatewayService {
       didAccountSizeDeltaCallback: () => {
         throw new Error("Dynamic Alloc not supported");
       },
+      // TODO: Implement this...
       allowsDynamicAlloc: false,
       authority: authority,
     });
@@ -172,23 +178,20 @@ class DummyWallet implements Wallet {
 }
 
 export class GatewayServiceBuilder {
-  private gateWayWallet: Wallet;
+  private wallet: Wallet;
   private connection: Connection;
   private confirmOptions: ConfirmOptions;
-  private payer: PublicKey | undefined;
   private partialSigners: Signer[] = [];
   private readonly idlErrors: Map<number, string>;
 
   constructor(
     private service: GatewayService,
-    //ToDo
     private _instruction: BuilderInstruction,
-    payer: PublicKey = PublicKey.default
+    private authority: PublicKey = PublicKey.default
   ) {
-    this.gateWayWallet = this.service.getWallet();
+    this.wallet = this.service.getWallet();
     this.connection = this.service.getConnection();
     this.confirmOptions = this.service.getConfrirmOptions();
-    this.payer = payer;
 
     this.idlErrors = parseIdlErrors(service.getIdl());
   }
@@ -208,12 +211,13 @@ export class GatewayServiceBuilder {
   }
 
   withSolWallet(solWallet: Wallet): GatewayServiceBuilder {
-    this.gateWayWallet = solWallet;
+    this.wallet = solWallet;
     return this;
   }
 
+  // TODO
   withAutomaticAlloc(payer: PublicKey): GatewayServiceBuilder {
-    this.payer = payer;
+    this.authority = payer;
     return this;
   }
 
@@ -232,7 +236,7 @@ export class GatewayServiceBuilder {
   async rpc(opts?: ConfirmOptions): Promise<string> {
     const provider = new AnchorProvider(
       this.connection,
-      this.gateWayWallet,
+      this.wallet,
       this.confirmOptions
     );
 
