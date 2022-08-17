@@ -14,6 +14,7 @@ describe("Gateway v2 Client", () => {
       const authority = programProvider.wallet;
       let service: GatewayService;
 
+      // (see sol-did didDataAccount)
       const [network, bump] = await PublicKey
         .findProgramAddress(
           [
