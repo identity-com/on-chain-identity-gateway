@@ -1,8 +1,8 @@
-import {AnchorProvider, Program} from "@project-serum/anchor";
-import {GatewayService} from "../../src/GatewayService";
-import {GatewayV2, IDL} from "../../src/gateway_v2";
+import { AnchorProvider, Program } from "@project-serum/anchor";
+import { GatewayService } from "../../src/GatewayService";
+import { GatewayV2, IDL } from "../../src/gateway_v2";
 import * as anchor from "@project-serum/anchor";
-import {PublicKey} from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 
 describe("Gateway v2 Client", () => {
   describe("Create Network", () => {
@@ -15,14 +15,13 @@ describe("Gateway v2 Client", () => {
       let service: GatewayService;
 
       // (see sol-did didDataAccount)
-      const [network, bump] = await PublicKey
-        .findProgramAddress(
-          [
-            anchor.utils.bytes.utf8.encode("gk-network"),
-            authority.publicKey.toBuffer()
-          ],
-          program.programId
-        );
+      const [network, bump] = await PublicKey.findProgramAddress(
+        [
+          anchor.utils.bytes.utf8.encode("gk-network"),
+          authority.publicKey.toBuffer(),
+        ],
+        program.programId
+      );
 
       service = await GatewayService.buildFromAnchor(
         program,
@@ -32,10 +31,7 @@ describe("Gateway v2 Client", () => {
         authority
       );
 
-
-      let createdNetwork = service.createNetwork(
-        authority.publicKey
-      ).rpc();
+      let createdNetwork = service.createNetwork(authority.publicKey).rpc();
 
       console.log("created network");
       // expect(createdNetwork.).to.not.be.null;
