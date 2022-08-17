@@ -1,24 +1,24 @@
 import {
-  Keypair,
-  Connection,
-  Transaction,
-  LAMPORTS_PER_SOL,
-  PublicKey,
+    Keypair,
+    Connection,
+    Transaction,
+    LAMPORTS_PER_SOL,
+    PublicKey,
 } from "@solana/web3.js";
 import {
-  getNetworkAccount,
-  NetworkKeyFlagsValues,
-  NetworkData,
+    getNetworkAccount,
+    NetworkKeyFlagsValues,
+    NetworkData,
 } from "../../src/state";
 import assert from "assert";
 import mocha from "mocha";
-import { Program } from "@project-serum/anchor";
-import { GatewayService } from "../../src/GatewayService";
-import { GatewayV2, IDL } from "../../src/gateway_v2";
+import {Program} from "@project-serum/anchor";
+import {GatewayService} from "../../src/GatewayService";
+import {GatewayV2, IDL} from "../../src/gateway_v2";
 import * as anchor from "@project-serum/anchor";
-import { before } from "mocha";
+import {before} from "mocha";
 import chai from "chai";
-import { expect } from "chai";
+import {expect} from "chai";
 
 // describe("sol-did controller operations", () => {
 // Configure the client to use the local cluster.
@@ -31,35 +31,36 @@ import { expect } from "chai";
 // });
 
 describe("Gateway v2 Client", () => {
-  describe("Create Network", () => {
-    it.only("should be equivalent", async function () {
-      let connection = new Connection("http://localhost:8899", "confirmed");
-      console.log("connection confirmed");
-      const programId = new PublicKey(
-        "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
-      );
+    describe("Create Network", () => {
+        it.only("should be equivalent", async function () {
+            let connection = new Connection("http://localhost:8899", "confirmed");
+            console.log("connection confirmed");
+            const programId = new PublicKey(
+                "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
+            );
 
-      const program = anchor.workspace.gateway_v2 as Program<GatewayV2>;
-      const programProvider = program.provider as anchor.AnchorProvider;
-      const authority = programProvider.wallet;
-      let service: GatewayService;
-      const nonAuthoritySigner = anchor.web3.Keypair.generate();
-      const nonAuthorityWallet = new anchor.Wallet(nonAuthoritySigner);
+            anchor.setProvider(anchor.AnchorProvider.env());
+            const program = anchor.workspace.GatewayV2 as Program<GatewayV2>;
+            const programProvider = program.provider as anchor.AnchorProvider;
+            const authority = programProvider.wallet;
+            let service: GatewayService;
+            const nonAuthoritySigner = anchor.web3.Keypair.generate();
+            const nonAuthorityWallet = new anchor.Wallet(nonAuthoritySigner);
 
-      service = await GatewayService.buildFromAnchor(
-        program,
-        "localnet",
-        programProvider,
-        authority
-      );
+            service = await GatewayService.buildFromAnchor(
+                program,
+                "localnet",
+                programProvider,
+                authority
+            );
 
-      let createdNetwork = service.createNetwork(
-        authority.publicKey
-      ).instruction;
-      console.log("created network");
-      // expect(createdNetwork.).to.not.be.null;
+            let createdNetwork = service.createNetwork(
+                authority.publicKey
+            ).instruction;
+            console.log("created network");
+            // expect(createdNetwork.).to.not.be.null;
+        });
     });
-  });
 });
 
 // const network = Keypair.generate();
