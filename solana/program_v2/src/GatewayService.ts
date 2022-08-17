@@ -1,4 +1,4 @@
-import {GatewayV2} from "./gateway_v2";
+import { GatewayV2, IDL } from "./gateway_v2";
 import {
   AnchorProvider,
   Program,
@@ -17,11 +17,54 @@ import {
   TransactionInstruction,
 } from "@solana/web3.js";
 
-import {Wallet} from "./lib/types";
+import { Wallet } from "./lib/types";
 
-import {ExtendedCluster} from "./lib/connection";
+import { ExtendedCluster } from "./lib/connection";
+
+type FeeStructure = {
+  // remove this, default to [], else form data above
+  token: PublicKey;
+  issue: number;
+  refresh: number;
+  expire: number;
+  verify: number;
+};
+type AuthKeyStructure = {
+  flags: anchor.BN;
+  key: PublicKey;
+};
+
+type CreateNetworkData = {
+  authThreshold: number;
+  passExpireTime: anchor.BN;
+  fees?: Array<FeeStructure>;
+  authKeys?: Array<AuthKeyStructure>;
+};
 
 export class GatewayService {
+  static async build(
+    dataAccount: PublicKey,
+    cluster: ExtendedCluster = "mainnet-beta",
+    wallet: Wallet = new DummyWallet(),
+    opts: ConfirmOptions = AnchorProvider.defaultOptions(),
+    connection?: Connection
+  ): Promise<GatewayService> {
+    const _connection = connection;
+    // getConnectionByCluster(identifier.clusterType, opts.preflightCommitment);
+    // Note, DidSolService never signs, so provider does not need a valid Wallet or confirmOptions.
+    const provider = new AnchorProvider(_connection, wallet, opts);
+
+    const program = await GatewayService.fetchProgram(provider);
+
+    return new GatewayService(
+      program,
+      provider.publicKey,
+      cluster,
+      wallet,
+      provider.opts
+    );
+  }
+
   static async buildFromAnchor(
     program: Program<GatewayV2>,
     dataAccount: PublicKey,
@@ -36,6 +79,27 @@ export class GatewayService {
       wallet ? wallet : provider.wallet,
       provider.opts
     );
+  }
+  static async fetchProgram(
+    provider: anchor.Provider
+  ): Promise<Program<GatewayV2>> {
+    let idl = await Program.fetchIdl<GatewayV2>(
+      "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe",
+      provider
+    );
+
+    if (!idl) {
+      console.warn(
+        "Could not fetch IDL from chain. Using build-in IDL as fallback."
+      );
+      idl = IDL;
+    }
+
+    return new Program<GatewayV2>(
+      idl,
+      "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe",
+      provider
+    ) as Program<GatewayV2>;
   }
 
   private constructor(
@@ -86,29 +150,24 @@ export class GatewayService {
     });
   }
 
-  createNetwork(payer: PublicKey = this._wallet.publicKey, data :CreateNetworkData): GatewayServiceBuilder {
+  createNetwork(
+    payer: PublicKey = this._wallet.publicKey,
+    data: CreateNetworkData = {
+      authThreshold: 1,
+      passExpireTime: new anchor.BN(360),
+      fees: [],
+      authKeys: [{ flags: new anchor.BN(1), key: this._wallet.publicKey }],
+    }
+  ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
       .createNetwork({
-        authThreshold: 1,
-        passExpireTime: new anchor.BN(360),
+        authThreshold: data.authThreshold,
+        passExpireTime: data.passExpireTime,
         networkDataLen: 0, // ignore
         // TODO: I think this is ignored and stored on chain ?
         signerBump: 0, // ignore
-        fees: [
-          { // remove this, default to [], else form data above
-            token: this._wallet.publicKey,
-            issue: 100,
-            refresh: 100,
-            expire: 100,
-            verify: 100,
-          },
-        ],
-        authKeys: [
-          { // this is default if no provided keys
-            flags: new anchor.BN(1), // admin
-            key: this._wallet.publicKey, // initial authority
-          },
-        ],
+        fees: data.fees,
+        authKeys: data.authKeys,
       })
       .accounts({
         network: this._dataAccount,
@@ -157,11 +216,11 @@ export class GatewayService {
     });
   }
 
-  async getNetworkAccount(): Promise<DidDataAccount | null> {
-    return (await this._program.account.gatekeeperNetwork.fetchNullable(
-      this._dataAccount
-    )) as DidDataAccount;
-  }
+  // async getNetworkAccount(): Promise<DidDataAccount | null> {
+  //   return (await this._program.account.gatekeeperNetwork.fetchNullable(
+  //     this._dataAccount
+  //   )) as DidDataAccount;
+  // }
 }
 
 class DummyWallet implements Wallet {
