@@ -86,19 +86,16 @@ export class GatewayService {
     });
   }
 
-
-  createNetwork(payer: PublicKey): GatewayServiceBuilder {
-    const authority = this._wallet.publicKey;
-
+  createNetwork(payer: PublicKey = this._wallet.publicKey, data :CreateNetworkData): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
       .createNetwork({
         authThreshold: 1,
         passExpireTime: new anchor.BN(360),
-        networkDataLen: 0,
+        networkDataLen: 0, // ignore
         // TODO: I think this is ignored and stored on chain ?
-        signerBump: 0,
+        signerBump: 0, // ignore
         fees: [
-          {
+          { // remove this, default to [], else form data above
             token: this._wallet.publicKey,
             issue: 100,
             refresh: 100,
@@ -107,16 +104,16 @@ export class GatewayService {
           },
         ],
         authKeys: [
-          {
-            flags: new anchor.BN(1),
-            key: this._wallet.publicKey,
+          { // this is default if no provided keys
+            flags: new anchor.BN(1), // admin
+            key: this._wallet.publicKey, // initial authority
           },
         ],
       })
       .accounts({
         network: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
-        payer: authority,
+        payer,
       })
       .instruction();
 
@@ -127,7 +124,7 @@ export class GatewayService {
       },
       // TODO: Implement this...
       allowsDynamicAlloc: false,
-      authority: authority,
+      authority: payer,
     });
   }
 
@@ -158,6 +155,12 @@ export class GatewayService {
       allowsDynamicAlloc: false,
       authority: authority,
     });
+  }
+
+  async getNetworkAccount(): Promise<DidDataAccount | null> {
+    return (await this._program.account.gatekeeperNetwork.fetchNullable(
+      this._dataAccount
+    )) as DidDataAccount;
   }
 }
 
