@@ -1,4 +1,3 @@
-import { AnchorProvider, Program } from "@project-serum/anchor";
 import { GatewayService } from "../../src/GatewayService";
 import { GatewayV2, IDL } from "../../src/gateway_v2";
 import * as anchor from "@project-serum/anchor";
@@ -10,7 +9,7 @@ describe("Gateway v2 Client", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   let service: GatewayService;
 
-  const program = anchor.workspace.GatewayV2 as Program<GatewayV2>;
+  const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
 
   const authority = programProvider.wallet;
@@ -47,7 +46,9 @@ describe("Gateway v2 Client", () => {
         authority
       );
 
-      let createdNetwork = service.createNetwork(authority.publicKey).rpc();
+      let createdNetwork = await service
+        .createNetwork(authority.publicKey)
+        .rpc();
 
       expect(createdNetwork).to.not.be.null;
     });
