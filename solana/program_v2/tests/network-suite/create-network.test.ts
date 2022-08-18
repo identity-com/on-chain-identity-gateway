@@ -46,11 +46,11 @@ describe("Gateway v2 Client", () => {
         authority
       );
 
-      let createdNetwork = await service
-        .createNetwork(authority.publicKey)
-        .rpc();
-
-      expect(createdNetwork).to.not.be.null;
+      let createdNetwork = service.createNetwork(
+        authority.publicKey
+      ).instruction;
+      console.log(createdNetwork.authority);
+      expect(createdNetwork.authority).to.not.be.null;
     });
   });
 });

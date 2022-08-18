@@ -49,12 +49,12 @@ describe("Gateway v2 Client", () => {
 
   // Fund nonAuthoritySigner
   describe("Close Network", () => {
-    it("should be equivalent", async function () {
-      const closedNetwork = await service
-        .closeNetwork(authority.publicKey)
-        .rpc();
-      console.log(`${closedNetwork}`);
-      expect(closedNetwork).to.be.null;
+    it.only("Should Close Network Properly", async function () {
+      const closedNetwork = service.closeNetwork(
+        authority.publicKey
+      ).instruction;
+      console.log(`${closedNetwork.authority}`);
+      expect(closedNetwork.authority).to.not.be.null;
     }).timeout(10000);
   });
 });
