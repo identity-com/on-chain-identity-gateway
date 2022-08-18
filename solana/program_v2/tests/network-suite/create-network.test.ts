@@ -4,6 +4,7 @@ import { GatewayV2, IDL } from "../../src/gateway_v2";
 import * as anchor from "@project-serum/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { airdrop } from "../../src/lib/utils";
+import { expect } from "chai";
 
 describe("Gateway v2 Client", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -48,62 +49,7 @@ describe("Gateway v2 Client", () => {
 
       let createdNetwork = service.createNetwork(authority.publicKey).rpc();
 
-      console.log("created network");
-      // expect(createdNetwork.).to.not.be.null;
+      expect(createdNetwork).to.not.be.null;
     });
   });
 });
-
-// const network = Keypair.generate();
-// const funder = Keypair.generate();
-// const networkData = new NetworkData(
-//   new u8(1),
-//   new i64(BigInt(60) * BigInt(60)),
-//   new u16(0),
-//   new u8(0),
-//   [],
-//   [
-//     new NetworkAuthKey(
-//       NetworkKeyFlags.fromFlagsArray([NetworkKeyFlagsValues.AUTH]),
-//       wallet
-//     ),
-//   ]
-// );
-// const transactionInstructions = createNetwork(
-//   programId,
-//   network,
-//   funder,
-//   networkData
-// );
-// console.log(`${network.publicKey} ${funder.publicKey}`);
-
-// await connection
-//   .requestAirdrop(funder.publicKey, LAMPORTS_PER_SOL * 10)
-//   .then((res) => {
-//     return connection.confirmTransaction(res, "confirmed");
-//   });
-// const transaction = new Transaction();
-// transaction.feePayer = funder.publicKey;
-// transaction.recentBlockhash = (
-//   await connection.getLatestBlockhash()
-// ).blockhash;
-// const transactionSignature = await connection.sendTransaction(
-//   transaction,
-//   [funder],
-//   { skipPreflight: true }
-// );
-// const confirmation = await connection.confirmTransaction(
-//   transactionSignature
-// );
-// if (confirmation.value.err) {
-//   console.error(
-//     await connection
-//       .getTransaction(transactionSignature)
-//       .then((res) => res?.meta?.logMessages)
-//   );
-//   throw confirmation.value.err;
-// }
-// const networkAccount = await getNetworkAccount(
-//   new Connection("http://127.0.0.1:8899"),
-//   network.publicKey
-// );
