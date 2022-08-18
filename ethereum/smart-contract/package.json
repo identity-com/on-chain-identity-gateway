@@ -14,7 +14,7 @@
   "author": "Secured Finance",
   "license": "MIT",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.4.2",
+    "@openzeppelin/contracts": "^4.7.3",
     "abi-to-sol": "^0.2.1",
     "chai": "^4.3.6",
     "solidity-coverage": "^0.7.16",
