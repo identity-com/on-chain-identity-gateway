@@ -52,7 +52,11 @@ export class GatewayService {
     const _connection = connection;
     // getConnectionByCluster(identifier.clusterType, opts.preflightCommitment);
     // Note, DidSolService never signs, so provider does not need a valid Wallet or confirmOptions.
-    const provider = new AnchorProvider(_connection, wallet, opts);
+    const provider = new AnchorProvider(
+      _connection as Connection,
+      wallet,
+      opts
+    );
 
     const program = await GatewayService.fetchProgram(provider);
 

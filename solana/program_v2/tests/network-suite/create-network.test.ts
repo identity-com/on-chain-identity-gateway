@@ -28,7 +28,7 @@ describe("Gateway v2 Client", () => {
     await airdrop(programProvider.connection, nonAuthoritySigner.publicKey);
   });
   describe("Create Network", () => {
-    it.only("should be equivalent", async function () {
+    it.only("Creates a Network", async function () {
       // (see sol-did didDataAccount)
       const [network, bump] = await PublicKey.findProgramAddress(
         [
@@ -46,11 +46,11 @@ describe("Gateway v2 Client", () => {
         authority
       );
 
-      let createdNetwork = service.createNetwork(
-        authority.publicKey
-      ).instruction;
-      console.log(createdNetwork.authority);
-      expect(createdNetwork.authority).to.not.be.null;
+      let createdNetwork = await service
+        .createNetwork(authority.publicKey)
+        .rpc();
+      console.log(createdNetwork);
+      expect(createdNetwork).to.not.be.null;
     });
   });
 });
