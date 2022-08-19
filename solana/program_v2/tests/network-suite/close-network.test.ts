@@ -20,12 +20,6 @@ describe("Gateway v2 Client", () => {
   const nonAuthoritySigner = anchor.web3.Keypair.generate();
 
   before(async () => {
-    service = await GatewayService.buildFromAnchor(
-      program,
-      authority.publicKey,
-      "localnet",
-      programProvider
-    );
     await airdrop(programProvider.connection, nonAuthoritySigner.publicKey);
 
     const [network, bump] = await PublicKey.findProgramAddress(
@@ -44,17 +38,17 @@ describe("Gateway v2 Client", () => {
       authority
     );
 
-    service.createNetwork(authority.publicKey).rpc();
+    await service.createNetwork(authority.publicKey).rpc();
   });
 
   // Fund nonAuthoritySigner
   describe("Close Network", () => {
-    it.only("Should Close Network Properly", async function () {
-      const closedNetwork = service.closeNetwork(
-        authority.publicKey
-      ).instruction;
-      console.log(`${closedNetwork.authority}`);
-      expect(closedNetwork.authority).to.not.be.null;
+    it("Should Close Network Properly", async function () {
+      const closedNetwork = await service
+        .closeNetwork(authority.publicKey)
+        .rpc();
+      console.log(`${closedNetwork}`);
+      expect(closedNetwork).to.not.be.null;
     }).timeout(10000);
   });
 });
