@@ -1,7 +1,8 @@
 import { Command, Flags } from "@oclif/core";
 import { Keypair } from "@solana/web3.js";
 // eslint-disable-next-line node/no-extraneous-import
-import { readJSONSync } from "fs-extra";
+// import { readJSONSync } from "fs-extra";
+import { readFile, readFileSync } from "node:fs";
 import { createNetwork } from "../../../utils/create-network";
 import {
   i64,
@@ -41,13 +42,11 @@ Latest Blockhash: [blockhash]
     const { flags } = await this.parse(Create);
     const programId = Keypair.generate().publicKey;
     const network = Keypair.generate();
-    const localSecretKey = readJSONSync(flags.key) as Uint8Array;
-    this.log(`${localSecretKey}`);
-    const funder = Keypair.fromSecretKey(localSecretKey);
-
+    const localSecretKey = require(flags.key);
+    const funder = Keypair.fromSecretKey(Buffer.from(localSecretKey));
     const networkData = new NetworkData(
       new u8(1),
-      new i64(BigInt(60) * BigInt(60)),
+      new i64(BigInt(3600)),
       new u16(0),
       new u8(0),
       [],
@@ -58,11 +57,10 @@ Latest Blockhash: [blockhash]
         ),
       ]
     );
-
     this.log(`Program ID: ${programId.toString()}`);
     this.log(`Network ID: ${network.publicKey.toString()}`);
     this.log(`Funder ID: ${funder.publicKey.toString()}`);
-    this.log(`Network Data: ${JSON.stringify(networkData)}`);
+    this.log(`Network Data: ${networkData.authKeys[0].serializedSize()}`);
     const createdNetwork = await createNetwork(
       programId,
       network,
@@ -70,6 +68,6 @@ Latest Blockhash: [blockhash]
       networkData
     );
     this.log("network created");
-    this.log(`Block Height: ${createdNetwork.lastValidBlockHeight}`);
+    this.log(`Block Height: ${createdNetwork.signature}`);
   }
 }
