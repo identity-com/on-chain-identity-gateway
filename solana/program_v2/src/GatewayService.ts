@@ -46,6 +46,7 @@ type CreateNetworkData = {
 type UpdateNetworkData = {
   authThreshold: u8;
   passExpireTime: anchor.BN;
+  networkDataLen?: u16;
   fees?: Array<FeeStructure>;
   authKeys?: Array<AuthKeyStructure>;
 };
@@ -196,18 +197,17 @@ export class GatewayService {
 
   updateNetwork(
     payer: PublicKey,
-    data: UpdateNetworkData
+    data: UpdateNetworkData = {
+      authThreshold: new u8(1),
+      passExpireTime: new anchor.BN(360),
+      networkDataLen: new u16(0),
+      fees: [],
+      authKeys: [],
+    }
   ): GatewayServiceBuilder {
     const authority = this._program.provider.publicKey as PublicKey;
     const instructionPromise = this._program.methods
-      .updateNetwork({
-        authThreshold: new u8(1),
-        passExpireTime: new anchor.BN(360),
-        networkDataLen: 0,
-        // TODO???? Why does this need to be of type never??
-        fees: [],
-        authKeys: [] as unknown as never,
-      })
+      .updateNetwork(data)
       .accounts({
         network: Keypair.generate().publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
