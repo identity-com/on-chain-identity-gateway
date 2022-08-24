@@ -37,6 +37,8 @@ type AuthKeyStructure = {
 type CreateNetworkData = {
   authThreshold: u8;
   passExpireTime: anchor.BN;
+  networkDataLen: u16;
+  signerBump?: u8;
   fees?: Array<FeeStructure>;
   authKeys?: Array<AuthKeyStructure>;
 };
@@ -166,20 +168,14 @@ export class GatewayService {
     data: CreateNetworkData = {
       authThreshold: new u8(1),
       passExpireTime: new anchor.BN(16),
+      networkDataLen: new u8(0),
+      signerBump: new u16(0),
       fees: [],
       authKeys: [],
     }
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
-      .createNetwork({
-        authThreshold: data.authThreshold,
-        passExpireTime: data.passExpireTime,
-        networkDataLen: 0, // ignore
-        // TODO: I think this is ignored and stored on chain ?
-        signerBump: 0, // ignore
-        fees: data.fees,
-        authKeys: data.authKeys,
-      })
+      .createNetwork(data)
       .accounts({
         network: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
