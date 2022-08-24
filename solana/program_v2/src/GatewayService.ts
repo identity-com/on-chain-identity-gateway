@@ -20,35 +20,34 @@ import {
 import { Wallet } from "./lib/types";
 
 import { ExtendedCluster } from "./lib/connection";
-import { u16, u8 } from "./state";
 
 type FeeStructure = {
   token: PublicKey;
-  issue: u16;
-  refresh: u16;
-  expire: u16;
-  verify: u16;
+  issue: number;
+  refresh: number;
+  expire: number;
+  verify: number;
 };
 type AuthKeyStructure = {
-  flags: anchor.BN;
+  flags: number;
   key: PublicKey;
 };
 
 type CreateNetworkData = {
-  authThreshold: u8;
-  passExpireTime: anchor.BN;
-  networkDataLen: u16;
-  signerBump?: u8;
-  fees?: Array<FeeStructure>;
-  authKeys?: Array<AuthKeyStructure>;
+  authThreshold: number;
+  passExpireTime: number;
+  networkDataLen: number;
+  signerBump: number;
+  fees: Array<FeeStructure>;
+  authKeys: Array<AuthKeyStructure>;
 };
 
 type UpdateNetworkData = {
-  authThreshold: u8;
-  passExpireTime: anchor.BN;
-  networkDataLen?: u16;
-  fees?: Array<FeeStructure>;
-  authKeys?: Array<AuthKeyStructure>;
+  authThreshold: number;
+  passExpireTime: number;
+  networkDataLen: number;
+  fees: Array<FeeStructure>;
+  authKeys: Array<AuthKeyStructure>;
 };
 
 export class GatewayService {
@@ -167,16 +166,23 @@ export class GatewayService {
   createNetwork(
     payer: PublicKey = this._wallet.publicKey,
     data: CreateNetworkData = {
-      authThreshold: new u8(1),
-      passExpireTime: new anchor.BN(16),
-      networkDataLen: new u8(0),
-      signerBump: new u16(0),
+      authThreshold: 1,
+      passExpireTime: 16,
+      networkDataLen: 0,
+      signerBump: 0,
       fees: [],
       authKeys: [],
     }
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
-      .createNetwork(data)
+      .createNetwork({
+        authThreshold: data.authThreshold,
+        passExpireTime: new anchor.BN(data.passExpireTime),
+        networkDataLen: data.networkDataLen,
+        signerBump: data.signerBump,
+        fees: data.fees,
+        authKeys: data.authKeys,
+      })
       .accounts({
         network: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
@@ -198,16 +204,31 @@ export class GatewayService {
   updateNetwork(
     payer: PublicKey,
     data: UpdateNetworkData = {
-      authThreshold: new u8(1),
-      passExpireTime: new anchor.BN(360),
-      networkDataLen: new u16(0),
-      fees: [],
-      authKeys: [],
+      authThreshold: 1,
+      passExpireTime: 360,
+      networkDataLen: 0,
+      fees: [] as FeeStructure[],
+      authKeys: [] as AuthKeyStructure[],
     }
   ): GatewayServiceBuilder {
     const authority = this._program.provider.publicKey as PublicKey;
     const instructionPromise = this._program.methods
-      .updateNetwork(data)
+      .updateNetwork({
+        authThreshold: data.authThreshold,
+        passExpireTime: new anchor.BN(data.passExpireTime),
+        networkDataLen: data.networkDataLen,
+        fees: data.fees.map(fee => {
+          token: fee.token,
+  issue: fee.issue,
+  refresh: fee.refresh,
+  expire: fee.expire,
+  verify: fee.verify,
+        }),
+        authKeys: data.authKeys.map(authKey => {
+          flags: authKey.flags;
+  key: authKey.key;
+        }),
+      })
       .accounts({
         network: Keypair.generate().publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
