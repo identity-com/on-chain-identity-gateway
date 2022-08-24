@@ -3,12 +3,11 @@ import { Program } from "@project-serum/anchor";
 import { GatewayV2 } from "../target/types/gateway_v2";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 chai.use(chaiAsPromised);
 
 const expect = chai.expect;
-
 
 describe("network operations", () => {
   const provider = anchor.AnchorProvider.env();
@@ -19,17 +18,19 @@ describe("network operations", () => {
   const createAccount = async () => {
     const authority = Keypair.generate();
 
-    const airdropSig = await provider.connection.requestAirdrop(authority.publicKey, LAMPORTS_PER_SOL);
+    const airdropSig = await provider.connection.requestAirdrop(
+      authority.publicKey,
+      LAMPORTS_PER_SOL
+    );
     await provider.connection.confirmTransaction(airdropSig, "confirmed");
 
-    const [network, bump] = await PublicKey
-        .findProgramAddress(
-            [
-              anchor.utils.bytes.utf8.encode("gk-network"),
-              authority.publicKey.toBuffer()
-            ],
-            program.programId
-        );
+    const [network, bump] = await PublicKey.findProgramAddress(
+      [
+        anchor.utils.bytes.utf8.encode("gk-network"),
+        authority.publicKey.toBuffer(),
+      ],
+      program.programId
+    );
 
     await program.methods
       .createNetwork({
@@ -55,7 +56,7 @@ describe("network operations", () => {
       .accounts({
         network: network,
         systemProgram: anchor.web3.SystemProgram.programId,
-        authority: authority.publicKey
+        authority: authority.publicKey,
       })
       .signers([authority])
       .rpc();
@@ -64,12 +65,12 @@ describe("network operations", () => {
       account: await program.account.gatekeeperNetwork.fetch(network),
       address: network,
       bump,
-      authority
+      authority,
     };
   };
 
   it("create an account", async () => {
-    const {bump, account, authority} = await createAccount();
+    const { bump, account, authority } = await createAccount();
 
     expect(account).to.deep.equal({
       version: 0,
@@ -97,7 +98,7 @@ describe("network operations", () => {
 
   it("adds an auth key to an account", async () => {
     const newKey = anchor.web3.Keypair.generate().publicKey;
-    const {address, bump, authority} = await createAccount();
+    const { address, bump, authority } = await createAccount();
 
     await program.methods
       .updateNetwork({
@@ -118,9 +119,7 @@ describe("network operations", () => {
       })
       .rpc();
 
-    const fetchAccount = await program.account.gatekeeperNetwork.fetch(
-      address
-    );
+    const fetchAccount = await program.account.gatekeeperNetwork.fetch(address);
     // const passExpireTime = fetchAccount.passExpireTime;
 
     expect(fetchAccount).to.deep.equal({
@@ -158,7 +157,7 @@ describe("network operations", () => {
   it("removes an auth key from an account", async () => {
     const newKey = anchor.web3.Keypair.generate();
 
-    const {bump, address, authority} = await createAccount();
+    const { bump, address, authority } = await createAccount();
 
     await program.methods
       .updateNetwork({
@@ -171,8 +170,8 @@ describe("network operations", () => {
           ],
           remove: [],
         },
-        fees: { add: [], remove: [], },
-        passExpireTime: null
+        fees: { add: [], remove: [] },
+        passExpireTime: null,
       })
       .accounts({
         network: address,
@@ -189,7 +188,7 @@ describe("network operations", () => {
           add: [],
           remove: [],
         },
-        passExpireTime: null
+        passExpireTime: null,
       })
       .accounts({
         network: address,
@@ -223,7 +222,7 @@ describe("network operations", () => {
   });
 
   it("cannot remove own account", async () => {
-    const {address} = await createAccount();
+    const { address } = await createAccount();
 
     return expect(
       program.methods
@@ -233,7 +232,7 @@ describe("network operations", () => {
             remove: [provider.wallet.publicKey],
           },
           fees: { add: [], remove: [] },
-          passExpireTime: null
+          passExpireTime: null,
         })
         .accounts({
           network: address,
@@ -243,8 +242,7 @@ describe("network operations", () => {
   });
 
   it("updates an auth key to an account", async () => {
-
-  const {bump, address, authority} = await createAccount();
+    const { bump, address, authority } = await createAccount();
 
     await program.methods
       .updateNetwork({
@@ -258,7 +256,7 @@ describe("network operations", () => {
           remove: [],
         },
         fees: { add: [], remove: [] },
-        passExpireTime: null
+        passExpireTime: null,
       })
       .accounts({
         network: address,
@@ -293,7 +291,7 @@ describe("network operations", () => {
   });
 
   it("cannot update to remove auth flag from account", async () => {
-    const {address} = await createAccount();
+    const { address } = await createAccount();
 
     return expect(
       program.methods
@@ -320,7 +318,7 @@ describe("network operations", () => {
   it("adds an auth key to an account", async () => {
     const newKey = anchor.web3.Keypair.generate();
 
-    const {address, bump, authority} = await createAccount();
+    const { address, bump, authority } = await createAccount();
 
     await program.methods
       .updateNetwork({
@@ -334,7 +332,7 @@ describe("network operations", () => {
           remove: [],
         },
         fees: { add: [], remove: [] },
-        passExpireTime: null
+        passExpireTime: null,
       })
       .accounts({
         network: address,
@@ -342,9 +340,7 @@ describe("network operations", () => {
       .signers([])
       .rpc();
 
-    const account = await program.account.gatekeeperNetwork.fetch(
-      address
-    );
+    const account = await program.account.gatekeeperNetwork.fetch(address);
 
     expect(account).to.deep.equal({
       version: 0,
@@ -375,8 +371,9 @@ describe("network operations", () => {
   });
 
   it("closes an account", async () => {
-    const initialBalance = await provider.connection
-      .getBalance(provider.wallet.publicKey);
+    const initialBalance = await provider.connection.getBalance(
+      provider.wallet.publicKey
+    );
 
     //! Check balance before run, then check balance after run... Find difference and calculate whether the fees are accurate
     //! Clean up lint errors
@@ -392,8 +389,7 @@ describe("network operations", () => {
       .signers([])
       .rpc();
 
-    return expect(
-      program.account.gatekeeperNetwork.fetch(account.address)
-    ).to.eventually.be.rejected;
+    return expect(program.account.gatekeeperNetwork.fetch(account.address)).to
+      .eventually.be.rejected;
   });
 });

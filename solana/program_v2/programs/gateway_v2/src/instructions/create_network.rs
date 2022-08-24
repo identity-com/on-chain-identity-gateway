@@ -12,12 +12,12 @@ impl CreateNetwork {
         data: CreateNetworkData,
         network: &mut Account<GatekeeperNetwork>,
     ) -> Result<()> {
-        /// Check there are auth_keys provided (TODO: Is this necessary? The next check implies this)
+        // Check there are auth_keys provided (TODO: Is this necessary? The next check implies this)
         if data.auth_keys.is_empty() {
             return Err(error!(ErrorCode::NoAuthKeys));
         }
 
-        /// Check if there are enough auth_keys with the AUTH flag set
+        // Check if there are enough auth_keys with the AUTH flag set
         if data
             .auth_keys
             .iter()

@@ -8,12 +8,12 @@ pub struct UpdateNetwork {}
 
 impl UpdateNetwork {
     pub fn process(
-        data: UpdateNetworkData,
+        data: &UpdateNetworkData,
         network: &mut Account<GatekeeperNetwork>,
         authority: &mut Signer,
     ) -> Result<()> {
-        Self::set_expire_time(&data, network, authority)?;
-        Self::add_auth_keys(&data, network, authority)?;
+        Self::set_expire_time(data, network, authority)?;
+        Self::add_auth_keys(data, network, authority)?;
 
         Ok(())
     }
@@ -23,7 +23,7 @@ impl UpdateNetwork {
         network: &mut Account<GatekeeperNetwork>,
         authority: &mut Signer,
     ) -> Result<()> {
-        if data.auth_keys.add.len() == 0 && data.auth_keys.remove.len() == 0 {
+        if data.auth_keys.add.is_empty() && data.auth_keys.remove.is_empty() {
             // no auth keys to add/remove
             return Ok(());
         }
@@ -36,49 +36,41 @@ impl UpdateNetwork {
         for key in data.auth_keys.remove.iter() {
             let index: Option<usize> = network.auth_keys.iter().position(|x| x.key == *key);
 
-            if(index.is_none()) {
-                msg!("Cannot remove auth key that doesn't exist");
+            if index.is_none() {
                 return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
             }
 
-            let some_index = index.unwrap();
-            // don't allow removing own key for now (TODO, check if other Auth keys exist)
-            if network.auth_keys[some_index].key == *authority.key {
-                // TODO: Proper error here
-                msg!("Cannot remove own auth key");
+            let key_index = index.unwrap();
+            if network.auth_keys[key_index].key == *authority.key {
+                // Cannot remove own key (TODO?)
                 return Err(error!(ErrorCode::InvalidKey));
-            } else {
-                network.auth_keys.remove(some_index);
             }
+
+            network.auth_keys.remove(key_index);
         }
 
-        // either add or update keys
-        data.auth_keys.add.iter().for_each(|key| {
+        for key in data.auth_keys.add.iter() {
             let index: Option<usize> = network.auth_keys.iter().position(|x| x.key == key.key);
-            match index {
-                Some(x) => {
-                    // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
-                    if network.auth_keys[x].key == *authority.key
-                        && !GatekeeperKeyFlags::contains(
-                        &GatekeeperKeyFlags::from_bits_truncate(key.flags),
-                        GatekeeperKeyFlags::AUTH,
-                    )
-                    {
-                        msg!("Not updating flag");
-                        // TODO: Proper error here
-                        panic!()
-                    } else {
-                        msg!("Updating flag");
-                        // update the key with the new flag if it exists
-                        network.auth_keys[x].flags = key.flags;
-                    }
+
+            if index.is_none() {
+                // add the key ifr it doesn't exist
+                network.auth_keys.push(*key);
+            } else {
+                let key_index = index.unwrap();
+
+                // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
+                if network.auth_keys[key_index].key == *authority.key
+                    && !GatekeeperKeyFlags::contains(
+                    &GatekeeperKeyFlags::from_bits_truncate(key.flags),
+                    GatekeeperKeyFlags::AUTH,
+                ) {
+                    return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
                 }
-                None => {
-                    // add the new key
-                    network.auth_keys.push(*key);
-                }
+
+                // update the key with the new flag if it exists
+                network.auth_keys[key_index].flags = key.flags;
             }
-        });
+        }
 
         Ok(())
     }
@@ -89,21 +81,21 @@ impl UpdateNetwork {
     ) -> Result<()> {
         match data.pass_expire_time {
             Some(pass_expire_time) => {
-                if (pass_expire_time != network.pass_expire_time) {
-                    if(!Self::can_access(&mut network.auth_keys, authority, NetworkKeyFlags::SET_EXPIRE_TIME)) {
-                        return Err(error!(ErrorCode::InsufficientAccessExpiry))
+                if pass_expire_time != network.pass_expire_time {
+                    if !Self::can_access(&mut network.auth_keys, authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
+                        return Err(error!(ErrorCode::InsufficientAccessExpiry));
                     }
 
                     network.pass_expire_time = pass_expire_time;
                 }
 
                 Ok(())
-            },
+            }
             None => Ok(())
         }
     }
     pub fn can_access(
-        keys: &mut Vec<NetworkAuthKey>,
+        keys: &mut [NetworkAuthKey],
         authority: &mut Signer,
         flag: NetworkKeyFlags,
     ) -> bool {
@@ -112,8 +104,7 @@ impl UpdateNetwork {
                 NetworkKeyFlags::from_bits_truncate(key.flags).contains(flag)
                     && *authority.key == key.key
             })
-            .count()
-            > 0
+            .count() > 0
     }
 }
 
