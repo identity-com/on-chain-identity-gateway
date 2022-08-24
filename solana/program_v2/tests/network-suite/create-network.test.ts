@@ -4,6 +4,7 @@ import * as anchor from "@project-serum/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { airdrop } from "../../src/lib/utils";
 import { expect } from "chai";
+import { describe } from "mocha";
 
 describe("Gateway v2 Client", () => {
   anchor.setProvider(anchor.AnchorProvider.env());

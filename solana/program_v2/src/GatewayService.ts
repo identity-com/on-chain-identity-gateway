@@ -20,14 +20,14 @@ import {
 import { Wallet } from "./lib/types";
 
 import { ExtendedCluster } from "./lib/connection";
+import { u16, u8 } from "./state";
 
 type FeeStructure = {
-  // remove this, default to [], else form data above
   token: PublicKey;
-  issue: number;
-  refresh: number;
-  expire: number;
-  verify: number;
+  issue: u16;
+  refresh: u16;
+  expire: u16;
+  verify: u16;
 };
 type AuthKeyStructure = {
   flags: anchor.BN;
@@ -35,7 +35,14 @@ type AuthKeyStructure = {
 };
 
 type CreateNetworkData = {
-  authThreshold: number;
+  authThreshold: u8;
+  passExpireTime: anchor.BN;
+  fees?: Array<FeeStructure>;
+  authKeys?: Array<AuthKeyStructure>;
+};
+
+type UpdateNetworkData = {
+  authThreshold: u8;
   passExpireTime: anchor.BN;
   fees?: Array<FeeStructure>;
   authKeys?: Array<AuthKeyStructure>;
@@ -157,10 +164,10 @@ export class GatewayService {
   createNetwork(
     payer: PublicKey = this._wallet.publicKey,
     data: CreateNetworkData = {
-      authThreshold: 1,
-      passExpireTime: new anchor.BN(360),
+      authThreshold: new u8(1),
+      passExpireTime: new anchor.BN(16),
       fees: [],
-      authKeys: [{ flags: new anchor.BN(1), key: this._wallet.publicKey }],
+      authKeys: [],
     }
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
@@ -191,15 +198,18 @@ export class GatewayService {
     });
   }
 
-  updateNetwork(payer: PublicKey): GatewayServiceBuilder {
+  updateNetwork(
+    payer: PublicKey,
+    data: UpdateNetworkData
+  ): GatewayServiceBuilder {
     const authority = this._program.provider.publicKey as PublicKey;
     const instructionPromise = this._program.methods
       .updateNetwork({
-        authThreshold: 1,
+        authThreshold: new u8(1),
         passExpireTime: new anchor.BN(360),
         networkDataLen: 0,
         // TODO???? Why does this need to be of type never??
-        fees: [] as unknown as never,
+        fees: [],
         authKeys: [] as unknown as never,
       })
       .accounts({

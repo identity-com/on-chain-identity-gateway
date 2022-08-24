@@ -33,22 +33,16 @@ export const createNetwork = async (
   const program = new anchor.Program(IDL, programId, provider);
 
   const createNetworkParams = {
-    authThreshold: new anchor.BN(
-      networkData.authThreshold as unknown as number
-    ),
-    passExpireTime: new anchor.BN(
-      networkData.passExpireTime as unknown as number
-    ),
-    networkDataLen: new anchor.BN(
-      networkData.networkDataLen as unknown as number
-    ),
-    signerBump: new anchor.BN(networkData.signerBump as unknown as number),
+    authThreshold: networkData.authThreshold,
+    passExpireTime: networkData.passExpireTime,
+    networkDataLen: networkData.networkDataLen,
+    signerBump: networkData.signerBump,
     fees: networkData.fees.map((data) => ({
       token: data.token,
-      issue: new anchor.BN(data.issue as unknown as number),
-      refresh: new anchor.BN(data.refresh as unknown as number),
-      expire: new anchor.BN(data.expire as unknown as number),
-      verify: new anchor.BN(data.verify as unknown as number),
+      issue: data.issue,
+      refresh: data.refresh,
+      expire: data.expire,
+      verify: data.verify,
     })),
     authKeys: [
       {

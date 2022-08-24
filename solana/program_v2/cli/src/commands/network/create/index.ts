@@ -1,8 +1,7 @@
 import { Command, Flags } from "@oclif/core";
 import { Keypair } from "@solana/web3.js";
-// eslint-disable-next-line node/no-extraneous-import
 // import { readJSONSync } from "fs-extra";
-import { readFile, readFileSync } from "node:fs";
+// import { readFile, readFileSync } from "node:fs";
 import { createNetwork } from "../../../utils/create-network";
 import {
   i64,
