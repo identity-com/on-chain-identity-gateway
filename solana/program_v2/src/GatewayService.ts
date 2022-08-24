@@ -28,6 +28,12 @@ type FeeStructure = {
   expire: number;
   verify: number;
 };
+
+type UpdateFeeStructure = {
+  add: [];
+  remove: [];
+};
+
 type AuthKeyStructure = {
   flags: number;
   key: PublicKey;
@@ -38,16 +44,16 @@ type CreateNetworkData = {
   passExpireTime: number;
   networkDataLen: number;
   signerBump: number;
-  fees: Array<FeeStructure>;
-  authKeys: Array<AuthKeyStructure>;
+  fees: FeeStructure[];
+  authKeys: AuthKeyStructure[];
 };
 
 type UpdateNetworkData = {
   authThreshold: number;
   passExpireTime: number;
   networkDataLen: number;
-  fees: Array<FeeStructure>;
-  authKeys: Array<AuthKeyStructure>;
+  fees: UpdateFeeStructure;
+  authKeys: AuthKeyStructure[];
 };
 
 export class GatewayService {
@@ -171,7 +177,7 @@ export class GatewayService {
       networkDataLen: 0,
       signerBump: 0,
       fees: [],
-      authKeys: [],
+      authKeys: [{ flags: 1, key: payer }],
     }
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
@@ -207,8 +213,8 @@ export class GatewayService {
       authThreshold: 1,
       passExpireTime: 360,
       networkDataLen: 0,
-      fees: [] as FeeStructure[],
-      authKeys: [] as AuthKeyStructure[],
+      fees: { add: [], remove: [] },
+      authKeys: [],
     }
   ): GatewayServiceBuilder {
     const authority = this._program.provider.publicKey as PublicKey;
@@ -217,17 +223,11 @@ export class GatewayService {
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
         networkDataLen: data.networkDataLen,
-        fees: data.fees.map(fee => {
-          token: fee.token,
-  issue: fee.issue,
-  refresh: fee.refresh,
-  expire: fee.expire,
-  verify: fee.verify,
-        }),
-        authKeys: data.authKeys.map(authKey => {
-          flags: authKey.flags;
-  key: authKey.key;
-        }),
+        fees: data.fees as never,
+        authKeys: data.authKeys.map((authKey) => {
+          authKey.flags;
+          authKey.key;
+        }) as never,
       })
       .accounts({
         network: Keypair.generate().publicKey,
