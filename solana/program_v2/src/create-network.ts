@@ -53,7 +53,7 @@ export const createNetwork = async (
   };
 
   const transaction = await program.methods
-    .createNetwork(createNetworkParams as any)
+    .createNetwork(createNetworkParams)
     .accounts({
       network: network.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,
