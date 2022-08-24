@@ -8,10 +8,10 @@ export type GatewayV2 = {
         {
           name: "network";
           isMut: true;
-          isSigner: true;
+          isSigner: false;
         },
         {
-          name: "payer";
+          name: "authority";
           isMut: true;
           isSigner: true;
         },
@@ -39,7 +39,7 @@ export type GatewayV2 = {
           isSigner: false;
         },
         {
-          name: "payer";
+          name: "authority";
           isMut: true;
           isSigner: true;
         },
@@ -69,6 +69,11 @@ export type GatewayV2 = {
         {
           name: "receiver";
           isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "authority";
+          isMut: false;
           isSigner: true;
         },
         {
@@ -95,6 +100,11 @@ export type GatewayV2 = {
             type: "u8";
           },
           {
+            name: "initialAuthority";
+            docs: ["The initial authority key"];
+            type: "publicKey";
+          },
+          {
             name: "authThreshold";
             docs: ["The number of auth keys needed to change the `auth_keys`"];
             type: "u8";
@@ -107,26 +117,9 @@ export type GatewayV2 = {
             type: "i64";
           },
           {
-            name: "networkDataLen";
-            docs: [
-              "Changing this justifies a new network as all old passes will become invalid"
-            ];
-            type: "u16";
-          },
-          {
             name: "signerBump";
             docs: ["The bump for the signer"];
             type: "u8";
-          },
-          {
-            name: "feesCount";
-            docs: ["Number of different token fees"];
-            type: "u16";
-          },
-          {
-            name: "authKeysCount";
-            docs: ["Number of auth keys"];
-            type: "u16";
           },
           {
             name: "fees";
@@ -189,11 +182,6 @@ export type GatewayV2 = {
             name: "networkDataLen";
             docs: ["The [`GatekeeperNetwork::network_data_len`]."];
             type: "u16";
-          },
-          {
-            name: "signerBump";
-            docs: ["The [`GatekeeperNetwork::signer_bump`]."];
-            type: "u8";
           },
           {
             name: "fees";
@@ -278,11 +266,6 @@ export type GatewayV2 = {
             type: {
               option: "i64";
             };
-          },
-          {
-            name: "networkDataLen";
-            docs: ["The [`GatekeeperNetwork::networkx_data_len`]."];
-            type: "u16";
           },
           {
             name: "fees";
@@ -429,10 +412,10 @@ export const IDL: GatewayV2 = {
         {
           name: "network",
           isMut: true,
-          isSigner: true,
+          isSigner: false,
         },
         {
-          name: "payer",
+          name: "authority",
           isMut: true,
           isSigner: true,
         },
@@ -460,7 +443,7 @@ export const IDL: GatewayV2 = {
           isSigner: false,
         },
         {
-          name: "payer",
+          name: "authority",
           isMut: true,
           isSigner: true,
         },
@@ -490,6 +473,11 @@ export const IDL: GatewayV2 = {
         {
           name: "receiver",
           isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "authority",
+          isMut: false,
           isSigner: true,
         },
         {
@@ -516,6 +504,11 @@ export const IDL: GatewayV2 = {
             type: "u8",
           },
           {
+            name: "initialAuthority",
+            docs: ["The initial authority key"],
+            type: "publicKey",
+          },
+          {
             name: "authThreshold",
             docs: ["The number of auth keys needed to change the `auth_keys`"],
             type: "u8",
@@ -528,26 +521,9 @@ export const IDL: GatewayV2 = {
             type: "i64",
           },
           {
-            name: "networkDataLen",
-            docs: [
-              "Changing this justifies a new network as all old passes will become invalid",
-            ],
-            type: "u16",
-          },
-          {
             name: "signerBump",
             docs: ["The bump for the signer"],
             type: "u8",
-          },
-          {
-            name: "feesCount",
-            docs: ["Number of different token fees"],
-            type: "u16",
-          },
-          {
-            name: "authKeysCount",
-            docs: ["Number of auth keys"],
-            type: "u16",
           },
           {
             name: "fees",
@@ -610,11 +586,6 @@ export const IDL: GatewayV2 = {
             name: "networkDataLen",
             docs: ["The [`GatekeeperNetwork::network_data_len`]."],
             type: "u16",
-          },
-          {
-            name: "signerBump",
-            docs: ["The [`GatekeeperNetwork::signer_bump`]."],
-            type: "u8",
           },
           {
             name: "fees",
@@ -699,11 +670,6 @@ export const IDL: GatewayV2 = {
             type: {
               option: "i64",
             },
-          },
-          {
-            name: "networkDataLen",
-            docs: ["The [`GatekeeperNetwork::networkx_data_len`]."],
-            type: "u16",
           },
           {
             name: "fees",

@@ -114,11 +114,7 @@ export class GatewayService {
       idl = IDL;
     }
 
-    return new Program<GatewayV2>(
-      idl,
-      GATE_WAY_PROGRAM,
-      provider
-    ) as Program<GatewayV2>;
+    return new Program<GatewayV2>(idl, GATE_WAY_PROGRAM, provider);
   }
 
   private constructor(
@@ -185,14 +181,13 @@ export class GatewayService {
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
         networkDataLen: data.networkDataLen,
-        signerBump: data.signerBump,
         fees: data.fees,
         authKeys: data.authKeys,
       })
       .accounts({
         network: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
-        payer,
+        authority: payer,
       })
       .instruction();
 
@@ -222,7 +217,6 @@ export class GatewayService {
       .updateNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        networkDataLen: data.networkDataLen,
         fees: data.fees as never,
         authKeys: data.authKeys.map((authKey) => {
           authKey.flags;
@@ -233,7 +227,7 @@ export class GatewayService {
         network: Keypair.generate().publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
         //authority,
-        payer,
+        authority: payer,
       })
       .instruction();
 
@@ -327,7 +321,6 @@ export class GatewayServiceBuilder {
   }
 
   async rpc(opts?: ConfirmOptions): Promise<string> {
-    console.log(this.connection);
     const provider = new AnchorProvider(
       this.connection,
       this.wallet,
@@ -335,6 +328,8 @@ export class GatewayServiceBuilder {
     );
 
     const tx = await this.transaction();
+    console.log(tx);
+
     try {
       return await provider.sendAndConfirm(tx, this.partialSigners, opts);
     } catch (err) {
