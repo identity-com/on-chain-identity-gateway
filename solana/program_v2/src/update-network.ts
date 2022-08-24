@@ -26,21 +26,15 @@ export const updateNetwork = async (
   const program = new anchor.Program(IDL, programId, provider);
 
   const updateNetworkParams = {
-    authKeys: {
-      add: [
-        {
-          flags: new anchor.BN(1),
-          key: network.publicKey,
-        },
-      ],
-      remove: [],
-    },
-    passExpireTime: null,
-    fees: { add: [], remove: [] },
+    authThreshold: 1,
+    passExpireTime: new anchor.BN(360),
+    networkDataLen: 0,
+    fees: [],
+    authKeys: [],
   };
 
   const transaction = await program.methods
-    .updateNetwork(updateNetworkParams as any)
+    .updateNetwork(updateNetworkParams)
     .accounts({
       network: network.publicKey,
     })

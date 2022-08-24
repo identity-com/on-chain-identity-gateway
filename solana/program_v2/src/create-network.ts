@@ -46,7 +46,7 @@ export const createNetwork = async (
     })),
     authKeys: [
       {
-        flags: new anchor.BN(1),
+        flags: 1,
         key: network.publicKey,
       },
     ],
