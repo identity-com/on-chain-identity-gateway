@@ -1,17 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import { Keypair } from "@solana/web3.js";
-// import { readJSONSync } from "fs-extra";
-// import { readFile, readFileSync } from "node:fs";
-import { createNetwork } from "../../../utils/create-network";
-import {
-  i64,
-  NetworkAuthKey,
-  NetworkData,
-  NetworkKeyFlags,
-  NetworkKeyFlagsValues,
-  u16,
-  u8,
-} from "../../../utils/state";
+import { Wallet } from "@project-serum/anchor";
+import { Connection, Keypair } from "@solana/web3.js";
+import { GatewayService } from "../../../utils/GatewayService";
+
 export default class Create extends Command {
   static description = "Creates a gatekeeper network";
 
@@ -43,30 +34,17 @@ Latest Blockhash: [blockhash]
     const network = Keypair.generate();
     const localSecretKey = require(flags.key);
     const funder = Keypair.fromSecretKey(Buffer.from(localSecretKey));
-    const networkData = new NetworkData(
-      new u8(1),
-      new i64(BigInt(3600)),
-      new u16(0),
-      new u8(0),
-      [],
-      [
-        new NetworkAuthKey(
-          NetworkKeyFlags.fromFlagsArray([NetworkKeyFlagsValues.AUTH]),
-          funder.publicKey
-        ),
-      ]
+
+    const gatewayService = await GatewayService.build(
+      network.publicKey,
+      undefined,
+      new Wallet(funder),
+      undefined,
+      new Connection("http://localhost:8899", "confirmed")
     );
-    this.log(`Program ID: ${programId.toString()}`);
-    this.log(`Network ID: ${network.publicKey.toString()}`);
-    this.log(`Funder ID: ${funder.publicKey.toString()}`);
-    this.log(`Network Data: ${networkData.authKeys[0].serializedSize()}`);
-    const createdNetwork = await createNetwork(
-      programId,
-      network,
-      funder,
-      networkData
-    );
-    this.log("network created");
-    this.log(`Block Height: ${createdNetwork.signature}`);
+    const createdNetworkSignature = await gatewayService
+      .createNetwork(funder.publicKey)
+      .rpc();
+    this.log(`${createdNetworkSignature}`);
   }
 }

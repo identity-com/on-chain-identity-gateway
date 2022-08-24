@@ -11,7 +11,7 @@ import {
   u16,
   u8,
 } from "../../../utils/state";
-import { updateNetwork } from "../../../utils/update-network";
+// import { updateNetwork } from "../../../utils/update-network";
 export default class Update extends Command {
   static description = "Updates a gatekeeper network";
 
@@ -38,38 +38,39 @@ Latest Blockhash: [blockhash]
   static args = [];
 
   async run(): Promise<void> {
-    const { flags } = await this.parse(Update);
-    const programId = Keypair.generate().publicKey;
-    const network = Keypair.generate();
-    const localSecretKey = readJSONSync(flags.key) as Uint8Array;
-    this.log(`${localSecretKey}`);
-    const funder = Keypair.fromSecretKey(localSecretKey);
+    this.log("Update");
+    // const { flags } = await this.parse(Update);
+    // const programId = Keypair.generate().publicKey;
+    // const network = Keypair.generate();
+    // const localSecretKey = readJSONSync(flags.key) as Uint8Array;
+    // this.log(`${localSecretKey}`);
+    // const funder = Keypair.fromSecretKey(localSecretKey);
 
-    const networkData = new NetworkData(
-      new u8(1),
-      new i64(BigInt(60) * BigInt(60)),
-      new u16(0),
-      new u8(0),
-      [],
-      [
-        new NetworkAuthKey(
-          NetworkKeyFlags.fromFlagsArray([NetworkKeyFlagsValues.AUTH]),
-          funder.publicKey
-        ),
-      ]
-    );
+    // const networkData = new NetworkData(
+    //   new u8(1),
+    //   new i64(BigInt(60) * BigInt(60)),
+    //   new u16(0),
+    //   new u8(0),
+    //   [],
+    //   [
+    //     new NetworkAuthKey(
+    //       NetworkKeyFlags.fromFlagsArray([NetworkKeyFlagsValues.AUTH]),
+    //       funder.publicKey
+    //     ),
+    //   ]
+    // );
 
-    this.log(`Program ID: ${programId.toString()}`);
-    this.log(`Network ID: ${network.publicKey.toString()}`);
-    this.log(`Funder ID: ${funder.publicKey.toString()}`);
-    this.log(`Network Data: ${JSON.stringify(networkData)}`);
-    const updatedNetwork = await updateNetwork(
-      programId,
-      network,
-      funder,
-      networkData
-    );
-    this.log("network created");
-    this.log(`Block Height: ${updatedNetwork.lastValidBlockHeight}`);
+    // this.log(`Program ID: ${programId.toString()}`);
+    // this.log(`Network ID: ${network.publicKey.toString()}`);
+    // this.log(`Funder ID: ${funder.publicKey.toString()}`);
+    // this.log(`Network Data: ${JSON.stringify(networkData)}`);
+    // const updatedNetwork = await updateNetwork(
+    //   programId,
+    //   network,
+    //   funder,
+    //   networkData
+    // );
+    // this.log("network created");
+    // this.log(`Block Height: ${updatedNetwork.lastValidBlockHeight}`);
   }
 }
