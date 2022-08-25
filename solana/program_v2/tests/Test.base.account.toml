@@ -1,0 +1,4 @@
+extends = ["./Test.base.toml"]
+
+[[test.validator.account]]
+address = "7aHML6LXPtEuUDu4Azv52KbgEqdSDk9syqFvCAE63ZT5"

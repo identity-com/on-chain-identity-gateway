@@ -1,7 +1,7 @@
 import { GatewayService } from "../../src/GatewayService";
 import { GatewayV2, IDL } from "../../src/gateway_v2";
 import * as anchor from "@project-serum/anchor";
-import { PublicKey } from "@solana/web3.js";
+import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import { airdrop } from "../../src/lib/utils";
 import { expect } from "chai";
 import { describe } from "mocha";
@@ -13,43 +13,30 @@ describe("Gateway v2 Client", () => {
   const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
 
-  const authority = programProvider.wallet;
-
-  const nonAuthoritySigner = anchor.web3.Keypair.generate();
+  let dataAccount: PublicKey;
 
   before(async () => {
+    const authority = new anchor.Wallet(Keypair.generate());
+    await airdrop(programProvider.connection, authority.publicKey, LAMPORTS_PER_SOL * 2);
+    [dataAccount] = await GatewayService.createNetworkAddress(authority.publicKey);
+
     service = await GatewayService.buildFromAnchor(
-      program,
-      authority.publicKey,
-      "localnet",
-      programProvider
-    );
-
-    // Fund nonAuthoritySigner
-    await airdrop(programProvider.connection, nonAuthoritySigner.publicKey);
-  });
-  describe("Create Network", () => {
-    it.only("Creates a Network", async function () {
-      // (see sol-did didDataAccount)
-      const [network, bump] = await PublicKey.findProgramAddress(
-        [
-          anchor.utils.bytes.utf8.encode("gk-network"),
-          authority.publicKey.toBuffer(),
-        ],
-        program.programId
-      );
-
-      service = await GatewayService.buildFromAnchor(
         program,
-        network,
-        "localnet",
+        dataAccount,
+      "localnet",
         programProvider,
         authority
-      );
+    );
+  });
 
-      let createdNetwork = await service
-        .createNetwork(authority.publicKey)
+  describe("Create Network", () => {
+    it("Creates a Network", async function () {
+      await service
+        .createNetwork()
         .rpc();
+
+      const createdNetwork = await service.getNetworkAccount();
+
       console.log(createdNetwork);
       expect(createdNetwork).to.not.be.null;
     });

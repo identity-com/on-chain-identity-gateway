@@ -8,6 +8,7 @@ import {
 } from "@project-serum/anchor";
 import * as anchor from "@project-serum/anchor";
 import {
+  clusterApiUrl,
   ConfirmOptions,
   Connection,
   Keypair,
@@ -19,7 +20,9 @@ import {
 
 import { Wallet } from "./lib/types";
 
-import { ExtendedCluster } from "./lib/connection";
+import {CustomClusterUrlConfig, ExtendedCluster, getConnectionByCluster} from "./lib/connection";
+import {findProgramAddress} from "./lib/utils";
+import {GATEWAY_PROGRAM, SOLANA_MAINNET} from "./lib/constants";
 
 type FeeStructure = {
   token: PublicKey;
@@ -59,16 +62,19 @@ type UpdateNetworkData = {
 export class GatewayService {
   static async build(
     dataAccount: PublicKey,
-    cluster: ExtendedCluster = "mainnet-beta",
-    wallet: Wallet = new DummyWallet(),
+    wallet: Wallet,
+    cluster: ExtendedCluster = SOLANA_MAINNET,
+    customConfig?: CustomClusterUrlConfig,
     opts: ConfirmOptions = AnchorProvider.defaultOptions(),
-    connection?: Connection
   ): Promise<GatewayService> {
-    const _connection = connection;
-    // getConnectionByCluster(identifier.clusterType, opts.preflightCommitment);
-    // Note, DidSolService never signs, so provider does not need a valid Wallet or confirmOptions.
+    const _connection = getConnectionByCluster(
+        cluster,
+        opts.preflightCommitment,
+        customConfig
+    );
+
     const provider = new AnchorProvider(
-      _connection as Connection,
+      _connection,
       wallet,
       opts
     );
@@ -77,7 +83,7 @@ export class GatewayService {
 
     return new GatewayService(
       program,
-      provider.publicKey,
+      dataAccount,
       cluster,
       wallet,
       provider.opts
@@ -88,14 +94,14 @@ export class GatewayService {
     program: Program<GatewayV2>,
     dataAccount: PublicKey,
     cluster: ExtendedCluster,
-    provider: AnchorProvider,
-    wallet?: Wallet
+    provider: AnchorProvider = program.provider as AnchorProvider,
+    wallet: Wallet = provider.wallet
   ): Promise<GatewayService> {
     return new GatewayService(
       program,
       dataAccount,
       cluster,
-      wallet ? wallet : provider.wallet,
+      wallet,
       provider.opts
     );
   }
@@ -103,7 +109,7 @@ export class GatewayService {
     provider: anchor.Provider
   ): Promise<Program<GatewayV2>> {
     let idl = await Program.fetchIdl<GatewayV2>(
-      "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe",
+      GATEWAY_PROGRAM,
       provider
     );
 
@@ -116,7 +122,7 @@ export class GatewayService {
 
     return new Program<GatewayV2>(
       idl,
-      "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe",
+      GATEWAY_PROGRAM,
       provider
     ) as Program<GatewayV2>;
   }
@@ -124,11 +130,14 @@ export class GatewayService {
   private constructor(
     private _program: Program<GatewayV2>,
     private _dataAccount: PublicKey,
-    private _cluster: ExtendedCluster = "mainnet-beta",
-    private _wallet: Wallet = new DummyWallet(),
+    private _cluster: ExtendedCluster = SOLANA_MAINNET,
+    private _wallet: Wallet = new NonSigningWallet(),
     private _opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {
-    // TODO what do we need to construct?
+  }
+
+  static async createNetworkAddress(authority: PublicKey): Promise<[PublicKey, number]> {
+    return findProgramAddress(authority);
   }
 
   getWallet(): Wallet {
@@ -147,15 +156,14 @@ export class GatewayService {
     return this._program.idl;
   }
 
-  closeNetwork(receiver: PublicKey): GatewayServiceBuilder {
-    const authority = this._program.provider.publicKey as PublicKey;
+  closeNetwork(destination: PublicKey = this._wallet.publicKey, authority: PublicKey = this._wallet.publicKey): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
       .closeNetwork()
       .accounts({
-        network: Keypair.generate().publicKey,
+        network: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
-        //authority,
-        receiver,
+        destination,
+        authority,
       })
       .instruction();
 
@@ -165,34 +173,35 @@ export class GatewayService {
         throw new Error("Dynamic Alloc not supported");
       },
       allowsDynamicAlloc: false,
-      authority: authority,
+      authority,
     });
   }
 
   createNetwork(
-    payer: PublicKey = this._wallet.publicKey,
     data: CreateNetworkData = {
       authThreshold: 1,
       passExpireTime: 16,
       networkDataLen: 0,
       signerBump: 0,
       fees: [],
-      authKeys: [{ flags: 1, key: payer }],
-    }
+      authKeys: [{ flags: 1, key: this._wallet.publicKey }],
+    },
+    authority: PublicKey = this._wallet.publicKey,
   ): GatewayServiceBuilder {
+    console.log("Creating with auth: " + authority.toBase58());
+
     const instructionPromise = this._program.methods
       .createNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
         networkDataLen: data.networkDataLen,
-        signerBump: data.signerBump,
         fees: data.fees,
         authKeys: data.authKeys,
       })
       .accounts({
         network: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
-        payer,
+        authority,
       })
       .instruction();
 
@@ -203,26 +212,24 @@ export class GatewayService {
       },
       // TODO: Implement this...
       allowsDynamicAlloc: false,
-      authority: payer,
+      authority,
     });
   }
 
   updateNetwork(
-    payer: PublicKey,
     data: UpdateNetworkData = {
       authThreshold: 1,
       passExpireTime: 360,
       networkDataLen: 0,
       fees: { add: [], remove: [] },
       authKeys: [],
-    }
+    },
+    authority: PublicKey = this._wallet.publicKey,
   ): GatewayServiceBuilder {
-    const authority = this._program.provider.publicKey as PublicKey;
     const instructionPromise = this._program.methods
       .updateNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        networkDataLen: data.networkDataLen,
         fees: data.fees as never,
         authKeys: data.authKeys.map((authKey) => {
           authKey.flags;
@@ -232,8 +239,7 @@ export class GatewayService {
       .accounts({
         network: Keypair.generate().publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
-        //authority,
-        payer,
+        authority,
       })
       .instruction();
 
@@ -243,18 +249,21 @@ export class GatewayService {
         throw new Error("Dynamic Alloc not supported");
       },
       allowsDynamicAlloc: false,
-      authority: authority,
+      authority,
     });
   }
 
-  // async getNetworkAccount(): Promise<DidDataAccount | null> {
-  //   return (await this._program.account.gatekeeperNetwork.fetchNullable(
-  //     this._dataAccount
-  //   )) as DidDataAccount;
-  // }
+  // TODO: Don't return <any...
+  async getNetworkAccount(account: PublicKey = this._dataAccount): Promise<any | null> {
+    console.log(this._dataAccount.toBase58());
+
+    return (await this._program.account.gatekeeperNetwork.fetchNullable(
+      account
+    )) as any;
+  }
 }
 
-class DummyWallet implements Wallet {
+class NonSigningWallet implements Wallet {
   publicKey: PublicKey;
 
   constructor() {
@@ -262,11 +271,11 @@ class DummyWallet implements Wallet {
   }
 
   signAllTransactions(txs: Transaction[]): Promise<Transaction[]> {
-    return Promise.reject("DummyWallet does not support signing transactions");
+    return Promise.reject("NonSigningWallet does not support signing transactions");
   }
 
   signTransaction(tx: Transaction): Promise<Transaction> {
-    return Promise.reject("DummyWallet does not support signing transactions");
+    return Promise.reject("NonSigningWallet does not support signing transactions");
   }
 }
 
@@ -327,6 +336,8 @@ export class GatewayServiceBuilder {
   }
 
   async rpc(opts?: ConfirmOptions): Promise<string> {
+    console.log("RPC Wallet: " + this.wallet.publicKey);
+
     const provider = new AnchorProvider(
       this.connection,
       this.wallet,
