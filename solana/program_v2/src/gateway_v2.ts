@@ -1,841 +1,891 @@
 export type GatewayV2 = {
-  version: "0.1.0";
-  name: "gateway_v2";
-  instructions: [
+  "version": "0.1.0",
+  "name": "gateway_v2",
+  "instructions": [
     {
-      name: "createNetwork";
-      accounts: [
+      "name": "createNetwork",
+      "accounts": [
         {
-          name: "network";
-          isMut: true;
-          isSigner: true;
+          "name": "network",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
-      ];
-      args: [
+      ],
+      "args": [
         {
-          name: "data";
-          type: {
-            defined: "CreateNetworkData";
-          };
+          "name": "data",
+          "type": {
+            "defined": "CreateNetworkData"
+          }
         }
-      ];
+      ]
     },
     {
-      name: "updateNetwork";
-      accounts: [
+      "name": "updateNetwork",
+      "accounts": [
         {
-          name: "network";
-          isMut: true;
-          isSigner: false;
+          "name": "network",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
-      ];
-      args: [
+      ],
+      "args": [
         {
-          name: "data";
-          type: {
-            defined: "UpdateNetworkData";
-          };
+          "name": "data",
+          "type": {
+            "defined": "UpdateNetworkData"
+          }
         }
-      ];
+      ]
     },
     {
-      name: "closeNetwork";
-      accounts: [
+      "name": "closeNetwork",
+      "accounts": [
         {
-          name: "network";
-          isMut: true;
-          isSigner: false;
+          "name": "network",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "receiver";
-          isMut: true;
-          isSigner: true;
+          "name": "destination",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
-      ];
-      args: [];
+      ],
+      "args": []
     }
-  ];
-  accounts: [
+  ],
+  "accounts": [
     {
-      name: "gatekeeperNetwork";
-      docs: ["A gatekeeper network which manages many [`Gatekeeper`]s."];
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "gatekeeperNetwork",
+      "docs": [
+        "A gatekeeper network which manages many [`Gatekeeper`]s."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "version";
-            docs: [
+            "name": "version",
+            "docs": [
               "The version of this struct, should be 0 until a new version is released"
-            ];
-            type: "u8";
+            ],
+            "type": "u8"
           },
           {
-            name: "authThreshold";
-            docs: ["The number of auth keys needed to change the `auth_keys`"];
-            type: "u8";
+            "name": "initialAuthority",
+            "docs": [
+              "The initial authority key"
+            ],
+            "type": "publicKey"
           },
           {
-            name: "passExpireTime";
-            docs: [
+            "name": "authThreshold",
+            "docs": [
+              "The number of auth keys needed to change the `auth_keys`"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "passExpireTime",
+            "docs": [
               "The length of time a pass lasts in seconds. `0` means does not expire."
-            ];
-            type: "i64";
+            ],
+            "type": "i64"
           },
           {
-            name: "networkDataLen";
-            docs: [
-              "Changing this justifies a new network as all old passes will become invalid"
-            ];
-            type: "u16";
+            "name": "signerBump",
+            "docs": [
+              "The bump for the signer"
+            ],
+            "type": "u8"
           },
           {
-            name: "signerBump";
-            docs: ["The bump for the signer"];
-            type: "u8";
+            "name": "fees",
+            "docs": [
+              "The fees for this network"
+            ],
+            "type": {
+              "vec": {
+                "defined": "NetworkFees"
+              }
+            }
           },
           {
-            name: "feesCount";
-            docs: ["Number of different token fees"];
-            type: "u16";
-          },
-          {
-            name: "authKeysCount";
-            docs: ["Number of auth keys"];
-            type: "u16";
-          },
-          {
-            name: "fees";
-            docs: ["The fees for this network"];
-            type: {
-              vec: {
-                defined: "NetworkFees";
-              };
-            };
-          },
-          {
-            name: "authKeys";
-            docs: ["Keys with permissions on the network"];
-            type: {
-              vec: {
-                defined: "NetworkAuthKey";
-              };
-            };
+            "name": "authKeys",
+            "docs": [
+              "Keys with permissions on the network"
+            ],
+            "type": {
+              "vec": {
+                "defined": "NetworkAuthKey"
+              }
+            }
           }
-        ];
-      };
+        ]
+      }
     }
-  ];
-  types: [
+  ],
+  "types": [
     {
-      name: "NetworkAuthKey";
-      docs: ["The authority key for a [`GatekeeperNetwork`]"];
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "NetworkAuthKey",
+      "docs": [
+        "The authority key for a [`GatekeeperNetwork`]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "flags";
-            docs: ["The permissions this key has"];
-            type: "u16";
+            "name": "flags",
+            "docs": [
+              "The permissions this key has"
+            ],
+            "type": "u16"
           },
           {
-            name: "key";
-            docs: ["The key"];
-            type: "publicKey";
+            "name": "key",
+            "docs": [
+              "The key"
+            ],
+            "type": "publicKey"
           }
-        ];
-      };
+        ]
+      }
     },
     {
-      name: "CreateNetworkData";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "CreateNetworkData",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "authThreshold";
-            docs: ["The [`GatekeeperNetwork::auth_threshold`]."];
-            type: "u8";
+            "name": "authThreshold",
+            "docs": [
+              "The [`GatekeeperNetwork::auth_threshold`]."
+            ],
+            "type": "u8"
           },
           {
-            name: "passExpireTime";
-            docs: ["The [`GatekeeperNetwork::pass_expire_time`]."];
-            type: "i64";
+            "name": "passExpireTime",
+            "docs": [
+              "The [`GatekeeperNetwork::pass_expire_time`]."
+            ],
+            "type": "i64"
           },
           {
-            name: "networkDataLen";
-            docs: ["The [`GatekeeperNetwork::network_data_len`]."];
-            type: "u16";
+            "name": "networkDataLen",
+            "docs": [
+              "The [`GatekeeperNetwork::network_data_len`]."
+            ],
+            "type": "u16"
           },
           {
-            name: "signerBump";
-            docs: ["The [`GatekeeperNetwork::signer_bump`]."];
-            type: "u8";
+            "name": "fees",
+            "docs": [
+              "The [`GatekeeperNetwork::fees`]."
+            ],
+            "type": {
+              "vec": {
+                "defined": "NetworkFees"
+              }
+            }
           },
           {
-            name: "fees";
-            docs: ["The [`GatekeeperNetwork::fees`]."];
-            type: {
-              vec: {
-                defined: "NetworkFees";
-              };
-            };
-          },
-          {
-            name: "authKeys";
-            docs: ["The [`GatekeeperNetwork::auth_keys`]."];
-            type: {
-              vec: {
-                defined: "NetworkAuthKey";
-              };
-            };
+            "name": "authKeys",
+            "docs": [
+              "The [`GatekeeperNetwork::auth_keys`]."
+            ],
+            "type": {
+              "vec": {
+                "defined": "NetworkAuthKey"
+              }
+            }
           }
-        ];
-      };
+        ]
+      }
     },
     {
-      name: "UpdateFees";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "UpdateFees",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "add";
-            type: {
-              vec: {
-                defined: "NetworkFees";
-              };
-            };
+            "name": "add",
+            "type": {
+              "vec": {
+                "defined": "NetworkFees"
+              }
+            }
           },
           {
-            name: "remove";
-            type: {
-              vec: {
-                defined: "NetworkFees";
-              };
-            };
+            "name": "remove",
+            "type": {
+              "vec": {
+                "defined": "NetworkFees"
+              }
+            }
           }
-        ];
-      };
+        ]
+      }
     },
     {
-      name: "UpdateKeys";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "UpdateKeys",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "add";
-            type: {
-              vec: {
-                defined: "NetworkAuthKey";
-              };
-            };
+            "name": "add",
+            "type": {
+              "vec": {
+                "defined": "NetworkAuthKey"
+              }
+            }
           },
           {
-            name: "remove";
-            type: {
-              vec: "publicKey";
-            };
+            "name": "remove",
+            "type": {
+              "vec": "publicKey"
+            }
           }
-        ];
-      };
+        ]
+      }
     },
     {
-      name: "UpdateNetworkData";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "UpdateNetworkData",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "authThreshold";
-            docs: ["The [`GatekeeperNetwork::auth_threshold`]."];
-            type: "u8";
+            "name": "authThreshold",
+            "docs": [
+              "The [`GatekeeperNetwork::auth_threshold`]."
+            ],
+            "type": "u8"
           },
           {
-            name: "passExpireTime";
-            docs: ["The [`GatekeeperNetwork::pass_expire_time`]."];
-            type: {
-              option: "i64";
-            };
+            "name": "passExpireTime",
+            "docs": [
+              "The [`GatekeeperNetwork::pass_expire_time`]."
+            ],
+            "type": {
+              "option": "i64"
+            }
           },
           {
-            name: "networkDataLen";
-            docs: ["The [`GatekeeperNetwork::networkx_data_len`]."];
-            type: "u16";
+            "name": "fees",
+            "docs": [
+              "The [`GatekeeperNetwork::signer_bump`]."
+            ],
+            "type": {
+              "defined": "UpdateFees"
+            }
           },
           {
-            name: "fees";
-            docs: ["The [`GatekeeperNetwork::signer_bump`]."];
-            type: {
-              defined: "UpdateFees";
-            };
-          },
-          {
-            name: "authKeys";
-            docs: ["The [`GatekeeperNetwork::auth_keys`]."];
-            type: {
-              defined: "UpdateKeys";
-            };
+            "name": "authKeys",
+            "docs": [
+              "The [`GatekeeperNetwork::auth_keys`]."
+            ],
+            "type": {
+              "defined": "UpdateKeys"
+            }
           }
-        ];
-      };
+        ]
+      }
     },
     {
-      name: "NetworkFees";
-      docs: ["Fees that a [`GatekeeperNetwork`] can charge"];
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "NetworkFees",
+      "docs": [
+        "Fees that a [`GatekeeperNetwork`] can charge"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "token";
-            docs: ["The token for the fee, `None` means fee is invalid"];
-            type: "publicKey";
+            "name": "token",
+            "docs": [
+              "The token for the fee, `None` means fee is invalid"
+            ],
+            "type": "publicKey"
           },
           {
-            name: "issue";
-            docs: [
+            "name": "issue",
+            "docs": [
               "Percentage taken on issue. In Hundredths of a percent (0.01% or 0.0001)."
-            ];
-            type: "u16";
+            ],
+            "type": "u16"
           },
           {
-            name: "refresh";
-            docs: [
+            "name": "refresh",
+            "docs": [
               "Percentage taken on refresh. In Hundredths of a percent (0.01% or 0.0001)."
-            ];
-            type: "u16";
+            ],
+            "type": "u16"
           },
           {
-            name: "expire";
-            docs: [
+            "name": "expire",
+            "docs": [
               "Percentage taken on expire. In Hundredths of a percent (0.01% or 0.0001)."
-            ];
-            type: "u16";
+            ],
+            "type": "u16"
           },
           {
-            name: "verify";
-            docs: [
+            "name": "verify",
+            "docs": [
               "Percentage taken on verify. In Hundredths of a percent (0.01% or 0.0001)."
-            ];
-            type: "u16";
+            ],
+            "type": "u16"
           }
-        ];
-      };
+        ]
+      }
     },
     {
-      name: "GatekeeperFees";
-      docs: ["The fees a gatekeeper/network can take"];
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "GatekeeperFees",
+      "docs": [
+        "The fees a gatekeeper/network can take"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "token";
-            docs: [
+            "name": "token",
+            "docs": [
               "The token for these fees. None value for this means native SOL price"
-            ];
-            type: "publicKey";
+            ],
+            "type": "publicKey"
           },
           {
-            name: "issue";
-            docs: [
+            "name": "issue",
+            "docs": [
               "Fees taken at issuance of a new pass in token units or lamports for SOL."
-            ];
-            type: "u64";
+            ],
+            "type": "u64"
           },
           {
-            name: "refresh";
-            docs: [
+            "name": "refresh",
+            "docs": [
               "Fees taken when a pass is refreshed in token units or lamports for SOL."
-            ];
-            type: "u64";
+            ],
+            "type": "u64"
           },
           {
-            name: "expire";
-            docs: [
+            "name": "expire",
+            "docs": [
               "The fee taken when a pass is expired in token units or lamports for SOL.",
               "This should only be used where pass value comes from one-time use."
-            ];
-            type: "u64";
+            ],
+            "type": "u64"
           },
           {
-            name: "verify";
-            docs: [
+            "name": "verify",
+            "docs": [
               "The fee taken when a pass is verified in token units or lamports for SOL.",
               "This should only be used where pass value comes from proper use"
-            ];
-            type: "u64";
+            ],
+            "type": "u64"
           }
-        ];
-      };
+        ]
+      }
     }
-  ];
-  errors: [
+  ],
+  "errors": [
     {
-      code: 6000;
-      name: "NoAuthKeys";
-      msg: "No auth keys provided";
+      "code": 6000,
+      "name": "NoAuthKeys",
+      "msg": "No auth keys provided"
     },
     {
-      code: 6001;
-      name: "InsufficientAuthKeys";
-      msg: "Not enough auth keys provided";
+      "code": 6001,
+      "name": "InsufficientAuthKeys",
+      "msg": "Not enough auth keys provided"
     },
     {
-      code: 6002;
-      name: "InsufficientAccessAuthKeys";
-      msg: "Insufficient access to update auth keys";
+      "code": 6002,
+      "name": "InsufficientAccessAuthKeys",
+      "msg": "Insufficient access to update auth keys"
     },
     {
-      code: 6003;
-      name: "InsufficientAccessExpiry";
-      msg: "Insufficient access to set expiry time";
+      "code": 6003,
+      "name": "InsufficientAccessExpiry",
+      "msg": "Insufficient access to set expiry time"
     },
     {
-      code: 6004;
-      name: "AuthKeyNotFound";
-      msg: "Auth key not found";
+      "code": 6004,
+      "name": "AuthKeyNotFound",
+      "msg": "Auth key not found"
     }
-  ];
+  ]
 };
 
 export const IDL: GatewayV2 = {
-  version: "0.1.0",
-  name: "gateway_v2",
-  instructions: [
+  "version": "0.1.0",
+  "name": "gateway_v2",
+  "instructions": [
     {
-      name: "createNetwork",
-      accounts: [
+      "name": "createNetwork",
+      "accounts": [
         {
-          name: "network",
-          isMut: true,
-          isSigner: true,
+          "name": "network",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "data",
-          type: {
-            defined: "CreateNetworkData",
-          },
-        },
-      ],
+          "name": "data",
+          "type": {
+            "defined": "CreateNetworkData"
+          }
+        }
+      ]
     },
     {
-      name: "updateNetwork",
-      accounts: [
+      "name": "updateNetwork",
+      "accounts": [
         {
-          name: "network",
-          isMut: true,
-          isSigner: false,
+          "name": "network",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "data",
-          type: {
-            defined: "UpdateNetworkData",
-          },
-        },
-      ],
+          "name": "data",
+          "type": {
+            "defined": "UpdateNetworkData"
+          }
+        }
+      ]
     },
     {
-      name: "closeNetwork",
-      accounts: [
+      "name": "closeNetwork",
+      "accounts": [
         {
-          name: "network",
-          isMut: true,
-          isSigner: false,
+          "name": "network",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "receiver",
-          isMut: true,
-          isSigner: true,
+          "name": "destination",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
         },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [],
-    },
+      "args": []
+    }
   ],
-  accounts: [
+  "accounts": [
     {
-      name: "gatekeeperNetwork",
-      docs: ["A gatekeeper network which manages many [`Gatekeeper`]s."],
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "gatekeeperNetwork",
+      "docs": [
+        "A gatekeeper network which manages many [`Gatekeeper`]s."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "version",
-            docs: [
-              "The version of this struct, should be 0 until a new version is released",
+            "name": "version",
+            "docs": [
+              "The version of this struct, should be 0 until a new version is released"
             ],
-            type: "u8",
+            "type": "u8"
           },
           {
-            name: "authThreshold",
-            docs: ["The number of auth keys needed to change the `auth_keys`"],
-            type: "u8",
-          },
-          {
-            name: "passExpireTime",
-            docs: [
-              "The length of time a pass lasts in seconds. `0` means does not expire.",
+            "name": "initialAuthority",
+            "docs": [
+              "The initial authority key"
             ],
-            type: "i64",
+            "type": "publicKey"
           },
           {
-            name: "networkDataLen",
-            docs: [
-              "Changing this justifies a new network as all old passes will become invalid",
+            "name": "authThreshold",
+            "docs": [
+              "The number of auth keys needed to change the `auth_keys`"
             ],
-            type: "u16",
+            "type": "u8"
           },
           {
-            name: "signerBump",
-            docs: ["The bump for the signer"],
-            type: "u8",
+            "name": "passExpireTime",
+            "docs": [
+              "The length of time a pass lasts in seconds. `0` means does not expire."
+            ],
+            "type": "i64"
           },
           {
-            name: "feesCount",
-            docs: ["Number of different token fees"],
-            type: "u16",
+            "name": "signerBump",
+            "docs": [
+              "The bump for the signer"
+            ],
+            "type": "u8"
           },
           {
-            name: "authKeysCount",
-            docs: ["Number of auth keys"],
-            type: "u16",
+            "name": "fees",
+            "docs": [
+              "The fees for this network"
+            ],
+            "type": {
+              "vec": {
+                "defined": "NetworkFees"
+              }
+            }
           },
           {
-            name: "fees",
-            docs: ["The fees for this network"],
-            type: {
-              vec: {
-                defined: "NetworkFees",
-              },
-            },
-          },
-          {
-            name: "authKeys",
-            docs: ["Keys with permissions on the network"],
-            type: {
-              vec: {
-                defined: "NetworkAuthKey",
-              },
-            },
-          },
-        ],
-      },
-    },
+            "name": "authKeys",
+            "docs": [
+              "Keys with permissions on the network"
+            ],
+            "type": {
+              "vec": {
+                "defined": "NetworkAuthKey"
+              }
+            }
+          }
+        ]
+      }
+    }
   ],
-  types: [
+  "types": [
     {
-      name: "NetworkAuthKey",
-      docs: ["The authority key for a [`GatekeeperNetwork`]"],
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "NetworkAuthKey",
+      "docs": [
+        "The authority key for a [`GatekeeperNetwork`]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "flags",
-            docs: ["The permissions this key has"],
-            type: "u16",
+            "name": "flags",
+            "docs": [
+              "The permissions this key has"
+            ],
+            "type": "u16"
           },
           {
-            name: "key",
-            docs: ["The key"],
-            type: "publicKey",
-          },
-        ],
-      },
+            "name": "key",
+            "docs": [
+              "The key"
+            ],
+            "type": "publicKey"
+          }
+        ]
+      }
     },
     {
-      name: "CreateNetworkData",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "CreateNetworkData",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "authThreshold",
-            docs: ["The [`GatekeeperNetwork::auth_threshold`]."],
-            type: "u8",
+            "name": "authThreshold",
+            "docs": [
+              "The [`GatekeeperNetwork::auth_threshold`]."
+            ],
+            "type": "u8"
           },
           {
-            name: "passExpireTime",
-            docs: ["The [`GatekeeperNetwork::pass_expire_time`]."],
-            type: "i64",
+            "name": "passExpireTime",
+            "docs": [
+              "The [`GatekeeperNetwork::pass_expire_time`]."
+            ],
+            "type": "i64"
           },
           {
-            name: "networkDataLen",
-            docs: ["The [`GatekeeperNetwork::network_data_len`]."],
-            type: "u16",
+            "name": "networkDataLen",
+            "docs": [
+              "The [`GatekeeperNetwork::network_data_len`]."
+            ],
+            "type": "u16"
           },
           {
-            name: "signerBump",
-            docs: ["The [`GatekeeperNetwork::signer_bump`]."],
-            type: "u8",
+            "name": "fees",
+            "docs": [
+              "The [`GatekeeperNetwork::fees`]."
+            ],
+            "type": {
+              "vec": {
+                "defined": "NetworkFees"
+              }
+            }
           },
           {
-            name: "fees",
-            docs: ["The [`GatekeeperNetwork::fees`]."],
-            type: {
-              vec: {
-                defined: "NetworkFees",
-              },
-            },
-          },
-          {
-            name: "authKeys",
-            docs: ["The [`GatekeeperNetwork::auth_keys`]."],
-            type: {
-              vec: {
-                defined: "NetworkAuthKey",
-              },
-            },
-          },
-        ],
-      },
+            "name": "authKeys",
+            "docs": [
+              "The [`GatekeeperNetwork::auth_keys`]."
+            ],
+            "type": {
+              "vec": {
+                "defined": "NetworkAuthKey"
+              }
+            }
+          }
+        ]
+      }
     },
     {
-      name: "UpdateFees",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "UpdateFees",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "add",
-            type: {
-              vec: {
-                defined: "NetworkFees",
-              },
-            },
+            "name": "add",
+            "type": {
+              "vec": {
+                "defined": "NetworkFees"
+              }
+            }
           },
           {
-            name: "remove",
-            type: {
-              vec: {
-                defined: "NetworkFees",
-              },
-            },
-          },
-        ],
-      },
+            "name": "remove",
+            "type": {
+              "vec": {
+                "defined": "NetworkFees"
+              }
+            }
+          }
+        ]
+      }
     },
     {
-      name: "UpdateKeys",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "UpdateKeys",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "add",
-            type: {
-              vec: {
-                defined: "NetworkAuthKey",
-              },
-            },
+            "name": "add",
+            "type": {
+              "vec": {
+                "defined": "NetworkAuthKey"
+              }
+            }
           },
           {
-            name: "remove",
-            type: {
-              vec: "publicKey",
-            },
-          },
-        ],
-      },
+            "name": "remove",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
     },
     {
-      name: "UpdateNetworkData",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "UpdateNetworkData",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "authThreshold",
-            docs: ["The [`GatekeeperNetwork::auth_threshold`]."],
-            type: "u8",
+            "name": "authThreshold",
+            "docs": [
+              "The [`GatekeeperNetwork::auth_threshold`]."
+            ],
+            "type": "u8"
           },
           {
-            name: "passExpireTime",
-            docs: ["The [`GatekeeperNetwork::pass_expire_time`]."],
-            type: {
-              option: "i64",
-            },
+            "name": "passExpireTime",
+            "docs": [
+              "The [`GatekeeperNetwork::pass_expire_time`]."
+            ],
+            "type": {
+              "option": "i64"
+            }
           },
           {
-            name: "networkDataLen",
-            docs: ["The [`GatekeeperNetwork::networkx_data_len`]."],
-            type: "u16",
+            "name": "fees",
+            "docs": [
+              "The [`GatekeeperNetwork::signer_bump`]."
+            ],
+            "type": {
+              "defined": "UpdateFees"
+            }
           },
           {
-            name: "fees",
-            docs: ["The [`GatekeeperNetwork::signer_bump`]."],
-            type: {
-              defined: "UpdateFees",
-            },
-          },
-          {
-            name: "authKeys",
-            docs: ["The [`GatekeeperNetwork::auth_keys`]."],
-            type: {
-              defined: "UpdateKeys",
-            },
-          },
-        ],
-      },
+            "name": "authKeys",
+            "docs": [
+              "The [`GatekeeperNetwork::auth_keys`]."
+            ],
+            "type": {
+              "defined": "UpdateKeys"
+            }
+          }
+        ]
+      }
     },
     {
-      name: "NetworkFees",
-      docs: ["Fees that a [`GatekeeperNetwork`] can charge"],
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "NetworkFees",
+      "docs": [
+        "Fees that a [`GatekeeperNetwork`] can charge"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "token",
-            docs: ["The token for the fee, `None` means fee is invalid"],
-            type: "publicKey",
-          },
-          {
-            name: "issue",
-            docs: [
-              "Percentage taken on issue. In Hundredths of a percent (0.01% or 0.0001).",
+            "name": "token",
+            "docs": [
+              "The token for the fee, `None` means fee is invalid"
             ],
-            type: "u16",
+            "type": "publicKey"
           },
           {
-            name: "refresh",
-            docs: [
-              "Percentage taken on refresh. In Hundredths of a percent (0.01% or 0.0001).",
+            "name": "issue",
+            "docs": [
+              "Percentage taken on issue. In Hundredths of a percent (0.01% or 0.0001)."
             ],
-            type: "u16",
+            "type": "u16"
           },
           {
-            name: "expire",
-            docs: [
-              "Percentage taken on expire. In Hundredths of a percent (0.01% or 0.0001).",
+            "name": "refresh",
+            "docs": [
+              "Percentage taken on refresh. In Hundredths of a percent (0.01% or 0.0001)."
             ],
-            type: "u16",
+            "type": "u16"
           },
           {
-            name: "verify",
-            docs: [
-              "Percentage taken on verify. In Hundredths of a percent (0.01% or 0.0001).",
+            "name": "expire",
+            "docs": [
+              "Percentage taken on expire. In Hundredths of a percent (0.01% or 0.0001)."
             ],
-            type: "u16",
+            "type": "u16"
           },
-        ],
-      },
+          {
+            "name": "verify",
+            "docs": [
+              "Percentage taken on verify. In Hundredths of a percent (0.01% or 0.0001)."
+            ],
+            "type": "u16"
+          }
+        ]
+      }
     },
     {
-      name: "GatekeeperFees",
-      docs: ["The fees a gatekeeper/network can take"],
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "GatekeeperFees",
+      "docs": [
+        "The fees a gatekeeper/network can take"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "token",
-            docs: [
-              "The token for these fees. None value for this means native SOL price",
+            "name": "token",
+            "docs": [
+              "The token for these fees. None value for this means native SOL price"
             ],
-            type: "publicKey",
+            "type": "publicKey"
           },
           {
-            name: "issue",
-            docs: [
-              "Fees taken at issuance of a new pass in token units or lamports for SOL.",
+            "name": "issue",
+            "docs": [
+              "Fees taken at issuance of a new pass in token units or lamports for SOL."
             ],
-            type: "u64",
+            "type": "u64"
           },
           {
-            name: "refresh",
-            docs: [
-              "Fees taken when a pass is refreshed in token units or lamports for SOL.",
+            "name": "refresh",
+            "docs": [
+              "Fees taken when a pass is refreshed in token units or lamports for SOL."
             ],
-            type: "u64",
+            "type": "u64"
           },
           {
-            name: "expire",
-            docs: [
+            "name": "expire",
+            "docs": [
               "The fee taken when a pass is expired in token units or lamports for SOL.",
-              "This should only be used where pass value comes from one-time use.",
+              "This should only be used where pass value comes from one-time use."
             ],
-            type: "u64",
+            "type": "u64"
           },
           {
-            name: "verify",
-            docs: [
+            "name": "verify",
+            "docs": [
               "The fee taken when a pass is verified in token units or lamports for SOL.",
-              "This should only be used where pass value comes from proper use",
+              "This should only be used where pass value comes from proper use"
             ],
-            type: "u64",
-          },
-        ],
-      },
-    },
+            "type": "u64"
+          }
+        ]
+      }
+    }
   ],
-  errors: [
+  "errors": [
     {
-      code: 6000,
-      name: "NoAuthKeys",
-      msg: "No auth keys provided",
+      "code": 6000,
+      "name": "NoAuthKeys",
+      "msg": "No auth keys provided"
     },
     {
-      code: 6001,
-      name: "InsufficientAuthKeys",
-      msg: "Not enough auth keys provided",
+      "code": 6001,
+      "name": "InsufficientAuthKeys",
+      "msg": "Not enough auth keys provided"
     },
     {
-      code: 6002,
-      name: "InsufficientAccessAuthKeys",
-      msg: "Insufficient access to update auth keys",
+      "code": 6002,
+      "name": "InsufficientAccessAuthKeys",
+      "msg": "Insufficient access to update auth keys"
     },
     {
-      code: 6003,
-      name: "InsufficientAccessExpiry",
-      msg: "Insufficient access to set expiry time",
+      "code": 6003,
+      "name": "InsufficientAccessExpiry",
+      "msg": "Insufficient access to set expiry time"
     },
     {
-      code: 6004,
-      name: "AuthKeyNotFound",
-      msg: "Auth key not found",
-    },
-  ],
+      "code": 6004,
+      "name": "AuthKeyNotFound",
+      "msg": "Auth key not found"
+    }
+  ]
 };

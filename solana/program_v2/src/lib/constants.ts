@@ -1,9 +1,11 @@
-import { PublicKey } from "@solana/web3.js";
+import {Commitment, PublicKey} from "@solana/web3.js";
 
-export const PROGRAM_ID = "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe";
-
-export const GATE_WAY_PROGRAM = new PublicKey(
+export const GATEWAY_PROGRAM = new PublicKey(
   "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
 );
 
-export const DEFAULT_SEED_STRING = "gateway_v2";
+export const DEFAULT_SEED_STRING = "gk-network";
+
+export const SOLANA_MAINNET = 'mainnet-beta';
+
+export const SOLANA_COMMITMENT: Commitment = 'confirmed';

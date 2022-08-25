@@ -1,7 +1,4 @@
-import { PublicKey } from "@solana/web3.js";
-import assert from "assert";
-import mocha from "mocha";
-
+import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import { GatewayService } from "../../src/GatewayService";
 import { GatewayV2 } from "../../src/gateway_v2";
 import * as anchor from "@project-serum/anchor";
@@ -10,45 +7,49 @@ import { expect } from "chai";
 
 describe("Gateway v2 Client", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
-  let service: GatewayService;
-
   const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
 
-  const authority = programProvider.wallet;
+  let service: GatewayService;
+  let dataAccount: PublicKey;
+  let authorityKeypair: Keypair;
 
-  const nonAuthoritySigner = anchor.web3.Keypair.generate();
+let authority;
 
   before(async () => {
-    await airdrop(programProvider.connection, nonAuthoritySigner.publicKey);
+    authorityKeypair = Keypair.generate();
+    authority = new anchor.Wallet(authorityKeypair);
+    // authority = programProvider.wallet;
+    await airdrop(programProvider.connection, authority.publicKey, LAMPORTS_PER_SOL * 2);
 
-    const [network, bump] = await PublicKey.findProgramAddress(
-      [
-        anchor.utils.bytes.utf8.encode("gk-network"),
-        authority.publicKey.toBuffer(),
-      ],
-      program.programId
-    );
+    [dataAccount] = await GatewayService.createNetworkAddress(authority.publicKey);
 
     service = await GatewayService.buildFromAnchor(
-      program,
-      network,
-      "localnet",
-      programProvider,
-      authority
+        program,
+        dataAccount,
+        "localnet",
+        programProvider,
+        authority
     );
 
-    await service.createNetwork(authority.publicKey).rpc();
+    // service = await GatewayService.build(dataAccount, authority, "localnet")
+
+    await service.createNetwork().rpc();
   });
 
-  // Fund nonAuthoritySigner
   describe("Close Network", () => {
-    it("Should Close Network Properly", async function () {
-      const closedNetwork = await service
-        .closeNetwork(authority.publicKey)
+    it.only("Should Close Network Properly", async function () {
+      let networkAccount = await service.getNetworkAccount();
+console.log(networkAccount);
+      console.log("Authority: " + authority.publicKey.toBase58());
+      console.log("Initial Authority: " + networkAccount.initialAuthority.toBase58());
+
+      await service
+        .closeNetwork()
         .rpc();
-      console.log(`${closedNetwork}`);
-      expect(closedNetwork).to.not.be.null;
+
+      networkAccount = await service.getNetworkAccount();
+      expect(networkAccount).to.be.null;
     }).timeout(10000);
   });
 });
