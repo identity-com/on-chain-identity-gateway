@@ -21,7 +21,8 @@
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.0.1",
     "@project-serum/anchor": "^0.25.0",
-    "@solana/web3.js": "^1.50.1"
+    "@solana/web3.js": "^1.50.1",
+    "@identity.com/GatewayService": "../src"
   },
   "devDependencies": {
     "@oclif/test": "^2",
