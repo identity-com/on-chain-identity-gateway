@@ -15,7 +15,7 @@ describe("Gateway v2 Client", () => {
 
   let dataAccount: PublicKey;
 
-  before(async () => {
+  beforeEach(async () => {
     const authority = new anchor.Wallet(Keypair.generate());
     await airdrop(
       programProvider.connection,
@@ -34,7 +34,6 @@ describe("Gateway v2 Client", () => {
       authority
     );
   });
-
   describe("Create Network", () => {
     it("Creates a Network w/ Default Values", async function () {
       await service.createNetwork().rpc();

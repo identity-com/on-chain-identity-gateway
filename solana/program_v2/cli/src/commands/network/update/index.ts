@@ -1,16 +1,7 @@
 import { Command, Flags } from "@oclif/core";
 import { Keypair } from "@solana/web3.js";
-// eslint-disable-next-line node/no-extraneous-import
-import { readJSONSync } from "fs-extra";
-import {
-  i64,
-  NetworkAuthKey,
-  NetworkData,
-  NetworkKeyFlags,
-  NetworkKeyFlagsValues,
-  u16,
-  u8,
-} from "../../../utils/state";
+// import { readJSONSync } from "fs-extra";
+
 // import { updateNetwork } from "../../../utils/update-network";
 export default class Update extends Command {
   static description = "Updates a gatekeeper network";

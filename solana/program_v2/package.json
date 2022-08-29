@@ -64,7 +64,7 @@
       "sinon": "^9.2.3",
       "sinon-chai": "^3.5.0",
       "ts-mocha": "^8.0.0",
-      "ts-node": "^9.0.0",
+      "ts-node": "^10.8.1",
       "typedoc": "^0.21.5",
       "typescript": "^4.2.4"
     }

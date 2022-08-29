@@ -1,9 +1,9 @@
 import { Command, Flags } from "@oclif/core";
 import { Wallet } from "@project-serum/anchor";
-import * as anchor from "@project-serum/anchor";
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-// import { GatewayService } from "../../../utils/GatewayService";
-import GatewayService from "@identity.com/GatewayService";
+import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
+// TODO: Import Gateway Service properly with package.json
+import { GatewayService } from "file:../../../../src/GatewayService";
+import { airdrop } from "../../../../../src/lib/utils";
 export default class Create extends Command {
   static description = "Creates a gatekeeper network";
 
@@ -23,11 +23,14 @@ Latest Blockhash: [blockhash]
     key: Flags.string({
       char: "k",
       description: "Path to a solana keypair",
+      required: true,
+    }),
+    cluster: Flags.string({
+      char: "c",
+      description: "The cluster you wish to use",
       required: false,
     }),
   };
-
-  // service = await GatewayService.build(dataAccount, authority, "localnet")
 
   static args = [];
 
@@ -35,27 +38,30 @@ Latest Blockhash: [blockhash]
     const { flags } = await this.parse(Create);
     const programId = Keypair.generate().publicKey;
     const localSecretKey = require(flags.key);
-    const funder = Keypair.fromSecretKey(Buffer.from(localSecretKey));
+    const funder = localSecretKey
+      ? Keypair.fromSecretKey(Buffer.from(localSecretKey))
+      : Keypair.generate();
 
-    const [network] = await PublicKey.findProgramAddress(
-      [
-        anchor.utils.bytes.utf8.encode("gk-network"),
-        funder.publicKey.toBuffer(),
-      ],
-      new PublicKey("8sPUQcf96QpGyAuXM36Trf4FqsXBbM6wT9PKQjHLjysq")
+    const [network] = await GatewayService.createNetworkAddress(
+      funder.publicKey
     );
-
+    this.log(`${network}`);
     const gatewayService = await GatewayService.build(
       network,
-      undefined,
       new Wallet(funder),
-      // undefined,
-      undefined,
-      new Connection("http://localhost:8899", "confirmed")
+      // TODO: mainnet is default
+      flags.cluster ? flags.cluster : "localnet"
     );
-    const createdNetworkSignature = await gatewayService
-      .createNetwork(funder.publicKey)
-      .rpc();
-    // this.log(`--${createdNetworkSignature}`);
+    // TODO: Remove airdrop
+    this.log("before airdrop");
+    await airdrop(
+      gatewayService.getConnection(),
+      funder.publicKey,
+      LAMPORTS_PER_SOL
+    );
+    this.log("after airdrop");
+
+    const createdNetworkSignature = await gatewayService.createNetwork().rpc();
+    this.log(`--${createdNetworkSignature}`);
   }
 }
