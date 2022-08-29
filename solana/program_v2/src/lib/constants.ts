@@ -1,7 +1,7 @@
 import { Commitment, PublicKey } from "@solana/web3.js";
 
 export const GATEWAY_PROGRAM = new PublicKey(
-  "8sPUQcf96QpGyAuXM36Trf4FqsXBbM6wT9PKQjHLjysq"
+  "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
 );
 
 export const DEFAULT_SEED_STRING = "gk-network";

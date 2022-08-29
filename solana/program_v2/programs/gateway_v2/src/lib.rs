@@ -15,7 +15,7 @@ clippy::pedantic
     clippy::wildcard_imports
 )]
 
-declare_id!("8sPUQcf96QpGyAuXM36Trf4FqsXBbM6wT9PKQjHLjysq");
+declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
 use crate::account::NetworkAuthKey;
 use crate::arguments::*;

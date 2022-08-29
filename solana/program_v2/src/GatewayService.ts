@@ -88,6 +88,8 @@ export class GatewayService {
         "Could not fetch IDL from chain. Using build-in IDL as fallback."
       );
       idl = IDL;
+    } else {
+      console.log("using idl on-chain");
     }
 
     return new Program<GatewayV2>(

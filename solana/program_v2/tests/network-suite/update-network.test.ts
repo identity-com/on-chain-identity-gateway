@@ -50,7 +50,7 @@ describe("Gateway v2 Client", () => {
   });
 
   describe("Update Network", () => {
-    it.only("Should Update Network Properly", async function () {
+    it("Should Update Network Properly", async function () {
       let networkAccount = await service.getNetworkAccount();
       console.log(networkAccount);
       await service
