@@ -19,46 +19,22 @@ import {
   TransactionInstruction,
 } from "@solana/web3.js";
 
-import { Wallet } from "./lib/types";
+import {
+  AuthKeyStructure,
+  CreateNetworkData,
+  NetworkAccount,
+  UpdateFeeStructure,
+  UpdateNetworkData,
+  Wallet,
+} from "./lib/types";
 
-import {CustomClusterUrlConfig, ExtendedCluster, getConnectionByCluster} from "./lib/connection";
-import {findProgramAddress} from "./lib/utils";
-import {GATEWAY_PROGRAM, SOLANA_MAINNET} from "./lib/constants";
-
-type FeeStructure = {
-  token: PublicKey;
-  issue: number;
-  refresh: number;
-  expire: number;
-  verify: number;
-};
-
-type UpdateFeeStructure = {
-  add: [];
-  remove: [];
-};
-
-type AuthKeyStructure = {
-  flags: number;
-  key: PublicKey;
-};
-
-type CreateNetworkData = {
-  authThreshold: number;
-  passExpireTime: number;
-  networkDataLen: number;
-  signerBump: number;
-  fees: FeeStructure[];
-  authKeys: AuthKeyStructure[];
-};
-
-type UpdateNetworkData = {
-  authThreshold: number;
-  passExpireTime: number;
-  networkDataLen: number;
-  fees: UpdateFeeStructure;
-  authKeys: AuthKeyStructure[];
-};
+import {
+  CustomClusterUrlConfig,
+  ExtendedCluster,
+  getConnectionByCluster,
+} from "./lib/connection";
+import { findProgramAddress } from "./lib/utils";
+import { GATEWAY_PROGRAM, SOLANA_MAINNET } from "./lib/constants";
 
 export class GatewayService {
   static async build(
@@ -66,19 +42,15 @@ export class GatewayService {
     wallet: Wallet,
     cluster: ExtendedCluster = SOLANA_MAINNET,
     customConfig?: CustomClusterUrlConfig,
-    opts: ConfirmOptions = AnchorProvider.defaultOptions(),
+    opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ): Promise<GatewayService> {
     const _connection = getConnectionByCluster(
-        cluster,
-        opts.preflightCommitment,
-        customConfig
+      cluster,
+      opts.preflightCommitment,
+      customConfig
     );
 
-    const provider = new AnchorProvider(
-      _connection,
-      wallet,
-      opts
-    );
+    const provider = new AnchorProvider(_connection, wallet, opts);
 
     const program = await GatewayService.fetchProgram(provider);
 
@@ -109,10 +81,7 @@ export class GatewayService {
   static async fetchProgram(
     provider: anchor.Provider
   ): Promise<Program<GatewayV2>> {
-    let idl = await Program.fetchIdl<GatewayV2>(
-      GATEWAY_PROGRAM,
-      provider
-    );
+    let idl = await Program.fetchIdl<GatewayV2>(GATEWAY_PROGRAM, provider);
 
     if (!idl) {
       console.warn(
@@ -134,10 +103,11 @@ export class GatewayService {
     private _cluster: ExtendedCluster = SOLANA_MAINNET,
     private _wallet: Wallet = new NonSigningWallet(),
     private _opts: ConfirmOptions = AnchorProvider.defaultOptions()
-  ) {
-  }
+  ) {}
 
-  static async createNetworkAddress(authority: PublicKey): Promise<[PublicKey, number]> {
+  static async createNetworkAddress(
+    authority: PublicKey
+  ): Promise<[PublicKey, number]> {
     return findProgramAddress(authority);
   }
 
@@ -157,7 +127,10 @@ export class GatewayService {
     return this._program.idl;
   }
 
-  closeNetwork(destination: PublicKey = this._wallet.publicKey, authority: PublicKey = this._wallet.publicKey): GatewayServiceBuilder {
+  closeNetwork(
+    destination: PublicKey = this._wallet.publicKey,
+    authority: PublicKey = this._wallet.publicKey
+  ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
       .closeNetwork()
       .accounts({
@@ -187,9 +160,9 @@ export class GatewayService {
       fees: [],
       authKeys: [{ flags: 1, key: this._wallet.publicKey }],
     },
-    authority: PublicKey = this._wallet.publicKey,
+    authority: PublicKey = this._wallet.publicKey
   ): GatewayServiceBuilder {
-    console.log("Creating with auth: " + authority.toBase58());
+    // console.log("Creating with auth: " + authority.toBase58());
 
     const instructionPromise = this._program.methods
       .createNetwork({
@@ -218,14 +191,14 @@ export class GatewayService {
   }
 
   updateNetwork(
+    authority: PublicKey = this._wallet.publicKey,
     data: UpdateNetworkData = {
       authThreshold: 1,
       passExpireTime: 360,
       networkDataLen: 0,
       fees: { add: [], remove: [] },
-      authKeys: [],
-    },
-    authority: PublicKey = this._wallet.publicKey,
+      authKeys: [{ flags: 1, key: authority }],
+    }
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
       .updateNetwork({
@@ -240,7 +213,7 @@ export class GatewayService {
       .accounts({
         network: Keypair.generate().publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
-        authority,
+        authority: authority,
       })
       .instruction();
 
@@ -254,13 +227,27 @@ export class GatewayService {
     });
   }
 
-  // TODO: Don't return <any...
-  async getNetworkAccount(account: PublicKey = this._dataAccount): Promise<any | null> {
-    console.log(this._dataAccount.toBase58());
-
-    return (await this._program.account.gatekeeperNetwork.fetchNullable(
-      account
-    )) as any;
+  async getNetworkAccount(
+    account: PublicKey = this._dataAccount
+  ): Promise<NetworkAccount | null> {
+    const networkAccount = this._program.account.gatekeeperNetwork
+      .fetchNullable(account)
+      .then((acct) => {
+        if (acct) {
+          return {
+            version: acct?.version,
+            initialAuthority: acct?.initialAuthority,
+            authThreshold: acct?.authThreshold,
+            passExpireTime: acct?.passExpireTime.toNumber(),
+            // TODO!: These cannot be included for some reason, even if I add them to the NetworkAccount type. It is expecting 'never' type for some reason
+            // fees: acct?.fees,
+            // authKeys: acct?.authKeys,
+          };
+        } else {
+          return null;
+        }
+      });
+    return networkAccount;
   }
 }
 
@@ -272,11 +259,15 @@ class NonSigningWallet implements Wallet {
   }
 
   signAllTransactions(txs: Transaction[]): Promise<Transaction[]> {
-    return Promise.reject("NonSigningWallet does not support signing transactions");
+    return Promise.reject(
+      "NonSigningWallet does not support signing transactions"
+    );
   }
 
   signTransaction(tx: Transaction): Promise<Transaction> {
-    return Promise.reject("NonSigningWallet does not support signing transactions");
+    return Promise.reject(
+      "NonSigningWallet does not support signing transactions"
+    );
   }
 }
 
