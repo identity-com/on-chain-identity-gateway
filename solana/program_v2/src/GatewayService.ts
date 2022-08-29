@@ -1,4 +1,5 @@
-import { GatewayV2, IDL } from "./gateway_v2";
+// @ts-ignore
+import { GatewayV2, IDL } from "../target/types/gateway_v2";
 import {
   AnchorProvider,
   Program,
@@ -336,8 +337,6 @@ export class GatewayServiceBuilder {
   }
 
   async rpc(opts?: ConfirmOptions): Promise<string> {
-    console.log("RPC Wallet: " + this.wallet.publicKey);
-
     const provider = new AnchorProvider(
       this.connection,
       this.wallet,
