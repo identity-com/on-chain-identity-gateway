@@ -4,6 +4,10 @@ seeds = false
 #TODO: Updated program id
 [programs.localnet]
 gateway_v2 = "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
+[programs.devnet]
+gateway_v2 = "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
+[programs.mainnet]
+gateway_v2 = "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
 
 [registry]
 url = "https://anchor.projectserum.com"
@@ -14,6 +18,7 @@ wallet = "./tests/fixtures/keypairs/7aHML6LXPtEuUDu4Azv52KbgEqdSDk9syqFvCAE63ZT5
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+createTestFixtureAccount = "./node_modules/.bin/ts-node ./scripts/createTestFixtureAccount.ts"
 
 [test]
 startup_wait = 20000
