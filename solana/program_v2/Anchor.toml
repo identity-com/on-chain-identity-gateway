@@ -3,7 +3,7 @@ seeds = false
 
 #TODO: Updated program id
 [programs.localnet]
-gateway_v2 = "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
+gateway_v2 = "8sPUQcf96QpGyAuXM36Trf4FqsXBbM6wT9PKQjHLjysq"
 
 [registry]
 url = "https://anchor.projectserum.com"

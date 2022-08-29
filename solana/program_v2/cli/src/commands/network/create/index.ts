@@ -27,6 +27,8 @@ Latest Blockhash: [blockhash]
     }),
   };
 
+  // service = await GatewayService.build(dataAccount, authority, "localnet")
+
   static args = [];
 
   async run(): Promise<void> {
