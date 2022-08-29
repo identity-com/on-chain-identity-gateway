@@ -19,8 +19,10 @@ import {
 } from "@solana/web3.js";
 
 import {
+  AuthKeyStructure,
   CreateNetworkData,
   NetworkAccount,
+  UpdateFeeStructure,
   UpdateNetworkData,
   Wallet,
 } from "./lib/types";
@@ -159,7 +161,7 @@ export class GatewayService {
     },
     authority: PublicKey = this._wallet.publicKey
   ): GatewayServiceBuilder {
-    console.log("Creating with auth: " + authority.toBase58());
+    // console.log("Creating with auth: " + authority.toBase58());
 
     const instructionPromise = this._program.methods
       .createNetwork({
@@ -188,14 +190,14 @@ export class GatewayService {
   }
 
   updateNetwork(
+    authority: PublicKey = this._wallet.publicKey,
     data: UpdateNetworkData = {
       authThreshold: 1,
       passExpireTime: 360,
       networkDataLen: 0,
       fees: { add: [], remove: [] },
-      authKeys: [],
-    },
-    authority: PublicKey = this._wallet.publicKey
+      authKeys: [{ flags: 1, key: authority }],
+    }
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
       .updateNetwork({
@@ -210,7 +212,7 @@ export class GatewayService {
       .accounts({
         network: Keypair.generate().publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
-        authority,
+        authority: authority,
       })
       .instruction();
 
@@ -236,7 +238,9 @@ export class GatewayService {
             initialAuthority: acct?.initialAuthority,
             authThreshold: acct?.authThreshold,
             passExpireTime: acct?.passExpireTime.toNumber(),
-            signerBump: acct?.signerBump,
+            // TODO!: These cannot be included for some reason, even if I add them to the NetworkAccount type. It is expecting 'never' type for some reason
+            // fees: acct?.fees,
+            // authKeys: acct?.authKeys,
           };
         } else {
           return null;
@@ -323,7 +327,7 @@ export class GatewayServiceBuilder {
   }
 
   async rpc(opts?: ConfirmOptions): Promise<string> {
-    console.log("RPC Wallet: " + this.wallet.publicKey);
+    // console.log("RPC Wallet: " + this.wallet.publicKey);
 
     const provider = new AnchorProvider(
       this.connection,

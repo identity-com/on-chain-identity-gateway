@@ -4,6 +4,12 @@ import { GatewayV2 } from "../../src/gateway_v2";
 import * as anchor from "@project-serum/anchor";
 import { airdrop } from "../../src/lib/utils";
 import { expect } from "chai";
+import { describe } from "mocha";
+import {
+  AuthKeyStructure,
+  FeeStructure,
+  UpdateFeeStructure,
+} from "../../src/lib/types";
 
 describe("Gateway v2 Client", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -46,15 +52,19 @@ describe("Gateway v2 Client", () => {
   describe("Update Network", () => {
     it.only("Should Update Network Properly", async function () {
       let networkAccount = await service.getNetworkAccount();
-
+      console.log(networkAccount);
       await service
-        .updateNetwork({
-          authThreshold: 1,
-          passExpireTime: 500,
-          networkDataLen: 0,
-          fees: { add: [], remove: [] },
-          authKeys: [{ flags: 1, key: programProvider.wallet.publicKey }],
-        })
+        .updateNetwork(
+          // TODO: I think the error here is something to do with passing in the right authority
+          authorityKeypair.publicKey,
+          {
+            authThreshold: 1,
+            passExpireTime: 500,
+            networkDataLen: 0,
+            fees: { add: [], remove: [] },
+            authKeys: [{ flags: 1, key: authorityKeypair.publicKey }],
+          }
+        )
         .rpc();
 
       networkAccount = await service.getNetworkAccount();

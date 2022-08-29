@@ -16,8 +16,8 @@ export type FeeStructure = {
 };
 
 export type UpdateFeeStructure = {
-  add: [];
-  remove: [];
+  add: FeeStructure[];
+  remove: FeeStructure[];
 };
 
 export type AuthKeyStructure = {
@@ -41,13 +41,12 @@ export type UpdateNetworkData = {
   fees: UpdateFeeStructure;
   authKeys: AuthKeyStructure[];
 };
-// TODO: passExpireTime shouldn't be an anchor.BN here? Also unsure why fees and authKeys aren't required here, as they are present in the IDL
 export type NetworkAccount = {
   version: number;
   initialAuthority: PublicKey;
   authThreshold: number;
   passExpireTime: number;
-  signerBump: number;
+  // TODO!: Frankly I don't understand why these are not able to be in here. It seems like the updateNetwork() function takes them as 'never' type, which clearly is not accurate
   // fees: FeeStructure[];
   // authKeys: AuthKeyStructure[];
 };
