@@ -22,7 +22,7 @@
     "@oclif/plugin-plugins": "^2.0.1",
     "@project-serum/anchor": "^0.25.0",
     "@solana/web3.js": "^1.50.1",
-    "@identity.com/GatewayService": "file:../src"
+    "@identity.com/GatewayService": "file:../src/GatewayService"
   },
   "devDependencies": {
     "@oclif/test": "^2",

@@ -1,5 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import { Keypair } from "@solana/web3.js";
+import { Wallet } from "@project-serum/anchor";
+import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { GatewayService } from "../../../../../src/GatewayService";
+import { airdrop } from "../../../../../src/lib/utils";
 // import { readJSONSync } from "fs-extra";
 
 // import { updateNetwork } from "../../../utils/update-network";
@@ -24,44 +27,51 @@ Latest Blockhash: [blockhash]
       description: "Path to a solana keypair",
       required: false,
     }),
+    program: Flags.string({
+      char: "p",
+      description: "The program id",
+      hidden: false,
+      multiple: false,
+      required: false,
+    }),
   };
 
   static args = [];
 
   async run(): Promise<void> {
     this.log("Update");
-    // const { flags } = await this.parse(Update);
-    // const programId = Keypair.generate().publicKey;
-    // const network = Keypair.generate();
-    // const localSecretKey = readJSONSync(flags.key) as Uint8Array;
-    // this.log(`${localSecretKey}`);
-    // const funder = Keypair.fromSecretKey(localSecretKey);
+    const { flags } = await this.parse(Update);
+    const programId = flags.program
+      ? flags.program
+      : Keypair.generate().publicKey;
+    const localSecretKey = require(flags.key);
+    const funder = localSecretKey
+      ? Keypair.fromSecretKey(Buffer.from(localSecretKey))
+      : Keypair.generate();
+    const data = flags.data ? flags.data : {};
 
-    // const networkData = new NetworkData(
-    //   new u8(1),
-    //   new i64(BigInt(60) * BigInt(60)),
-    //   new u16(0),
-    //   new u8(0),
-    //   [],
-    //   [
-    //     new NetworkAuthKey(
-    //       NetworkKeyFlags.fromFlagsArray([NetworkKeyFlagsValues.AUTH]),
-    //       funder.publicKey
-    //     ),
-    //   ]
-    // );
+    const [network] = await GatewayService.createNetworkAddress(
+      funder.publicKey
+    );
+    this.log(`${network}`);
+    const gatewayService = await GatewayService.build(
+      network,
+      new Wallet(funder),
+      // TODO: mainnet is default
+      "localnet"
+    );
+    // TODO: Remove airdrop
+    this.log("before airdrop");
+    await airdrop(
+      gatewayService.getConnection(),
+      funder.publicKey,
+      LAMPORTS_PER_SOL
+    );
+    this.log("after airdrop");
 
-    // this.log(`Program ID: ${programId.toString()}`);
-    // this.log(`Network ID: ${network.publicKey.toString()}`);
-    // this.log(`Funder ID: ${funder.publicKey.toString()}`);
-    // this.log(`Network Data: ${JSON.stringify(networkData)}`);
-    // const updatedNetwork = await updateNetwork(
-    //   programId,
-    //   network,
-    //   funder,
-    //   networkData
-    // );
-    // this.log("network created");
-    // this.log(`Block Height: ${updatedNetwork.lastValidBlockHeight}`);
+    const createdNetworkSignature = await gatewayService
+      .updateNetwork(funder.publicKey, data)
+      .rpc();
+    this.log(`--${createdNetworkSignature}`);
   }
 }
