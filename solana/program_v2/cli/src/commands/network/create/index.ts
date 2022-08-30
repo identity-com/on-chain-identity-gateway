@@ -8,7 +8,7 @@ export default class Create extends Command {
   static description = "Creates a gatekeeper network";
 
   static examples = [
-    `$ gateway network create --data ./network.json --key ./funder-key.json
+    `$ gateway network create --data ./network.json --key ./funder-key.json --cluster localnet
 Latest Blockhash: [blockhash]
 `,
   ];
