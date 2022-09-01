@@ -193,24 +193,39 @@ export class GatewayService {
   }
 
   updateNetwork(
-    authority: PublicKey = this._wallet.publicKey,
     data: UpdateNetworkData = {
       authThreshold: 1,
       passExpireTime: 360,
       networkDataLen: 0,
-      fees: { add: [], remove: [] },
-      authKeys: [{ flags: 1, key: authority }],
-    }
+      fees: {
+        add: [
+          {
+            token: undefined,
+            issue: undefined,
+            refresh: undefined,
+            expire: undefined,
+          },
+        ],
+        remove: [
+          {
+            token: undefined,
+            issue: undefined,
+            refresh: undefined,
+            expire: undefined,
+          },
+        ],
+      },
+      authKeys: [{ flags: 1, key: this._wallet.publicKey }],
+    },
+    authority: PublicKey = this._wallet.publicKey
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
       .updateNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        fees: data.fees as never,
-        authKeys: data.authKeys.map((authKey) => {
-          authKey.flags;
-          authKey.key;
-        }) as never,
+        networkDataLen: data.networkDataLen,
+        fees: [] as never,
+        authKeys: [] as never,
       })
       .accounts({
         network: Keypair.generate().publicKey,
