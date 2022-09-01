@@ -35,6 +35,7 @@ describe("Gateway v2 Client", () => {
     [dataAccount] = await GatewayService.createNetworkAddress(
       authority.publicKey
     );
+    console.log(authority.payer.publicKey);
 
     service = await GatewayService.buildFromAnchor(
       program,
@@ -50,22 +51,27 @@ describe("Gateway v2 Client", () => {
   });
 
   describe("Update Network", () => {
-    it("Should Update Network Properly", async function () {
+    it.only("Should Update Network Properly", async function () {
       let networkAccount = await service.getNetworkAccount();
-      console.log(networkAccount);
+      console.log(networkAccount?.initialAuthority);
       await service
         .updateNetwork(
           // TODO: I think the error here is something to do with passing in the right authority
-          authorityKeypair.publicKey,
           {
             authThreshold: 1,
             passExpireTime: 500,
             networkDataLen: 0,
-            fees: { add: [], remove: [] },
+            fees: { add: [{}], remove: [{}] },
             authKeys: [{ flags: 1, key: authorityKeypair.publicKey }],
-          }
+          },
+          authorityKeypair.publicKey
         )
         .rpc();
+      // authThreshold: number;
+      // passExpireTime: number;
+      // networkDataLen: number;
+      // fees: UpdateFeeStructure;
+      // authKeys: AuthKeyStructure[];
 
       networkAccount = await service.getNetworkAccount();
       expect(networkAccount?.passExpireTime).to.equal(500);
