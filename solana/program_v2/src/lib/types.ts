@@ -8,16 +8,16 @@ export interface Wallet {
 }
 
 export type FeeStructure = {
-  token?: PublicKey;
-  issue?: number;
-  refresh?: number;
-  expire?: number;
-  verify?: number;
+  token: PublicKey;
+  issue: number;
+  refresh: number;
+  expire: number;
+  verify: number;
 };
 
 export type UpdateFeeStructure = {
-  add: FeeStructure[];
-  remove: FeeStructure[];
+  add: AuthKeyStructure[];
+  remove: PublicKey[];
 };
 
 export type AuthKeyStructure = {

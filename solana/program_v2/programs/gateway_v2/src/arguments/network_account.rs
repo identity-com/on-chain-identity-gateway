@@ -72,8 +72,6 @@ pub struct CreateNetworkData {
     pub auth_threshold: u8,
     /// The [`GatekeeperNetwork::pass_expire_time`].
     pub pass_expire_time: i64,
-    /// The [`GatekeeperNetwork::network_data_len`].
-    pub network_data_len: u16,
     /// The [`GatekeeperNetwork::fees`].
     pub fees: Vec<NetworkFees>,
     /// The [`GatekeeperNetwork::auth_keys`].
