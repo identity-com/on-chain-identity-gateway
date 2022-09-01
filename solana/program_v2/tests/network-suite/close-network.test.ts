@@ -1,6 +1,6 @@
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { GatewayService } from "../../src/GatewayService";
-import { GatewayV2 } from "../../src/gateway_v2";
+import { GatewayV2 } from "../../target/types/gateway_v2";
 import * as anchor from "@project-serum/anchor";
 import { airdrop } from "../../src/lib/utils";
 import { expect } from "chai";
