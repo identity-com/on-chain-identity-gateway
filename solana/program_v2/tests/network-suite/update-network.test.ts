@@ -1,6 +1,6 @@
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { GatewayService } from "../../src/GatewayService";
-import { GatewayV2 } from "../../src/gateway_v2";
+import { GatewayV2 } from "../../target/types/gateway_v2";
 import * as anchor from "@project-serum/anchor";
 import { airdrop } from "../../src/lib/utils";
 import { expect } from "chai";
@@ -55,8 +55,8 @@ describe("Gateway v2 Client", () => {
           {
             authThreshold: 1,
             passExpireTime: 500,
-            fees: { add: [{}], remove: [{}] },
-            authKeys: [{ flags: 1, key: authorityKeypair.publicKey }],
+            fees: { add: [], remove: [] },
+            authKeys: [],
           },
           authorityKeypair.publicKey
         )
