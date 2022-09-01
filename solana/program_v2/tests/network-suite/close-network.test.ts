@@ -4,6 +4,7 @@ import { GatewayV2 } from "../../src/gateway_v2";
 import * as anchor from "@project-serum/anchor";
 import { airdrop } from "../../src/lib/utils";
 import { expect } from "chai";
+import { describe } from "mocha";
 
 describe("Gateway v2 Client", () => {
   anchor.setProvider(anchor.AnchorProvider.env());

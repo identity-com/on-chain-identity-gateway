@@ -5,11 +5,6 @@ import * as anchor from "@project-serum/anchor";
 import { airdrop } from "../../src/lib/utils";
 import { expect } from "chai";
 import { describe } from "mocha";
-import {
-  AuthKeyStructure,
-  FeeStructure,
-  UpdateFeeStructure,
-} from "../../src/lib/types";
 
 describe("Gateway v2 Client", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
