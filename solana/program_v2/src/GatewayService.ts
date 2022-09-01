@@ -157,7 +157,6 @@ export class GatewayService {
     data: CreateNetworkData = {
       authThreshold: 1,
       passExpireTime: 16,
-      networkDataLen: 0,
       signerBump: 0,
       fees: [],
       authKeys: [{ flags: 1, key: this._wallet.publicKey }],
@@ -170,7 +169,6 @@ export class GatewayService {
       .createNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        networkDataLen: data.networkDataLen,
         fees: data.fees,
         authKeys: data.authKeys,
       })
@@ -196,19 +194,16 @@ export class GatewayService {
     data: UpdateNetworkData = {
       authThreshold: 1,
       passExpireTime: 360,
-      networkDataLen: 0,
       fees: { add: [], remove: [] },
       authKeys: [{ flags: 1, key: this._wallet.publicKey }],
     },
     authority: PublicKey = this._wallet.publicKey
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
-      // TODO?? Why do fees and authKeys have to be 'never' type??
-      // TODO?? networkDataLen doesn't seem to exist in the IDL on UpdateNetworkDat??
       .updateNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        networkDataLen: data.networkDataLen,
+        // TODO?? Why do fees and authKeys have to be 'never' type??
         fees: data.fees as never,
         authKeys: data.authKeys as never,
       })

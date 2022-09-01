@@ -28,7 +28,6 @@ export type AuthKeyStructure = {
 export type CreateNetworkData = {
   authThreshold: number;
   passExpireTime: number;
-  networkDataLen: number;
   signerBump: number;
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
@@ -37,7 +36,6 @@ export type CreateNetworkData = {
 export type UpdateNetworkData = {
   authThreshold: number;
   passExpireTime: number;
-  networkDataLen: number;
   fees: UpdateFeeStructure;
   authKeys: AuthKeyStructure[];
 };
