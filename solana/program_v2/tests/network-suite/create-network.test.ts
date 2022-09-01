@@ -48,7 +48,6 @@ describe("Gateway v2 Client", () => {
         .createNetwork({
           authThreshold: 1,
           passExpireTime: 400,
-          networkDataLen: 0,
           signerBump: 0,
           fees: [
             {
