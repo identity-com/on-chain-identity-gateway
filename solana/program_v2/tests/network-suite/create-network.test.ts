@@ -40,9 +40,8 @@ describe("Gateway v2 Client", () => {
 
       const createdNetwork = await service.getNetworkAccount();
 
-      // console.log(createdNetwork);
       expect(createdNetwork).to.not.be.null;
-    });
+    }).timeout(10000);
     it("Creates a Network w/ Non-Default Values", async function () {
       await service
         .createNetwork({
@@ -70,6 +69,6 @@ describe("Gateway v2 Client", () => {
       const createdNetwork = await service.getNetworkAccount();
 
       expect(createdNetwork?.passExpireTime).to.equal(400);
-    });
+    }).timeout(10000);
   });
 });

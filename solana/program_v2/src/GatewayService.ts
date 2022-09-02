@@ -191,7 +191,7 @@ export class GatewayService {
 
   updateNetwork(
     data: UpdateNetworkData,
-    authority: PublicKey = this._wallet.publicKey,
+    authority: PublicKey = this._wallet.publicKey
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
       .updateNetwork({
