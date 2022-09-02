@@ -23,10 +23,11 @@ impl UpdateNetwork {
         network: &mut Account<GatekeeperNetwork>,
         authority: &mut Signer,
     ) -> Result<()> {
-        if data.auth_keys.add.is_empty() && data.auth_keys.remove.is_empty() {
-            // no auth keys to add/remove
-            return Ok(());
-        }
+        // MARTIN: This case is not required, correct?
+        // if data.auth_keys.add.is_empty() && data.auth_keys.remove.is_empty() {
+        //     // no auth keys to add/remove
+        //     return Ok(());
+        // }
 
         if !Self::can_access(&mut network.auth_keys, authority, NetworkKeyFlags::AUTH) {
             return Err(error!(ErrorCode::InsufficientAccessAuthKeys));

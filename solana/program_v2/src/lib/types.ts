@@ -16,6 +16,11 @@ export type FeeStructure = {
 };
 
 export type UpdateFeeStructure = {
+  add: FeeStructure[];
+  remove: PublicKey[];
+};
+
+export type UpdateAuthKeytructure = {
   add: AuthKeyStructure[];
   remove: PublicKey[];
 };
@@ -37,7 +42,7 @@ export type UpdateNetworkData = {
   authThreshold: number;
   passExpireTime: number;
   fees: UpdateFeeStructure;
-  authKeys: AuthKeyStructure[];
+  authKeys: UpdateAuthKeytructure;
 };
 export type NetworkAccount = {
   version: number;
