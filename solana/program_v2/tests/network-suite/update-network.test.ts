@@ -56,7 +56,7 @@ describe("Gateway v2 Client", () => {
             authThreshold: 1,
             passExpireTime: 500,
             fees: { add: [], remove: [] },
-            authKeys: [],
+            authKeys: { add: [], remove: [] },
           },
           authorityKeypair.publicKey
         )

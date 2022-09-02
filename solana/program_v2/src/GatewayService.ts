@@ -1,4 +1,3 @@
-// @ts-ignore
 import { GatewayV2, IDL } from "../target/types/gateway_v2";
 import {
   AnchorProvider,
@@ -195,7 +194,10 @@ export class GatewayService {
       authThreshold: 1,
       passExpireTime: 360,
       fees: { add: [], remove: [] },
-      authKeys: [{ flags: 1, key: this._wallet.publicKey }],
+      authKeys: {
+        add: [],
+        remove: [],
+      },
     },
     authority: PublicKey = this._wallet.publicKey
   ): GatewayServiceBuilder {
@@ -203,7 +205,7 @@ export class GatewayService {
       .updateNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        // TODO?? Why do fees and authKeys have to be 'never' type??
+        // // TODO?? Why do fees and authKeys have to be 'never' type??
         fees: data.fees as never,
         authKeys: data.authKeys as never,
       })

@@ -81,7 +81,7 @@ pub struct CreateNetworkData {
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct UpdateFees {
     pub add: Vec<NetworkFees>,
-    pub remove: Vec<NetworkFees>,
+    pub remove: Vec<Pubkey>,
 }
 
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
