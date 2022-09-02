@@ -47,14 +47,7 @@ describe("Gateway v2 Client", () => {
   describe("Close Network", () => {
     it("Should Close Network Properly", async function () {
       let networkAccount = await service.getNetworkAccount();
-      // console.log(networkAccount);
-      // console.log("Authority: " + authority.publicKey.toBase58());
-      // console.log(
-      //   "Initial Authority: " + networkAccount?.initialAuthority.toBase58()
-      // );
-
       await service.closeNetwork().rpc();
-
       networkAccount = await service.getNetworkAccount();
       expect(networkAccount).to.be.null;
     }).timeout(10000);

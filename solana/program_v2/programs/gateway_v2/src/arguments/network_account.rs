@@ -96,7 +96,7 @@ pub struct UpdateNetworkData {
     pub auth_threshold: u8,
     /// The [`GatekeeperNetwork::pass_expire_time`].
     pub pass_expire_time: Option<i64>,
-    /// The [`GatekeeperNetwork::signer_bump`].
+    /// The [`GatekeeperNetwork::fees`].
     pub fees: UpdateFees,
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: UpdateKeys,

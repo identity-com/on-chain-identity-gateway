@@ -5,6 +5,7 @@ import * as anchor from "@project-serum/anchor";
 import { airdrop } from "../../src/lib/utils";
 import { expect } from "chai";
 import { describe } from "mocha";
+import { NetworkAccount } from "../../src/lib/types";
 
 describe("Gateway v2 Client", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -30,7 +31,6 @@ describe("Gateway v2 Client", () => {
     [dataAccount] = await GatewayService.createNetworkAddress(
       authority.publicKey
     );
-    console.log(authority.payer.publicKey);
 
     service = await GatewayService.buildFromAnchor(
       program,
@@ -42,32 +42,62 @@ describe("Gateway v2 Client", () => {
 
     // service = await GatewayService.build(dataAccount, authority, "localnet")
 
-    await service.createNetwork().rpc();
+    await service
+      .createNetwork({
+        authThreshold: 1,
+        passExpireTime: 400,
+        signerBump: 0,
+        fees: [
+          {
+            token: programProvider.wallet.publicKey,
+            issue: 0.0001,
+            refresh: 0.0001,
+            expire: 0.0001,
+            verify: 0.0001,
+          },
+        ],
+        authKeys: [
+          {
+            flags: 1,
+            key: programProvider.wallet.publicKey,
+          },
+        ],
+      })
+      .rpc();
   });
 
   describe("Update Network", () => {
     it.only("Should Update Network Properly", async function () {
-      let networkAccount = await service.getNetworkAccount();
-      console.log(networkAccount?.initialAuthority);
+      let networkAccount =
+        (await service.getNetworkAccount()) as NetworkAccount;
+      console.log(networkAccount);
       await service
         .updateNetwork(
           // TODO: I think the error here is something to do with passing in the right authority
           {
             authThreshold: 1,
             passExpireTime: 500,
-            fees: { add: [], remove: [] },
-            authKeys: { add: [], remove: [] },
+            fees: {
+              add: [
+                {
+                  token: Keypair.generate().publicKey,
+                  issue: 0.0001,
+                  refresh: 0.0001,
+                  expire: 0.0001,
+                  verify: 0.0001,
+                },
+              ],
+              remove: [],
+            },
+            authKeys: {
+              add: [{ flags: 1, key: Keypair.generate().publicKey }],
+              remove: [],
+            },
           },
-          authorityKeypair.publicKey
+          dataAccount,
+          authorityKeypair
         )
         .rpc();
-      // authThreshold: number;
-      // passExpireTime: number;
-      // networkDataLen: number;
-      // fees: UpdateFeeStructure;
-      // authKeys: AuthKeyStructure[];
-
-      networkAccount = await service.getNetworkAccount();
       expect(networkAccount?.passExpireTime).to.equal(500);
     }).timeout(10000);
   });

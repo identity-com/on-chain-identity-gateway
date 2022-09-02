@@ -190,29 +190,24 @@ export class GatewayService {
   }
 
   updateNetwork(
-    data: UpdateNetworkData = {
-      authThreshold: 1,
-      passExpireTime: 360,
-      fees: { add: [], remove: [] },
-      authKeys: {
-        add: [],
-        remove: [],
-      },
-    },
-    authority: PublicKey = this._wallet.publicKey
+    data: UpdateNetworkData,
+    authority: PublicKey,
+    authorityKeypair: Keypair
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
       .updateNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        // // TODO?? Why do fees and authKeys have to be 'never' type??
-        fees: data.fees as never,
-        authKeys: data.authKeys as never,
+        // TODO?? Why do fees and authKeys have to be 'never' type??
+        // @ts-ignore
+        fees: data.fees,
+        // @ts-ignore
+        authKeys: data.authKeys,
       })
       .accounts({
-        network: Keypair.generate().publicKey,
+        network: this._dataAccount,
+        authority: authorityKeypair.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
-        authority: authority,
       })
       .instruction();
 
