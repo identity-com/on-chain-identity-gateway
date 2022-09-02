@@ -6,6 +6,7 @@ import { airdrop } from "../../src/lib/utils";
 import { expect } from "chai";
 import { describe } from "mocha";
 import { NetworkAccount } from "../../src/lib/types";
+import {NetworkKeyFlags} from "../../src/lib/constants";
 
 describe("Gateway v2 Client", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -19,14 +20,14 @@ describe("Gateway v2 Client", () => {
   let authority;
 
   before(async () => {
-    authorityKeypair = Keypair.generate();
-    authority = new anchor.Wallet(authorityKeypair);
-    // authority = programProvider.wallet;
-    await airdrop(
-      programProvider.connection,
-      authority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
+    // authorityKeypair = Keypair.generate();
+    // authority = new anchor.Wallet(authorityKeypair);
+    authority = programProvider.wallet;
+    // await airdrop(
+    //   programProvider.connection,
+    //   authority.publicKey,
+    //   LAMPORTS_PER_SOL * 2
+    // );
 
     [dataAccount] = await GatewayService.createNetworkAddress(
       authority.publicKey
@@ -36,8 +37,7 @@ describe("Gateway v2 Client", () => {
       program,
       dataAccount,
       "localnet",
-      programProvider,
-      authority
+      programProvider
     );
 
     // service = await GatewayService.build(dataAccount, authority, "localnet")
@@ -58,7 +58,7 @@ describe("Gateway v2 Client", () => {
         ],
         authKeys: [
           {
-            flags: 1,
+            flags: NetworkKeyFlags.AUTH | NetworkKeyFlags.SET_EXPIRE_TIME,
             key: programProvider.wallet.publicKey,
           },
         ],
@@ -90,12 +90,10 @@ describe("Gateway v2 Client", () => {
               remove: [],
             },
             authKeys: {
-              add: [{ flags: 1, key: Keypair.generate().publicKey }],
+              add: [],
               remove: [],
             },
           },
-          dataAccount,
-          authorityKeypair
         )
         .rpc();
       expect(networkAccount?.passExpireTime).to.equal(500);
