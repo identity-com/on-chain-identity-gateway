@@ -39,8 +39,6 @@ describe("Gateway v2 Client", () => {
       authority
     );
 
-    // service = await GatewayService.build(dataAccount, authority, "localnet")
-
     await service.createNetwork().rpc();
   });
 
