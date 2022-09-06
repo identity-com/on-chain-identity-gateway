@@ -21,6 +21,7 @@ describe("Gateway v2 Client", () => {
   let dataAccount: PublicKey;
   let authority: Wallet;
   const extraAuthKey = Keypair.generate();
+  const feeKeypair = Keypair.generate();
 
   before(async () => {
     authority = programProvider.wallet;
@@ -50,6 +51,13 @@ describe("Gateway v2 Client", () => {
             refresh: 0.0001,
             expire: 0.0001,
             verify: 0.0001,
+          },
+          {
+            token: feeKeypair.publicKey,
+            issue: 100,
+            refresh: 100,
+            expire: 100,
+            verify: 100,
           },
         ],
         authKeys: [
@@ -235,10 +243,9 @@ describe("Gateway v2 Client", () => {
         originalKeyAfterUpdate?.flags
       );
     }).timeout(10000);
-    it.only("Should update fees correctly", async function () {
-      let authKeypair = Keypair.generate();
+    it("Can add fees correctly", async function () {
+      let additionalFeeToken = Keypair.generate();
       let networkAccount = await service.getNetworkAccount();
-      console.log(networkAccount?.fees);
       await service
         .updateNetwork({
           authThreshold: 1,
@@ -246,7 +253,7 @@ describe("Gateway v2 Client", () => {
           fees: {
             add: [
               {
-                token: Keypair.generate().publicKey,
+                token: additionalFeeToken.publicKey,
                 issue: 100,
                 refresh: 100,
                 expire: 100,
@@ -262,7 +269,35 @@ describe("Gateway v2 Client", () => {
         })
         .rpc();
       networkAccount = await service.getNetworkAccount();
-      console.log(networkAccount?.fees);
+      expect(
+        networkAccount?.fees.filter(
+          (fee) =>
+            fee.token.toBase58() === additionalFeeToken.publicKey.toBase58()
+        ).length
+      ).to.equal(1);
+    }).timeout(10000);
+    it("Can remove fees correctly", async function () {
+      let networkAccount = await service.getNetworkAccount();
+      await service
+        .updateNetwork({
+          authThreshold: 1,
+          passExpireTime: 400,
+          fees: {
+            add: [],
+            remove: [feeKeypair.publicKey],
+          },
+          authKeys: {
+            add: [],
+            remove: [],
+          },
+        })
+        .rpc();
+      networkAccount = await service.getNetworkAccount();
+      expect(
+        networkAccount?.fees.filter(
+          (fee) => fee.token.toBase58() === feeKeypair.publicKey.toBase58()
+        ).length
+      ).to.equal(0);
     }).timeout(10000);
   });
 });
