@@ -21,6 +21,7 @@ import {
 import {
   AuthKeyStructure,
   CreateNetworkData,
+  FeeStructure,
   NetworkAccount,
   UpdateFeeStructure,
   UpdateNetworkData,
@@ -232,9 +233,8 @@ export class GatewayService {
             initialAuthority: acct?.initialAuthority,
             authThreshold: acct?.authThreshold,
             passExpireTime: acct?.passExpireTime.toNumber(),
-            // TODO!: These cannot be included for some reason, even if I add them to the NetworkAccount type. It is expecting 'never' type for some reason
-            // fees: acct?.fees,
-            // authKeys: acct?.authKeys,
+            fees: acct?.fees as FeeStructure[],
+            authKeys: acct?.authKeys as AuthKeyStructure[],
           };
         } else {
           return null;

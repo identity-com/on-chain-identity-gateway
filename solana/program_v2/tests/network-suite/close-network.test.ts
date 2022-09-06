@@ -43,7 +43,7 @@ describe("Gateway v2 Client", () => {
   });
 
   describe("Close Network", () => {
-    it("Should Close Network Properly", async function () {
+    it("Should close network properly", async function () {
       let networkAccount = await service.getNetworkAccount();
       await service.closeNetwork().rpc();
       networkAccount = await service.getNetworkAccount();

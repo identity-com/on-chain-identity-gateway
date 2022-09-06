@@ -35,14 +35,14 @@ describe("Gateway v2 Client", () => {
     );
   });
   describe("Create Network", () => {
-    it("Creates a Network w/ Default Values", async function () {
+    it("Creates a network with default values", async function () {
       await service.createNetwork().rpc();
 
       const createdNetwork = await service.getNetworkAccount();
 
       expect(createdNetwork).to.not.be.null;
     }).timeout(10000);
-    it("Creates a Network w/ Non-Default Values", async function () {
+    it("Creates a network with non-default values", async function () {
       await service
         .createNetwork({
           authThreshold: 1,
