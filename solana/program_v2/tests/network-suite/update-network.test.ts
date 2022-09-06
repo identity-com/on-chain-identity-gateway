@@ -235,5 +235,34 @@ describe("Gateway v2 Client", () => {
         originalKeyAfterUpdate?.flags
       );
     }).timeout(10000);
+    it.only("Should update fees correctly", async function () {
+      let authKeypair = Keypair.generate();
+      let networkAccount = await service.getNetworkAccount();
+      console.log(networkAccount?.fees);
+      await service
+        .updateNetwork({
+          authThreshold: 1,
+          passExpireTime: 400,
+          fees: {
+            add: [
+              {
+                token: Keypair.generate().publicKey,
+                issue: 100,
+                refresh: 100,
+                expire: 100,
+                verify: 100,
+              },
+            ],
+            remove: [],
+          },
+          authKeys: {
+            add: [],
+            remove: [],
+          },
+        })
+        .rpc();
+      networkAccount = await service.getNetworkAccount();
+      console.log(networkAccount?.fees);
+    }).timeout(10000);
   });
 });
