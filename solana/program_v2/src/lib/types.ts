@@ -49,7 +49,7 @@ export type NetworkAccount = {
   initialAuthority: PublicKey;
   authThreshold: number;
   passExpireTime: number;
-  // TODO!: Frankly I don't understand why these are not able to be in here. It seems like the updateNetwork() function takes them as 'never' type, which clearly is not accurate
-  // fees: FeeStructure[];
-  // authKeys: AuthKeyStructure[];
+  fees: FeeStructure[];
+  authKeys: AuthKeyStructure[];
 };
+// TODO!: Frankly I don't understand why these are not able to be in here. It seems like the updateNetwork() function takes them as 'never' type, which clearly is not accurate
