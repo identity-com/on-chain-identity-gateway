@@ -299,5 +299,6 @@ describe("Gateway v2 Client", () => {
         ).length
       ).to.equal(0);
     }).timeout(10000);
+    // TODO: Add test covering the removal of an auth key combined with addition of flags... expect to fail
   });
 });
