@@ -14,20 +14,19 @@ impl UpdateNetwork {
     ) -> Result<()> {
         Self::set_expire_time(data, network, authority)?;
         Self::add_auth_keys(data, network, authority)?;
-
+        Self::add_fees(data, network, authority)?;
         Ok(())
     }
-
     pub fn add_auth_keys(
         data: &UpdateNetworkData,
         network: &mut Account<GatekeeperNetwork>,
         authority: &mut Signer,
     ) -> Result<()> {
         // MARTIN: This case is not required, correct?
-        // if data.auth_keys.add.is_empty() && data.auth_keys.remove.is_empty() {
-        //     // no auth keys to add/remove
-        //     return Ok(());
-        // }
+        if data.auth_keys.add.is_empty() && data.auth_keys.remove.is_empty() {
+            // no auth keys to add/remove
+            return Ok(());
+        }
 
         if !Self::can_access(&mut network.auth_keys, authority, NetworkKeyFlags::AUTH) {
             return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
@@ -62,9 +61,10 @@ impl UpdateNetwork {
                 // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                 if network.auth_keys[key_index].key == *authority.key
                     && !GatekeeperKeyFlags::contains(
-                    &GatekeeperKeyFlags::from_bits_truncate(key.flags),
-                    GatekeeperKeyFlags::AUTH,
-                ) {
+                        &GatekeeperKeyFlags::from_bits_truncate(key.flags),
+                        GatekeeperKeyFlags::AUTH,
+                    )
+                {
                     return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
                 }
 
@@ -75,6 +75,66 @@ impl UpdateNetwork {
 
         Ok(())
     }
+    pub fn add_fees(
+        data: &UpdateNetworkData,
+        network: &mut Account<GatekeeperNetwork>,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        // MARTIN: This case is not required, correct?
+        if data.fees.add.is_empty() && data.fees.remove.is_empty() {
+            // no auth keys to add/remove
+            return Ok(());
+        }
+
+        if !Self::can_access(&mut network.auth_keys, authority, NetworkKeyFlags::AUTH) {
+            return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
+        }
+
+        // remove the fees if they exist
+        for fee in data.fees.remove.iter() {
+            let index: Option<usize> = network.fees.iter().position(|x| x.token == *fee);
+
+            if index.is_none() {
+                return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
+            }
+            // TODO: Don't think we need this because removal of fees is okay?
+            let fee_index = index.unwrap();
+            // if network.fees[key_index].key == *authority.key {
+            //     // Cannot remove own key (TODO?)
+            //     return Err(error!(ErrorCode::InvalidKey));
+            // }
+
+            network.fees.remove(fee_index);
+        }
+
+        for fee in data.fees.add.iter() {
+            let index: Option<usize> = network.fees.iter().position(|x| x.token == fee.token);
+
+            if index.is_none() {
+                // add the fee if it doesn't exist
+                network.fees.push(*fee);
+            } else {
+                let fee_index = index.unwrap();
+
+                // TODO: Don't think this block is necessary
+                // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
+                // if network.auth_keys[key_index].key == *authority.key
+                //     && !GatekeeperKeyFlags::contains(
+                //         &GatekeeperKeyFlags::from_bits_truncate(key.flags),
+                //         GatekeeperKeyFlags::AUTH,
+                //     )
+                // {
+                //     return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
+                // }
+
+                // update the existing key with new fees
+                network.fees[fee_index] = *fee;
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn set_expire_time(
         data: &UpdateNetworkData,
         network: &mut Account<GatekeeperNetwork>,
@@ -83,7 +143,11 @@ impl UpdateNetwork {
         match data.pass_expire_time {
             Some(pass_expire_time) => {
                 if pass_expire_time != network.pass_expire_time {
-                    if !Self::can_access(&mut network.auth_keys, authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
+                    if !Self::can_access(
+                        &mut network.auth_keys,
+                        authority,
+                        NetworkKeyFlags::SET_EXPIRE_TIME,
+                    ) {
                         return Err(error!(ErrorCode::InsufficientAccessExpiry));
                     }
 
@@ -92,7 +156,7 @@ impl UpdateNetwork {
 
                 Ok(())
             }
-            None => Ok(())
+            None => Ok(()),
         }
     }
     pub fn can_access(
@@ -105,7 +169,8 @@ impl UpdateNetwork {
                 NetworkKeyFlags::from_bits_truncate(key.flags).contains(flag)
                     && *authority.key == key.key
             })
-            .count() > 0
+            .count()
+            > 0
     }
 }
 
