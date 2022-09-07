@@ -243,6 +243,7 @@ describe("Gateway v2 Client", () => {
         originalKeyAfterUpdate?.flags
       );
     }).timeout(10000);
+    // TODO: This test will fail until the program side is updated
     it("Can add fees correctly", async function () {
       let additionalFeeToken = Keypair.generate();
       let networkAccount = await service.getNetworkAccount();
@@ -276,6 +277,7 @@ describe("Gateway v2 Client", () => {
         ).length
       ).to.equal(1);
     }).timeout(10000);
+    // TODO: This test will fail until the program side is updated
     it("Can remove fees correctly", async function () {
       let networkAccount = await service.getNetworkAccount();
       await service
