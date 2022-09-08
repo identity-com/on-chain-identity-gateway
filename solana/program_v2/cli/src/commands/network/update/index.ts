@@ -3,6 +3,7 @@ import { Wallet } from "@project-serum/anchor";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { readFileSync } from "fs";
 import { GatewayService } from "../../../GatewayService";
+import { FeeStructure } from "../../../lib/types";
 import { airdrop } from "../../../lib/utils";
 // import { readJSONSync } from "fs-extra";
 
@@ -88,9 +89,9 @@ Latest Blockhash: [blockhash]
       funder.publicKey,
       LAMPORTS_PER_SOL
     );
-    updateData.fees.add[0].token = new PublicKey(
-      "k2qcXd77iH6shxU7DePDCKrY3JkPxh8JQhMaof472iY"
-    );
+    updateData.fees = updateData.fees.map((fee: FeeStructure) => {
+      fee.token = new PublicKey(fee.token);
+    });
 
     const createdNetworkSignature = await gatewayService
       .updateNetwork(updateData)
