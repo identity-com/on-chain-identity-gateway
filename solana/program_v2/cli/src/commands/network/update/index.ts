@@ -1,8 +1,9 @@
 import { Command, Flags } from "@oclif/core";
 import { Wallet } from "@project-serum/anchor";
-import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { GatewayService } from "../../../../../src/GatewayService";
-import { airdrop } from "../../../../../src/lib/utils";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { readFileSync } from "fs";
+import { GatewayService } from "../../../GatewayService";
+import { airdrop } from "../../../lib/utils";
 // import { readJSONSync } from "fs-extra";
 
 // import { updateNetwork } from "../../../utils/update-network";
@@ -44,16 +45,37 @@ Latest Blockhash: [blockhash]
     const programId = flags.program
       ? flags.program
       : Keypair.generate().publicKey;
-    const localSecretKey = require(flags.key);
+    const localSecretKey = flags.key ? require(flags.key) : null;
     const funder = localSecretKey
       ? Keypair.fromSecretKey(Buffer.from(localSecretKey))
       : Keypair.generate();
-    const data = flags.data ? flags.data : {};
+    const suppliedDataFile = readFileSync(flags.data).toString();
+    const updateData = suppliedDataFile
+      ? JSON.parse(suppliedDataFile)
+      : {
+          authThreshold: 1,
+          passExpireTime: 600,
+          fees: {
+            add: [
+              {
+                token: Keypair.generate().publicKey,
+                issue: 1,
+                refresh: 2,
+                expire: 3,
+                verify: 4,
+              },
+            ],
+            remove: [],
+          },
+          authKeys: {
+            add: [],
+            remove: [],
+          },
+        };
 
     const [network] = await GatewayService.createNetworkAddress(
       funder.publicKey
     );
-    this.log(`${network}`);
     const gatewayService = await GatewayService.build(
       network,
       new Wallet(funder),
@@ -61,16 +83,17 @@ Latest Blockhash: [blockhash]
       "localnet"
     );
     // TODO: Remove airdrop
-    this.log("before airdrop");
     await airdrop(
       gatewayService.getConnection(),
       funder.publicKey,
       LAMPORTS_PER_SOL
     );
-    this.log("after airdrop");
+    updateData.fees.add[0].token = new PublicKey(
+      "k2qcXd77iH6shxU7DePDCKrY3JkPxh8JQhMaof472iY"
+    );
 
     const createdNetworkSignature = await gatewayService
-      .updateNetwork(funder.publicKey, data)
+      .updateNetwork(updateData)
       .rpc();
     this.log(`--${createdNetworkSignature}`);
   }

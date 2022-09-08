@@ -2,8 +2,8 @@ import { Command, Flags } from "@oclif/core";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 // import * as anchor from "@project-serum/anchor";
 // TODO: Import Gateway Service properly with package.json
-import { GatewayService } from "file:../../../../src/GatewayService";
-import { airdrop } from "../../../../../src/lib/utils";
+import { GatewayService } from "../../../GatewayService";
+import { airdrop } from "../../../lib/utils";
 import { Wallet } from "@project-serum/anchor";
 
 export default class Close extends Command {
