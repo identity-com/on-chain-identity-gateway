@@ -82,7 +82,7 @@ impl UpdateNetwork {
     ) -> Result<()> {
         // MARTIN: This case is not required, correct?
         if data.fees.add.is_empty() && data.fees.remove.is_empty() {
-            // no auth keys to add/remove
+            // no fees to add/remove
             return Ok(());
         }
 
@@ -97,7 +97,7 @@ impl UpdateNetwork {
             if index.is_none() {
                 return Err(error!(ErrorCode::InsufficientAccessAuthKeys));
             }
-            // TODO: Don't think we need this because removal of fees is okay?
+            // TODO: Don't think we need this because removal of fees is okay? Could be wrong
             let fee_index = index.unwrap();
             // if network.fees[key_index].key == *authority.key {
             //     // Cannot remove own key (TODO?)
@@ -116,7 +116,7 @@ impl UpdateNetwork {
             } else {
                 let fee_index = index.unwrap();
 
-                // TODO: Don't think this block is necessary
+                // TODO: Don't think this block is necessary but not 100% certain
                 // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                 // if network.auth_keys[key_index].key == *authority.key
                 //     && !GatekeeperKeyFlags::contains(
