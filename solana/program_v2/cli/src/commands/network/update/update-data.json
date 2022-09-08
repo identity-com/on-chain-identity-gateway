@@ -1,0 +1,20 @@
+{
+    "authThreshold": 1,
+    "passExpireTime": 600,
+    "fees": {
+      "add": [
+        {
+          "token": "k2qcXd77iH6shxU7DePDCKrY3JkPxh8JQhMaof472iY",
+          "issue": 1,
+          "refresh": 2,
+          "expire": 3,
+          "verify": 4
+        }
+      ],
+      "remove": []
+    },
+    "authKeys": {
+      "add": [],
+      "remove": []
+    }
+  }
