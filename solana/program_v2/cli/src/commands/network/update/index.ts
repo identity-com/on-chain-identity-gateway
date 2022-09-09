@@ -45,7 +45,7 @@ Latest Blockhash: [blockhash]
     const { flags } = await this.parse(Update);
     const programId = flags.program
       ? flags.program
-      : Keypair.generate().publicKey;
+      : "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe";
     const localSecretKey = flags.key ? require(flags.key) : null;
     const funder = localSecretKey
       ? Keypair.fromSecretKey(Buffer.from(localSecretKey))

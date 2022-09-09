@@ -19,7 +19,7 @@ declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
 use crate::account::NetworkAuthKey;
 use crate::arguments::*;
-use crate::instructions::{CreateNetwork, UpdateNetwork};
+use crate::instructions::{CreateNetworkData, UpdateNetworkData};
 use crate::types::NetworkKeyFlags;
 use anchor_lang::prelude::*;
 
@@ -37,7 +37,7 @@ pub mod gateway_v2 {
         ctx: Context<CreateNetworkAccount>,
         data: CreateNetworkData,
     ) -> Result<()> {
-        CreateNetwork::process(
+        instructions::create_network(
             *ctx.accounts.authority.key,
             *ctx.bumps.get("network").unwrap(),
             data,
@@ -53,7 +53,7 @@ pub mod gateway_v2 {
         //     !msg("{}", acc);
         // });
 
-        UpdateNetwork::process(
+        instructions::update_network(
             &data,
             &mut ctx.accounts.network,
             &mut ctx.accounts.authority,
