@@ -1,5 +1,6 @@
 use crate::account::*;
 use crate::account::{GatekeeperNetwork, NetworkAuthKey};
+use crate::instructions::{CreateNetworkData, UpdateFees, UpdateKeys, UpdateNetworkData};
 use crate::types::NetworkFees;
 use anchor_lang::prelude::*;
 
@@ -66,41 +67,41 @@ pub struct CloseNetworkAccount<'info> {
 }
 
 // /// Data for [`CreateNetwork`].
-#[derive(Debug, AnchorSerialize, AnchorDeserialize)]
-pub struct CreateNetworkData {
-    /// The [`GatekeeperNetwork::auth_threshold`].
-    pub auth_threshold: u8,
-    /// The [`GatekeeperNetwork::pass_expire_time`].
-    pub pass_expire_time: i64,
-    /// The [`GatekeeperNetwork::fees`].
-    pub fees: Vec<NetworkFees>,
-    /// The [`GatekeeperNetwork::auth_keys`].
-    pub auth_keys: Vec<NetworkAuthKey>,
-}
+// #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
+// pub struct CreateNetworkData {
+//     /// The [`GatekeeperNetwork::auth_threshold`].
+//     pub auth_threshold: u8,
+//     /// The [`GatekeeperNetwork::pass_expire_time`].
+//     pub pass_expire_time: i64,
+//     /// The [`GatekeeperNetwork::fees`].
+//     pub fees: Vec<NetworkFees>,
+//     /// The [`GatekeeperNetwork::auth_keys`].
+//     pub auth_keys: Vec<NetworkAuthKey>,
+// }
 
-#[derive(Debug, AnchorSerialize, AnchorDeserialize)]
-pub struct UpdateFees {
-    pub add: Vec<NetworkFees>,
-    pub remove: Vec<Pubkey>,
-}
+// #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
+// pub struct UpdateFees {
+//     pub add: Vec<NetworkFees>,
+//     pub remove: Vec<Pubkey>,
+// }
 
-#[derive(Debug, AnchorSerialize, AnchorDeserialize)]
-pub struct UpdateKeys {
-    pub add: Vec<NetworkAuthKey>,
-    pub remove: Vec<Pubkey>,
-}
+// #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
+// pub struct UpdateKeys {
+//     pub add: Vec<NetworkAuthKey>,
+//     pub remove: Vec<Pubkey>,
+// }
 
-#[derive(Debug, AnchorSerialize, AnchorDeserialize)]
-pub struct UpdateNetworkData {
-    /// The [`GatekeeperNetwork::auth_threshold`].
-    pub auth_threshold: u8,
-    /// The [`GatekeeperNetwork::pass_expire_time`].
-    pub pass_expire_time: Option<i64>,
-    /// The [`GatekeeperNetwork::fees`].
-    pub fees: UpdateFees,
-    /// The [`GatekeeperNetwork::auth_keys`].
-    pub auth_keys: UpdateKeys,
-}
+// #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
+// pub struct UpdateNetworkData {
+//     /// The [`GatekeeperNetwork::auth_threshold`].
+//     pub auth_threshold: u8,
+//     /// The [`GatekeeperNetwork::pass_expire_time`].
+//     pub pass_expire_time: Option<i64>,
+//     /// The [`GatekeeperNetwork::fees`].
+//     pub fees: UpdateFees,
+//     /// The [`GatekeeperNetwork::auth_keys`].
+//     pub auth_keys: UpdateKeys,
+// }
 
 // use crate::accounts::GatekeeperNetwork;
 // use crate::GatewayAccountList;
