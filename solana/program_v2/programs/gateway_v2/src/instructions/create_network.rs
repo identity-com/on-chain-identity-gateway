@@ -1,6 +1,7 @@
 use crate::state::{GatekeeperNetwork, NetworkAuthKey, GatekeeperNetworkSize};
 use crate::types::{NetworkFees, NetworkKeyFlags};
 use crate::constants::NETWORK_SEED;
+use crate::errors::CreateNetworkErrors;
 use anchor_lang::prelude::*;
 
 pub fn create_network(
@@ -11,7 +12,7 @@ pub fn create_network(
 ) -> Result<()> {
     // Check there are auth_keys provided (TODO: Is this necessary? The next check implies this)
     if data.auth_keys.is_empty() {
-        return Err(error!(ErrorCode::NoAuthKeys));
+        return Err(error!(CreateNetworkErrors::NoAuthKeys));
     }
 
     // Check if there are enough auth_keys with the AUTH flag set
@@ -24,7 +25,7 @@ pub fn create_network(
         .count()
         < data.auth_threshold as usize
     {
-        return Err(error!(ErrorCode::InsufficientAuthKeys));
+        return Err(error!(CreateNetworkErrors::InsufficientAuthKeys));
     }
 
     network.auth_threshold = data.auth_threshold;
@@ -37,19 +38,6 @@ pub fn create_network(
     Ok(())
 }
 
-#[error_code]
-pub enum ErrorCode {
-    #[msg("No auth keys provided")]
-    NoAuthKeys,
-    #[msg("Not enough auth keys provided")]
-    InsufficientAuthKeys,
-    #[msg("Insufficient access to update auth keys")]
-    InsufficientAccessAuthKeys,
-    #[msg("Insufficient access to set expiry time")]
-    InsufficientAccessExpiry,
-    #[msg("Auth key not found")]
-    AuthKeyNotFound,
-}
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct CreateNetworkData {
     /// The [`GatekeeperNetwork::auth_threshold`].

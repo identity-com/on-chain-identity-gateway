@@ -14,4 +14,19 @@ pub enum CreateNetworkErrors {
     AuthKeyNotFound,
 }
 
+#[error_code]
+pub enum UpdateNetworkErrors {
+    #[msg("No auth keys provided")]
+    NoAuthKeys,
+    #[msg("Not enough auth keys provided")]
+    InsufficientAuthKeys,
+    #[msg("Invalid key provided")]
+    InvalidKey,
+    #[msg("Insufficient access to update auth keys")]
+    InsufficientAccessAuthKeys,
+    #[msg("Insufficient access to set expiry time")]
+    InsufficientAccessExpiry,
+    #[msg("Auth key not found")]
+    AuthKeyNotFound,
+}
 

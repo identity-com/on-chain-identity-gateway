@@ -1,4 +1,4 @@
-use crate::types::NetworkFees;
+use crate::types::{NetworkFees, NetworkKeyFlags};
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorSerialize, AnchorDeserialize};
 use crate::util::*;
@@ -45,6 +45,20 @@ impl GatekeeperNetwork {
             + OC_SIZE_U8 // signer_bump
             + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * arg.fees_count as usize // fees
             + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize // auth_keys
+    }
+
+    pub fn can_access(
+        &self,
+        authority: &mut Signer,
+        flag: NetworkKeyFlags,
+    ) -> bool {
+        self.auth_keys.iter()
+            .filter(|key| {
+                NetworkKeyFlags::from_bits_truncate(key.flags).contains(flag)
+                    && *authority.key == key.key
+            })
+            .count()
+            > 0
     }
 }
 
