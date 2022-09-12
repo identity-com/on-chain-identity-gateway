@@ -1,8 +1,10 @@
 name: Ethereum Smart Contract
 on:
-  pull_request:
+  push:
     paths:
       - 'ethereum/smart-contract/**'
+      - '.github/**'
+  pull_request:
 jobs:
   ethereum-gateway-smart-contract-test:
     name: Build and test the ethereum smart-contract code on ${{ matrix.node }} and ${{ matrix.os }}
@@ -12,7 +14,7 @@ jobs:
       matrix:
         node: ['16.x']
         os: [ubuntu-latest]
-        
+
     defaults:
       run:
         working-directory: ./ethereum/smart-contract
@@ -20,7 +22,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-        
+
       - name: Use Node ${{ matrix.node }}
         uses: actions/setup-node@v1
         with:
