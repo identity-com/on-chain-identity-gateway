@@ -4,7 +4,10 @@ import { GatewayV2 } from '../../target/types/gateway_v2';
 import * as anchor from '@project-serum/anchor';
 import { airdrop } from '../../src/lib/utils';
 import { expect } from 'chai';
+import * as chai from 'chai';
 import { describe } from 'mocha';
+import chaiAsPromised from 'chai-as-promised';
+chai.use(chaiAsPromised);
 
 describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -49,5 +52,11 @@ describe('Gateway v2 Client', () => {
       networkAccount = await service.getNetworkAccount();
       expect(networkAccount).to.be.null;
     }).timeout(10000);
+    it("Shouldn't allow a random authority to close the network", async function () {
+      let networkAccount = await service.getNetworkAccount();
+      expect(
+        service.closeNetwork(undefined, Keypair.generate().publicKey).rpc()
+      ).to.be.eventually.rejected;
+    });
   });
 });
