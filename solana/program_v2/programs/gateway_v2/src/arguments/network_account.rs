@@ -1,5 +1,5 @@
-use crate::account::*;
-use crate::account::{GatekeeperNetwork, NetworkAuthKey};
+use crate::state::*;
+use crate::state::{GatekeeperNetwork, NetworkAuthKey};
 use crate::instructions::{CreateNetworkData, UpdateFees, UpdateKeys, UpdateNetworkData};
 use crate::types::NetworkFees;
 use anchor_lang::prelude::*;

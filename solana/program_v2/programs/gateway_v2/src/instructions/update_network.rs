@@ -1,4 +1,4 @@
-use crate::account::GatekeeperNetwork;
+use crate::state::GatekeeperNetwork;
 use crate::types::{GatekeeperKeyFlags, NetworkFees};
 use crate::{NetworkAuthKey, NetworkKeyFlags};
 use anchor_lang::prelude::*;
