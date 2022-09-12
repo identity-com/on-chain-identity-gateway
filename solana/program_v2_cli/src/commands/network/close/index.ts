@@ -1,9 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 // import * as anchor from "@project-serum/anchor";
-// TODO: Import Gateway Service properly with package.json
-import { GatewayService } from "../../../GatewayService";
-import { airdrop } from "../../../lib/utils";
+import { GatewayService } from "@identity.com/solana-gateway-ts-v2/src/GatewayService";
+import { airdrop } from "@identity.com/solana-gateway-ts-v2/src/lib/utils";
 import { Wallet } from "@project-serum/anchor";
 
 export default class Close extends Command {
@@ -53,8 +52,8 @@ network closed
     const programId = flags.program
       ? flags.program
       : "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe";
-    // const funder = flags.funder;
 
+    // eslint-disable-next-line unicorn/prefer-module
     const localSecretKey = require(flags.funder);
     const funder = localSecretKey
       ? Keypair.fromSecretKey(Buffer.from(localSecretKey))
@@ -62,9 +61,7 @@ network closed
 
     // TODO: If program ID and and network match, and maybe a secret key? then close the network
 
-    const [network] = await GatewayService.createNetworkAddress(
-      funder.publicKey
-    );
+    const [network] = await GatewayService.createNetworkAddress(programId);
 
     const gatewayService = await GatewayService.build(
       network,

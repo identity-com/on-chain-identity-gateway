@@ -1,10 +1,10 @@
 import { Command, Flags } from "@oclif/core";
 import { Wallet } from "@project-serum/anchor";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { readFileSync } from "fs";
-import { GatewayService } from "../../../GatewayService";
-import { FeeStructure } from "../../../lib/types";
-import { airdrop } from "../../../lib/utils";
+import { readFileSync } from "node:fs";
+import { GatewayService } from "@identity.com/solana-gateway-ts-v2/src/GatewayService";
+import { FeeStructure } from "@identity.com/solana-gateway-ts-v2/src/lib/types";
+import { airdrop } from "@identity.com/solana-gateway-ts-v2/src/lib/utils";
 // import { readJSONSync } from "fs-extra";
 
 // import { updateNetwork } from "../../../utils/update-network";
@@ -46,6 +46,7 @@ Latest Blockhash: [blockhash]
     const programId = flags.program
       ? flags.program
       : "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe";
+    // eslint-disable-next-line unicorn/prefer-module
     const localSecretKey = flags.key ? require(flags.key) : null;
     const funder = localSecretKey
       ? Keypair.fromSecretKey(Buffer.from(localSecretKey))
@@ -74,9 +75,7 @@ Latest Blockhash: [blockhash]
           },
         };
 
-    const [network] = await GatewayService.createNetworkAddress(
-      funder.publicKey
-    );
+    const [network] = await GatewayService.createNetworkAddress(programId);
     const gatewayService = await GatewayService.build(
       network,
       new Wallet(funder),
@@ -91,6 +90,7 @@ Latest Blockhash: [blockhash]
     );
     updateData.fees = updateData.fees.map((fee: FeeStructure) => {
       fee.token = new PublicKey(fee.token);
+      return fee;
     });
 
     const createdNetworkSignature = await gatewayService
