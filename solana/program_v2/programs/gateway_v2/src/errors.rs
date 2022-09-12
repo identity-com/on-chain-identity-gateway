@@ -29,4 +29,3 @@ pub enum UpdateNetworkErrors {
     #[msg("Auth key not found")]
     AuthKeyNotFound,
 }
-
