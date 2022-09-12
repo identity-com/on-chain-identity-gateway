@@ -1,19 +1,18 @@
-name: Solana v2 Rust
+name: Program
 on:
-  pull_request:
+  push:
     paths:
-      - 'solana/program_v2/**'
-      - 'solana/Cargo.toml'
-      - 'solana/Cargo.lock'
+      - 'solana/program_v2'
+  pull_request:
 jobs:
-  solana-gateway-program-lint:
-    name: Lint the solana rust code on ${{ matrix.rust }} and ${{ matrix.os }}
+  program-lint:
+    name: Format and lint the Gateway V2 on-chain program on Rust ${{ matrix.rust }} and ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [ 'nightly-2022-03-22' ]
-        os: [ ubuntu-latest ]
+        rust: ['nightly-2022-05-18']
+        os: [ubuntu-latest]
 
     steps:
       - name: Checkout repo
@@ -23,45 +22,39 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          components: rustfmt, clippy
           override: true
-
-      - name: Cache build dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            ./solana/target
-          key: cargo-lint-${{ hashFiles('solana/Cargo.lock') }}
-
-      - name: Update dependencies
-        uses: actions-rs/cargo@v1
-        with:
-          command: update
-          args: --manifest-path solana/Cargo.toml
+          profile: minimal
+          components: rustfmt, clippy
 
       - name: Run fmt
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path solana/Cargo.toml --all -- --check
+          args: --manifest-path solana/program_v2/Cargo.toml --all -- --check
 
-      - name: Run clippy
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./solana/program_v2/target
+          key: cargo-clippy-${{ hashFiles('solana/program_v2/Cargo.lock') }}
+
+      - name: Run Clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --tests -p gateway_program_v2 --all-features --manifest-path solana/Cargo.toml -- --deny=warnings
+          args: --manifest-path solana/program_v2/Cargo.toml --tests --workspace --all-targets -- --deny=warnings
 
-  solana-gateway-program-v2-build:
-    name: Build the v2 solana rust code on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
+  program-unit-test:
+    name: Unit test program on Rust ${{ matrix.rust }} and ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [ 'nightly-2022-03-22' ]
-        solana: [ 'stable' ]
-        os: [ ubuntu-latest ]
+        rust: ['nightly-2022-05-18']
+        os: [ubuntu-latest]
 
     steps:
       - name: Checkout repo
@@ -72,21 +65,57 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           override: true
+          profile: minimal
 
       - name: Cache build dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            ./solana/target
-          key: cargo-build-v2-${{ hashFiles('solana/Cargo.lock') }}
+            ./solana/program_v2/target
+          key: cargo-test-${{ hashFiles('solana/program_v2/Cargo.lock') }}
 
-      - name: Update dependencies
+      - name: Run unit tests
         uses: actions-rs/cargo@v1
         with:
-          command: update
-          args: --manifest-path solana/Cargo.toml
+          command: test
+          args: --manifest-path solana/program_v2/Cargo.toml
+
+  anchor-e2e-test:
+    name: Build, Lint Client and test the Gateway V2 on-chain program on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }}, node ${{ matrix.node }}, and ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: ./solana/program_v2
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: [ '16.x' ]
+        rust: ['nightly-2022-05-18']
+        solana: ['v1.10.29']
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+
+      - name: Cache build dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./solana/program_v2/target
+          key: cargo-build-${{ hashFiles('solana/program_v2/Cargo.lock') }}
 
       - name: Cache Solana version
         uses: actions/cache@v2
@@ -100,14 +129,25 @@ jobs:
           sh -c "$(curl -sSfL https://release.solana.com/${{ matrix.solana }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: Run unit tests
-        uses: actions-rs/cargo@v1
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
         with:
-          command: test
-          args: --manifest-path solana/Cargo.toml --features client -p gateway_program_v2
+          node-version: ${{ matrix.node }}
 
-      - name: Build the program and run functional tests
-        uses: actions-rs/cargo@v1
+      - name: Cache node dependencies
+        uses: actions/cache@v2
         with:
-          command: build-bpf
-          args: --manifest-path solana/Cargo.toml -- -p gateway_program_v2
+          path: |
+            ./solana/program_v2/node_modules
+          key: yarn-client-${{ hashFiles('solana/program_v2/yarn.lock') }}
+
+      - name: Install
+        run: yarn install --ignore-scripts --frozen-lockfile
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build program and run integration tests
+        run: |
+          yarn build
+          yarn anchor test
