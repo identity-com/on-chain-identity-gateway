@@ -11,58 +11,127 @@ import {issueGT} from "./tasks/issueGT";
 
 dotenv.config();
 
-const accounts = {
+const derivedAccounts = {
   mnemonic: process.env.MNEMONIC || "test test test test test test test test test test test junk",
   path: process.env.MNEMONIC_PATH || "m/44'/60'/0'/0/",
   initialIndex: 0,
   count: 20,
 }
+const liveAccounts = (process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY) ?
+    [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`]
+    : derivedAccounts;
 
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
-  .addParam('address', 'The wallet to check')
-  .setAction(checkGT)
+    .addParam('address', 'The wallet to check')
+    .setAction(checkGT)
 task('add-gatekeeper', 'check if a wallet has a gateway token for a particular gatekeeper network')
-  .addParam('gatekeeper', 'The gatekeeper to add')
-  .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to add the gatekeeper to')
-  .setAction(addGatekeeper)
+    .addParam('gatekeeper', 'The gatekeeper to add')
+    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to add the gatekeeper to')
+    .setAction(addGatekeeper)
 task('issue-gt', 'issue a gateway token')
-  .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to issue the token against')
-  .addParam('address', 'The wallet to issue the gateway token for')
-  .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
-  .setAction(issueGT)
+    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to issue the token against')
+    .addParam('address', 'The wallet to issue the gateway token for')
+    .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
+    .setAction(issueGT)
 
 module.exports = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
-      accounts, 
+      accounts: derivedAccounts,
     },
     localhost: {
       saveDeployments: true,
-      accounts,
+      accounts: derivedAccounts,
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
+      accounts: liveAccounts,
       chainId: 1,
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
+      accounts: liveAccounts,
       chainId: 3,
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
-      accounts: process.env.PRIVATE_KEY ? [`0x${process.env.PRIVATE_KEY}`] : accounts,
+      accounts: liveAccounts,
       chainId: 4,
+    },
+    goerli: {
+      url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 5,
+    },
+    polygonMumbai: {
+      url: `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 80001,
+    },
+    polygonMainnet: {
+      url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 137,
+    },
+    auroraTestnet: {
+      url: `https://aurora-testnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 1313161555,
+    },
+    auroraMainnet: {
+      url: `https://aurora-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 1313161554,
+    },
+    optimismGoerli: {
+      url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 300,
+    },
+    optimismMainnet: {
+      url: `https://optimism-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 10,
+    },
+    palmTestnet: {
+      url: `https://palm-testnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 11297108099,
+    },
+    palmMainnet: {
+      url: `https://palm-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 11297108109,
+    },
+    arbitrumRinkeby: {
+      url: `https://arbitrum-rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 421611,
+    },
+    arbitrumMainnet: {
+      url: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 42161,
     },
   },
   solidity: {
-    version: "0.8.0",
+    version: "0.8.9",
     settings: {
       optimizer: {
         enabled: true,
@@ -102,6 +171,14 @@ module.exports = {
   namedAccounts: {
     deployer: {
       default: 0,
+    },
+    authority: {
+      default: 1,
+    },
+    gatekeeper: {
+      default: '0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688',
+      localhost: 2,
+      hardhat: 2
     },
   },
 }

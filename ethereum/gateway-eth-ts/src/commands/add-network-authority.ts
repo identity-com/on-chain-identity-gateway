@@ -1,16 +1,14 @@
 import { Command, Flags } from "@oclif/core";
-import { BigNumber, utils, Wallet } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
-import { GatewayToken } from "../contracts/GatewayToken";
+import { utils} from "ethers";
+
+import {makeGatewayTs} from "../utils/oclif/utils";
 import {
-  privateKeyFlag,
-  gatewayTokenAddressFlag,
-  networkFlag,
   confirmationsFlag,
   gasPriceFeeFlag,
-} from "../utils/flags";
-import { TxBase } from "../utils/tx";
-import { mnemonicSigner, privateKeySigner } from "../utils/signer";
+  gatewayTokenAddressFlag,
+  networkFlag,
+  privateKeyFlag
+} from "../utils/oclif/flags";
 
 export default class AddNetworkAuthority extends Command {
   static description = "Add a network authority to a GatewayToken contract";
@@ -44,40 +42,22 @@ export default class AddNetworkAuthority extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(AddNetworkAuthority);
 
-    const pk = flags.privateKey;
-    const authority: string = args.address as string;
-    const provider: BaseProvider = flags.network;
-
-    const signer: Wallet = utils.isValidMnemonic(pk)
-      ? mnemonicSigner(pk, provider)
-      : privateKeySigner(pk, provider);
-
-    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
     const confirmations = flags.confirmations;
 
+    const authority = args.address as string;
+    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+
     this.log(`Adding:
-			network authority ${authority} 
+			authority ${authority} 
 			to GatewayToken ${gatewayTokenAddress}`);
 
-    const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gateway = await makeGatewayTs(flags.network, flags.privateKey, gatewayTokenAddress, flags.gasPriceFee);
+    const sendableTransaction = await gateway.addNetworkAuthority(authority);
 
-    const gasPrice = flags.gasPriceFee;
-    const gasLimit =
-      await gatewayToken.contract.estimateGas.addNetworkAuthority(authority);
-
-    const txParams: TxBase = {
-      gasLimit: gasLimit,
-      gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
-    };
-
-    const tx = await gatewayToken.addNetworkAuthority(authority, txParams)
-    let hash = tx.hash;
-    if (confirmations > 0) {
-      hash = (await tx.wait(confirmations)).transactionHash
-    }
+    const receipt = await sendableTransaction.wait(confirmations);
 
     this.log(
-      `Added gatekeeper to Gateway Token contract. TxHash: ${hash}`
+      `Added network authority to Gateway Token contract. TxHash: ${receipt.transactionHash}`
     );
   }
 }

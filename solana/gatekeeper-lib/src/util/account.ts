@@ -1,5 +1,7 @@
 import { Keypair, Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
-import fs from "node:fs";
+// Not supported before v18
+// eslint-disable-next-line unicorn/prefer-node-protocol
+import * as fs from "fs";
 
 export const MIN_AIRDROP_BALANCE = 100_000_000;
 const sleep = (ms: number): Promise<void> =>

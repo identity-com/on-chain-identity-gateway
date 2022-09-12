@@ -30,9 +30,12 @@ export const getClusterUrl = (cluster: ExtendedCluster): string => {
 };
 
 export const getConnection = (
-  clusterUrl: string = process.env.CLUSTER_URL ||
-    getClusterUrl(process.env.CLUSTER as ExtendedCluster)
-): Connection => new Connection(clusterUrl, SOLANA_COMMITMENT);
+  clusterUrl: string = process.env.SOLANA_CLUSTER_URL ||
+    getClusterUrl(process.env.SOLANA_CLUSTER as ExtendedCluster)
+): Connection => {
+  console.log("Using Cluster URL: " + clusterUrl);
+  return new Connection(clusterUrl, SOLANA_COMMITMENT);
+};
 
 export interface TransactionHolder {
   readonly connection: Connection;

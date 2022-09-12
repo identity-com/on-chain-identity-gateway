@@ -8,4 +8,8 @@ export {
   SentDataTransaction,
   SendableTransaction,
   SendableDataTransaction,
+  ChargeOptions,
+  TransactionOptions,
+  Action,
+  GatekeeperConfig
 } from "./util";
