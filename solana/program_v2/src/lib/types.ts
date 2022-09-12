@@ -1,5 +1,5 @@
-import { PublicKey, Transaction } from "@solana/web3.js";
-import * as anchor from "@project-serum/anchor";
+import { PublicKey, Transaction } from '@solana/web3.js';
+import * as anchor from '@project-serum/anchor';
 
 export interface Wallet {
   signTransaction(tx: Transaction): Promise<Transaction>;

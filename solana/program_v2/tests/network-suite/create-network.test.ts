@@ -1,12 +1,12 @@
-import { GatewayService } from "../../src/GatewayService";
-import { GatewayV2, IDL } from "../../target/types/gateway_v2";
-import * as anchor from "@project-serum/anchor";
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { airdrop } from "../../src/lib/utils";
-import { expect } from "chai";
-import { describe } from "mocha";
+import { GatewayService } from '../../src/GatewayService';
+import { GatewayV2, IDL } from '../../target/types/gateway_v2';
+import * as anchor from '@project-serum/anchor';
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { airdrop } from '../../src/lib/utils';
+import { expect } from 'chai';
+import { describe } from 'mocha';
 
-describe("Gateway v2 Client", () => {
+describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   let service: GatewayService;
 
@@ -29,20 +29,20 @@ describe("Gateway v2 Client", () => {
     service = await GatewayService.buildFromAnchor(
       program,
       dataAccount,
-      "localnet",
+      'localnet',
       programProvider,
       authority
     );
   });
-  describe("Create Network", () => {
-    it("Creates a network with default values", async function () {
+  describe('Create Network', () => {
+    it('Creates a network with default values', async function () {
       await service.createNetwork().rpc();
 
       const createdNetwork = await service.getNetworkAccount();
 
       expect(createdNetwork).to.not.be.null;
     }).timeout(10000);
-    it("Creates a network with non-default values", async function () {
+    it('Creates a network with non-default values', async function () {
       await service
         .createNetwork({
           authThreshold: 1,

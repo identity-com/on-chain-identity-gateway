@@ -12,11 +12,9 @@
       "build": "yarn clean && anchor build && yarn compile",
       "clean": "rimraf -rf ./dist",
       "compile": "tsc -p tsconfig.json",
-      "prepare": "yarn build",
       "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'tests/**/*.ts'",
-      "lint": "eslint src/ --ext .ts",
-      "lint:fix": "yarn lint --fix",
-      "doc": "yarn typedoc src/index.ts --readme none",
+      "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
+      "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
       "create-fixtures": "anchor run createTestFixtureAccount",
       "start-validator": "solana-test-validator --bpf-program FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe ./target/deploy/program_v2.so --reset"
     },
@@ -40,22 +38,10 @@
       "@types/ramda": "^0.27.60",
       "@types/sinon": "^10.0.0",
       "@types/sinon-chai": "^3.2.5",
-      "@typescript-eslint/eslint-plugin": "^4.22.0",
-      "@typescript-eslint/parser": "^4.22.0",
       "chai": "^4.2.0",
       "chai-as-promised": "^7.1.1",
       "chai-subset": "^1.6.0",
       "cross-fetch": "^3.1.4",
-      "eslint": "^7.25.0",
-      "eslint-config-prettier": "^8.3.0",
-      "eslint-config-standard": "^16.0.2",
-      "eslint-plugin-import": "^2.22.1",
-      "eslint-plugin-mocha": "^8.1.0",
-      "eslint-plugin-node": "^11.1.0",
-      "eslint-plugin-prettier": "^3.4.0",
-      "eslint-plugin-promise": "^5.1.0",
-      "eslint-plugin-react": "^7.23.2",
-      "eslint-plugin-standard": "^5.0.0",
       "fetch-mock": "^9.11.0",
       "mocha": "^8.3.2",
       "mocha-circleci-reporter": "^0.0.3",
@@ -67,6 +53,18 @@
       "ts-mocha": "^8.0.0",
       "ts-node": "^10.8.1",
       "typedoc": "^0.21.5",
-      "typescript": "^4.2.4"
+      "typescript": "^4.2.4",
+      "prettier": "^2.6.2"
+    },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint"
     }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  }
   }

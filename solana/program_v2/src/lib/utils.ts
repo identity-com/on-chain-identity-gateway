@@ -1,8 +1,8 @@
-import { PublicKey } from "@solana/web3.js";
-import { web3 } from "@project-serum/anchor";
-import * as anchor from "@project-serum/anchor";
+import { PublicKey } from '@solana/web3.js';
+import { web3 } from '@project-serum/anchor';
+import * as anchor from '@project-serum/anchor';
 
-import { DEFAULT_SEED_STRING, GATEWAY_PROGRAM } from "./constants";
+import { DEFAULT_SEED_STRING, GATEWAY_PROGRAM } from './constants';
 
 export const airdrop = async (
   connection: web3.Connection,

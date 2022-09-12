@@ -1,18 +1,18 @@
-import * as anchor from "@project-serum/anchor";
-import { PublicKey } from "@solana/web3.js";
-import { exec as execCB } from "child_process";
-import * as util from "util";
-import { GatewayV2 } from "../target/types/gateway_v2";
-import { airdrop } from "../src/lib/utils";
-import { GATEWAY_PROGRAM } from "../src/lib/constants";
+import * as anchor from '@project-serum/anchor';
+import { PublicKey } from '@solana/web3.js';
+import { exec as execCB } from 'child_process';
+import * as util from 'util';
+import { GatewayV2 } from '../target/types/gateway_v2';
+import { airdrop } from '../src/lib/utils';
+import { GATEWAY_PROGRAM } from '../src/lib/constants';
 const exec = util.promisify(execCB);
 
-const fixturePath = "./tests/fixtures/accounts/";
+const fixturePath = './tests/fixtures/accounts/';
 
 //copied from anchor
 export async function idlAddress(programId: PublicKey): Promise<PublicKey> {
   const base = (await PublicKey.findProgramAddress([], programId))[0];
-  return await PublicKey.createWithSeed(base, "anchor:idl", programId);
+  return await PublicKey.createWithSeed(base, 'anchor:idl', programId);
 }
 
 (async () => {
@@ -30,7 +30,7 @@ export async function idlAddress(programId: PublicKey): Promise<PublicKey> {
   console.log(
     `anchor idl init --filepath ./target/idl/gateway_v2.json ${GATEWAY_PROGRAM}`
   );
-  console.log("Deploying IDL");
+  console.log('Deploying IDL');
   // Deploy IDL
   await exec(
     `anchor idl init --filepath ./target/idl/gateway_v2.json ${GATEWAY_PROGRAM}`
