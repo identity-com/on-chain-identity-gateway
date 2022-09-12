@@ -152,7 +152,6 @@ jobs:
           yarn build
           yarn anchor test
 
-
  E2E:
     name: Test the gateway_v2 cli against the on-chain program on Solana ${{ matrix.solana }}, Node ${{ matrix.node }}, Rust ${{ matrix.rust }}, and ${{ matrix.os }}
     needs: anchor-e2e-test
