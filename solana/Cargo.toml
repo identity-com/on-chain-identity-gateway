@@ -12,4 +12,4 @@ strip = "debuginfo"
 codegen-units = 1
 
 [profile.test]
-opt-level = 2
+opt-level = 0

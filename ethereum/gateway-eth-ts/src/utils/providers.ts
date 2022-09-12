@@ -1,4 +1,3 @@
-// import { providers } from "ethers";
 import {
   BaseProvider,
   JsonRpcProvider,

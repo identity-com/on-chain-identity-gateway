@@ -4,7 +4,6 @@ import {
   clusterApiUrl,
   Commitment,
   Connection,
-  Message,
   NonceInformation,
   PublicKey,
   SendOptions,
@@ -13,14 +12,13 @@ import {
   TransactionError,
   TransactionSignature,
 } from "@solana/web3.js";
-import bs58 from "bs58";
 import { SOLANA_COMMITMENT } from "./constants";
 
 export type ExtendedCluster = Cluster | "localnet" | "civicnet";
 export const CIVICNET_URL =
   "http://ec2-34-238-243-215.compute-1.amazonaws.com:8899";
 
-export const getClusterUrl = (cluster: ExtendedCluster) => {
+export const getClusterUrl = (cluster: ExtendedCluster): string => {
   switch (cluster) {
     case "localnet":
       return "http://localhost:8899";
@@ -54,7 +52,7 @@ export type HashOrNonce =
 export async function addHashOrNonce(
   transaction: TransactionHolder,
   hashOrNonce: HashOrNonce
-) {
+): Promise<void> {
   if (hashOrNonce === "find") {
     transaction.transaction.recentBlockhash = await transaction.connection
       .getRecentBlockhash()
@@ -66,12 +64,8 @@ export async function addHashOrNonce(
   }
 }
 
-/**
- * from `@solana/web3.js`
- */
-const DEFAULT_SIGNATURE = Buffer.alloc(64).fill(0);
-
 export class SendableTransaction implements TransactionHolder {
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     readonly connection: Connection,
     readonly transaction: Transaction
@@ -85,7 +79,7 @@ export class SendableTransaction implements TransactionHolder {
     options: SendOptions = {},
     ...extraSigners: Signer[]
   ): Promise<SentTransaction> {
-    if (extraSigners.length) {
+    if (extraSigners.length > 0) {
       this.partialSign(...extraSigners);
     }
 
@@ -108,14 +102,17 @@ export class SendableTransaction implements TransactionHolder {
   ): SendableTransaction {
     return new SendableTransaction(connection, Transaction.from(message));
   }
+
   partialSign(...signers: Signer[]): this {
     this.transaction.partialSign(...signers);
     return this;
   }
+
   async addHashOrNonce(hashOrNonce: HashOrNonce): Promise<this> {
     await addHashOrNonce(this, hashOrNonce);
     return this;
   }
+
   feePayer(feePayer: PublicKey): this {
     this.transaction.feePayer = feePayer;
     return this;
@@ -123,6 +120,7 @@ export class SendableTransaction implements TransactionHolder {
 }
 
 export class SendableDataTransaction<T> implements TransactionHolder {
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     readonly sendableTransaction: SendableTransaction,
     readonly data: DataCallback<T>
@@ -131,6 +129,7 @@ export class SendableDataTransaction<T> implements TransactionHolder {
   get connection(): Connection {
     return this.sendableTransaction.connection;
   }
+
   get transaction(): Transaction {
     return this.sendableTransaction.transaction;
   }
@@ -143,14 +142,17 @@ export class SendableDataTransaction<T> implements TransactionHolder {
       .send(options, ...extraSigners)
       .then((t) => t.withData(this.data));
   }
+
   async addHashOrNonce(hashOrNonce: HashOrNonce): Promise<this> {
     await addHashOrNonce(this, hashOrNonce);
     return this;
   }
+
   partialSign(...signers: Signer[]): this {
     this.transaction.partialSign(...signers);
     return this;
   }
+
   feePayer(feePayer: PublicKey): this {
     this.transaction.feePayer = feePayer;
     return this;
@@ -176,12 +178,13 @@ const normalizeDataCallback = <T>(
 ): DataCallback<T> => {
   if (isGeneralDataCallback(d)) {
     return () => Promise.resolve(d());
-  } else {
-    return () => Promise.resolve(d);
   }
+
+  return () => Promise.resolve(d);
 };
 
 export class SentTransaction {
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     readonly connection: Connection,
     readonly signature: TransactionSignature
@@ -203,13 +206,16 @@ export class SentTransaction {
       if (errorCallback) {
         errorCallback(result.value.err);
       } else {
-        throw new Error(`Error confirming transaction: ${result.value.err}`);
+        throw new Error(
+          `Error confirming transaction: ${result.value.err.toString()}`
+        );
       }
     }
   }
 }
 
 export class SentDataTransaction<T> {
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     readonly sentTransaction: SentTransaction,
     readonly data: DataCallback<T>
@@ -224,6 +230,6 @@ export class SentDataTransaction<T> {
     errorCallback?: (error: TransactionError) => void
   ): Promise<T | null> {
     await this.sentTransaction.confirm(commitment, errorCallback);
-    return this.data instanceof Function ? await this.data() : this.data;
+    return this.data instanceof Function ? this.data() : this.data;
   }
 }

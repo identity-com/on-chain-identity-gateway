@@ -1,9 +1,9 @@
 import { addresses, ContractAddresses } from "./lib/addresses";
-import { gatewayTokenAddresses, GatewayTokenItem } from "./lib/gatewaytokens";
-import { BigNumber, Wallet } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
+import { gatewayTokenAddresses } from "./lib/gatewaytokens";
+import { BigNumber, Signer } from "ethers";
+import { getDefaultProvider, Network, Provider } from "@ethersproject/providers";
 
-import { SUBTRACT_GAS_LIMIT, NETWORKS } from "./utils";
+import { NETWORKS, onGatewayTokenChange, removeGatewayTokenChangeListener } from "./utils";
 import { GatewayTokenItems } from "./utils/addresses";
 import {
   FlagsStorage,
@@ -14,21 +14,19 @@ import { checkTokenState, parseTokenState } from "./utils/token-state";
 import { TokenData } from "./utils/types";
 import { generateId } from "./utils/tokenId";
 import { toBytes32 } from "./utils/string";
+import { Forwarder } from "./contracts/Forwarder";
+import { ZERO_BN } from "./utils/constants";
 
 export class GatewayTsBase {
-  provider: BaseProvider;
+  providerOrSigner: Provider | Signer;
 
   networkId: number;
-
-  blockGasLimit: BigNumber;
 
   defaultGas: number;
 
   defaultGasPrice: number;
 
   network: string;
-
-  wallet: Wallet;
 
   gatewayTokenAddresses: string[];
 
@@ -40,63 +38,56 @@ export class GatewayTsBase {
 
   gatewayTokens: GatewayTokenItems = {};
 
-  defaultGatewayToken: string;
+  defaultGatewayToken: string | undefined;
+
+  forwarder: Forwarder;
 
   constructor(
-    provider: BaseProvider,
-    signer?: Wallet,
-    options?: { defaultGas?: number; defaultGasPrice?: any }
+    providerOrSigner: Provider | Signer,
+    network: Network,
+    defaultGatewayToken?: string,
+    options?: { defaultGas?: number; defaultGasPrice?: number }
   ) {
     this.defaultGas = options?.defaultGas || 6_000_000;
     this.defaultGasPrice = options?.defaultGasPrice || 1_000_000_000_000;
 
-    this.wallet = signer;
-
-    this.provider = provider;
-  }
-
-  async init(defaultGatewayToken?: string): Promise<void> {
-    const network = await this.provider.getNetwork();
+    this.providerOrSigner = providerOrSigner || getDefaultProvider();
 
     this.networkId = network.chainId;
     this.network = NETWORKS[this.networkId];
     this.contractAddresses = addresses[this.networkId];
+    this.forwarder = new Forwarder(
+      this.providerOrSigner,
+      addresses[this.networkId].forwarder
+    );
 
     this.gatewayTokenController = new GatewayTokenController(
-      this.wallet || this.provider,
+      this.providerOrSigner,
       addresses[this.networkId].gatewayTokenController
     );
     this.flagsStorage = new FlagsStorage(
-      this.wallet || this.provider,
+      this.providerOrSigner,
       addresses[this.networkId].flagsStorage
     );
-    gatewayTokenAddresses[this.networkId].forEach(
-      (gatewayToken: GatewayTokenItem) => {
-        const tokenAddress = gatewayToken.address;
-
-        if (
-          defaultGatewayToken !== null &&
-          tokenAddress === defaultGatewayToken
-        ) {
-          this.defaultGatewayToken = defaultGatewayToken;
-        }
-
-        this.gatewayTokens[tokenAddress] = {
-          name: gatewayToken.name,
-          symbol: gatewayToken.symbol,
-          address: gatewayToken.address,
-          tokenInstance: new GatewayToken(
-            this.wallet || this.provider,
-            gatewayToken.address
-          ),
-        };
+    for (const gatewayToken of gatewayTokenAddresses[this.networkId]) {
+      const tokenAddress: string = gatewayToken.address;
+      if (
+        defaultGatewayToken !== undefined &&
+        tokenAddress === defaultGatewayToken
+      ) {
+        this.defaultGatewayToken = defaultGatewayToken;
       }
-    );
-  }
 
-  async setGasLimit(): Promise<void> {
-    const block = await this.provider.getBlock("latest");
-    this.blockGasLimit = block.gasLimit.sub(BigNumber.from(SUBTRACT_GAS_LIMIT));
+      this.gatewayTokens[tokenAddress] = {
+        name: gatewayToken.name,
+        symbol: gatewayToken.symbol,
+        address: gatewayToken.address,
+        tokenInstance: new GatewayToken(
+          this.providerOrSigner,
+          gatewayToken.address
+        ),
+      };
+    }
   }
 
   getGatewayTokenContract(gatewayTokenAddress?: string): GatewayToken {
@@ -116,7 +107,7 @@ export class GatewayTsBase {
   }
 
   defaultGatewayTokenContract(): GatewayToken {
-    if (this.defaultGatewayToken !== null) {
+    if (this.defaultGatewayToken) {
       return this.gatewayTokens[this.defaultGatewayToken].tokenInstance;
     }
 
@@ -131,10 +122,11 @@ export class GatewayTsBase {
   ): Promise<boolean> {
     const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
 
-    const result = await (tokenId
+    const result = (await (tokenId
       ? gatewayToken.verifyTokenByTokenID(owner, tokenId)
-      : gatewayToken.verifyToken(owner));
+      : gatewayToken.verifyToken(owner))) as unknown as boolean[];
 
+    // TODO: Not sure why boolean is wrapped in an array here.
     return result[0];
   }
 
@@ -153,19 +145,15 @@ export class GatewayTsBase {
     constrains?: BigNumber,
     gatewayToken?: GatewayToken
   ): Promise<BigNumber> {
-    if (constrains.eq(BigNumber.from("0"))) {
+    constrains = constrains || ZERO_BN;
+    if (constrains.eq(ZERO_BN)) {
       if (gatewayToken === undefined) {
         gatewayToken = this.getGatewayTokenContract(this.defaultGatewayToken);
       }
 
-      const balance: number | BigNumber = await gatewayToken.getBalance(
-        address
-      );
+      const balance = await gatewayToken.getBalance(address);
 
-      constrains =
-        typeof balance === "number"
-          ? BigNumber.from(balance.toString()).add(BigNumber.from("1"))
-          : balance.add(BigNumber.from("1"));
+      constrains = balance.add(BigNumber.from("1"));
     }
 
     return generateId(address, constrains);
@@ -174,11 +162,9 @@ export class GatewayTsBase {
   async getDefaultTokenId(
     owner: string,
     gatewayTokenAddress?: string
-  ): Promise<number | BigNumber> {
+  ): Promise<BigNumber> {
     const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
-    const tokenId: number | BigNumber = await gatewayToken.getTokenId(owner);
-
-    return tokenId;
+    return gatewayToken.getTokenId(owner);
   }
 
   async getTokenState(
@@ -218,5 +204,31 @@ export class GatewayTsBase {
     const bytes32 = toBytes32(flag);
 
     return this.flagsStorage.getFlagIndex(bytes32);
+  }
+
+  async subscribeOnGatewayTokenChange(
+    tokenId: BigNumber | string,
+    callback: (gatewayToken: TokenData) => void,
+    gatewayTokenAddress?: string,
+  ): Promise<ReturnType<typeof setInterval>> {
+    const gatewayToken = this.getGatewayTokenContract(gatewayTokenAddress);
+    let provider: Provider;
+
+    if (Signer.isSigner(this.providerOrSigner)) {
+      provider = this.providerOrSigner.provider;
+    } else if (Provider.isProvider(this.providerOrSigner)) {
+      provider = this.providerOrSigner;
+    }
+
+    return onGatewayTokenChange(
+      provider,
+      tokenId,
+      gatewayToken,
+      callback
+    );
+  }
+
+  unsubscribeOnGatewayTokenChange(listenerId: number): void {
+    return removeGatewayTokenChangeListener(listenerId);
   }
 }

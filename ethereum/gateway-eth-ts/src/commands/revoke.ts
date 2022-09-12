@@ -34,6 +34,7 @@ export default class RevokeToken extends Command {
       name: "tokenID",
       required: true,
       description: "Token ID number to revoke",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
     },
   ];
@@ -41,7 +42,7 @@ export default class RevokeToken extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(RevokeToken);
 
-    const tokenID: BigNumber = args.tokenID;
+    const tokenID = args.tokenID as BigNumber;
     const pk = flags.privateKey;
     const provider: BaseProvider = flags.network;
     const confirmations = flags.confirmations;
@@ -60,7 +61,7 @@ export default class RevokeToken extends Command {
 			for owner ${owner}
 			on GatewayToken ${gatewayTokenAddress} contract`);
 
-    const gasPrice = await flags.gasPriceFee;
+    const gasPrice = flags.gasPriceFee;
     const gasLimit = await gatewayToken.contract.estimateGas.revoke(tokenID);
 
     const txParams: TxBase = {
@@ -68,14 +69,14 @@ export default class RevokeToken extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx: any = await (confirmations > 0
-      ? (await gatewayToken.revoke(tokenID, txParams)).wait(confirmations)
-      : gatewayToken.revoke(tokenID, txParams));
+    const tx = await gatewayToken.revoke(tokenID, txParams)
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Revoked existing token with TokenID: ${tokenID.toString()} TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Revoked existing token with TokenID: ${tokenID.toString()} TxHash: ${hash}`
     );
   }
 }
