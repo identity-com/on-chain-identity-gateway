@@ -9,7 +9,7 @@
     "author": "Kevin Colgan <kevin@civic.com>",
     "license": "MIT",
     "scripts": {
-      "build": "yarn clean && yarn compile && yarn doc",
+      "build": "yarn clean && anchor build && yarn compile",
       "clean": "rimraf -rf ./dist",
       "compile": "tsc -p tsconfig.json",
       "prepare": "yarn build",
