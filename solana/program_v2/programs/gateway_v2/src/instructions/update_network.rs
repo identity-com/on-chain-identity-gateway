@@ -1,8 +1,7 @@
 use crate::constants::NETWORK_SEED;
-use crate::errors::NetworkErrors;
 use crate::state::{GatekeeperNetwork, GatekeeperNetworkSize};
-use crate::types::{GatekeeperKeyFlags, NetworkFees};
-use crate::{NetworkAuthKey, NetworkKeyFlags};
+use crate::types::NetworkFees;
+use crate::NetworkAuthKey;
 use anchor_lang::prelude::*;
 
 pub fn update_network(
