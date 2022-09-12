@@ -1,8 +1,10 @@
 name: Ethereum Smart Contract
 on:
-  pull_request:
+  push:
     paths:
       - 'ethereum/smart-contract/**'
+      - '.github/**'
+  pull_request:
 jobs:
   ethereum-gateway-smart-contract-test:
     name: Build and test the ethereum smart-contract code on ${{ matrix.node }} and ${{ matrix.os }}
@@ -39,11 +41,14 @@ jobs:
       - name: Install
         run: yarn
 
-#      - name: Lint
-#        run: yarn lint
-
       - name: Build
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          INFURA_KEY: ${{ secrets.INFURA_KEY }}
         run: yarn build
 
       - name: Test
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          INFURA_KEY: ${{ secrets.INFURA_KEY }}
         run: yarn test

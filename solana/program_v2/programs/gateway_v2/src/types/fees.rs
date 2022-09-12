@@ -1,7 +1,6 @@
+use crate::util::{OnChainSize, OC_SIZE_PUBKEY, OC_SIZE_U16};
 use anchor_lang::prelude::Pubkey;
-use crate::util::{OC_SIZE_PUBKEY, OC_SIZE_U16, OnChainSize};
-use anchor_lang::{AnchorSerialize, AnchorDeserialize};
-
+use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 
 /// Fees that a [`GatekeeperNetwork`] can charge
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Default, Copy)]

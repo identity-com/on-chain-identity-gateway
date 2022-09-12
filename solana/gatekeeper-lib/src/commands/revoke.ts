@@ -28,11 +28,12 @@ Revoked
       name: "gatewayToken",
       required: true,
       description: "The gateway token to revoke",
-      parse: async (input: string) => new PublicKey(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(Revoke);
 
     const { gatewayToken, gatekeeper, service } =

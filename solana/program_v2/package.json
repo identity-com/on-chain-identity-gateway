@@ -30,6 +30,7 @@
       "ramda": "^0.27.1"
     },
     "devDependencies": {
+      "@project-serum/anchor-cli": "^0.25.0",
       "@types/bn.js": "^5.1.0",
       "@types/chai": "^4.2.16",
       "@types/chai-as-promised": "^7.1.3",

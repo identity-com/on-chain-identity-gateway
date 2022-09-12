@@ -2,7 +2,8 @@ import {
   AccountInfo,
   Commitment,
   Connection,
-  GetProgramAccountsConfig,
+  DataSlice,
+  GetProgramAccountsFilter,
   PublicKey,
 } from "@solana/web3.js";
 import {
@@ -14,6 +15,7 @@ import {
 import { GatewayToken, ProgramAccountResponse, State } from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
 import { mapEnumToFeatureName, NetworkFeature } from "./GatewayNetworkData";
+import { encode } from "bs58";
 
 /**
  * Derive the address of the gatekeeper PDA for this gatekeeper
@@ -98,36 +100,61 @@ export const dataToGatewayToken = (
   );
 
 /**
- * Find all gateway tokens for a user on a gatekeeper network, optionally filtering out revoked tokens.
+ * Find all gateway tokens (optionally for a user) on a gatekeeper network, optionally filtering out revoked tokens.
  *
  * Warning - this uses the Solana getProgramAccounts RPC endpoint, which is inefficient and may be
  * blocked by some RPC services.
  *
  * @param connection A solana connection object
- * @param owner The token owner
+ * @param owner The token owner (optional)
  * @param gatekeeperNetwork The network to find a token for
  * @param {boolean=false} includeRevoked If false (default), filter out revoked tokens
+ * @param page If a large number of tokens has been issued, the request to the RPC endpoint may time out.
+ * In this case, enable pagination by setting page variable
+ * Pagination is not supported in the RPC API per-se, but this approximates it by
+ * adding another filter on the first byte of the owner address.
+ * Each page requests the accounts that match that byte.
  * @returns {Promise<GatewayToken[]>} All tokens for the owner
  */
 export const findGatewayTokens = async (
   connection: Connection,
-  owner: PublicKey,
+  owner: PublicKey | undefined,
   gatekeeperNetwork: PublicKey,
-  includeRevoked = false
+  includeRevoked = false,
+  page?: number
 ): Promise<GatewayToken[]> => {
-  const ownerFilter = {
-    memcmp: {
-      offset: GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET,
-      bytes: owner.toBase58(),
-    },
-  };
+  // if owner is specified, filter on the gateway token owner
+  const ownerFilter = owner
+    ? {
+        memcmp: {
+          offset: GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET,
+          bytes: owner.toBase58(),
+        },
+      }
+    : undefined;
+
+  // filter on the gatekeeper network
   const gatekeeperNetworkFilter = {
     memcmp: {
       offset: GATEWAY_TOKEN_ACCOUNT_GATEKEEPER_NETWORK_FIELD_OFFSET,
-      bytes: gatekeeperNetwork?.toBase58(),
+      bytes: gatekeeperNetwork.toBase58(),
     },
   };
-  const filters = [ownerFilter, gatekeeperNetworkFilter];
+
+  const pageFilter =
+    page !== undefined
+      ? {
+          memcmp: {
+            offset: GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET,
+            bytes: encode([page]),
+          },
+        }
+      : undefined;
+
+  const filters = [ownerFilter, gatekeeperNetworkFilter, pageFilter].filter(
+    Boolean
+  ) as GetProgramAccountsFilter[];
+
   const accountsResponse = await connection.getProgramAccounts(PROGRAM_ID, {
     filters,
   });
@@ -280,8 +307,9 @@ export const getFeatureAccountAddress = async (
 
 /**
  * Return true if an address feature exists.
- * @param featureName The name of the feature to set.
- * @param network The network
+ * @param connection
+ * @param feature The feature to check
+ * @param network The gatekeeper network
  */
 export const featureExists = async (
   connection: Connection,

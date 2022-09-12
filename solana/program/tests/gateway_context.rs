@@ -15,7 +15,6 @@ use solana_sdk::{
     transaction::Transaction,
     transport,
 };
-use std::error::Error;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 fn program_test() -> ProgramTest {
@@ -105,7 +104,7 @@ impl GatewayContext {
         &mut self,
         authority: &Pubkey,
         network: &Keypair,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> transport::Result<()> {
         let transaction = Transaction::new_signed_with_payer(
             &[instruction::add_gatekeeper(
                 &self.context.payer.pubkey(),
@@ -119,8 +118,7 @@ impl GatewayContext {
         self.context
             .banks_client
             .process_transaction(transaction)
-            .await?;
-        Ok(())
+            .await
     }
 
     pub async fn issue_gateway_token_transaction(
@@ -130,7 +128,7 @@ impl GatewayContext {
         gatekeeper_account: &Pubkey,
         network: &Pubkey,
         expire_time: Option<UnixTimestamp>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> transport::Result<()> {
         let transaction = Transaction::new_signed_with_payer(
             &[instruction::issue_vanilla(
                 &self.context.payer.pubkey(),
@@ -148,8 +146,7 @@ impl GatewayContext {
         self.context
             .banks_client
             .process_transaction(transaction)
-            .await?;
-        Ok(())
+            .await
     }
 
     pub async fn update_gateway_token_expiry_transaction(
@@ -158,7 +155,7 @@ impl GatewayContext {
         gatekeeper_authority: &Keypair,
         gatekeeper_account: &Pubkey,
         expire_time: UnixTimestamp,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> transport::Result<()> {
         let (gateway_token, _) = get_gateway_token_address_with_seed(
             owner,
             &None,
@@ -178,8 +175,7 @@ impl GatewayContext {
         self.context
             .banks_client
             .process_transaction(transaction)
-            .await?;
-        Ok(())
+            .await
     }
 
     pub async fn set_gateway_token_state_transaction(
@@ -203,15 +199,14 @@ impl GatewayContext {
         self.context
             .banks_client
             .process_transaction(transaction)
-            .await?;
-        Ok(())
+            .await
     }
 
     pub async fn attempt_add_gatekeeper_without_network_signature(
         &mut self,
         authority: &Pubkey,
         network: &Pubkey,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> transport::Result<()> {
         let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(authority, network);
         // create an instruction that doesn't require the network signature.
         let instruction = Instruction::new_with_borsh(
@@ -236,8 +231,7 @@ impl GatewayContext {
         self.context
             .banks_client
             .process_transaction(transaction)
-            .await?;
-        Ok(())
+            .await
     }
 
     pub async fn add_gatekeeper(&mut self) -> Pubkey {

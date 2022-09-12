@@ -1,4 +1,6 @@
-use crate::account::{GatekeeperNetwork, NetworkAuthKey};
+use crate::constants::NETWORK_SEED;
+use crate::errors::CreateNetworkErrors;
+use crate::state::{GatekeeperNetwork, GatekeeperNetworkSize, NetworkAuthKey};
 use crate::types::{NetworkFees, NetworkKeyFlags};
 use anchor_lang::prelude::*;
 
@@ -10,7 +12,7 @@ pub fn create_network(
 ) -> Result<()> {
     // Check there are auth_keys provided (TODO: Is this necessary? The next check implies this)
     if data.auth_keys.is_empty() {
-        return Err(error!(ErrorCode::NoAuthKeys));
+        return Err(error!(CreateNetworkErrors::NoAuthKeys));
     }
 
     // Check if there are enough auth_keys with the AUTH flag set
@@ -23,7 +25,7 @@ pub fn create_network(
         .count()
         < data.auth_threshold as usize
     {
-        return Err(error!(ErrorCode::InsufficientAuthKeys));
+        return Err(error!(CreateNetworkErrors::InsufficientAuthKeys));
     }
 
     network.auth_threshold = data.auth_threshold;
@@ -36,19 +38,6 @@ pub fn create_network(
     Ok(())
 }
 
-#[error_code]
-pub enum ErrorCode {
-    #[msg("No auth keys provided")]
-    NoAuthKeys,
-    #[msg("Not enough auth keys provided")]
-    InsufficientAuthKeys,
-    #[msg("Insufficient access to update auth keys")]
-    InsufficientAccessAuthKeys,
-    #[msg("Insufficient access to set expiry time")]
-    InsufficientAccessExpiry,
-    #[msg("Auth key not found")]
-    AuthKeyNotFound,
-}
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct CreateNetworkData {
     /// The [`GatekeeperNetwork::auth_threshold`].
@@ -59,4 +48,25 @@ pub struct CreateNetworkData {
     pub fees: Vec<NetworkFees>,
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: Vec<NetworkAuthKey>,
+}
+
+#[derive(Accounts, Debug)]
+#[instruction(data: CreateNetworkData)]
+pub struct CreateNetworkAccount<'info> {
+    #[account(
+    init,
+    payer = authority,
+    space = GatekeeperNetwork::on_chain_size_with_arg(
+    GatekeeperNetworkSize{
+    fees_count: data.fees.len() as u16,
+    auth_keys: data.auth_keys.len() as u16,
+    }
+    ),
+    seeds = [NETWORK_SEED, authority.key().as_ref()],
+    bump
+    )]
+    pub network: Account<'info, GatekeeperNetwork>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
