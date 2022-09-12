@@ -1,11 +1,14 @@
 name: Solana Rust
 on:
-  pull_request:
+  push:
     paths:
       - 'solana/program/**'
       - 'solana/integration-lib/**'
       - 'solana/Cargo.toml'
       - 'solana/Cargo.lock'
+      - 'solana/Xargo.toml'
+      - '.github/**'
+  pull_request:
 jobs:
   solana-gateway-program-lint:
     name: Lint the solana rust code on ${{ matrix.rust }} and ${{ matrix.os }}
@@ -13,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['nightly-2022-03-22']
+        rust: ['1.60']
         os: [ubuntu-latest]
 
     steps:
@@ -25,22 +28,15 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           components: rustfmt, clippy
-          override: true
 
       - name: Cache build dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             ./solana/target
           key: cargo-lint-${{ hashFiles('solana/Cargo.lock') }}
-
-      - name: Update dependencies
-        uses: actions-rs/cargo@v1
-        with:
-          command: update
-          args: --manifest-path solana/Cargo.toml
 
       - name: Run fmt
         uses: actions-rs/cargo@v1
@@ -60,7 +56,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['nightly-2022-03-22']
+        rust: ['1.58']
         solana: ['stable']
         os: [ubuntu-latest]
 
@@ -72,16 +68,15 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
 
       - name: Cache build dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             ./solana/target
-          key: cargo-build-v1-${{ hashFiles('solana/Cargo.lock') }}
+          key: cargo-build-v2-${{ hashFiles('solana/Cargo.lock') }}
 
       - name: Cache Solana version
         uses: actions/cache@v2
@@ -99,10 +94,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path solana/Cargo.toml -p solana-gateway-program
+          args: --manifest-path solana/Cargo.toml
 
       - name: Build the program and run functional tests
         uses: actions-rs/cargo@v1
         with:
           command: test-bpf
-          args: --manifest-path solana/Cargo.toml -- -p solana-gateway-program
+          args: --manifest-path solana/Cargo.toml

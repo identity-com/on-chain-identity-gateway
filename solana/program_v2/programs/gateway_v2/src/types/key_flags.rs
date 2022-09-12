@@ -1,6 +1,6 @@
+use crate::util::{OnChainSize, OC_SIZE_U16};
+use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
-use crate::util::{OC_SIZE_U16, OnChainSize};
-use anchor_lang::{AnchorSerialize, AnchorDeserialize};
 
 bitflags! {
     /// The flags for a key on a network

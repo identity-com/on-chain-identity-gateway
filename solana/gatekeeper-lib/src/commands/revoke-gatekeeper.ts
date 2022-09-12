@@ -29,14 +29,15 @@ export default class RevokeGatekeeper extends Command {
       name: "address",
       required: true,
       description: "The address of the gatekeeper to revoke from the network",
-      parse: async (input: string) => new PublicKey(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(RevokeGatekeeper);
 
-    const gatekeeper: PublicKey = args.address;
+    const gatekeeper: PublicKey = args.address as PublicKey;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
     this.log(`Revoking: 
       gatekeeper ${gatekeeper.toBase58()}
@@ -59,7 +60,11 @@ export default class RevokeGatekeeper extends Command {
       .then((t) => t.send())
       .then((t) => t.confirm());
     this.log(
-      `Revoked gatekeeper from network. Gatekeeper account: ${gatekeeperAccount?.toBase58()}`
+      `Revoked gatekeeper from network. Gatekeeper account: ${
+        gatekeeperAccount
+          ? gatekeeperAccount.toBase58()
+          : "//Gatekeeper Account Undefined//"
+      }`
     );
   }
 }

@@ -28,11 +28,12 @@ Unfrozen
       name: "gatewayToken",
       required: true,
       description: "The gateway token to unfreeze",
-      parse: async (input: string) => new PublicKey(input),
+      parse: (input: string): Promise<PublicKey> =>
+        Promise.resolve(new PublicKey(input)),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(Unfreeze);
 
     const { gatewayToken, gatekeeper, service } =
