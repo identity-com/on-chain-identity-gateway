@@ -1,10 +1,10 @@
 // #![feature(in_band_lifetimes)]
 #![warn(
-unused_import_braces,
-unused_imports,
-// missing_docs,
-missing_debug_implementations,
-clippy::pedantic
+    unused_import_braces,
+    unused_imports,
+    // missing_docs,
+    missing_debug_implementations,
+    clippy::pedantic
 )]
 #![allow(
     clippy::cast_possible_truncation,
@@ -24,6 +24,7 @@ use anchor_lang::prelude::*;
 
 pub mod state;
 pub mod constants;
+pub mod errors;
 pub mod instructions;
 pub mod types;
 pub mod util;
@@ -48,10 +49,6 @@ pub mod gateway_v2 {
         ctx: Context<UpdateNetworkAccount>,
         data: UpdateNetworkData,
     ) -> Result<()> {
-        // ctx.remaining_accounts.iter().for_each(|acc| {
-        //     !msg("{}", acc);
-        // });
-
         instructions::update_network(
             &data,
             &mut ctx.accounts.network,
