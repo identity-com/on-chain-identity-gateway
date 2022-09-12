@@ -151,3 +151,72 @@ jobs:
         run: |
           yarn build
           yarn anchor test
+
+
+ E2E:
+    name: Test the gateway_v2 cli against the on-chain program on Solana ${{ matrix.solana }}, Node ${{ matrix.node }}, Rust ${{ matrix.rust }}, and ${{ matrix.os }}
+    needs: anchor-e2e-test
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ['16.x']
+        os: [ubuntu-latest]
+        solana: ['v1.10.29']
+        rust: ['1.61']
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+
+      - name: Cache build dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./solana/program_v2/target
+          key: cargo-build-${{ hashFiles('program_v2/Cargo.lock') }}
+
+      - name: Cache Solana version
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache
+          key: solana-${{ matrix.solana }}
+
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/${{ matrix.solana }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./solana/program_v2_cli/node_modules
+          key: yarn-cli-${{ hashFiles('program_v2_cli/yarn.lock') }}
+
+      - name: Install cli dependencies
+        run: yarn install
+        working-directory: solana/program_v2_cli
+
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: latest-program_v2_version
+
+      - name: Test e2e
+        run: yarn test-e2e
+        working-directory: solana/program_v2_cli
