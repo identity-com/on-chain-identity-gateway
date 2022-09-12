@@ -149,5 +149,6 @@ jobs:
 
       - name: Build program and run integration tests
         run: |
+          yarn anchor build
           yarn build
           yarn anchor test
