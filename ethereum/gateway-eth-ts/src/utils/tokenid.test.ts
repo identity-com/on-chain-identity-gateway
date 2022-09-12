@@ -5,7 +5,7 @@ import { utils } from "ethers/lib/ethers";
 
 describe("Test token id generation", function () {
   const sampleAddress = "0x2de1EFea6044b44432aedBC9f29861296695AF0C";
-  let id;
+  let id: BigNumber;
 
   it("Try to generate token id with constrains equal 1", () => {
     const constrains = BigNumber.from("1");

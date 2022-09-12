@@ -6,7 +6,7 @@ import { DEFAULT_EXPIRATION_BN } from "./constants";
 describe("Check expiration calculations", () => {
   let now: number;
   let nowBN: BigNumber;
-  let expiration;
+  let expiration: BigNumber;
 
   const _30days = BigNumber.from(30 * 24 * 60 * 60);
   const _minus15days = BigNumber.from(-15 * 24 * 60 * 60);

@@ -1,17 +1,4 @@
 export * from './strings';
-//@ts-ignore
-export {
-    notEmitted,
-    emitted,
-    equal,
-    notEqual,
-    reverted,
-    getResult,
-    passes,
-    fails,
-    isTrue,
-    ok
-} from './assert';
 
 export {
     ONE_SECOND,
