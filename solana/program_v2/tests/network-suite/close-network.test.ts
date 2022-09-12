@@ -1,12 +1,12 @@
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { GatewayService } from "../../src/GatewayService";
-import { GatewayV2 } from "../../target/types/gateway_v2";
-import * as anchor from "@project-serum/anchor";
-import { airdrop } from "../../src/lib/utils";
-import { expect } from "chai";
-import { describe } from "mocha";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { GatewayService } from '../../src/GatewayService';
+import { GatewayV2 } from '../../target/types/gateway_v2';
+import * as anchor from '@project-serum/anchor';
+import { airdrop } from '../../src/lib/utils';
+import { expect } from 'chai';
+import { describe } from 'mocha';
 
-describe("Gateway v2 Client", () => {
+describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
@@ -34,7 +34,7 @@ describe("Gateway v2 Client", () => {
     service = await GatewayService.buildFromAnchor(
       program,
       dataAccount,
-      "localnet",
+      'localnet',
       programProvider,
       authority
     );
@@ -42,8 +42,8 @@ describe("Gateway v2 Client", () => {
     await service.createNetwork().rpc();
   });
 
-  describe("Close Network", () => {
-    it("Should close network properly", async function () {
+  describe('Close Network', () => {
+    it('Should close network properly', async function () {
       let networkAccount = await service.getNetworkAccount();
       await service.closeNetwork().rpc();
       networkAccount = await service.getNetworkAccount();

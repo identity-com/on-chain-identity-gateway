@@ -1,18 +1,18 @@
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { GatewayService } from "../../src/GatewayService";
-import { GatewayV2 } from "../../target/types/gateway_v2";
-import * as anchor from "@project-serum/anchor";
-import { airdrop } from "../../src/lib/utils";
-import { expect, use } from "chai";
-import * as chai from "chai";
-import { describe } from "mocha";
-import { NetworkAccount } from "../../src/lib/types";
-import { NetworkKeyFlags } from "../../src/lib/constants";
-import { Wallet } from "@project-serum/anchor/dist/cjs/provider";
-import chaiAsPromised from "chai-as-promised";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { GatewayService } from '../../src/GatewayService';
+import { GatewayV2 } from '../../target/types/gateway_v2';
+import * as anchor from '@project-serum/anchor';
+import { airdrop } from '../../src/lib/utils';
+import { expect, use } from 'chai';
+import * as chai from 'chai';
+import { describe } from 'mocha';
+import { NetworkAccount } from '../../src/lib/types';
+import { NetworkKeyFlags } from '../../src/lib/constants';
+import { Wallet } from '@project-serum/anchor/dist/cjs/provider';
+import chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 
-describe("Gateway v2 Client", () => {
+describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
@@ -33,7 +33,7 @@ describe("Gateway v2 Client", () => {
     service = await GatewayService.buildFromAnchor(
       program,
       dataAccount,
-      "localnet",
+      'localnet',
       programProvider
     );
 
@@ -74,8 +74,8 @@ describe("Gateway v2 Client", () => {
       .rpc();
   });
 
-  describe("Update Network", () => {
-    it("Should update passExpireTime", async function () {
+  describe('Update Network', () => {
+    it('Should update passExpireTime', async function () {
       let networkAccount = await service.getNetworkAccount();
       await service
         .updateNetwork({
@@ -102,7 +102,7 @@ describe("Gateway v2 Client", () => {
       networkAccount = await service.getNetworkAccount();
       expect(networkAccount?.passExpireTime).to.equal(600);
     }).timeout(10000);
-    it("Should add an authKey", async function () {
+    it('Should add an authKey', async function () {
       let authKeypair = Keypair.generate();
       let networkAccount = await service.getNetworkAccount();
       await service
@@ -140,7 +140,7 @@ describe("Gateway v2 Client", () => {
         )
       ).to.have.lengthOf(1);
     }).timeout(10000);
-    it("Should remove an authKey", async function () {
+    it('Should remove an authKey', async function () {
       await service
         .updateNetwork({
           authThreshold: 1,
@@ -172,7 +172,7 @@ describe("Gateway v2 Client", () => {
         )
       ).to.have.lengthOf(0);
     }).timeout(10000);
-    it("Should not be able to remove own account from authKeys", async function () {
+    it('Should not be able to remove own account from authKeys', async function () {
       return expect(
         service
           .updateNetwork({
@@ -243,7 +243,7 @@ describe("Gateway v2 Client", () => {
         originalKeyAfterUpdate?.flags
       );
     }).timeout(10000);
-    it("Can add fees correctly", async function () {
+    it('Can add fees correctly', async function () {
       let networkAccount = await service.getNetworkAccount();
       let additionalFeeToken = Keypair.generate();
       await service
@@ -276,7 +276,7 @@ describe("Gateway v2 Client", () => {
         ).length
       ).to.equal(1);
     }).timeout(10000);
-    it("Can remove fees correctly", async function () {
+    it('Can remove fees correctly', async function () {
       let networkAccount = await service.getNetworkAccount();
       await service
         .updateNetwork({

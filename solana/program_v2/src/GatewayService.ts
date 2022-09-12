@@ -1,12 +1,12 @@
-import { GatewayV2, IDL } from "../target/types/gateway_v2";
+import { GatewayV2, IDL } from '../target/types/gateway_v2';
 import {
   AnchorProvider,
   Program,
   Idl,
   parseIdlErrors,
   translateError,
-} from "@project-serum/anchor";
-import * as anchor from "@project-serum/anchor";
+} from '@project-serum/anchor';
+import * as anchor from '@project-serum/anchor';
 import {
   clusterApiUrl,
   ConfirmOptions,
@@ -16,7 +16,7 @@ import {
   Signer,
   Transaction,
   TransactionInstruction,
-} from "@solana/web3.js";
+} from '@solana/web3.js';
 
 import {
   AuthKeyStructure,
@@ -26,15 +26,15 @@ import {
   UpdateFeeStructure,
   UpdateNetworkData,
   Wallet,
-} from "./lib/types";
+} from './lib/types';
 
 import {
   CustomClusterUrlConfig,
   ExtendedCluster,
   getConnectionByCluster,
-} from "./lib/connection";
-import { findProgramAddress } from "./lib/utils";
-import { GATEWAY_PROGRAM, SOLANA_MAINNET } from "./lib/constants";
+} from './lib/connection';
+import { findProgramAddress } from './lib/utils';
+import { GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
 
 export class GatewayService {
   static async build(
@@ -85,11 +85,11 @@ export class GatewayService {
 
     if (!idl) {
       console.warn(
-        "Could not fetch IDL from chain. Using build-in IDL as fallback."
+        'Could not fetch IDL from chain. Using build-in IDL as fallback.'
       );
       idl = IDL;
     } else {
-      console.log("using idl on-chain");
+      console.log('using idl on-chain');
     }
 
     return new Program<GatewayV2>(
@@ -146,7 +146,7 @@ export class GatewayService {
     return new GatewayServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
-        throw new Error("Dynamic Alloc not supported");
+        throw new Error('Dynamic Alloc not supported');
       },
       allowsDynamicAlloc: false,
       authority,
@@ -182,7 +182,7 @@ export class GatewayService {
     return new GatewayServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
-        throw new Error("Dynamic Alloc not supported");
+        throw new Error('Dynamic Alloc not supported');
       },
       // TODO: Implement this...
       allowsDynamicAlloc: false,
@@ -214,7 +214,7 @@ export class GatewayService {
     return new GatewayServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
-        throw new Error("Dynamic Alloc not supported");
+        throw new Error('Dynamic Alloc not supported');
       },
       allowsDynamicAlloc: false,
       authority,
@@ -248,18 +248,18 @@ class NonSigningWallet implements Wallet {
   publicKey: PublicKey;
 
   constructor() {
-    this.publicKey = new PublicKey("11111111111111111111111111111111");
+    this.publicKey = new PublicKey('11111111111111111111111111111111');
   }
 
   signAllTransactions(txs: Transaction[]): Promise<Transaction[]> {
     return Promise.reject(
-      "NonSigningWallet does not support signing transactions"
+      'NonSigningWallet does not support signing transactions'
     );
   }
 
   signTransaction(tx: Transaction): Promise<Transaction> {
     return Promise.reject(
-      "NonSigningWallet does not support signing transactions"
+      'NonSigningWallet does not support signing transactions'
     );
   }
 }
