@@ -37,7 +37,7 @@ pub fn add_auth_keys(
         if index.is_none() {
             return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
         }
-        if let Some() = index {
+        if let Some(index) = index {
             let key_index = index.unwrap();
             if network.auth_keys[key_index].key == *authority.key {
                 // Cannot remove own key (TODO?)
@@ -55,7 +55,7 @@ pub fn add_auth_keys(
             // add the key ifr it doesn't exist
             network.auth_keys.push(*key);
         }
-        if let Some() = index {
+        if let Some(index) = index {
             let key_index = index.unwrap();
 
             // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
@@ -97,7 +97,7 @@ pub fn add_fees(
         if index.is_none() {
             return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
         }
-        if let Some() = index {
+        if let Some(index) = index {
             // TODO: Don't think we need this because removal of fees is okay? Could be wrong
             let fee_index = index.unwrap();
             // if network.fees[key_index].key == *authority.key {
@@ -116,7 +116,7 @@ pub fn add_fees(
             // add the fee if it doesn't exist
             network.fees.push(*fee);
         }
-        if let Some() = index {
+        if let Some(index) = index {
             let fee_index = index.unwrap();
 
             // TODO: Don't think this block is necessary but not 100% certain
