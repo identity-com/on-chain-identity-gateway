@@ -7,7 +7,6 @@ mod util;
 
 use crate::instructions::*;
 use crate::state::NetworkAuthKey;
-use crate::types::NetworkKeyFlags;
 use anchor_lang::prelude::*;
 
 declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
