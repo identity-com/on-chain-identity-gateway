@@ -36,15 +36,15 @@ pub fn add_auth_keys(
 
         if index.is_none() {
             return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-        }
+        } else {
+            let key_index = index.unwrap();
+            if network.auth_keys[key_index].key == *authority.key {
+                // Cannot remove own key (TODO?)
+                return Err(error!(NetworkErrors::InvalidKey));
+            }
 
-        let key_index = index.unwrap();
-        if network.auth_keys[key_index].key == *authority.key {
-            // Cannot remove own key (TODO?)
-            return Err(error!(NetworkErrors::InvalidKey));
+            network.auth_keys.remove(key_index);
         }
-
-        network.auth_keys.remove(key_index);
     }
 
     for key in data.auth_keys.add.iter() {
