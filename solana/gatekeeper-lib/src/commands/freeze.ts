@@ -28,11 +28,12 @@ Frozen
       name: "gatewayToken",
       required: true,
       description: "The gateway token to freeze",
-      parse: async (input: string) => new PublicKey(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(Freeze);
 
     const { gatewayToken, gatekeeper, service } =

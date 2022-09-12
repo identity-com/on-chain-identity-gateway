@@ -1,27 +1,31 @@
-import { BigNumber, Transaction, Wallet } from "ethers";
-import { BaseProvider } from "@ethersproject/providers";
+import { BigNumber, Signer, Transaction } from "ethers";
+import { Network } from "@ethersproject/providers";
 
 import { signTranaction, TxOptions } from "./utils/tx";
 import { getExpirationTime } from "./utils/time";
 import { GatewayTsBase } from "./GatewayTsBase";
 
 export class GatewayTsCallData extends GatewayTsBase {
+  // eslint-disable-next-line no-useless-constructor
   constructor(
-    provider: BaseProvider,
-    wallet?: Wallet,
-    options?: { defaultGas?: number; defaultGasPrice?: any }
+    provider: Signer,
+    network?: Network,
+    defaultGatewayToken?: string,
   ) {
-    super(provider, wallet, options);
-
-    super.setGasLimit();
+    super(provider, network, defaultGatewayToken);
   }
 
+  /* eslint-disable max-params */
   async issue(
     owner: string,
-    tokenId: number | BigNumber,
-    expiration: number | BigNumber,
-    bitmask: BigNumber,
-    constrains?: BigNumber,
+    // eslint-disable-next-line default-param-last
+    tokenId: number | BigNumber = null,
+    // eslint-disable-next-line default-param-last
+    expiration: number | BigNumber = 0,
+    // eslint-disable-next-line default-param-last
+    bitmask: BigNumber = BigNumber.from("0"),
+    // eslint-disable-next-line default-param-last
+    constrains: BigNumber = BigNumber.from("0"),
     gatewayTokenAddress?: string,
     options?: TxOptions
   ): Promise<Transaction> {

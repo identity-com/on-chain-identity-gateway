@@ -34,8 +34,14 @@ export default class Blacklist extends Command {
       name: "address",
       required: true,
       description: "User ETH address to blacklist",
-      parse: async (input: string): Promise<string> =>
-        utils.isAddress(input) ? input : null,
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
+
+        return input;
+      }
     },
   ];
 
@@ -43,7 +49,7 @@ export default class Blacklist extends Command {
     const { args, flags } = await this.parse(Blacklist);
     const pk = flags.privateKey;
     const provider: BaseProvider = flags.network;
-    const user: string = args.address;
+    const user = args.address as string;
     const confirmations = flags.confirmations;
 
     const signer: Wallet = utils.isValidMnemonic(pk)
@@ -55,7 +61,7 @@ export default class Blacklist extends Command {
 
     this.log(`Blacklisting user: ${user}`);
 
-    const gasPrice = await flags.gasPriceFee;
+    const gasPrice = flags.gasPriceFee;
     const gasLimit = await controller.contract.estimateGas.blacklist(user);
 
     const txParams: TxBase = {
@@ -63,14 +69,14 @@ export default class Blacklist extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx: any = await (confirmations > 0
-      ? (await controller.blacklist(user, txParams)).wait(confirmations)
-      : controller.blacklist(user, txParams));
+    const tx = await controller.blacklist(user, txParams)
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Blacklisted user with ${user} address. TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Blacklisted user with ${user} address. TxHash: ${hash}`
     );
   }
 }

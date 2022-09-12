@@ -1,103 +1,79 @@
+import { Connection } from "@solana/web3.js";
 import {
-  ConfirmedSignaturesForAddress2Options,
-  Connection,
-  Keypair,
-  PublicKey,
-} from "@solana/web3.js";
-import {
-  ExtendedCluster,
-  registerUsage,
-  RegisterUsageParams,
-  getClusterUrl,
-} from "@identity.com/gateway-usage";
-import { Provider, Wallet, web3 } from "@project-serum/anchor";
-import { DummyStrategy, loadTransactions, NativeTransferStrategy } from "../lib/transactionUtils";
+  loadTransactions,
+  ConfigBasedStrategy,
+} from "../util/transactionUtils";
+import { UsageConfig } from "./config";
 
-const DEFAULT_COMMITMENT: web3.Commitment = "confirmed";
-
-type PaginationProps = { offset: number; limit: number };
+type GetUsageParams = {
+  startSlot: number;
+  maxSlots: number;
+};
 
 export class UsageOracleService {
-  private connection: Connection;
+  constructor(private connection: Connection, private config: UsageConfig) {}
 
-  constructor(private oracle: Keypair, private cluster: ExtendedCluster) {
-    this.connection = new Connection(
-      getClusterUrl(cluster),
-      DEFAULT_COMMITMENT
+  private async getTransactionSignatures(startSlot: number, maxSlots: number) {
+    const currentSlot = await this.connection.getSlot();
+
+    const lastSlot = Math.min(startSlot + maxSlots, currentSlot);
+
+    console.log(
+      `Reading from Slot ${startSlot} to ${lastSlot}. Total: ${
+        lastSlot - startSlot
+      }`
     );
-  }
-
-  private getProvider = () => {
-    const wallet = new Wallet(this.oracle);
-    return new Provider(this.connection, wallet, {
-      commitment: DEFAULT_COMMITMENT,
-    });
-  };
-
-  private async getTransactionSignaturesForEpoch(
-    dapp: web3.PublicKey,
-    epoch: number
-  ) {
-    // TODO we might want to cache this - it should never change after an epoch is over
-    const epochSchedule = await this.connection.getEpochSchedule();
-
-    // TODO we need to make sure that we only consider FINALIZED Epochs here
-    const firstSlot = epochSchedule.getFirstSlotInEpoch(epoch);
-    const lastSlot = epochSchedule.getLastSlotInEpoch(epoch);
 
     // Split and Join into 1000 tx window
-    const signatures: string[] = []
-    let currentStartSlot = firstSlot;
-    const SLOT_WINDOW = 1000;
+    let signatures: string[] = [];
+    let currentStartSlot = startSlot;
+    const SLOT_WINDOW = 10_000;
 
     // TODO: Parallelize
-    // TODO: Handle "Error: failed to get confirmed block: Block 1001 cleaned up, does not exist on node. First available block: 44478"
-    while( currentStartSlot < lastSlot) {
-      console.log(`Window: ${currentStartSlot}`)
-      let currentEndSlot = currentStartSlot + SLOT_WINDOW
+    while (currentStartSlot < lastSlot) {
+      let currentEndSlot = currentStartSlot + SLOT_WINDOW;
       if (currentEndSlot > lastSlot) {
-        currentStartSlot = lastSlot
+        currentEndSlot = lastSlot;
       }
+      console.log(`Window: ${currentStartSlot} - ${currentEndSlot}`);
 
       const sigs = await this.connection.getConfirmedSignaturesForAddress(
-        dapp,
+        this.config.program,
         currentStartSlot,
         currentEndSlot
-      )
-      signatures.concat(sigs)
-      currentStartSlot = currentEndSlot
+      );
+      // console.log(sigs);
+      signatures = signatures.concat(sigs);
+      // console.log(signatures)
+      currentStartSlot = currentEndSlot;
     }
 
-    // TODO fix deprecation
-    return signatures
+    return { signatures, firstSlot: startSlot, lastSlot };
   }
 
-  async readUsage({
-    gatekeeper,
-    dapp,
-    epoch,
-  }: Omit<RegisterUsageParams, "oracleProvider" | "amount"> & PaginationProps) {
-    const fetched = await this.getTransactionSignaturesForEpoch(dapp, epoch);
-    // TODO filter/map and reduce
+  async readUsage({ startSlot, maxSlots }: GetUsageParams) {
+    const { signatures, firstSlot, lastSlot } =
+      await this.getTransactionSignatures(startSlot, maxSlots);
 
-    const billableTx = await loadTransactions(this.connection, fetched, [new NativeTransferStrategy()])
-
-    return billableTx;
+    const billableTx = await loadTransactions(this.connection, signatures, [
+      new ConfigBasedStrategy(this.config),
+    ]);
+    return { billableTx, firstSlot, lastSlot };
   }
 
-  writeUsage({
-    gatekeeper,
-    dapp,
-    epoch,
-    amount,
-  }: Omit<RegisterUsageParams, "oracleProvider">): Promise<PublicKey> {
-    const oracleProvider = this.getProvider();
-    return registerUsage({
-      amount,
-      dapp,
-      epoch,
-      gatekeeper,
-      oracleProvider,
-    });
-  }
+  // writeUsage({
+  //   gatekeeper,
+  //   dapp,
+  //   epoch,
+  //   amount,
+  // }: Omit<RegisterUsageParams, "oracleProvider">): Promise<PublicKey> {
+  //   const oracleProvider = this.getProvider();
+  //   return registerUsage({
+  //     amount,
+  //     dapp,
+  //     epoch,
+  //     gatekeeper,
+  //     oracleProvider,
+  //   });
+  // }
 }

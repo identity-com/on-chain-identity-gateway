@@ -5,11 +5,13 @@ import { gatewayTokenAddresses } from "./lib/gatewaytokens";
 import { addresses } from "./lib/addresses";
 import { ONE_BN, ZERO_BN } from "./utils/constants";
 import { TokenData } from "./utils/types";
-import { rejects } from "assert";
-import assert = require("assert");
-import { GatewayToken } from "./contracts";
-// eslint-disable-next-line unicorn/prefer-module
-require("dotenv/config");
+import * as assert from "node:assert";
+import * as dotenv from "dotenv";
+import {
+  SAMPLE_PRIVATE_KEY,
+  SAMPLE_WALLET_ADDRESS,
+} from "./utils/constants_test";
+dotenv.config();
 
 const generateTokenId = (wallet: string, constrains: BigNumber): string => {
   const hexConstrains = utils.hexlify(constrains);
@@ -22,14 +24,12 @@ describe("Test GatewayTSBase class", function () {
   const ropstenNetworkID = 3;
   let gatewayBase: GatewayTsBase;
   let provider: BaseProvider;
-  let wallet: Wallet;
   let defaultGatewayToken: string;
   const defaultGas: number | BigNumber = 6_000_000;
 
-  const sampleWalletAddress = "0x57AB42d4fa756b6956b0cAf986a5f53bA90D9e28";
+  const sampleWalletAddress = SAMPLE_WALLET_ADDRESS;
   const defaultGasPrice: number | BigNumber = 1_000_000_000_000;
-  const dummyPrivateKey =
-    "16cf319b463e6e8db6fc525ad2cb300963a0f0661dbb94b5209073e29b43abfe";
+
   const dummyWalletAddress = "0x2de1EFea6044b44432aedBC9f29861296695AF0C";
   const sampleTokenId = 124_678;
 
@@ -37,47 +37,24 @@ describe("Test GatewayTSBase class", function () {
     provider = getDefaultProvider("ropsten", {
       infura: process.env.INFURA_KEY,
     });
-    wallet = new Wallet(`0x${process.env.PRIVATE_KEY}`);
-    wallet = wallet.connect(provider);
+    const network = await provider.getNetwork();
     defaultGatewayToken = gatewayTokenAddresses[ropstenNetworkID][0].address;
-    gatewayBase = new GatewayTsBase(provider, wallet);
-
-    await gatewayBase.init(defaultGatewayToken);
-    const networkId = await (await gatewayBase.provider.getNetwork()).chainId;
+    gatewayBase = new GatewayTsBase(provider, network, defaultGatewayToken);
 
     assert.equal(gatewayBase.defaultGatewayToken, defaultGatewayToken);
-    assert.equal(gatewayBase.wallet, wallet);
-    assert.equal(networkId, ropstenNetworkID);
+    assert.equal(gatewayBase.providerOrSigner, provider);
+    assert.equal(network.chainId, ropstenNetworkID);
     assert.equal(gatewayBase.defaultGas, defaultGas);
     assert.equal(gatewayBase.defaultGasPrice, defaultGasPrice);
     assert.equal(gatewayBase.contractAddresses, addresses[ropstenNetworkID]);
   });
 
-  it("Test getting gateway token address functions", async () => {
-    let gatewayToken: GatewayToken =
-      await gatewayBase.getGatewayTokenContract();
-    assert.equal(gatewayToken.contract.address, defaultGatewayToken);
-
-    gatewayToken = await gatewayBase.getGatewayTokenContract(
-      defaultGatewayToken
-    );
-    assert.equal(gatewayToken.contract.address, defaultGatewayToken);
-
-    assert.throws(
-      () =>
-        gatewayBase.getGatewayTokenContract(
-          "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be"
-        ),
-      Error
-    );
-  }).timeout(10_000);
-
-  it("Verify gateway tokens for multiple addresses", async () => {
+  it.skip("Verify gateway tokens for multiple addresses", async () => {
     let result = await gatewayBase.verify(sampleWalletAddress);
     assert.equal(result, true);
 
     // expect FALSE on validation if user doesn't have any token
-    const dummyWallet = new Wallet(dummyPrivateKey);
+    const dummyWallet = new Wallet(SAMPLE_PRIVATE_KEY);
     result = await gatewayBase.verify(dummyWallet.address);
     assert.equal(result, false);
   }).timeout(10_000);
@@ -90,7 +67,7 @@ describe("Test GatewayTSBase class", function () {
     assert.equal(result.toString(), actualResult.toString());
 
     // expect balance to be 0 on wallet without tokens
-    const dummyWallet = new Wallet(dummyPrivateKey);
+    const dummyWallet = new Wallet(SAMPLE_PRIVATE_KEY);
     result = await gatewayBase.getTokenBalance(dummyWallet.address);
     assert.equal(result.toString(), "0");
   }).timeout(10_000);
@@ -176,7 +153,7 @@ describe("Test GatewayTSBase class", function () {
     assert.deepEqual(data, targetData);
 
     // expect to throw error on non-existing token
-    await rejects(gatewayBase.getTokenData(sampleTokenId));
+    await assert.rejects(gatewayBase.getTokenData(sampleTokenId));
   }).timeout(10_000);
 
   it("Test token bitmask get functions", async () => {

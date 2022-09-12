@@ -11,11 +11,14 @@ import {
   generateTokenIdFlag,
   bitmaskFlag,
   tokenIdFlag,
+  forwardTransactionFlag,
 } from "../utils/flags";
-import { TxBase } from "../utils/tx";
+import { TxOptions } from "../utils/tx";
 import { mnemonicSigner, privateKeySigner } from "../utils/signer";
 import { generateId } from "../utils/tokenId";
 import { getExpirationTime } from "../utils/time";
+import { GatewayETH } from "..";
+import { SentTransaction } from "../utils/types";
 
 export default class IssueToken extends Command {
   static description =
@@ -36,6 +39,7 @@ export default class IssueToken extends Command {
     generateTokenId: generateTokenIdFlag,
     bitmask: bitmaskFlag(),
     tokenID: tokenIdFlag(),
+    forwardTransaction: forwardTransactionFlag,
   };
 
   static args = [
@@ -43,13 +47,20 @@ export default class IssueToken extends Command {
       name: "address",
       required: true,
       description: "Owner ethereum address to tokenID for",
-      parse: async (input: string): Promise<string> =>
-        utils.isAddress(input) ? input : null,
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
+
+        return input;
+      },
     },
     {
       name: "expiration",
       required: false,
       description: "Expiration timestamp for newly issued token",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: any): Promise<BigNumber> => BigNumber.from(input),
       default: 0,
     },
@@ -57,6 +68,7 @@ export default class IssueToken extends Command {
       name: "constrains",
       required: false,
       description: "Constrains to generate tokenId",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: any): Promise<BigNumber> => BigNumber.from(input),
       default: BigNumber.from("0"),
     },
@@ -76,23 +88,19 @@ export default class IssueToken extends Command {
     let tokenID: BigNumber = flags.tokenID;
     const generateTokenId: boolean = flags.generateTokenId;
     const bitmask: BigNumber = flags.bitmask;
-    const ownerAddress: string = args.address;
-    let expiration: BigNumber = args.expiration;
-    const constrains: BigNumber = args.constrains;
+    const ownerAddress = args.address as string;
+    let expiration = args.expiration as BigNumber;
+    const constrains = args.constrains as BigNumber;
     const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const forwardTransaction = flags.forwardTransaction;
 
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-    if (generateTokenId && tokenID === null) {
+    if (generateTokenId && tokenID) {
       tokenID = generateId(ownerAddress, constrains);
     }
 
-    const gasPrice = await flags.gasPriceFee;
-
-    if (expiration.gt(0)) {
-      expiration = getExpirationTime(expiration);
-    }
-
+    const gasPrice = flags.gasPriceFee;
     const gasLimit: BigNumber = await gatewayToken.contract.estimateGas.mint(
       ownerAddress,
       tokenID,
@@ -100,38 +108,48 @@ export default class IssueToken extends Command {
       bitmask
     );
 
-    const txParams: TxBase = {
+    if (expiration.gt(0)) {
+      expiration = getExpirationTime(expiration);
+    }
+
+    const txParams: TxOptions = {
       gasLimit: gasLimit,
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
+      confirmations,
+      forwardTransaction,
     };
 
+    const network = await provider.getNetwork();
+    const gateway = new GatewayETH(signer, network);
+    const sendableTransaction = await gateway.issue(
+      ownerAddress,
+      tokenID,
+      expiration,
+      bitmask,
+      null,
+      gatewayTokenAddress,
+      txParams
+    );
+
     this.log(`Issuing new token with TokenID:
-			${tokenID} 
+			${tokenID.toString()} 
 			for owner ${ownerAddress}
 			on GatewayToken ${gatewayTokenAddress} contract`);
 
-    const tx: any = await (confirmations > 0
-      ? (
-          await gatewayToken.mint(
-            ownerAddress,
-            tokenID,
-            expiration,
-            bitmask,
-            txParams
-          )
-        ).wait(confirmations)
-      : gatewayToken.mint(
-          ownerAddress,
-          tokenID,
-          expiration,
-          bitmask,
-          txParams
-        ));
-
-    this.log(
-      `Issued new token with TokenID: ${tokenID} to ${ownerAddress} TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
-    );
+    if (confirmations > 0) {
+      const tx = (await sendableTransaction.send()).confirm();
+      this.log(
+        `Issued new token with TokenID: ${tokenID.toString()} to ${ownerAddress} TxHash: ${
+          (await tx).transactionHash
+        }}`
+      );
+    } else {
+      const tx: SentTransaction = await sendableTransaction.send();
+      this.log(
+        `Issued new token with TokenID: ${tokenID.toString()} to ${ownerAddress} TxHash: ${
+          tx.response.hash
+        }}`
+      );
+    }
   }
 }

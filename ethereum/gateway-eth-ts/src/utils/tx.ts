@@ -28,12 +28,13 @@ export declare type TxBase = {
 
 export interface TxOptions extends TxBase {
   confirmations?: number;
+  forwardTransaction?: boolean;
 }
 
 export const populateTx = async (
   contract: Contract,
   method: string,
-  args: any[],
+  args: unknown[],
   options?: TxOptions
 ): Promise<PopulatedTransaction> => {
   const overrides = {

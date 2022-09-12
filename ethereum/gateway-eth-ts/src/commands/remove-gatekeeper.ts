@@ -34,8 +34,14 @@ export default class RemoveGatekeeper extends Command {
       name: "address",
       required: true,
       description: "Gatekeeper address to remove to the GatewayToken contract",
-      parse: async (input: string): Promise<string> =>
-        utils.isAddress(input) ? input : null,
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
+
+        return input;
+      }
     },
   ];
 
@@ -51,7 +57,7 @@ export default class RemoveGatekeeper extends Command {
       ? mnemonicSigner(pk, provider)
       : privateKeySigner(pk, provider);
 
-    const gatekeeper: string = args.address;
+    const gatekeeper = args.address as string;
 
     signer = signer.connect(provider);
 
@@ -63,7 +69,7 @@ export default class RemoveGatekeeper extends Command {
 
     const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-    const gasPrice = await flags.gasPriceFee;
+    const gasPrice = flags.gasPriceFee;
     const gasLimit = await gatewayToken.contract.estimateGas.removeGatekeeper(
       gatekeeper
     );
@@ -73,16 +79,14 @@ export default class RemoveGatekeeper extends Command {
       gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), "gwei")),
     };
 
-    const tx: any = await (confirmations > 0
-      ? (
-          await gatewayToken.removeGatekeeper(gatekeeper, txParams)
-        ).wait(confirmations)
-      : gatewayToken.removeGatekeeper(gatekeeper, txParams));
+    const tx = await gatewayToken.removeGatekeeper(gatekeeper, txParams)
+    let hash = tx.hash;
+    if (confirmations > 0) {
+      hash = (await tx.wait(confirmations)).transactionHash
+    }
 
     this.log(
-      `Removed gatekeeper on Gateway Token contract. TxHash: ${
-        confirmations > 0 ? tx.transactionHash : tx.hash
-      }`
+      `Removed gatekeeper on Gateway Token contract. TxHash: ${hash}`
     );
   }
 }
