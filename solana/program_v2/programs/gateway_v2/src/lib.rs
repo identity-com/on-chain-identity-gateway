@@ -1,12 +1,12 @@
-mod state;
 mod constants;
 mod errors;
 mod instructions;
+mod state;
 mod types;
 mod util;
 
-use crate::state::NetworkAuthKey;
 use crate::instructions::*;
+use crate::state::NetworkAuthKey;
 use crate::types::NetworkKeyFlags;
 use anchor_lang::prelude::*;
 

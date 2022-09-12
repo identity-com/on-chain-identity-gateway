@@ -1,8 +1,8 @@
+use crate::constants::NETWORK_SEED;
+use crate::errors::UpdateNetworkErrors;
 use crate::state::{GatekeeperNetwork, GatekeeperNetworkSize};
 use crate::types::{GatekeeperKeyFlags, NetworkFees};
-use crate::errors::UpdateNetworkErrors;
 use crate::{NetworkAuthKey, NetworkKeyFlags};
-use crate::constants::NETWORK_SEED;
 use anchor_lang::prelude::*;
 
 pub fn update_network(
@@ -141,10 +141,7 @@ pub fn set_expire_time(
     match data.pass_expire_time {
         Some(pass_expire_time) => {
             if pass_expire_time != network.pass_expire_time {
-                if !network.can_access(
-                    authority,
-                    NetworkKeyFlags::SET_EXPIRE_TIME,
-                ) {
+                if !network.can_access(authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
                     return Err(error!(UpdateNetworkErrors::InsufficientAccessExpiry));
                 }
 
