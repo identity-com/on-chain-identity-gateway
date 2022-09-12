@@ -1,5 +1,5 @@
 use crate::constants::NETWORK_SEED;
-use crate::errors::UpdateNetworkErrors;
+use crate::errors::NetworkErrors;
 use crate::state::{GatekeeperNetwork, GatekeeperNetworkSize};
 use crate::types::{GatekeeperKeyFlags, NetworkFees};
 use crate::{NetworkAuthKey, NetworkKeyFlags};
@@ -27,7 +27,7 @@ pub fn add_auth_keys(
     }
 
     if !network.can_access(authority, NetworkKeyFlags::AUTH) {
-        return Err(error!(UpdateNetworkErrors::InsufficientAccessAuthKeys));
+        return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
     }
 
     // remove the keys if they exist
@@ -35,13 +35,13 @@ pub fn add_auth_keys(
         let index: Option<usize> = network.auth_keys.iter().position(|x| x.key == *key);
 
         if index.is_none() {
-            return Err(error!(UpdateNetworkErrors::InsufficientAccessAuthKeys));
+            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
         }
 
         let key_index = index.unwrap();
         if network.auth_keys[key_index].key == *authority.key {
             // Cannot remove own key (TODO?)
-            return Err(error!(UpdateNetworkErrors::InvalidKey));
+            return Err(error!(NetworkErrors::InvalidKey));
         }
 
         network.auth_keys.remove(key_index);
@@ -63,7 +63,7 @@ pub fn add_auth_keys(
                     GatekeeperKeyFlags::AUTH,
                 )
             {
-                return Err(error!(UpdateNetworkErrors::InsufficientAccessAuthKeys));
+                return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
             }
 
             // update the key with the new flag if it exists
@@ -85,7 +85,7 @@ pub fn add_fees(
     }
 
     if !network.can_access(authority, NetworkKeyFlags::AUTH) {
-        return Err(error!(UpdateNetworkErrors::InsufficientAccessAuthKeys));
+        return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
     }
 
     // remove the fees if they exist
@@ -93,13 +93,13 @@ pub fn add_fees(
         let index: Option<usize> = network.fees.iter().position(|x| x.token == *fee);
 
         if index.is_none() {
-            return Err(error!(UpdateNetworkErrors::InsufficientAccessAuthKeys));
+            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
         }
         // TODO: Don't think we need this because removal of fees is okay? Could be wrong
         let fee_index = index.unwrap();
         // if network.fees[key_index].key == *authority.key {
         //     // Cannot remove own key (TODO?)
-        //     return Err(error!(UpdateNetworkErrors::InvalidKey));
+        //     return Err(error!(NetworkErrors::InvalidKey));
         // }
 
         network.fees.remove(fee_index);
@@ -122,7 +122,7 @@ pub fn add_fees(
             //         GatekeeperKeyFlags::AUTH,
             //     )
             // {
-            //     return Err(error!(UpdateNetworkErrors::InsufficientAccessAuthKeys));
+            //     return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
             // }
 
             // update the existing key with new fees
@@ -142,7 +142,7 @@ pub fn set_expire_time(
         Some(pass_expire_time) => {
             if pass_expire_time != network.pass_expire_time {
                 if !network.can_access(authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
-                    return Err(error!(UpdateNetworkErrors::InsufficientAccessExpiry));
+                    return Err(error!(NetworkErrors::InsufficientAccessExpiry));
                 }
 
                 network.pass_expire_time = pass_expire_time;
