@@ -1,33 +1,16 @@
-// #![feature(in_band_lifetimes)]
-#![warn(
-    unused_import_braces,
-    unused_imports,
-    // missing_docs,
-    missing_debug_implementations,
-    clippy::pedantic
-)]
-#![allow(
-    clippy::cast_possible_truncation,
-    clippy::module_name_repetitions,
-    clippy::missing_errors_doc,
-    clippy::too_many_lines,
-    clippy::mut_mut,
-    clippy::wildcard_imports
-)]
-
-declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
+mod state;
+mod constants;
+mod errors;
+mod instructions;
+mod types;
+mod util;
 
 use crate::state::NetworkAuthKey;
 use crate::instructions::*;
 use crate::types::NetworkKeyFlags;
 use anchor_lang::prelude::*;
 
-pub mod state;
-pub mod constants;
-pub mod errors;
-pub mod instructions;
-pub mod types;
-pub mod util;
+declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
 #[program]
 pub mod gateway_v2 {
@@ -57,6 +40,6 @@ pub mod gateway_v2 {
     }
 
     pub fn close_network(_ctx: Context<CloseNetworkAccount>) -> Result<()> {
-        Ok(())
+        instructions::close_network()
     }
 }
