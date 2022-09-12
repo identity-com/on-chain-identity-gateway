@@ -1,5 +1,5 @@
 use crate::constants::NETWORK_SEED;
-use crate::errors::CreateNetworkErrors;
+use crate::errors::NetworkErrors;
 use crate::state::{GatekeeperNetwork, GatekeeperNetworkSize, NetworkAuthKey};
 use crate::types::{NetworkFees, NetworkKeyFlags};
 use anchor_lang::prelude::*;
@@ -12,7 +12,7 @@ pub fn create_network(
 ) -> Result<()> {
     // Check there are auth_keys provided (TODO: Is this necessary? The next check implies this)
     if data.auth_keys.is_empty() {
-        return Err(error!(CreateNetworkErrors::NoAuthKeys));
+        return Err(error!(NetworkErrors::NoAuthKeys));
     }
 
     // Check if there are enough auth_keys with the AUTH flag set
@@ -25,7 +25,7 @@ pub fn create_network(
         .count()
         < data.auth_threshold as usize
     {
-        return Err(error!(CreateNetworkErrors::InsufficientAuthKeys));
+        return Err(error!(NetworkErrors::InsufficientAuthKeys));
     }
 
     network.auth_threshold = data.auth_threshold;
