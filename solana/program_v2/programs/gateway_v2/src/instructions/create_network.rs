@@ -1,5 +1,6 @@
-use crate::state::{GatekeeperNetwork, NetworkAuthKey};
+use crate::state::{GatekeeperNetwork, NetworkAuthKey, GatekeeperNetworkSize};
 use crate::types::{NetworkFees, NetworkKeyFlags};
+use crate::constants::NETWORK_SEED;
 use anchor_lang::prelude::*;
 
 pub fn create_network(
@@ -59,4 +60,25 @@ pub struct CreateNetworkData {
     pub fees: Vec<NetworkFees>,
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: Vec<NetworkAuthKey>,
+}
+
+#[derive(Accounts, Debug)]
+#[instruction(data: CreateNetworkData)]
+pub struct CreateNetworkAccount<'info> {
+    #[account(
+    init,
+    payer = authority,
+    space = GatekeeperNetwork::on_chain_size_with_arg(
+    GatekeeperNetworkSize{
+    fees_count: data.fees.len() as u16,
+    auth_keys: data.auth_keys.len() as u16,
+    }
+    ),
+    seeds = [NETWORK_SEED, authority.key().as_ref()],
+    bump
+    )]
+    pub network: Account<'info, GatekeeperNetwork>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }

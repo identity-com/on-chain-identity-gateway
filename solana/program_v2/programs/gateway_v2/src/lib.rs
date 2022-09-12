@@ -18,13 +18,12 @@ clippy::pedantic
 declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
 use crate::state::NetworkAuthKey;
-use crate::arguments::*;
-use crate::instructions::{CreateNetworkData, UpdateNetworkData};
+use crate::instructions::*;
 use crate::types::NetworkKeyFlags;
 use anchor_lang::prelude::*;
 
 pub mod state;
-pub mod arguments;
+pub mod constants;
 pub mod instructions;
 pub mod types;
 pub mod util;
