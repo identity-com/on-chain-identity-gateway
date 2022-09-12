@@ -268,8 +268,9 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@identity.com/GatewayService@../src":
+"@identity.com/solana-gateway-ts-v2@link:../program_v2/dist/src":
   version "0.0.0"
+  uid ""
 
 "@isaacs/string-locale-compare@^1.1.0":
   version "1.1.0"

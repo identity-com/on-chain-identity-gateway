@@ -26,6 +26,8 @@
     "unicorn/prefer-ternary": "off",
     "unicorn/no-object-as-default-parameter": "off",
     "operator-assignment": "off",
-    "max-params": "off"
+    "max-params": "off",
+    "no-warning-comments": "off",
+    "operator-linebreak": "off"
   }
 }

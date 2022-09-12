@@ -2,8 +2,8 @@ import { Command, Flags } from "@oclif/core";
 import { Wallet } from "@project-serum/anchor";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 // TODO: Import Gateway Service properly with package.json
-import { GatewayService } from "../../../GatewayService";
-import { airdrop } from "../../../lib/utils";
+import { GatewayService } from "@identity.com/solana-gateway-ts-v2/src/GatewayService";
+import { airdrop } from "@identity.com/solana-gateway-ts-v2/src/lib/utils";
 export default class Create extends Command {
   static description = "Creates a gatekeeper network";
 
@@ -37,14 +37,13 @@ Latest Blockhash: [blockhash]
   async run(): Promise<void> {
     const { flags } = await this.parse(Create);
     const programId = Keypair.generate().publicKey;
+    // eslint-disable-next-line unicorn/prefer-module
     const localSecretKey = require(flags.key);
     const funder = localSecretKey
       ? Keypair.fromSecretKey(Buffer.from(localSecretKey))
       : Keypair.generate();
 
-    const [network] = await GatewayService.createNetworkAddress(
-      funder.publicKey
-    );
+    const [network] = await GatewayService.createNetworkAddress(programId);
     this.log(`${network}`);
     const gatewayService = await GatewayService.build(
       network,
