@@ -36,7 +36,8 @@ pub fn add_auth_keys(
 
         if index.is_none() {
             return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-        } else {
+        }
+        if let Some() = index {
             let key_index = index.unwrap();
             if network.auth_keys[key_index].key == *authority.key {
                 // Cannot remove own key (TODO?)
@@ -53,7 +54,8 @@ pub fn add_auth_keys(
         if index.is_none() {
             // add the key ifr it doesn't exist
             network.auth_keys.push(*key);
-        } else {
+        }
+        if let Some() = index {
             let key_index = index.unwrap();
 
             // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
@@ -95,14 +97,16 @@ pub fn add_fees(
         if index.is_none() {
             return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
         }
-        // TODO: Don't think we need this because removal of fees is okay? Could be wrong
-        let fee_index = index.unwrap();
-        // if network.fees[key_index].key == *authority.key {
-        //     // Cannot remove own key (TODO?)
-        //     return Err(error!(NetworkErrors::InvalidKey));
-        // }
+        if let Some() = index {
+            // TODO: Don't think we need this because removal of fees is okay? Could be wrong
+            let fee_index = index.unwrap();
+            // if network.fees[key_index].key == *authority.key {
+            //     // Cannot remove own key (TODO?)
+            //     return Err(error!(NetworkErrors::InvalidKey));
+            // }
 
-        network.fees.remove(fee_index);
+            network.fees.remove(fee_index);
+        }
     }
 
     for fee in data.fees.add.iter() {
@@ -111,7 +115,8 @@ pub fn add_fees(
         if index.is_none() {
             // add the fee if it doesn't exist
             network.fees.push(*fee);
-        } else {
+        }
+        if let Some() = index {
             let fee_index = index.unwrap();
 
             // TODO: Don't think this block is necessary but not 100% certain
