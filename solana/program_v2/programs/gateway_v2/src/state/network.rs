@@ -50,7 +50,7 @@ impl GatekeeperNetwork {
         // auth_keys
     }
 
-    pub fn can_access(&self, authority: &mut Signer, flag: NetworkKeyFlags) -> bool {
+    pub fn can_access(&self, authority: &Signer, flag: NetworkKeyFlags) -> bool {
         self.auth_keys
             .iter()
             .filter(|key| {
