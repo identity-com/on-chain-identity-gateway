@@ -100,7 +100,7 @@ pub fn get_expire_address_with_seed(network: &Pubkey) -> (Pubkey, u8) {
 }
 
 /// Defines the gateway token structure
-#[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq)]
+#[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq, Eq)]
 pub struct GatewayToken {
     /// Feature flags that define the type of gateway token
     pub features: u8,
@@ -552,7 +552,7 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess {
 impl<T> GatewayTokenFunctions for T where T: GatewayTokenAccess {}
 
 /// Enum representing the states that a gateway token can be in.
-#[derive(Copy, Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, BorshSchema)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, BorshSerialize, BorshDeserialize, BorshSchema)]
 pub enum GatewayTokenState {
     /// Valid, non-frozen token. Note - a token may be active but have passed its expire_time.
     Active,
@@ -597,7 +597,7 @@ pub trait CompatibleTransactionDetails {
 
 /// A simple struct defining details of a transaction, optionally used for session tokens
 /// to restrict access based on details of a transaction
-#[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq)]
+#[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq, Eq)]
 pub struct SimpleTransactionDetails {
     /// The transaction size (in units based on the token. Assume SOL if no token is provided)
     pub amount: u64,
