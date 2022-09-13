@@ -24,6 +24,25 @@ describe("GatewayTS Forwarder", function () {
     return (await relayer.sendTransaction(populatedTx)).wait();
   }
 
+  const relaySerialized = async (fn: () => Promise<PopulatedTransaction>): Promise<TransactionReceipt> => {
+    const populatedTx = await fn();
+    const serialized = JSON.stringify(populatedTx);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { to, data } = JSON.parse(serialized);
+
+    console.log(data);
+
+    const r = await relayer.sendTransaction({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      to,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      data,
+    });
+
+    return r.wait();
+  }
+
   before("Initialize GatewayTS class", async function () {
     this.timeout(20_000);
 
@@ -40,8 +59,8 @@ describe("GatewayTS Forwarder", function () {
     gateway = new GatewayTs(gatekeeper, network, DEFAULT_GATEWAY_TOKEN_ADDRESS).forward(DEFAULT_FORWARDER_ADDRESS);
   });
 
-  it('should issue a token', async () => {
-    await relay(() => gateway.issue(sampleWalletAddress));
+  it.only('should issue a token', async () => {
+    await relaySerialized(() => gateway.issue(sampleWalletAddress));
 
     const token = await gateway.getToken(sampleWalletAddress);
 
