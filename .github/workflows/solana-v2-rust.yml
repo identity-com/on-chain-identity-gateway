@@ -153,6 +153,12 @@ jobs:
           yarn anchor build
           # yarn anchor test
 
+      - name: Upload a single artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: latest-program_v2_version
+      
+
   E2E:
     name: Test the gateway_v2 cli against the on-chain program on Solana ${{ matrix.solana }}, Node ${{ matrix.node }}, Rust ${{ matrix.rust }}, and ${{ matrix.os }}
     needs: anchor-e2e-test
