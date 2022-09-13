@@ -17,7 +17,7 @@ use {
 };
 
 /// Instructions supported by the program
-#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq)]
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq, Eq)]
 #[repr(u8)]
 pub enum GatewayInstruction {
     /// Add a new Gatekeeper to a network
