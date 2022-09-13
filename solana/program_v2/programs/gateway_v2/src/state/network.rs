@@ -101,28 +101,22 @@ impl GatekeeperNetwork {
         for key in data.auth_keys.remove.iter() {
             let index: Option<usize> = self.auth_keys.iter().position(|x| x.key == *key);
 
-            if index.is_none() {
+            if let Some(key_index) = index {
+                if self.auth_keys[key_index].key == *authority.key {
+                    // Cannot remove own key (TODO?)
+                    return Err(error!(NetworkErrors::InvalidKey));
+                }
+
+                self.auth_keys.remove(key_index);
+            } else {
                 return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
             }
-
-            let key_index = index.unwrap();
-            if self.auth_keys[key_index].key == *authority.key {
-                // Cannot remove own key (TODO?)
-                return Err(error!(NetworkErrors::InvalidKey));
-            }
-
-            self.auth_keys.remove(key_index);
         }
 
         for key in data.auth_keys.add.iter() {
             let index: Option<usize> = self.auth_keys.iter().position(|x| x.key == key.key);
 
-            if index.is_none() {
-                // add the key ifr it doesn't exist
-                self.auth_keys.push(*key);
-            } else {
-                let key_index = index.unwrap();
-
+            if let Some(key_index) = index {
                 // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                 if self.auth_keys[key_index].key == *authority.key
                     && !GatekeeperKeyFlags::contains(
@@ -135,6 +129,8 @@ impl GatekeeperNetwork {
 
                 // update the key with the new flag if it exists
                 self.auth_keys[key_index].flags = key.flags;
+            } else {
+                self.auth_keys.push(*key);
             }
         }
 
@@ -173,14 +169,11 @@ impl GatekeeperNetwork {
         for fee in data.fees.add.iter() {
             let index: Option<usize> = self.fees.iter().position(|x| x.token == fee.token);
 
-            if index.is_none() {
-                // add the fee if it doesn't exist
-                self.fees.push(*fee);
-            } else {
-                let fee_index = index.unwrap();
-
+            if let Some(fee_index) = index {
                 // update the existing key with new fees
                 self.fees[fee_index] = *fee;
+            } else {
+                self.fees.push(*fee);
             }
         }
 
