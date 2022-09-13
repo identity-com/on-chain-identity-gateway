@@ -1,4 +1,4 @@
-name: Program
+name: Gateway_V2 Program
 on:
   push:
     paths:
@@ -149,6 +149,7 @@ jobs:
 
       - name: Build program and run integration tests
         run: |
+          yarn anchor build
           yarn build
           yarn anchor test
 
