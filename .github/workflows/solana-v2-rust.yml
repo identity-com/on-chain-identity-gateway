@@ -153,10 +153,11 @@ jobs:
           yarn anchor build
           # yarn anchor test
 
-      - name: Upload a single artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: latest-program_v2_version
+      # - name: Upload a single artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     path: /solana/program_v2
+      #     name: latest-program_v2_version
       
 
   E2E:
@@ -218,10 +219,10 @@ jobs:
         run: yarn install
         working-directory: solana/program_v2_cli
 
-      - name: Download a single artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: latest-program_v2_version
+      # - name: Download a single artifact
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: latest-program_v2_version
 
       - name: Test e2e
         run: yarn test
