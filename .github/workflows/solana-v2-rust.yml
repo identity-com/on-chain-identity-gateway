@@ -149,9 +149,9 @@ jobs:
 
       - name: Build program and run integration tests
         run: |
+          # yarn build
           yarn anchor build
-          yarn build
-          yarn anchor test
+          # yarn anchor test
 
   E2E:
     name: Test the gateway_v2 cli against the on-chain program on Solana ${{ matrix.solana }}, Node ${{ matrix.node }}, Rust ${{ matrix.rust }}, and ${{ matrix.os }}
