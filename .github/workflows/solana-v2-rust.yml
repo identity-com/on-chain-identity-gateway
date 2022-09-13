@@ -2,7 +2,7 @@ name: Program
 on:
   push:
     paths:
-      - 'solana/program_v2'
+      - "solana/program_v2"
   pull_request:
 jobs:
   program-lint:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['nightly-2022-05-18']
+        rust: ["nightly-2022-05-18"]
         os: [ubuntu-latest]
 
     steps:
@@ -53,7 +53,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['nightly-2022-05-18']
+        rust: ["nightly-2022-05-18"]
         os: [ubuntu-latest]
 
     steps:
@@ -92,9 +92,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: [ '16.x' ]
-        rust: ['nightly-2022-05-18']
-        solana: ['v1.10.29']
+        node: ["16.x"]
+        rust: ["nightly-2022-05-18"]
+        solana: ["v1.10.29"]
         os: [ubuntu-latest]
 
     steps:
@@ -152,17 +152,17 @@ jobs:
           yarn build
           yarn anchor test
 
- E2E:
+  E2E:
     name: Test the gateway_v2 cli against the on-chain program on Solana ${{ matrix.solana }}, Node ${{ matrix.node }}, Rust ${{ matrix.rust }}, and ${{ matrix.os }}
     needs: anchor-e2e-test
 
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: ['16.x']
+        node: ["16.x"]
         os: [ubuntu-latest]
-        solana: ['v1.10.29']
-        rust: ['1.61']
+        solana: ["v1.10.29"]
+        rust: ["1.61"]
 
     steps:
       - name: Checkout repo
@@ -217,5 +217,5 @@ jobs:
           name: latest-program_v2_version
 
       - name: Test e2e
-        run: yarn test-e2e
+        run: yarn test
         working-directory: solana/program_v2_cli
