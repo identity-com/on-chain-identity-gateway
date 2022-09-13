@@ -1,5 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import {
+  airdropFlag,
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkKeyFlag,
@@ -22,6 +23,7 @@ export default class RevokeGatekeeper extends Command {
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
     cluster: clusterFlag(),
+    airdrop: airdropFlag,
   };
 
   static args = [
@@ -45,26 +47,28 @@ export default class RevokeGatekeeper extends Command {
 
     const connection = getConnectionFromEnv(flags.cluster);
 
-    await airdropTo(
-      connection,
-      gatekeeperNetwork.publicKey,
-      flags.cluster as string
-    );
+    if (flags.airdrop) {
+      await airdropTo(
+          connection,
+          gatekeeperNetwork.publicKey,
+          flags.cluster as string
+      );
+    }
 
     const networkService = new GatekeeperNetworkService(
-      connection,
-      gatekeeperNetwork
+        connection,
+        gatekeeperNetwork
     );
     const gatekeeperAccount = await networkService
-      .revokeGatekeeper(gatekeeper)
-      .then((t) => t.send())
-      .then((t) => t.confirm());
+        .revokeGatekeeper(gatekeeper)
+        .then((t) => t.send())
+        .then((t) => t.confirm());
     this.log(
-      `Revoked gatekeeper from network. Gatekeeper account: ${
-        gatekeeperAccount
-          ? gatekeeperAccount.toBase58()
-          : "//Gatekeeper Account Undefined//"
-      }`
+        `Revoked gatekeeper from network. Gatekeeper account: ${
+            gatekeeperAccount
+                ? gatekeeperAccount.toBase58()
+                : "//Gatekeeper Account Undefined//"
+        }`
     );
   }
 }
