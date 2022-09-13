@@ -10,6 +10,7 @@ export const getTokenUpdateProperties = async (
     help: void;
     cluster: ExtendedCluster | undefined;
     gatekeeperKey: Keypair | undefined;
+    airdrop: boolean;
   }
 ): Promise<{
   gatewayToken: PublicKey;
@@ -21,7 +22,10 @@ export const getTokenUpdateProperties = async (
   const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
 
   const connection = getConnectionFromEnv(flags.cluster);
-  await airdropTo(connection, gatekeeper.publicKey, flags.cluster as string);
+  if (flags.airdrop) {
+    await airdropTo(connection, gatekeeper.publicKey, flags.cluster as string);
+  }
+
   const service = new GatekeeperService(
     connection,
     gatekeeperNetwork,
