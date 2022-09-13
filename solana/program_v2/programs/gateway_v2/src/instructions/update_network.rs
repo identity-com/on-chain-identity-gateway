@@ -1,6 +1,5 @@
 use crate::constants::NETWORK_SEED;
-use crate::state::{GatekeeperNetwork, GatekeeperNetworkSize};
-use crate::types::NetworkFees;
+use crate::state::{GatekeeperNetwork, GatekeeperNetworkSize, NetworkFees};
 use crate::NetworkAuthKey;
 use anchor_lang::prelude::*;
 

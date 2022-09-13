@@ -1,7 +1,6 @@
 use crate::constants::NETWORK_SEED;
-use crate::state::GatekeeperNetwork;
+use crate::state::*;
 use anchor_lang::prelude::*;
-use crate::types::*;
 /// Placeholder for additional close_network functionality
 pub fn close_network() -> Result<()> {
     Ok(())

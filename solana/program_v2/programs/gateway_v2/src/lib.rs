@@ -2,12 +2,12 @@ mod constants;
 mod errors;
 mod instructions;
 mod state;
-mod types;
 mod util;
 
 use crate::instructions::*;
-use crate::state::NetworkAuthKey;
+use crate::state::*;
 use anchor_lang::prelude::*;
+use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 
 declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
