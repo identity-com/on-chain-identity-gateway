@@ -4,6 +4,7 @@ import { Keypair, PublicKey } from "@solana/web3.js";
 import { airdropTo } from "../util";
 import { GatekeeperNetworkService } from "../service";
 import {
+  airdropFlag,
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkKeyFlag,
@@ -23,6 +24,7 @@ export default class AddGatekeeper extends Command {
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
     cluster: clusterFlag(),
+    airdrop: airdropFlag,
   };
 
   static args = [
@@ -46,11 +48,13 @@ export default class AddGatekeeper extends Command {
 
     const connection = getConnectionFromEnv(flags.cluster);
 
-    await airdropTo(
-      connection,
-      gatekeeperNetwork.publicKey,
-      flags.cluster as string
-    );
+    if (flags.airdrop) {
+      await airdropTo(
+          connection,
+          gatekeeperNetwork.publicKey,
+          flags.cluster as string
+      );
+    }
 
     const networkService = new GatekeeperNetworkService(
       connection,
