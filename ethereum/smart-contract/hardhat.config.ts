@@ -8,6 +8,7 @@ import * as dotenv from 'dotenv'
 import { checkGT } from "./tasks/checkGT";
 import { addGatekeeper } from "./tasks/addGatekeeper";
 import {issueGT} from "./tasks/issueGT";
+import {fund} from "./tasks/fund";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ const liveAccounts = (process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KE
 
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
     .addParam('address', 'The wallet to check')
+    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract')
     .setAction(checkGT)
 task('add-gatekeeper', 'check if a wallet has a gateway token for a particular gatekeeper network')
     .addParam('gatekeeper', 'The gatekeeper to add')
@@ -33,6 +35,10 @@ task('issue-gt', 'issue a gateway token')
     .addParam('address', 'The wallet to issue the gateway token for')
     .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
     .setAction(issueGT)
+task('fund', 'fund a wallet')
+    .addParam('address', 'The wallet to fund')
+    .addParam('amount', 'The amount in eth to send')
+    .setAction(fund)
 
 module.exports = {
   defaultNetwork: "hardhat",

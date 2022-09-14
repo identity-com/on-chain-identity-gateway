@@ -1,6 +1,7 @@
 import { Command, Flags } from "@oclif/core";
 import { PublicKey } from "@solana/web3.js";
 import {
+  airdropFlag,
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkPubkeyFlag,
@@ -21,6 +22,7 @@ Frozen
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
     cluster: clusterFlag(),
+    airdrop: airdropFlag,
   };
 
   static args = [
