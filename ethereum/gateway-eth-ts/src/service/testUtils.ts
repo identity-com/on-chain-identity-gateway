@@ -2,8 +2,8 @@ import {Wallet} from "ethers";
 import {Provider} from "@ethersproject/providers";
 
 // Deployed by Hardhat on localnet
-export const DEFAULT_GATEWAY_TOKEN_ADDRESS = "0x80226BC342Ca42ACF258D88F99Edbac647e88F84";
-export const DEFAULT_FORWARDER_ADDRESS = "0x2F1A34f0fbf164E229D4c83382b88533aFb881be";
+export const DEFAULT_GATEWAY_TOKEN_ADDRESS = "0xd8058efe0198ae9dD7D563e1b4938Dcbc86A1F81";
+export const DEFAULT_FORWARDER_ADDRESS = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
 
 export const DEFAULT_MNEMONIC =
   "test test test test test test test test test test test junk";

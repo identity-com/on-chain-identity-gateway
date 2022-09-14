@@ -59,7 +59,7 @@ describe("GatewayTS Forwarder", function () {
     gateway = new GatewayTs(gatekeeper, network, DEFAULT_GATEWAY_TOKEN_ADDRESS).forward(DEFAULT_FORWARDER_ADDRESS);
   });
 
-  it.only('should issue a token', async () => {
+  it('should issue a token', async () => {
     await relaySerialized(() => gateway.issue(sampleWalletAddress));
 
     const token = await gateway.getToken(sampleWalletAddress);
