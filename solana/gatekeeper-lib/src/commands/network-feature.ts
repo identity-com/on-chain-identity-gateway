@@ -3,7 +3,7 @@ import { Keypair } from "@solana/web3.js";
 
 import { airdropTo } from "../util";
 import { GatekeeperNetworkService } from "../service";
-import { clusterFlag, gatekeeperNetworkKeyFlag } from "../util/oclif/flags";
+import {airdropFlag, clusterFlag, gatekeeperNetworkKeyFlag} from "../util/oclif/flags";
 import {
   NetworkFeature,
   UserTokenExpiry,
@@ -30,7 +30,7 @@ export const featureOperation = Flags.build<featureOperation>({
   default: "get",
 });
 
-export default class AddGatekeeper extends Command {
+export default class AddNetworkFeature extends Command {
   static description = "Get or Change a Network Feature";
   static examples = [`$ gateway network-feature userTokenExpiry`];
 
@@ -39,6 +39,7 @@ export default class AddGatekeeper extends Command {
     featureOperation: featureOperation(),
     gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
     cluster: clusterFlag(),
+    airdrop: airdropFlag,
   };
 
   static args = [
@@ -59,7 +60,7 @@ export default class AddGatekeeper extends Command {
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(AddGatekeeper);
+    const { args, flags } = await this.parse(AddNetworkFeature);
 
     const networkFeature: NetworkFeature = args.feature as NetworkFeature;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
@@ -96,11 +97,13 @@ export default class AddGatekeeper extends Command {
       return;
     }
 
-    await airdropTo(
-      connection,
-      gatekeeperNetwork.publicKey,
-      flags.cluster as string
-    );
+    if (flags.airdrop) {
+      await airdropTo(
+          connection,
+          gatekeeperNetwork.publicKey,
+          flags.cluster as string
+      );
+    }
 
     // ? Why are the featureAddress variables unused? What are they doing here?
 
