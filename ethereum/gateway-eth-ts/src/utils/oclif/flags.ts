@@ -17,6 +17,7 @@ export const privateKeyFlag = Flags.build<string>({
 export const gatewayTokenAddressFlag = Flags.build<string>({
   char: "t",
   env: "GATEWAY_TOKEN",
+  required: true,
   parse: async (input: string) => (utils.isAddress(input) ? input : null),
   description: "GatewayToken address to target",
 });
@@ -26,7 +27,7 @@ export const networkFlag = Flags.build<BaseProvider>({
   env: "GTS_DEFAULT_NETWORK",
   parse: async (input: string) => getProvider(input),
   default: async () => getProvider("mainnet"),
-  options: ["mainnet", "rinkeby", "ropsten", "kovan", "goerli"],
+  options: ["mainnet", "rinkeby", "ropsten", "kovan", "goerli", "localhost"],
   description: "Specify target network to work with",
 });
 

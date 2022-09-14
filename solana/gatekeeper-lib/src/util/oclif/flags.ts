@@ -48,3 +48,8 @@ export const clusterFlag = Flags.build<ExtendedCluster>({
   description:
     "The cluster to target. Alternatively, set the environment variable SOLANA_CLUSTER. To override this property with a specific endpoint url, set SOLANA_CLUSTER_URL",
 });
+export const airdropFlag = Flags.boolean({
+    char: "a",
+    default: false,
+    description: "Airdrop SOL if needed",
+});

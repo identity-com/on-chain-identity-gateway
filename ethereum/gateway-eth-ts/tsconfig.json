@@ -19,7 +19,7 @@
       "src/**/*"
     ],
     "exclude": [
-      "node_modules/**/*", "src/contracts/typechain-types"
+      "node_modules/**/*"
     ],
     "ts-node": {
       "compilerOptions": {
