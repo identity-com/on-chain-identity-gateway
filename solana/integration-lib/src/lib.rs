@@ -30,7 +30,7 @@ const MAX_SESSION_TOKEN_BALANCE: u64 = 0;
 
 /// Options to configure how a gateway token is considered valid. Typically, integrators should
 /// use the default options.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Default)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 pub struct VerificationOptions {
     /// If true, consider an expired token as invalid. Defaults to true
     pub check_expiry: bool,

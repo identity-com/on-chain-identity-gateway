@@ -100,7 +100,7 @@ pub fn get_expire_address_with_seed(network: &Pubkey) -> (Pubkey, u8) {
 }
 
 /// Defines the gateway token structure
-#[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq)]
 pub struct GatewayToken {
     /// Feature flags that define the type of gateway token
     pub features: u8,
