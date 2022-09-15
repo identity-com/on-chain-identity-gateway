@@ -13,7 +13,8 @@ pub struct GatekeeperNetwork {
     pub version: u8,
     /// The initial authority key
     pub initial_authority: Pubkey,
-    // /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
+    // TODO: Add Network Features
+    /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
     // pub network_features: Vec<[u8; 32]>,
     /// The number of auth keys needed to change the `auth_keys`
     pub auth_threshold: u8,
@@ -41,6 +42,7 @@ impl GatekeeperNetwork {
         OC_SIZE_DISCRIMINATOR
             + OC_SIZE_U8 // version
             + OC_SIZE_PUBKEY // initial_authority
+            // TODO: Add size for network_features
             // + OC_SIZE_U8 * 32 * 12 // network_features
             + OC_SIZE_U8 // auth_threshold
             + OC_SIZE_U64 // pass_expire_time
