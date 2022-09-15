@@ -1,0 +1,231 @@
+name: Gateway_V2 Program
+on:
+  push:
+    paths:
+      - "solana/program_v2"
+  pull_request:
+jobs:
+  program-lint:
+    name: Format and lint the Gateway V2 on-chain program on Rust ${{ matrix.rust }} and ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        rust: ["nightly-2022-05-18"]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+          components: rustfmt, clippy
+
+      - name: Run fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path solana/program_v2/Cargo.toml --all -- --check
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./solana/program_v2/target
+          key: cargo-clippy-${{ hashFiles('solana/program_v2/Cargo.lock') }}
+
+      - name: Run Clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --manifest-path solana/program_v2/Cargo.toml --tests --workspace --all-targets -- --deny=warnings
+
+  program-unit-test:
+    name: Unit test program on Rust ${{ matrix.rust }} and ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        rust: ["nightly-2022-05-18"]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+
+      - name: Cache build dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./solana/program_v2/target
+          key: cargo-test-${{ hashFiles('solana/program_v2/Cargo.lock') }}
+
+      - name: Run unit tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --manifest-path solana/program_v2/Cargo.toml
+
+  anchor-e2e-test:
+    name: Build, Lint Client and test the Gateway V2 on-chain program on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }}, node ${{ matrix.node }}, and ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: ./solana/program_v2
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ["16.x"]
+        rust: ["nightly-2022-05-18"]
+        solana: ["v1.10.29"]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+
+      - name: Cache build dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./solana/program_v2/target
+          key: cargo-build-${{ hashFiles('solana/program_v2/Cargo.lock') }}
+
+      - name: Cache Solana version
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache
+          key: solana-${{ matrix.solana }}
+
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/${{ matrix.solana }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./solana/program_v2/node_modules
+          key: yarn-client-${{ hashFiles('solana/program_v2/yarn.lock') }}
+
+      - name: Install
+        run: yarn install --ignore-scripts --frozen-lockfile
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build program
+        run: yarn build
+
+      - name: Run integration tests
+        run: |
+          yarn anchor test
+
+      # yarn anchor build
+      # - name: Upload a single artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     path: /solana/program_v2
+      #     name: latest-program_v2_version
+      
+
+  E2E:
+    name: Test the gateway_v2 cli against the on-chain program on Solana ${{ matrix.solana }}, Node ${{ matrix.node }}, Rust ${{ matrix.rust }}, and ${{ matrix.os }}
+    needs: anchor-e2e-test
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ["16.x"]
+        os: [ubuntu-latest]
+        solana: ["v1.10.29"]
+        rust: ["1.61"]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+
+      - name: Cache build dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./solana/program_v2/target
+          key: cargo-build-${{ hashFiles('program_v2/Cargo.lock') }}
+
+      - name: Cache Solana version
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache
+          key: solana-${{ matrix.solana }}
+
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/${{ matrix.solana }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./solana/program_v2_cli/node_modules
+          key: yarn-cli-${{ hashFiles('program_v2_cli/yarn.lock') }}
+
+      - name: Install cli dependencies
+        run: yarn install
+        working-directory: solana/program_v2_cli
+
+      # - name: Download a single artifact
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: latest-program_v2_version
+
+      - name: Test e2e
+        run: yarn test
+        working-directory: solana/program_v2_cli
