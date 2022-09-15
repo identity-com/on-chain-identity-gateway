@@ -150,8 +150,8 @@ jobs:
       - name: Build program and run integration tests
         run: |
           yarn build
-#          yarn anchor build
           yarn anchor test
+      # yarn anchor build
 
       # - name: Upload a single artifact
       #   uses: actions/upload-artifact@v3
