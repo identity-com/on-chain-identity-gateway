@@ -7,7 +7,6 @@ pub fn create_gatekeeper(
     bump: u8,
     data: CreateGatekeeperData,
     gatekeeper: &mut Account<Gatekeeper>,
-    network: &mut Account<GatekeeperNetwork>,
 ) -> Result<()> {
     if data.auth_keys.is_empty() {
         return Err(error!(GatekeeperErrors::NoAuthKeys));
@@ -74,6 +73,10 @@ pub struct CreateGatekeeperData {
     pub signer_bump: u8,
     /// The initial key for the gatekeeper. Allows setting up the gatekeeper.
     pub initial_auth_key: Pubkey,
+    /// The associated network for the gatekeeper
+    pub gatekeeper_network: Pubkey,
+    /// The initial state of the gatekeeper
+    pub initial_state: GatekeeperState,
 }
 
 #[cfg(feature = "processor")]
