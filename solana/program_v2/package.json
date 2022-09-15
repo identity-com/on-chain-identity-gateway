@@ -9,7 +9,7 @@
   "author": "Kevin Colgan <kevin@civic.com>",
   "license": "MIT",
   "scripts": {
-    "build": "yarn clean && anchor build && yarn compile",
+    "build": "yarn clean && yarn anchor build && yarn compile",
     "clean": "rimraf -rf ./dist",
     "compile": "tsc -p tsconfig.json",
     "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'tests/**/*.ts'",
