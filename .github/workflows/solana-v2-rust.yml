@@ -85,10 +85,6 @@ jobs:
   anchor-e2e-test:
     name: Build, Lint Client and test the Gateway V2 on-chain program on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }}, node ${{ matrix.node }}, and ${{ matrix.os }}
 
-    defaults:
-      run:
-        working-directory: ./solana/program_v2
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
