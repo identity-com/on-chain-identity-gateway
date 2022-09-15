@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "importHelpers": true,
+    "module": "commonjs",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "target": "ES2020",
+    "skipLibCheck": true,
+    "lib": [
+      "ES2020"
+    ],
+  },
+  "include": [
+    "src/**/*"
+, "target"  ],
+  "exclude": ["node_modules", "dist"],
+}
