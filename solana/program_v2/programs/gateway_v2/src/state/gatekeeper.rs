@@ -1,8 +1,13 @@
+use crate::errors::GatekeeperErrors;
+use crate::instructions::*;
+use crate::util::*;
 use anchor_lang::prelude::*;
+use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
 
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
-#[derive(Debug, InPlace)]
+#[derive(Debug)]
+#[account]
 pub struct Gatekeeper {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
@@ -24,7 +29,28 @@ pub struct Gatekeeper {
     pub auth_keys: Vec<GatekeeperAuthKey>,
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct GatekeeperSize {
+    /// The number of fee tokens
+    pub fees_count: u16,
+    /// The number of auth keys
+    pub auth_keys: u16,
+}
+
 impl Gatekeeper {
+    pub fn on_chain_size_with_arg(arg: GatekeeperSize) -> usize {
+        OC_SIZE_DISCRIMINATOR
+            + OC_SIZE_U8 // version
+            + OC_SIZE_PUBKEY // initial_authority
+            // TODO: Add size for network_features
+            // + OC_SIZE_U8 * 32 * 12 // network_features
+            + OC_SIZE_U8 // auth_threshold
+            + OC_SIZE_U64 // pass_expire_time
+            + OC_SIZE_U8 // signer_bump
+            + OC_SIZE_VEC_PREFIX + GatekeeperFees::ON_CHAIN_SIZE * arg.fees_count as usize // fees
+            + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize
+        // auth_keys
+    }
     //TODO: Won't work with current structure of auth_keys
     pub fn can_access(&self, authority: &Signer, flag: GatekeeperKeyFlags) -> bool {
         self.auth_keys
@@ -64,7 +90,7 @@ impl Gatekeeper {
 
                 self.auth_keys.remove(key_index);
             } else {
-                return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
+                return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
             }
         }
 
@@ -79,7 +105,7 @@ impl Gatekeeper {
                         GatekeeperKeyFlags::AUTH,
                     )
                 {
-                    return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
+                    return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
                 }
 
                 // update the key with the new flag if it exists
@@ -103,7 +129,7 @@ impl Gatekeeper {
             authority,
             GatekeeperKeyFlags::ADJUST_FEES | GatekeeperKeyFlags::REMOVE_FEES,
         ) {
-            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
+            return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
         }
 
         // remove the fees if they exist
@@ -111,7 +137,7 @@ impl Gatekeeper {
             let index: Option<usize> = self.fees.iter().position(|x| x.token == *fee);
 
             if index.is_none() {
-                return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
+                return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
             }
 
             let fee_index = index.unwrap();
@@ -134,41 +160,20 @@ impl Gatekeeper {
         Ok(())
     }
 
-    pub fn set_auth_threshold(
-        &mut self,
-        data: &UpdateGatekeeperData,
-        authority: &mut Signer,
-    ) -> Result<()> {
-        if data.auth_threshold.is_none() {
-            // no auth threshold to update
-            return Ok(());
-        }
-
-        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
-            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
-        }
-
-        self.auth_threshold = *data.auth_threshold;
-        return Ok(());
-    }
-
     pub fn set_gatekeeper_state(
         &mut self,
         state: &GatekeeperState,
         authority: &mut Signer,
     ) -> Result<()> {
-        if state.is_none() {
-            // no state to modify
-            return Ok(());
+        if *state != self.gatekeeper_state {
+            if !self.can_access(authority, GatekeeperKeyFlags::SET_GATEKEEPER_STATE) {
+                return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
+            }
+
+            self.gatekeeper_state = *state;
         }
 
-        if !self.can_access(authority, GatekeeperKeyFlags::SET_GATEKEEPER_STATE) {
-            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
-        }
-
-        self.gatekeeper_state = *data.gatekeeper_state;
-
-        return Ok(());
+        Ok(())
     }
 
     pub fn set_network(
@@ -176,18 +181,20 @@ impl Gatekeeper {
         data: &UpdateGatekeeperData,
         authority: &mut Signer,
     ) -> Result<()> {
-        if data.gatekeeper_network.is_none() {
-            // no network to update
-            return Ok(());
-        }
+        match data.gatekeeper_network {
+            Some(gatekeeper_network) => {
+                if gatekeeper_network != self.gatekeeper_network {
+                    if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
+                        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
+                    }
 
-        // If authority doesn't have sufficient access
-        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
-            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
-        }
+                    self.gatekeeper_network = gatekeeper_network;
+                }
 
-        self.gatekeeper_network = *data.gatekeeper_network;
-        return Ok(());
+                Ok(())
+            }
+            None => Ok(()),
+        }
     }
 
     pub fn set_addresses(
@@ -195,37 +202,61 @@ impl Gatekeeper {
         data: &UpdateGatekeeperData,
         authority: &mut Signer,
     ) -> Result<()> {
-        if data.addresses.is_none() {
-            // no addresses to update
-            return Ok(());
-        }
+        match data.addresses {
+            Some(addresses) => {
+                if addresses != self.addresses {
+                    if !self.can_access(authority, GatekeeperKeyFlags::SET_ADDRESSES) {
+                        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
+                    }
 
-        // If authority doesn't have sufficient access
-        if !self.can_access(authority, GatekeeperKeyFlags::SET_ADDRESSES) {
-            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
-        }
+                    self.addresses = addresses;
+                }
 
-        self.addresses = *data.addresses;
-        return Ok(());
+                Ok(())
+            }
+            None => Ok(()),
+        }
     }
 
+    pub fn set_auth_threshold(
+        &mut self,
+        data: &UpdateGatekeeperData,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        match data.auth_threshold {
+            Some(auth_threshold) => {
+                if auth_threshold != self.auth_threshold {
+                    if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
+                        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
+                    }
+
+                    self.auth_threshold = auth_threshold;
+                }
+
+                Ok(())
+            }
+            None => Ok(()),
+        }
+    }
     pub fn set_staking_account(
         &mut self,
         data: &UpdateGatekeeperData,
         authority: &mut Signer,
     ) -> Result<()> {
-        if data.staking_account.is_none() {
-            // no staking account to update
-            return Ok(());
-        }
+        match data.staking_account {
+            Some(staking_account) => {
+                if staking_account != self.staking_account {
+                    if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
+                        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
+                    }
 
-        // If authority doesn't have sufficient access
-        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
-            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
-        }
+                    self.staking_account = staking_account;
+                }
 
-        self.staking_account = *data.staking_account;
-        return Ok(());
+                Ok(())
+            }
+            None => Ok(()),
+        }
     }
 }
 
@@ -239,20 +270,20 @@ pub enum GatekeeperState {
     /// Gatekeeper may not issue passes and all passes invalid
     Halted,
 }
-impl const OnChainSize for GatekeeperState {
+impl OnChainSize for GatekeeperState {
     const ON_CHAIN_SIZE: usize = 1;
 }
 
 /// The authority key for a [`Gatekeeper`]
-#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, InPlace)]
+#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Copy)]
 pub struct GatekeeperAuthKey {
     /// The permissions this key has
-    pub flags: GatekeeperKeyFlags,
+    pub flags: u16,
     /// The key
     pub key: Pubkey,
 }
 impl OnChainSize for GatekeeperAuthKey {
-    const ON_CHAIN_SIZE: usize = GatekeeperKeyFlags::ON_CHAIN_SIZE + Pubkey::ON_CHAIN_SIZE;
+    const ON_CHAIN_SIZE: usize = OC_SIZE_U16 + OC_SIZE_PUBKEY;
 }
 
 #[derive(Clone, Debug)]
@@ -271,18 +302,6 @@ pub struct CreateGatekeeperData {
     pub fees: Vec<GatekeeperFees>,
     /// The keys with permissions on this gatekeeper
     pub auth_keys: Vec<GatekeeperAuthKey>,
-}
-
-#[derive(Debug, AnchorSerialize, AnchorDeserialize, Default, Clone, Copy)]
-pub struct GatekeeperAuthKey {
-    /// The permissions this key has
-    pub flags: u16,
-    /// The key
-    pub key: Pubkey,
-}
-
-impl OnChainSize for GatekeeperAuthKey {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_U16 + OC_SIZE_PUBKEY;
 }
 
 /// The fees a gatekeeper/network can take
@@ -337,7 +356,7 @@ bitflags! {
          /// Key can unrevoke a pass with network concurrence.
          const UNREVOKE_PASS = 1 << 12;
          /// Key can set gatekeeper state
-         const SET_GATEKEEPER_STATE = 1 << 13
+         const SET_GATEKEEPER_STATE = 1 << 13;
      }
 }
 

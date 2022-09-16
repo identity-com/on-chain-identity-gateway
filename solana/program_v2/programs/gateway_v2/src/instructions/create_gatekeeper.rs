@@ -1,5 +1,10 @@
-use crate::arguments::{GatekeeperAccount, GatekeeperNetworkAccount};
-use crate::pda::GatekeeperSignerSeeder;
+// use crate::arguments::{GatekeeperAccount, GatekeeperNetworkAccount};
+// use crate::pda::GatekeeperSignerSeeder;
+use crate::constants::GATEKEEPER_SEED;
+use crate::errors::GatekeeperErrors;
+use crate::state::gatekeeper::{
+    Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, GatekeeperSize,
+};
 use anchor_lang::prelude::*;
 
 pub fn create_gatekeeper(
@@ -25,24 +30,30 @@ pub fn create_gatekeeper(
     }
 
     gatekeeper.auth_threshold = data.auth_threshold;
+    gatekeeper.signer_bump = bump;
+    gatekeeper.auth_keys = data.auth_keys;
     gatekeeper.gatekeeper_network = data.gatekeeper_network;
     gatekeeper.addresses = data.addresses;
     gatekeeper.staking_account = data.staking_account;
-    gatekeeper.signer_bump = bump;
     gatekeeper.fees = data.fees;
-    gatekeeper.auth_keys = data.auth_keys;
+    Ok(())
 }
 /// Data for [`CreateGatekeeper`]
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct CreateGatekeeperData {
+    pub auth_threshold: u8,
     /// The [`Gatekeeper::signer_bump`].
     pub signer_bump: u8,
     /// The initial key for the gatekeeper. Allows setting up the gatekeeper.
     pub auth_keys: Vec<GatekeeperAuthKey>,
     /// The associated network for the gatekeeper
     pub gatekeeper_network: Pubkey,
-    /// The initial state of the gatekeeper
-    pub gatekeeper_state: GatekeeperState,
+    // addresses of the gatekeeper
+    pub addresses: Pubkey,
+    // staking account for the gatekeeper
+    pub staking_account: Pubkey,
+    // Fees for the gatekeeper
+    pub fees: Vec<GatekeeperFees>,
 }
 
 #[derive(Accounts, Debug)]
@@ -54,6 +65,7 @@ pub struct CreateGatekeeperAccount<'info> {
     space = Gatekeeper::on_chain_size_with_arg(
     GatekeeperSize{
     auth_keys: data.auth_keys.len() as u16,
+    fees_count: data.fees.len() as u16,
     }
     ),
     seeds = [GATEKEEPER_SEED, authority.key().as_ref()],

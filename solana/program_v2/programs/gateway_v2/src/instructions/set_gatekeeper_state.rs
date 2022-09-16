@@ -1,7 +1,5 @@
-use crate::constants::NETWORK_SEED;
-use crate::state::{
-    GatekeeperAuthKey, GatekeeperNetwork, GatekeeperNetworkSize, GatekeeperState, NetworkFees,
-};
+use crate::constants::GATEKEEPER_SEED;
+use crate::state::{Gatekeeper, GatekeeperState};
 use anchor_lang::prelude::*;
 
 pub fn set_gatekeeper_state(
@@ -9,17 +7,16 @@ pub fn set_gatekeeper_state(
     state: GatekeeperState,
     authority: &mut Signer,
 ) -> Result<()> {
-    gatekeeper.set_gatekeeper_state(state, authority)?;
+    gatekeeper.set_gatekeeper_state(&state, authority)?;
     Ok(())
 }
 
-#[derive(Accounts, Debug)]
+#[derive(Accounts, Debug, AnchorDeserialize, AnchorSerialize)]
 #[instruction(state: Gatekeeper)]
 pub struct SetGatekeeperState<'info> {
     #[account(
         mut,
-        realloc::zero = false,
-        seeds = [NETWORK_SEED, network.initial_authority.key().as_ref()],
+        seeds = [GATEKEEPER_SEED],
         bump = gatekeeper.signer_bump,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,

@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2017-06-20
-
 ### Added
 
     PROGRAM
@@ -22,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
             state/
                 - gatekeeper.rs
+                - network.rs
 
     - CHANGELOG.md
 
@@ -38,5 +37,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         - errors.rs
         - constants.rs
         - lib.rs
+
+    CLIENT
+        src/
+            lib/
+                - types.ts
+
+            - GatewayService.ts
 
 [Unreleased]: https://github.com/identity-com/on-chain-identity-gateway

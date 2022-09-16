@@ -58,13 +58,13 @@ pub mod gateway_v2 {
         data: UpdateGatekeeperData,
     ) -> Result<()> {
         instructions::update_gatekeeper(
-            data,
+            &data,
             &mut ctx.accounts.gatekeeper,
             &mut ctx.accounts.authority,
         )
     }
 
-    pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
+    pub fn close_gatekeeper(_ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
         instructions::close_gatekeeper()
     }
 }

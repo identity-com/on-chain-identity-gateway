@@ -52,4 +52,22 @@ export type NetworkAccount = {
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
 };
-// TODO!: Frankly I don't understand why these are not able to be in here. It seems like the updateNetwork() function takes them as 'never' type, which clearly is not accurate
+
+export type CreateGatekeeperData = {
+  authThreshold: number;
+  signerBump: number;
+  authKeys: AuthKeyStructure[];
+  gatekeeperNetwork: PublicKey;
+  addresses: PublicKey;
+  stakingAccount: PublicKey;
+  fees: FeeStructure[];
+};
+
+export type UpdateGatekeeperData = {
+  authThreshold: number;
+  authKeys: AuthKeyStructure[];
+  gatekeeperNetwork: PublicKey;
+  addresses: PublicKey;
+  stakingAccount: PublicKey;
+  fees: FeeStructure[];
+};

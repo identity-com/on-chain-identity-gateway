@@ -121,9 +121,9 @@ impl GatekeeperNetwork {
             if let Some(key_index) = index {
                 // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                 if self.auth_keys[key_index].key == *authority.key
-                    && !GatekeeperKeyFlags::contains(
-                        &GatekeeperKeyFlags::from_bits_truncate(key.flags),
-                        GatekeeperKeyFlags::AUTH,
+                    && !NetworkKeyFlags::contains(
+                        &NetworkKeyFlags::from_bits_truncate(key.flags),
+                        NetworkKeyFlags::AUTH,
                     )
                 {
                     return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
@@ -211,27 +211,6 @@ impl OnChainSize for NetworkFees {
     const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + OC_SIZE_U16 * 4;
 }
 
-/// The fees a gatekeeper/network can take
-#[derive(Debug, Clone, Eq, PartialEq, AnchorSerialize, AnchorDeserialize, Copy)]
-pub struct GatekeeperFees {
-    /// The token for these fees. None value for this means native SOL price
-    pub token: Pubkey,
-    /// Fees taken at issuance of a new pass in token units or lamports for SOL.
-    pub issue: u64,
-    /// Fees taken when a pass is refreshed in token units or lamports for SOL.
-    pub refresh: u64,
-    /// The fee taken when a pass is expired in token units or lamports for SOL.
-    /// This should only be used where pass value comes from one-time use.
-    pub expire: u64,
-    /// The fee taken when a pass is verified in token units or lamports for SOL.
-    /// This should only be used where pass value comes from proper use
-    pub verify: u64,
-}
-
-impl OnChainSize for GatekeeperFees {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + OC_SIZE_U16 * 4;
-}
-
 bitflags! {
     /// The flags for a key on a network
     #[derive(AnchorSerialize, AnchorDeserialize, Default)]
@@ -263,41 +242,8 @@ bitflags! {
         /// Key can set [`GatekeeperNetwork::pass_expire_time`]
         const SET_EXPIRE_TIME = 1 << 12;
     }
-    /// The flags for a key on a gatekeeper
-    #[derive(AnchorSerialize, AnchorDeserialize)]
-    pub struct GatekeeperKeyFlags: u16{
-        /// Key can change keys
-        const AUTH = 1 << 0;
-        /// Key can issue passes
-        const ISSUE = 1 << 1;
-        /// Key can refresh passes
-        const REFRESH = 1 << 2;
-        /// Key can freeze passes
-        const FREEZE = 1 << 3;
-        /// Key can unfreeze passes
-        const UNFREEZE = 1 << 4;
-        /// Key can revoke passes
-        const REVOKE = 1 << 5;
-        /// Key can adjust gatekeeper fees
-        const ADJUST_FEES = 1 << 6;
-        /// Key can set gatekeeper addresses key
-        const SET_ADDRESSES = 1 << 7;
-        /// Key can set data on passes
-        const SET_PASS_DATA = 1 << 8;
-        /// Key can add new fee types to a gatekeeper
-        const ADD_FEES = 1 << 9;
-        /// Key can remove fee types from a gatekeeper
-        const REMOVE_FEES = 1 << 10;
-        /// Key can access the gatekeeper's vault
-        const ACCESS_VAULT = 1 << 11;
-        /// Key can unrevoke a pass with network concurrence.
-        const UNREVOKE_PASS = 1 << 12;
-    }
+
 }
 impl OnChainSize for NetworkKeyFlags {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
-}
-
-impl OnChainSize for GatekeeperKeyFlags {
     const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
 }
