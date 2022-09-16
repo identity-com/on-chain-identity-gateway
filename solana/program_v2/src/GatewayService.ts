@@ -121,7 +121,7 @@ export class GatewayService {
     return this._program.provider.connection;
   }
 
-  getConfrirmOptions(): ConfirmOptions {
+  getConfirmOptions(): ConfirmOptions {
     return this._opts;
   }
 
@@ -277,7 +277,7 @@ export class GatewayServiceBuilder {
   ) {
     this.wallet = this.service.getWallet();
     this.connection = this.service.getConnection();
-    this.confirmOptions = this.service.getConfrirmOptions();
+    this.confirmOptions = this.service.getConfirmOptions();
 
     this.idlErrors = parseIdlErrors(service.getIdl());
   }
