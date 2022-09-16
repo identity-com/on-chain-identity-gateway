@@ -32,84 +32,35 @@ pub fn create_gatekeeper(
     gatekeeper.fees = data.fees;
     gatekeeper.auth_keys = data.auth_keys;
 }
-
-/// Creates a new gatekeeper
-#[derive(Debug)]
-pub struct CreateGatekeeper;
-
-impl<AI> Instruction<AI> for CreateGatekeeper {
-    type Accounts = CreateGatekeeperAccounts<AI>;
-    type Data = CreateGatekeeperData;
-    type ReturnType = ();
-}
-
-/// Accounts for [`CreateGatekeeper`]
-#[derive(AccountArgument, Debug)]
-#[account_argument(account_info = AI, generics = [<'info> where AI: ToSolanaAccountInfo<'info>])]
-#[validate(data = (signer_bump: u8, rent: Rent))]
-pub struct CreateGatekeeperAccounts<AI> {
-    /// The network for the new gatekeeper
-    pub network: GatekeeperNetworkAccount<AI>,
-    /// The key with [`NetworkKeyFlags::CREATE_GATEKEEPER`] permission
-    #[validate(signer)]
-    pub key: AI,
-    /// The gatekeeper account to create
-    // TODO: Replace with proper gatekeeper account type and init validate
-    pub gatekeeper: GatekeeperAccount<AI>,
-    /// The system program
-    pub system_program: SystemProgram<AI>,
-    /// The signer for the new gatekeeper
-    #[validate(data = (GatekeeperSignerSeeder{ gatekeeper: *self.gatekeeper.info().key() }, signer_bump))]
-    pub gatekeeper_signer: Seeds<AI, GatekeeperSignerSeeder>,
-    /// The funder for the new gatekeeper account if needed.
-    #[validate(signer(IfSome), writable(IfSome))]
-    pub funder: Option<AI>,
-}
-
 /// Data for [`CreateGatekeeper`]
-#[derive(Clone, Debug, BorshSerialize, BorshDeserialize)]
+#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct CreateGatekeeperData {
     /// The [`Gatekeeper::signer_bump`].
     pub signer_bump: u8,
     /// The initial key for the gatekeeper. Allows setting up the gatekeeper.
-    pub initial_auth_key: Pubkey,
+    pub auth_keys: Vec<GatekeeperAuthKey>,
     /// The associated network for the gatekeeper
     pub gatekeeper_network: Pubkey,
     /// The initial state of the gatekeeper
-    pub initial_state: GatekeeperState,
+    pub gatekeeper_state: GatekeeperState,
 }
 
-#[cfg(feature = "processor")]
-mod processor {
-    use super::CreateGatekeeper;
-    use cruiser::instruction::{Instruction, InstructionProcessor};
-    use cruiser::solana_program::rent::Rent;
-    use cruiser::{CruiserResult, Pubkey, ToSolanaAccountInfo};
-
-    impl<'a, AI> InstructionProcessor<AI, CreateGatekeeper> for CreateGatekeeper
-    where
-        AI: ToSolanaAccountInfo<'a>,
-    {
-        type FromAccountsData = ();
-        type ValidateData = (u8, Rent);
-        type InstructionData = ();
-
-        fn data_to_instruction_arg(
-            _data: <CreateGatekeeper as Instruction<AI>>::Data,
-        ) -> CruiserResult<(
-            Self::FromAccountsData,
-            Self::ValidateData,
-            Self::InstructionData,
-        )> {
-            todo!()
-        }
-
-        fn process(
-            _program_id: &Pubkey,
-            _data: Self::InstructionData,
-            _accounts: &mut <CreateGatekeeper as Instruction<AI>>::Accounts,
-        ) -> CruiserResult<<CreateGatekeeper as Instruction<AI>>::ReturnType> {
-            todo!()
-        }
+#[derive(Accounts, Debug)]
+#[instruction(data: CreateGatekeeperData)]
+pub struct CreateGatekeeperAccount<'info> {
+    #[account(
+    init,
+    payer = authority,
+    space = Gatekeeper::on_chain_size_with_arg(
+    GatekeeperSize{
+    auth_keys: data.auth_keys.len() as u16,
     }
+    ),
+    seeds = [GATEKEEPER_SEED, authority.key().as_ref()],
+    bump
+    )]
+    pub gatekeeper: Account<'info, Gatekeeper>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }

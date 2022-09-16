@@ -5,26 +5,33 @@ use anchor_lang::prelude::*;
 
 pub fn update_gatekeeper(
     data: &UpdateGatekeeperData,
-    network: &mut Account<GatekeeperNetwork>,
+    gatekeeper: &mut Account<Gatekeeper>,
     authority: &mut Signer,
 ) -> Result<()> {
     gatekeeper.add_auth_keys(data, authority)?;
     gatekeeper.add_fees(data, authority)?;
-    gatekeeper.modify_auth_threshold(data, authority)?;
+    gatekeeper.set_auth_threshold(data, authority)?;
+    gatekeeper.set_network(data, authority)?;
+    gatekeeper.set_addresses(data, authority)?;
+    gatekeeper.set_staking_account(data, authority)?;
 
     Ok(())
 }
 
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
-pub struct UpdateNetworkData {
-    /// The [`GatekeeperNetwork::auth_threshold`].
+pub struct UpdateGatekeeperData {
+    /// The number of keys needed to change the `auth_keys`
     pub auth_threshold: u8,
-    /// The [`GatekeeperNetwork::pass_expire_time`].
-    pub pass_expire_time: Option<i64>,
-    /// The [`GatekeeperNetwork::fees`].
-    pub fees: UpdateFees,
-    /// The [`GatekeeperNetwork::auth_keys`].
-    pub auth_keys: UpdateKeys,
+    /// The [`GatekeeperNetwork`] this gatekeeper is on
+    pub gatekeeper_network: Pubkey,
+    /// A pointer to the addresses this gatekeeper uses for discoverability
+    pub addresses: Pubkey,
+    /// The staking account of this gatekeeper
+    pub staking_account: Pubkey,
+    /// The fees for this gatekeeper
+    pub fees: Vec<GatekeeperFees>,
+    /// The keys with permissions on this gatekeeper
+    pub auth_keys: Vec<GatekeeperAuthKey>,
 }
 
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
@@ -40,22 +47,22 @@ pub struct UpdateKeys {
 }
 
 #[derive(Accounts, Debug)]
-#[instruction(data: UpdateNetworkData)]
-pub struct UpdateNetworkAccount<'info> {
+#[instruction(data: UpdateGatekeeperData)]
+pub struct UpdateGatekeeperAccount<'info> {
     #[account(
         mut,
-        realloc = GatekeeperNetwork::on_chain_size_with_arg(
-            GatekeeperNetworkSize{
-                fees_count: (network.fees.len() + data.fees.add.len() - data.fees.remove.len()) as u16,
-                auth_keys: (network.auth_keys.len() + data.auth_keys.add.len() - data.auth_keys.remove.len()) as u16,
+        realloc = Gatekeeper::on_chain_size_with_arg(
+            GatekeeperSize{
+                fees_count: (gatekeeper.fees.len() + data.fees.add.len() - data.fees.remove.len()) as u16,
+                auth_keys: (gatekeeper.auth_keys.len() + data.auth_keys.add.len() - data.auth_keys.remove.len()) as u16,
             }
         ),
         realloc::payer = authority,
         realloc::zero = false,
-        seeds = [NETWORK_SEED, network.initial_authority.key().as_ref()],
-        bump = network.signer_bump,
+        seeds = [GATEKEEPER_SEED, gatekeeper.initial_authority.key().as_ref()],
+        bump = gatekeeper.signer_bump,
     )]
-    pub network: Account<'info, GatekeeperNetwork>,
+    pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,

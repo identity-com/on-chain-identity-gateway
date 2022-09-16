@@ -99,7 +99,10 @@ impl Gatekeeper {
             return Ok(());
         }
 
-        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
+        if !self.can_access(
+            authority,
+            GatekeeperKeyFlags::ADJUST_FEES | GatekeeperKeyFlags::REMOVE_FEES,
+        ) {
             return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
         }
 
@@ -131,7 +134,7 @@ impl Gatekeeper {
         Ok(())
     }
 
-    pub fn modify_auth_threshold(
+    pub fn set_auth_threshold(
         &mut self,
         data: &UpdateGatekeeperData,
         authority: &mut Signer,
@@ -149,12 +152,12 @@ impl Gatekeeper {
         return Ok(());
     }
 
-    pub fn modify_state(
+    pub fn set_gatekeeper_state(
         &mut self,
-        data: &UpdateGatekeeperData,
+        state: &GatekeeperState,
         authority: &mut Signer,
     ) -> Result<()> {
-        if data.state.is_none() {
+        if state.is_none() {
             // no state to modify
             return Ok(());
         }
@@ -165,6 +168,63 @@ impl Gatekeeper {
 
         self.gatekeeper_state = *data.gatekeeper_state;
 
+        return Ok(());
+    }
+
+    pub fn set_network(
+        &mut self,
+        data: &UpdateGatekeeperData,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        if data.gatekeeper_network.is_none() {
+            // no network to update
+            return Ok(());
+        }
+
+        // If authority doesn't have sufficient access
+        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
+            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
+        }
+
+        self.gatekeeper_network = *data.gatekeeper_network;
+        return Ok(());
+    }
+
+    pub fn set_addresses(
+        &mut self,
+        data: &UpdateGatekeeperData,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        if data.addresses.is_none() {
+            // no addresses to update
+            return Ok(());
+        }
+
+        // If authority doesn't have sufficient access
+        if !self.can_access(authority, GatekeeperKeyFlags::SET_ADDRESSES) {
+            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
+        }
+
+        self.addresses = *data.addresses;
+        return Ok(());
+    }
+
+    pub fn set_staking_account(
+        &mut self,
+        data: &UpdateGatekeeperData,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        if data.staking_account.is_none() {
+            // no staking account to update
+            return Ok(());
+        }
+
+        // If authority doesn't have sufficient access
+        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
+            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
+        }
+
+        self.staking_account = *data.staking_account;
         return Ok(());
     }
 }

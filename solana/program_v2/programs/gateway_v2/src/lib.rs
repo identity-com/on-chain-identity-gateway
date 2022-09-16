@@ -40,4 +40,31 @@ pub mod gateway_v2 {
     pub fn close_network(_ctx: Context<CloseNetworkAccount>) -> Result<()> {
         instructions::close_network()
     }
+
+    pub fn create_gatekeeper(
+        ctx: Context<CreateGatekeeperAccount>,
+        data: CreateGatekeeperData,
+    ) -> Result<()> {
+        instructions::create_gatekeeper(
+            *ctx.accounts.authority.key,
+            *ctx.bumps.get("gatekeeper").unwrap(),
+            data,
+            &mut ctx.accounts.gatekeeper,
+        )
+    }
+
+    pub fn update_gatekeeper(
+        ctx: Context<UpdateGatekeeperAccount>,
+        data: UpdateGatekeeperData,
+    ) -> Result<()> {
+        instructions::update_gatekeeper(
+            data,
+            &mut ctx.accounts.gatekeeper,
+            &mut ctx.accounts.authority,
+        )
+    }
+
+    pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
+        instructions::close_gatekeeper()
+    }
 }

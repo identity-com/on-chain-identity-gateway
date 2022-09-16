@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
             state/
                 - mod.rs
         
-            - errors.rs
+        - errors.rs
+        - constants.rs
+        - lib.rs
 
 [Unreleased]: https://github.com/identity-com/on-chain-identity-gateway
