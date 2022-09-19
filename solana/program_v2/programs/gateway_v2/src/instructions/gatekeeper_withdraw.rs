@@ -12,11 +12,11 @@ pub fn gatekeeper_withdraw(
 }
 
 #[derive(Accounts, Debug, AnchorDeserialize, AnchorSerialize)]
-#[instruction(state: Gatekeeper)]
+#[instruction(receiver: Pubkey)]
 pub struct GatekeeperWithdraw<'info> {
     #[account(
         mut,
-        seeds = [GATEKEEPER_SEED],
+        seeds = [GATEKEEPER_SEED, authority.key().as_ref()],
         bump = gatekeeper.signer_bump,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,

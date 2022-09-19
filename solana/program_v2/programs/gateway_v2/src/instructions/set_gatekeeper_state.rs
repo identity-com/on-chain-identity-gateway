@@ -11,8 +11,8 @@ pub fn set_gatekeeper_state(
     Ok(())
 }
 
-#[derive(Accounts, Debug, AnchorDeserialize, AnchorSerialize)]
-#[instruction(state: Gatekeeper)]
+#[derive(Accounts, Debug)]
+#[instruction(state: GatekeeperState)]
 pub struct SetGatekeeperState<'info> {
     #[account(
         mut,

@@ -13,29 +13,29 @@ pub fn create_gatekeeper(
     data: CreateGatekeeperData,
     gatekeeper: &mut Account<Gatekeeper>,
 ) -> Result<()> {
-    if data.auth_keys.is_empty() {
-        return Err(error!(GatekeeperErrors::NoAuthKeys));
-    }
+    // if data.auth_keys.is_empty() {
+    //     return Err(error!(GatekeeperErrors::NoAuthKeys));
+    // }
 
-    if data
-        .auth_keys
-        .iter()
-        .filter(|key| {
-            GatekeeperKeyFlags::from_bits_truncate(key.flags).contains(GatekeeperKeyFlags::AUTH)
-        })
-        .count()
-        < data.auth_threshold as usize
-    {
-        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-    }
+    // if data
+    //     .auth_keys
+    //     .iter()
+    //     .filter(|key| {
+    //         GatekeeperKeyFlags::from_bits_truncate(key.flags).contains(GatekeeperKeyFlags::AUTH)
+    //     })
+    //     .count()
+    //     < data.auth_threshold as usize
+    // {
+    //     return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
+    // }
 
-    gatekeeper.auth_threshold = data.auth_threshold;
-    gatekeeper.signer_bump = bump;
-    gatekeeper.auth_keys = data.auth_keys;
-    gatekeeper.gatekeeper_network = data.gatekeeper_network;
-    gatekeeper.addresses = data.addresses;
-    gatekeeper.staking_account = data.staking_account;
-    gatekeeper.fees = data.fees;
+    // gatekeeper.auth_threshold = data.auth_threshold;
+    // gatekeeper.signer_bump = bump;
+    // gatekeeper.auth_keys = data.auth_keys;
+    // gatekeeper.gatekeeper_network = data.gatekeeper_network;
+    // gatekeeper.addresses = data.addresses;
+    // gatekeeper.staking_account = data.staking_account;
+    // gatekeeper.fees = data.fees;
     Ok(())
 }
 /// Data for [`CreateGatekeeper`]

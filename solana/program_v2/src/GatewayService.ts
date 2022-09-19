@@ -36,7 +36,11 @@ import {
   getConnectionByCluster,
 } from './lib/connection';
 import { findProgramAddress } from './lib/utils';
-import { GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
+import {
+  GatekeeperKeyFlags,
+  GATEWAY_PROGRAM,
+  SOLANA_MAINNET,
+} from './lib/constants';
 import { GatewayV2, IDL } from '../target/types/gateway_v2';
 
 export class GatewayService {
@@ -223,96 +227,109 @@ export class GatewayService {
     });
   }
 
-  // createGatekeeper(
-  //   data: CreateGatekeeperData,
-  //   authority: PublicKey
-  // ): GatewayServiceBuilder {
-  //   const instructionPromise = this._program.methods
-  //     .createGatekeeper({
-  //       authThreshold: data.authThreshold ? data.authThreshold : 1,
-  //       signerBump: data.signerBump ? data.signerBump : 0,
-  //       authKeys: data.authKeys
-  //         ? data.authKeys
-  //         : [{ flags: 1, key: this._wallet.publicKey }],
-  //       gatekeeperNetwork: data.gatekeeperNetwork,
-  //       addresses: data.addresses,
-  //       stakingAccount: data.stakingAccount,
-  //       fees: data.fees,
-  //     })
-  //     .accounts({
-  //       gatekeeper: this._wallet.publicKey,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //       authority,
-  //     })
-  //     .instruction();
+  createGatekeeper(
+    network: PublicKey,
+    data: CreateGatekeeperData = {
+      authThreshold: 1,
+      signerBump: 0,
+      authKeys: [
+        {
+          flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
+          key: this._wallet.publicKey,
+        },
+      ],
+      gatekeeperNetwork: network,
+      addresses: this._wallet.publicKey,
+      stakingAccount: this._wallet.publicKey,
+      fees: [],
+    },
+    authority: PublicKey = this._wallet.publicKey
+  ): GatewayServiceBuilder {
+    const instructionPromise = this._program.methods
+      .createGatekeeper({
+        authThreshold: data.authThreshold,
+        signerBump: data.signerBump,
+        authKeys: data.authKeys,
+        gatekeeperNetwork: data.gatekeeperNetwork,
+        addresses: data.addresses,
+        stakingAccount: data.stakingAccount,
+        fees: data.fees,
+      })
+      .accounts({
+        gatekeeper: this._dataAccount,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        authority,
+      })
+      .instruction();
 
-  //   return new GatewayServiceBuilder(this, {
-  //     instructionPromise,
-  //     didAccountSizeDeltaCallback: () => {
-  //       throw new Error('Dynamic Alloc not supported');
-  //     },
-  //     allowsDynamicAlloc: false,
-  //     authority,
-  //   });
-  // }
+    // TODO!: Code breaks right here... error is "key.toBuffer is not a function"
+    return new GatewayServiceBuilder(this, {
+      instructionPromise,
+      didAccountSizeDeltaCallback: () => {
+        throw new Error('Dynamic Alloc not supported');
+      },
+      allowsDynamicAlloc: false,
+      authority,
+    });
+  }
 
-  // updateGatekeeper(
-  //   data: UpdateGatekeeperData,
-  //   authority: PublicKey = this._wallet.publicKey
-  // ): GatewayServiceBuilder {
-  //   const instructionPromise = this._program.methods
-  //     // @ts-ignore
-  //     .updateGatekeeper({
-  //       authThreshold: data.authThreshold,
-  //       gatekeeperNetwork: data.gatekeeperNetwork,
-  //       addresses: data.addresses,
-  //       stakingAccount: data.stakingAccount,
-  //       fees: data.fees,
-  //       authKeys: data.authKeys
-  //         ? data.authKeys
-  //         : [{ flags: 1, key: this._wallet.publicKey }],
-  //     })
-  //     .accounts({
-  //       gatekeeper: this._dataAccount,
-  //       authority,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //     })
-  //     .instruction();
+  updateGatekeeper(
+    data: UpdateGatekeeperData,
+    authority: PublicKey = this._wallet.publicKey
+  ): GatewayServiceBuilder {
+    const instructionPromise = this._program.methods
+      // @ts-ignore
+      .updateGatekeeper({
+        authThreshold: data.authThreshold,
+        gatekeeperNetwork: data.gatekeeperNetwork,
+        addresses: data.addresses,
+        stakingAccount: data.stakingAccount,
+        fees: data.fees,
+        authKeys: data.authKeys
+          ? data.authKeys
+          : [{ flags: 1, key: this._wallet.publicKey }],
+      })
+      .accounts({
+        gatekeeper: this._dataAccount,
+        authority,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .instruction();
 
-  //   return new GatewayServiceBuilder(this, {
-  //     instructionPromise,
-  //     didAccountSizeDeltaCallback: () => {
-  //       throw new Error('Dynamic Alloc not supported');
-  //     },
-  //     allowsDynamicAlloc: false,
-  //     authority,
-  //   });
-  // }
+    return new GatewayServiceBuilder(this, {
+      instructionPromise,
+      didAccountSizeDeltaCallback: () => {
+        throw new Error('Dynamic Alloc not supported');
+      },
+      allowsDynamicAlloc: false,
+      authority,
+    });
+  }
 
-  // closeGatekeeper(
-  //   destination: PublicKey = this._wallet.publicKey,
-  //   authority: PublicKey = this._wallet.publicKey
-  // ): GatewayServiceBuilder {
-  //   const instructionPromise = this._program.methods
-  //     // @ts-ignore
-  //     .closeGatekeeper()
-  //     .accounts({
-  //       gatekeeper: this._dataAccount,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //       destination,
-  //       authority,
-  //     })
-  //     .instruction();
+  closeGatekeeper(
+    destination: PublicKey = this._wallet.publicKey,
+    authority: PublicKey = this._wallet.publicKey
+  ): GatewayServiceBuilder {
+    const instructionPromise = this._program.methods
+      // @ts-ignore
+      .closeGatekeeper()
+      .accounts({
+        gatekeeper: this._dataAccount,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        destination,
+        authority,
+      })
+      .instruction();
 
-  //   return new GatewayServiceBuilder(this, {
-  //     instructionPromise,
-  //     didAccountSizeDeltaCallback: () => {
-  //       throw new Error('Dynamic Alloc not supported');
-  //     },
-  //     allowsDynamicAlloc: false,
-  //     authority,
-  //   });
-  // }
+    return new GatewayServiceBuilder(this, {
+      instructionPromise,
+      didAccountSizeDeltaCallback: () => {
+        throw new Error('Dynamic Alloc not supported');
+      },
+      allowsDynamicAlloc: false,
+      authority,
+    });
+  }
 
   async getNetworkAccount(
     account: PublicKey = this._dataAccount
@@ -391,7 +408,6 @@ export class GatewayServiceBuilder {
     this.wallet = this.service.getWallet();
     this.connection = this.service.getConnection();
     this.confirmOptions = this.service.getConfirmOptions();
-
     this.idlErrors = parseIdlErrors(service.getIdl());
   }
 
