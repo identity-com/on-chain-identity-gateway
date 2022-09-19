@@ -7,7 +7,6 @@ mod util;
 use crate::instructions::*;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 
 declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
@@ -40,5 +39,20 @@ pub mod gateway_v2 {
 
     pub fn close_network(_ctx: Context<CloseNetworkAccount>) -> Result<()> {
         instructions::close_network()
+    }
+
+    pub fn issue_pass(
+        ctx: Context<IssuePass>
+    ) -> Result<()> {
+        instructions::issue_pass(
+            *ctx.accounts.authority.key,
+            *ctx.bumps.get("pass").unwrap(),
+            &mut ctx.accounts.pass,
+            &mut ctx.accounts.network,
+        )
+    }
+
+    pub fn pass_issue_state(ctx: Context<PassSetState>, state: PassState) -> Result<()> {
+        instructions::pass_set_state(&mut ctx.accounts.pass, state)
     }
 }
