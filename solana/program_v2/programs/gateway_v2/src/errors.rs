@@ -15,3 +15,9 @@ pub enum NetworkErrors {
     #[msg("Invalid key provided")]
     InvalidKey,
 }
+
+#[error_code]
+pub enum PassErrors {
+    #[msg("Invalid state change")]
+    InvalidStateChange,
+}

@@ -6,7 +6,7 @@ import { airdrop } from '../../src/lib/utils';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 
-describe('Gateway v2 Client', () => {
+describe.skip('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   let service: GatewayService;
 
