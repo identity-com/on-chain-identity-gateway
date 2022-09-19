@@ -171,6 +171,8 @@ impl Gatekeeper {
             }
 
             self.gatekeeper_state = *state;
+
+            // TODO: If gatekeeper_state is set to halted, need to invalidate all passes...
         }
 
         Ok(())
@@ -257,6 +259,13 @@ impl Gatekeeper {
             }
             None => Ok(()),
         }
+    }
+    pub fn gatekeeper_withdraw(&mut self, receiver: Pubkey, authority: &mut Signer) -> Result<()> {
+        if !self.can_access(authority, GatekeeperKeyFlags::ACCESS_VAULT) {
+            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
+        }
+        // TODO: Add withdrawal functionality
+        Ok(())
     }
 }
 

@@ -39,7 +39,7 @@ pub fn create_gatekeeper(
     Ok(())
 }
 /// Data for [`CreateGatekeeper`]
-#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize)]
+#[derive(Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct CreateGatekeeperData {
     pub auth_threshold: u8,
     /// The [`Gatekeeper::signer_bump`].

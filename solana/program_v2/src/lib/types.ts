@@ -71,3 +71,9 @@ export type UpdateGatekeeperData = {
   stakingAccount: PublicKey;
   fees: FeeStructure[];
 };
+
+export type GatekeeperAccount = {
+  fees: FeeStructure[];
+  authKeys: AuthKeyStructure[];
+  gatekeeperNetwork: PublicKey;
+};
