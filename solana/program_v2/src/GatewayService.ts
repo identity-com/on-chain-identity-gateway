@@ -29,6 +29,7 @@ import {
   Wallet,
   GatekeeperAccount,
   GatekeeperState,
+  GatekeeperStateMapping,
 } from './lib/types';
 
 import {
@@ -36,7 +37,7 @@ import {
   ExtendedCluster,
   getConnectionByCluster,
 } from './lib/connection';
-import { findProgramAddress } from './lib/utils';
+import { EnumMapper, findProgramAddress } from './lib/utils';
 import {
   GatekeeperKeyFlags,
   GATEWAY_PROGRAM,
@@ -173,7 +174,7 @@ export class GatewayService {
       passExpireTime: 16,
       signerBump: 0,
       fees: [],
-      authKeys: [{ flags: 1, key: this._wallet.publicKey }],
+      authKeys: [{ flags: 4097, key: this._wallet.publicKey }],
     },
     authority: PublicKey = this._wallet.publicKey
   ): GatewayServiceBuilder {
@@ -340,7 +341,7 @@ export class GatewayService {
     authority: PublicKey = this._wallet.publicKey
   ): GatewayServiceBuilder {
     const instructionPromise = this._program.methods
-      .setGatekeeperState(state)
+      .setGatekeeperState(EnumMapper.to(state, GatekeeperStateMapping))
       .accounts({
         gatekeeper: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,

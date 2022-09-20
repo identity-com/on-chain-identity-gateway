@@ -19,6 +19,41 @@ export const airdrop = async (
   });
 };
 
+type EnumMapping = {
+  [name: string]: any;
+};
+
+type EnumType = {
+  [name: string]: {};
+};
+
+export const EnumMapper = {
+  /**
+   * Converts an anchor "enum" to a local enum
+   * @param obj The anchor enum object
+   * @param mapping The enum to maps it to
+   */
+  from(obj: EnumType, mapping: EnumMapping) {
+    for (const property in mapping) {
+      if (property in obj) return mapping[property];
+    }
+
+    throw new Error(`Invalid enum ${JSON.stringify(obj)}`);
+  },
+
+  to(type: any, mapping: EnumMapping) {
+    for (const property in mapping) {
+      if (type == mapping[property]) {
+        const obj: { [k: string]: {} } = {};
+        obj[property] = {};
+        return obj;
+      }
+    }
+
+    throw new Error(`Invalid num type ${type}`);
+  },
+};
+
 export const findProgramAddress = async (seed: string, authority: PublicKey) =>
   PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode(seed), authority.toBuffer()],

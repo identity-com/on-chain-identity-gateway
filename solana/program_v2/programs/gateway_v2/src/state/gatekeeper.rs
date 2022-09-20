@@ -166,7 +166,7 @@ impl Gatekeeper {
         authority: &mut Signer,
     ) -> Result<()> {
         if *state != self.gatekeeper_state {
-            if !self.can_access(authority, GatekeeperKeyFlags::SET_GATEKEEPER_STATE) {
+            if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
                 return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
             }
 

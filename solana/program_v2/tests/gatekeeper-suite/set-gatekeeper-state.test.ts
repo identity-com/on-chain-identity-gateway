@@ -1,13 +1,14 @@
 import { GatewayService } from '../../src/GatewayService';
 import { GatewayV2 } from '../../target/types/gateway_v2';
-import { GatekeeperState } from '../../src/lib/types';
+import { GatekeeperState, GatekeeperStateMapping } from '../../src/lib/types';
 import * as anchor from '@project-serum/anchor';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { airdrop, findProgramAddress } from '../../src/lib/utils';
+import { Enum, Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { airdrop, EnumMapper, findProgramAddress } from '../../src/lib/utils';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
+import { GatekeeperKeyFlags } from '../../src/lib/constants';
 chai.use(chaiAsPromised);
 
 describe('Gateway v2 Client', () => {
@@ -68,9 +69,17 @@ describe('Gateway v2 Client', () => {
   });
   describe('Set Gatekeeper State', () => {
     it.only("Should set a gatekeeper's state", async function () {
-      const gatekeeperAccount = await gatekeeperService.getGatekeeperAccount();
+      let gatekeeperAccount = await gatekeeperService.getGatekeeperAccount();
+      const initialState = gatekeeperAccount?.state;
+
       await gatekeeperService.setGatekeeperState(GatekeeperState.Frozen).rpc();
-      console.log(gatekeeperAccount);
+      gatekeeperAccount = await gatekeeperService.getGatekeeperAccount();
+      const newState = gatekeeperAccount?.state;
+
+      //@ts-ignore
+      expect(EnumMapper.from(initialState, GatekeeperStateMapping)).to.equal(0);
+      //@ts-ignore
+      expect(EnumMapper.from(newState, GatekeeperStateMapping)).to.equal(1);
     }).timeout(10000);
   });
 });

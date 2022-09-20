@@ -84,3 +84,9 @@ export enum GatekeeperState {
   Frozen,
   Halted,
 }
+
+export const GatekeeperStateMapping = {
+  active: GatekeeperState.Active,
+  frozen: GatekeeperState.Frozen,
+  halted: GatekeeperState.Halted,
+};
