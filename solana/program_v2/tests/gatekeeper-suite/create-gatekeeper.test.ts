@@ -19,7 +19,7 @@ describe('Gateway v2 Client', () => {
 
   let networkAuthority: anchor.Wallet;
   let gatekeeperAuthority: anchor.Wallet;
-  let networkAddress;
+  let networkAddress: PublicKey;
 
   before(async () => {
     networkAuthority = new anchor.Wallet(Keypair.generate());
@@ -67,7 +67,7 @@ describe('Gateway v2 Client', () => {
     console.log('both services built from anchor');
 
     await networkService.createNetwork().rpc();
-    networkAddress = await findProgramAddress(networkAuthority.publicKey);
+    [networkAddress] = await findProgramAddress(networkAuthority.publicKey);
   });
   describe('Create Gatekeeper', () => {
     it.only(
