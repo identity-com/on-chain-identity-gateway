@@ -37,14 +37,14 @@ import { GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2, IDL } from '../target/types/gateway_v2';
 import {AbstractService, ServiceBuilder} from "./utils/AbstractService";
 
-export class GatewayService extends AbstractService {
+export class AdminService extends AbstractService {
   static async build(
     dataAccount: PublicKey,
     wallet: Wallet,
     cluster: ExtendedCluster = SOLANA_MAINNET,
     customConfig?: CustomClusterUrlConfig,
     opts: ConfirmOptions = AnchorProvider.defaultOptions()
-  ): Promise<GatewayService> {
+  ): Promise<AdminService> {
     const _connection = getConnectionByCluster(
       cluster,
       opts.preflightCommitment,
@@ -53,9 +53,9 @@ export class GatewayService extends AbstractService {
 
     const provider = new AnchorProvider(_connection, wallet, opts);
 
-    const program = await GatewayService.fetchProgram(provider);
+    const program = await AdminService.fetchProgram(provider);
 
-    return new GatewayService(
+    return new AdminService(
       program,
       dataAccount,
       cluster,
@@ -70,8 +70,8 @@ export class GatewayService extends AbstractService {
     cluster: ExtendedCluster,
     provider: AnchorProvider = program.provider as AnchorProvider,
     wallet: Wallet = provider.wallet
-  ): Promise<GatewayService> {
-    return new GatewayService(
+  ): Promise<AdminService> {
+    return new AdminService(
       program,
       dataAccount,
       cluster,

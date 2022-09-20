@@ -1,5 +1,5 @@
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { GatewayService } from '../../src/GatewayService';
+import { AdminService } from '../../src/AdminService';
 import { GatewayV2 } from '../../target/types/gateway_v2';
 import * as anchor from '@project-serum/anchor';
 import { airdrop } from '../../src/lib/utils';
@@ -14,7 +14,7 @@ describe('Gateway v2 Client', () => {
   const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
 
-  let service: GatewayService;
+  let service: AdminService;
   let dataAccount: PublicKey;
   let authorityKeypair: Keypair;
 
@@ -30,11 +30,11 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
-    [dataAccount] = await GatewayService.createNetworkAddress(
+    [dataAccount] = await AdminService.createNetworkAddress(
       authority.publicKey
     );
 
-    service = await GatewayService.buildFromAnchor(
+    service = await AdminService.buildFromAnchor(
       program,
       dataAccount,
       'localnet',

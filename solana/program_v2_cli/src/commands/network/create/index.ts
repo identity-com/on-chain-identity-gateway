@@ -2,7 +2,7 @@ import { Command, Flags } from "@oclif/core";
 import { Wallet } from "@project-serum/anchor";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 // TODO: Import Gateway Service properly with package.json
-import { GatewayService } from "@identity.com/solana-gateway-ts-v2/src/GatewayService";
+import { GatewayService } from "solana/program_v2/src/AdminService";
 import { airdrop } from "@identity.com/solana-gateway-ts-v2/src/lib/utils";
 export default class Create extends Command {
   static description = "Creates a gatekeeper network";
