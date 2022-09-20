@@ -35,7 +35,7 @@ import {
 import { findProgramAddress } from './lib/utils';
 import { GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2, IDL } from '../target/types/gateway_v2';
-import {AbstractService, ServiceBuilder} from "./utils/AbstractService";
+import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
 export class AdminService extends AbstractService {
   static async build(
