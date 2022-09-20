@@ -65,15 +65,22 @@ export type CreateGatekeeperData = {
 
 export type UpdateGatekeeperData = {
   authThreshold: number;
-  authKeys: AuthKeyStructure[];
+  authKeys: UpdateAuthKeytructure;
   gatekeeperNetwork: PublicKey;
-  addresses: PublicKey;
-  stakingAccount: PublicKey;
-  fees: FeeStructure[];
+  addresses: PublicKey | null;
+  stakingAccount: PublicKey | null;
+  fees: UpdateFeeStructure;
 };
 
 export type GatekeeperAccount = {
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
   gatekeeperNetwork: PublicKey;
+  state: GatekeeperState;
 };
+
+export enum GatekeeperState {
+  Active,
+  Frozen,
+  Halted,
+}

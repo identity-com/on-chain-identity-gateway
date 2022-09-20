@@ -3,17 +3,17 @@ use crate::state::Gatekeeper;
 use anchor_lang::prelude::*;
 
 pub fn gatekeeper_withdraw(
-    gatekeeper: &mut Account<Gatekeeper>,
     receiver: Pubkey,
+    gatekeeper: &mut Account<Gatekeeper>,
     authority: &mut Signer,
 ) -> Result<()> {
     gatekeeper.gatekeeper_withdraw(receiver, authority)?;
     Ok(())
 }
 
-#[derive(Accounts, Debug, AnchorDeserialize, AnchorSerialize)]
+#[derive(Accounts, Debug)]
 #[instruction(receiver: Pubkey)]
-pub struct GatekeeperWithdraw<'info> {
+pub struct GatekeeperWithdrawAccount<'info> {
     #[account(
         mut,
         seeds = [GATEKEEPER_SEED, authority.key().as_ref()],

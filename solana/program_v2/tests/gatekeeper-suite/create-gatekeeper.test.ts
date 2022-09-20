@@ -37,16 +37,12 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
-    console.log('both airdrops');
-
     [networkDataAccount] = await GatewayService.createNetworkAddress(
       networkAuthority.publicKey
     );
-    [gatekeeperDataAccount] = await GatewayService.createNetworkAddress(
-      gatekeeperAuthority.publicKey
+    [gatekeeperDataAccount] = await GatewayService.createGatekeeperAddress(
+      networkAuthority.publicKey
     );
-
-    console.log('both data accounts');
 
     networkService = await GatewayService.buildFromAnchor(
       program,
@@ -61,23 +57,20 @@ describe('Gateway v2 Client', () => {
       gatekeeperDataAccount,
       'localnet',
       programProvider,
-      gatekeeperAuthority
+      networkAuthority
     );
 
-    console.log('both services built from anchor');
-
     await networkService.createNetwork().rpc();
-    [networkAddress] = await findProgramAddress(networkAuthority.publicKey);
   });
   describe('Create Gatekeeper', () => {
-    it.only(
-      'Creates a gatekeeper on an established network',
-      async function () {
-        console.log('before createGatekeeper');
-        let gatekeeper = await gatekeeperService
-          .createGatekeeper(networkAddress)
-          .rpc();
-      }
-    ).timeout(10000);
+    it('Creates a gatekeeper w/ default data on an established network', async function () {
+      await gatekeeperService
+        .createGatekeeper(networkAuthority.publicKey)
+        .rpc();
+      let gatekeeperAccount = await gatekeeperService.getGatekeeperAccount();
+      expect(gatekeeperAccount?.gatekeeperNetwork.toBase58()).to.equal(
+        networkAuthority.publicKey.toBase58()
+      );
+    }).timeout(10000);
   });
 });

@@ -4,6 +4,7 @@ use crate::constants::GATEKEEPER_SEED;
 use crate::errors::GatekeeperErrors;
 use crate::state::gatekeeper::{
     Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, GatekeeperSize,
+    GatekeeperState,
 };
 use anchor_lang::prelude::*;
 
@@ -13,29 +14,30 @@ pub fn create_gatekeeper(
     data: CreateGatekeeperData,
     gatekeeper: &mut Account<Gatekeeper>,
 ) -> Result<()> {
-    // if data.auth_keys.is_empty() {
-    //     return Err(error!(GatekeeperErrors::NoAuthKeys));
-    // }
+    if data.auth_keys.is_empty() {
+        return Err(error!(GatekeeperErrors::NoAuthKeys));
+    }
 
-    // if data
-    //     .auth_keys
-    //     .iter()
-    //     .filter(|key| {
-    //         GatekeeperKeyFlags::from_bits_truncate(key.flags).contains(GatekeeperKeyFlags::AUTH)
-    //     })
-    //     .count()
-    //     < data.auth_threshold as usize
-    // {
-    //     return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-    // }
+    if data
+        .auth_keys
+        .iter()
+        .filter(|key| {
+            GatekeeperKeyFlags::from_bits_truncate(key.flags).contains(GatekeeperKeyFlags::AUTH)
+        })
+        .count()
+        < data.auth_threshold as usize
+    {
+        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
+    }
 
-    // gatekeeper.auth_threshold = data.auth_threshold;
-    // gatekeeper.signer_bump = bump;
-    // gatekeeper.auth_keys = data.auth_keys;
-    // gatekeeper.gatekeeper_network = data.gatekeeper_network;
-    // gatekeeper.addresses = data.addresses;
-    // gatekeeper.staking_account = data.staking_account;
-    // gatekeeper.fees = data.fees;
+    gatekeeper.auth_threshold = data.auth_threshold;
+    gatekeeper.signer_bump = bump;
+    gatekeeper.auth_keys = data.auth_keys;
+    gatekeeper.gatekeeper_network = data.gatekeeper_network;
+    gatekeeper.addresses = data.addresses;
+    gatekeeper.staking_account = data.staking_account;
+    gatekeeper.fees = data.fees;
+    gatekeeper.gatekeeper_state = GatekeeperState::Active;
     Ok(())
 }
 /// Data for [`CreateGatekeeper`]
@@ -62,7 +64,8 @@ pub struct CreateGatekeeperAccount<'info> {
     #[account(
     init,
     payer = authority,
-    space = Gatekeeper::on_chain_size_with_arg(
+    space =
+    Gatekeeper::on_chain_size_with_arg(
     GatekeeperSize{
     auth_keys: data.auth_keys.len() as u16,
     fees_count: data.fees.len() as u16,

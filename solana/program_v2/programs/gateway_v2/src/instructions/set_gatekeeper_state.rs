@@ -3,20 +3,20 @@ use crate::state::{Gatekeeper, GatekeeperState};
 use anchor_lang::prelude::*;
 
 pub fn set_gatekeeper_state(
+    state: &GatekeeperState,
     gatekeeper: &mut Account<Gatekeeper>,
-    state: GatekeeperState,
     authority: &mut Signer,
 ) -> Result<()> {
-    gatekeeper.set_gatekeeper_state(&state, authority)?;
+    gatekeeper.set_gatekeeper_state(state, authority)?;
     Ok(())
 }
 
 #[derive(Accounts, Debug)]
 #[instruction(state: GatekeeperState)]
-pub struct SetGatekeeperState<'info> {
+pub struct SetGatekeeperStateAccount<'info> {
     #[account(
         mut,
-        seeds = [GATEKEEPER_SEED],
+        seeds = [GATEKEEPER_SEED, authority.key().as_ref()],
         bump = gatekeeper.signer_bump,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,

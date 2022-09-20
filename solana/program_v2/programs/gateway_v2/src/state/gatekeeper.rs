@@ -41,15 +41,15 @@ impl Gatekeeper {
     pub fn on_chain_size_with_arg(arg: GatekeeperSize) -> usize {
         OC_SIZE_DISCRIMINATOR
             + OC_SIZE_U8 // version
-            + OC_SIZE_PUBKEY // initial_authority
-            // TODO: Add size for network_features
-            // + OC_SIZE_U8 * 32 * 12 // network_features
             + OC_SIZE_U8 // auth_threshold
-            + OC_SIZE_U64 // pass_expire_time
+            + OC_SIZE_PUBKEY // gatekeeper_network
+            + OC_SIZE_PUBKEY // addresses
+            + OC_SIZE_PUBKEY // staking account
+            + GatekeeperState::ON_CHAIN_SIZE
             + OC_SIZE_U8 // signer_bump
             + OC_SIZE_VEC_PREFIX + GatekeeperFees::ON_CHAIN_SIZE * arg.fees_count as usize // fees
             + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize
-        // auth_keys
+        // auth keys
     }
     //TODO: Won't work with current structure of auth_keys
     pub fn can_access(&self, authority: &Signer, flag: GatekeeperKeyFlags) -> bool {
@@ -273,11 +273,11 @@ impl Gatekeeper {
 #[derive(Debug, Copy, Clone, Eq, PartialEq, AnchorSerialize, AnchorDeserialize)]
 pub enum GatekeeperState {
     /// Functional gatekeeper
-    Active,
+    Active = 0,
     /// Gatekeeper may not issue passes
-    Frozen,
+    Frozen = 1,
     /// Gatekeeper may not issue passes and all passes invalid
-    Halted,
+    Halted = 2,
 }
 impl OnChainSize for GatekeeperState {
     const ON_CHAIN_SIZE: usize = 1;

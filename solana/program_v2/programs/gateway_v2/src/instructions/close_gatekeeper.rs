@@ -1,4 +1,4 @@
-use crate::constants::NETWORK_SEED;
+use crate::constants::GATEKEEPER_SEED;
 use crate::state::*;
 use anchor_lang::prelude::*;
 /// Placeholder for additional close_gatekeeper functionality
@@ -11,7 +11,7 @@ pub struct CloseGatekeeperAccount<'info> {
     #[account(
         mut,
         close = destination,
-        seeds = [NETWORK_SEED],
+        seeds = [GATEKEEPER_SEED, authority.key().as_ref()],
         bump = gatekeeper.signer_bump,
         constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::AUTH),
     )]

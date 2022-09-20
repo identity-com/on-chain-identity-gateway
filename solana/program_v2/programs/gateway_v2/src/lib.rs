@@ -5,6 +5,7 @@ mod state;
 mod util;
 
 use crate::instructions::*;
+use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 // TODO: Grind for better key
@@ -66,5 +67,25 @@ pub mod gateway_v2 {
 
     pub fn close_gatekeeper(_ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
         instructions::close_gatekeeper()
+    }
+    pub fn set_gatekeeper_state(
+        _ctx: Context<SetGatekeeperStateAccount>,
+        state: GatekeeperState,
+    ) -> Result<()> {
+        instructions::set_gatekeeper_state(
+            &state,
+            &mut _ctx.accounts.gatekeeper,
+            &mut _ctx.accounts.authority,
+        )
+    }
+    pub fn gatekeeper_withdraw(
+        _ctx: Context<GatekeeperWithdrawAccount>,
+        receiver: Pubkey,
+    ) -> Result<()> {
+        instructions::gatekeeper_withdraw(
+            receiver,
+            &mut _ctx.accounts.gatekeeper,
+            &mut _ctx.accounts.authority,
+        )
     }
 }

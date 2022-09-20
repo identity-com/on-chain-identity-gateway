@@ -29,7 +29,7 @@ pub struct UpdateGatekeeperAccount<'info> {
         ),
         realloc::payer = authority,
         realloc::zero = false,
-        seeds = [GATEKEEPER_SEED],
+        seeds = [GATEKEEPER_SEED, authority.key().as_ref()],
         bump = gatekeeper.signer_bump,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,

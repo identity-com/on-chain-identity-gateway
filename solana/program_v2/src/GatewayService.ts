@@ -28,6 +28,7 @@ import {
   UpdateNetworkData,
   Wallet,
   GatekeeperAccount,
+  GatekeeperState,
 } from './lib/types';
 
 import {
@@ -117,7 +118,13 @@ export class GatewayService {
   static async createNetworkAddress(
     authority: PublicKey
   ): Promise<[PublicKey, number]> {
-    return findProgramAddress(authority);
+    return findProgramAddress('gk-network', authority);
+  }
+
+  static async createGatekeeperAddress(
+    authority: PublicKey
+  ): Promise<[PublicKey, number]> {
+    return findProgramAddress('gatekeeper', authority);
   }
 
   getWallet(): Wallet {
@@ -262,7 +269,6 @@ export class GatewayService {
       })
       .instruction();
 
-    // TODO!: Code breaks right here... error is "key.toBuffer is not a function"
     return new GatewayServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
@@ -285,14 +291,12 @@ export class GatewayService {
         addresses: data.addresses,
         stakingAccount: data.stakingAccount,
         fees: data.fees,
-        authKeys: data.authKeys
-          ? data.authKeys
-          : [{ flags: 1, key: this._wallet.publicKey }],
+        authKeys: data.authKeys,
       })
       .accounts({
         gatekeeper: this._dataAccount,
-        authority,
         systemProgram: anchor.web3.SystemProgram.programId,
+        authority,
       })
       .instruction();
 
@@ -317,6 +321,52 @@ export class GatewayService {
         gatekeeper: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         destination,
+        authority,
+      })
+      .instruction();
+
+    return new GatewayServiceBuilder(this, {
+      instructionPromise,
+      didAccountSizeDeltaCallback: () => {
+        throw new Error('Dynamic Alloc not supported');
+      },
+      allowsDynamicAlloc: false,
+      authority,
+    });
+  }
+
+  setGatekeeperState(
+    state: GatekeeperState = GatekeeperState.Active,
+    authority: PublicKey = this._wallet.publicKey
+  ): GatewayServiceBuilder {
+    const instructionPromise = this._program.methods
+      .setGatekeeperState(state)
+      .accounts({
+        gatekeeper: this._dataAccount,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        authority,
+      })
+      .instruction();
+
+    return new GatewayServiceBuilder(this, {
+      instructionPromise,
+      didAccountSizeDeltaCallback: () => {
+        throw new Error('Dynamic Alloc not supported');
+      },
+      allowsDynamicAlloc: false,
+      authority,
+    });
+  }
+
+  gatekeeperWithdraw(
+    receiver: PublicKey = this._wallet.publicKey,
+    authority: PublicKey = this._wallet.publicKey
+  ): GatewayServiceBuilder {
+    const instructionPromise = this._program.methods
+      .gatekeeperWithdraw(receiver)
+      .accounts({
+        gatekeeper: this._dataAccount,
+        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
       })
       .instruction();
@@ -364,6 +414,7 @@ export class GatewayService {
             gatekeeperNetwork: acct?.gatekeeperNetwork,
             fees: acct?.fees as FeeStructure[],
             authKeys: acct?.authKeys as AuthKeyStructure[],
+            state: acct?.gatekeeperState as GatekeeperState,
           };
         } else {
           return null;

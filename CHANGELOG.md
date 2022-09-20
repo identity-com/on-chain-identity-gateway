@@ -22,6 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
                 - gatekeeper.rs
                 - network.rs
 
+        tests/
+            gatekeeper-suite/
+                - close-gatekeeper.test.ts
+                - create-gatekeeper.test.ts
+                - gatekeeper-withdraw.test.ts
+                - set-gatekeeper-state.test.ts
+                - update-gatekeeper.test.ts
+                - Test.toml
+            
     - CHANGELOG.md
 
 ### Changed
@@ -42,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         src/
             lib/
                 - types.ts
+                - utils.ts
 
             - GatewayService.ts
 

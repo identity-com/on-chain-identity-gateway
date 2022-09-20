@@ -19,8 +19,8 @@ export const airdrop = async (
   });
 };
 
-export const findProgramAddress = async (authority: PublicKey) =>
+export const findProgramAddress = async (seed: string, authority: PublicKey) =>
   PublicKey.findProgramAddress(
-    [anchor.utils.bytes.utf8.encode(DEFAULT_SEED_STRING), authority.toBuffer()],
+    [anchor.utils.bytes.utf8.encode(seed), authority.toBuffer()],
     GATEWAY_PROGRAM
   );
