@@ -1,6 +1,5 @@
 use crate::constants::NETWORK_SEED;
-use crate::state::{GatekeeperNetwork, GatekeeperNetworkSize, NetworkFees};
-use crate::NetworkAuthKey;
+use crate::state::{GatekeeperNetwork, GatekeeperNetworkSize, NetworkAuthKey, NetworkFees};
 use anchor_lang::prelude::*;
 
 pub fn update_network(
