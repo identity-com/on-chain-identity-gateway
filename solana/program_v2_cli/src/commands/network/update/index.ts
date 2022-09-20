@@ -2,7 +2,7 @@ import { Command, Flags } from "@oclif/core";
 import { Wallet } from "@project-serum/anchor";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { readFileSync } from "node:fs";
-import { GatewayService } from "@identity.com/solana-gateway-ts-v2/src/GatewayService";
+import { GatewayService } from "solana/program_v2/src/AdminService";
 import { FeeStructure } from "@identity.com/solana-gateway-ts-v2/src/lib/types";
 import { airdrop } from "@identity.com/solana-gateway-ts-v2/src/lib/utils";
 // import { readJSONSync } from "fs-extra";
