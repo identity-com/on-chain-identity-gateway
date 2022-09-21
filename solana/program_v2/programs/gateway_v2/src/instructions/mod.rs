@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-mod gatekeeper;
+mod admin;
 mod network;
 
-pub use gatekeeper::*;
+pub use admin::*;
 pub use network::*;
-=======
-pub(crate) mod admin;
->>>>>>> feature/gateway_v2

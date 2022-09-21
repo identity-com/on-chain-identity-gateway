@@ -4,12 +4,8 @@ mod instructions;
 mod state;
 mod util;
 
-<<<<<<< HEAD
-use crate::instructions::*;
-use crate::state::*;
-=======
 use crate::instructions::admin::*;
->>>>>>> feature/gateway_v2
+use crate::instructions::network::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 // TODO: Grind for better key

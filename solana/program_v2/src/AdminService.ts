@@ -101,25 +101,6 @@ export class AdminService extends AbstractService {
     return findProgramAddress('gatekeeper', authority);
   }
 
-<<<<<<< HEAD:solana/program_v2/src/GatewayService.ts
-  getWallet(): Wallet {
-    return this._wallet;
-  }
-
-  getConnection(): Connection {
-    return this._program.provider.connection;
-  }
-
-  getConfirmOptions(): ConfirmOptions {
-    return this._opts;
-  }
-
-  getIdl(): Idl {
-    return this._program.idl;
-  }
-
-=======
->>>>>>> feature/gateway_v2:solana/program_v2/src/AdminService.ts
   closeNetwork(
     destination: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
@@ -225,7 +206,7 @@ export class AdminService extends AbstractService {
       fees: [],
     },
     authority: PublicKey = this._wallet.publicKey
-  ): GatewayServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .createGatekeeper({
         authThreshold: data.authThreshold,
@@ -243,7 +224,7 @@ export class AdminService extends AbstractService {
       })
       .instruction();
 
-    return new GatewayServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -256,7 +237,7 @@ export class AdminService extends AbstractService {
   updateGatekeeper(
     data: UpdateGatekeeperData,
     authority: PublicKey = this._wallet.publicKey
-  ): GatewayServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       // @ts-ignore
       .updateGatekeeper({
@@ -274,7 +255,7 @@ export class AdminService extends AbstractService {
       })
       .instruction();
 
-    return new GatewayServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -287,7 +268,7 @@ export class AdminService extends AbstractService {
   closeGatekeeper(
     destination: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
-  ): GatewayServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       // @ts-ignore
       .closeGatekeeper()
@@ -299,7 +280,7 @@ export class AdminService extends AbstractService {
       })
       .instruction();
 
-    return new GatewayServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -312,7 +293,7 @@ export class AdminService extends AbstractService {
   setGatekeeperState(
     state: GatekeeperState = GatekeeperState.Active,
     authority: PublicKey = this._wallet.publicKey
-  ): GatewayServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .setGatekeeperState(EnumMapper.to(state, GatekeeperStateMapping))
       .accounts({
@@ -322,7 +303,7 @@ export class AdminService extends AbstractService {
       })
       .instruction();
 
-    return new GatewayServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -335,7 +316,7 @@ export class AdminService extends AbstractService {
   gatekeeperWithdraw(
     receiver: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
-  ): GatewayServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .gatekeeperWithdraw(receiver)
       .accounts({
@@ -345,7 +326,7 @@ export class AdminService extends AbstractService {
       })
       .instruction();
 
-    return new GatewayServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -397,104 +378,3 @@ export class AdminService extends AbstractService {
     return gatekeeperAccount;
   }
 }
-<<<<<<< HEAD:solana/program_v2/src/GatewayService.ts
-
-class NonSigningWallet implements Wallet {
-  publicKey: PublicKey;
-
-  constructor() {
-    this.publicKey = new PublicKey('11111111111111111111111111111111');
-  }
-
-  signAllTransactions(txs: Transaction[]): Promise<Transaction[]> {
-    return Promise.reject(
-      'NonSigningWallet does not support signing transactions'
-    );
-  }
-
-  signTransaction(tx: Transaction): Promise<Transaction> {
-    return Promise.reject(
-      'NonSigningWallet does not support signing transactions'
-    );
-  }
-}
-
-export class GatewayServiceBuilder {
-  private wallet: Wallet;
-  private connection: Connection;
-  private confirmOptions: ConfirmOptions;
-  private partialSigners: Signer[] = [];
-  private readonly idlErrors: Map<number, string>;
-
-  constructor(
-    private service: GatewayService,
-    private _instruction: BuilderInstruction,
-    private authority: PublicKey = PublicKey.default
-  ) {
-    this.wallet = this.service.getWallet();
-    this.connection = this.service.getConnection();
-    this.confirmOptions = this.service.getConfirmOptions();
-    this.idlErrors = parseIdlErrors(service.getIdl());
-  }
-
-  get instruction(): BuilderInstruction {
-    return this._instruction;
-  }
-
-  withConnection(connection: Connection): GatewayServiceBuilder {
-    this.connection = connection;
-    return this;
-  }
-
-  withConfirmOptions(confirmOptions: ConfirmOptions): GatewayServiceBuilder {
-    this.confirmOptions = confirmOptions;
-    return this;
-  }
-
-  withSolWallet(solWallet: Wallet): GatewayServiceBuilder {
-    this.wallet = solWallet;
-    return this;
-  }
-
-  // TODO
-  withAutomaticAlloc(payer: PublicKey): GatewayServiceBuilder {
-    this.authority = payer;
-    return this;
-  }
-
-  withPartialSigners(...signers: Signer[]) {
-    this.partialSigners = signers;
-    return this;
-  }
-
-  async transaction(): Promise<Transaction> {
-    const tx = new Transaction();
-    const instructions = await this._instruction.instructionPromise;
-    tx.add(instructions);
-    return tx;
-  }
-
-  async rpc(opts?: ConfirmOptions): Promise<string> {
-    const provider = new AnchorProvider(
-      this.connection,
-      this.wallet,
-      this.confirmOptions
-    );
-
-    const tx = await this.transaction();
-    try {
-      return await provider.sendAndConfirm(tx, this.partialSigners, opts);
-    } catch (err) {
-      throw translateError(err, this.idlErrors);
-    }
-  }
-}
-
-export type BuilderInstruction = {
-  instructionPromise: Promise<TransactionInstruction>;
-  didAccountSizeDeltaCallback: (didAccountBefore: null) => number;
-  allowsDynamicAlloc: boolean;
-  authority: PublicKey;
-};
-=======
->>>>>>> feature/gateway_v2:solana/program_v2/src/AdminService.ts
