@@ -1,4 +1,5 @@
-import { GatewayService } from '../../src/GatewayService';
+import { NetworkService } from '../../src/NetworkService';
+import { AdminService } from '../../src/AdminService';
 import { GatewayV2 } from '../../target/types/gateway_v2';
 import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
@@ -14,62 +15,61 @@ describe('Gateway v2 Client', () => {
   const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
 
-  let networkService: GatewayService;
-  let gatekeeperService: GatewayService;
+  let adminService: AdminService;
+  let networkService: NetworkService;
+  let adminDataAccount: PublicKey;
   let networkDataAccount: PublicKey;
-  let gatekeeperDataAccount: PublicKey;
 
+  let adminAuthority: anchor.Wallet;
   let networkAuthority: anchor.Wallet;
-  let gatekeeperAuthority: anchor.Wallet;
-  let networkAddress: PublicKey;
+  let adminAddress: PublicKey;
 
   before(async () => {
+    adminAuthority = new anchor.Wallet(Keypair.generate());
     networkAuthority = new anchor.Wallet(Keypair.generate());
-    gatekeeperAuthority = new anchor.Wallet(Keypair.generate());
 
     //network airdrop
+    await airdrop(
+      programProvider.connection,
+      adminAuthority.publicKey,
+      LAMPORTS_PER_SOL * 2
+    );
     await airdrop(
       programProvider.connection,
       networkAuthority.publicKey,
       LAMPORTS_PER_SOL * 2
     );
-    await airdrop(
-      programProvider.connection,
-      gatekeeperAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
+
+    [adminDataAccount] = await AdminService.createNetworkAddress(
+      adminAuthority.publicKey
+    );
+    [networkDataAccount] = await NetworkService.createGatekeeperAddress(
+      adminAuthority.publicKey
     );
 
-    [networkDataAccount] = await GatewayService.createNetworkAddress(
-      networkAuthority.publicKey
-    );
-    [gatekeeperDataAccount] = await GatewayService.createGatekeeperAddress(
-      networkAuthority.publicKey
+    adminService = await AdminService.buildFromAnchor(
+      program,
+      adminDataAccount,
+      'localnet',
+      programProvider,
+      adminAuthority
     );
 
-    networkService = await GatewayService.buildFromAnchor(
+    networkService = await NetworkService.buildFromAnchor(
       program,
       networkDataAccount,
       'localnet',
       programProvider,
-      networkAuthority
+      adminAuthority
     );
 
-    gatekeeperService = await GatewayService.buildFromAnchor(
-      program,
-      gatekeeperDataAccount,
-      'localnet',
-      programProvider,
-      networkAuthority
-    );
-
-    await networkService.createNetwork().rpc();
-    await gatekeeperService.createGatekeeper(networkAuthority.publicKey).rpc();
+    await adminService.createNetwork().rpc();
+    await networkService.createGatekeeper(adminAuthority.publicKey).rpc();
   });
   describe('Close Gatekeeper', () => {
     it('Should close a gatekeeper properly', async function () {
-      await gatekeeperService.closeGatekeeper().rpc();
-      expect(gatekeeperService.getGatekeeperAccount()).to.eventually.be
-        .rejected;
+      await networkService.closeGatekeeper().rpc();
+      expect(networkService.getGatekeeperAccount()).to.eventually.be.rejected;
     }).timeout(10000);
   });
 });

@@ -95,12 +95,6 @@ export class AdminService extends AbstractService {
     return findProgramAddress('gk-network', authority);
   }
 
-  static async createGatekeeperAddress(
-    authority: PublicKey
-  ): Promise<[PublicKey, number]> {
-    return findProgramAddress('gatekeeper', authority);
-  }
-
   closeNetwork(
     destination: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
@@ -189,153 +183,6 @@ export class AdminService extends AbstractService {
     });
   }
 
-  createGatekeeper(
-    network: PublicKey,
-    data: CreateGatekeeperData = {
-      authThreshold: 1,
-      signerBump: 0,
-      authKeys: [
-        {
-          flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
-          key: this._wallet.publicKey,
-        },
-      ],
-      gatekeeperNetwork: network,
-      addresses: this._wallet.publicKey,
-      stakingAccount: this._wallet.publicKey,
-      fees: [],
-    },
-    authority: PublicKey = this._wallet.publicKey
-  ): ServiceBuilder {
-    const instructionPromise = this._program.methods
-      .createGatekeeper({
-        authThreshold: data.authThreshold,
-        signerBump: data.signerBump,
-        authKeys: data.authKeys,
-        gatekeeperNetwork: data.gatekeeperNetwork,
-        addresses: data.addresses,
-        stakingAccount: data.stakingAccount,
-        fees: data.fees,
-      })
-      .accounts({
-        gatekeeper: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        authority,
-      })
-      .instruction();
-
-    return new ServiceBuilder(this, {
-      instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
-      authority,
-    });
-  }
-
-  updateGatekeeper(
-    data: UpdateGatekeeperData,
-    authority: PublicKey = this._wallet.publicKey
-  ): ServiceBuilder {
-    const instructionPromise = this._program.methods
-      // @ts-ignore
-      .updateGatekeeper({
-        authThreshold: data.authThreshold,
-        gatekeeperNetwork: data.gatekeeperNetwork,
-        addresses: data.addresses,
-        stakingAccount: data.stakingAccount,
-        fees: data.fees,
-        authKeys: data.authKeys,
-      })
-      .accounts({
-        gatekeeper: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        authority,
-      })
-      .instruction();
-
-    return new ServiceBuilder(this, {
-      instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
-      authority,
-    });
-  }
-
-  closeGatekeeper(
-    destination: PublicKey = this._wallet.publicKey,
-    authority: PublicKey = this._wallet.publicKey
-  ): ServiceBuilder {
-    const instructionPromise = this._program.methods
-      // @ts-ignore
-      .closeGatekeeper()
-      .accounts({
-        gatekeeper: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        destination,
-        authority,
-      })
-      .instruction();
-
-    return new ServiceBuilder(this, {
-      instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
-      authority,
-    });
-  }
-
-  setGatekeeperState(
-    state: GatekeeperState = GatekeeperState.Active,
-    authority: PublicKey = this._wallet.publicKey
-  ): ServiceBuilder {
-    const instructionPromise = this._program.methods
-      .setGatekeeperState(EnumMapper.to(state, GatekeeperStateMapping))
-      .accounts({
-        gatekeeper: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        authority,
-      })
-      .instruction();
-
-    return new ServiceBuilder(this, {
-      instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
-      authority,
-    });
-  }
-
-  gatekeeperWithdraw(
-    receiver: PublicKey = this._wallet.publicKey,
-    authority: PublicKey = this._wallet.publicKey
-  ): ServiceBuilder {
-    const instructionPromise = this._program.methods
-      .gatekeeperWithdraw(receiver)
-      .accounts({
-        gatekeeper: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        authority,
-      })
-      .instruction();
-
-    return new ServiceBuilder(this, {
-      instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
-      authority,
-    });
-  }
-
   async getNetworkAccount(
     account: PublicKey = this._dataAccount
   ): Promise<NetworkAccount | null> {
@@ -356,25 +203,5 @@ export class AdminService extends AbstractService {
         }
       });
     return networkAccount;
-  }
-  async getGatekeeperAccount(
-    account: PublicKey = this._dataAccount
-  ): Promise<GatekeeperAccount | null> {
-    const gatekeeperAccount = this._program.account.gatekeeper
-      .fetchNullable(account)
-      .then((acct) => {
-        if (acct) {
-          return {
-            version: acct?.version,
-            gatekeeperNetwork: acct?.gatekeeperNetwork,
-            fees: acct?.fees as FeeStructure[],
-            authKeys: acct?.authKeys as AuthKeyStructure[],
-            state: acct?.gatekeeperState as GatekeeperState,
-          };
-        } else {
-          return null;
-        }
-      });
-    return gatekeeperAccount;
   }
 }

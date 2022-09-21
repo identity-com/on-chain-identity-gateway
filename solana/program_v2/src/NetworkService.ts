@@ -44,7 +44,7 @@ import {
   SOLANA_MAINNET,
 } from './lib/constants';
 import { GatewayV2, IDL } from '../target/types/gateway_v2';
-import { AbstractService } from './utils/AbstractService';
+import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
 export class NetworkService extends AbstractService {
   static async build(
@@ -88,144 +88,11 @@ export class NetworkService extends AbstractService {
       provider.opts
     );
   }
-  static async fetchProgram(
-    provider: anchor.Provider
-  ): Promise<Program<GatewayV2>> {
-    let idl = await Program.fetchIdl<GatewayV2>(GATEWAY_PROGRAM, provider);
-
-    if (!idl) {
-      console.warn(
-        'Could not fetch IDL from chain. Using build-in IDL as fallback.'
-      );
-      idl = IDL;
-    } else {
-      console.log('using idl on-chain');
-    }
-
-    return new Program<GatewayV2>(
-      idl,
-      GATEWAY_PROGRAM,
-      provider
-    ) as Program<GatewayV2>;
-  }
-
-  static async createNetworkAddress(
-    authority: PublicKey
-  ): Promise<[PublicKey, number]> {
-    return findProgramAddress('gk-network', authority);
-  }
 
   static async createGatekeeperAddress(
     authority: PublicKey
   ): Promise<[PublicKey, number]> {
     return findProgramAddress('gatekeeper', authority);
-  }
-
-  getWallet(): Wallet {
-    return this._wallet;
-  }
-
-  getConnection(): Connection {
-    return this._program.provider.connection;
-  }
-
-  getConfirmOptions(): ConfirmOptions {
-    return this._opts;
-  }
-
-  getIdl(): Idl {
-    return this._program.idl;
-  }
-
-  closeNetwork(
-    destination: PublicKey = this._wallet.publicKey,
-    authority: PublicKey = this._wallet.publicKey
-  ): NetworkServiceBuilder {
-    const instructionPromise = this._program.methods
-      .closeNetwork()
-      .accounts({
-        network: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        destination,
-        authority,
-      })
-      .instruction();
-
-    return new NetworkServiceBuilder(this, {
-      instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
-      authority,
-    });
-  }
-
-  createNetwork(
-    data: CreateNetworkData = {
-      authThreshold: 1,
-      passExpireTime: 16,
-      signerBump: 0,
-      fees: [],
-      authKeys: [{ flags: 4097, key: this._wallet.publicKey }],
-    },
-    authority: PublicKey = this._wallet.publicKey
-  ): NetworkServiceBuilder {
-    // console.log("Creating with auth: " + authority.toBase58());
-
-    const instructionPromise = this._program.methods
-      .createNetwork({
-        authThreshold: data.authThreshold,
-        passExpireTime: new anchor.BN(data.passExpireTime),
-        fees: data.fees,
-        authKeys: data.authKeys,
-      })
-      .accounts({
-        network: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        authority,
-      })
-      .instruction();
-
-    return new NetworkServiceBuilder(this, {
-      instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      // TODO: Implement this...
-      allowsDynamicAlloc: false,
-      authority,
-    });
-  }
-
-  updateNetwork(
-    data: UpdateNetworkData,
-    authority: PublicKey = this._wallet.publicKey
-  ): NetworkServiceBuilder {
-    const instructionPromise = this._program.methods
-      // @ts-ignore
-      .updateNetwork({
-        authThreshold: data.authThreshold,
-        passExpireTime: new anchor.BN(data.passExpireTime),
-        // TODO?? Why do fees and authKeys have to be 'never' type??
-        fees: data.fees,
-        authKeys: data.authKeys,
-      })
-      .accounts({
-        network: this._dataAccount,
-        authority,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .instruction();
-
-    return new NetworkServiceBuilder(this, {
-      instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
-      authority,
-    });
   }
 
   createGatekeeper(
@@ -245,7 +112,7 @@ export class NetworkService extends AbstractService {
       fees: [],
     },
     authority: PublicKey = this._wallet.publicKey
-  ): NetworkServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .createGatekeeper({
         authThreshold: data.authThreshold,
@@ -263,7 +130,7 @@ export class NetworkService extends AbstractService {
       })
       .instruction();
 
-    return new NetworkServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -276,7 +143,7 @@ export class NetworkService extends AbstractService {
   updateGatekeeper(
     data: UpdateGatekeeperData,
     authority: PublicKey = this._wallet.publicKey
-  ): NetworkServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       // @ts-ignore
       .updateGatekeeper({
@@ -294,7 +161,7 @@ export class NetworkService extends AbstractService {
       })
       .instruction();
 
-    return new NetworkServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -307,7 +174,7 @@ export class NetworkService extends AbstractService {
   closeGatekeeper(
     destination: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
-  ): NetworkServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       // @ts-ignore
       .closeGatekeeper()
@@ -319,7 +186,7 @@ export class NetworkService extends AbstractService {
       })
       .instruction();
 
-    return new NetworkServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -332,7 +199,7 @@ export class NetworkService extends AbstractService {
   setGatekeeperState(
     state: GatekeeperState = GatekeeperState.Active,
     authority: PublicKey = this._wallet.publicKey
-  ): NetworkServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .setGatekeeperState(EnumMapper.to(state, GatekeeperStateMapping))
       .accounts({
@@ -342,7 +209,7 @@ export class NetworkService extends AbstractService {
       })
       .instruction();
 
-    return new NetworkServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -355,7 +222,7 @@ export class NetworkService extends AbstractService {
   gatekeeperWithdraw(
     receiver: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
-  ): NetworkServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .gatekeeperWithdraw(receiver)
       .accounts({
@@ -365,7 +232,7 @@ export class NetworkService extends AbstractService {
       })
       .instruction();
 
-    return new NetworkServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -375,27 +242,6 @@ export class NetworkService extends AbstractService {
     });
   }
 
-  async getNetworkAccount(
-    account: PublicKey = this._dataAccount
-  ): Promise<NetworkAccount | null> {
-    const networkAccount = this._program.account.gatekeeperNetwork
-      .fetchNullable(account)
-      .then((acct) => {
-        if (acct) {
-          return {
-            version: acct?.version,
-            initialAuthority: acct?.initialAuthority,
-            authThreshold: acct?.authThreshold,
-            passExpireTime: acct?.passExpireTime.toNumber(),
-            fees: acct?.fees as FeeStructure[],
-            authKeys: acct?.authKeys as AuthKeyStructure[],
-          };
-        } else {
-          return null;
-        }
-      });
-    return networkAccount;
-  }
   async getGatekeeperAccount(
     account: PublicKey = this._dataAccount
   ): Promise<GatekeeperAccount | null> {
@@ -417,101 +263,3 @@ export class NetworkService extends AbstractService {
     return gatekeeperAccount;
   }
 }
-
-class NonSigningWallet implements Wallet {
-  publicKey: PublicKey;
-
-  constructor() {
-    this.publicKey = new PublicKey('11111111111111111111111111111111');
-  }
-
-  signAllTransactions(txs: Transaction[]): Promise<Transaction[]> {
-    return Promise.reject(
-      'NonSigningWallet does not support signing transactions'
-    );
-  }
-
-  signTransaction(tx: Transaction): Promise<Transaction> {
-    return Promise.reject(
-      'NonSigningWallet does not support signing transactions'
-    );
-  }
-}
-
-export class NetworkServiceBuilder {
-  private wallet: Wallet;
-  private connection: Connection;
-  private confirmOptions: ConfirmOptions;
-  private partialSigners: Signer[] = [];
-  private readonly idlErrors: Map<number, string>;
-
-  constructor(
-    private service: NetworkService,
-    private _instruction: BuilderInstruction,
-    private authority: PublicKey = PublicKey.default
-  ) {
-    this.wallet = this.service.getWallet();
-    this.connection = this.service.getConnection();
-    this.confirmOptions = this.service.getConfirmOptions();
-    this.idlErrors = parseIdlErrors(service.getIdl());
-  }
-
-  get instruction(): BuilderInstruction {
-    return this._instruction;
-  }
-
-  withConnection(connection: Connection): NetworkServiceBuilder {
-    this.connection = connection;
-    return this;
-  }
-
-  withConfirmOptions(confirmOptions: ConfirmOptions): NetworkServiceBuilder {
-    this.confirmOptions = confirmOptions;
-    return this;
-  }
-
-  withSolWallet(solWallet: Wallet): NetworkServiceBuilder {
-    this.wallet = solWallet;
-    return this;
-  }
-
-  // TODO
-  withAutomaticAlloc(payer: PublicKey): NetworkServiceBuilder {
-    this.authority = payer;
-    return this;
-  }
-
-  withPartialSigners(...signers: Signer[]) {
-    this.partialSigners = signers;
-    return this;
-  }
-
-  async transaction(): Promise<Transaction> {
-    const tx = new Transaction();
-    const instructions = await this._instruction.instructionPromise;
-    tx.add(instructions);
-    return tx;
-  }
-
-  async rpc(opts?: ConfirmOptions): Promise<string> {
-    const provider = new AnchorProvider(
-      this.connection,
-      this.wallet,
-      this.confirmOptions
-    );
-
-    const tx = await this.transaction();
-    try {
-      return await provider.sendAndConfirm(tx, this.partialSigners, opts);
-    } catch (err) {
-      throw translateError(err, this.idlErrors);
-    }
-  }
-}
-
-export type BuilderInstruction = {
-  instructionPromise: Promise<TransactionInstruction>;
-  didAccountSizeDeltaCallback: (didAccountBefore: null) => number;
-  allowsDynamicAlloc: boolean;
-  authority: PublicKey;
-};
