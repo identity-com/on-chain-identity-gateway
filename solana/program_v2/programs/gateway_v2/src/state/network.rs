@@ -1,5 +1,5 @@
 use crate::errors::NetworkErrors;
-use crate::instructions::*;
+use crate::instructions::admin::*;
 use crate::util::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
