@@ -1,7 +1,7 @@
 import { Command, Flags } from "@oclif/core";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 // import * as anchor from "@project-serum/anchor";
-import { GatewayService } from "@identity.com/solana-gateway-ts-v2/src/GatewayService";
+import { GatewayService } from "solana/program_v2/src/AdminService";
 import { airdrop } from "@identity.com/solana-gateway-ts-v2/src/lib/utils";
 import { Wallet } from "@project-serum/anchor";
 

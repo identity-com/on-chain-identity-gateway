@@ -35,15 +35,16 @@ import {
 import { findProgramAddress } from './lib/utils';
 import { GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2, IDL } from '../target/types/gateway_v2';
+import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
-export class GatewayService {
+export class AdminService extends AbstractService {
   static async build(
     dataAccount: PublicKey,
     wallet: Wallet,
     cluster: ExtendedCluster = SOLANA_MAINNET,
     customConfig?: CustomClusterUrlConfig,
     opts: ConfirmOptions = AnchorProvider.defaultOptions()
-  ): Promise<GatewayService> {
+  ): Promise<AdminService> {
     const _connection = getConnectionByCluster(
       cluster,
       opts.preflightCommitment,
@@ -52,9 +53,9 @@ export class GatewayService {
 
     const provider = new AnchorProvider(_connection, wallet, opts);
 
-    const program = await GatewayService.fetchProgram(provider);
+    const program = await AdminService.fetchProgram(provider);
 
-    return new GatewayService(
+    return new AdminService(
       program,
       dataAccount,
       cluster,
@@ -69,8 +70,8 @@ export class GatewayService {
     cluster: ExtendedCluster,
     provider: AnchorProvider = program.provider as AnchorProvider,
     wallet: Wallet = provider.wallet
-  ): Promise<GatewayService> {
-    return new GatewayService(
+  ): Promise<AdminService> {
+    return new AdminService(
       program,
       dataAccount,
       cluster,
@@ -78,34 +79,6 @@ export class GatewayService {
       provider.opts
     );
   }
-  static async fetchProgram(
-    provider: anchor.Provider
-  ): Promise<Program<GatewayV2>> {
-    let idl = await Program.fetchIdl<GatewayV2>(GATEWAY_PROGRAM, provider);
-
-    if (!idl) {
-      console.warn(
-        'Could not fetch IDL from chain. Using build-in IDL as fallback.'
-      );
-      idl = IDL;
-    } else {
-      console.log('using idl on-chain');
-    }
-
-    return new Program<GatewayV2>(
-      idl,
-      GATEWAY_PROGRAM,
-      provider
-    ) as Program<GatewayV2>;
-  }
-
-  private constructor(
-    private _program: Program<GatewayV2>,
-    private _dataAccount: PublicKey,
-    private _cluster: ExtendedCluster = SOLANA_MAINNET,
-    private _wallet: Wallet = new NonSigningWallet(),
-    private _opts: ConfirmOptions = AnchorProvider.defaultOptions()
-  ) {}
 
   static async createNetworkAddress(
     authority: PublicKey
@@ -113,26 +86,10 @@ export class GatewayService {
     return findProgramAddress(authority);
   }
 
-  getWallet(): Wallet {
-    return this._wallet;
-  }
-
-  getConnection(): Connection {
-    return this._program.provider.connection;
-  }
-
-  getConfrirmOptions(): ConfirmOptions {
-    return this._opts;
-  }
-
-  getIdl(): Idl {
-    return this._program.idl;
-  }
-
   closeNetwork(
     destination: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
-  ): GatewayServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .closeNetwork()
       .accounts({
@@ -143,7 +100,7 @@ export class GatewayService {
       })
       .instruction();
 
-    return new GatewayServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -162,9 +119,7 @@ export class GatewayService {
       authKeys: [{ flags: 1, key: this._wallet.publicKey }],
     },
     authority: PublicKey = this._wallet.publicKey
-  ): GatewayServiceBuilder {
-    // console.log("Creating with auth: " + authority.toBase58());
-
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .createNetwork({
         authThreshold: data.authThreshold,
@@ -179,7 +134,7 @@ export class GatewayService {
       })
       .instruction();
 
-    return new GatewayServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -193,13 +148,12 @@ export class GatewayService {
   updateNetwork(
     data: UpdateNetworkData,
     authority: PublicKey = this._wallet.publicKey
-  ): GatewayServiceBuilder {
+  ): ServiceBuilder {
     const instructionPromise = this._program.methods
       // @ts-ignore
       .updateNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        // TODO?? Why do fees and authKeys have to be 'never' type??
         fees: data.fees,
         authKeys: data.authKeys,
       })
@@ -210,7 +164,7 @@ export class GatewayService {
       })
       .instruction();
 
-    return new GatewayServiceBuilder(this, {
+    return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
@@ -242,102 +196,3 @@ export class GatewayService {
     return networkAccount;
   }
 }
-
-class NonSigningWallet implements Wallet {
-  publicKey: PublicKey;
-
-  constructor() {
-    this.publicKey = new PublicKey('11111111111111111111111111111111');
-  }
-
-  signAllTransactions(txs: Transaction[]): Promise<Transaction[]> {
-    return Promise.reject(
-      'NonSigningWallet does not support signing transactions'
-    );
-  }
-
-  signTransaction(tx: Transaction): Promise<Transaction> {
-    return Promise.reject(
-      'NonSigningWallet does not support signing transactions'
-    );
-  }
-}
-
-export class GatewayServiceBuilder {
-  private wallet: Wallet;
-  private connection: Connection;
-  private confirmOptions: ConfirmOptions;
-  private partialSigners: Signer[] = [];
-  private readonly idlErrors: Map<number, string>;
-
-  constructor(
-    private service: GatewayService,
-    private _instruction: BuilderInstruction,
-    private authority: PublicKey = PublicKey.default
-  ) {
-    this.wallet = this.service.getWallet();
-    this.connection = this.service.getConnection();
-    this.confirmOptions = this.service.getConfrirmOptions();
-
-    this.idlErrors = parseIdlErrors(service.getIdl());
-  }
-
-  get instruction(): BuilderInstruction {
-    return this._instruction;
-  }
-
-  withConnection(connection: Connection): GatewayServiceBuilder {
-    this.connection = connection;
-    return this;
-  }
-
-  withConfirmOptions(confirmOptions: ConfirmOptions): GatewayServiceBuilder {
-    this.confirmOptions = confirmOptions;
-    return this;
-  }
-
-  withSolWallet(solWallet: Wallet): GatewayServiceBuilder {
-    this.wallet = solWallet;
-    return this;
-  }
-
-  // TODO
-  withAutomaticAlloc(payer: PublicKey): GatewayServiceBuilder {
-    this.authority = payer;
-    return this;
-  }
-
-  withPartialSigners(...signers: Signer[]) {
-    this.partialSigners = signers;
-    return this;
-  }
-
-  async transaction(): Promise<Transaction> {
-    const tx = new Transaction();
-    const instructions = await this._instruction.instructionPromise;
-    tx.add(instructions);
-    return tx;
-  }
-
-  async rpc(opts?: ConfirmOptions): Promise<string> {
-    const provider = new AnchorProvider(
-      this.connection,
-      this.wallet,
-      this.confirmOptions
-    );
-
-    const tx = await this.transaction();
-    try {
-      return await provider.sendAndConfirm(tx, this.partialSigners, opts);
-    } catch (err) {
-      throw translateError(err, this.idlErrors);
-    }
-  }
-}
-
-export type BuilderInstruction = {
-  instructionPromise: Promise<TransactionInstruction>;
-  didAccountSizeDeltaCallback: (didAccountBefore: null) => number;
-  allowsDynamicAlloc: boolean;
-  authority: PublicKey;
-};
