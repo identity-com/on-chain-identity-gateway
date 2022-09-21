@@ -5,6 +5,8 @@ use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
 
+// TODO: Modify methods to require correct authorization.
+
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
 #[derive(Debug)]
 #[account]
@@ -260,11 +262,14 @@ impl Gatekeeper {
             None => Ok(()),
         }
     }
+
+    // TODO: Change Auth Access
     pub fn gatekeeper_withdraw(&mut self, receiver: Pubkey, authority: &mut Signer) -> Result<()> {
-        if !self.can_access(authority, GatekeeperKeyFlags::ACCESS_VAULT) {
+        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
             return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
         }
         // TODO: Add withdrawal functionality
+
         Ok(())
     }
 }

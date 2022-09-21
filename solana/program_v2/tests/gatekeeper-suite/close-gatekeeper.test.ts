@@ -68,7 +68,6 @@ describe('Gateway v2 Client', () => {
   describe('Close Gatekeeper', () => {
     it('Should close a gatekeeper properly', async function () {
       await gatekeeperService.closeGatekeeper().rpc();
-      const acct = await gatekeeperService.getGatekeeperAccount();
       expect(gatekeeperService.getGatekeeperAccount()).to.eventually.be
         .rejected;
     }).timeout(10000);
