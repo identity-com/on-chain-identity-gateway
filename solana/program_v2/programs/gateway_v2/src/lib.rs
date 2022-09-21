@@ -4,8 +4,8 @@ mod instructions;
 mod state;
 mod util;
 
-use crate::instructions::admin::*;
-use crate::instructions::network::*;
+use crate::instructions::*;
+use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 // TODO: Grind for better key
@@ -19,7 +19,7 @@ pub mod gateway_v2 {
         ctx: Context<CreateNetworkAccount>,
         data: CreateNetworkData,
     ) -> Result<()> {
-        instructions::admin::create_network(
+        instructions::create_network(
             *ctx.accounts.authority.key,
             *ctx.bumps.get("network").unwrap(),
             data,
@@ -31,7 +31,7 @@ pub mod gateway_v2 {
         ctx: Context<UpdateNetworkAccount>,
         data: UpdateNetworkData,
     ) -> Result<()> {
-        instructions::admin::update_network(
+        instructions::update_network(
             &data,
             &mut ctx.accounts.network,
             &mut ctx.accounts.authority,
@@ -39,7 +39,7 @@ pub mod gateway_v2 {
     }
 
     pub fn close_network(_ctx: Context<CloseNetworkAccount>) -> Result<()> {
-        instructions::admin::close_network()
+        instructions::close_network()
     }
 
     pub fn create_gatekeeper(
