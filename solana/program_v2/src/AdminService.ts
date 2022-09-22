@@ -21,13 +21,20 @@ import { SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2 } from '../target/types/gateway_v2';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
-// admin service for managing networks (creating, closing, updating) on gateway program v2 (Anchor implementation)
+/**
+ * @class AdminService - Anchor implementation of admin service for managing networks on gateway program v2
+ * @extends AbstractService - Abstract class that provides common functionality for all services
+ * service for a admin. This will handle all aspects of the Gateway that a admin is able to control... i.e. creating, closing, and updating network, etc...
+ */
+
 export class AdminService extends AbstractService {
-  // @dataAccount - the network account
-  // @wallet - the wallet that will be used to sign the transaction
-  // @cluster - the cluster that the network account is on
-  // @customConfig - custom cluster url config
-  // @opts - transaction options
+/**
+ * @param dataAccount - the network account
+ * @param wallet - the wallet that will be used to sign the transaction
+ * @param cluster - the cluster that the network account is on (default: mainnet, option: devnet, testnet, localnet)
+ * @param customConfig - custom cluster url config 
+ * @param opts - transaction options
+ * */
   static async build(
     dataAccount: PublicKey,
     wallet: Wallet,
@@ -35,7 +42,7 @@ export class AdminService extends AbstractService {
     customConfig?: CustomClusterUrlConfig,
     opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ): Promise<AdminService> {
-    // connect to the cluster (testnet, localnet, devnet, mainnet), at the momenet we are connecting to the localnet
+    // connect to the cluster
     const _connection = getConnectionByCluster(
       cluster,
       opts.preflightCommitment,
@@ -45,6 +52,7 @@ export class AdminService extends AbstractService {
     const provider = new AnchorProvider(_connection, wallet, opts);
     // fetches the program id from the cluster
     const program = await AdminService.fetchProgram(provider);
+    // returns a new instance of the AdminService
     return new AdminService(
       program,
       dataAccount,
@@ -53,8 +61,14 @@ export class AdminService extends AbstractService {
       provider.opts
     );
   }
-  //builds a transaction that will create a new network
 
+/**
+ * @param program - gateway program v2 from anchor
+ * @param dataAccount - the network account 
+ * @param cluster - the cluster that the network account is on
+ * @param provider - the provider required to sign the transaction
+ * @param wallet - the wallet that will be used to sign the transaction
+ * */
   static async buildFromAnchor(
     program: Program<GatewayV2>,
     dataAccount: PublicKey,
@@ -70,13 +84,20 @@ export class AdminService extends AbstractService {
       provider.opts
     );
   }
-  // let admin to create a new network and return the new network account
+  /**
+   * let admin to create a new network and return the new network account
+   * @param authority - the authority required to sign the transaction
+   */ 
   static async createNetworkAddress(
     authority: PublicKey
   ): Promise<[PublicKey, number]> {
     return findProgramAddress('gk-network', authority);
   }
-  //gives admin an authority to close network
+  /**
+   * let admin to close the network account 
+   * @param authority - the authority required to sign the transaction
+   * @param destination - the destination account that will receive the lamports 
+   */ 
   closeNetwork(
     destination: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
@@ -100,7 +121,14 @@ export class AdminService extends AbstractService {
       authority,
     });
   }
-  //gives admin an authority to create a network
+  /**
+   * gives admin an authority to create a network
+   * @param authThreshold - the number of auth keys required to sign the transaction 
+   * @param passExpireTime - the time that the password will expire
+   * @param fees - the fees that will be charged for each creation
+   * @param signerBump - TODO: what is this?
+   * @param authKeys - the auth keys that will be used to sign the transaction 
+   */ 
   createNetwork(
     data: CreateNetworkData = {
       authThreshold: 1,
@@ -135,8 +163,11 @@ export class AdminService extends AbstractService {
       authority,
     });
   }
-  //gives admin an authority to update a network
-  //
+  /**
+   * gives admin an authority to update a network
+   * @param data - the data that will be used to update the network
+   * @param authority - the authority required to sign the transaction
+   */ 
   updateNetwork(
     data: UpdateNetworkData,
     authority: PublicKey = this._wallet.publicKey
@@ -165,7 +196,10 @@ export class AdminService extends AbstractService {
       authority,
     });
   }
-  //let admin to grab the network account data from the network account
+  /**
+   * let admin to grab the network account data from the network account
+   * @param account - the network account
+   */ 
   async getNetworkAccount(
     account: PublicKey = this._dataAccount
   ): Promise<NetworkAccount | null> {
