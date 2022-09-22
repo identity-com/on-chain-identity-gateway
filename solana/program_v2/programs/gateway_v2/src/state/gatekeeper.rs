@@ -53,7 +53,7 @@ impl Gatekeeper {
             + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize
         // auth keys
     }
-    //TODO: Won't work with current structure of auth_keys
+    // Checks if an authkey has enough authority for an action
     pub fn can_access(&self, authority: &Signer, flag: GatekeeperKeyFlags) -> bool {
         self.auth_keys
             .iter()
@@ -64,7 +64,7 @@ impl Gatekeeper {
             .count()
             > 0
     }
-    // TODO: Won't work with current structure of auth_keys
+    // Adds auth keys to the gatekeeper
     pub fn add_auth_keys(
         &mut self,
         data: &UpdateGatekeeperData,
@@ -119,7 +119,7 @@ impl Gatekeeper {
 
         Ok(())
     }
-    // TODO: Won't work with current structure of fees
+    // Adds fees to gatekeeper
     pub fn add_fees(&mut self, data: &UpdateGatekeeperData, authority: &mut Signer) -> Result<()> {
         // This will skip the next auth check which isn't required if there are no fees
         if data.fees.add.is_empty() && data.fees.remove.is_empty() {
@@ -162,6 +162,7 @@ impl Gatekeeper {
         Ok(())
     }
 
+    // Allows a network to set the state of the gatekeeper (Active, Frozen, Halted)
     pub fn set_gatekeeper_state(
         &mut self,
         state: &GatekeeperState,
@@ -180,6 +181,7 @@ impl Gatekeeper {
         Ok(())
     }
 
+    // Allows the setting of a new associated gatekeeper network
     pub fn set_network(
         &mut self,
         data: &UpdateGatekeeperData,
@@ -201,6 +203,7 @@ impl Gatekeeper {
         }
     }
 
+    // Sets the discovery pubkey for the gatekeeper
     pub fn set_addresses(
         &mut self,
         data: &UpdateGatekeeperData,
@@ -222,6 +225,7 @@ impl Gatekeeper {
         }
     }
 
+    // Sets the auth threshold for the gatekeeper
     pub fn set_auth_threshold(
         &mut self,
         data: &UpdateGatekeeperData,
@@ -242,6 +246,8 @@ impl Gatekeeper {
             None => Ok(()),
         }
     }
+
+    // sets the staking account for the gatekeeper
     pub fn set_staking_account(
         &mut self,
         data: &UpdateGatekeeperData,
@@ -264,6 +270,7 @@ impl Gatekeeper {
     }
 
     // TODO: Change Auth Access
+    // controls withdrawal of funds from the gatekeeper
     pub fn gatekeeper_withdraw(&mut self, receiver: Pubkey, authority: &mut Signer) -> Result<()> {
         if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
             return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));

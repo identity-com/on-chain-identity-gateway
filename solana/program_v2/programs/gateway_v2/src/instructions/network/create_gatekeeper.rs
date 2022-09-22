@@ -9,6 +9,7 @@ use crate::state::gatekeeper::{
 use anchor_lang::prelude::*;
 
 pub fn create_gatekeeper(
+    // need to use authority somewhere?
     authority: Pubkey,
     bump: u8,
     data: CreateGatekeeperData,
@@ -17,7 +18,7 @@ pub fn create_gatekeeper(
     if data.auth_keys.is_empty() {
         return Err(error!(GatekeeperErrors::NoAuthKeys));
     }
-
+    // Checks if there are enough auth keys to create the gatekeeper, should maybe check in NetworkKeyFlags
     if data
         .auth_keys
         .iter()

@@ -1,51 +1,27 @@
-import {
-  AnchorProvider,
-  Program,
-  Idl,
-  parseIdlErrors,
-  translateError,
-} from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
-import {
-  clusterApiUrl,
-  ConfirmOptions,
-  Connection,
-  Keypair,
-  PublicKey,
-  Signer,
-  Transaction,
-  TransactionInstruction,
-} from '@solana/web3.js';
-
+import { AnchorProvider, Program } from '@project-serum/anchor';
+import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 import {
   AuthKeyStructure,
-  CreateNetworkData,
   CreateGatekeeperData,
   UpdateGatekeeperData,
   FeeStructure,
-  NetworkAccount,
-  UpdateFeeStructure,
-  UpdateNetworkData,
   Wallet,
   GatekeeperAccount,
   GatekeeperState,
   GatekeeperStateMapping,
 } from './lib/types';
-
 import {
   CustomClusterUrlConfig,
   ExtendedCluster,
   getConnectionByCluster,
 } from './lib/connection';
 import { EnumMapper, findProgramAddress } from './lib/utils';
-import {
-  GatekeeperKeyFlags,
-  GATEWAY_PROGRAM,
-  SOLANA_MAINNET,
-} from './lib/constants';
-import { GatewayV2, IDL } from '../target/types/gateway_v2';
+import { GatekeeperKeyFlags, SOLANA_MAINNET } from './lib/constants';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
+import { GatewayV2 } from '../target/types/gateway_v2';
 
+// Service for a network. This will handle all aspects of the Gateway that a network is able to control... i.e. creating gatekeepers, updating gatekeepers, etc...
 export class NetworkService extends AbstractService {
   static async build(
     dataAccount: PublicKey,
@@ -89,12 +65,15 @@ export class NetworkService extends AbstractService {
     );
   }
 
+  // Creates a gatekeeper's public key from a given seed and authority.
   static async createGatekeeperAddress(
     authority: PublicKey
   ): Promise<[PublicKey, number]> {
     return findProgramAddress('gatekeeper', authority);
   }
 
+  // Creates a gatekeeper on a specified network
+  // @authThreshold
   createGatekeeper(
     network: PublicKey,
     data: CreateGatekeeperData = {
@@ -140,6 +119,7 @@ export class NetworkService extends AbstractService {
     });
   }
 
+  // Allows a network to update a gatekeeper's data
   updateGatekeeper(
     data: UpdateGatekeeperData,
     authority: PublicKey = this._wallet.publicKey
@@ -171,6 +151,7 @@ export class NetworkService extends AbstractService {
     });
   }
 
+  // Closes a gatekeeper on a network
   closeGatekeeper(
     destination: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
@@ -196,6 +177,7 @@ export class NetworkService extends AbstractService {
     });
   }
 
+  // Allows an authority to update the state of a gatekeeper (Active, Frozen, Halted)
   setGatekeeperState(
     state: GatekeeperState = GatekeeperState.Active,
     authority: PublicKey = this._wallet.publicKey
@@ -219,6 +201,7 @@ export class NetworkService extends AbstractService {
     });
   }
 
+  // Controls withdrawal of funds from a gatekeeper
   gatekeeperWithdraw(
     receiver: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
@@ -242,6 +225,7 @@ export class NetworkService extends AbstractService {
     });
   }
 
+  // Retrieves a gatekeeper's information
   async getGatekeeperAccount(
     account: PublicKey = this._dataAccount
   ): Promise<GatekeeperAccount | null> {

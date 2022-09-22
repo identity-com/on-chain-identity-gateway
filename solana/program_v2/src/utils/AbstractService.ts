@@ -16,9 +16,7 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js';
-
 import { Wallet } from '../lib/types';
-
 import { ExtendedCluster } from '../lib/connection';
 import { GATEWAY_PROGRAM, SOLANA_MAINNET } from '../lib/constants';
 

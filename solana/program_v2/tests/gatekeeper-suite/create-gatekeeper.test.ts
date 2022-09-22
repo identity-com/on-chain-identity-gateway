@@ -65,8 +65,11 @@ describe('Gateway v2 Client', () => {
   });
   describe('Create Gatekeeper', () => {
     it('Creates a gatekeeper w/ default data on an established network', async function () {
+      // creates a gatekeeper with the admin's authority
       await networkService.createGatekeeper(adminAuthority.publicKey).rpc();
+      // retrieves the gatekeeper
       let gatekeeperAccount = await networkService.getGatekeeperAccount();
+      // tests to see if the requested gatekeeper's associated network equals the adminAuthority (or network) public key
       expect(gatekeeperAccount?.gatekeeperNetwork.toBase58()).to.equal(
         adminAuthority.publicKey.toBase58()
       );

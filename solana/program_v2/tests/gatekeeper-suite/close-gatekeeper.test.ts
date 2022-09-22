@@ -25,10 +25,11 @@ describe('Gateway v2 Client', () => {
   let adminAddress: PublicKey;
 
   before(async () => {
+    // Creates both necessary authorities
     adminAuthority = new anchor.Wallet(Keypair.generate());
     networkAuthority = new anchor.Wallet(Keypair.generate());
 
-    //network airdrop
+    // airdrop to admin authority and network authority
     await airdrop(
       programProvider.connection,
       adminAuthority.publicKey,
@@ -40,6 +41,7 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
+    // Creates the address for both the network and gatekeeper
     [adminDataAccount] = await AdminService.createNetworkAddress(
       adminAuthority.publicKey
     );
@@ -47,6 +49,7 @@ describe('Gateway v2 Client', () => {
       adminAuthority.publicKey
     );
 
+    // creates the admin service with anchor
     adminService = await AdminService.buildFromAnchor(
       program,
       adminDataAccount,
@@ -55,6 +58,7 @@ describe('Gateway v2 Client', () => {
       adminAuthority
     );
 
+    // creates the network service with anchor
     networkService = await NetworkService.buildFromAnchor(
       program,
       networkDataAccount,
@@ -68,7 +72,9 @@ describe('Gateway v2 Client', () => {
   });
   describe('Close Gatekeeper', () => {
     it('Should close a gatekeeper properly', async function () {
+      // runs closeGatekeeper
       await networkService.closeGatekeeper().rpc();
+      // tries to request the gatekeeper account, which we expect to fail after closure
       expect(networkService.getGatekeeperAccount()).to.eventually.be.rejected;
     }).timeout(10000);
   });

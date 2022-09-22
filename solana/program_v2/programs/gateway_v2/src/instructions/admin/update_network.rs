@@ -7,6 +7,7 @@ pub fn update_network(
     network: &mut Account<GatekeeperNetwork>,
     authority: &mut Signer,
 ) -> Result<()> {
+    // Runs the following methods on the passed-in network in order to update its parameters
     network.set_expire_time(data, authority)?;
     network.add_auth_keys(data, authority)?;
     network.add_fees(data, authority)?;

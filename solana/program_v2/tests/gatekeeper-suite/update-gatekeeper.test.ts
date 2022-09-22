@@ -66,6 +66,7 @@ describe('Gateway v2 Client', () => {
   });
   describe('Update Gatekeeper', () => {
     it('Updates a gatekeeper on an established network', async function () {
+      // updates gatekeeper with new data
       await networkService
         .updateGatekeeper({
           authThreshold: 1,
@@ -79,7 +80,9 @@ describe('Gateway v2 Client', () => {
           fees: { add: [], remove: [] },
         })
         .rpc();
+      // retrieves the gatekeeper account
       let gatekeeperAccount = await networkService.getGatekeeperAccount();
+      // expects there to be an additional auth key matching the additionalKey defined above
       expect(
         gatekeeperAccount?.authKeys.filter(
           (auth) => auth.key.toBase58() === additionalAuthKey.toBase58()

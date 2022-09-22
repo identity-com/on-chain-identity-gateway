@@ -70,16 +70,18 @@ describe('Gateway v2 Client', () => {
   });
   describe('Set Gatekeeper State', () => {
     it.only("Should set a gatekeeper's state", async function () {
+      // retrieves gatekeeper account before state change and stores its state as a const
       let gatekeeperAccount = await networkService.getGatekeeperAccount();
       const initialState = gatekeeperAccount?.state;
-
+      // sets the gatekeeper's state to Frozen
       await networkService.setGatekeeperState(GatekeeperState.Frozen).rpc();
+      // retrieves gatekeeper account after state change and stores its state as a const
       gatekeeperAccount = await networkService.getGatekeeperAccount();
       const newState = gatekeeperAccount?.state;
 
-      //@ts-ignore
+      //@ts-ignore // Expects initial state of gatekeeper to be 0 (Active)
       expect(EnumMapper.from(initialState, GatekeeperStateMapping)).to.equal(0);
-      //@ts-ignore
+      //@ts-ignore // Expects modified state of gatekeeper to be 1 (Frozen)
       expect(EnumMapper.from(newState, GatekeeperStateMapping)).to.equal(1);
     }).timeout(10000);
   });

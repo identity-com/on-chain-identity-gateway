@@ -2,6 +2,7 @@ use crate::constants::GATEKEEPER_SEED;
 use crate::state::{Gatekeeper, GatekeeperState};
 use anchor_lang::prelude::*;
 
+// Allows a network to set the state of a gatekeeper (Active, Frozen, Halted)
 pub fn set_gatekeeper_state(
     state: &GatekeeperState,
     gatekeeper: &mut Account<Gatekeeper>,

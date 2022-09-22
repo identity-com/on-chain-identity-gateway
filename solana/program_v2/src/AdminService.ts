@@ -1,35 +1,14 @@
-import {
-  AnchorProvider,
-  Program,
-  Idl,
-  parseIdlErrors,
-  translateError,
-} from '@project-serum/anchor';
+import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
-import {
-  clusterApiUrl,
-  ConfirmOptions,
-  Connection,
-  Keypair,
-  PublicKey,
-  Signer,
-  Transaction,
-  TransactionInstruction,
-} from '@solana/web3.js';
+import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
 import {
   AuthKeyStructure,
   CreateNetworkData,
-  CreateGatekeeperData,
-  UpdateGatekeeperData,
   FeeStructure,
   NetworkAccount,
-  UpdateFeeStructure,
   UpdateNetworkData,
   Wallet,
-  GatekeeperAccount,
-  GatekeeperState,
-  GatekeeperStateMapping,
 } from './lib/types';
 
 import {
@@ -37,16 +16,18 @@ import {
   ExtendedCluster,
   getConnectionByCluster,
 } from './lib/connection';
-import { EnumMapper, findProgramAddress } from './lib/utils';
-import {
-  GatekeeperKeyFlags,
-  GATEWAY_PROGRAM,
-  SOLANA_MAINNET,
-} from './lib/constants';
-import { GatewayV2, IDL } from '../target/types/gateway_v2';
+import { findProgramAddress } from './lib/utils';
+import { SOLANA_MAINNET } from './lib/constants';
+import { GatewayV2 } from '../target/types/gateway_v2';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
+// admin service for managing networks (creating, closing, updating) on gateway program v2 (Anchor implementation)
 export class AdminService extends AbstractService {
+  // @dataAccount - the network account
+  // @wallet - the wallet that will be used to sign the transaction
+  // @cluster - the cluster that the network account is on
+  // @customConfig - custom cluster url config
+  // @opts - transaction options
   static async build(
     dataAccount: PublicKey,
     wallet: Wallet,
@@ -54,16 +35,16 @@ export class AdminService extends AbstractService {
     customConfig?: CustomClusterUrlConfig,
     opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ): Promise<AdminService> {
+    // connect to the cluster (testnet, localnet, devnet, mainnet), at the momenet we are connecting to the localnet
     const _connection = getConnectionByCluster(
       cluster,
       opts.preflightCommitment,
       customConfig
     );
-
+    // provider is the wallet that will be used to sign the transaction
     const provider = new AnchorProvider(_connection, wallet, opts);
-
+    // fetches the program id from the cluster
     const program = await AdminService.fetchProgram(provider);
-
     return new AdminService(
       program,
       dataAccount,
@@ -72,6 +53,7 @@ export class AdminService extends AbstractService {
       provider.opts
     );
   }
+  //builds a transaction that will create a new network
 
   static async buildFromAnchor(
     program: Program<GatewayV2>,
@@ -88,13 +70,13 @@ export class AdminService extends AbstractService {
       provider.opts
     );
   }
-
+  // let admin to create a new network and return the new network account
   static async createNetworkAddress(
     authority: PublicKey
   ): Promise<[PublicKey, number]> {
     return findProgramAddress('gk-network', authority);
   }
-
+  //gives admin an authority to close network
   closeNetwork(
     destination: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
@@ -118,7 +100,7 @@ export class AdminService extends AbstractService {
       authority,
     });
   }
-
+  //gives admin an authority to create a network
   createNetwork(
     data: CreateNetworkData = {
       authThreshold: 1,
@@ -153,7 +135,8 @@ export class AdminService extends AbstractService {
       authority,
     });
   }
-
+  //gives admin an authority to update a network
+  //
   updateNetwork(
     data: UpdateNetworkData,
     authority: PublicKey = this._wallet.publicKey
@@ -182,7 +165,7 @@ export class AdminService extends AbstractService {
       authority,
     });
   }
-
+  //let admin to grab the network account data from the network account
   async getNetworkAccount(
     account: PublicKey = this._dataAccount
   ): Promise<NetworkAccount | null> {

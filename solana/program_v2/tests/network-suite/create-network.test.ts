@@ -36,13 +36,15 @@ describe('Gateway v2 Client', () => {
   });
   describe('Create Network', () => {
     it('Creates a network with default values', async function () {
+      // creates a network w/ default values
       await service.createNetwork().rpc();
-
+      // retrieves the created network's account
       const createdNetwork = await service.getNetworkAccount();
-
+      // expect the network to exist
       expect(createdNetwork).to.not.be.null;
     }).timeout(10000);
     it('Creates a network with non-default values', async function () {
+      // creates a network w/ non-default values
       await service
         .createNetwork({
           authThreshold: 1,
@@ -66,8 +68,10 @@ describe('Gateway v2 Client', () => {
         })
         .rpc();
 
+      // retrieves the created network's account
       const createdNetwork = await service.getNetworkAccount();
 
+      // expects the network's pass expire time to not be the default value
       expect(createdNetwork?.passExpireTime).to.equal(400);
     }).timeout(10000);
   });

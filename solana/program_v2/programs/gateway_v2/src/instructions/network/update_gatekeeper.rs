@@ -2,6 +2,7 @@ use crate::constants::GATEKEEPER_SEED;
 use crate::state::{Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperSize};
 use anchor_lang::prelude::*;
 
+// Runs all the update methods on the passed-in gatekeeper
 pub fn update_gatekeeper(
     data: &UpdateGatekeeperData,
     gatekeeper: &mut Account<Gatekeeper>,

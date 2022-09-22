@@ -2,6 +2,7 @@ use crate::constants::GATEKEEPER_SEED;
 use crate::state::Gatekeeper;
 use anchor_lang::prelude::*;
 
+// Will withdraw funds from the gatekeeper
 pub fn gatekeeper_withdraw(
     receiver: Pubkey,
     gatekeeper: &mut Account<Gatekeeper>,
