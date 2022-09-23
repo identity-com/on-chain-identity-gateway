@@ -798,7 +798,7 @@
     "@solana/buffer-layout-utils" "^0.2.0"
     buffer "^6.0.3"
 
-"@solana/web3.js@^1.22.0", "@solana/web3.js@^1.32.0":
+"@solana/web3.js@^1.32.0":
   version "1.44.2"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.44.2.tgz#5303efd94a7f2d6054a1483a4b4db4a26eb2a392"
   integrity sha512-DvrJMoKonLuaX0/KyyJXcP/+w+9q8mve4gN3hC2Ptg51K/Gi1/cx6oQN2lbRZb4wYPBd2s2GDAJAJUAwZGsEug==
@@ -824,6 +824,27 @@
   version "1.61.0"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.61.0.tgz#69551a001f5a2e2ce36905007e6b6a3c98b6fec4"
   integrity sha512-vwkETDmqQDuTRikW8o3tLkNNlzQ/NU7MVtQOTkJ/wmlwsUAMgWrWlTNQoP3fzmsenn/5Y/3UbeOYdHaGCNHCgQ==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+    "@noble/ed25519" "^1.7.0"
+    "@noble/hashes" "^1.1.2"
+    "@noble/secp256k1" "^1.6.3"
+    "@solana/buffer-layout" "^4.0.0"
+    bigint-buffer "^1.1.5"
+    bn.js "^5.0.0"
+    borsh "^0.7.0"
+    bs58 "^4.0.1"
+    buffer "6.0.1"
+    fast-stable-stringify "^1.0.0"
+    jayson "^3.4.4"
+    node-fetch "2"
+    rpc-websockets "^7.5.0"
+    superstruct "^0.14.2"
+
+"@solana/web3.js@^1.63.0":
+  version "1.63.0"
+  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.63.0.tgz#2e247d89785bd79c994bbc79040f0d146ee117a5"
+  integrity sha512-qmDmfLPDjzhTAfN3jbtVI8YaIIIDN9q4p6gCiIhWwzKs8299rq8B+tkmCgiU6tAtIm3uqHl3wduhJMKmqdToBA==
   dependencies:
     "@babel/runtime" "^7.12.5"
     "@noble/ed25519" "^1.7.0"
