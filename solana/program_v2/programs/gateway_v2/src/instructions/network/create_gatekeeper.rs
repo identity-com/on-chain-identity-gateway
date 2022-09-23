@@ -30,6 +30,7 @@ pub fn create_gatekeeper(
     {
         return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
     }
+    print!("{}", authority);
 
     gatekeeper.auth_threshold = data.auth_threshold;
     gatekeeper.signer_bump = bump;

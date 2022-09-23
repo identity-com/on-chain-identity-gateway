@@ -271,7 +271,7 @@ impl Gatekeeper {
 
     // TODO: Change Auth Access
     // controls withdrawal of funds from the gatekeeper
-    pub fn gatekeeper_withdraw(&mut self, receiver: Pubkey, authority: &mut Signer) -> Result<()> {
+    pub fn gatekeeper_withdraw(&mut self, _receiver: Pubkey, authority: &mut Signer) -> Result<()> {
         if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
             return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
         }

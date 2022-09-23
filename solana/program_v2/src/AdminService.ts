@@ -28,13 +28,13 @@ import { AbstractService, ServiceBuilder } from './utils/AbstractService';
  */
 
 export class AdminService extends AbstractService {
-/**
- * @param dataAccount - the network account
- * @param wallet - the wallet that will be used to sign the transaction
- * @param cluster - the cluster that the network account is on (default: mainnet, option: devnet, testnet, localnet)
- * @param customConfig - custom cluster url config 
- * @param opts - transaction options
- * */
+  /**
+   * @param dataAccount - the network account
+   * @param wallet - the wallet that will be used to sign the transaction
+   * @param cluster - the cluster that the network account is on (default: mainnet, option: devnet, testnet, localnet)
+   * @param customConfig - custom cluster url config
+   * @param opts - transaction options
+   * */
   static async build(
     dataAccount: PublicKey,
     wallet: Wallet,
@@ -62,13 +62,13 @@ export class AdminService extends AbstractService {
     );
   }
 
-/**
- * @param program - gateway program v2 from anchor
- * @param dataAccount - the network account 
- * @param cluster - the cluster that the network account is on
- * @param provider - the provider required to sign the transaction
- * @param wallet - the wallet that will be used to sign the transaction
- * */
+  /**
+   * @param program - gateway program v2 from anchor
+   * @param dataAccount - the network account
+   * @param cluster - the cluster that the network account is on
+   * @param provider - the provider required to sign the transaction
+   * @param wallet - the wallet that will be used to sign the transaction
+   * */
   static async buildFromAnchor(
     program: Program<GatewayV2>,
     dataAccount: PublicKey,
@@ -87,17 +87,17 @@ export class AdminService extends AbstractService {
   /**
    * let admin to create a new network and return the new network account
    * @param authority - the authority required to sign the transaction
-   */ 
+   */
   static async createNetworkAddress(
     authority: PublicKey
   ): Promise<[PublicKey, number]> {
     return findProgramAddress('gk-network', authority);
   }
   /**
-   * let admin to close the network account 
+   * let admin to close the network account
    * @param authority - the authority required to sign the transaction
-   * @param destination - the destination account that will receive the lamports 
-   */ 
+   * @param destination - the destination account that will receive the lamports
+   */
   closeNetwork(
     destination: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
@@ -123,12 +123,12 @@ export class AdminService extends AbstractService {
   }
   /**
    * gives admin an authority to create a network
-   * @param authThreshold - the number of auth keys required to sign the transaction 
+   * @param authThreshold - the number of auth keys required to sign the transaction
    * @param passExpireTime - the time that the password will expire
    * @param fees - the fees that will be charged for each creation
    * @param signerBump - TODO: what is this?
-   * @param authKeys - the auth keys that will be used to sign the transaction 
-   */ 
+   * @param authKeys - the auth keys that will be used to sign the transaction
+   */
   createNetwork(
     data: CreateNetworkData = {
       authThreshold: 1,
@@ -167,7 +167,7 @@ export class AdminService extends AbstractService {
    * gives admin an authority to update a network
    * @param data - the data that will be used to update the network
    * @param authority - the authority required to sign the transaction
-   */ 
+   */
   updateNetwork(
     data: UpdateNetworkData,
     authority: PublicKey = this._wallet.publicKey
@@ -199,7 +199,7 @@ export class AdminService extends AbstractService {
   /**
    * let admin to grab the network account data from the network account
    * @param account - the network account
-   */ 
+   */
   async getNetworkAccount(
     account: PublicKey = this._dataAccount
   ): Promise<NetworkAccount | null> {
