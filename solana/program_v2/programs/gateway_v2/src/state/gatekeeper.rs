@@ -18,6 +18,7 @@ pub struct Gatekeeper {
     /// The [`GatekeeperNetwork`] this gatekeeper is on
     pub gatekeeper_network: Pubkey,
     /// A pointer to the addresses this gatekeeper uses for discoverability
+    /// TODO! REMOVE addresses
     pub addresses: Pubkey,
     /// The staking account of this gatekeeper
     pub staking_account: Pubkey,

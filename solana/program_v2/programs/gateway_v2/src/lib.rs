@@ -52,6 +52,7 @@ pub mod gateway_v2 {
             data,
             &mut ctx.accounts.gatekeeper,
         )
+        // TODO: add instruction to add gatekeeper pubkey to gatekeeper_network
     }
 
     pub fn update_gatekeeper(

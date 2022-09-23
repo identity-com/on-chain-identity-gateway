@@ -10,6 +10,8 @@ use anchor_lang::prelude::*;
 
 pub fn create_gatekeeper(
     // need to use authority somewhere?
+    // store authority on the gatekeeper struct,
+    // need to pass in network account as well to modify it by adding gatekeeper keys
     authority: Pubkey,
     bump: u8,
     data: CreateGatekeeperData,
