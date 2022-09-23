@@ -9,7 +9,7 @@ import {
   Revoked,
   GatewayTokenState,
 } from "../../src/lib/GatewayTokenData";
-import { VALIDATOR_URL } from "../constatnts";
+import { VALIDATOR_URL } from "../constants";
 import { describe } from "mocha";
 import { getAccountWithState } from "./utils";
 

@@ -21,7 +21,7 @@ import {
   Revoked,
 } from "../../src/lib/GatewayTokenData";
 import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
-import { VALIDATOR_URL } from "../constatnts";
+import { VALIDATOR_URL } from "../constants";
 
 chai.use(chaiSubset);
 const { expect } = chai;

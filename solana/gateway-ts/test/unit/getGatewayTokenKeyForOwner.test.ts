@@ -19,7 +19,7 @@ import {
   getGatewayTokenAddressForOwnerAndGatekeeperNetwork,
   issueVanilla,
 } from "../../src";
-import { VALIDATOR_URL } from "../constatnts";
+import { VALIDATOR_URL } from "../constants";
 
 chai.use(chaiSubset);
 const { expect } = chai;
