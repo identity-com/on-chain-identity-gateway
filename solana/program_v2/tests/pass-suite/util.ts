@@ -1,7 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import {GatekeeperService} from "../../src/GatekeeperService";
 import {airdrop} from "../../src/lib/utils";
-import {TEST_NETWORK} from "../util/constants";
+import {TEST_GATEKEEPER, TEST_NETWORK} from "../util/constants";
 import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {GatewayV2} from "../../target/types/gateway_v2";
 import {PassState} from "../../src/lib/wrappers";
@@ -31,19 +31,21 @@ export const createGatekeeperService = async () => {
     );
 
     [dataAccount, bump] = await GatekeeperService.createPassAddress(
-        authority.publicKey
+        authority.publicKey,
+        TEST_GATEKEEPER
     );
 
     service = await GatekeeperService.buildFromAnchor(
         program,
         dataAccount,
         TEST_NETWORK,
+        TEST_GATEKEEPER,
         'localnet',
         programProvider,
         authority
     );
 
-    await service.issue().rpc();
+    await service.issue(authority.publicKey).rpc();
 
     return service;
 }
