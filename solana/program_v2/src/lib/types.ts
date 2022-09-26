@@ -33,9 +33,10 @@ export type AuthKeyStructure = {
 export type CreateNetworkData = {
   authThreshold: number;
   passExpireTime: number;
-  signerBump: number;
+  networkBump: number;
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
+  networkIndex: number;
 };
 
 export type UpdateNetworkData = {
@@ -46,10 +47,15 @@ export type UpdateNetworkData = {
 };
 export type NetworkAccount = {
   version: number;
-  initialAuthority: PublicKey;
+  authority: PublicKey;
+  networkIndex: number;
   authThreshold: number;
   passExpireTime: number;
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
+  networkFeatures: number[];
+  // Hash Set
+  supportedTokens: PublicKey[];
+  // Hash Set
+  gatekeepers: PublicKey[];
 };
-// TODO!: Frankly I don't understand why these are not able to be in here. It seems like the updateNetwork() function takes them as 'never' type, which clearly is not accurate

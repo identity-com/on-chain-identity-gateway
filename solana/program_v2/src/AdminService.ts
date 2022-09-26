@@ -1,28 +1,12 @@
-import {
-  AnchorProvider,
-  Program,
-  Idl,
-  parseIdlErrors,
-  translateError,
-} from '@project-serum/anchor';
+import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
-import {
-  clusterApiUrl,
-  ConfirmOptions,
-  Connection,
-  Keypair,
-  PublicKey,
-  Signer,
-  Transaction,
-  TransactionInstruction,
-} from '@solana/web3.js';
+import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
 import {
   AuthKeyStructure,
   CreateNetworkData,
   FeeStructure,
   NetworkAccount,
-  UpdateFeeStructure,
   UpdateNetworkData,
   Wallet,
 } from './lib/types';
@@ -33,7 +17,7 @@ import {
   getConnectionByCluster,
 } from './lib/connection';
 import { findProgramAddress } from './lib/utils';
-import { GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
+import { SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2, IDL } from '../target/types/gateway_v2';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
@@ -81,9 +65,10 @@ export class AdminService extends AbstractService {
   }
 
   static async createNetworkAddress(
-    authority: PublicKey
+    authority: PublicKey,
+    network_index: number
   ): Promise<[PublicKey, number]> {
-    return findProgramAddress(authority);
+    return findProgramAddress(authority, network_index);
   }
 
   closeNetwork(
@@ -114,9 +99,10 @@ export class AdminService extends AbstractService {
     data: CreateNetworkData = {
       authThreshold: 1,
       passExpireTime: 16,
-      signerBump: 0,
+      networkBump: 0,
       fees: [],
       authKeys: [{ flags: 1, key: this._wallet.publicKey }],
+      networkIndex: 1,
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
@@ -183,11 +169,15 @@ export class AdminService extends AbstractService {
         if (acct) {
           return {
             version: acct?.version,
-            initialAuthority: acct?.initialAuthority,
+            authority: acct?.initialAuthority,
+            networkIndex: acct?.networkIndex,
             authThreshold: acct?.authThreshold,
             passExpireTime: acct?.passExpireTime.toNumber(),
             fees: acct?.fees as FeeStructure[],
             authKeys: acct?.authKeys as AuthKeyStructure[],
+            networkFeatures: acct?.networkFeatures,
+            supportedTokens: acct?.supportedTokens,
+            gatekeepers: acct?.gatekeepers,
           };
         } else {
           return null;

@@ -23,7 +23,8 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
     [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey
+      authority.publicKey,
+      3
     );
 
     service = await AdminService.buildFromAnchor(
@@ -63,6 +64,7 @@ describe('Gateway v2 Client', () => {
               key: programProvider.wallet.publicKey,
             },
           ],
+          network_index: 2,
         })
         .rpc();
 

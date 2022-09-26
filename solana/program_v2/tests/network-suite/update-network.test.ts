@@ -27,7 +27,8 @@ describe('Gateway v2 Client', () => {
     authority = programProvider.wallet;
 
     [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey
+      authority.publicKey,
+      4
     );
 
     service = await AdminService.buildFromAnchor(
@@ -70,6 +71,7 @@ describe('Gateway v2 Client', () => {
             key: extraAuthKey.publicKey,
           },
         ],
+        network_index: 3,
       })
       .rpc();
   });

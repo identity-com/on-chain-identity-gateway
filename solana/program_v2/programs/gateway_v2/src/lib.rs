@@ -6,7 +6,6 @@ mod util;
 
 use crate::instructions::admin::*;
 use anchor_lang::prelude::*;
-use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 // TODO: Grind for better key
 declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 

@@ -4,7 +4,6 @@ use crate::state::{
     GatekeeperNetwork, GatekeeperNetworkSize, NetworkAuthKey, NetworkFees, NetworkKeyFlags,
 };
 use anchor_lang::prelude::*;
-
 pub fn create_network(
     authority: Pubkey,
     bump: u8,
@@ -30,9 +29,9 @@ pub fn create_network(
     }
 
     network.auth_threshold = data.auth_threshold;
-    network.initial_authority = authority;
+    network.authority = authority;
     network.pass_expire_time = data.pass_expire_time;
-    network.signer_bump = bump;
+    network.network_bump = bump;
     network.auth_keys = data.auth_keys;
     network.fees = data.fees;
 
@@ -49,6 +48,7 @@ pub struct CreateNetworkData {
     pub fees: Vec<NetworkFees>,
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: Vec<NetworkAuthKey>,
+    pub network_index: u16,
 }
 
 #[derive(Accounts, Debug)]
@@ -63,7 +63,7 @@ pub struct CreateNetworkAccount<'info> {
     auth_keys: data.auth_keys.len() as u16,
     }
     ),
-    seeds = [NETWORK_SEED, authority.key().as_ref()],
+    seeds = [NETWORK_SEED, authority.key().as_ref(), &data.network_index.to_le_bytes()],
     bump
     )]
     pub network: Account<'info, GatekeeperNetwork>,
