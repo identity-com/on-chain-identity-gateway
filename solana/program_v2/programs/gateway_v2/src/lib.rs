@@ -91,7 +91,9 @@ pub mod gateway_v2 {
     }
 
     pub fn issue_pass(
-        ctx: Context<IssuePass>
+        ctx: Context<IssuePass>,
+        subject: Pubkey,
+        pass_number: u16
     ) -> Result<()> {
         instructions::issue_pass(
             *ctx.accounts.authority.key,

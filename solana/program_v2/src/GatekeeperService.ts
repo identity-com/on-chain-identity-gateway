@@ -9,7 +9,7 @@ import {
 import {Wallet} from './lib/types';
 
 import {EnumMapper, findProgramAddress} from './lib/utils';
-import {DEFAULT_PASS_SEED, SOLANA_MAINNET} from './lib/constants';
+import {DEFAULT_PASS_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET} from './lib/constants';
 import {ServiceBuilder, AbstractService, NonSigningWallet} from "./utils/AbstractService";
 import {CustomClusterUrlConfig, ExtendedCluster, getConnectionByCluster} from "./lib/connection";
 import {PassAccount, PassState, PassStateMapping} from "./lib/wrappers";
@@ -18,6 +18,7 @@ export class GatekeeperService extends AbstractService {
     private constructor(_program: Program<GatewayV2>,
                         _dataAccount: PublicKey,
                         private _network: PublicKey,
+                        private _gatekeeper: PublicKey,
                         _cluster: ExtendedCluster = SOLANA_MAINNET,
                         _wallet: Wallet = new NonSigningWallet(),
                         _opts: ConfirmOptions = AnchorProvider.defaultOptions()) {
@@ -27,6 +28,7 @@ export class GatekeeperService extends AbstractService {
     static async build(
         dataAccount: PublicKey,
         network: PublicKey,
+        gatekeeper: PublicKey,
         wallet: Wallet,
         cluster: ExtendedCluster = SOLANA_MAINNET,
         customConfig?: CustomClusterUrlConfig,
@@ -46,6 +48,7 @@ export class GatekeeperService extends AbstractService {
             program,
             dataAccount,
             network,
+            gatekeeper,
             cluster,
             wallet,
             provider.opts
@@ -56,6 +59,7 @@ export class GatekeeperService extends AbstractService {
         program: Program<GatewayV2>,
         dataAccount: PublicKey,
         network: PublicKey,
+        gatekeeper: PublicKey,
         cluster: ExtendedCluster,
         provider: AnchorProvider = program.provider as AnchorProvider,
         wallet: Wallet = provider.wallet
@@ -64,6 +68,7 @@ export class GatekeeperService extends AbstractService {
             program,
             dataAccount,
             network,
+            gatekeeper,
             cluster,
             wallet,
             provider.opts
@@ -71,21 +76,30 @@ export class GatekeeperService extends AbstractService {
     }
 
     static async createPassAddress(
-        authority: PublicKey
+        subject: PublicKey,
+        network: PublicKey,
+        pass_number: number
     ): Promise<[PublicKey, number]> {
-        return findProgramAddress(DEFAULT_PASS_SEED, authority);
+        const pass_number_buffer = Buffer.alloc(2);
+        pass_number_buffer.writeInt16LE(pass_number);
+
+        return PublicKey.findProgramAddress(
+            [anchor.utils.bytes.utf8.encode(DEFAULT_PASS_SEED), subject.toBuffer(), network.toBuffer(), pass_number_buffer],
+            GATEWAY_PROGRAM
+        );
     }
 
     issue(
         authority: PublicKey = this.getWallet().publicKey
     ): ServiceBuilder {
         const instructionPromise = this.getProgram().methods
-            .issuePass()
+            .issuePass(authority, 0)
             .accounts({
-                pass: this.getDataAccount(),
+                pass: this._dataAccount,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 authority,
                 network: this._network,
+                gatekeeper: this._gatekeeper
             })
             .instruction();
 

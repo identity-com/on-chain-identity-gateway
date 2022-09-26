@@ -27,7 +27,7 @@ export class PassAccount {
     }
 
     get issueTime(): number {
-        return this._rawAccount.issueTime * 1000;
+        return this._rawAccount.issueTime.toNumber() * 1000;
     }
 
     get bump(): number {
@@ -38,8 +38,12 @@ export class PassAccount {
         return this._rawAccount.network;
     }
 
-    get authority(): PublicKey {
-        return this._rawAccount.initialAuthority;
+    get gatekeeper(): PublicKey {
+        return this._rawAccount.gatekeeper;
+    }
+
+    get subject(): PublicKey {
+        return this._rawAccount.subject;
     }
 
     get state(): PassState {

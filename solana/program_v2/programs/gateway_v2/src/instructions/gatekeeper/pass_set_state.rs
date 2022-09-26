@@ -20,10 +20,10 @@ pub fn pass_set_state(
 pub struct PassSetState<'info> {
     #[account(
         // TODO: Should gatekeeper or network be part of the keys?
-        seeds = [PASS_SEED, authority.key().as_ref()],
+        seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes() ],
         bump,
         // TODO: Gatekeeper authority is required to set state
-        constraint = pass.initial_authority == authority.key(),
+        // constraint = pass.initial_authority == authority.key(),
         mut
     )]
     pub pass: Account<'info, Pass>,

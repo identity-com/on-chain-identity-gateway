@@ -32,7 +32,7 @@ export const createGatekeeperService = async () => {
 
     [dataAccount, bump] = await GatekeeperService.createPassAddress(
         authority.publicKey,
-        TEST_GATEKEEPER
+        TEST_NETWORK
     );
 
     service = await GatekeeperService.buildFromAnchor(

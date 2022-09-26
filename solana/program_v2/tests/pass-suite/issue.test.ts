@@ -1,6 +1,6 @@
 import {GatekeeperService} from "../../src/GatekeeperService";
 import {PassState} from "../../src/lib/wrappers";
-import {TEST_NETWORK} from "../util/constants";
+import {TEST_GATEKEEPER, TEST_NETWORK} from "../util/constants";
 
 import chai from 'chai';
 import {createGatekeeperService} from "./util";
@@ -15,12 +15,13 @@ describe("Issue pass", () => {
     })
 
     it.only("Issues a pass", async () => {
-        const pass = await service.getPassAccount();
+        const pass = await service.getPassAxccount();
 
         expect(pass).to.deep.include({
             version: 0,
-            authority: service.getWallet().publicKey,
+            subject: service.getWallet().publicKey,
             network: TEST_NETWORK,
+            gatekeeper: TEST_GATEKEEPER,
             state: PassState.Active
         })
 

@@ -10,10 +10,10 @@ pub fn issue_pass(
     network: &mut Account<GatekeeperNetwork>,
     gatekeeper: &mut Account<Gatekeeper>,
 ) -> Result<()> {
-    pass.initial_authority = authority;
+    pass.subject = authority;
     pass.issue_time = Clock::get().unwrap().unix_timestamp;
     pass.network = network.key();
-    pass.issuing_gatekeeper = gatekeeper.key();
+    pass.gatekeeper = gatekeeper.key();
     pass.signer_bump = bump;
     pass.state = PassState::Active;
     pass.version = 0;
@@ -22,12 +22,13 @@ pub fn issue_pass(
 }
 
 #[derive(Accounts, Debug)]
+#[instruction(subject: Pubkey, pass_number: u16)]
 pub struct IssuePass<'info> {
     #[account(
         init,
         payer = authority,
         space = Pass::size(0, 0),
-        seeds = [PASS_SEED, authority.key().as_ref()],
+        seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes() ],
         bump
     )]
     pub pass: Account<'info, Pass>,

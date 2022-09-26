@@ -7,28 +7,28 @@ use crate::util::{OC_SIZE_DISCRIMINATOR, OC_SIZE_PUBKEY, OC_SIZE_U64, OC_SIZE_U8
 pub struct Pass {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
-    /// The issue time of this pass, used for expiry
-    pub issue_time: i64,
     /// The initial authority
-    pub initial_authority: Pubkey,
-    /// The bump for the signer
-    pub signer_bump: u8,
+    pub subject: Pubkey,
     /// The network this pass belongs to
     pub network: Pubkey,
+    /// The pass number
+    pub pass_number: u8,
+    /// The bump for the signer
+    pub signer_bump: u8,
     /// The gatekeeper that issued this pass
-    pub issuing_gatekeeper: Pubkey,
+    pub gatekeeper: Pubkey,
+    /// The issue time of this pass, used for expiry
+    pub issue_time: i64,
     /// The state of this pass
     pub state: PassState,
-    // /// Additional data from the network
-    // /// TODO: Replace with a more generic solution
-    // pub network_data: [u8; 32],
-    // /// Additional data from the gatekeeper
-    // /// TODO: Replace with a more generic solution
-    // pub gatekeeper_data: [u8; 32],
+    /// Additional data from the network
+    pub network_data: [u8; 32],
+    /// Additional data from the gatekeeper
+    pub gatekeeper_data: [u8; 32],
 }
 
 impl Pass {
-    pub fn is_valid_gatekeeper_state_change(&self, new_state: &PassState)  -> bool {
+    pub fn is_valid_gatekeeper_state_change(&self, new_state: &PassState) -> bool {
         return true;
 
         // FROM V1.. TODO
@@ -64,14 +64,15 @@ impl Pass {
     pub fn size(_network_data_length: i16, _gatekeeper_data: i16) -> usize {
         OC_SIZE_DISCRIMINATOR
             + OC_SIZE_U8 // version
-            + OC_SIZE_U64 // issue_time
-            + OC_SIZE_PUBKEY // initial_authority
-            + OC_SIZE_U8 // signer_bump
+            + OC_SIZE_PUBKEY // subject
             + OC_SIZE_PUBKEY // network
-            // + OC_SIZE_PUBKEY // issuing_gatekeeper
-            + PassState::ON_CHAIN_SIZE // state
-        // + OC_SIZE_U8 * 32 * 12
-        // + OC_SIZE_U8 * 32 * 12
+            + OC_SIZE_U8 // pass_number
+            + OC_SIZE_U8 // signer_bump
+            + OC_SIZE_PUBKEY // gatekeeper
+            + OC_SIZE_U64 // issue_time
+            + PassState::ON_CHAIN_SIZE // pass_state
+            + OC_SIZE_U8 * 32 // network_data
+            + OC_SIZE_U8 * 32 // gatekeeper_data
     }
 }
 

@@ -95,9 +95,10 @@ export const GatekeeperStateMapping = {
 export type RawPassAccount = {
   version: number;
   issueTime: BN;
-  initialAuthority: PublicKey;
+  subject: PublicKey;
   signerBump: number;
   network: PublicKey;
+  gatekeeper: PublicKey;
   state: {
     active?: {},
     revoked?: {},
