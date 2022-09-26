@@ -1,6 +1,6 @@
 import {PassState} from "../../src/lib/wrappers";
 import {changeState, createGatekeeperService} from "./util";
-import {GatewayPassService} from "../../src/GatewayPassService";
+import {GatekeeperService} from "../../src/GatekeeperService";
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
@@ -8,7 +8,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe("Change pass state", () => {
-    let service: GatewayPassService;
+    let service: GatekeeperService;
 
     beforeEach(async () => {
         service = await createGatekeeperService()
