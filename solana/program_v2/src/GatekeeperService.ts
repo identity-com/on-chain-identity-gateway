@@ -105,7 +105,7 @@ export class GatekeeperService extends AbstractService {
         authority: PublicKey = this.getWallet().publicKey
     ): ServiceBuilder {
         const instructionPromise = this.getProgram().methods
-            .passIssueState(EnumMapper.to(state, PassStateMapping))
+            .setPassState(EnumMapper.to(state, PassStateMapping))
             .accounts({
                 pass: this.getDataAccount(),
                 systemProgram: anchor.web3.SystemProgram.programId,

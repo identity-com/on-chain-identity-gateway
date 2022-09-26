@@ -15,8 +15,8 @@ pub struct Pass {
     pub signer_bump: u8,
     /// The network this pass belongs to
     pub network: Pubkey,
-    // /// The gatekeeper that issued this pass
-    // pub issuing_gatekeeper: Pubkey,
+    /// The gatekeeper that issued this pass
+    pub issuing_gatekeeper: Pubkey,
     /// The state of this pass
     pub state: PassState,
     // /// Additional data from the network
