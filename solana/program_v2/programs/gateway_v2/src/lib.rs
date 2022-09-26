@@ -89,4 +89,19 @@ pub mod gateway_v2 {
             &mut _ctx.accounts.authority,
         )
     }
+
+    pub fn issue_pass(
+        ctx: Context<IssuePass>
+    ) -> Result<()> {
+        instructions::issue_pass(
+            *ctx.accounts.authority.key,
+            *ctx.bumps.get("pass").unwrap(),
+            &mut ctx.accounts.pass,
+            &mut ctx.accounts.network,
+        )
+    }
+
+    pub fn pass_issue_state(ctx: Context<PassSetState>, state: PassState) -> Result<()> {
+        instructions::pass_set_state(&mut ctx.accounts.pass, state)
+    }
 }

@@ -5,6 +5,7 @@ export const GATEWAY_PROGRAM = new PublicKey(
 );
 
 export const DEFAULT_SEED_STRING = 'gk-network';
+export const DEFAULT_PASS_SEED = 'gk-pass';
 
 export const SOLANA_MAINNET = 'mainnet-beta';
 
