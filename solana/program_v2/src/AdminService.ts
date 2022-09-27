@@ -94,7 +94,6 @@ export class AdminService extends AbstractService {
       authority,
     });
   }
-
   createNetwork(
     data: CreateNetworkData = {
       authThreshold: 1,
@@ -102,7 +101,9 @@ export class AdminService extends AbstractService {
       networkBump: 0,
       fees: [],
       authKeys: [{ flags: 1, key: this._wallet.publicKey }],
-      networkIndex: 1,
+      networkIndex: 0,
+      gatekeepers: [],
+      supportedTokens: [],
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
@@ -112,6 +113,9 @@ export class AdminService extends AbstractService {
         passExpireTime: new anchor.BN(data.passExpireTime),
         fees: data.fees,
         authKeys: data.authKeys,
+        networkIndex: data.networkIndex,
+        gatekeepers: data.gatekeepers,
+        supportedTokens: data.supportedTokens,
       })
       .accounts({
         network: this._dataAccount,
@@ -142,6 +146,9 @@ export class AdminService extends AbstractService {
         passExpireTime: new anchor.BN(data.passExpireTime),
         fees: data.fees,
         authKeys: data.authKeys,
+        gatekeepers: data.gatekeepers,
+        supportedTokens: data.supportedTokens,
+        networkFeatures: data.networkFeatures,
       })
       .accounts({
         network: this._dataAccount,
@@ -169,7 +176,7 @@ export class AdminService extends AbstractService {
         if (acct) {
           return {
             version: acct?.version,
-            authority: acct?.initialAuthority,
+            authority: acct?.authority,
             networkIndex: acct?.networkIndex,
             authThreshold: acct?.authThreshold,
             passExpireTime: acct?.passExpireTime.toNumber(),
@@ -183,6 +190,7 @@ export class AdminService extends AbstractService {
           return null;
         }
       });
+    //@ts-ignore
     return networkAccount;
   }
 }

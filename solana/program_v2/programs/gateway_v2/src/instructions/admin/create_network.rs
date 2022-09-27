@@ -2,6 +2,7 @@ use crate::constants::NETWORK_SEED;
 use crate::errors::NetworkErrors;
 use crate::state::{
     GatekeeperNetwork, GatekeeperNetworkSize, NetworkAuthKey, NetworkFees, NetworkKeyFlags,
+    SupportedToken,
 };
 use anchor_lang::prelude::*;
 pub fn create_network(
@@ -49,6 +50,8 @@ pub struct CreateNetworkData {
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: Vec<NetworkAuthKey>,
     pub network_index: u16,
+    pub gatekeepers: Vec<Pubkey>,
+    pub supported_tokens: Vec<SupportedToken>,
 }
 
 #[derive(Accounts, Debug)]
@@ -61,6 +64,8 @@ pub struct CreateNetworkAccount<'info> {
     GatekeeperNetworkSize{
     fees_count: data.fees.len() as u16,
     auth_keys: data.auth_keys.len() as u16,
+    gatekeepers: data.gatekeepers.len() as u16,
+    supported_tokens: data.supported_tokens.len() as u16
     }
     ),
     seeds = [NETWORK_SEED, authority.key().as_ref(), &data.network_index.to_le_bytes()],

@@ -11,6 +11,7 @@ pub struct CloseNetworkAccount<'info> {
     #[account(
         mut,
         close = destination,
+        // TODO? Do I need to update this to include the network index?
         seeds = [NETWORK_SEED, network.authority.key().as_ref()],
         bump = network.network_bump,
         constraint = network.can_access(&authority, NetworkKeyFlags::AUTH),

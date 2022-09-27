@@ -48,7 +48,7 @@ describe('Gateway v2 Client', () => {
         .createNetwork({
           authThreshold: 1,
           passExpireTime: 400,
-          signerBump: 0,
+          networkBump: 0,
           fees: [
             {
               token: programProvider.wallet.publicKey,
@@ -64,7 +64,9 @@ describe('Gateway v2 Client', () => {
               key: programProvider.wallet.publicKey,
             },
           ],
-          network_index: 2,
+          networkIndex: 0,
+          supportedTokens: [],
+          gatekeepers: [],
         })
         .rpc();
 

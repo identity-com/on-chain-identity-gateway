@@ -37,6 +37,8 @@ export type CreateNetworkData = {
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
   networkIndex: number;
+  supportedTokens: SupportedToken[];
+  gatekeepers: PublicKey[];
 };
 
 export type UpdateNetworkData = {
@@ -44,7 +46,21 @@ export type UpdateNetworkData = {
   passExpireTime: number;
   fees: UpdateFeeStructure;
   authKeys: UpdateAuthKeytructure;
+  networkFeatures: number[];
+  supportedTokens: UpdateSupportedTokens;
+  gatekeepers: UpdateGatekeepers;
 };
+
+export type UpdateSupportedTokens = {
+  add: SupportedToken[];
+  remove: PublicKey[];
+};
+
+export type UpdateGatekeepers = {
+  add: PublicKey[];
+  remove: PublicKey[];
+};
+
 export type NetworkAccount = {
   version: number;
   authority: PublicKey;
@@ -55,7 +71,14 @@ export type NetworkAccount = {
   authKeys: AuthKeyStructure[];
   networkFeatures: number[];
   // Hash Set
-  supportedTokens: PublicKey[];
+  supportedTokens: SupportedToken[];
   // Hash Set
   gatekeepers: PublicKey[];
 };
+
+export type SupportedToken = {
+  key: PublicKey;
+  settlementInfo: SettlementInfo;
+};
+
+export type SettlementInfo = {};

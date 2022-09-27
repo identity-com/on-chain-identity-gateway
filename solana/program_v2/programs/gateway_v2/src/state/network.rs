@@ -4,9 +4,6 @@ use crate::util::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
-use std::cmp::Eq;
-use std::collections::{HashMap, HashSet};
-use std::hash::Hash;
 
 /// A gatekeeper network which manages many [`Gatekeeper`]s.
 #[account]
@@ -27,22 +24,36 @@ pub struct GatekeeperNetwork {
     /// The fees for this network
     pub fees: Vec<NetworkFees>,
     // A set of all supported tokens on the network
-    pub supported_tokens: HashMap<Pubkey, SettlementInfo>,
+    pub supported_tokens: Vec<SupportedToken>,
     /// A set of all active gatekeepers in the network
-    pub gatekeepers: HashSet<Gatekeepers>,
+    pub gatekeepers: Vec<Pubkey>,
     /// The number of auth keys needed to change the `auth_keys`
     pub auth_threshold: u8,
     /// Keys with permissions on the network
     pub auth_keys: Vec<NetworkAuthKey>,
 }
 
-#[derive(
-    Debug, Copy, Clone, AnchorDeserialize, AnchorSerialize, Hash, Eq, PartialEq, PartialOrd, Ord,
-)]
-pub struct Gatekeepers {
+#[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize)]
+pub struct SupportedToken {
     key: Pubkey,
+    settlement_info: SettlementInfo,
 }
 
+impl OnChainSize for SupportedToken {
+    const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + SettlementInfo::ON_CHAIN_SIZE;
+}
+
+// TODO: Actual Settlement Info Implementation
+#[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize)]
+pub struct SettlementInfo {
+    placeholder: u16,
+}
+
+impl OnChainSize for SettlementInfo {
+    const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
+}
+
+// TODO! Update size to be correct with new interface
 impl GatekeeperNetwork {
     pub fn on_chain_size_with_arg(arg: GatekeeperNetworkSize) -> usize {
         OC_SIZE_DISCRIMINATOR
@@ -56,6 +67,10 @@ impl GatekeeperNetwork {
             + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * arg.fees_count as usize // fees
             + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize
         // auth_keys
+        + OC_SIZE_VEC_PREFIX + OC_SIZE_PUBKEY * arg.gatekeepers as usize // gatekeeper list
+        + OC_SIZE_U16 // network_index
+        + OC_SIZE_VEC_PREFIX + SupportedToken::ON_CHAIN_SIZE * arg.supported_tokens as usize
+        // supported tokens list
     }
 
     pub fn can_access(&self, authority: &Signer, flag: NetworkKeyFlags) -> bool {
@@ -90,7 +105,7 @@ impl GatekeeperNetwork {
         }
     }
 
-    pub fn add_auth_keys(
+    pub fn update_auth_keys(
         &mut self,
         data: &UpdateNetworkData,
         authority: &mut Signer,
@@ -145,7 +160,7 @@ impl GatekeeperNetwork {
         Ok(())
     }
 
-    pub fn add_fees(&mut self, data: &UpdateNetworkData, authority: &mut Signer) -> Result<()> {
+    pub fn update_fees(&mut self, data: &UpdateNetworkData, authority: &mut Signer) -> Result<()> {
         // This will skip the next auth check which isn't required if there are no fees
         if data.fees.add.is_empty() && data.fees.remove.is_empty() {
             // no fees to add/remove
@@ -183,6 +198,107 @@ impl GatekeeperNetwork {
 
         Ok(())
     }
+
+    pub fn update_network_features(
+        &mut self,
+        data: &UpdateNetworkData,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        match &data.network_features {
+            Some(network_features) => {
+                if network_features != &self.network_features {
+                    if !self.can_access(authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
+                        return Err(error!(NetworkErrors::InsufficientAccessExpiry));
+                    }
+
+                    self.network_features = network_features.to_vec();
+                }
+
+                Ok(())
+            }
+            None => Ok(()),
+        }
+    }
+
+    pub fn update_supported_tokens(
+        &mut self,
+        data: &UpdateNetworkData,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        if data.supported_tokens.add.is_empty() && data.supported_tokens.remove.is_empty() {
+            // no fees to add/remove
+            return Ok(());
+        }
+        if !self.can_access(authority, NetworkKeyFlags::AUTH) {
+            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
+        }
+        for token in data.supported_tokens.remove.iter() {
+            let index: Option<usize> = self.supported_tokens.iter().position(|x| x.key == *token);
+
+            if index.is_none() {
+                return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
+            }
+
+            let token_index = index.unwrap();
+
+            self.supported_tokens.remove(token_index);
+        }
+        for token in data.supported_tokens.add.iter() {
+            let index: Option<usize> = self
+                .supported_tokens
+                .iter()
+                .position(|x| x.key == token.key);
+
+            if let Some(token_index) = index {
+                // update the existing key with new fees
+                self.supported_tokens[token_index] = *token;
+            } else {
+                self.supported_tokens.push(*token);
+            }
+        }
+        Ok(())
+    }
+    pub fn update_gatekeepers(
+        &mut self,
+        data: &UpdateNetworkData,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        if data.gatekeepers.add.is_empty() && data.gatekeepers.remove.is_empty() {
+            // no fees to add/remove
+            return Ok(());
+        }
+        if !self.can_access(authority, NetworkKeyFlags::AUTH) {
+            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
+        }
+        for gatekeeper in data.gatekeepers.remove.iter() {
+            let index: Option<usize> = self
+                .gatekeepers
+                .iter()
+                .position(|pubkey| pubkey == gatekeeper);
+
+            if index.is_none() {
+                return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
+            }
+
+            let gatekeeper_index = index.unwrap();
+
+            self.gatekeepers.remove(gatekeeper_index);
+        }
+        for gatekeeper in data.gatekeepers.add.iter() {
+            let index: Option<usize> = self
+                .gatekeepers
+                .iter()
+                .position(|pubkey| pubkey == gatekeeper);
+
+            if let Some(gatekeeper_index) = index {
+                // update the existing key with new fees
+                self.gatekeepers[gatekeeper_index] = *gatekeeper;
+            } else {
+                self.gatekeepers.push(*gatekeeper);
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Size for [`GatekeeperNetwork`]
@@ -192,25 +308,8 @@ pub struct GatekeeperNetworkSize {
     pub fees_count: u16,
     /// The number of auth keys
     pub auth_keys: u16,
-}
-
-/// fee information for [`GatekeeperNetwork`]
-#[derive(
-    Debug,
-    Default,
-    Clone,
-    Copy,
-    AnchorDeserialize,
-    AnchorSerialize,
-    Hash,
-    Eq,
-    PartialEq,
-    PartialOrd,
-    Ord,
-)]
-pub struct SettlementInfo {
-    // TODO! Implement Settlement Info
-    issue: u16,
+    pub gatekeepers: u16,
+    pub supported_tokens: u16,
 }
 
 /// The authority key for a [`GatekeeperNetwork`]
