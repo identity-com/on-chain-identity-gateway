@@ -16,8 +16,13 @@ import {
   ExtendedCluster,
   getConnectionByCluster,
 } from './lib/connection';
-import { EnumMapper, findProgramAddress } from './lib/utils';
-import { GatekeeperKeyFlags, SOLANA_MAINNET } from './lib/constants';
+import { EnumMapper } from './lib/utils';
+import {
+  GatekeeperKeyFlags,
+  GATEKEEPER_SEED,
+  GATEWAY_PROGRAM,
+  SOLANA_MAINNET,
+} from './lib/constants';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 import { GatewayV2 } from '../target/types/gateway_v2';
 
@@ -67,9 +72,17 @@ export class NetworkService extends AbstractService {
 
   // Creates a gatekeeper's public key from a given seed and authority.
   static async createGatekeeperAddress(
-    authority: PublicKey
+    authority: PublicKey,
+    network: PublicKey
   ): Promise<[PublicKey, number]> {
-    return findProgramAddress('gatekeeper', authority);
+    return PublicKey.findProgramAddress(
+      [
+        anchor.utils.bytes.utf8.encode(GATEKEEPER_SEED),
+        authority.toBuffer(),
+        network.toBuffer(),
+      ],
+      GATEWAY_PROGRAM
+    );
   }
 
   // Creates a gatekeeper on a specified network

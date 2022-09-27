@@ -75,7 +75,7 @@ pub struct CreateGatekeeperAccount<'info> {
     fees_count: data.fees.len() as u16,
     }
     ),
-    seeds = [GATEKEEPER_SEED, authority.key().as_ref()],
+    seeds = [GATEKEEPER_SEED, authority.key().as_ref(), data.gatekeeper_network.key().as_ref()],
     bump
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
