@@ -4,7 +4,7 @@ export const GATEWAY_PROGRAM = new PublicKey(
   'FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe'
 );
 
-export const DEFAULT_SEED_STRING = 'gk-network';
+export const DEFAULT_SEED_STRING = 'gw-network';
 
 export const SOLANA_MAINNET = 'mainnet-beta';
 

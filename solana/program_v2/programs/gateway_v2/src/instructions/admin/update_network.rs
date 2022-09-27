@@ -74,7 +74,7 @@ pub struct UpdateNetworkAccount<'info> {
         ),
         realloc::payer = authority,
         realloc::zero = false,
-        seeds = [NETWORK_SEED, network.authority.key().as_ref()],
+        seeds = [NETWORK_SEED, network.authority.key().as_ref(), &network.network_index.to_le_bytes()],
         bump = network.network_bump,
     )]
     pub network: Account<'info, GatekeeperNetwork>,

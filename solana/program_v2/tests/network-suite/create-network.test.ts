@@ -24,7 +24,7 @@ describe('Gateway v2 Client', () => {
     );
     [dataAccount] = await AdminService.createNetworkAddress(
       authority.publicKey,
-      3
+      0
     );
 
     service = await AdminService.buildFromAnchor(

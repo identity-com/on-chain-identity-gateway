@@ -17,7 +17,11 @@ import {
   getConnectionByCluster,
 } from './lib/connection';
 import { findProgramAddress } from './lib/utils';
-import { SOLANA_MAINNET } from './lib/constants';
+import {
+  DEFAULT_SEED_STRING,
+  GATEWAY_PROGRAM,
+  SOLANA_MAINNET,
+} from './lib/constants';
 import { GatewayV2, IDL } from '../target/types/gateway_v2';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
@@ -66,9 +70,19 @@ export class AdminService extends AbstractService {
 
   static async createNetworkAddress(
     authority: PublicKey,
-    network_index: number
+    networkIndex: number
   ): Promise<[PublicKey, number]> {
-    return findProgramAddress(authority, network_index);
+    const network_index_buffer = Buffer.alloc(2);
+    network_index_buffer.writeInt16LE(networkIndex);
+
+    return PublicKey.findProgramAddress(
+      [
+        anchor.utils.bytes.utf8.encode(DEFAULT_SEED_STRING),
+        authority.toBuffer(),
+        network_index_buffer,
+      ],
+      GATEWAY_PROGRAM
+    );
   }
 
   closeNetwork(
@@ -100,7 +114,7 @@ export class AdminService extends AbstractService {
       passExpireTime: 16,
       networkBump: 0,
       fees: [],
-      authKeys: [{ flags: 1, key: this._wallet.publicKey }],
+      authKeys: [{ flags: 4097, key: this._wallet.publicKey }],
       networkIndex: 0,
       gatekeepers: [],
       supportedTokens: [],
