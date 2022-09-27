@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 use anchor_lang::prelude::*;
+use crate::errors::PassErrors;
 use crate::util::{OC_SIZE_DISCRIMINATOR, OC_SIZE_PUBKEY, OC_SIZE_U64, OC_SIZE_U8};
 
 #[derive(Debug)]
@@ -59,6 +60,16 @@ impl Pass {
                 PassState::Revoked => false,
             },
         }
+    }
+
+    pub fn refresh(&mut self) -> Result<()> {
+        require!(self.state == PassState::Active, PassErrors::PassNotActive);
+
+        msg!("Initial timestamp {}", self.issue_time);
+
+        self.issue_time = Clock::get().unwrap().unix_timestamp;
+        msg!("Updated timestamp {}", self.issue_time);
+        Ok(())
     }
 
     pub fn size(_network_data_length: i16, _gatekeeper_data: i16) -> usize {

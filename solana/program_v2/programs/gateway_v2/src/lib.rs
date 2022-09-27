@@ -69,6 +69,7 @@ pub mod gateway_v2 {
     pub fn close_gatekeeper(_ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
         instructions::close_gatekeeper()
     }
+
     pub fn set_gatekeeper_state(
         _ctx: Context<SetGatekeeperStateAccount>,
         state: GatekeeperState,
@@ -79,6 +80,7 @@ pub mod gateway_v2 {
             &mut _ctx.accounts.authority,
         )
     }
+
     pub fn gatekeeper_withdraw(
         _ctx: Context<GatekeeperWithdrawAccount>,
         receiver: Pubkey,
@@ -93,7 +95,7 @@ pub mod gateway_v2 {
     pub fn issue_pass(
         ctx: Context<IssuePass>,
         subject: Pubkey,
-        pass_number: u16
+        pass_number: u16,
     ) -> Result<()> {
         instructions::issue_pass(
             *ctx.accounts.authority.key,
@@ -104,7 +106,11 @@ pub mod gateway_v2 {
         )
     }
 
-    pub fn set_pass_state(ctx: Context<PassSetState>, state: PassState) -> Result<()> {
+    pub fn set_pass_state(ctx: Context<PassSetState>, state: PassState, subject: Pubkey, pass_number: u16) -> Result<()> {
         instructions::pass_set_state(&mut ctx.accounts.pass, state)
+    }
+
+    pub fn refresh_pass(ctx: Context<PassRefresh>, subject: Pubkey, pass_number: u16) -> Result<()> {
+        instructions::refresh_pass(&mut ctx.accounts.pass)
     }
 }

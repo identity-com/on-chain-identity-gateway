@@ -14,8 +14,8 @@ describe("Issue pass", () => {
         service = await createGatekeeperService()
     })
 
-    it.only("Issues a pass", async () => {
-        const pass = await service.getPassAxccount();
+    it("Issues a pass", async () => {
+        const pass = await service.getPassAccount();
 
         expect(pass).to.deep.include({
             version: 0,

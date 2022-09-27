@@ -34,4 +34,6 @@ pub enum GatekeeperErrors {
 pub enum PassErrors {
     #[msg("Invalid state change")]
     InvalidStateChange,
+    #[msg("The pass is not active")]
+    PassNotActive,
 }

@@ -58,7 +58,7 @@ export const changeState = async (service: GatekeeperService, from: PassState, t
         await service.setState(from).rpc();
     }
 
-    await service.setState(to).rpc();
+    await service.setState(to, service.getWallet().publicKey).rpc();
 
     const updatedAccount = await service.getPassAccount();
 

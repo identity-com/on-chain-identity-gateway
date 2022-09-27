@@ -23,6 +23,12 @@ describe("Change pass state", () => {
     });
 
     it("Can activate a frozen pass", async () => {
+        await changeState(
+            service,
+            PassState.Frozen,
+            PassState.Active
+        )
+
         return expect(changeState(
             service,
             PassState.Frozen,
