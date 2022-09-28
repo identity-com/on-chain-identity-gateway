@@ -17,8 +17,8 @@ pub fn set_gatekeeper_state(
 pub struct SetGatekeeperStateAccount<'info> {
     #[account(
         mut,
-        seeds = [GATEKEEPER_SEED, authority.key().as_ref()],
-        bump = gatekeeper.signer_bump,
+        seeds = [GATEKEEPER_SEED, authority.key().as_ref(), gatekeeper.gatekeeper_network.key().as_ref()],
+        bump = gatekeeper.gatekeeper_bump,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]

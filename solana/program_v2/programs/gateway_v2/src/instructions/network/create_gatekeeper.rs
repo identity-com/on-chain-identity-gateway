@@ -34,32 +34,29 @@ pub fn create_gatekeeper(
     }
     print!("{}", authority);
 
-    gatekeeper.auth_threshold = data.auth_threshold;
-    gatekeeper.signer_bump = bump;
-    gatekeeper.auth_keys = data.auth_keys;
+    gatekeeper.authority = authority;
+    gatekeeper.gatekeeper_bump = bump;
     gatekeeper.gatekeeper_network = data.gatekeeper_network;
-    gatekeeper.addresses = data.addresses;
     gatekeeper.staking_account = data.staking_account;
-    gatekeeper.fees = data.fees;
+    gatekeeper.token_fees = data.token_fees;
+    gatekeeper.auth_threshold = data.auth_threshold;
+    gatekeeper.auth_keys = data.auth_keys;
     gatekeeper.gatekeeper_state = GatekeeperState::Active;
     Ok(())
 }
 /// Data for [`CreateGatekeeper`]
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct CreateGatekeeperData {
-    pub auth_threshold: u8,
-    /// The [`Gatekeeper::signer_bump`].
-    pub signer_bump: u8,
-    /// The initial key for the gatekeeper. Allows setting up the gatekeeper.
-    pub auth_keys: Vec<GatekeeperAuthKey>,
+    /// The [`Gatekeeper::gatekeeper_bump`].
+    pub gatekeeper_bump: u8,
     /// The associated network for the gatekeeper
     pub gatekeeper_network: Pubkey,
-    // addresses of the gatekeeper
-    pub addresses: Pubkey,
     // staking account for the gatekeeper
     pub staking_account: Pubkey,
     // Fees for the gatekeeper
-    pub fees: Vec<GatekeeperFees>,
+    pub token_fees: Vec<GatekeeperFees>,
+    pub auth_threshold: u8,
+    pub auth_keys: Vec<GatekeeperAuthKey>,
 }
 
 #[derive(Accounts, Debug)]
@@ -72,7 +69,7 @@ pub struct CreateGatekeeperAccount<'info> {
     Gatekeeper::on_chain_size_with_arg(
     GatekeeperSize{
     auth_keys: data.auth_keys.len() as u16,
-    fees_count: data.fees.len() as u16,
+    fees_count: data.token_fees.len() as u16,
     }
     ),
     seeds = [GATEKEEPER_SEED, authority.key().as_ref(), data.gatekeeper_network.key().as_ref()],

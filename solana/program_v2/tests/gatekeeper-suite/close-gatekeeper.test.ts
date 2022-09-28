@@ -46,7 +46,8 @@ describe('Gateway v2 Client', () => {
       adminAuthority.publicKey
     );
     [networkDataAccount] = await NetworkService.createGatekeeperAddress(
-      adminAuthority.publicKey
+      adminAuthority.publicKey,
+      adminDataAccount
     );
 
     // creates the admin service with anchor
@@ -68,7 +69,7 @@ describe('Gateway v2 Client', () => {
     );
 
     await adminService.createNetwork().rpc();
-    await networkService.createGatekeeper(adminAuthority.publicKey).rpc();
+    await networkService.createGatekeeper(adminDataAccount).rpc();
   });
   describe('Close Gatekeeper', () => {
     it('Should close a gatekeeper properly', async function () {

@@ -90,30 +90,35 @@ export class NetworkService extends AbstractService {
   createGatekeeper(
     network: PublicKey,
     data: CreateGatekeeperData = {
+      gatekeeperBump: 0,
+      gatekeeperNetwork: network,
+      // TODO? Is this the correct way to derive the default staking account?
+      stakingAccount: PublicKey.findProgramAddressSync(
+        [
+          anchor.utils.bytes.utf8.encode('gw-stake'),
+          this._wallet.publicKey.toBuffer(),
+        ],
+        GATEWAY_PROGRAM
+      )[0],
+      tokenFees: [],
       authThreshold: 1,
-      signerBump: 0,
       authKeys: [
         {
           flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
           key: this._wallet.publicKey,
         },
       ],
-      gatekeeperNetwork: network,
-      addresses: this._wallet.publicKey,
-      stakingAccount: this._wallet.publicKey,
-      fees: [],
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .createGatekeeper({
-        authThreshold: data.authThreshold,
-        signerBump: data.signerBump,
-        authKeys: data.authKeys,
+        gatekeeperBump: data.gatekeeperBump,
         gatekeeperNetwork: data.gatekeeperNetwork,
-        addresses: data.addresses,
         stakingAccount: data.stakingAccount,
-        fees: data.fees,
+        tokenFees: data.tokenFees,
+        authThreshold: data.authThreshold,
+        authKeys: data.authKeys,
       })
       .accounts({
         gatekeeper: this._dataAccount,
@@ -121,7 +126,6 @@ export class NetworkService extends AbstractService {
         authority,
       })
       .instruction();
-
     return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
@@ -142,9 +146,8 @@ export class NetworkService extends AbstractService {
       .updateGatekeeper({
         authThreshold: data.authThreshold,
         gatekeeperNetwork: data.gatekeeperNetwork,
-        addresses: data.addresses,
         stakingAccount: data.stakingAccount,
-        fees: data.fees,
+        tokenFees: data.tokenFees,
         authKeys: data.authKeys,
       })
       .accounts({
@@ -248,8 +251,10 @@ export class NetworkService extends AbstractService {
         if (acct) {
           return {
             version: acct?.version,
+            authority: acct?.authority,
             gatekeeperNetwork: acct?.gatekeeperNetwork,
-            fees: acct?.fees as FeeStructure[],
+            stakingAccount: acct?.stakingAccount,
+            tokenFees: acct?.tokenFees as FeeStructure[],
             authKeys: acct?.authKeys as AuthKeyStructure[],
             state: acct?.gatekeeperState as GatekeeperState,
           };

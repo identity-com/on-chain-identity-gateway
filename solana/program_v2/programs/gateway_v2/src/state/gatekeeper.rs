@@ -13,21 +13,20 @@ use bitflags::bitflags;
 pub struct Gatekeeper {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
-    /// The number of keys needed to change the `auth_keys`
-    pub auth_threshold: u8,
+    /// the authority for this gatekeeper
+    pub authority: Pubkey,
+    /// The bump for the signer of this gatekeeper
+    pub gatekeeper_bump: u8,
     /// The [`GatekeeperNetwork`] this gatekeeper is on
     pub gatekeeper_network: Pubkey,
-    /// A pointer to the addresses this gatekeeper uses for discoverability
-    /// TODO! REMOVE addresses
-    pub addresses: Pubkey,
     /// The staking account of this gatekeeper
     pub staking_account: Pubkey,
     /// The state of this gatekeeper
     pub gatekeeper_state: GatekeeperState,
-    /// The bump for the signer of this gatekeeper
-    pub signer_bump: u8,
     /// The fees for this gatekeeper
-    pub fees: Vec<GatekeeperFees>,
+    pub token_fees: Vec<GatekeeperFees>,
+    /// The number of keys needed to change the `auth_keys`
+    pub auth_threshold: u8,
     /// The keys with permissions on this gatekeeper
     pub auth_keys: Vec<GatekeeperAuthKey>,
 }
@@ -44,13 +43,13 @@ impl Gatekeeper {
     pub fn on_chain_size_with_arg(arg: GatekeeperSize) -> usize {
         OC_SIZE_DISCRIMINATOR
             + OC_SIZE_U8 // version
-            + OC_SIZE_U8 // auth_threshold
+            + OC_SIZE_PUBKEY // authority
+            + OC_SIZE_U8 // gatekeeper_bump
             + OC_SIZE_PUBKEY // gatekeeper_network
-            + OC_SIZE_PUBKEY // addresses
             + OC_SIZE_PUBKEY // staking account
-            + GatekeeperState::ON_CHAIN_SIZE
-            + OC_SIZE_U8 // signer_bump
+            + GatekeeperState::ON_CHAIN_SIZE // gatekeeper state
             + OC_SIZE_VEC_PREFIX + GatekeeperFees::ON_CHAIN_SIZE * arg.fees_count as usize // fees
+            + OC_SIZE_U8 // auth_threshold
             + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize
         // auth keys
     }
@@ -123,7 +122,7 @@ impl Gatekeeper {
     // Adds fees to gatekeeper
     pub fn add_fees(&mut self, data: &UpdateGatekeeperData, authority: &mut Signer) -> Result<()> {
         // This will skip the next auth check which isn't required if there are no fees
-        if data.fees.add.is_empty() && data.fees.remove.is_empty() {
+        if data.token_fees.add.is_empty() && data.token_fees.remove.is_empty() {
             // no fees to add/remove
             return Ok(());
         }
@@ -136,8 +135,8 @@ impl Gatekeeper {
         }
 
         // remove the fees if they exist
-        for fee in data.fees.remove.iter() {
-            let index: Option<usize> = self.fees.iter().position(|x| x.token == *fee);
+        for fee in data.token_fees.remove.iter() {
+            let index: Option<usize> = self.token_fees.iter().position(|x| x.token == *fee);
 
             if index.is_none() {
                 return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
@@ -145,18 +144,18 @@ impl Gatekeeper {
 
             let fee_index = index.unwrap();
 
-            self.fees.remove(fee_index);
+            self.token_fees.remove(fee_index);
         }
 
         // Add or update fees
-        for fee in data.fees.add.iter() {
-            let index: Option<usize> = self.fees.iter().position(|x| x.token == fee.token);
+        for fee in data.token_fees.add.iter() {
+            let index: Option<usize> = self.token_fees.iter().position(|x| x.token == fee.token);
 
             if let Some(fee_index) = index {
                 // update the existing key with new fees
-                self.fees[fee_index] = *fee;
+                self.token_fees[fee_index] = *fee;
             } else {
-                self.fees.push(*fee);
+                self.token_fees.push(*fee);
             }
         }
 
@@ -196,28 +195,6 @@ impl Gatekeeper {
                     }
 
                     self.gatekeeper_network = gatekeeper_network;
-                }
-
-                Ok(())
-            }
-            None => Ok(()),
-        }
-    }
-
-    // Sets the discovery pubkey for the gatekeeper
-    pub fn set_addresses(
-        &mut self,
-        data: &UpdateGatekeeperData,
-        authority: &mut Signer,
-    ) -> Result<()> {
-        match data.addresses {
-            Some(addresses) => {
-                if addresses != self.addresses {
-                    if !self.can_access(authority, GatekeeperKeyFlags::SET_ADDRESSES) {
-                        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-                    }
-
-                    self.addresses = addresses;
                 }
 
                 Ok(())
@@ -319,9 +296,9 @@ pub struct CreateGatekeeperData {
     /// The staking account of this gatekeeper
     pub staking_account: Pubkey,
     /// The bump for the signer of this gatekeeper
-    pub signer_bump: u8,
+    pub gatekeeper_bump: u8,
     /// The fees for this gatekeeper
-    pub fees: Vec<GatekeeperFees>,
+    pub token_fees: Vec<GatekeeperFees>,
     /// The keys with permissions on this gatekeeper
     pub auth_keys: Vec<GatekeeperAuthKey>,
 }

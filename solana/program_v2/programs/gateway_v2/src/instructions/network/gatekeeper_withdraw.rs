@@ -18,7 +18,7 @@ pub struct GatekeeperWithdrawAccount<'info> {
     #[account(
         mut,
         seeds = [GATEKEEPER_SEED, authority.key().as_ref()],
-        bump = gatekeeper.signer_bump,
+        bump = gatekeeper.gatekeeper_bump,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]

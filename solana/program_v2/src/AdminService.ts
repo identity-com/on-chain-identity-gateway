@@ -91,7 +91,7 @@ export class AdminService extends AbstractService {
   static async createNetworkAddress(
     authority: PublicKey
   ): Promise<[PublicKey, number]> {
-    return findProgramAddress('gk-network', authority);
+    return findProgramAddress('gw-network', authority);
   }
   /**
    * let admin to close the network account

@@ -54,28 +54,29 @@ export type NetworkAccount = {
 };
 
 export type CreateGatekeeperData = {
-  authThreshold: number;
-  signerBump: number;
-  authKeys: AuthKeyStructure[];
+  gatekeeperBump: number;
   gatekeeperNetwork: PublicKey;
-  addresses: PublicKey;
   stakingAccount: PublicKey;
-  fees: FeeStructure[];
+  tokenFees: FeeStructure[];
+  authThreshold: number;
+  authKeys: AuthKeyStructure[];
 };
 
 export type UpdateGatekeeperData = {
+  gatekeeperNetwork: PublicKey;
+  stakingAccount: PublicKey | null;
+  tokenFees: UpdateFeeStructure;
   authThreshold: number;
   authKeys: UpdateAuthKeytructure;
-  gatekeeperNetwork: PublicKey;
-  addresses: PublicKey | null;
-  stakingAccount: PublicKey | null;
-  fees: UpdateFeeStructure;
 };
 
 export type GatekeeperAccount = {
-  fees: FeeStructure[];
-  authKeys: AuthKeyStructure[];
+  version: number;
+  authority: PublicKey;
   gatekeeperNetwork: PublicKey;
+  stakingAccount: PublicKey;
+  tokenFees: FeeStructure[];
+  authKeys: AuthKeyStructure[];
   state: GatekeeperState;
 };
 
