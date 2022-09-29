@@ -36,4 +36,8 @@ pub enum PassErrors {
     InvalidStateChange,
     #[msg("The pass is not active")]
     PassNotActive,
+    #[msg("Invalid gatekeeper")]
+    InvalidGatekeeper,
+    #[msg("Invalid network")]
+    InvalidNetwork,
 }

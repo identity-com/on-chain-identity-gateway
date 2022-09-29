@@ -65,10 +65,15 @@ impl Pass {
     pub fn refresh(&mut self) -> Result<()> {
         require!(self.state == PassState::Active, PassErrors::PassNotActive);
 
-        msg!("Initial timestamp {}", self.issue_time);
-
         self.issue_time = Clock::get().unwrap().unix_timestamp;
-        msg!("Updated timestamp {}", self.issue_time);
+
+        Ok(())
+    }
+
+    pub fn expire(&mut self) -> Result<()> {
+
+        self.issue_time = 0;
+
         Ok(())
     }
 

@@ -113,4 +113,8 @@ pub mod gateway_v2 {
     pub fn refresh_pass(ctx: Context<PassRefresh>, subject: Pubkey, pass_number: u16) -> Result<()> {
         instructions::refresh_pass(&mut ctx.accounts.pass)
     }
+
+    pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>, subject: Pubkey, pass_number: u16) -> Result<()> {
+        instructions::change_pass_gatekeeper(&mut ctx.accounts.pass, &mut ctx.accounts.old_gatekeeper, &mut ctx.accounts.new_gatekeeper)
+    }
 }

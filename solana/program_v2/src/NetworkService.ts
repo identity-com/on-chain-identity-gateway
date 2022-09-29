@@ -68,6 +68,7 @@ export class NetworkService extends AbstractService {
   // Creates a gatekeeper's public key from a given seed and authority.
   static async createGatekeeperAddress(
     authority: PublicKey
+    network: PublicKey
   ): Promise<[PublicKey, number]> {
     return findProgramAddress('gatekeeper', authority);
   }

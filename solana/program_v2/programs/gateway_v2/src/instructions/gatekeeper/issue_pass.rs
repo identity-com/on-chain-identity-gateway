@@ -28,7 +28,7 @@ pub struct IssuePass<'info> {
         init,
         payer = authority,
         space = Pass::size(0, 0),
-        seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes() ],
+        seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
         bump
     )]
     pub pass: Account<'info, Pass>,

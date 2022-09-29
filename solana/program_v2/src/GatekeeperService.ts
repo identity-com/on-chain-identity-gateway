@@ -168,11 +168,75 @@ export class GatekeeperService extends AbstractService {
         });
     }
 
+    expirePass(
+        subject: PublicKey = this.getWallet().publicKey,
+        passNumber = 0,
+        authority: PublicKey = this.getWallet().publicKey
+    ): ServiceBuilder {
+        const instructionPromise = this.getProgram().methods
+
+            .refreshPass(subject, passNumber)
+            .accounts({
+                pass: this.getDataAccount(),
+                systemProgram: anchor.web3.SystemProgram.programId,
+                authority,
+                network: this._network
+            })
+            .instruction();
+
+        return new ServiceBuilder(this, {
+            instructionPromise,
+            didAccountSizeDeltaCallback: () => {
+                throw new Error('Dynamic Alloc not supported');
+            },
+            // TODO: Implement this...
+            allowsDynamicAlloc: false,
+            authority,
+        });
+    }
+
+    changePassGatekeeper(
+        gatekeeper: PublicKey,
+        subject: PublicKey = this.getWallet().publicKey,
+        passNumber = 0,
+        authority: PublicKey = this.getWallet().publicKey,
+    ): ServiceBuilder {
+        const instructionPromise = this.getProgram().methods
+            .changePassGatekeeper(subject, passNumber)
+            .accounts({
+                pass: this.getDataAccount(),
+                systemProgram: anchor.web3.SystemProgram.programId,
+                authority,
+                network: this._network,
+                newGatekeeper: gatekeeper,
+                oldGatekeeper: this._gatekeeper
+            })
+            .instruction();
+
+        return new ServiceBuilder(this, {
+            instructionPromise,
+            didAccountSizeDeltaCallback: () => {
+                throw new Error('Dynamic Alloc not supported');
+            },
+            // TODO: Implement this...
+            allowsDynamicAlloc: false,
+            authority,
+        });
+    }
+
     async getPassAccount(
         account: PublicKey = this.getDataAccount()
     ): Promise<PassAccount | null> {
         return this.getProgram().account.pass
             .fetchNullable(account)
             .then(PassAccount.from);
+    }
+
+    getGatekeeper() {
+        return this._gatekeeper;
+    }
+
+    getNetwork() {
+        return this._network;
     }
 }
