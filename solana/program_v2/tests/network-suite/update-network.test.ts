@@ -44,7 +44,6 @@ describe('Gateway v2 Client', () => {
       .createNetwork({
         authThreshold: 1,
         passExpireTime: 400,
-        networkBump: 0,
         fees: [
           {
             token: programProvider.wallet.publicKey,
@@ -101,7 +100,7 @@ describe('Gateway v2 Client', () => {
             add: [],
             remove: [],
           },
-          networkFeatures: [],
+          networkFeatures: 1,
           supportedTokens: {
             add: [],
             remove: [],
@@ -143,7 +142,7 @@ describe('Gateway v2 Client', () => {
             ],
             remove: [],
           },
-          networkFeatures: [],
+          networkFeatures: 1,
           supportedTokens: {
             add: [],
             remove: [],
@@ -183,7 +182,7 @@ describe('Gateway v2 Client', () => {
             add: [],
             remove: [extraAuthKey.publicKey],
           },
-          networkFeatures: [],
+          networkFeatures: 1,
           supportedTokens: {
             add: [],
             remove: [],
@@ -225,7 +224,7 @@ describe('Gateway v2 Client', () => {
               add: [],
               remove: [programProvider.wallet.publicKey],
             },
-            networkFeatures: [],
+            networkFeatures: 1,
             supportedTokens: {
               add: [],
               remove: [],
@@ -272,7 +271,7 @@ describe('Gateway v2 Client', () => {
             ],
             remove: [],
           },
-          networkFeatures: [],
+          networkFeatures: 1,
           supportedTokens: {
             add: [],
             remove: [],
@@ -315,7 +314,7 @@ describe('Gateway v2 Client', () => {
             add: [],
             remove: [],
           },
-          networkFeatures: [],
+          networkFeatures: 1,
           supportedTokens: {
             add: [],
             remove: [],
@@ -348,7 +347,7 @@ describe('Gateway v2 Client', () => {
             add: [],
             remove: [],
           },
-          networkFeatures: [],
+          networkFeatures: 1,
           supportedTokens: {
             add: [],
             remove: [],

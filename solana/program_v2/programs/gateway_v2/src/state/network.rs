@@ -20,7 +20,7 @@ pub struct GatekeeperNetwork {
     /// The length of time a pass lasts in seconds. `0` means does not expire.
     pub pass_expire_time: i64,
     /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
-    pub network_features: Vec<[u8; 32]>,
+    pub network_features: u32,
     /// The fees for this network
     pub fees: Vec<NetworkFees>,
     // A set of all supported tokens on the network
@@ -31,6 +31,8 @@ pub struct GatekeeperNetwork {
     pub auth_threshold: u8,
     /// Keys with permissions on the network
     pub auth_keys: Vec<NetworkAuthKey>,
+    // possible data for network features
+    // pub network_features_data: Vec<u8>
 }
 
 #[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize)]
@@ -60,7 +62,7 @@ impl GatekeeperNetwork {
             + OC_SIZE_U8 // version
             + OC_SIZE_PUBKEY // initial_authority
             // TODO: Add size for network_features
-            + OC_SIZE_VEC_PREFIX + OC_SIZE_U8 * 32 // network_features
+            + OC_SIZE_U32 // network_features
             + OC_SIZE_U8 // auth_threshold
             + OC_SIZE_U64 // pass_expire_time
             + OC_SIZE_U8 // signer_bump
@@ -204,14 +206,14 @@ impl GatekeeperNetwork {
         data: &UpdateNetworkData,
         authority: &mut Signer,
     ) -> Result<()> {
-        match &data.network_features {
+        match data.network_features {
             Some(network_features) => {
-                if network_features != &self.network_features {
+                if network_features != self.network_features {
                     if !self.can_access(authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
                         return Err(error!(NetworkErrors::InsufficientAccessExpiry));
                     }
 
-                    self.network_features = network_features.to_vec();
+                    self.network_features = network_features
                 }
 
                 Ok(())

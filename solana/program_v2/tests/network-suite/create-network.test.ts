@@ -48,7 +48,6 @@ describe('Gateway v2 Client', () => {
         .createNetwork({
           authThreshold: 1,
           passExpireTime: 400,
-          networkBump: 0,
           fees: [
             {
               token: programProvider.wallet.publicKey,

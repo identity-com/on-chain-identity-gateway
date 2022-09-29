@@ -30,7 +30,7 @@ pub struct UpdateNetworkData {
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: UpdateKeys,
     /// The [`GatekeeperNetwork::network_features`].
-    pub network_features: Option<Vec<[u8; 32]>>,
+    pub network_features: Option<u32>,
     /// The [`GatekeeperNetwork::supported_tokens`].
     pub supported_tokens: UpdateSupportedTokens,
     /// The [`GatekeeperNetwork::gatekeepers`].
@@ -75,7 +75,7 @@ pub struct UpdateNetworkAccount<'info> {
         realloc::payer = authority,
         realloc::zero = false,
         seeds = [NETWORK_SEED, network.authority.key().as_ref(), &network.network_index.to_le_bytes()],
-        bump = network.network_bump,
+        bump,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]

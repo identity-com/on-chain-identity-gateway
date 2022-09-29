@@ -33,7 +33,6 @@ export type AuthKeyStructure = {
 export type CreateNetworkData = {
   authThreshold: number;
   passExpireTime: number;
-  networkBump: number;
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
   networkIndex: number;
@@ -46,7 +45,7 @@ export type UpdateNetworkData = {
   passExpireTime: number;
   fees: UpdateFeeStructure;
   authKeys: UpdateAuthKeytructure;
-  networkFeatures: number[];
+  networkFeatures: number;
   supportedTokens: UpdateSupportedTokens;
   gatekeepers: UpdateGatekeepers;
 };
@@ -69,7 +68,7 @@ export type NetworkAccount = {
   passExpireTime: number;
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
-  networkFeatures: number[];
+  networkFeatures: number;
   // Hash Set
   supportedTokens: SupportedToken[];
   // Hash Set

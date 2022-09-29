@@ -70,7 +70,7 @@ export class AdminService extends AbstractService {
 
   static async createNetworkAddress(
     authority: PublicKey,
-    networkIndex: number
+    networkIndex: number = 0
   ): Promise<[PublicKey, number]> {
     const network_index_buffer = Buffer.alloc(2);
     network_index_buffer.writeInt16LE(networkIndex);
@@ -112,7 +112,6 @@ export class AdminService extends AbstractService {
     data: CreateNetworkData = {
       authThreshold: 1,
       passExpireTime: 16,
-      networkBump: 0,
       fees: [],
       authKeys: [{ flags: 4097, key: this._wallet.publicKey }],
       networkIndex: 0,
