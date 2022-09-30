@@ -253,7 +253,8 @@ impl Gatekeeper {
         if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
             return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
         }
-        // TODO: Add withdrawal functionality
+        // TODO: Check type of currency,
+        // TODO: Transfer to _receiver
 
         Ok(())
     }
