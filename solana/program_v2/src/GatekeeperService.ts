@@ -13,7 +13,6 @@ import {DEFAULT_PASS_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET} from './lib/constant
 import {ServiceBuilder, AbstractService, NonSigningWallet} from "./utils/AbstractService";
 import {CustomClusterUrlConfig, ExtendedCluster, getConnectionByCluster} from "./lib/connection";
 import {PassAccount, PassState, PassStateMapping} from "./lib/wrappers";
-import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 export class GatekeeperService extends AbstractService {
     private constructor(_program: Program<GatewayV2>,
@@ -93,12 +92,7 @@ export class GatekeeperService extends AbstractService {
     issue(
         authority: PublicKey = this.getWallet().publicKey,
         passNumber: number = 0,
-        mint: PublicKey,
-        sender: PublicKey,
-        recipient: PublicKey,
     ): ServiceBuilder {
-        console.log('!!!!!!!!!!!');
-
         const instructionPromise = this.getProgram().methods
             .issuePass(authority, passNumber)
             .accounts({
@@ -107,10 +101,6 @@ export class GatekeeperService extends AbstractService {
                 payer: authority,
                 network: this._network,
                 gatekeeper: this._gatekeeper,
-                mint,
-                tokenProgram: TOKEN_PROGRAM_ID,
-                recipient,
-                sender,
             })
             .instruction();
 

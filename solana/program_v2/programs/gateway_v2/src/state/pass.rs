@@ -71,7 +71,6 @@ impl Pass {
     }
 
     pub fn expire(&mut self) -> Result<()> {
-
         self.issue_time = 0;
 
         Ok(())

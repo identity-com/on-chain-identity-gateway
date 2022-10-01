@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use crate::{GatekeeperNetwork, Pass};
+use crate::constants::PASS_SEED;
 
 pub fn refresh_pass(pass: &mut Account<Pass>,) -> Result<()> {
     pass.refresh()
@@ -10,8 +11,8 @@ pub fn refresh_pass(pass: &mut Account<Pass>,) -> Result<()> {
 pub struct PassRefresh<'info> {
     // TODO: Fix validation
     #[account(
-    // seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes() ],
-    // bump,
+    seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
+    bump,
     // // TODO: Gatekeeper authority is required to set state
     // // constraint = pass.initial_authority == authority.key(),
     mut

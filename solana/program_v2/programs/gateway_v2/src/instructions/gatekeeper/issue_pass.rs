@@ -4,21 +4,24 @@ use crate::constants::PASS_SEED;
 use crate::{Gatekeeper, GatekeeperNetwork, Pass, PassState, Pubkey};
 use anchor_spl::{
     token::{Token, Mint, TokenAccount},
-
 };
+use anchor_spl::token::{Transfer, transfer};
 
 pub fn issue_pass(
-    authority: Pubkey,
-    bump: u8,
-    pass: &mut Account<Pass>,
-    network: &mut Account<GatekeeperNetwork>,
-    gatekeeper: &mut Account<Gatekeeper>,
+    ctx: Context<IssuePass>,
+    subject: Pubkey,
 ) -> Result<()> {
-    pass.subject = authority;
+    // TODO: Handle payments
+
+    let pass = &mut ctx.accounts.pass;
+    let network = &mut ctx.accounts.network;
+    let gatekeeper = &mut ctx.accounts.gatekeeper;
+
+    pass.signer_bump = *ctx.bumps.get("pass").unwrap();
+    pass.subject = subject;
     pass.issue_time = Clock::get().unwrap().unix_timestamp;
     pass.network = network.key();
     pass.gatekeeper = gatekeeper.key();
-    pass.signer_bump = bump;
     pass.state = PassState::Active;
     pass.version = 0;
 
@@ -41,13 +44,13 @@ pub struct IssuePass<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
-
-    #[account(mut)]
-    pub mint: Account<'info, Mint>,
-
-    #[account(mut)]
-    pub sender: Account<'info, TokenAccount>,
-    #[account(mut)]
-    pub recipient: Account<'info, TokenAccount>,
+    // pub token_program: Program<'info, Token>,
+    // #[account(mut)]
+    // pub mint: Account<'info, Mint>,
+    // // #[account(mut)]
+    // // pub funder_token: Account<'info, TokenAccount>,
+    // #[account(mut)]
+    // pub gatekeeper_token: Account<'info, TokenAccount>,
+    // #[account(mut)]
+    // pub network_token: Account<'info, TokenAccount>,
 }

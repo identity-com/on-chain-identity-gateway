@@ -7,7 +7,7 @@ import chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe.skip("Change pass state", () => {
+describe("Change pass state", () => {
     let service: GatekeeperService;
 
     beforeEach(async () => {
@@ -19,7 +19,7 @@ describe.skip("Change pass state", () => {
             service,
             PassState.Active,
             PassState.Active
-        )).to.eventually.be.rejected;
+        )).to.eventually.be.rejectedWith(/InvalidStateChange/);
     });
 
     it("Can activate a frozen pass", async () => {
@@ -41,7 +41,7 @@ describe.skip("Change pass state", () => {
             service,
             PassState.Revoked,
             PassState.Active
-        )).to.eventually.be.rejected;
+        )).to.eventually.be.rejectedWith(/InvalidStateChange/);
     });
 
     it("Can freeze an active pass", async () => {
@@ -57,7 +57,7 @@ describe.skip("Change pass state", () => {
             service,
             PassState.Frozen,
             PassState.Frozen
-        )).to.eventually.be.rejected;
+        )).to.eventually.be.rejectedWith(/InvalidStateChange/);
     });
 
     it("Cannot freeze a revoked token", async () => {
@@ -65,7 +65,7 @@ describe.skip("Change pass state", () => {
             service,
             PassState.Revoked,
             PassState.Frozen
-        )).to.eventually.be.rejected;
+        )).to.eventually.be.rejectedWith(/InvalidStateChange/);
     });
 
     it("Can revoke an active pass", async () => {
@@ -84,11 +84,11 @@ describe.skip("Change pass state", () => {
         )).to.eventually.be.fulfilled;
     });
 
-    it("Cannot revoke a revoked token", async () => {
+    it.only("Cannot revoke a revoked token", async () => {
         return expect(changeState(
             service,
             PassState.Revoked,
             PassState.Revoked
-        )).to.eventually.be.rejected;
+        )).to.eventually.be.rejectedWith(/InvalidStateChange/);
     });
 });

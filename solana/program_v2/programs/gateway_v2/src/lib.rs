@@ -100,27 +100,12 @@ pub mod gateway_v2 {
         subject: Pubkey,
         pass_number: u16,
     ) -> Result<()> {
-        transfer(
-            CpiContext::new(
-                ctx.accounts.mint.to_account_info(),
-                Transfer {
-                    from: ctx.accounts.sender.to_account_info(),
-                    to: ctx.accounts.recipient.to_account_info(),
-                    authority: ctx.accounts.payer.to_account_info(),
-                },
-            ),
-            10,
-        )?;
+        instructions::issue_pass(
+            ctx,
+            subject,
+        )
 
-        Ok(())
-
-        // instructions::issue_pass(
-        //     *ctx.accounts.payer.key,
-        //     *ctx.bumps.get("pass").unwrap(),
-        //     &mut ctx.accounts.pass,
-        //     &mut ctx.accounts.network,
-        //     &mut ctx.accounts.gatekeeper,
-        // )
+        // Ok(())
     }
 
     pub fn set_pass_state(ctx: Context<PassSetState>, state: PassState, subject: Pubkey, pass_number: u16) -> Result<()> {

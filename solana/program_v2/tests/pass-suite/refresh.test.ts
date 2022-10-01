@@ -17,6 +17,7 @@ describe("Refresh a pass", () => {
     it("Refreshes a pass", async () => {
         const initialPass = await service.getPassAccount();
 
+        // Sleep a bit so the expiry time passes
         await new Promise(r => setTimeout(r, 2000));
 
         await service.refreshPass().rpc();
