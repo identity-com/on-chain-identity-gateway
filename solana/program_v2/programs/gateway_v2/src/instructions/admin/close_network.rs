@@ -11,7 +11,7 @@ pub struct CloseNetworkAccount<'info> {
     #[account(
         mut,
         close = destination,
-        seeds = [NETWORK_SEED, network.authority.key().as_ref(), &network.network_index.to_le_bytes()],
+        seeds = [NETWORK_SEED, authority.key().as_ref(), &network.network_index.to_le_bytes()],
         bump,
         constraint = network.can_access(&authority, NetworkKeyFlags::AUTH),
     )]
