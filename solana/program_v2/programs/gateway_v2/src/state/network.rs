@@ -55,26 +55,28 @@ impl OnChainSize for SettlementInfo {
     const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
 }
 
-// TODO! Update size to be correct with new interface
 impl GatekeeperNetwork {
-    pub fn on_chain_size_with_arg(arg: GatekeeperNetworkSize) -> usize {
+    pub fn size(fees_count: usize,
+                auth_keys: usize,
+                gatekeepers: usize,
+                supported_tokens: usize) -> usize {
         OC_SIZE_DISCRIMINATOR
             + OC_SIZE_U8 // version
             + OC_SIZE_PUBKEY // initial_authority
-            // TODO: Add size for network_features
             + OC_SIZE_U32 // network_features
             + OC_SIZE_U8 // auth_threshold
             + OC_SIZE_U64 // pass_expire_time
             + OC_SIZE_U8 // signer_bump
-            + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * arg.fees_count as usize // fees
-            + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize
-        // auth_keys
-        + OC_SIZE_VEC_PREFIX + OC_SIZE_PUBKEY * arg.gatekeepers as usize // gatekeeper list
-        + OC_SIZE_U16 // network_index
-        + OC_SIZE_VEC_PREFIX + SupportedToken::ON_CHAIN_SIZE * arg.supported_tokens as usize
+            + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * fees_count as usize // fees
+            + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * auth_keys as usize // auth_keys
+            + OC_SIZE_VEC_PREFIX + OC_SIZE_PUBKEY * gatekeepers as usize // gatekeeper list
+            + OC_SIZE_U16 // network_index
+            + OC_SIZE_VEC_PREFIX + SupportedToken::ON_CHAIN_SIZE * supported_tokens as usize
         // supported tokens list
     }
 
+    /// Checks if the provided authority exists within the [`GatekeeperNetwork::auth_keys`]
+    /// and has the requested flag set
     pub fn can_access(&self, authority: &Signer, flag: NetworkKeyFlags) -> bool {
         self.auth_keys
             .iter()
@@ -301,17 +303,10 @@ impl GatekeeperNetwork {
         }
         Ok(())
     }
-}
 
-/// Size for [`GatekeeperNetwork`]
-#[derive(Debug, Copy, Clone)]
-pub struct GatekeeperNetworkSize {
-    /// The number of fee tokens
-    pub fees_count: u16,
-    /// The number of auth keys
-    pub auth_keys: u16,
-    pub gatekeepers: u16,
-    pub supported_tokens: u16,
+    pub fn is_closeable(&self) -> bool {
+        self.gatekeepers.is_empty()
+    }
 }
 
 /// The authority key for a [`GatekeeperNetwork`]

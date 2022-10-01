@@ -18,10 +18,8 @@ pub mod gateway_v2 {
         data: CreateNetworkData,
     ) -> Result<()> {
         instructions::admin::create_network(
-            *ctx.accounts.authority.key,
-            *ctx.bumps.get("network").unwrap(),
+            ctx,
             data,
-            &mut ctx.accounts.network,
         )
     }
 
@@ -30,9 +28,8 @@ pub mod gateway_v2 {
         data: UpdateNetworkData,
     ) -> Result<()> {
         instructions::admin::update_network(
+            ctx,
             &data,
-            &mut ctx.accounts.network,
-            &mut ctx.accounts.authority,
         )
     }
 
