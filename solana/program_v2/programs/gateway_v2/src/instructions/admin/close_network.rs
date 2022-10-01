@@ -5,7 +5,7 @@ use crate::errors::NetworkErrors;
 
 /// Placeholder for additional close_network functionality
 pub fn close_network(ctx: Context<CloseNetworkAccount>) -> Result<()> {
-    require!(ctx.accounts.network.can_close(), NetworkErrors::AccountInUse);
+    require!(ctx.accounts.network.is_closeable(), NetworkErrors::AccountInUse);
 
     Ok(())
 }
