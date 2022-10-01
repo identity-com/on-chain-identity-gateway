@@ -5,8 +5,16 @@ test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/pass-suite/**/*.ts
 
 [[test.validator.account]]
 address = "8PyTqDcyDKbMQB99D2aoNLsBqgheQU3UV4xz28ZXJYmN"
-filename = "../fixtures/accounts/network-account.json"
+filename = "../fixtures/accounts/network.json"
 
 [[test.validator.account]]
 address = "56vtYZv5VatmSKGnzWmCd5TbutNi2f4eWEfcU18i8QsJ"
-filename = "../fixtures/accounts/gatekeeper-account.json"
+filename = "../fixtures/accounts/gatekeeper.json"
+
+[[test.validator.account]]
+address = "CCxNLk6pq5oADpSRjrLsJPeUWXR6z1BAaf7j5jNe8pPV"
+filename = "../fixtures/accounts/mint-account.json"
+
+[[test.validator.account]]
+address = "9SkxBuj9kuaJQ3yAXEuRESjYt14BcPUTac25Mbi1n8ny"
+filename = "../fixtures/accounts/mint-authority.json"
