@@ -93,7 +93,6 @@ export class AdminService extends AbstractService {
       .closeNetwork()
       .accounts({
         network: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         destination,
         authority,
       })

@@ -36,7 +36,7 @@ pub mod gateway_v2 {
         )
     }
 
-    pub fn close_network(_ctx: Context<CloseNetworkAccount>) -> Result<()> {
-        instructions::admin::close_network()
+    pub fn close_network(ctx: Context<CloseNetworkAccount>) -> Result<()> {
+        instructions::admin::close_network(ctx)
     }
 }

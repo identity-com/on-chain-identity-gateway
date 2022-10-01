@@ -14,4 +14,6 @@ pub enum NetworkErrors {
     AuthKeyNotFound,
     #[msg("Invalid key provided")]
     InvalidKey,
+    #[msg("The network account is in use")]
+    AccountInUse,
 }
