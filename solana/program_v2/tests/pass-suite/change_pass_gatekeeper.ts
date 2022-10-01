@@ -14,7 +14,7 @@ describe("Change pass gatekeeper", () => {
         service = await createGatekeeperService()
     })
 
-    it.only("Cannot activate an active pass", async () => {
+    it("Cannot activate an active pass", async () => {
         service.changePassGatekeeper(service.getGatekeeper());
     });
 });

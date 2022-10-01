@@ -8,11 +8,14 @@ use crate::instructions::*;
 use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
+use anchor_spl::token::Transfer;
+
 // TODO: Grind for better key
 declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
 #[program]
 pub mod gateway_v2 {
+    use anchor_spl::token::transfer;
     use super::*;
 
     pub fn create_network(
@@ -97,13 +100,27 @@ pub mod gateway_v2 {
         subject: Pubkey,
         pass_number: u16,
     ) -> Result<()> {
-        instructions::issue_pass(
-            *ctx.accounts.authority.key,
-            *ctx.bumps.get("pass").unwrap(),
-            &mut ctx.accounts.pass,
-            &mut ctx.accounts.network,
-            &mut ctx.accounts.gatekeeper,
-        )
+        transfer(
+            CpiContext::new(
+                ctx.accounts.mint.to_account_info(),
+                Transfer {
+                    from: ctx.accounts.sender.to_account_info(),
+                    to: ctx.accounts.recipient.to_account_info(),
+                    authority: ctx.accounts.payer.to_account_info(),
+                },
+            ),
+            10,
+        )?;
+
+        Ok(())
+
+        // instructions::issue_pass(
+        //     *ctx.accounts.payer.key,
+        //     *ctx.bumps.get("pass").unwrap(),
+        //     &mut ctx.accounts.pass,
+        //     &mut ctx.accounts.network,
+        //     &mut ctx.accounts.gatekeeper,
+        // )
     }
 
     pub fn set_pass_state(ctx: Context<PassSetState>, state: PassState, subject: Pubkey, pass_number: u16) -> Result<()> {

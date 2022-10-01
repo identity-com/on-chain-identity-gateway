@@ -16,11 +16,11 @@ if (process.env.SOLANA_LOGS) {
     });
 }
 
-export const createGatekeeperService = async () => {
+export const createGatekeeperService = async (mint: PublicKey, sender: PublicKey, receiver: PublicKey, optionalAuthority: Keypair | undefined = undefined) => {
     let service: GatekeeperService;
     let dataAccount: PublicKey;
     let bump: number;
-    let authorityKeypair = Keypair.generate();
+    let authorityKeypair = optionalAuthority ?? Keypair.generate();
 
     let authority = new anchor.Wallet(authorityKeypair);
 
@@ -45,8 +45,11 @@ export const createGatekeeperService = async () => {
         authority
     );
 
-    await service.issue(authority.publicKey).rpc();
-
+    try {
+        await service.issue(authority.publicKey, 0, mint, sender, receiver).rpc();
+    } catch(e) {
+        console.log( e);
+    }
     return service;
 }
 

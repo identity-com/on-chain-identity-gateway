@@ -7,7 +7,7 @@ import chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe("Change pass state", () => {
+describe.skip("Change pass state", () => {
     let service: GatekeeperService;
 
     beforeEach(async () => {

@@ -77,19 +77,18 @@ impl Pass {
         Ok(())
     }
 
-    pub fn size(_network_data_length: i16, _gatekeeper_data: i16) -> usize {
-        OC_SIZE_DISCRIMINATOR
-            + OC_SIZE_U8 // version
-            + OC_SIZE_PUBKEY // subject
-            + OC_SIZE_PUBKEY // network
-            + OC_SIZE_U8 // pass_number
-            + OC_SIZE_U8 // signer_bump
-            + OC_SIZE_PUBKEY // gatekeeper
-            + OC_SIZE_U64 // issue_time
-            + PassState::ON_CHAIN_SIZE // pass_state
-            + OC_SIZE_U8 * 32 // network_data
-            + OC_SIZE_U8 * 32 // gatekeeper_data
-    }
+    pub const ON_CHAIN_SIZE: usize = OC_SIZE_DISCRIMINATOR
+        + OC_SIZE_U8 // version
+        + OC_SIZE_PUBKEY // subject
+        + OC_SIZE_PUBKEY // network
+        + OC_SIZE_U8 // pass_number
+        + OC_SIZE_U8 // signer_bump
+        + OC_SIZE_PUBKEY // gatekeeper
+        + OC_SIZE_U64 // issue_time
+        + PassState::ON_CHAIN_SIZE // pass_state
+        + OC_SIZE_U8 * 32 // network_data
+        + OC_SIZE_U8 * 32 // gatekeeper_data
+    ;
 }
 
 /// The state of a [`Pass`].

@@ -2,6 +2,10 @@ use anchor_lang::Key;
 use anchor_lang::prelude::*;
 use crate::constants::PASS_SEED;
 use crate::{Gatekeeper, GatekeeperNetwork, Pass, PassState, Pubkey};
+use anchor_spl::{
+    token::{Token, Mint, TokenAccount},
+
+};
 
 pub fn issue_pass(
     authority: Pubkey,
@@ -21,13 +25,13 @@ pub fn issue_pass(
     Ok(())
 }
 
-#[derive(Accounts, Debug)]
+#[derive(Accounts)]
 #[instruction(subject: Pubkey, pass_number: u16)]
 pub struct IssuePass<'info> {
     #[account(
         init,
-        payer = authority,
-        space = Pass::size(0, 0),
+        payer = payer,
+        space = Pass::ON_CHAIN_SIZE,
         seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
         bump
     )]
@@ -35,6 +39,15 @@ pub struct IssuePass<'info> {
     pub network: Account<'info, GatekeeperNetwork>,
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]
-    pub authority: Signer<'info>,
+    pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+
+    #[account(mut)]
+    pub mint: Account<'info, Mint>,
+
+    #[account(mut)]
+    pub sender: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub recipient: Account<'info, TokenAccount>,
 }
