@@ -54,13 +54,13 @@ describe("GatekeeperService", () => {
 
   afterEach(() => sandbox.restore());
 
-  beforeEach(async () => {
+  beforeEach(() => {
     tokenOwner = Keypair.generate();
     gatekeeperNetwork = Keypair.generate();
     gatekeeperAuthority = Keypair.generate();
 
     gatewayTokenAddress =
-      await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
+      getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
         tokenOwner.publicKey,
         gatekeeperNetwork.publicKey
       );
