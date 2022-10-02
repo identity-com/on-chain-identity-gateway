@@ -1,13 +1,8 @@
 use crate::constants::NETWORK_SEED;
-use crate::state::{
-    GatekeeperNetwork, NetworkAuthKey, NetworkFees, SupportedToken,
-};
+use crate::state::{GatekeeperNetwork, NetworkAuthKey, NetworkFees, SupportedToken};
 use anchor_lang::prelude::*;
 
-pub fn update_network(
-    ctx: Context<UpdateNetworkAccount>,
-    data: &UpdateNetworkData,
-) -> Result<()> {
+pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
     let authority = &mut ctx.accounts.authority;
 

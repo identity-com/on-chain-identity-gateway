@@ -1,11 +1,14 @@
 use crate::constants::NETWORK_SEED;
+use crate::errors::NetworkErrors;
 use crate::state::*;
 use anchor_lang::prelude::*;
-use crate::errors::NetworkErrors;
 
 /// Placeholder for additional close_network functionality
 pub fn close_network(ctx: Context<CloseNetworkAccount>) -> Result<()> {
-    require!(ctx.accounts.network.is_closeable(), NetworkErrors::AccountInUse);
+    require!(
+        ctx.accounts.network.is_closeable(),
+        NetworkErrors::AccountInUse
+    );
 
     Ok(())
 }

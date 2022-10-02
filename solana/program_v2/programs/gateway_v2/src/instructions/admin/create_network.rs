@@ -1,15 +1,11 @@
 use crate::constants::NETWORK_SEED;
 use crate::errors::NetworkErrors;
 use crate::state::{
-    GatekeeperNetwork, NetworkAuthKey, NetworkFees, NetworkKeyFlags,
-    SupportedToken,
+    GatekeeperNetwork, NetworkAuthKey, NetworkFees, NetworkKeyFlags, SupportedToken,
 };
 use anchor_lang::prelude::*;
 
-pub fn create_network(
-    ctx: Context<CreateNetworkAccount>,
-    data: CreateNetworkData,
-) -> Result<()> {
+pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
     let authority = &mut ctx.accounts.authority;
 

@@ -56,10 +56,12 @@ impl OnChainSize for SettlementInfo {
 }
 
 impl GatekeeperNetwork {
-    pub fn size(fees_count: usize,
-                auth_keys: usize,
-                gatekeepers: usize,
-                supported_tokens: usize) -> usize {
+    pub fn size(
+        fees_count: usize,
+        auth_keys: usize,
+        gatekeepers: usize,
+        supported_tokens: usize,
+    ) -> usize {
         OC_SIZE_DISCRIMINATOR
             + OC_SIZE_U8 // version
             + OC_SIZE_PUBKEY // initial_authority

@@ -17,20 +17,14 @@ pub mod gateway_v2 {
         ctx: Context<CreateNetworkAccount>,
         data: CreateNetworkData,
     ) -> Result<()> {
-        instructions::admin::create_network(
-            ctx,
-            data,
-        )
+        instructions::admin::create_network(ctx, data)
     }
 
     pub fn update_network(
         ctx: Context<UpdateNetworkAccount>,
         data: UpdateNetworkData,
     ) -> Result<()> {
-        instructions::admin::update_network(
-            ctx,
-            &data,
-        )
+        instructions::admin::update_network(ctx, &data)
     }
 
     pub fn close_network(ctx: Context<CloseNetworkAccount>) -> Result<()> {
