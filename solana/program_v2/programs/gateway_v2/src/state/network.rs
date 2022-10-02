@@ -45,7 +45,7 @@ impl OnChainSize for SupportedToken {
     const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + SettlementInfo::ON_CHAIN_SIZE;
 }
 
-// TODO: Actual Settlement Info Implementation
+// TODO: Actual Settlement Info Implementation (IDCOM-2135)
 #[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize)]
 pub struct SettlementInfo {
     placeholder: u16,
