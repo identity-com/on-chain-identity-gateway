@@ -10,6 +10,7 @@ use anchor_spl::token::{Transfer, transfer};
 pub fn issue_pass(
     ctx: Context<IssuePass>,
     subject: Pubkey,
+    pass_number: u16,
 ) -> Result<()> {
     // TODO: Handle payments
 
@@ -24,6 +25,7 @@ pub fn issue_pass(
     pass.gatekeeper = gatekeeper.key();
     pass.state = PassState::Active;
     pass.version = 0;
+    pass.pass_number = pass_number;
 
     Ok(())
 }
@@ -44,13 +46,4 @@ pub struct IssuePass<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
-    // pub token_program: Program<'info, Token>,
-    // #[account(mut)]
-    // pub mint: Account<'info, Mint>,
-    // // #[account(mut)]
-    // // pub funder_token: Account<'info, TokenAccount>,
-    // #[account(mut)]
-    // pub gatekeeper_token: Account<'info, TokenAccount>,
-    // #[account(mut)]
-    // pub network_token: Account<'info, TokenAccount>,
 }

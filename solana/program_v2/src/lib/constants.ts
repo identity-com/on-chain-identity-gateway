@@ -68,4 +68,7 @@ export const GatekeeperKeyFlags = {
   // Key can set [`GatekeeperNetwork::pass_expire_time`]
   SET_EXPIRE_TIME: 1 << 12,
   // Key can set [`Gatekeeper::state`]
+  SET_GATEKEEPER_STATE: 1 << 13,
+  // Key can set [`Pass::state`]
+  CHANGE_PASS_GATEKEEPER: 1 << 14,
 };

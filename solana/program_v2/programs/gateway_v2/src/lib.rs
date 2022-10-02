@@ -103,9 +103,8 @@ pub mod gateway_v2 {
         instructions::issue_pass(
             ctx,
             subject,
+            pass_number
         )
-
-        // Ok(())
     }
 
     pub fn set_pass_state(ctx: Context<PassSetState>, state: PassState, subject: Pubkey, pass_number: u16) -> Result<()> {
@@ -116,7 +115,7 @@ pub mod gateway_v2 {
         instructions::refresh_pass(&mut ctx.accounts.pass)
     }
 
-    pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>, subject: Pubkey, pass_number: u16) -> Result<()> {
-        instructions::change_pass_gatekeeper(&mut ctx.accounts.pass, &mut ctx.accounts.old_gatekeeper, &mut ctx.accounts.new_gatekeeper)
+    pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> {
+        instructions::change_pass_gatekeeper(ctx)
     }
 }

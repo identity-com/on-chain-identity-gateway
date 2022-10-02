@@ -1,12 +1,14 @@
 use anchor_lang::prelude::*;
-use crate::{Gatekeeper, GatekeeperNetwork, Pass};
+use crate::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
 use crate::errors::PassErrors;
 use crate::constants::PASS_SEED;
 
-pub fn change_pass_gatekeeper(pass: &mut Account<Pass>,
-                              old_gatekeeper: &mut Account<Gatekeeper>,
-                              new_gatekeeper: &mut Account<Gatekeeper>) -> Result<()> {
+pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> {
     // TODO: Check if feature flag is set
+    let pass = &mut ctx.accounts.pass;
+    let old_gatekeeper = &mut ctx.accounts.old_gatekeeper;
+    let new_gatekeeper = &mut ctx.accounts.new_gatekeeper;
+    let authority = &mut ctx.accounts.authority;
 
     require!(pass.gatekeeper == old_gatekeeper.key(), PassErrors::InvalidGatekeeper);
     require!(old_gatekeeper.gatekeeper_network == new_gatekeeper.gatekeeper_network, PassErrors::InvalidNetwork);
@@ -17,14 +19,13 @@ pub fn change_pass_gatekeeper(pass: &mut Account<Pass>,
 }
 
 #[derive(Accounts, Debug)]
-#[instruction(subject: Pubkey, pass_number: u16)]
 pub struct PassChangeGatekeeper<'info> {
     // TODO: Fix validation
     #[account(
-    seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes() ],
+    seeds = [PASS_SEED, pass.subject.as_ref(), network.key().as_ref(), &pass.pass_number.to_le_bytes()],
     bump,
-    // // TODO: Gatekeeper authority is required to set state
-    // // constraint = pass.initial_authority == authority.key(),
+    // TODO: Gatekeeper authority is required to set state
+    // constraint = old_gatekeeper.can_access(&authority, GatekeeperKeyFlags::AUTH),
     mut
     )]
     pub pass: Account<'info, Pass>,

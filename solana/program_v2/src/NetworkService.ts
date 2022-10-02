@@ -82,7 +82,7 @@ export class NetworkService extends AbstractService {
       signerBump: 0,
       authKeys: [
         {
-          flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
+          flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME | GatekeeperKeyFlags.CHANGE_PASS_GATEKEEPER,
           key: this._wallet.publicKey,
         },
       ],

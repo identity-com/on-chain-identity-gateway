@@ -1,22 +1,38 @@
 import {PassState} from "../../src/lib/wrappers";
-import {changeState, createGatekeeperService} from "./util";
+import {createGatekeeperService} from "./util";
 import {GatekeeperService} from "../../src/GatekeeperService";
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import {Keypair, PublicKey} from "@solana/web3.js";
+import {TEST_NETWORK} from "../util/constants";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe("Change pass state", () => {
     let service: GatekeeperService;
+    let subject: PublicKey;
+    let account: PublicKey;
 
     beforeEach(async () => {
-        service = await createGatekeeperService()
-    })
+        service = await createGatekeeperService();
+
+        subject = Keypair.generate().publicKey;
+        account = await GatekeeperService.createPassAddress(subject, TEST_NETWORK);
+
+        await service.issue(account, subject).rpc();
+    });
+
+    const changeState = async (from: PassState, to: PassState) => {
+        if (from !== PassState.Active) { // initial state is already Active
+            await service.setState(from, account, subject).rpc();
+        }
+
+        await service.setState(to, account, subject).rpc();
+    }
 
     it("Cannot activate an active pass", async () => {
         return expect(changeState(
-            service,
             PassState.Active,
             PassState.Active
         )).to.eventually.be.rejectedWith(/InvalidStateChange/);
@@ -24,13 +40,11 @@ describe("Change pass state", () => {
 
     it("Can activate a frozen pass", async () => {
         await changeState(
-            service,
             PassState.Frozen,
             PassState.Active
         )
 
         return expect(changeState(
-            service,
             PassState.Frozen,
             PassState.Active
         )).to.eventually.be.fulfilled;
@@ -38,7 +52,6 @@ describe("Change pass state", () => {
 
     it("Cannot activate a revoked pass", async () => {
         return expect(changeState(
-            service,
             PassState.Revoked,
             PassState.Active
         )).to.eventually.be.rejectedWith(/InvalidStateChange/);
@@ -46,7 +59,6 @@ describe("Change pass state", () => {
 
     it("Can freeze an active pass", async () => {
         return expect(changeState(
-            service,
             PassState.Active,
             PassState.Frozen
         )).to.eventually.be.fulfilled;
@@ -54,7 +66,6 @@ describe("Change pass state", () => {
 
     it("Cannot freeze a frozen token", async () => {
         return expect(changeState(
-            service,
             PassState.Frozen,
             PassState.Frozen
         )).to.eventually.be.rejectedWith(/InvalidStateChange/);
@@ -62,7 +73,6 @@ describe("Change pass state", () => {
 
     it("Cannot freeze a revoked token", async () => {
         return expect(changeState(
-            service,
             PassState.Revoked,
             PassState.Frozen
         )).to.eventually.be.rejectedWith(/InvalidStateChange/);
@@ -70,7 +80,6 @@ describe("Change pass state", () => {
 
     it("Can revoke an active pass", async () => {
         return expect(changeState(
-            service,
             PassState.Active,
             PassState.Revoked
         )).to.eventually.be.fulfilled;
@@ -78,15 +87,13 @@ describe("Change pass state", () => {
 
     it("Can revoke a frozen token", async () => {
         return expect(changeState(
-            service,
             PassState.Frozen,
             PassState.Revoked
         )).to.eventually.be.fulfilled;
     });
 
-    it.only("Cannot revoke a revoked token", async () => {
+    it("Cannot revoke a revoked token", async () => {
         return expect(changeState(
-            service,
             PassState.Revoked,
             PassState.Revoked
         )).to.eventually.be.rejectedWith(/InvalidStateChange/);

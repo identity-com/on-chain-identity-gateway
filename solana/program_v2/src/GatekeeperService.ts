@@ -16,17 +16,15 @@ import {PassAccount, PassState, PassStateMapping} from "./lib/wrappers";
 
 export class GatekeeperService extends AbstractService {
     private constructor(_program: Program<GatewayV2>,
-                        _dataAccount: PublicKey,
                         private _network: PublicKey,
                         private _gatekeeper: PublicKey,
                         _cluster: ExtendedCluster = SOLANA_MAINNET,
                         _wallet: Wallet = new NonSigningWallet(),
                         _opts: ConfirmOptions = AnchorProvider.defaultOptions()) {
-        super(_program, _dataAccount, _cluster, _wallet, _opts);
+        super(_program, undefined, _cluster, _wallet, _opts);
     }
 
     static async build(
-        dataAccount: PublicKey,
         network: PublicKey,
         gatekeeper: PublicKey,
         wallet: Wallet,
@@ -46,7 +44,6 @@ export class GatekeeperService extends AbstractService {
 
         return new GatekeeperService(
             program,
-            dataAccount,
             network,
             gatekeeper,
             cluster,
@@ -57,7 +54,6 @@ export class GatekeeperService extends AbstractService {
 
     static async buildFromAnchor(
         program: Program<GatewayV2>,
-        dataAccount: PublicKey,
         network: PublicKey,
         gatekeeper: PublicKey,
         cluster: ExtendedCluster,
@@ -66,7 +62,6 @@ export class GatekeeperService extends AbstractService {
     ): Promise<GatekeeperService> {
         return new GatekeeperService(
             program,
-            dataAccount,
             network,
             gatekeeper,
             cluster,
@@ -79,24 +74,28 @@ export class GatekeeperService extends AbstractService {
         subject: PublicKey,
         network: PublicKey,
         pass_number: number = 0
-    ): Promise<[PublicKey, number]> {
+    ): Promise<PublicKey> {
         const pass_number_buffer = Buffer.alloc(2);
         pass_number_buffer.writeInt16LE(pass_number);
 
-        return PublicKey.findProgramAddress(
+        const [address] = await PublicKey.findProgramAddress(
             [anchor.utils.bytes.utf8.encode(DEFAULT_PASS_SEED), subject.toBuffer(), network.toBuffer(), pass_number_buffer],
             GATEWAY_PROGRAM
         );
+
+        return address;
     }
 
     issue(
-        authority: PublicKey = this.getWallet().publicKey,
+        passAccount: PublicKey,
+        subject: PublicKey,
         passNumber: number = 0,
+        authority: PublicKey = this.getWallet().publicKey,
     ): ServiceBuilder {
         const instructionPromise = this.getProgram().methods
-            .issuePass(authority, passNumber)
+            .issuePass(subject, passNumber)
             .accounts({
-                pass: this._dataAccount,
+                pass: passAccount,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 payer: authority,
                 network: this._network,
@@ -117,14 +116,15 @@ export class GatekeeperService extends AbstractService {
 
     setState(
         state: PassState,
-        subject: PublicKey = this.getWallet().publicKey,
+        passAccount: PublicKey,
+        subject: PublicKey,
         passNumber = 0,
         authority: PublicKey = this.getWallet().publicKey
     ): ServiceBuilder {
         const instructionPromise = this.getProgram().methods
             .setPassState(EnumMapper.to(state, PassStateMapping), subject, passNumber)
             .accounts({
-                pass: this.getDataAccount(),
+                pass: passAccount,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 authority,
                 network: this._network
@@ -143,14 +143,15 @@ export class GatekeeperService extends AbstractService {
     }
 
     refreshPass(
-        subject: PublicKey = this.getWallet().publicKey,
+        passAccount: PublicKey,
+        subject: PublicKey,
         passNumber = 0,
         authority: PublicKey = this.getWallet().publicKey
     ): ServiceBuilder {
         const instructionPromise = this.getProgram().methods
             .refreshPass(subject, passNumber)
             .accounts({
-                pass: this.getDataAccount(),
+                pass: passAccount,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 authority,
                 network: this._network
@@ -174,7 +175,6 @@ export class GatekeeperService extends AbstractService {
         authority: PublicKey = this.getWallet().publicKey
     ): ServiceBuilder {
         const instructionPromise = this.getProgram().methods
-
             .refreshPass(subject, passNumber)
             .accounts({
                 pass: this.getDataAccount(),
@@ -197,14 +197,13 @@ export class GatekeeperService extends AbstractService {
 
     changePassGatekeeper(
         gatekeeper: PublicKey,
-        subject: PublicKey = this.getWallet().publicKey,
-        passNumber = 0,
+        passAccount: PublicKey,
         authority: PublicKey = this.getWallet().publicKey,
     ): ServiceBuilder {
         const instructionPromise = this.getProgram().methods
-            .changePassGatekeeper(subject, passNumber)
+            .changePassGatekeeper()
             .accounts({
-                pass: this.getDataAccount(),
+                pass: passAccount,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 authority,
                 network: this._network,
@@ -225,8 +224,10 @@ export class GatekeeperService extends AbstractService {
     }
 
     async getPassAccount(
-        account: PublicKey = this.getDataAccount()
+        subject: PublicKey,
+        passNumber: number = 0
     ): Promise<PassAccount | null> {
+        const account = await GatekeeperService.createPassAddress(subject, this._network, passNumber)
         return this.getProgram().account.pass
             .fetchNullable(account)
             .then(PassAccount.from);

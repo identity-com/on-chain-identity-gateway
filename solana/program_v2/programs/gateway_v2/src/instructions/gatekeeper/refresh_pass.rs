@@ -14,7 +14,7 @@ pub struct PassRefresh<'info> {
     seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
     bump,
     // // TODO: Gatekeeper authority is required to set state
-    // // constraint = pass.initial_authority == authority.key(),
+    // constraint = pass.initial_authority == authority.key(),
     mut
     )]
     pub pass: Account<'info, Pass>,

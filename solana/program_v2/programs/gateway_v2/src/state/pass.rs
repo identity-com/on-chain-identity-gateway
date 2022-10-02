@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use anchor_lang::prelude::*;
 use crate::errors::PassErrors;
-use crate::util::{OC_SIZE_DISCRIMINATOR, OC_SIZE_PUBKEY, OC_SIZE_U64, OC_SIZE_U8};
+use crate::util::{OC_SIZE_DISCRIMINATOR, OC_SIZE_PUBKEY, OC_SIZE_U16, OC_SIZE_U64, OC_SIZE_U8};
 
 #[derive(Debug)]
 #[account]
@@ -13,7 +13,7 @@ pub struct Pass {
     /// The network this pass belongs to
     pub network: Pubkey,
     /// The pass number
-    pub pass_number: u8,
+    pub pass_number: u16,
     /// The bump for the signer
     pub signer_bump: u8,
     /// The gatekeeper that issued this pass
@@ -80,7 +80,7 @@ impl Pass {
         + OC_SIZE_U8 // version
         + OC_SIZE_PUBKEY // subject
         + OC_SIZE_PUBKEY // network
-        + OC_SIZE_U8 // pass_number
+        + OC_SIZE_U16 // pass_number
         + OC_SIZE_U8 // signer_bump
         + OC_SIZE_PUBKEY // gatekeeper
         + OC_SIZE_U64 // issue_time

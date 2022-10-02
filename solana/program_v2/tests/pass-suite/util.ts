@@ -5,6 +5,8 @@ import {TEST_GATEKEEPER, TEST_NETWORK} from "../util/constants";
 import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {GatewayV2} from "../../target/types/gateway_v2";
 import {PassState} from "../../src/lib/wrappers";
+import {NetworkService} from "../../src/NetworkService";
+import {Wallet} from "@project-serum/anchor";
 
 anchor.setProvider(anchor.AnchorProvider.env());
 const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
@@ -16,13 +18,26 @@ if (process.env.SOLANA_LOGS) {
     });
 }
 
-export const createGatekeeperService = async () => {
-    let service: GatekeeperService;
-    let dataAccount: PublicKey;
-    let bump: number;
-    let authorityKeypair = Keypair.generate();
+export const createNetworkService = async (
+    authority: Keypair = Keypair.generate(),
+    network: PublicKey = TEST_NETWORK,
+) => {
+    await airdrop(programProvider.connection, authority.publicKey, LAMPORTS_PER_SOL);
 
-    let authority = new anchor.Wallet(authorityKeypair);
+    const [dataAccount] = await NetworkService.createGatekeeperAddress(authority.publicKey, network);
+
+    return NetworkService.buildFromAnchor(
+        program,
+        dataAccount,
+        'localnet',
+        programProvider,
+        new Wallet(authority)
+    )
+}
+
+export const createGatekeeperService = async (gatekeeper: PublicKey = TEST_GATEKEEPER, network: PublicKey = TEST_NETWORK) => {
+    const authorityKeypair = Keypair.generate();
+    const authority = new anchor.Wallet(authorityKeypair);
 
     await airdrop(
         programProvider.connection,
@@ -30,14 +45,8 @@ export const createGatekeeperService = async () => {
         LAMPORTS_PER_SOL * 2
     );
 
-    [dataAccount, bump] = await GatekeeperService.createPassAddress(
-        authority.publicKey,
-        TEST_NETWORK
-    );
-
-    service = await GatekeeperService.buildFromAnchor(
+    const service = await GatekeeperService.buildFromAnchor(
         program,
-        dataAccount,
         TEST_NETWORK,
         TEST_GATEKEEPER,
         'localnet',
@@ -45,27 +54,5 @@ export const createGatekeeperService = async () => {
         authority
     );
 
-    try {
-        await service.issue(authority.publicKey, 0).rpc();
-    } catch (e) {
-        console.log(e);
-    }
     return service;
-}
-
-export const changeState = async (service: GatekeeperService, from: PassState, to: PassState) => {
-    const account = await service.getPassAccount();
-
-    // Get it in the expected state
-    if (account.state !== from) {
-        await service.setState(from).rpc();
-    }
-
-    await service.setState(to, service.getWallet().publicKey).rpc();
-
-    const updatedAccount = await service.getPassAccount();
-
-    if (updatedAccount.state !== to) {
-        throw new Error("State change failed");
-    }
 }

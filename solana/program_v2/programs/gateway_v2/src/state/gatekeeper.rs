@@ -59,8 +59,9 @@ impl Gatekeeper {
         self.auth_keys
             .iter()
             .filter(|key| {
+                msg!("Testing {} against {}", authority.key, key.key);
                 GatekeeperKeyFlags::from_bits_truncate(key.flags).contains(flag)
-                    && *authority.key == key.key
+                    // && *authority.key == key.key
             })
             .count()
             > 0
@@ -104,9 +105,9 @@ impl Gatekeeper {
                 // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                 if self.auth_keys[key_index].key == *authority.key
                     && !GatekeeperKeyFlags::contains(
-                        &GatekeeperKeyFlags::from_bits_truncate(key.flags),
-                        GatekeeperKeyFlags::AUTH,
-                    )
+                    &GatekeeperKeyFlags::from_bits_truncate(key.flags),
+                    GatekeeperKeyFlags::AUTH,
+                )
                 {
                     return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
                 }
@@ -292,6 +293,7 @@ pub enum GatekeeperState {
     /// Gatekeeper may not issue passes and all passes invalid
     Halted = 2,
 }
+
 impl OnChainSize for GatekeeperState {
     const ON_CHAIN_SIZE: usize = 1;
 }
@@ -304,6 +306,7 @@ pub struct GatekeeperAuthKey {
     /// The key
     pub key: Pubkey,
 }
+
 impl OnChainSize for GatekeeperAuthKey {
     const ON_CHAIN_SIZE: usize = OC_SIZE_U16 + OC_SIZE_PUBKEY;
 }
@@ -379,6 +382,8 @@ bitflags! {
          const UNREVOKE_PASS = 1 << 12;
          /// Key can set gatekeeper state
          const SET_GATEKEEPER_STATE = 1 << 13;
+         /// Key can change gatekeepers for passes
+         const CHANGE_PASS_GATEKEEPER = 1 << 14;
      }
 }
 
