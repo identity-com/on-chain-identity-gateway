@@ -63,7 +63,7 @@ describe('Gateway v2 Client', () => {
               key: programProvider.wallet.publicKey,
             },
           ],
-          networkIndex: 0,
+          networkIndex: 0, // TODO: This should probably not be part of the network data
           supportedTokens: [],
           gatekeepers: [],
         })
