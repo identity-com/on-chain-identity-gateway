@@ -340,7 +340,7 @@ export async function addFeatureToNetwork(
   network: PublicKey,
   feature: NetworkFeature
 ): Promise<TransactionInstruction> {
-  const featureAccount = await getFeatureAccountAddress(feature, network);
+  const featureAccount = getFeatureAccountAddress(feature, network);
 
   const keys: AccountMeta[] = [
     { pubkey: payer, isSigner: true, isWritable: true },
@@ -368,7 +368,7 @@ export async function removeFeatureFromNetwork(
   network: PublicKey,
   feature: NetworkFeature
 ): Promise<TransactionInstruction> {
-  const featureAccount = await getFeatureAccountAddress(feature, network);
+  const featureAccount = getFeatureAccountAddress(feature, network);
 
   const keys: AccountMeta[] = [
     { pubkey: payer, isSigner: true, isWritable: true },

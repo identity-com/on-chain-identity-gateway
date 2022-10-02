@@ -13,3 +13,4 @@ export const DEFAULT_SOLANA_RETRIES: number = 3;
 export const SOLANA_TIMEOUT_PROCESSED = 3000;
 export const SOLANA_TIMEOUT_CONFIRMED = 7000;
 export const SOLANA_TIMEOUT_FINALIZED = 10000;
+export const DEFAULT_DERIVATION_SEED = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);

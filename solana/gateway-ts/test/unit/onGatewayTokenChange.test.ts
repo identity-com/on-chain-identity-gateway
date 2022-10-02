@@ -12,15 +12,13 @@ import {
   onGatewayTokenChange,
   removeAccountChangeListener,
   State,
-} from "../../src";
-import { PROGRAM_ID } from "../../src/lib/constants";
-import {
+  PROGRAM_ID,
   Active,
   GatewayTokenData,
   GatewayTokenState,
   Revoked,
-} from "../../src/lib/GatewayTokenData";
-import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
+  AssignablePublicKey,
+} from "../../src";
 import { VALIDATOR_URL } from "../constants";
 
 chai.use(chaiSubset);

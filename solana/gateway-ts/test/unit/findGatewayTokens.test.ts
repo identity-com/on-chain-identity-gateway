@@ -2,13 +2,14 @@ import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
-import { findGatewayTokens, State } from "../../src";
-import { PROGRAM_ID } from "../../src/lib/constants";
 import {
+  findGatewayTokens,
+  State,
   Active,
   Revoked,
   GatewayTokenState,
-} from "../../src/lib/GatewayTokenData";
+  PROGRAM_ID,
+} from "../../src";
 import { VALIDATOR_URL } from "../constants";
 import { describe } from "mocha";
 import { getAccountWithState } from "./utils";
