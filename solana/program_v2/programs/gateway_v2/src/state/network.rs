@@ -149,9 +149,9 @@ impl GatekeeperNetwork {
                 // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                 if self.auth_keys[key_index].key == *authority.key
                     && !NetworkKeyFlags::contains(
-                    &NetworkKeyFlags::from_bits_truncate(key.flags),
-                    NetworkKeyFlags::AUTH,
-                )
+                        &NetworkKeyFlags::from_bits_truncate(key.flags),
+                        NetworkKeyFlags::AUTH,
+                    )
                 {
                     return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
                 }
