@@ -1,28 +1,12 @@
-import {
-  AnchorProvider,
-  Program,
-  Idl,
-  parseIdlErrors,
-  translateError,
-} from '@project-serum/anchor';
+import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
-import {
-  clusterApiUrl,
-  ConfirmOptions,
-  Connection,
-  Keypair,
-  PublicKey,
-  Signer,
-  Transaction,
-  TransactionInstruction,
-} from '@solana/web3.js';
+import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
 import {
   AuthKeyStructure,
   CreateNetworkData,
   FeeStructure,
   NetworkAccount,
-  UpdateFeeStructure,
   UpdateNetworkData,
   Wallet,
 } from './lib/types';
@@ -33,7 +17,11 @@ import {
   getConnectionByCluster,
 } from './lib/connection';
 import { findProgramAddress } from './lib/utils';
-import { GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
+import {
+  DEFAULT_SEED_STRING,
+  GATEWAY_PROGRAM,
+  SOLANA_MAINNET,
+} from './lib/constants';
 import { GatewayV2, IDL } from '../target/types/gateway_v2';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
@@ -81,9 +69,20 @@ export class AdminService extends AbstractService {
   }
 
   static async createNetworkAddress(
-    authority: PublicKey
+    authority: PublicKey,
+    networkIndex: number = 0
   ): Promise<[PublicKey, number]> {
-    return findProgramAddress(authority);
+    const network_index_buffer = Buffer.alloc(2);
+    network_index_buffer.writeInt16LE(networkIndex);
+
+    return PublicKey.findProgramAddress(
+      [
+        anchor.utils.bytes.utf8.encode(DEFAULT_SEED_STRING),
+        authority.toBuffer(),
+        network_index_buffer,
+      ],
+      GATEWAY_PROGRAM
+    );
   }
 
   closeNetwork(
@@ -94,7 +93,6 @@ export class AdminService extends AbstractService {
       .closeNetwork()
       .accounts({
         network: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         destination,
         authority,
       })
@@ -109,14 +107,15 @@ export class AdminService extends AbstractService {
       authority,
     });
   }
-
   createNetwork(
     data: CreateNetworkData = {
       authThreshold: 1,
       passExpireTime: 16,
-      signerBump: 0,
       fees: [],
-      authKeys: [{ flags: 1, key: this._wallet.publicKey }],
+      authKeys: [{ flags: 4097, key: this._wallet.publicKey }],
+      networkIndex: 0,
+      gatekeepers: [],
+      supportedTokens: [],
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
@@ -126,6 +125,9 @@ export class AdminService extends AbstractService {
         passExpireTime: new anchor.BN(data.passExpireTime),
         fees: data.fees,
         authKeys: data.authKeys,
+        networkIndex: data.networkIndex,
+        gatekeepers: data.gatekeepers,
+        supportedTokens: data.supportedTokens,
       })
       .accounts({
         network: this._dataAccount,
@@ -156,6 +158,9 @@ export class AdminService extends AbstractService {
         passExpireTime: new anchor.BN(data.passExpireTime),
         fees: data.fees,
         authKeys: data.authKeys,
+        gatekeepers: data.gatekeepers,
+        supportedTokens: data.supportedTokens,
+        networkFeatures: data.networkFeatures,
       })
       .accounts({
         network: this._dataAccount,
@@ -183,16 +188,21 @@ export class AdminService extends AbstractService {
         if (acct) {
           return {
             version: acct?.version,
-            initialAuthority: acct?.initialAuthority,
+            authority: acct?.authority,
+            networkIndex: acct?.networkIndex,
             authThreshold: acct?.authThreshold,
             passExpireTime: acct?.passExpireTime.toNumber(),
             fees: acct?.fees as FeeStructure[],
             authKeys: acct?.authKeys as AuthKeyStructure[],
+            networkFeatures: acct?.networkFeatures,
+            supportedTokens: acct?.supportedTokens,
+            gatekeepers: acct?.gatekeepers,
           };
         } else {
           return null;
         }
       });
+    //@ts-ignore
     return networkAccount;
   }
 }

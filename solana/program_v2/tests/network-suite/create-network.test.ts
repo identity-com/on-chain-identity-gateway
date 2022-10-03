@@ -23,7 +23,8 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
     [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey
+      authority.publicKey,
+      0
     );
 
     service = await AdminService.buildFromAnchor(
@@ -47,7 +48,6 @@ describe('Gateway v2 Client', () => {
         .createNetwork({
           authThreshold: 1,
           passExpireTime: 400,
-          signerBump: 0,
           fees: [
             {
               token: programProvider.wallet.publicKey,
@@ -63,6 +63,9 @@ describe('Gateway v2 Client', () => {
               key: programProvider.wallet.publicKey,
             },
           ],
+          networkIndex: 0, // TODO: This should probably not be part of the network data
+          supportedTokens: [],
+          gatekeepers: [],
         })
         .rpc();
 

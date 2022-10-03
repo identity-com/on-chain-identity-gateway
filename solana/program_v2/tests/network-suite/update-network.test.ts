@@ -27,7 +27,8 @@ describe('Gateway v2 Client', () => {
     authority = programProvider.wallet;
 
     [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey
+      authority.publicKey,
+      0
     );
 
     service = await AdminService.buildFromAnchor(
@@ -43,7 +44,6 @@ describe('Gateway v2 Client', () => {
       .createNetwork({
         authThreshold: 1,
         passExpireTime: 400,
-        signerBump: 0,
         fees: [
           {
             token: programProvider.wallet.publicKey,
@@ -70,6 +70,9 @@ describe('Gateway v2 Client', () => {
             key: extraAuthKey.publicKey,
           },
         ],
+        networkIndex: 0,
+        gatekeepers: [],
+        supportedTokens: [],
       })
       .rpc();
   });
@@ -94,6 +97,15 @@ describe('Gateway v2 Client', () => {
             remove: [],
           },
           authKeys: {
+            add: [],
+            remove: [],
+          },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
             add: [],
             remove: [],
           },
@@ -130,6 +142,15 @@ describe('Gateway v2 Client', () => {
             ],
             remove: [],
           },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
+            add: [],
+            remove: [],
+          },
         })
         .rpc();
       networkAccount = await service.getNetworkAccount();
@@ -160,6 +181,15 @@ describe('Gateway v2 Client', () => {
           authKeys: {
             add: [],
             remove: [extraAuthKey.publicKey],
+          },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
+            add: [],
+            remove: [],
           },
         })
         .rpc();
@@ -193,6 +223,15 @@ describe('Gateway v2 Client', () => {
             authKeys: {
               add: [],
               remove: [programProvider.wallet.publicKey],
+            },
+            networkFeatures: 1,
+            supportedTokens: {
+              add: [],
+              remove: [],
+            },
+            gatekeepers: {
+              add: [],
+              remove: [],
             },
           })
           .rpc()
@@ -232,6 +271,15 @@ describe('Gateway v2 Client', () => {
             ],
             remove: [],
           },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
+            add: [],
+            remove: [],
+          },
         })
         .rpc();
       networkAccount = await service.getNetworkAccount();
@@ -266,6 +314,15 @@ describe('Gateway v2 Client', () => {
             add: [],
             remove: [],
           },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
+            add: [],
+            remove: [],
+          },
         })
         .rpc();
       networkAccount = await service.getNetworkAccount();
@@ -287,6 +344,15 @@ describe('Gateway v2 Client', () => {
             remove: [feeKeypair.publicKey],
           },
           authKeys: {
+            add: [],
+            remove: [],
+          },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
             add: [],
             remove: [],
           },

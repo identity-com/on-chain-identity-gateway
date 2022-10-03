@@ -19,8 +19,19 @@ export const airdrop = async (
   });
 };
 
-export const findProgramAddress = async (authority: PublicKey) =>
-  PublicKey.findProgramAddress(
-    [anchor.utils.bytes.utf8.encode(DEFAULT_SEED_STRING), authority.toBuffer()],
+export const findProgramAddress = async (
+  authority: PublicKey,
+  network_index: number
+) => {
+  const network_index_buffer = Buffer.alloc(2);
+  network_index_buffer.writeInt16LE(network_index);
+
+  return PublicKey.findProgramAddress(
+    [
+      anchor.utils.bytes.utf8.encode(DEFAULT_SEED_STRING),
+      authority.toBuffer(),
+      network_index_buffer,
+    ],
     GATEWAY_PROGRAM
   );
+};
