@@ -149,9 +149,9 @@ impl GatekeeperNetwork {
                 // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                 if self.auth_keys[key_index].key == *authority.key
                     && !NetworkKeyFlags::contains(
-                        &NetworkKeyFlags::from_bits_truncate(key.flags),
-                        NetworkKeyFlags::AUTH,
-                    )
+                    &NetworkKeyFlags::from_bits_truncate(key.flags),
+                    NetworkKeyFlags::AUTH,
+                )
                 {
                     return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
                 }
@@ -210,20 +210,15 @@ impl GatekeeperNetwork {
         data: &UpdateNetworkData,
         authority: &mut Signer,
     ) -> Result<()> {
-        match data.network_features {
-            Some(network_features) => {
-                if network_features != self.network_features {
-                    if !self.can_access(authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
-                        return Err(error!(NetworkErrors::InsufficientAccessExpiry));
-                    }
-
-                    self.network_features = network_features
-                }
-
-                Ok(())
+        if data.network_features != self.network_features {
+            if !self.can_access(authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
+                return Err(error!(NetworkErrors::InsufficientAccessExpiry));
             }
-            None => Ok(()),
+
+            self.network_features = data.network_features
         }
+
+        Ok(())
     }
 
     pub fn update_supported_tokens(
@@ -264,6 +259,7 @@ impl GatekeeperNetwork {
         }
         Ok(())
     }
+
     pub fn update_gatekeepers(
         &mut self,
         data: &UpdateNetworkData,

@@ -27,7 +27,7 @@ pub struct UpdateNetworkData {
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: UpdateKeys,
     /// The [`GatekeeperNetwork::network_features`].
-    pub network_features: Option<u32>,
+    pub network_features: u32,
     /// The [`GatekeeperNetwork::supported_tokens`].
     pub supported_tokens: UpdateSupportedTokens,
     /// The [`GatekeeperNetwork::gatekeepers`].
