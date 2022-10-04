@@ -17,8 +17,12 @@ import {
   getConnectionByCluster,
 } from './lib/connection';
 import { findProgramAddress } from './lib/utils';
-import { SOLANA_MAINNET } from './lib/constants';
-import { GatewayV2 } from '../target/types/gateway_v2';
+import {
+  DEFAULT_SEED_STRING,
+  GATEWAY_PROGRAM,
+  SOLANA_MAINNET,
+} from './lib/constants';
+import { GatewayV2, IDL } from '../target/types/gateway_v2';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
 /**
@@ -89,9 +93,20 @@ export class AdminService extends AbstractService {
    * @param authority - the authority required to sign the transaction
    */
   static async createNetworkAddress(
-    authority: PublicKey
+    authority: PublicKey,
+    networkIndex: number = 0
   ): Promise<[PublicKey, number]> {
-    return findProgramAddress('gw-network', authority);
+    const network_index_buffer = Buffer.alloc(2);
+    network_index_buffer.writeInt16LE(networkIndex);
+
+    return PublicKey.findProgramAddress(
+      [
+        anchor.utils.bytes.utf8.encode(DEFAULT_SEED_STRING),
+        authority.toBuffer(),
+        network_index_buffer,
+      ],
+      GATEWAY_PROGRAM
+    );
   }
   /**
    * let admin to close the network account
@@ -106,7 +121,6 @@ export class AdminService extends AbstractService {
       .closeNetwork()
       .accounts({
         network: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         destination,
         authority,
       })
@@ -133,9 +147,11 @@ export class AdminService extends AbstractService {
     data: CreateNetworkData = {
       authThreshold: 1,
       passExpireTime: 16,
-      signerBump: 0,
       fees: [],
       authKeys: [{ flags: 4097, key: this._wallet.publicKey }],
+      networkIndex: 0,
+      gatekeepers: [],
+      supportedTokens: [],
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
@@ -145,6 +161,9 @@ export class AdminService extends AbstractService {
         passExpireTime: new anchor.BN(data.passExpireTime),
         fees: data.fees,
         authKeys: data.authKeys,
+        networkIndex: data.networkIndex,
+        gatekeepers: data.gatekeepers,
+        supportedTokens: data.supportedTokens,
       })
       .accounts({
         network: this._dataAccount,
@@ -209,16 +228,22 @@ export class AdminService extends AbstractService {
         if (acct) {
           return {
             version: acct?.version,
-            initialAuthority: acct?.initialAuthority,
+            authority: acct?.authority,
+            networkIndex: acct?.networkIndex,
             authThreshold: acct?.authThreshold,
             passExpireTime: acct?.passExpireTime.toNumber(),
             fees: acct?.fees as FeeStructure[],
             authKeys: acct?.authKeys as AuthKeyStructure[],
+            networkFeatures: acct?.networkFeatures,
+            supportedTokens: acct?.supportedTokens,
+            gatekeepers: acct?.gatekeepers,
           };
         } else {
           return null;
         }
       });
+    // TODO: Why the ignore ?!?
+    //@ts-ignore
     return networkAccount;
   }
 }

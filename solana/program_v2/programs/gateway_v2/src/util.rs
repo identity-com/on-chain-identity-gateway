@@ -3,7 +3,7 @@
 // pub const OC_SIZE_BOOL: usize = 1;
 pub const OC_SIZE_U8: usize = 1;
 pub const OC_SIZE_U16: usize = 2;
-// pub const OC_SIZE_U32: usize = 4;
+pub const OC_SIZE_U32: usize = 4;
 pub const OC_SIZE_U64: usize = 8;
 // pub const OC_SIZE_U128: usize = 16;
 pub const OC_SIZE_PUBKEY: usize = 32;

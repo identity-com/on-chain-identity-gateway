@@ -1,5 +1,4 @@
 import { PublicKey, Transaction } from '@solana/web3.js';
-import * as anchor from '@project-serum/anchor';
 
 export interface Wallet {
   signTransaction(tx: Transaction): Promise<Transaction>;
@@ -33,9 +32,11 @@ export type AuthKeyStructure = {
 export type CreateNetworkData = {
   authThreshold: number;
   passExpireTime: number;
-  signerBump: number;
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
+  networkIndex: number;
+  supportedTokens: SupportedToken[];
+  gatekeepers: PublicKey[];
 };
 
 export type UpdateNetworkData = {
@@ -43,15 +44,42 @@ export type UpdateNetworkData = {
   passExpireTime: number;
   fees: UpdateFeeStructure;
   authKeys: UpdateAuthKeytructure;
+  networkFeatures: number;
+  supportedTokens: UpdateSupportedTokens;
+  gatekeepers: UpdateGatekeepers;
 };
+
+export type UpdateSupportedTokens = {
+  add: SupportedToken[];
+  remove: PublicKey[];
+};
+
+export type UpdateGatekeepers = {
+  add: PublicKey[];
+  remove: PublicKey[];
+};
+
 export type NetworkAccount = {
   version: number;
-  initialAuthority: PublicKey;
+  authority: PublicKey;
+  networkIndex: number;
   authThreshold: number;
   passExpireTime: number;
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
+  networkFeatures: number;
+  // Hash Set
+  supportedTokens: SupportedToken[];
+  // Hash Set
+  gatekeepers: PublicKey[];
 };
+
+export type SupportedToken = {
+  key: PublicKey;
+  settlementInfo: SettlementInfo;
+};
+
+export type SettlementInfo = {};
 
 export type CreateGatekeeperData = {
   gatekeeperBump: number;

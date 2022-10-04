@@ -30,8 +30,10 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
+    // createNetworkAddress( authority pubkey, network index)
     [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey
+      authority.publicKey,
+      0
     );
 
     service = await AdminService.buildFromAnchor(

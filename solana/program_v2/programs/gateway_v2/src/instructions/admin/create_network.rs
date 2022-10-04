@@ -1,16 +1,14 @@
 use crate::constants::NETWORK_SEED;
 use crate::errors::NetworkErrors;
 use crate::state::{
-    GatekeeperNetwork, GatekeeperNetworkSize, NetworkAuthKey, NetworkFees, NetworkKeyFlags,
+    GatekeeperNetwork, NetworkAuthKey, NetworkFees, NetworkKeyFlags, SupportedToken,
 };
 use anchor_lang::prelude::*;
 
-pub fn create_network(
-    authority: Pubkey,
-    bump: u8,
-    data: CreateNetworkData,
-    network: &mut Account<GatekeeperNetwork>,
-) -> Result<()> {
+pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkData) -> Result<()> {
+    let network = &mut ctx.accounts.network;
+    let authority = &mut ctx.accounts.authority;
+
     // Check there are auth_keys provided (TODO: Is this necessary? The next check implies this)
     if data.auth_keys.is_empty() {
         return Err(error!(NetworkErrors::NoAuthKeys));
@@ -30,9 +28,9 @@ pub fn create_network(
     }
 
     network.auth_threshold = data.auth_threshold;
-    network.initial_authority = authority;
+    network.authority = *authority.key;
     network.pass_expire_time = data.pass_expire_time;
-    network.signer_bump = bump;
+    network.network_bump = *ctx.bumps.get("network").unwrap();
     network.auth_keys = data.auth_keys;
     network.fees = data.fees;
 
@@ -49,22 +47,25 @@ pub struct CreateNetworkData {
     pub fees: Vec<NetworkFees>,
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: Vec<NetworkAuthKey>,
+    pub network_index: u16,
+    pub gatekeepers: Vec<Pubkey>,
+    pub supported_tokens: Vec<SupportedToken>,
 }
 
 #[derive(Accounts, Debug)]
 #[instruction(data: CreateNetworkData)]
 pub struct CreateNetworkAccount<'info> {
     #[account(
-    init,
-    payer = authority,
-    space = GatekeeperNetwork::on_chain_size_with_arg(
-    GatekeeperNetworkSize{
-    fees_count: data.fees.len() as u16,
-    auth_keys: data.auth_keys.len() as u16,
-    }
-    ),
-    seeds = [NETWORK_SEED, authority.key().as_ref()],
-    bump
+        init,
+        payer = authority,
+        space = GatekeeperNetwork::size(
+            data.fees.len(),
+            data.auth_keys.len(),
+            data.gatekeepers.len(),
+            data.supported_tokens.len()
+        ),
+        seeds = [NETWORK_SEED, authority.key().as_ref(), & data.network_index.to_le_bytes()],
+        bump
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]
