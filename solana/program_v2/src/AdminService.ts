@@ -141,8 +141,8 @@ export class AdminService extends AbstractService {
       didAccountSizeDeltaCallback: () => {
         throw new Error('Dynamic Alloc not supported');
       },
-        // TODO: Implement this...
-      allowsDynamicAlloc: false,
+      // TODO: Implement this...
+          allowsDynamicAlloc: false,
       authority,
     });
   }
