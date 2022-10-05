@@ -142,7 +142,7 @@ export class AdminService extends AbstractService {
         throw new Error('Dynamic Alloc not supported');
       },
       // TODO: Implement this...
-          allowsDynamicAlloc: false,
+      allowsDynamicAlloc: false,
       authority,
     });
   }
