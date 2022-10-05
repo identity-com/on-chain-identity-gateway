@@ -15,8 +15,8 @@ describe('Gateway v2 Client', () => {
 
   let adminService: AdminService;
   let networkService: NetworkService;
-  let adminDataAccount: PublicKey;
   let networkDataAccount: PublicKey;
+  let gatekeeperDataAccount: PublicKey;
 
   let adminAuthority: anchor.Wallet;
   let networkAuthority: anchor.Wallet;
@@ -38,17 +38,17 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
-    [adminDataAccount] = await AdminService.createNetworkAddress(
+    [networkDataAccount] = await AdminService.createNetworkAddress(
       adminAuthority.publicKey
     );
-    [networkDataAccount] = await NetworkService.createGatekeeperAddress(
+    [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
       adminAuthority.publicKey,
-      adminDataAccount
+      networkDataAccount
     );
 
     adminService = await AdminService.buildFromAnchor(
       program,
-      adminDataAccount,
+      networkDataAccount,
       'localnet',
       programProvider,
       adminAuthority
@@ -56,7 +56,7 @@ describe('Gateway v2 Client', () => {
 
     networkService = await NetworkService.buildFromAnchor(
       program,
-      networkDataAccount,
+      gatekeeperDataAccount,
       'localnet',
       programProvider,
       adminAuthority
@@ -67,12 +67,12 @@ describe('Gateway v2 Client', () => {
   describe('Create Gatekeeper', () => {
     it('Creates a gatekeeper w/ default data on an established network', async function () {
       // creates a gatekeeper with the admin's authority
-      await networkService.createGatekeeper(adminDataAccount).rpc();
+      await networkService.createGatekeeper(networkDataAccount).rpc();
       // retrieves the gatekeeper
       let gatekeeperAccount = await networkService.getGatekeeperAccount();
       // tests to see if the requested gatekeeper's associated network equals the adminAuthority (or network) public key
       expect(gatekeeperAccount?.gatekeeperNetwork.toBase58()).to.equal(
-        adminDataAccount.toBase58()
+        networkDataAccount.toBase58()
       );
     }).timeout(10000);
   });
