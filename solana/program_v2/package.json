@@ -16,19 +16,12 @@
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
     "create-fixtures": "anchor run createTestFixtureAccount",
-    "prepare": "cd .. && husky install ./solana/program_v2/.husky",
     "start-validator": "solana-test-validator --bpf-program FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe ./target/deploy/program_v2.so --reset"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "cd solana/ && cd program_v2/ && yarn lint"
-    }
   },
   "dependencies": {
     "@project-serum/anchor": "^0.25.0",
     "@solana/web3.js": "^1.41.3",
-    "chai-as-promised": "^7.1.1",
-    "husky": "^8.0.1"
+    "chai-as-promised": "^7.1.1"
   },
   "devDependencies": {
     "@project-serum/anchor-cli": "https://github.com/kklas/anchor-nightly/releases/download/anchor-cli-latest/anchor-cli-0.25.0-7eb8ca8.tgz",
