@@ -4,6 +4,7 @@ use crate::util::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
+use crate::instructions::network::UpdateGatekeeperData;
 
 // TODO: Modify methods to require correct authorization.
 

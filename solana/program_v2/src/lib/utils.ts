@@ -59,4 +59,3 @@ export const findProgramAddress = async (seed: string, authority: PublicKey) =>
     [anchor.utils.bytes.utf8.encode(seed), authority.toBuffer()],
     GATEWAY_PROGRAM
   );
-};

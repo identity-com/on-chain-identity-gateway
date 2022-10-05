@@ -2,11 +2,10 @@ use crate::constants::NETWORK_SEED;
 use crate::state::{GatekeeperNetwork, NetworkAuthKey, NetworkFees, SupportedToken};
 use anchor_lang::prelude::*;
 
-pub fn update_network(
-    data: &UpdateNetworkData,
-    network: &mut Account<GatekeeperNetwork>,
-    authority: &mut Signer,
-) -> Result<()> {
+pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkData) -> Result<()> {
+    let network = &mut ctx.accounts.network;
+    let authority = &mut ctx.accounts.authority;
+
     network.set_expire_time(data, authority)?;
     network.update_auth_keys(data, authority)?;
     network.update_fees(data, authority)?;
