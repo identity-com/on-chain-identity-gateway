@@ -1,9 +1,9 @@
 use crate::errors::GatekeeperErrors;
+use crate::instructions::network::UpdateGatekeeperData;
 use crate::util::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
-use crate::instructions::network::UpdateGatekeeperData;
 
 // TODO: Modify methods to require correct authorization.
 
@@ -95,9 +95,9 @@ impl Gatekeeper {
                 // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                 if self.auth_keys[key_index].key == *authority.key
                     && !GatekeeperKeyFlags::contains(
-                    &GatekeeperKeyFlags::from_bits_truncate(key.flags),
-                    GatekeeperKeyFlags::AUTH,
-                )
+                        &GatekeeperKeyFlags::from_bits_truncate(key.flags),
+                        GatekeeperKeyFlags::AUTH,
+                    )
                 {
                     return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
                 }

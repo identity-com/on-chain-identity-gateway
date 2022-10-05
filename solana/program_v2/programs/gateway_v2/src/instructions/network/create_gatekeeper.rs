@@ -1,11 +1,10 @@
 use crate::constants::GATEKEEPER_SEED;
 use crate::errors::GatekeeperErrors;
 use crate::state::gatekeeper::{
-    Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags,
-    GatekeeperState,
+    Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, GatekeeperState,
 };
-use anchor_lang::prelude::*;
 use crate::state::GatekeeperNetwork;
+use anchor_lang::prelude::*;
 
 pub fn create_gatekeeper(
     ctx: Context<CreateGatekeeperAccount>,

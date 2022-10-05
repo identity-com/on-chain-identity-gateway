@@ -13,9 +13,13 @@ declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
 #[program]
 pub mod gateway_v2 {
-    use crate::instructions::network::{CloseGatekeeperAccount, CreateGatekeeperAccount, CreateGatekeeperData, GatekeeperWithdrawAccount, SetGatekeeperStateAccount, UpdateGatekeeperAccount, UpdateGatekeeperData};
-    use crate::state::GatekeeperState;
     use super::*;
+    use crate::instructions::network::{
+        CloseGatekeeperAccount, CreateGatekeeperAccount, CreateGatekeeperData,
+        GatekeeperWithdrawAccount, SetGatekeeperStateAccount, UpdateGatekeeperAccount,
+        UpdateGatekeeperData,
+    };
+    use crate::state::GatekeeperState;
 
     pub fn create_network(
         ctx: Context<CreateNetworkAccount>,
@@ -39,20 +43,14 @@ pub mod gateway_v2 {
         ctx: Context<CreateGatekeeperAccount>,
         data: CreateGatekeeperData,
     ) -> Result<()> {
-        instructions::network::create_gatekeeper(
-            ctx,
-            data,
-        )
+        instructions::network::create_gatekeeper(ctx, data)
     }
 
     pub fn update_gatekeeper(
         ctx: Context<UpdateGatekeeperAccount>,
         data: UpdateGatekeeperData,
     ) -> Result<()> {
-        instructions::network::update_gatekeeper(
-            ctx,
-            data,
-        )
+        instructions::network::update_gatekeeper(ctx, data)
     }
 
     pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
@@ -70,9 +68,6 @@ pub mod gateway_v2 {
         ctx: Context<GatekeeperWithdrawAccount>,
         receiver: Pubkey,
     ) -> Result<()> {
-        instructions::network::gatekeeper_withdraw(
-            ctx,
-            receiver,
-        )
+        instructions::network::gatekeeper_withdraw(ctx, receiver)
     }
 }

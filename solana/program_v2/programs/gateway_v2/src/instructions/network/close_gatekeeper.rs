@@ -7,7 +7,10 @@ pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
 
-    let index = network.gatekeepers.iter().position(|k| k == &gatekeeper.key());
+    let index = network
+        .gatekeepers
+        .iter()
+        .position(|k| k == &gatekeeper.key());
 
     if index.is_some() {
         network.gatekeepers.remove(index.unwrap());
