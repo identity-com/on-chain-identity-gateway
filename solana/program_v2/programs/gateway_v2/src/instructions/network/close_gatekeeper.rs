@@ -12,8 +12,8 @@ pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
         .iter()
         .position(|k| k == &gatekeeper.key());
 
-    if index.is_some() {
-        network.gatekeepers.remove(index.unwrap());
+    if let Some(key_index) = index {
+        network.gatekeepers.remove(key_index);
     }
 
     Ok(())
