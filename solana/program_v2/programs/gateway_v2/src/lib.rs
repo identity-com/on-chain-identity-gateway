@@ -14,12 +14,6 @@ declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 #[program]
 pub mod gateway_v2 {
     use super::*;
-    use crate::instructions::network::{
-        CloseGatekeeperAccount, CreateGatekeeperAccount, CreateGatekeeperData,
-        GatekeeperWithdrawAccount, SetGatekeeperStateAccount, UpdateGatekeeperAccount,
-        UpdateGatekeeperData,
-    };
-    use crate::state::GatekeeperState;
 
     pub fn create_network(
         ctx: Context<CreateNetworkAccount>,
