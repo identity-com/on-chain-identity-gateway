@@ -6,9 +6,6 @@ use anchor_lang::prelude::*;
 pub fn set_gatekeeper_state(
     ctx: Context<SetGatekeeperStateAccount>,
     state: GatekeeperState,
-    // state: &GatekeeperState,
-    // gatekeeper: &mut Account<Gatekeeper>,
-    // authority: &mut Signer,
 ) -> Result<()> {
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let authority = &mut ctx.accounts.authority;
