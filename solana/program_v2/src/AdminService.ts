@@ -202,7 +202,6 @@ export class AdminService extends AbstractService {
           return null;
         }
       });
-    // TODO: Why the ignore ?!?
     //@ts-ignore
     return networkAccount;
   }
