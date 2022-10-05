@@ -1,12 +1,11 @@
-// use crate::arguments::{GatekeeperAccount, GatekeeperNetworkAccount};
-// use crate::pda::GatekeeperSignerSeeder;
 use crate::constants::GATEKEEPER_SEED;
 use crate::errors::GatekeeperErrors;
 use crate::state::gatekeeper::{
-    Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, GatekeeperSize,
+    Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags,
     GatekeeperState,
 };
 use anchor_lang::prelude::*;
+use crate::state::GatekeeperNetwork;
 
 pub fn create_gatekeeper(
     ctx: Context<CreateGatekeeperAccount>,
@@ -15,6 +14,7 @@ pub fn create_gatekeeper(
     let authority = &mut ctx.accounts.authority;
     let bump = *ctx.bumps.get("gatekeeper").unwrap();
     let gatekeeper = &mut ctx.accounts.gatekeeper;
+    let network = &mut ctx.accounts.network;
 
     if data.auth_keys.is_empty() {
         return Err(error!(GatekeeperErrors::NoAuthKeys));
@@ -41,6 +41,8 @@ pub fn create_gatekeeper(
     gatekeeper.auth_keys = data.auth_keys;
     gatekeeper.gatekeeper_state = GatekeeperState::Active;
 
+    network.gatekeepers.push(gatekeeper.key());
+
     Ok(())
 }
 /// Data for [`CreateGatekeeper`]
@@ -62,20 +64,29 @@ pub struct CreateGatekeeperData {
 #[instruction(data: CreateGatekeeperData)]
 pub struct CreateGatekeeperAccount<'info> {
     #[account(
-    init,
-    payer = authority,
-    space =
-    Gatekeeper::on_chain_size_with_arg(
-    GatekeeperSize{
-    auth_keys: data.auth_keys.len() as u16,
-    fees_count: data.token_fees.len() as u16,
-    }
-    ),
-    seeds = [GATEKEEPER_SEED, authority.key().as_ref(), data.gatekeeper_network.key().as_ref()],
-    bump
+        init,
+        payer = authority,
+        space = Gatekeeper::size(
+            data.auth_keys.len(),
+            data.token_fees.len(),
+        ),
+        seeds = [GATEKEEPER_SEED, authority.key().as_ref(), data.gatekeeper_network.key().as_ref()],
+        bump
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    #[account(
+        mut,
+        realloc = GatekeeperNetwork::size(
+            network.fees.len(),
+            network.auth_keys.len(),
+            network.gatekeepers.len() + 1,
+            network.supported_tokens.len(),
+        ),
+        realloc::payer = authority,
+        realloc::zero = false,
+    )]
+    pub network: Account<'info, GatekeeperNetwork>,
     pub system_program: Program<'info, System>,
 }

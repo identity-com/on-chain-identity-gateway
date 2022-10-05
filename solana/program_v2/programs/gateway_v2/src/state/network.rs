@@ -71,9 +71,10 @@ impl GatekeeperNetwork {
             + OC_SIZE_U8 // signer_bump
             + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * fees_count as usize // fees
             + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * auth_keys as usize // auth_keys
-            + OC_SIZE_VEC_PREFIX + OC_SIZE_PUBKEY * gatekeepers as usize // gatekeeper list
+            + OC_SIZE_VEC_PREFIX + (OC_SIZE_PUBKEY * gatekeepers) as usize // gatekeeper list
             + OC_SIZE_U16 // network_index
             + OC_SIZE_VEC_PREFIX + SupportedToken::ON_CHAIN_SIZE * supported_tokens as usize
+        + 1000
         // supported tokens list
     }
 

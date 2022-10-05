@@ -31,16 +31,8 @@ pub struct Gatekeeper {
     pub auth_keys: Vec<GatekeeperAuthKey>,
 }
 
-#[derive(Debug, Copy, Clone)]
-pub struct GatekeeperSize {
-    /// The number of fee tokens
-    pub fees_count: u16,
-    /// The number of auth keys
-    pub auth_keys: u16,
-}
-
 impl Gatekeeper {
-    pub fn on_chain_size_with_arg(arg: GatekeeperSize) -> usize {
+    pub fn size(fees_count: usize, auth_keys: usize) -> usize {
         OC_SIZE_DISCRIMINATOR
             + OC_SIZE_U8 // version
             + OC_SIZE_PUBKEY // authority
@@ -48,9 +40,9 @@ impl Gatekeeper {
             + OC_SIZE_PUBKEY // gatekeeper_network
             + OC_SIZE_PUBKEY // staking account
             + GatekeeperState::ON_CHAIN_SIZE // gatekeeper state
-            + OC_SIZE_VEC_PREFIX + GatekeeperFees::ON_CHAIN_SIZE * arg.fees_count as usize // fees
+            + OC_SIZE_VEC_PREFIX + GatekeeperFees::ON_CHAIN_SIZE * fees_count as usize // fees
             + OC_SIZE_U8 // auth_threshold
-            + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize
+            + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * auth_keys as usize
         // auth keys
     }
     // Checks if an authkey has enough authority for an action
