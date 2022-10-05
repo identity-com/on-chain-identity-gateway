@@ -27,7 +27,8 @@ describe('Gateway v2 Client', () => {
     authority = programProvider.wallet;
 
     [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey
+      authority.publicKey,
+      0
     );
 
     service = await AdminService.buildFromAnchor(
@@ -43,7 +44,6 @@ describe('Gateway v2 Client', () => {
       .createNetwork({
         authThreshold: 1,
         passExpireTime: 400,
-        signerBump: 0,
         fees: [
           {
             token: programProvider.wallet.publicKey,
@@ -70,15 +70,16 @@ describe('Gateway v2 Client', () => {
             key: extraAuthKey.publicKey,
           },
         ],
+        networkIndex: 0,
+        gatekeepers: [],
+        supportedTokens: [],
       })
       .rpc();
   });
 
   describe('Update Network', () => {
     it('Should update passExpireTime', async function () {
-      // retrieves the network account
       let networkAccount = await service.getNetworkAccount();
-      // updates the network with a new pass expire time
       await service
         .updateNetwork({
           authThreshold: 1,
@@ -99,19 +100,23 @@ describe('Gateway v2 Client', () => {
             add: [],
             remove: [],
           },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
+            add: [],
+            remove: [],
+          },
         })
         .rpc();
-      // retrieves the network again
       networkAccount = await service.getNetworkAccount();
-      // expects the pass expire time on the network to now equal 600
       expect(networkAccount?.passExpireTime).to.equal(600);
     }).timeout(10000);
     it('Should add an authKey', async function () {
-      // generates a new auth keypair
       let authKeypair = Keypair.generate();
-      // retrieves network account
       let networkAccount = await service.getNetworkAccount();
-      // updates network with an additional fee and an additional auth key
       await service
         .updateNetwork({
           authThreshold: 1,
@@ -137,11 +142,18 @@ describe('Gateway v2 Client', () => {
             ],
             remove: [],
           },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
+            add: [],
+            remove: [],
+          },
         })
         .rpc();
-      // retrieves network account
       networkAccount = await service.getNetworkAccount();
-      // expects the added auth key to exist in the updated network account
       expect(
         networkAccount?.authKeys.filter(
           (authKey) =>
@@ -150,7 +162,6 @@ describe('Gateway v2 Client', () => {
       ).to.have.lengthOf(1);
     }).timeout(10000);
     it('Should remove an authKey', async function () {
-      // updates network with the removal of an auth key, and addition of a fee
       await service
         .updateNetwork({
           authThreshold: 1,
@@ -171,11 +182,19 @@ describe('Gateway v2 Client', () => {
             add: [],
             remove: [extraAuthKey.publicKey],
           },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
+            add: [],
+            remove: [],
+          },
         })
         .rpc();
-      // retrieves network account
+
       const networkAccount = await service.getNetworkAccount();
-      // expect that one of the original auth keys for the network has now been removed
       expect(
         networkAccount?.authKeys.filter(
           (authKey) =>
@@ -184,7 +203,6 @@ describe('Gateway v2 Client', () => {
       ).to.have.lengthOf(0);
     }).timeout(10000);
     it('Should not be able to remove own account from authKeys', async function () {
-      // expects an update to the network in which the network's own account is removed from its auth keys to fail
       return expect(
         service
           .updateNetwork({
@@ -206,19 +224,25 @@ describe('Gateway v2 Client', () => {
               add: [],
               remove: [programProvider.wallet.publicKey],
             },
+            networkFeatures: 1,
+            supportedTokens: {
+              add: [],
+              remove: [],
+            },
+            gatekeepers: {
+              add: [],
+              remove: [],
+            },
           })
           .rpc()
       ).to.eventually.be.rejected;
     }).timeout(10000);
     it("Updates an existing authKey's flags", async function () {
-      // retrieves the network account
       let networkAccount = await service.getNetworkAccount();
-      // retrieves the original auth key before update
       const originalKeyBeforeUpdate = networkAccount?.authKeys.filter(
         (authKey) =>
           authKey.key.toBase58() === programProvider.wallet.publicKey.toBase58()
       )[0];
-      // updates the network by modifying an existing auth key's flags
       await service
         .updateNetwork({
           authThreshold: 1,
@@ -247,26 +271,29 @@ describe('Gateway v2 Client', () => {
             ],
             remove: [],
           },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
+            add: [],
+            remove: [],
+          },
         })
         .rpc();
-      // retrieves the network account again
       networkAccount = await service.getNetworkAccount();
-      // assigns the updated key to a const
       const originalKeyAfterUpdate = networkAccount?.authKeys.filter(
         (authKey) =>
           authKey.key.toBase58() === programProvider.wallet.publicKey.toBase58()
       )[0];
-      // expect that the key's flags before update and the key's flags after update will not match
       expect(originalKeyBeforeUpdate?.flags).to.not.equal(
         originalKeyAfterUpdate?.flags
       );
     }).timeout(10000);
     it('Can add fees correctly', async function () {
-      // retrieves the network account
       let networkAccount = await service.getNetworkAccount();
-      // generates a new fee token
       let additionalFeeToken = Keypair.generate();
-      // updates the network with a new fee addition
       await service
         .updateNetwork({
           authThreshold: 1,
@@ -287,11 +314,18 @@ describe('Gateway v2 Client', () => {
             add: [],
             remove: [],
           },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
+            add: [],
+            remove: [],
+          },
         })
         .rpc();
-      // retrieves the network account again
       networkAccount = await service.getNetworkAccount();
-      // expects the new fees to contain a fee with a token matching the public key from the keypair generated above
       expect(
         networkAccount?.fees.filter(
           (fee) =>
@@ -300,9 +334,7 @@ describe('Gateway v2 Client', () => {
       ).to.equal(1);
     }).timeout(10000);
     it('Can remove fees correctly', async function () {
-      // retrieves the network account
       let networkAccount = await service.getNetworkAccount();
-      // updates the network with the removal of a fee
       await service
         .updateNetwork({
           authThreshold: 1,
@@ -315,11 +347,18 @@ describe('Gateway v2 Client', () => {
             add: [],
             remove: [],
           },
+          networkFeatures: 1,
+          supportedTokens: {
+            add: [],
+            remove: [],
+          },
+          gatekeepers: {
+            add: [],
+            remove: [],
+          },
         })
         .rpc();
-      // retrieves the network account again
       networkAccount = await service.getNetworkAccount();
-      // expects the previously existing fee to no longer exist
       expect(
         networkAccount?.fees.filter(
           (fee) => fee.token.toBase58() === feeKeypair.publicKey.toBase58()

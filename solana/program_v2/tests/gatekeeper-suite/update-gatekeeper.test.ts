@@ -15,8 +15,8 @@ describe('Gateway v2 Client', () => {
 
   let adminService: AdminService;
   let networkService: NetworkService;
-  let adminDataAccount: PublicKey;
   let networkDataAccount: PublicKey;
+  let gatekeeperDataAccount: PublicKey;
 
   let adminAuthority: anchor.Wallet;
   let networkAuthority: anchor.Wallet;
@@ -38,22 +38,15 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
-    [adminDataAccount] = await AdminService.createNetworkAddress(
+    [networkDataAccount] = await AdminService.createNetworkAddress(
       adminAuthority.publicKey
     );
-    [networkDataAccount] = await NetworkService.createGatekeeperAddress(
-      adminAuthority.publicKey
+    [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
+      adminAuthority.publicKey,
+      networkDataAccount
     );
 
     adminService = await AdminService.buildFromAnchor(
-      program,
-      adminDataAccount,
-      'localnet',
-      programProvider,
-      adminAuthority
-    );
-
-    networkService = await NetworkService.buildFromAnchor(
       program,
       networkDataAccount,
       'localnet',
@@ -61,8 +54,16 @@ describe('Gateway v2 Client', () => {
       adminAuthority
     );
 
+    networkService = await NetworkService.buildFromAnchor(
+      program,
+      gatekeeperDataAccount,
+      'localnet',
+      programProvider,
+      adminAuthority
+    );
+
     await adminService.createNetwork().rpc();
-    await networkService.createGatekeeper(adminAuthority.publicKey).rpc();
+    await networkService.createGatekeeper(networkDataAccount).rpc();
   });
   describe('Update Gatekeeper', () => {
     it('Updates a gatekeeper on an established network', async function () {
@@ -70,14 +71,13 @@ describe('Gateway v2 Client', () => {
       await networkService
         .updateGatekeeper({
           authThreshold: 1,
+          gatekeeperNetwork: networkDataAccount,
+          stakingAccount: null,
+          tokenFees: { add: [], remove: [] },
           authKeys: {
             add: [{ flags: 4097, key: additionalAuthKey }],
             remove: [],
           },
-          gatekeeperNetwork: adminAuthority.publicKey,
-          addresses: null,
-          stakingAccount: null,
-          fees: { add: [], remove: [] },
         })
         .rpc();
       // retrieves the gatekeeper account

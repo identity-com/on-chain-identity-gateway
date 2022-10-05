@@ -30,8 +30,10 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
+    // createNetworkAddress( authority pubkey, network index)
     [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey
+      authority.publicKey,
+      0
     );
 
     service = await AdminService.buildFromAnchor(
@@ -47,19 +49,13 @@ describe('Gateway v2 Client', () => {
 
   describe('Close Network', () => {
     it('Should close network properly', async function () {
-      // retrieves network account
       let networkAccount = await service.getNetworkAccount();
-      // closes network
       await service.closeNetwork().rpc();
-      // tries to retrieve network account again
       networkAccount = await service.getNetworkAccount();
-      // expects it to be unavailable
       expect(networkAccount).to.be.null;
     }).timeout(10000);
     it("Shouldn't allow a random authority to close the network", async function () {
-      // retrieves network account
       let networkAccount = await service.getNetworkAccount();
-      // tries to close network with random pubkey, which we expect to be rejected
       expect(
         service.closeNetwork(undefined, Keypair.generate().publicKey).rpc()
       ).to.be.eventually.rejected;

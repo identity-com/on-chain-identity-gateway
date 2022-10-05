@@ -1,5 +1,5 @@
 use crate::errors::NetworkErrors;
-use crate::instructions::*;
+use crate::instructions::admin::*;
 use crate::util::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
@@ -12,46 +12,74 @@ pub struct GatekeeperNetwork {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
     /// The initial authority key
-    pub initial_authority: Pubkey,
-    // TODO: Add Network Features
-    /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
-    // pub network_features: Vec<[u8; 32]>,
-    /// The number of auth keys needed to change the `auth_keys`
-    pub auth_threshold: u8,
+    pub authority: Pubkey,
+    /// the index of the network
+    pub network_index: u16,
+    /// The bump for the signer
+    pub network_bump: u8,
     /// The length of time a pass lasts in seconds. `0` means does not expire.
     pub pass_expire_time: i64,
-    /// The bump for the signer
-    pub signer_bump: u8,
+    /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
+    pub network_features: u32,
     /// The fees for this network
     pub fees: Vec<NetworkFees>,
+    // A set of all supported tokens on the network
+    pub supported_tokens: Vec<SupportedToken>,
+    /// A set of all active gatekeepers in the network
+    pub gatekeepers: Vec<Pubkey>,
+    /// The number of auth keys needed to change the `auth_keys`
+    pub auth_threshold: u8,
     /// Keys with permissions on the network
     pub auth_keys: Vec<NetworkAuthKey>,
+    // possible data for network features
+    // pub network_features_data: Vec<u8>
 }
 
-/// Size for [`GatekeeperNetwork`]
-#[derive(Debug, Copy, Clone)]
-pub struct GatekeeperNetworkSize {
-    /// The number of fee tokens
-    pub fees_count: u16,
-    /// The number of auth keys
-    pub auth_keys: u16,
+#[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize)]
+pub struct SupportedToken {
+    key: Pubkey,
+    settlement_info: SettlementInfo,
+}
+
+impl OnChainSize for SupportedToken {
+    const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + SettlementInfo::ON_CHAIN_SIZE;
+}
+
+// TODO: Actual Settlement Info Implementation (IDCOM-2135)
+#[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize)]
+pub struct SettlementInfo {
+    placeholder: u16,
+}
+
+impl OnChainSize for SettlementInfo {
+    const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
 }
 
 impl GatekeeperNetwork {
-    pub fn on_chain_size_with_arg(arg: GatekeeperNetworkSize) -> usize {
+    pub fn size(
+        fees_count: usize,
+        auth_keys: usize,
+        gatekeepers: usize,
+        supported_tokens: usize,
+    ) -> usize {
         OC_SIZE_DISCRIMINATOR
             + OC_SIZE_U8 // version
             + OC_SIZE_PUBKEY // initial_authority
-            // TODO: Add size for network_features
-            // + OC_SIZE_VEC_PREFIX + OC_SIZE_U8 * 32 // network_features
+            + OC_SIZE_U32 // network_features
             + OC_SIZE_U8 // auth_threshold
             + OC_SIZE_U64 // pass_expire_time
             + OC_SIZE_U8 // signer_bump
-            + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * arg.fees_count as usize // fees
-            + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * arg.auth_keys as usize
-        // auth_keys
+            + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * fees_count as usize // fees
+            + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * auth_keys as usize // auth_keys
+            + OC_SIZE_VEC_PREFIX + (OC_SIZE_PUBKEY * gatekeepers) as usize // gatekeeper list
+            + OC_SIZE_U16 // network_index
+            + OC_SIZE_VEC_PREFIX + SupportedToken::ON_CHAIN_SIZE * supported_tokens as usize
+        + 1000
+        // supported tokens list
     }
 
+    /// Checks if the provided authority exists within the [`GatekeeperNetwork::auth_keys`]
+    /// and has the requested flag set
     pub fn can_access(&self, authority: &Signer, flag: NetworkKeyFlags) -> bool {
         self.auth_keys
             .iter()
@@ -84,7 +112,7 @@ impl GatekeeperNetwork {
         }
     }
 
-    pub fn add_auth_keys(
+    pub fn update_auth_keys(
         &mut self,
         data: &UpdateNetworkData,
         authority: &mut Signer,
@@ -139,7 +167,7 @@ impl GatekeeperNetwork {
         Ok(())
     }
 
-    pub fn add_fees(&mut self, data: &UpdateNetworkData, authority: &mut Signer) -> Result<()> {
+    pub fn update_fees(&mut self, data: &UpdateNetworkData, authority: &mut Signer) -> Result<()> {
         // This will skip the next auth check which isn't required if there are no fees
         if data.fees.add.is_empty() && data.fees.remove.is_empty() {
             // no fees to add/remove
@@ -177,10 +205,111 @@ impl GatekeeperNetwork {
 
         Ok(())
     }
+
+    pub fn update_network_features(
+        &mut self,
+        data: &UpdateNetworkData,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        if data.network_features != self.network_features {
+            if !self.can_access(authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
+                return Err(error!(NetworkErrors::InsufficientAccessExpiry));
+            }
+
+            self.network_features = data.network_features
+        }
+
+        Ok(())
+    }
+
+    pub fn update_supported_tokens(
+        &mut self,
+        data: &UpdateNetworkData,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        if data.supported_tokens.add.is_empty() && data.supported_tokens.remove.is_empty() {
+            // no fees to add/remove
+            return Ok(());
+        }
+        if !self.can_access(authority, NetworkKeyFlags::AUTH) {
+            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
+        }
+        for token in data.supported_tokens.remove.iter() {
+            let index: Option<usize> = self.supported_tokens.iter().position(|x| x.key == *token);
+
+            if index.is_none() {
+                return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
+            }
+
+            let token_index = index.unwrap();
+
+            self.supported_tokens.remove(token_index);
+        }
+        for token in data.supported_tokens.add.iter() {
+            let index: Option<usize> = self
+                .supported_tokens
+                .iter()
+                .position(|x| x.key == token.key);
+
+            if let Some(token_index) = index {
+                // update the existing key with new fees
+                self.supported_tokens[token_index] = *token;
+            } else {
+                self.supported_tokens.push(*token);
+            }
+        }
+        Ok(())
+    }
+
+    pub fn update_gatekeepers(
+        &mut self,
+        data: &UpdateNetworkData,
+        authority: &mut Signer,
+    ) -> Result<()> {
+        if data.gatekeepers.add.is_empty() && data.gatekeepers.remove.is_empty() {
+            // no fees to add/remove
+            return Ok(());
+        }
+        if !self.can_access(authority, NetworkKeyFlags::AUTH) {
+            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
+        }
+        for gatekeeper in data.gatekeepers.remove.iter() {
+            let index: Option<usize> = self
+                .gatekeepers
+                .iter()
+                .position(|pubkey| pubkey == gatekeeper);
+
+            if index.is_none() {
+                return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
+            }
+
+            let gatekeeper_index = index.unwrap();
+
+            self.gatekeepers.remove(gatekeeper_index);
+        }
+        for gatekeeper in data.gatekeepers.add.iter() {
+            let index: Option<usize> = self
+                .gatekeepers
+                .iter()
+                .position(|pubkey| pubkey == gatekeeper);
+
+            if let Some(gatekeeper_index) = index {
+                // update the existing key with new fees
+                self.gatekeepers[gatekeeper_index] = *gatekeeper;
+            } else {
+                self.gatekeepers.push(*gatekeeper);
+            }
+        }
+        Ok(())
+    }
+
+    pub fn is_closeable(&self) -> bool {
+        self.gatekeepers.is_empty()
+    }
 }
 
 /// The authority key for a [`GatekeeperNetwork`]
-#[derive(Debug, AnchorSerialize, AnchorDeserialize, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize)]
 pub struct NetworkAuthKey {
     /// The permissions this key has
     pub flags: u16,
@@ -193,7 +322,7 @@ impl OnChainSize for NetworkAuthKey {
 }
 
 /// Fees that a [`GatekeeperNetwork`] can charge
-#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Default, Copy)]
+#[derive(Clone, Debug, Default, Copy, AnchorDeserialize, AnchorSerialize)]
 pub struct NetworkFees {
     /// The token for the fee, `None` means fee is invalid
     pub token: Pubkey,
@@ -242,7 +371,37 @@ bitflags! {
         /// Key can set [`GatekeeperNetwork::pass_expire_time`]
         const SET_EXPIRE_TIME = 1 << 12;
     }
-
+    /// TODO: This should be in the gatekeeper state, but the build complains with multiple bitflags?
+    /// The flags for a key on a gatekeeper
+    #[derive(AnchorSerialize, AnchorDeserialize, Default)]
+    pub struct GatekeeperKeyFlags: u16{
+        /// Key can change keys
+        const AUTH = 1 << 0;
+        /// Key can issue passes
+        const ISSUE = 1 << 1;
+        /// Key can refresh passes
+        const REFRESH = 1 << 2;
+        /// Key can freeze passes
+        const FREEZE = 1 << 3;
+        /// Key can unfreeze passes
+        const UNFREEZE = 1 << 4;
+        /// Key can revoke passes
+        const REVOKE = 1 << 5;
+        /// Key can adjust gatekeeper fees
+        const ADJUST_FEES = 1 << 6;
+        /// Key can set gatekeeper addresses key
+        const SET_ADDRESSES = 1 << 7;
+        /// Key can set data on passes
+        const SET_PASS_DATA = 1 << 8;
+        /// Key can add new fee types to a gatekeeper
+        const ADD_FEES = 1 << 9;
+        /// Key can remove fee types from a gatekeeper
+        const REMOVE_FEES = 1 << 10;
+        /// Key can access the gatekeeper's vault
+        const ACCESS_VAULT = 1 << 11;
+        /// Key can unrevoke a pass with network concurrence.
+        const UNREVOKE_PASS = 1 << 12;
+    }
 }
 impl OnChainSize for NetworkKeyFlags {
     const ON_CHAIN_SIZE: usize = OC_SIZE_U16;

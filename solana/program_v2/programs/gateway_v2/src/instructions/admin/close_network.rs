@@ -1,8 +1,15 @@
 use crate::constants::NETWORK_SEED;
+use crate::errors::NetworkErrors;
 use crate::state::*;
 use anchor_lang::prelude::*;
+
 /// Placeholder for additional close_network functionality
-pub fn close_network() -> Result<()> {
+pub fn close_network(ctx: Context<CloseNetworkAccount>) -> Result<()> {
+    require!(
+        ctx.accounts.network.is_closeable(),
+        NetworkErrors::AccountInUse
+    );
+
     Ok(())
 }
 
@@ -11,8 +18,8 @@ pub struct CloseNetworkAccount<'info> {
     #[account(
         mut,
         close = destination,
-        seeds = [NETWORK_SEED, network.initial_authority.key().as_ref()],
-        bump = network.signer_bump,
+        seeds = [NETWORK_SEED, network.authority.key().as_ref(), &network.network_index.to_le_bytes()],
+        bump,
         constraint = network.can_access(&authority, NetworkKeyFlags::AUTH),
     )]
     pub network: Account<'info, GatekeeperNetwork>,
@@ -20,5 +27,4 @@ pub struct CloseNetworkAccount<'info> {
     #[account(mut)]
     pub destination: UncheckedAccount<'info>,
     pub authority: Signer<'info>,
-    pub system_program: Program<'info, System>,
 }

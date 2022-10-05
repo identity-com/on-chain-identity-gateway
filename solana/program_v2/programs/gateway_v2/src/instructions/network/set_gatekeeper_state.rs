@@ -4,11 +4,14 @@ use anchor_lang::prelude::*;
 
 // Allows a network to set the state of a gatekeeper (Active, Frozen, Halted)
 pub fn set_gatekeeper_state(
-    state: &GatekeeperState,
-    gatekeeper: &mut Account<Gatekeeper>,
-    authority: &mut Signer,
+    ctx: Context<SetGatekeeperStateAccount>,
+    state: GatekeeperState,
 ) -> Result<()> {
-    gatekeeper.set_gatekeeper_state(state, authority)?;
+    let gatekeeper = &mut ctx.accounts.gatekeeper;
+    let authority = &mut ctx.accounts.authority;
+
+    gatekeeper.set_gatekeeper_state(&state, authority)?;
+
     Ok(())
 }
 
@@ -17,8 +20,8 @@ pub fn set_gatekeeper_state(
 pub struct SetGatekeeperStateAccount<'info> {
     #[account(
         mut,
-        seeds = [GATEKEEPER_SEED, authority.key().as_ref()],
-        bump = gatekeeper.signer_bump,
+        seeds = [GATEKEEPER_SEED, authority.key().as_ref(), gatekeeper.gatekeeper_network.key().as_ref()],
+        bump = gatekeeper.gatekeeper_bump,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]

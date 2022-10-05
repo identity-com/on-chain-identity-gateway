@@ -16,8 +16,13 @@ import {
   ExtendedCluster,
   getConnectionByCluster,
 } from './lib/connection';
-import { EnumMapper, findProgramAddress } from './lib/utils';
-import { GatekeeperKeyFlags, SOLANA_MAINNET } from './lib/constants';
+import { EnumMapper } from './lib/utils';
+import {
+  GatekeeperKeyFlags,
+  GATEKEEPER_SEED,
+  GATEWAY_PROGRAM,
+  SOLANA_MAINNET,
+} from './lib/constants';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 import { GatewayV2 } from '../target/types/gateway_v2';
 
@@ -70,7 +75,14 @@ export class NetworkService extends AbstractService {
     authority: PublicKey,
     network: PublicKey
   ): Promise<[PublicKey, number]> {
-    return findProgramAddress('gatekeeper', authority);
+    return PublicKey.findProgramAddress(
+      [
+        anchor.utils.bytes.utf8.encode(GATEKEEPER_SEED),
+        authority.toBuffer(),
+        network.toBuffer(),
+      ],
+      GATEWAY_PROGRAM
+    );
   }
 
   // Creates a gatekeeper on a specified network
@@ -78,38 +90,43 @@ export class NetworkService extends AbstractService {
   createGatekeeper(
     network: PublicKey,
     data: CreateGatekeeperData = {
+      gatekeeperBump: 0,
+      gatekeeperNetwork: network,
+      // TODO? Is this the correct way to derive the default staking account?
+      stakingAccount: PublicKey.findProgramAddressSync(
+        [
+          anchor.utils.bytes.utf8.encode('gw-stake'),
+          this._wallet.publicKey.toBuffer(),
+        ],
+        GATEWAY_PROGRAM
+      )[0],
+      tokenFees: [],
       authThreshold: 1,
-      signerBump: 0,
       authKeys: [
         {
           flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME | GatekeeperKeyFlags.CHANGE_PASS_GATEKEEPER,
           key: this._wallet.publicKey,
         },
       ],
-      gatekeeperNetwork: network,
-      addresses: this._wallet.publicKey,
-      stakingAccount: this._wallet.publicKey,
-      fees: [],
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .createGatekeeper({
-        authThreshold: data.authThreshold,
-        signerBump: data.signerBump,
-        authKeys: data.authKeys,
+        gatekeeperBump: data.gatekeeperBump,
         gatekeeperNetwork: data.gatekeeperNetwork,
-        addresses: data.addresses,
         stakingAccount: data.stakingAccount,
-        fees: data.fees,
+        tokenFees: data.tokenFees,
+        authThreshold: data.authThreshold,
+        authKeys: data.authKeys,
       })
       .accounts({
         gatekeeper: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
+        network,
       })
       .instruction();
-
     return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
@@ -130,9 +147,8 @@ export class NetworkService extends AbstractService {
       .updateGatekeeper({
         authThreshold: data.authThreshold,
         gatekeeperNetwork: data.gatekeeperNetwork,
-        addresses: data.addresses,
         stakingAccount: data.stakingAccount,
-        fees: data.fees,
+        tokenFees: data.tokenFees,
         authKeys: data.authKeys,
       })
       .accounts({
@@ -154,6 +170,7 @@ export class NetworkService extends AbstractService {
 
   // Closes a gatekeeper on a network
   closeGatekeeper(
+    network: PublicKey,
     destination: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
@@ -165,6 +182,7 @@ export class NetworkService extends AbstractService {
         systemProgram: anchor.web3.SystemProgram.programId,
         destination,
         authority,
+        network,
       })
       .instruction();
 
@@ -236,8 +254,10 @@ export class NetworkService extends AbstractService {
         if (acct) {
           return {
             version: acct?.version,
+            authority: acct?.authority,
             gatekeeperNetwork: acct?.gatekeeperNetwork,
-            fees: acct?.fees as FeeStructure[],
+            stakingAccount: acct?.stakingAccount,
+            tokenFees: acct?.tokenFees as FeeStructure[],
             authKeys: acct?.authKeys as AuthKeyStructure[],
             state: acct?.gatekeeperState as GatekeeperState,
           };

@@ -4,7 +4,8 @@ export const GATEWAY_PROGRAM = new PublicKey(
   'FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe'
 );
 
-export const DEFAULT_SEED_STRING = 'gk-network';
+export const NETWORK_SEED = 'gw-network';
+export const GATEKEEPER_SEED = 'gw-gatekeeper';
 export const DEFAULT_PASS_SEED = 'gk-pass';
 
 export const SOLANA_MAINNET = 'mainnet-beta';

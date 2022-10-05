@@ -19,8 +19,8 @@ describe('Gateway v2 Client', () => {
 
   let adminService: AdminService;
   let networkService: NetworkService;
-  let adminDataAccount: PublicKey;
   let networkDataAccount: PublicKey;
+  let gatekeeperDataAccount: PublicKey;
 
   let adminAuthority: anchor.Wallet;
   let networkAuthority: anchor.Wallet;
@@ -42,22 +42,15 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
-    [adminDataAccount] = await AdminService.createNetworkAddress(
+    [networkDataAccount] = await AdminService.createNetworkAddress(
       adminAuthority.publicKey
     );
-    [networkDataAccount] = await NetworkService.createGatekeeperAddress(
-      adminAuthority.publicKey
+    [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
+      adminAuthority.publicKey,
+      networkDataAccount
     );
 
     adminService = await AdminService.buildFromAnchor(
-      program,
-      adminDataAccount,
-      'localnet',
-      programProvider,
-      adminAuthority
-    );
-
-    networkService = await NetworkService.buildFromAnchor(
       program,
       networkDataAccount,
       'localnet',
@@ -65,11 +58,19 @@ describe('Gateway v2 Client', () => {
       adminAuthority
     );
 
+    networkService = await NetworkService.buildFromAnchor(
+      program,
+      gatekeeperDataAccount,
+      'localnet',
+      programProvider,
+      adminAuthority
+    );
+
     await adminService.createNetwork().rpc();
-    await networkService.createGatekeeper(adminAuthority.publicKey).rpc();
+    await networkService.createGatekeeper(networkDataAccount).rpc();
   });
   describe('Set Gatekeeper State', () => {
-    it.only("Should set a gatekeeper's state", async function () {
+    it("Should set a gatekeeper's state", async function () {
       // retrieves gatekeeper account before state change and stores its state as a const
       let gatekeeperAccount = await networkService.getGatekeeperAccount();
       const initialState = gatekeeperAccount?.state;

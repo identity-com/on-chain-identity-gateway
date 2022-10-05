@@ -23,7 +23,8 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
     [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey
+      authority.publicKey,
+      0
     );
 
     service = await AdminService.buildFromAnchor(
@@ -36,20 +37,17 @@ describe('Gateway v2 Client', () => {
   });
   describe('Create Network', () => {
     it('Creates a network with default values', async function () {
-      // creates a network w/ default values
       await service.createNetwork().rpc();
-      // retrieves the created network's account
+
       const createdNetwork = await service.getNetworkAccount();
-      // expect the network to exist
+
       expect(createdNetwork).to.not.be.null;
     }).timeout(10000);
     it('Creates a network with non-default values', async function () {
-      // creates a network w/ non-default values
       await service
         .createNetwork({
           authThreshold: 1,
           passExpireTime: 400,
-          signerBump: 0,
           fees: [
             {
               token: programProvider.wallet.publicKey,
@@ -65,13 +63,14 @@ describe('Gateway v2 Client', () => {
               key: programProvider.wallet.publicKey,
             },
           ],
+          networkIndex: 0, // TODO: This should probably not be part of the network data
+          supportedTokens: [],
+          gatekeepers: [],
         })
         .rpc();
 
-      // retrieves the created network's account
       const createdNetwork = await service.getNetworkAccount();
 
-      // expects the network's pass expire time to not be the default value
       expect(createdNetwork?.passExpireTime).to.equal(400);
     }).timeout(10000);
   });

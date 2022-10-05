@@ -4,95 +4,65 @@ mod instructions;
 mod state;
 mod util;
 
-use crate::instructions::*;
-use crate::state::*;
+use crate::instructions::admin::*;
+use crate::instructions::network::*;
+use crate::state::GatekeeperState;
 use anchor_lang::prelude::*;
-use anchor_lang::{AnchorDeserialize, AnchorSerialize};
-use anchor_spl::token::Transfer;
-
 // TODO: Grind for better key
 declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
 
 #[program]
 pub mod gateway_v2 {
-    use anchor_spl::token::transfer;
     use super::*;
 
     pub fn create_network(
         ctx: Context<CreateNetworkAccount>,
         data: CreateNetworkData,
     ) -> Result<()> {
-        instructions::create_network(
-            *ctx.accounts.authority.key,
-            *ctx.bumps.get("network").unwrap(),
-            data,
-            &mut ctx.accounts.network,
-        )
+        instructions::admin::create_network(ctx, data)
     }
 
     pub fn update_network(
         ctx: Context<UpdateNetworkAccount>,
         data: UpdateNetworkData,
     ) -> Result<()> {
-        instructions::update_network(
-            &data,
-            &mut ctx.accounts.network,
-            &mut ctx.accounts.authority,
-        )
+        instructions::admin::update_network(ctx, &data)
     }
 
-    pub fn close_network(_ctx: Context<CloseNetworkAccount>) -> Result<()> {
-        instructions::close_network()
+    pub fn close_network(ctx: Context<CloseNetworkAccount>) -> Result<()> {
+        instructions::admin::close_network(ctx)
     }
 
     pub fn create_gatekeeper(
         ctx: Context<CreateGatekeeperAccount>,
         data: CreateGatekeeperData,
     ) -> Result<()> {
-        instructions::create_gatekeeper(
-            *ctx.accounts.authority.key,
-            *ctx.bumps.get("gatekeeper").unwrap(),
-            data,
-            &mut ctx.accounts.gatekeeper,
-        )
-        // TODO: add instruction to add gatekeeper pubkey to gatekeeper_network
+        instructions::network::create_gatekeeper(ctx, data)
     }
 
     pub fn update_gatekeeper(
         ctx: Context<UpdateGatekeeperAccount>,
         data: UpdateGatekeeperData,
     ) -> Result<()> {
-        instructions::update_gatekeeper(
-            &data,
-            &mut ctx.accounts.gatekeeper,
-            &mut ctx.accounts.authority,
-        )
+        instructions::network::update_gatekeeper(ctx, data)
     }
 
-    pub fn close_gatekeeper(_ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
-        instructions::close_gatekeeper()
+    pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
+        instructions::network::close_gatekeeper(ctx)
     }
 
     pub fn set_gatekeeper_state(
-        _ctx: Context<SetGatekeeperStateAccount>,
+        ctx: Context<SetGatekeeperStateAccount>,
         state: GatekeeperState,
     ) -> Result<()> {
-        instructions::set_gatekeeper_state(
-            &state,
-            &mut _ctx.accounts.gatekeeper,
-            &mut _ctx.accounts.authority,
-        )
+        instructions::network::set_gatekeeper_state(ctx, state)
     }
 
     pub fn gatekeeper_withdraw(
-        _ctx: Context<GatekeeperWithdrawAccount>,
+        ctx: Context<GatekeeperWithdrawAccount>,
         receiver: Pubkey,
     ) -> Result<()> {
-        instructions::gatekeeper_withdraw(
-            receiver,
-            &mut _ctx.accounts.gatekeeper,
-            &mut _ctx.accounts.authority,
-        )
+        instructions::network::gatekeeper_withdraw(ctx, receiver)
     }
 
     pub fn issue_pass(

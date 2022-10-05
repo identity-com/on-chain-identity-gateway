@@ -4,11 +4,14 @@ use anchor_lang::prelude::*;
 
 // Will withdraw funds from the gatekeeper
 pub fn gatekeeper_withdraw(
+    ctx: Context<GatekeeperWithdrawAccount>,
     receiver: Pubkey,
-    gatekeeper: &mut Account<Gatekeeper>,
-    authority: &mut Signer,
 ) -> Result<()> {
+    let gatekeeper = &mut ctx.accounts.gatekeeper;
+    let authority = &mut ctx.accounts.authority;
+
     gatekeeper.gatekeeper_withdraw(receiver, authority)?;
+
     Ok(())
 }
 
@@ -18,7 +21,7 @@ pub struct GatekeeperWithdrawAccount<'info> {
     #[account(
         mut,
         seeds = [GATEKEEPER_SEED, authority.key().as_ref()],
-        bump = gatekeeper.signer_bump,
+        bump = gatekeeper.gatekeeper_bump,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]
