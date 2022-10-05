@@ -366,39 +366,3 @@ bitflags! {
 impl OnChainSize for GatekeeperKeyFlags {
     const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
 }
-
-
-
-
-bitflags! {
-    /// The flags for a key on a gatekeeper
-    #[derive(AnchorSerialize, AnchorDeserialize, Default)]
-    pub struct GatekeeperKeyFlags: u16{
-        /// Key can change keys
-        const AUTH = 1 << 0;
-        /// Key can issue passes
-        const ISSUE = 1 << 1;
-        /// Key can refresh passes
-        const REFRESH = 1 << 2;
-        /// Key can freeze passes
-        const FREEZE = 1 << 3;
-        /// Key can unfreeze passes
-        const UNFREEZE = 1 << 4;
-        /// Key can revoke passes
-        const REVOKE = 1 << 5;
-        /// Key can adjust gatekeeper fees
-        const ADJUST_FEES = 1 << 6;
-        /// Key can set gatekeeper addresses key
-        const SET_ADDRESSES = 1 << 7;
-        /// Key can set data on passes
-        const SET_PASS_DATA = 1 << 8;
-        /// Key can add new fee types to a gatekeeper
-        const ADD_FEES = 1 << 9;
-        /// Key can remove fee types from a gatekeeper
-        const REMOVE_FEES = 1 << 10;
-        /// Key can access the gatekeeper's vault
-        const ACCESS_VAULT = 1 << 11;
-        /// Key can unrevoke a pass with network concurrence.
-        const UNREVOKE_PASS = 1 << 12;
-    }
-}
