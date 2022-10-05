@@ -2,11 +2,11 @@ use crate::constants::GATEKEEPER_SEED;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
-/// Placeholder for additional close_gatekeeper functionality
 pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
 
+    // Find and remove the gatekeeper from the network
     let index = network
         .gatekeepers
         .iter()
