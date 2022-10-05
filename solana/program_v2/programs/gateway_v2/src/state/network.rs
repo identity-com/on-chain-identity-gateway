@@ -6,8 +6,8 @@ use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
 
 /// A gatekeeper network which manages many [`Gatekeeper`]s.
-#[derive(Debug)]
 #[account]
+#[derive(Debug)]
 pub struct GatekeeperNetwork {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,

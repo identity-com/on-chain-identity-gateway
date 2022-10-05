@@ -30,7 +30,7 @@ const setGatekeeperFlags = async (service: NetworkService, flags: number) => {
     }).rpc();
 }
 
-describe.only("Change pass gatekeeper", () => {
+describe("Change pass gatekeeper", () => {
     let service: GatekeeperService;
     let subject: PublicKey;
     let account: PublicKey;
@@ -45,11 +45,10 @@ describe.only("Change pass gatekeeper", () => {
     });
 
 
-    it.only("Can change to gatekeeper within the same network", async () => {
+    it("Can change to gatekeeper within the same network", async () => {
         const networkService = await createNetworkService(Keypair.generate());
         await networkService.createGatekeeper(TEST_NETWORK).rpc();
-        // console.log((await networkService.getGatekeeperAccount())?.authKeys);
-        // await setGatekeeperFlags(networkService, GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.CHANGE_PASS_GATEKEEPER);
+
         await service.changePassGatekeeper(networkService.getDataAccount(), account).rpc();
 
         const pass = await service.getPassAccount(subject);

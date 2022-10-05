@@ -104,7 +104,7 @@ export class NetworkService extends AbstractService {
       authThreshold: 1,
       authKeys: [
         {
-          flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME | GatekeeperKeyFlags.CHANGE_PASS_GATEKEEPER,
+          flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
           key: this._wallet.publicKey,
         },
       ],

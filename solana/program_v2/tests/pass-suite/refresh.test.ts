@@ -36,7 +36,6 @@ describe("Refresh a pass", () => {
         expect(initialPass.issueTime).to.be.lt(updatedPass.issueTime);
     });
 
-
     it("Cannot refresh a frozen pass", async () => {
         await service.setState(PassState.Frozen, account, subject).rpc();
         return expect(service.refreshPass(account, subject).rpc()).to.eventually.be.rejected;

@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
-use crate::{GatekeeperNetwork, Pass};
 use crate::constants::PASS_SEED;
+use crate::state::{GatekeeperNetwork, Pass};
 
 pub fn expire_pass(pass: &mut Account<Pass>,) -> Result<()> {
     pass.refresh()

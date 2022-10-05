@@ -8,7 +8,7 @@ import {
 
 import {Wallet} from './lib/types';
 
-import {EnumMapper, findProgramAddress} from './lib/utils';
+import {EnumMapper} from './lib/utils';
 import {DEFAULT_PASS_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET} from './lib/constants';
 import {ServiceBuilder, AbstractService, NonSigningWallet} from "./utils/AbstractService";
 import {CustomClusterUrlConfig, ExtendedCluster, getConnectionByCluster} from "./lib/connection";
@@ -209,6 +209,34 @@ export class GatekeeperService extends AbstractService {
                 network: this._network,
                 newGatekeeper: gatekeeper,
                 oldGatekeeper: this._gatekeeper
+            })
+            .instruction();
+
+        return new ServiceBuilder(this, {
+            instructionPromise,
+            didAccountSizeDeltaCallback: () => {
+                throw new Error('Dynamic Alloc not supported');
+            },
+            // TODO: Implement this...
+            allowsDynamicAlloc: false,
+            authority,
+        });
+    }
+
+    setPassData(
+        passAccount: PublicKey,
+        gatekeeperData: Uint8Array,
+        networkData: Uint8Array,
+        authority: PublicKey = this.getWallet().publicKey,
+    ): ServiceBuilder {
+        // validate data is 32 byte (else throw error)
+
+        const instructionPromise = this.getProgram().methods
+            .setPassData(gatekeeperData, networkData)
+            .accounts({
+                pass: passAccount,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                authority,
             })
             .instruction();
 

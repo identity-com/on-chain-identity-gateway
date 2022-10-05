@@ -6,7 +6,8 @@ mod util;
 
 use crate::instructions::admin::*;
 use crate::instructions::network::*;
-use crate::state::GatekeeperState;
+use crate::instructions::gatekeeper::*;
+use crate::state::{GatekeeperState, PassState};
 use anchor_lang::prelude::*;
 // TODO: Grind for better key
 declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
@@ -70,22 +71,30 @@ pub mod gateway_v2 {
         subject: Pubkey,
         pass_number: u16,
     ) -> Result<()> {
-        instructions::issue_pass(
+        instructions::gatekeeper::issue_pass(
             ctx,
             subject,
-            pass_number
+            pass_number,
         )
     }
 
     pub fn set_pass_state(ctx: Context<PassSetState>, state: PassState, subject: Pubkey, pass_number: u16) -> Result<()> {
-        instructions::pass_set_state(&mut ctx.accounts.pass, state)
+        instructions::gatekeeper::pass_set_state(&mut ctx.accounts.pass, state)
     }
 
     pub fn refresh_pass(ctx: Context<PassRefresh>, subject: Pubkey, pass_number: u16) -> Result<()> {
-        instructions::refresh_pass(&mut ctx.accounts.pass)
+        instructions::gatekeeper::refresh_pass(&mut ctx.accounts.pass, subject, pass_number)
     }
 
     pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> {
-        instructions::change_pass_gatekeeper(ctx)
+        instructions::gatekeeper::change_pass_gatekeeper(ctx)
+    }
+
+    pub fn set_pass_data(ctx: Context<PassSetData>, gatekeeper_data: Option<[u8; 32]>, network_data: Option<[u8; 32]>) -> Result<()> {
+        instructions::gatekeeper::set_pass_data(
+            ctx,
+            gatekeeper_data,
+            network_data,
+        )
     }
 }

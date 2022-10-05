@@ -1,19 +1,13 @@
 use anchor_lang::Key;
 use anchor_lang::prelude::*;
 use crate::constants::PASS_SEED;
-use crate::{Gatekeeper, GatekeeperNetwork, Pass, PassState, Pubkey};
-use anchor_spl::{
-    token::{Token, Mint, TokenAccount},
-};
-use anchor_spl::token::{Transfer, transfer};
+use crate::state::{Gatekeeper, GatekeeperNetwork, Pass, PassState};
 
 pub fn issue_pass(
     ctx: Context<IssuePass>,
     subject: Pubkey,
     pass_number: u16,
 ) -> Result<()> {
-    // TODO: Handle payments
-
     let pass = &mut ctx.accounts.pass;
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;

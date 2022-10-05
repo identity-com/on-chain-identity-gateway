@@ -10,18 +10,7 @@ import {createGatekeeperService} from "./util";
 
 const expect = chai.expect;
 
-describe("Issue pass", () => {
-    // const kp = Keypair.generate();
-
-    // const envProvider = anchor.AnchorProvider.env();
-    // const provider = new AnchorProvider(envProvider.connection, new Wallet(kp), envProvider.opts);
-    // anchor.setProvider(provider);
-
-
-    // provider.connection.onLogs('all', (logs) => {
-    //     console.log(logs)
-    // });
-
+describe.only("Issue pass", () => {
     let service: GatekeeperService;
 
     beforeEach(async () => {

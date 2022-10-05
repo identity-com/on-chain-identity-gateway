@@ -6,7 +6,7 @@ export const GATEWAY_PROGRAM = new PublicKey(
 
 export const NETWORK_SEED = 'gw-network';
 export const GATEKEEPER_SEED = 'gw-gatekeeper';
-export const DEFAULT_PASS_SEED = 'gk-pass';
+export const DEFAULT_PASS_SEED = 'gw-pass';
 
 export const SOLANA_MAINNET = 'mainnet-beta';
 

@@ -119,7 +119,7 @@ const createGatekeeperAccount = async (network: PublicKey, authorityBase58: stri
 
     const [dataAccount] = await NetworkService.createGatekeeperAddress(
         authority.publicKey,
-        authority.publicKey
+        network
     );
 
     const service = await NetworkService.buildFromAnchor(

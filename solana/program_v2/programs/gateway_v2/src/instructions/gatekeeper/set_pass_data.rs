@@ -2,21 +2,25 @@ use anchor_lang::prelude::*;
 use crate::state::{GatekeeperNetwork, Pass, PassState};
 use crate::errors::PassErrors;
 
-pub fn pass_set_state(
-    pass: &mut Account<Pass>,
-    state: PassState,
+pub fn set_pass_data(
+    ctx: Context<PassSetData>, gatekeeper_data: Option<[u8; 32]>, network_data: Option<[u8; 32]>
 ) -> Result<()> {
-    require!(pass.is_valid_state_change(&state), PassErrors::InvalidStateChange);
-    require!(pass.is_valid_gatekeeper_state_change(&state), PassErrors::InvalidStateChange);
+    let pass = &mut ctx.accounts.pass;
 
-    pass.state = state;
+    if let Some(data) = gatekeeper_data {
+        pass.gatekeeper_data = data;
+    }
+
+    if let Some(data) = network_data {
+        pass.network_data = data;
+    }
 
     Ok(())
 }
 
 #[derive(Accounts, Debug)]
 #[instruction(subject: Pubkey, pass_number: u16)]
-pub struct PassSetState<'info> {
+pub struct PassSetData<'info> {
     // TODO: Fix validation
     #[account(
     // seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
@@ -28,7 +32,5 @@ pub struct PassSetState<'info> {
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
-    pub network: Account<'info, GatekeeperNetwork>,
-
 }
 

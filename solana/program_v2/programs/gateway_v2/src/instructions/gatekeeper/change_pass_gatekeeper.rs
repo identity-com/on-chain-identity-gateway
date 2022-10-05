@@ -1,20 +1,20 @@
 use anchor_lang::prelude::*;
-use crate::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
 use crate::errors::PassErrors;
 use crate::constants::PASS_SEED;
+use crate::state::{Gatekeeper, GatekeeperNetwork, Pass};
 
 pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> {
-    // TODO: Check if feature flag is set
-    let pass = &mut ctx.accounts.pass;
-    let old_gatekeeper = &mut ctx.accounts.old_gatekeeper;
-    let new_gatekeeper = &mut ctx.accounts.new_gatekeeper;
-    let authority = &mut ctx.accounts.authority;
-
-    require!(pass.gatekeeper == old_gatekeeper.key(), PassErrors::InvalidGatekeeper);
-    require!(old_gatekeeper.gatekeeper_network == new_gatekeeper.gatekeeper_network, PassErrors::InvalidNetwork);
-
-    pass.gatekeeper = new_gatekeeper.key();
-
+    // // TODO: Check if feature flag is set
+    // let pass = &mut ctx.accounts.pass;
+    // let old_gatekeeper = &mut ctx.accounts.old_gatekeeper;
+    // let new_gatekeeper = &mut ctx.accounts.new_gatekeeper;
+    // let authority = &mut ctx.accounts.authority;
+    //
+    // require!(pass.gatekeeper == old_gatekeeper.key(), PassErrors::InvalidGatekeeper);
+    // require!(old_gatekeeper.gatekeeper_network == new_gatekeeper.gatekeeper_network, PassErrors::InvalidNetwork);
+    //
+    // pass.gatekeeper = new_gatekeeper.key();
+    //
     Ok(())
 }
 
