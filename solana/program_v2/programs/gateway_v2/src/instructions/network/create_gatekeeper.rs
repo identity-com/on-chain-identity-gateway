@@ -12,11 +12,18 @@ pub fn create_gatekeeper(
     // need to use authority somewhere?
     // store authority on the gatekeeper struct,
     // need to pass in network account as well to modify it by adding gatekeeper keys
-    authority: Pubkey,
-    bump: u8,
+    // authority: Pubkey,
+    // bump: u8,
+    // data: CreateGatekeeperData,
+    // gatekeeper: &mut Account<Gatekeeper>,
+
+    ctx: Context<CreateGatekeeperAccount>,
     data: CreateGatekeeperData,
-    gatekeeper: &mut Account<Gatekeeper>,
 ) -> Result<()> {
+    let authority = &mut ctx.accounts.authority;
+    let bump = *ctx.bumps.get("gatekeeper").unwrap();
+    let gatekeeper = &mut ctx.accounts.gatekeeper;
+
     if data.auth_keys.is_empty() {
         return Err(error!(GatekeeperErrors::NoAuthKeys));
     }
@@ -32,9 +39,8 @@ pub fn create_gatekeeper(
     {
         return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
     }
-    print!("{}", authority);
 
-    gatekeeper.authority = authority;
+    gatekeeper.authority = *authority.key;
     gatekeeper.gatekeeper_bump = bump;
     gatekeeper.gatekeeper_network = data.gatekeeper_network;
     gatekeeper.staking_account = data.staking_account;
@@ -42,6 +48,7 @@ pub fn create_gatekeeper(
     gatekeeper.auth_threshold = data.auth_threshold;
     gatekeeper.auth_keys = data.auth_keys;
     gatekeeper.gatekeeper_state = GatekeeperState::Active;
+
     Ok(())
 }
 /// Data for [`CreateGatekeeper`]

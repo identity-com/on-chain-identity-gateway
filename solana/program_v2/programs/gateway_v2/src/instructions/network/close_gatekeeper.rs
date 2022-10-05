@@ -2,7 +2,7 @@ use crate::constants::GATEKEEPER_SEED;
 use crate::state::*;
 use anchor_lang::prelude::*;
 /// Placeholder for additional close_gatekeeper functionality
-pub fn close_gatekeeper() -> Result<()> {
+pub fn close_gatekeeper(_ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
     Ok(())
 }
 

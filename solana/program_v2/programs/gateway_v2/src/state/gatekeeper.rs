@@ -1,5 +1,4 @@
 use crate::errors::GatekeeperErrors;
-use crate::instructions::*;
 use crate::util::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};

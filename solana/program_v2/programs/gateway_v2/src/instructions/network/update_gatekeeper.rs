@@ -4,14 +4,16 @@ use anchor_lang::prelude::*;
 
 // Runs all the update methods on the passed-in gatekeeper
 pub fn update_gatekeeper(
-    data: &UpdateGatekeeperData,
-    gatekeeper: &mut Account<Gatekeeper>,
-    authority: &mut Signer,
+    ctx: Context<UpdateGatekeeperAccount>,
+    data: UpdateGatekeeperData,
 ) -> Result<()> {
-    gatekeeper.add_auth_keys(data, authority)?;
-    gatekeeper.add_fees(data, authority)?;
-    gatekeeper.set_network(data, authority)?;
-    gatekeeper.set_staking_account(data, authority)?;
+    let gatekeeper = &mut ctx.accounts.gatekeeper;
+    let authority = &mut ctx.accounts.authority;
+
+    gatekeeper.add_auth_keys(&data, authority)?;
+    gatekeeper.add_fees(&data, authority)?;
+    gatekeeper.set_network(&data, authority)?;
+    gatekeeper.set_staking_account(&data, authority)?;
 
     Ok(())
 }

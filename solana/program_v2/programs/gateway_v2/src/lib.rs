@@ -40,12 +40,9 @@ pub mod gateway_v2 {
         data: CreateGatekeeperData,
     ) -> Result<()> {
         instructions::network::create_gatekeeper(
-            *ctx.accounts.authority.key,
-            *ctx.bumps.get("gatekeeper").unwrap(),
+            ctx,
             data,
-            &mut ctx.accounts.gatekeeper,
         )
-        // TODO: add instruction to add gatekeeper pubkey to gatekeeper_network
     }
 
     pub fn update_gatekeeper(
@@ -53,33 +50,29 @@ pub mod gateway_v2 {
         data: UpdateGatekeeperData,
     ) -> Result<()> {
         instructions::network::update_gatekeeper(
-            &data,
-            &mut ctx.accounts.gatekeeper,
-            &mut ctx.accounts.authority,
+            ctx,
+            data,
         )
     }
 
-    pub fn close_gatekeeper(_ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
-        instructions::network::close_gatekeeper()
+    pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
+        instructions::network::close_gatekeeper(ctx)
     }
+
     pub fn set_gatekeeper_state(
-        _ctx: Context<SetGatekeeperStateAccount>,
+        ctx: Context<SetGatekeeperStateAccount>,
         state: GatekeeperState,
     ) -> Result<()> {
-        instructions::network::set_gatekeeper_state(
-            &state,
-            &mut _ctx.accounts.gatekeeper,
-            &mut _ctx.accounts.authority,
-        )
+        instructions::network::set_gatekeeper_state(ctx, state)
     }
+
     pub fn gatekeeper_withdraw(
-        _ctx: Context<GatekeeperWithdrawAccount>,
+        ctx: Context<GatekeeperWithdrawAccount>,
         receiver: Pubkey,
     ) -> Result<()> {
         instructions::network::gatekeeper_withdraw(
+            ctx,
             receiver,
-            &mut _ctx.accounts.gatekeeper,
-            &mut _ctx.accounts.authority,
         )
     }
 }
