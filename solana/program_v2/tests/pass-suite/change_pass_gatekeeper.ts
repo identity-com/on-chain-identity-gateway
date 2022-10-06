@@ -7,6 +7,7 @@ import {NetworkService} from "../../src/NetworkService";
 import {Keypair, PublicKey} from "@solana/web3.js";
 import {TEST_ALT_NETWORK, TEST_NETWORK} from "../util/constants";
 import {GatekeeperKeyFlags} from "../../src/lib/constants";
+import {loadPrivateKey} from "../util/lib";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -44,7 +45,6 @@ describe("Change pass gatekeeper", () => {
         await service.issue(account, subject).rpc();
     });
 
-
     it("Can change to gatekeeper within the same network", async () => {
         const networkService = await createNetworkService(Keypair.generate());
         await networkService.createGatekeeper(TEST_NETWORK).rpc();
@@ -57,18 +57,11 @@ describe("Change pass gatekeeper", () => {
     });
 
     it("Cannot change to gatekeeper within a different network", async () => {
-        const networkService = await createNetworkService(Keypair.generate());
+        const networkService = await createNetworkService(loadPrivateKey("DuqrwqMDuVwgd2BNbCFQS5gwNuZcfgjuL6KpuvjGjaYa"));
         await networkService.createGatekeeper(TEST_ALT_NETWORK).rpc();
 
         return expect(
             service.changePassGatekeeper(networkService.getDataAccount(), account).rpc()
         ).to.eventually.be.rejectedWith(/InvalidNetwork/);
     });
-
-    it("123", async () => {
-        const networkService = await createNetworkService(Keypair.generate());
-        await networkService.createGatekeeper(TEST_NETWORK).rpc();
-        await setGatekeeperFlags(networkService, GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.CHANGE_PASS_GATEKEEPER);
-
-    })
 });

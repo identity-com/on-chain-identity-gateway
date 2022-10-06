@@ -9,7 +9,7 @@ import {TEST_NETWORK} from "../util/constants";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe("Change pass data", () => {
+describe.only("Change pass data", () => {
     let service: GatekeeperService;
     let subject: PublicKey;
     let account: PublicKey;
@@ -23,11 +23,33 @@ describe("Change pass data", () => {
         await service.issue(account, subject).rpc();
     });
 
-    it("Should be able to set data", async () => {
+    it("Should be able to set network data", async () => {
+        const data = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
+        await service.setPassData(account, null, data).rpc();
+        const pass = await service.getPassAccount(subject);
 
+        // Check: how to properly test this without toString
+        expect(pass.networkData.toString()).to.equal(data.toString());
     });
 
-    it("Should not be able set data if not 32 bytes", async () => {
+    it("Should be able to set gatekeeper data", async () => {
+        const data = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
+        await service.setPassData(account, data, null).rpc();
+        const pass = await service.getPassAccount(subject);
 
+        // Check: how to properly test this without toString
+        expect(pass.gatekeeperData.toString()).to.equal(data.toString());
+    });
+
+    it("Should not be able set network data if not 32 bytes", async () => {
+        const data = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
+
+        expect(() => service.setPassData(account, null, data)).to.throw(/Data provided needs to be 32 bytes/)
+    });
+
+    it("Should not be able set gatekeeper data if not 32 bytes", async () => {
+        const data = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
+
+        expect(() => service.setPassData(account, data, null)).to.throw(/Data provided needs to be 32 bytes/)
     });
 });

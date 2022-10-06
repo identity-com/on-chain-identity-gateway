@@ -49,4 +49,12 @@ export class PassAccount {
     get state(): PassState {
         return EnumMapper.from(this._rawAccount.state, PassStateMapping);
     }
+
+    get networkData(): Uint8Array {
+        return new Uint8Array(this._rawAccount.networkData);
+    }
+
+    get gatekeeperData(): Uint8Array {
+        return new Uint8Array(this._rawAccount.gatekeeperData);
+    }
 }

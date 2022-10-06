@@ -229,7 +229,10 @@ export class GatekeeperService extends AbstractService {
         networkData: Uint8Array,
         authority: PublicKey = this.getWallet().publicKey,
     ): ServiceBuilder {
-        // validate data is 32 byte (else throw error)
+        // CHECK: Could/Should we pad with 0's automatically if less than 32 bytes?
+        if (gatekeeperData && gatekeeperData.length !== 32 || networkData && networkData.length !== 32) {
+            throw new Error('Data provided needs to be 32 bytes');
+        }
 
         const instructionPromise = this.getProgram().methods
             .setPassData(gatekeeperData, networkData)

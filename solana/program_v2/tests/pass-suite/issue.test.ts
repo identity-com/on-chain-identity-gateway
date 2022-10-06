@@ -7,7 +7,7 @@ import {createGatekeeperService} from "./util";
 
 const expect = chai.expect;
 
-describe.only("Issue pass", () => {
+describe("Issue pass", () => {
     let service: GatekeeperService;
 
     beforeEach(async () => {
@@ -18,7 +18,7 @@ describe.only("Issue pass", () => {
         const subject = Keypair.generate().publicKey;
 
         const account = await GatekeeperService.createPassAddress(subject, TEST_NETWORK);
-        // expect(service.getNetwork().toBase58()).to.equal("8PyTqDcyDKbMQB99D2aoNLsBqgheQU3UV4xz28ZXJYmN");
+
         await service.issue(account, subject).rpc();
         const pass = await service.getPassAccount(subject);
 
