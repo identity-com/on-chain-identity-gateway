@@ -14,7 +14,7 @@
     "compile": "tsc -p tsconfig.json",
     "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'tests/**/*.ts'",
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check && cargo fmt --manifest-path Cargo.toml --all -- --check ",
     "create-fixtures": "anchor run createTestFixtureAccount",
     "start-validator": "solana-test-validator --bpf-program FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe ./target/deploy/program_v2.so --reset"
   },
