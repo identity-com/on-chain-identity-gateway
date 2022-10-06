@@ -1,4 +1,4 @@
-    {
+{
     "name": "on-chain-identity-gateway",
     "version": "1.0.0",
     "description": "Welcome to the Identity.com On-chain Identity Gateway monorepo.",
@@ -31,4 +31,4 @@
         "url": "https://github.com/identity-com/on-chain-identity-gateway/issues"
     },
     "homepage": "https://github.com/identity-com/on-chain-identity-gateway#readme"
-    }
+}
