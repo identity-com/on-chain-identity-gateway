@@ -12,7 +12,7 @@
     "test:inner": "yarn workspaces run test",
     "build": "yarn workspaces run build",
     "build-program": "cargo build-bpf",
-    "build-test": "yarn build-porgram && yarn test"
+    "build-test": "yarn build-program && yarn test"
   },
   "devDependencies": {
     "audit-ci": "^5.1.2",
