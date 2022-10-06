@@ -30,4 +30,6 @@ pub enum GatekeeperErrors {
     AuthKeyNotFound,
     #[msg("Invalid key provided")]
     InvalidKey,
+    #[msg("Gatekeeper not found")]
+    InvalidGatekeeper,
 }

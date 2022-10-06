@@ -5,8 +5,6 @@ use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
 
-// TODO: Modify methods to require correct authorization.
-
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
 #[derive(Debug)]
 #[account]

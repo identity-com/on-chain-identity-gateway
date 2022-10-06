@@ -14,6 +14,8 @@ pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
 
     if let Some(key_index) = index {
         network.gatekeepers.remove(key_index);
+    } else {
+        return Err(error!(GatekeeperErrors::InvalidGatekeeper));
     }
 
     Ok(())
