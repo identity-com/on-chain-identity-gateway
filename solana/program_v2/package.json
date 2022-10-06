@@ -16,7 +16,7 @@
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
     "create-fixtures": "anchor run createTestFixtureAccount",
-    "start-validator": "solana-test-validator --bpf-program FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe ./target/deploy/program_v2.so --reset",
+    "start-validator": "solana-test-validator --bpf-program FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe ./target/deploy/program_v2.so --reset"
   },
   "dependencies": {
     "@project-serum/anchor": "^0.25.0",
@@ -35,7 +35,8 @@
     "prettier": "^2.6.2",
     "rimraf": "~3.0.2",
     "ts-mocha": "^8.0.0",
-    "typescript": "^4.2.4"
+    "typescript": "^4.2.4",
+    "husky": "^4.3.8"
   },
   "prettier": {
     "printWidth": 80,
