@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::state::{GatekeeperNetwork, Pass, PassState};
 use crate::errors::PassErrors;
+use crate::constants::PASS_SEED;
 
 pub fn pass_set_state(
     pass: &mut Account<Pass>,
@@ -19,8 +20,8 @@ pub fn pass_set_state(
 pub struct PassSetState<'info> {
     // TODO: Fix validation
     #[account(
-    // seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
-    // bump,
+    seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
+    bump,
     // // TODO: Gatekeeper authority is required to set state
     // // constraint = pass.initial_authority == authority.key(),
     mut

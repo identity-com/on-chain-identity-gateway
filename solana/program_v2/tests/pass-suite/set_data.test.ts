@@ -9,7 +9,7 @@ import {TEST_NETWORK} from "../util/constants";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe.only("Change pass data", () => {
+describe("Change pass data", () => {
     let service: GatekeeperService;
     let subject: PublicKey;
     let account: PublicKey;
