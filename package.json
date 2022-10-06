@@ -14,11 +14,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install",
     "lint": "cd solana/program_v2 && yarn lint"
-    
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm-run-all lint"
+      "pre-commit": "cargo fmt --manifest-path solana/program_v2/Cargo.toml --all -- --check && yarn lint"
     }
   },
   "repository": {
