@@ -6,8 +6,6 @@ import chaiAsPromised from 'chai-as-promised';
 import {NetworkService} from "../../src/NetworkService";
 import {Keypair, PublicKey} from "@solana/web3.js";
 import {TEST_ALT_NETWORK, TEST_NETWORK} from "../util/constants";
-import {GatekeeperKeyFlags} from "../../src/lib/constants";
-import {loadPrivateKey} from "../util/lib";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -57,7 +55,7 @@ describe("Change pass gatekeeper", () => {
     });
 
     it("Cannot change to gatekeeper within a different network", async () => {
-        const networkService = await createNetworkService(loadPrivateKey("DuqrwqMDuVwgd2BNbCFQS5gwNuZcfgjuL6KpuvjGjaYa"));
+        const networkService = await createNetworkService(Keypair.generate(), TEST_ALT_NETWORK);
         await networkService.createGatekeeper(TEST_ALT_NETWORK).rpc();
 
         return expect(
