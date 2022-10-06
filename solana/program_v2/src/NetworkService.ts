@@ -246,7 +246,7 @@ export class NetworkService extends AbstractService {
 
   // Retrieves a gatekeeper's information
   async getGatekeeperAccount(
-    account: PublicKey = this._dataAccount
+    account: PublicKey = this._dataAccount as PublicKey // TODO: Update this once the interface has changed
   ): Promise<GatekeeperAccount | null> {
     const gatekeeperAccount = this._program.account.gatekeeper
       .fetchNullable(account)
