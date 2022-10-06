@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-yarn lint
 cargo fmt --manifest-path solana/program_v2/Cargo.toml --all -- --check && yarn lint
