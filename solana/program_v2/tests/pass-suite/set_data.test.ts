@@ -32,7 +32,7 @@ describe("Change pass data", () => {
         expect(pass.networkData.toString()).to.equal(data.toString());
     });
 
-    it("Should be able to set gatekeeper data", async () => {
+    it.only("Should be able to set gatekeeper data", async () => {
         const data = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
         await service.setPassData(account, data, null).rpc();
         const pass = await service.getPassAccount(subject);
