@@ -211,6 +211,40 @@ export const onGatewayTokenChange = (
     commitment
   );
 };
+
+/**
+ * Register a callback to be called whenever a gateway token is created or changes state
+ * @param connection A solana connection object
+ * @param owner The gateway token owner
+ * @param gatekeeperNetwork
+ * @param callback The callback to register
+ * @param commitment The solana commitment level at which to register gateway token changes. Defaults to 'confirmed'
+ * @param seed
+ * @return The subscription id
+ */
+export const onGatewayToken = (
+  connection: Connection,
+  owner: PublicKey,
+  gatekeeperNetwork: PublicKey,
+  callback: (gatewayToken: GatewayToken) => void,
+  commitment: Commitment = SOLANA_COMMITMENT,
+  seed = 0
+): number => {
+  const gatewayTokenAddress =
+    getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
+      owner,
+      gatekeeperNetwork,
+      seed
+    );
+
+  return onGatewayTokenChange(
+    connection,
+    gatewayTokenAddress,
+    callback,
+    commitment
+  );
+};
+
 /**
  * Lookup the gateway token at a given address
  * @param connection A solana connection object
