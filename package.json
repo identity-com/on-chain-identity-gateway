@@ -12,11 +12,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install",
-    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
+    "lint": "cd solana/program_v2 && yarn lint"
+    
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn lint"
+      "pre-commit": "npm-run-all lint"
     }
   },
   "repository": {
