@@ -171,28 +171,6 @@ impl Gatekeeper {
         Ok(())
     }
 
-    // Allows the setting of a new associated gatekeeper network
-    pub fn set_network(
-        &mut self,
-        data: &UpdateGatekeeperData,
-        authority: &mut Signer,
-    ) -> Result<()> {
-        match data.gatekeeper_network {
-            Some(gatekeeper_network) => {
-                if gatekeeper_network != self.gatekeeper_network {
-                    if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
-                        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-                    }
-
-                    self.gatekeeper_network = gatekeeper_network;
-                }
-
-                Ok(())
-            }
-            None => Ok(()),
-        }
-    }
-
     // Sets the auth threshold for the gatekeeper
     pub fn set_auth_threshold(
         &mut self,
@@ -218,26 +196,20 @@ impl Gatekeeper {
     // sets the staking account for the gatekeeper
     pub fn set_staking_account(
         &mut self,
-        data: &UpdateGatekeeperData,
+        staking_account: &mut UncheckedAccount,
         authority: &mut Signer,
     ) -> Result<()> {
-        match data.staking_account {
-            Some(staking_account) => {
-                if staking_account != self.staking_account {
-                    if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
-                        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-                    }
-
-                    self.staking_account = staking_account;
-                }
-
-                Ok(())
+        if staking_account.key() != self.staking_account {
+            if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
+                return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
             }
-            None => Ok(()),
+            self.staking_account = staking_account.key();
         }
+        Ok(())
     }
 
     // TODO: Change Auth Access
+    // TODO: Change Receiver to Account
     // controls withdrawal of funds from the gatekeeper
     pub fn gatekeeper_withdraw(&mut self, _receiver: Pubkey, authority: &mut Signer) -> Result<()> {
         if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {

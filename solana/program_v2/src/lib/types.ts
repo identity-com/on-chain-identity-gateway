@@ -82,16 +82,12 @@ export type SupportedToken = {
 export type SettlementInfo = {};
 
 export type CreateGatekeeperData = {
-  gatekeeperBump: number;
-  gatekeeperNetwork: PublicKey;
   tokenFees: FeeStructure[];
   authThreshold: number;
   authKeys: AuthKeyStructure[];
 };
 
 export type UpdateGatekeeperData = {
-  gatekeeperNetwork: PublicKey;
-  stakingAccount: PublicKey | null;
   tokenFees: UpdateFeeStructure;
   authThreshold: number;
   authKeys: UpdateAuthKeytructure;

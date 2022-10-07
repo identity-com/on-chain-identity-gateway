@@ -9,11 +9,11 @@ pub fn update_gatekeeper(
 ) -> Result<()> {
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let authority = &mut ctx.accounts.authority;
+    let staking_account = &mut ctx.accounts.staking_account;
 
     gatekeeper.add_auth_keys(&data, authority)?;
     gatekeeper.add_fees(&data, authority)?;
-    gatekeeper.set_network(&data, authority)?;
-    gatekeeper.set_staking_account(&data, authority)?;
+    gatekeeper.set_staking_account(staking_account, authority)?;
 
     Ok(())
 }
@@ -35,15 +35,14 @@ pub struct UpdateGatekeeperAccount<'info> {
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    #[account(mut)]
+    /// CHECK: Add Check Later
+    pub staking_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Clone, Debug, AnchorDeserialize, AnchorSerialize)]
 pub struct UpdateGatekeeperData {
-    /// The [`GatekeeperNetwork`] this gatekeeper is on
-    pub gatekeeper_network: Option<Pubkey>,
-    /// The staking account of this gatekeeper
-    pub staking_account: Option<Pubkey>,
     /// The fees for this gatekeeper
     pub token_fees: UpdateGatekeeperFees,
     /// The [`Gatekeeper::auth_threshold`].

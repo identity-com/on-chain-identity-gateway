@@ -1,4 +1,4 @@
-use crate::constants::GATEKEEPER_SEED;
+use crate::constants::{GATEKEEPER_SEED, STAKING_SEED};
 use crate::errors::GatekeeperErrors;
 use crate::state::gatekeeper::{
     Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, GatekeeperState,
@@ -12,8 +12,10 @@ pub fn create_gatekeeper(
 ) -> Result<()> {
     let authority = &mut ctx.accounts.authority;
     let bump = *ctx.bumps.get("gatekeeper").unwrap();
+    // let stake_bump = *ctx.bumps.get("stake").unwrap();
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let network = &mut ctx.accounts.network;
+    let staking_account = &mut ctx.accounts.staking_account;
 
     if data.auth_keys.is_empty() {
         return Err(error!(GatekeeperErrors::NoAuthKeys));
@@ -33,8 +35,8 @@ pub fn create_gatekeeper(
 
     gatekeeper.authority = *authority.key;
     gatekeeper.gatekeeper_bump = bump;
-    gatekeeper.gatekeeper_network = data.gatekeeper_network;
-    gatekeeper.staking_account = data.staking_account;
+    gatekeeper.gatekeeper_network = network.key();
+    gatekeeper.staking_account = staking_account.key();
     gatekeeper.token_fees = data.token_fees;
     gatekeeper.auth_threshold = data.auth_threshold;
     gatekeeper.auth_keys = data.auth_keys;
@@ -47,12 +49,6 @@ pub fn create_gatekeeper(
 /// Data for [`CreateGatekeeper`]
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct CreateGatekeeperData {
-    /// The [`Gatekeeper::gatekeeper_bump`].
-    pub gatekeeper_bump: u8,
-    /// The associated network for the gatekeeper
-    pub gatekeeper_network: Pubkey,
-    // staking account for the gatekeeper
-    pub staking_account: Pubkey,
     // Fees for the gatekeeper
     pub token_fees: Vec<GatekeeperFees>,
     pub auth_threshold: u8,
@@ -69,7 +65,7 @@ pub struct CreateGatekeeperAccount<'info> {
             data.auth_keys.len(),
             data.token_fees.len(),
         ),
-        seeds = [GATEKEEPER_SEED, authority.key().as_ref(), data.gatekeeper_network.key().as_ref()],
+        seeds = [GATEKEEPER_SEED, authority.key().as_ref(), network.key().as_ref()],
         bump
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
@@ -87,5 +83,8 @@ pub struct CreateGatekeeperAccount<'info> {
         realloc::zero = false,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
+    #[account(mut)]
+    /// CHECK: Add Checking Later
+    pub staking_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }

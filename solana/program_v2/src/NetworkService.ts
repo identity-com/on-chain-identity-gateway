@@ -84,7 +84,7 @@ export class NetworkService extends AbstractService {
       GATEWAY_PROGRAM
     );
   }
-
+  //TODO! seeds derivation program side
   static async createStakingAddress(
     network: PublicKey
   ): Promise<[PublicKey, number]> {
@@ -98,10 +98,8 @@ export class NetworkService extends AbstractService {
   // @authThreshold
   createGatekeeper(
     network: PublicKey,
-    stake: PublicKey,
+    stakingAccount: PublicKey,
     data: CreateGatekeeperData = {
-      gatekeeperBump: 0,
-      gatekeeperNetwork: network,
       tokenFees: [],
       authThreshold: 1,
       authKeys: [
@@ -109,28 +107,22 @@ export class NetworkService extends AbstractService {
           flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
           key: this._wallet.publicKey,
         },
-        {
-          flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
-          key: this._dataAccount,
-        },
       ],
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .createGatekeeper({
-        gatekeeperBump: data.gatekeeperBump,
-        gatekeeperNetwork: data.gatekeeperNetwork,
-        stakingAccount: stake,
         tokenFees: data.tokenFees,
         authThreshold: data.authThreshold,
         authKeys: data.authKeys,
       })
       .accounts({
         gatekeeper: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network,
+        stakingAccount,
+        systemProgram: anchor.web3.SystemProgram.programId,
       })
       .instruction();
     return new ServiceBuilder(this, {
@@ -146,14 +138,13 @@ export class NetworkService extends AbstractService {
   // Allows a network to update a gatekeeper's data
   updateGatekeeper(
     data: UpdateGatekeeperData,
+    stakingAccount: PublicKey,
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       // @ts-ignore
       .updateGatekeeper({
         authThreshold: data.authThreshold,
-        gatekeeperNetwork: data.gatekeeperNetwork,
-        stakingAccount: data.stakingAccount,
         tokenFees: data.tokenFees,
         authKeys: data.authKeys,
       })
@@ -161,6 +152,7 @@ export class NetworkService extends AbstractService {
         gatekeeper: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
+        stakingAccount,
       })
       .instruction();
 

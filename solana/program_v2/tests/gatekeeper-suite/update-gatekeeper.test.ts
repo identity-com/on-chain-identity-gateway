@@ -75,16 +75,17 @@ describe('Gateway v2 Client', () => {
     it('Updates a gatekeeper on an established network', async function () {
       // updates gatekeeper with new data
       await networkService
-        .updateGatekeeper({
-          authThreshold: 1,
-          gatekeeperNetwork: networkDataAccount,
-          stakingAccount: null,
-          tokenFees: { add: [], remove: [] },
-          authKeys: {
-            add: [{ flags: 4097, key: additionalAuthKey }],
-            remove: [],
+        .updateGatekeeper(
+          {
+            authThreshold: 1,
+            tokenFees: { add: [], remove: [] },
+            authKeys: {
+              add: [{ flags: 4097, key: additionalAuthKey }],
+              remove: [],
+            },
           },
-        })
+          stakingDataAccount
+        )
         .rpc();
       // retrieves the gatekeeper account
       let gatekeeperAccount = await networkService.getGatekeeperAccount();

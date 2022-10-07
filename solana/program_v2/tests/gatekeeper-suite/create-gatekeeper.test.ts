@@ -74,6 +74,7 @@ describe('Gateway v2 Client', () => {
       await networkService
         .createGatekeeper(networkDataAccount, stakingDataAccount)
         .rpc();
+
       // retrieves the gatekeeper
       let gatekeeperAccount = await networkService.getGatekeeperAccount();
       // tests to see if the requested gatekeeper's associated network equals the adminAuthority (or network) public key
@@ -83,3 +84,7 @@ describe('Gateway v2 Client', () => {
     }).timeout(10000);
   });
 });
+
+// network: PublicKey,
+// stakingAccount: PublicKey,
+// authority: PublicKey = this._wallet.publicKey
