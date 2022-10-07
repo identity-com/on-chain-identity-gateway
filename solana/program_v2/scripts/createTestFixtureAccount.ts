@@ -9,6 +9,7 @@ import {AdminService} from "../src/AdminService";
 import {NetworkService} from "../src/NetworkService";
 import {createMint} from "@solana/spl-token";
 import * as fs from 'fs';
+import {setGatekeeperFlags} from "../tests/util/lib";
 
 const exec = util.promisify(execCB);
 
@@ -134,6 +135,8 @@ const createGatekeeperAccount = async (network: PublicKey, authorityBase58: stri
 
     if (!foundAccount) {
         await service.createGatekeeper(network, undefined, authority.publicKey).rpc();
+
+        await setGatekeeperFlags(service, 65535);
     }
 
     await saveAccountToFile(dataAccount.toBase58(), filename);

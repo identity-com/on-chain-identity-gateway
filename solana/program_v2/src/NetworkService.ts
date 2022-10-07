@@ -104,13 +104,14 @@ export class NetworkService extends AbstractService {
       authThreshold: 1,
       authKeys: [
         {
-          flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
+          flags: GatekeeperKeyFlags.AUTH,
           key: this._wallet.publicKey,
         },
       ],
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
+      console.log("Creating gatekeeper with authority: " + authority.toBase58());
     const instructionPromise = this._program.methods
       .createGatekeeper({
         gatekeeperBump: data.gatekeeperBump,
@@ -142,7 +143,9 @@ export class NetworkService extends AbstractService {
     data: UpdateGatekeeperData,
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
-    const instructionPromise = this._program.methods
+      console.log("Setting state for gatekeeper with authority: " + authority.toBase58());
+
+      const instructionPromise = this._program.methods
       // @ts-ignore
       .updateGatekeeper({
         authThreshold: data.authThreshold,

@@ -5,11 +5,12 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import {Keypair, PublicKey} from "@solana/web3.js";
 import {TEST_NETWORK} from "../util/constants";
+import {NetworkService} from "../../src/NetworkService";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe("Change pass state", () => {
+describe.only("Change pass state", () => {
     let service: GatekeeperService;
     let subject: PublicKey;
     let account: PublicKey;
@@ -38,12 +39,7 @@ describe("Change pass state", () => {
         )).to.eventually.be.rejectedWith(/InvalidStateChange/);
     });
 
-    it("Can activate a frozen pass", async () => {
-        await changeState(
-            PassState.Frozen,
-            PassState.Active
-        )
-
+    it.only("Can activate a frozen pass", async () => {
         return expect(changeState(
             PassState.Frozen,
             PassState.Active

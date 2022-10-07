@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::errors::PassErrors;
 use crate::constants::PASS_SEED;
-use crate::state::{Gatekeeper, GatekeeperNetwork, Pass};
+use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
 
 pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> {
     // TODO: Check if feature flag is set
@@ -24,8 +24,7 @@ pub struct PassChangeGatekeeper<'info> {
     #[account(
     seeds = [PASS_SEED, pass.subject.as_ref(), network.key().as_ref(), &pass.pass_number.to_le_bytes()],
     bump,
-    // TODO: Gatekeeper authority is required to set state
-    // constraint = old_gatekeeper.can_access(&authority, GatekeeperKeyFlags::AUTH),
+    constraint = old_gatekeeper.can_access(&authority.key(), GatekeeperKeyFlags::CHANGE_PASS_GATEKEEPER),
     mut
     )]
     pub pass: Account<'info, Pass>,

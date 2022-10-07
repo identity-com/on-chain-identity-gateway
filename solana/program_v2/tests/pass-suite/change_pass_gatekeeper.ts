@@ -6,31 +6,11 @@ import chaiAsPromised from 'chai-as-promised';
 import { NetworkService } from '../../src/NetworkService';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { TEST_ALT_NETWORK, TEST_NETWORK } from '../util/constants';
+import {setGatekeeperFlags} from "../util/lib";
+import {GatekeeperKeyFlags} from "../../src/lib/constants";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
-const setGatekeeperFlags = async (service: NetworkService, flags: number) => {
-  const gatekeeper = await service.getGatekeeperAccount();
-
-  await service
-    .updateGatekeeper({
-      authThreshold: 1,
-      gatekeeperNetwork: gatekeeper?.gatekeeperNetwork,
-      tokenFees: { remove: [] as any, add: [] as any },
-      stakingAccount: null,
-      authKeys: {
-        add: [
-          {
-            key: service.getWallet().publicKey,
-            flags: flags,
-          },
-        ],
-        remove: [],
-      },
-    })
-    .rpc();
-};
 
 describe('Change pass gatekeeper', () => {
   let service: GatekeeperService;
@@ -50,6 +30,8 @@ describe('Change pass gatekeeper', () => {
     const networkService = await createNetworkService(Keypair.generate());
     await networkService.createGatekeeper(TEST_NETWORK).rpc();
     const dataAcct = networkService.getDataAccount();
+
+    await setGatekeeperFlags(networkService, GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.CHANGE_PASS_GATEKEEPER);
 
     await service.changePassGatekeeper(dataAcct, account).rpc();
 

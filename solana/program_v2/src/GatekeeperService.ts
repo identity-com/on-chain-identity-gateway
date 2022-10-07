@@ -148,6 +148,7 @@ export class GatekeeperService extends AbstractService {
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network: this._network,
+        gatekeeper: this._gatekeeper,
       })
       .instruction();
 
@@ -175,6 +176,7 @@ export class GatekeeperService extends AbstractService {
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network: this._network,
+        gatekeeper: this._gatekeeper,
       })
       .instruction();
 
@@ -201,6 +203,7 @@ export class GatekeeperService extends AbstractService {
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network: this._network,
+        gatekeeper: this._gatekeeper,
       })
       .instruction();
 
@@ -263,6 +266,7 @@ export class GatekeeperService extends AbstractService {
         pass: passAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
+        gatekeeper: this._gatekeeper,
       })
       .instruction();
 

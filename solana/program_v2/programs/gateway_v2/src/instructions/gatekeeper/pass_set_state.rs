@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::state::{GatekeeperNetwork, Pass, PassState};
+use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass, PassState};
 use crate::errors::PassErrors;
 use crate::constants::PASS_SEED;
 
@@ -15,21 +15,25 @@ pub fn pass_set_state(
     Ok(())
 }
 
+
 #[derive(Accounts, Debug)]
-#[instruction(subject: Pubkey, pass_number: u16)]
+#[instruction(subject: Pubkey, pass_number: u16, state: PassState)]
 pub struct PassSetState<'info> {
     // TODO: Fix validation
     #[account(
-    seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
-    bump,
-    // // TODO: Gatekeeper authority is required to set state
-    // // constraint = pass.initial_authority == authority.key(),
+    // seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
+    // bump,
+    constraint = gatekeeper.can_access(&authority.key(), match state {
+            PassState::Active => GatekeeperKeyFlags::UNFREEZE,
+            PassState::Frozen => GatekeeperKeyFlags::FREEZE,
+            PassState::Revoked => GatekeeperKeyFlags::REVOKE,
+        }),
     mut
     )]
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub network: Account<'info, GatekeeperNetwork>,
-
+    pub gatekeeper: Account<'info, Gatekeeper>,
 }
 

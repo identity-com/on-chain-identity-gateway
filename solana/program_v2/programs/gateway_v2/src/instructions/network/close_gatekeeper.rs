@@ -26,7 +26,7 @@ pub struct CloseGatekeeperAccount<'info> {
     close = destination,
     seeds = [GATEKEEPER_SEED, authority.key().as_ref(), gatekeeper.gatekeeper_network.key().as_ref()],
     bump = gatekeeper.gatekeeper_bump,
-    constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::AUTH),
+    constraint = gatekeeper.can_access(& authority.key(), GatekeeperKeyFlags::AUTH),
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(
