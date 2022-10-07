@@ -17,7 +17,8 @@
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check && cargo fmt --manifest-path Cargo.toml --all -- --check ",
     "create-fixtures": "anchor run createTestFixtureAccount",
     "start-validator": "solana-test-validator --bpf-program FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe ./target/deploy/program_v2.so --reset",
-    "precommit": "yarn lint"
+    "precommit": "yarn lint",
+    "prepare": "cd ../../ && yarn prepare"
   },
   "dependencies": {
     "@project-serum/anchor": "^0.25.0",
