@@ -17,6 +17,7 @@ describe('Gateway v2 Client', () => {
   let networkService: NetworkService;
   let networkDataAccount: PublicKey;
   let gatekeeperDataAccount: PublicKey;
+  let stakingDataAccount: PublicKey;
 
   let adminAuthority: anchor.Wallet;
   let networkAuthority: anchor.Wallet;
@@ -45,6 +46,9 @@ describe('Gateway v2 Client', () => {
       adminAuthority.publicKey,
       networkDataAccount
     );
+    [stakingDataAccount] = await NetworkService.createStakingAddress(
+      networkAuthority.publicKey
+    );
 
     adminService = await AdminService.buildFromAnchor(
       program,
@@ -63,7 +67,9 @@ describe('Gateway v2 Client', () => {
     );
 
     await adminService.createNetwork().rpc();
-    await networkService.createGatekeeper(networkDataAccount).rpc();
+    await networkService
+      .createGatekeeper(networkDataAccount, stakingDataAccount)
+      .rpc();
   });
   describe('Update Gatekeeper', () => {
     it('Updates a gatekeeper on an established network', async function () {

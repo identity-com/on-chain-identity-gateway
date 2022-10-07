@@ -85,7 +85,9 @@ export class NetworkService extends AbstractService {
     );
   }
 
-  static createStakingAddress(network: PublicKey): [PublicKey, number] {
+  static async createStakingAddress(
+    network: PublicKey
+  ): Promise<[PublicKey, number]> {
     return PublicKey.findProgramAddressSync(
       [anchor.utils.bytes.utf8.encode('gw-stake'), network.toBuffer()],
       GATEWAY_PROGRAM
