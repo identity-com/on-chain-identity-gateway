@@ -1,4 +1,5 @@
 use crate::constants::GATEKEEPER_SEED;
+use crate::errors::*;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
