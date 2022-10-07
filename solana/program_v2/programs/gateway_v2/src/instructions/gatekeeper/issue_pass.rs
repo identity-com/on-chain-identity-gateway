@@ -12,6 +12,13 @@ pub fn issue_pass(
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
 
+    msg!("Issuing pass for with PASS_SEED: {:?}", PASS_SEED);
+    msg!("Issuing pass for with subject: {:?}", subject.as_ref());
+    msg!("Issuing pass for with network: {:?}", network.key().as_ref());
+    msg!("Issuing pass for with pass_number: {:?}", &pass_number.to_le_bytes());
+    msg!("Issuing pass for bump: {:?}", *ctx.bumps.get("pass").unwrap());
+
+
     pass.signer_bump = *ctx.bumps.get("pass").unwrap();
     pass.subject = subject;
     pass.issue_time = Clock::get().unwrap().unix_timestamp;

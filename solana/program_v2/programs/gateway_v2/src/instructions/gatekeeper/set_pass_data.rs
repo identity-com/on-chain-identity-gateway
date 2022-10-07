@@ -8,7 +8,15 @@ pub fn set_pass_data(
     gatekeeper_data: Option<[u8; 32]>,
     network_data: Option<[u8; 32]>,
 ) -> Result<()> {
+
     let pass = &mut ctx.accounts.pass;
+
+
+    msg!("Issuing pass for with PASS_SEED: {:?}", PASS_SEED);
+    msg!("Issuing pass for with subject: {:?}", pass.subject.as_ref());
+    msg!("Issuing pass for with network: {:?}", pass.network.key().as_ref());
+    msg!("Issuing pass for with pass_number: {:?}", &pass.pass_number.to_le_bytes());
+    msg!("Issuing pass for bump: {:?}", pass.signer_bump);
 
     if let Some(data) = gatekeeper_data {
         pass.gatekeeper_data = data;
@@ -22,13 +30,13 @@ pub fn set_pass_data(
 }
 
 #[derive(Accounts, Debug)]
-#[instruction(subject: Pubkey, pass_number: u16)]
 pub struct PassSetData<'info> {
     // TODO: Fix validation
     #[account(
-    // seeds = [PASS_SEED, subject.as_ref(), pass.network.as_ref(), &pass_number.to_le_bytes()],
-    // bump,
-    constraint = gatekeeper.can_access(&authority.key(), GatekeeperKeyFlags::SET_PASS_DATA),
+    seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.as_ref(), &pass.pass_number.to_le_bytes()],
+    bump = pass.signer_bump,
+    // // TODO: Gatekeeper authority is required to set state
+    // // constraint = pass.initial_authority == authority.key(),
     mut
     )]
     pub pass: Account<'info, Pass>,
