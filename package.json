@@ -3,18 +3,16 @@
   "version": "1.0.0",
   "description": "Welcome to the Identity.com On-chain Identity Gateway monorepo.",
   "main": "index.js",
+  "private": true,
   "directories": {
     "doc": "docs"
   },
-  "dependencies": {
+  "devDependencies": {
     "husky": "^8.0.1"
   },
-  "devDependencies": {
-    "lerna": "^5.6.1"
-  },
   "scripts": {
-    "prepare": "cd .. && husky install solana/program_v2/.husky && husky install solana/program_v2_cli/.husky",
-    "program_v2_lint": "cd solana/program_v2 && yarn lint"
+    "prepare_program_v2": "husky install solana/program_v2/.husky",
+    "prepare_program_v2_cli": "husky install solana/program_v2_cli/.husky"
   },
   "husky": {
     "hooks": {
@@ -33,6 +31,6 @@
   },
   "homepage": "https://github.com/identity-com/on-chain-identity-gateway#readme",
   "workspaces": [
-    "packages/*"
+    "solana/*"
   ]
 }
