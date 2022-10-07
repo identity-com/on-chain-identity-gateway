@@ -9,9 +9,11 @@
   "dependencies": {
     "husky": "^8.0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "lerna": "^5.6.1"
+  },
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "cd .. && husky install solana/program_v2/.husky && husky install solana/program_v2_cli/.husky",
     "program_v2_lint": "cd solana/program_v2 && yarn lint"
   },
   "husky": {
@@ -29,5 +31,8 @@
   "bugs": {
     "url": "https://github.com/identity-com/on-chain-identity-gateway/issues"
   },
-  "homepage": "https://github.com/identity-com/on-chain-identity-gateway#readme"
+  "homepage": "https://github.com/identity-com/on-chain-identity-gateway#readme",
+  "workspaces": [
+    "packages/*"
+  ]
 }
