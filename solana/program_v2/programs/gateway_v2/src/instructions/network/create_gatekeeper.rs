@@ -1,4 +1,4 @@
-use crate::constants::{GATEKEEPER_SEED, STAKING_SEED};
+use crate::constants::GATEKEEPER_SEED;
 use crate::errors::GatekeeperErrors;
 use crate::state::gatekeeper::{
     Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, GatekeeperState,
