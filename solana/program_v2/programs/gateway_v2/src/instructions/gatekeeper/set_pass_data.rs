@@ -1,10 +1,12 @@
-use anchor_lang::prelude::*;
 use crate::constants::PASS_SEED;
-use crate::state::{GatekeeperNetwork, Pass, PassState};
 use crate::errors::PassErrors;
+use crate::state::{GatekeeperNetwork, Pass, PassState};
+use anchor_lang::prelude::*;
 
 pub fn set_pass_data(
-    ctx: Context<PassSetData>, gatekeeper_data: Option<[u8; 32]>, network_data: Option<[u8; 32]>
+    ctx: Context<PassSetData>,
+    gatekeeper_data: Option<[u8; 32]>,
+    network_data: Option<[u8; 32]>,
 ) -> Result<()> {
     let pass = &mut ctx.accounts.pass;
 
@@ -24,7 +26,7 @@ pub fn set_pass_data(
 pub struct PassSetData<'info> {
     // TODO: Fix validation
     #[account(
-    seeds = [PASS_SEED, subject.as_ref(), pass.network.key().as_ref(), &pass_number.to_le_bytes()],
+    seeds = [PASS_SEED, subject.as_ref(), pass.network.as_ref(), &pass_number.to_le_bytes()],
     bump,
     // // TODO: Gatekeeper authority is required to set state
     // // constraint = pass.initial_authority == authority.key(),
@@ -35,3 +37,5 @@ pub struct PassSetData<'info> {
     pub system_program: Program<'info, System>,
 }
 
+// gatekeeper_data,
+// network_data,
