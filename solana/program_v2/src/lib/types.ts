@@ -84,7 +84,6 @@ export type SettlementInfo = {};
 export type CreateGatekeeperData = {
   gatekeeperBump: number;
   gatekeeperNetwork: PublicKey;
-  stakingAccount: PublicKey;
   tokenFees: FeeStructure[];
   authThreshold: number;
   authKeys: AuthKeyStructure[];

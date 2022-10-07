@@ -1,6 +1,6 @@
 import * as anchor from '@project-serum/anchor';
 import { AnchorProvider, Program } from '@project-serum/anchor';
-import { ConfirmOptions, PublicKey } from '@solana/web3.js';
+import { ConfirmOptions, Keypair, PublicKey } from '@solana/web3.js';
 import {
   AuthKeyStructure,
   CreateGatekeeperData,
@@ -85,27 +85,31 @@ export class NetworkService extends AbstractService {
     );
   }
 
+  static createStakingAddress(network: PublicKey): [PublicKey, number] {
+    return PublicKey.findProgramAddressSync(
+      [anchor.utils.bytes.utf8.encode('gw-stake'), network.toBuffer()],
+      GATEWAY_PROGRAM
+    );
+  }
+
   // Creates a gatekeeper on a specified network
   // @authThreshold
   createGatekeeper(
     network: PublicKey,
+    stake: PublicKey,
     data: CreateGatekeeperData = {
       gatekeeperBump: 0,
       gatekeeperNetwork: network,
-      // TODO? Is this the correct way to derive the default staking account?
-      stakingAccount: PublicKey.findProgramAddressSync(
-        [
-          anchor.utils.bytes.utf8.encode('gw-stake'),
-          this._wallet.publicKey.toBuffer(),
-        ],
-        GATEWAY_PROGRAM
-      )[0],
       tokenFees: [],
       authThreshold: 1,
       authKeys: [
         {
           flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
           key: this._wallet.publicKey,
+        },
+        {
+          flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
+          key: this._dataAccount,
         },
       ],
     },
@@ -115,7 +119,7 @@ export class NetworkService extends AbstractService {
       .createGatekeeper({
         gatekeeperBump: data.gatekeeperBump,
         gatekeeperNetwork: data.gatekeeperNetwork,
-        stakingAccount: data.stakingAccount,
+        stakingAccount: stake,
         tokenFees: data.tokenFees,
         authThreshold: data.authThreshold,
         authKeys: data.authKeys,
