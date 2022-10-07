@@ -1,71 +1,70 @@
-import { Command, flags } from "@oclif/command";
-import { BigNumber, utils, Wallet } from "ethers";
-import { GatewayToken } from "../contracts/GatewayToken";
-import { BaseProvider } from '@ethersproject/providers';
 import {
-	privateKeyFlag,
-	gatewayTokenAddressFlag,
-	networkFlag,
-} from "../utils/flags";
-import { mnemonicSigner, privateKeySigner } from "../utils/signer";
-import { TokenData } from "../utils/types";
-import { checkTokenState } from "../utils/token-state";
+  gatewayTokenAddressFlag,
+  networkFlag,
+  tokenIdFlag
+} from "../utils/oclif/flags";
+import {Command, Flags} from "@oclif/core";
+import {utils} from "ethers";
+import {GatewayTs} from "../service/GatewayTs";
+import {TokenState} from "../utils/types";
 
 export default class GetToken extends Command {
-	static description = "Get information related to gateway token by tokenID";
+  static description = "Get existing gateway token";
 
-	static examples = [
-		`$ gateway get-token 10
+  static examples = [
+    `$ gateway get 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 		`,
-	];
+  ];
+  
+  static aliases = ["verify"];
 
-	static flags = {
-		help: flags.help({ char: "h" }),
-		privateKey: privateKeyFlag(),
-		gatewayTokenAddress: gatewayTokenAddressFlag(),
-		network: networkFlag(),
-	};
+  static flags = {
+    help: Flags.help({ char: "h" }),
+    gatewayTokenAddress: gatewayTokenAddressFlag(),
+    tokenID: tokenIdFlag(),
+    network: networkFlag(),
+  };
 
-	static args = [
-		{
-			name: "tokenID",
-			required: true,
-			description: "Owner address to verify identity token for",
-			parse: (input: string) => BigNumber.from(input),
-		},
-	];
+  static args = [
+    {
+      name: "address",
+      required: true,
+      description: "Owner ethereum address to get the token for",
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
 
-	async run() {
-		const { args, flags } = this.parse(GetToken);
+        return input;
+      },
+    },
+  ];
 
-		const pk = flags.privateKey;
-		const provider:BaseProvider = flags.network;
-		let signer: Wallet
-		const tokenID: BigNumber = args.tokenID;
+  async run(): Promise<void> {
+    const { args, flags } = await this.parse(GetToken);
 
-		if (utils.isValidMnemonic(pk)) {
-			signer = mnemonicSigner(pk, provider)
-		} else {
-			signer = privateKeySigner(pk, provider)
-		}
+    const ownerAddress = args.address as string;
 
-		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
-		
-		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayTokenAddress = flags.gatewayTokenAddress;
 
-        const token:TokenData = await gatewayToken.getToken(tokenID);
+    this.log(`Getting token for ${ownerAddress}`);
 
-		this.log(
-			`Gateway token information:
+    const network = await flags.network.getNetwork();
 
-            Gateway TokenID: ${tokenID}
-            Owner: ${token?.owner} 
-            State: ${checkTokenState(token?.state)}
-            Identity: ${token?.identity} 
-            Expiration: ${token?.expiration.toString()} 
-            Bitmask: ${token?.bitmask.toString()}
-            on GatewayToken ${gatewayTokenAddress} contract
-			`
-		);
-	}
+    const gateway = new GatewayTs(flags.network, network, gatewayTokenAddress);
+
+    const token = await gateway.getToken(
+      ownerAddress,
+      flags.tokenID,
+    );
+
+    this.log('Token:', {
+      owner: token.owner,
+      state: TokenState[token.state],
+      tokenId: token.tokenId.toString(),
+      expiration: token.expiration.toString(),
+      bitmask: token.bitmask.toString(),
+    });
+  }
 }

@@ -1,6 +1,7 @@
 import { Command, Flags } from "@oclif/core";
 import { PublicKey } from "@solana/web3.js";
 import {
+  airdropFlag,
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkPubkeyFlag,
@@ -21,6 +22,7 @@ Refreshed
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
     cluster: clusterFlag(),
+    airdrop: airdropFlag,
   };
 
   static args = [
@@ -28,18 +30,20 @@ Refreshed
       name: "gatewayToken",
       required: true,
       description: "The gateway token to freeze",
-      parse: async (input: string) => new PublicKey(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
     {
       name: "expiry",
       description:
         "The new expiry time in seconds for the gateway token (default 15 minutes)",
       default: 15 * 60 * 60, // 15 minutes
-      parse: async (input: string) => Number(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<number> => Number(input),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(Refresh);
 
     const { gatewayToken, gatekeeper, service } =
@@ -50,7 +54,10 @@ Refreshed
      by gatekeeper ${gatekeeper.publicKey.toBase58()}`);
 
     await service
-      .updateExpiry(gatewayToken, args.expiry + Math.floor(Date.now() / 1000))
+      .updateExpiry(
+        gatewayToken,
+        Number.parseInt(args.expiry, 10) + Math.floor(Date.now() / 1000)
+      )
       .then((t) => t.send())
       .then((t) => t.confirm());
 

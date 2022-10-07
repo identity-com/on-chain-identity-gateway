@@ -1,15 +1,15 @@
 import chai from "chai";
 import chaiSubset from "chai-subset";
 import { PublicKey, Keypair, AccountInfo } from "@solana/web3.js";
-import { PROGRAM_ID } from "../../src/lib/constants";
 import {
+  PROGRAM_ID,
   Active,
   GatewayTokenData,
   GatewayTokenState,
-} from "../../src/lib/GatewayTokenData";
-import { AssignablePublicKey } from "../../src/lib/AssignablePublicKey";
+  AssignablePublicKey,
+  GatewayToken,
+} from "../../src";
 import { describe } from "mocha";
-import { GatewayToken } from "../../src";
 
 chai.use(chaiSubset);
 const { expect } = chai;

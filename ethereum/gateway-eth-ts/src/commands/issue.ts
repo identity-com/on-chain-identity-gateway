@@ -1,122 +1,88 @@
-import { Command, flags } from "@oclif/command";
-import { BigNumber, utils, Wallet } from "ethers";
-import { GatewayToken } from "../contracts/GatewayToken";
-import { BaseProvider } from '@ethersproject/providers';
-import {
-		privateKeyFlag,
-		gatewayTokenAddressFlag,
-		networkFlag,
-		gasPriceFeeFlag,
-		confirmationsFlag,
-		generateTokenIdFlag,
-		bitmaskFlag,
-		tokenIdFlag,
-} from "../utils/flags";
-import { TxBase } from "../utils/tx";
-import { mnemonicSigner, privateKeySigner } from "../utils/signer";
-import { generateId } from "../utils/tokenId";
+import { Command, Flags } from "@oclif/core";
+import { BigNumber, utils} from "ethers";
 import { getExpirationTime } from "../utils/time";
+import {
+  bitmaskFlag, confirmationsFlag,
+  gasPriceFeeFlag, gatewayTokenAddressFlag,
+  networkFlag,
+  privateKeyFlag,
+  tokenIdFlag
+} from "../utils/oclif/flags";
+import {makeGatewayTs} from "../utils/oclif/utils";
+import {ZERO_BN} from "../utils/constants";
 
 export default class IssueToken extends Command {
-	static description = "Issue new identity token with TokenID for Ethereum address";
+  static description =
+    "Issue new gateway token with TokenID for Ethereum address";
 
-	static examples = [
-		`$ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -i <TokenID>
+  static examples = [
+    `$ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 		`,
-	];
+  ];
 
-	static flags = {
-		help: flags.help({ char: "h" }),
-		privateKey: privateKeyFlag(),
-		gatewayTokenAddress: gatewayTokenAddressFlag(),
-		network: networkFlag(),
-		gasPriceFee: gasPriceFeeFlag(),
-		confirmations: confirmationsFlag(),
-		generateTokenId: generateTokenIdFlag,
-		bitmask: bitmaskFlag(),
-		tokenID: tokenIdFlag(),
-	};
+  static flags = {
+    help: Flags.help({ char: "h" }),
+    privateKey: privateKeyFlag(),
+    gatewayTokenAddress: gatewayTokenAddressFlag(),
+    network: networkFlag(),
+    gasPriceFee: gasPriceFeeFlag(),
+    confirmations: confirmationsFlag(),
+    bitmask: bitmaskFlag(),
+    tokenID: tokenIdFlag(),
+  };
 
-	static args = [
-		{
-			name: "address",
-			required: true,
-			description: "Owner ethereum address to tokenID for",
-			parse: (input: string) => utils.isAddress(input) ? input : null,
-		},
-		{
-			name: "expiration",
-			required: false,
-			description: "Expiration timestamp for newly issued token",
-			parse: (input: any) => BigNumber.from(input),
-			default: 0,
-		},
-		{
-			name: "constrains",
-			required: false,
-			description: "Constrains to generate tokenId",
-			parse: (input: any) => BigNumber.from(input),
-			default: BigNumber.from("0"),
-		}
-	];
+  static args = [
+    {
+      name: "address",
+      required: true,
+      description: "Owner ethereum address to issue the token to",
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
 
-	async run() {
-		const { args, flags } = this.parse(IssueToken);
+        return input;
+      },
+    },
+    {
+      name: "expiration",
+      required: false,
+      description: "Expiration timestamp for newly issued token",
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: any): Promise<BigNumber> => BigNumber.from(input),
+      default: ZERO_BN,
+    },
+  ];
 
-		const pk = flags.privateKey;
-		const provider:BaseProvider = flags.network;
-		let signer: Wallet
-		const confirmations = flags.confirmations;
-		let tx:any;
+  async run(): Promise<void> {
+    const { args, flags } = await this.parse(IssueToken);
 
-		if (utils.isValidMnemonic(pk)) {
-			signer = mnemonicSigner(pk, provider)
-		} else {
-			signer = privateKeySigner(pk, provider)
-		}
+    const confirmations = flags.confirmations;
+    const bitmask: BigNumber = flags.bitmask;
+    const ownerAddress = args.address as string;
+    let expiration = args.expiration as BigNumber;
+    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
-		let tokenID: BigNumber = flags.tokenID;
-		const generateTokenId: boolean = flags.generateTokenId;
-		const bitmask: BigNumber = flags.bitmask;
-		const ownerAddress: string = args.address;
-		let expiration: BigNumber = args.expiration;
-		const constrains: BigNumber = args.constrains;
-		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    if (expiration.gt(0)) {
+      expiration = getExpirationTime(expiration);
+    }
 
-		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gateway = await makeGatewayTs(flags.network, flags.privateKey, gatewayTokenAddress, flags.gasPriceFee);
+    const sendableTransaction = await gateway.issue(
+      ownerAddress,
+      flags.tokenID,
+      expiration,
+      bitmask,
+    );
 
-		if (generateTokenId && tokenID == null) {
-			tokenID = generateId(ownerAddress, constrains);
-		}
+    this.log(`Issuing new token for owner ${ownerAddress}
+			on GatewayToken ${gatewayTokenAddress} contract.`);
 
-		const gasPrice = await flags.gasPriceFee;
-		let gasLimit: BigNumber 
+    this.log(`Transaction hash: ${sendableTransaction.hash}`);
 
-		if (expiration.gt(0)) {
-			expiration = getExpirationTime(expiration);
-		}
-
-		gasLimit = await gatewayToken.contract.estimateGas.mint(ownerAddress, tokenID, expiration, bitmask);
-
-		const txParams: TxBase = {
-			gasLimit: gasLimit,
-			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
-		};
-
-		this.log(`Issuing new token with TokenID:
-			${tokenID} 
-			for owner ${ownerAddress}
-			on GatewayToken ${gatewayTokenAddress} contract`
-		);
-
-		if (confirmations > 0) {
-			tx = await(await gatewayToken.mint(ownerAddress, tokenID, expiration, bitmask, txParams)).wait(confirmations);
-		} else {
-			tx = await gatewayToken.mint(ownerAddress, tokenID, expiration, bitmask, txParams);
-		}
-
-		this.log(
-			`Issued new token with TokenID: ${tokenID} to ${ownerAddress} TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
-		);
-	}
+    const receipt = await sendableTransaction.wait(confirmations);
+    
+    this.log(`Token issued. TxHash: ${receipt.transactionHash}`);
+  }
 }

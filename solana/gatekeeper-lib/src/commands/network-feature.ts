@@ -3,7 +3,7 @@ import { Keypair } from "@solana/web3.js";
 
 import { airdropTo } from "../util";
 import { GatekeeperNetworkService } from "../service";
-import { clusterFlag, gatekeeperNetworkKeyFlag } from "../util/oclif/flags";
+import {airdropFlag, clusterFlag, gatekeeperNetworkKeyFlag} from "../util/oclif/flags";
 import {
   NetworkFeature,
   UserTokenExpiry,
@@ -13,6 +13,7 @@ import { getConnectionFromEnv } from "../util/oclif/utils";
 type featureOperation = "add" | "remove" | "get";
 
 export const featureOperation = Flags.build<featureOperation>({
+  // eslint-disable-next-line @typescript-eslint/require-await
   parse: async (input: string) => {
     switch (input) {
       case "add":
@@ -29,7 +30,7 @@ export const featureOperation = Flags.build<featureOperation>({
   default: "get",
 });
 
-export default class AddGatekeeper extends Command {
+export default class AddNetworkFeature extends Command {
   static description = "Get or Change a Network Feature";
   static examples = [`$ gateway network-feature userTokenExpiry`];
 
@@ -38,6 +39,7 @@ export default class AddGatekeeper extends Command {
     featureOperation: featureOperation(),
     gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
     cluster: clusterFlag(),
+    airdrop: airdropFlag,
   };
 
   static args = [
@@ -45,7 +47,8 @@ export default class AddGatekeeper extends Command {
       name: "feature",
       required: true,
       description: "The Network Feature Name",
-      parse: async (input: string) => {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<NetworkFeature | undefined> => {
         switch (input) {
           case "userTokenExpiry":
             return new NetworkFeature({
@@ -56,16 +59,22 @@ export default class AddGatekeeper extends Command {
     },
   ];
 
-  async run() {
-    const { args, flags } = await this.parse(AddGatekeeper);
+  async run(): Promise<void> {
+    const { args, flags } = await this.parse(AddNetworkFeature);
 
-    const networkFeature: NetworkFeature = args.feature;
+    const networkFeature: NetworkFeature = args.feature as NetworkFeature;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
     const featureOperation = flags.featureOperation;
-    this.log(`Performing ${featureOperation} on ${networkFeature.enum}
+    this.log(`Performing ${
+      featureOperation ? featureOperation : "//Undefined//"
+    } on ${networkFeature.enum}
       in network ${gatekeeperNetwork.publicKey.toBase58()}`);
 
-    this.log(`Cluster config: ${flags.cluster}`);
+    this.log(
+      `Cluster config: ${
+        flags.cluster ? flags.cluster : "//Cluster Undefined//"
+      }`
+    );
 
     const connection = getConnectionFromEnv(flags.cluster);
 
@@ -88,28 +97,34 @@ export default class AddGatekeeper extends Command {
       return;
     }
 
-    await airdropTo(
-      connection,
-      gatekeeperNetwork.publicKey,
-      flags.cluster as string
-    );
+    if (flags.airdrop) {
+      await airdropTo(
+          connection,
+          gatekeeperNetwork.publicKey,
+          flags.cluster as string
+      );
+    }
+
+    // ? Why are the featureAddress variables unused? What are they doing here?
 
     if (featureOperation === "add" && !hasNetworkFeature) {
-      const featureAddress = await networkService
+      await networkService
         .addNetworkFeature("find", networkFeature)
         .then((t) => t.send())
         .then((t) => t.confirm());
     } else if (featureOperation === "remove" && hasNetworkFeature) {
       // remove case
-      const featureAddress = await networkService
+      await networkService
         .removeNetworkFeature("find", networkFeature)
         .then((t) => t.send())
         .then((t) => t.confirm());
     } else {
       this.log(
-        `Not executing ${featureOperation} operation. ${
-          networkFeature.enum
-        } already ${hasNetworkFeature ? "set" : "not set"}.`
+        `Not executing ${
+          featureOperation ? featureOperation : "undefined"
+        } operation. ${networkFeature.enum} already ${
+          hasNetworkFeature ? "set" : "not set"
+        }.`
       );
     }
   }

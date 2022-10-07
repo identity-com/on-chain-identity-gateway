@@ -4,6 +4,7 @@ import { Keypair, PublicKey } from "@solana/web3.js";
 import { airdropTo } from "../util";
 import { GatekeeperService } from "../service";
 import {
+  airdropFlag,
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkPubkeyFlag,
@@ -25,11 +26,13 @@ export default class Issue extends Command {
       char: "e",
       description:
         "The expiry time in seconds for the gateway token (default none)",
+      // eslint-disable-next-line @typescript-eslint/require-await
       parse: async (input: string) => Number(input),
     }),
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
     cluster: clusterFlag(),
+    airdrop: airdropFlag,
   };
 
   static args = [
@@ -37,14 +40,15 @@ export default class Issue extends Command {
       name: "address",
       required: true,
       description: "The address to issue the token to",
-      parse: async (input: string) => new PublicKey(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(Issue);
 
-    const address: PublicKey = args.address;
+    const address: PublicKey = args.address as PublicKey;
     const gatekeeper = flags.gatekeeperKey as Keypair;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as PublicKey;
     this.log(`Issuing:
@@ -54,7 +58,9 @@ export default class Issue extends Command {
 
     const connection = getConnectionFromEnv(flags.cluster);
 
-    await airdropTo(connection, gatekeeper.publicKey, flags.cluster as string);
+    if (flags.airdrop) {
+      await airdropTo(connection, gatekeeper.publicKey, flags.cluster as string);
+    }
 
     const service = new GatekeeperService(
       connection,

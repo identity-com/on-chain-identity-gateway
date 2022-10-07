@@ -1,84 +1,69 @@
-import { Command, flags } from "@oclif/command";
-import { BigNumber, utils, Wallet } from "ethers";
-import { GatewayToken } from "../contracts/GatewayToken";
-import { BaseProvider } from '@ethersproject/providers';
 import {
-		privateKeyFlag,
-		gatewayTokenAddressFlag,
-		networkFlag,
-		gasPriceFeeFlag,
-		confirmationsFlag,
-} from "../utils/flags";
-import { TxBase } from "../utils/tx";
-import { mnemonicSigner, privateKeySigner } from "../utils/signer";
+  confirmationsFlag,
+  gasPriceFeeFlag,
+  gatewayTokenAddressFlag,
+  networkFlag,
+  privateKeyFlag, tokenIdFlag
+} from "../utils/oclif/flags";
+import {Command, Flags} from "@oclif/core";
+import {makeGatewayTs} from "../utils/oclif/utils";
+import {utils} from "ethers";
 
 export default class FreezeToken extends Command {
-	static description = "Freeze existing identity token using TokenID";
+  static description = "Freeze existing gateway token";
 
-	static examples = [
-		`$ gateway freeze 10
+  static examples = [
+    `$ gateway freeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 		`,
-	];
+  ];
 
-	static flags = {
-		help: flags.help({ char: "h" }),
-		privateKey: privateKeyFlag(),
-		gatewayTokenAddress: gatewayTokenAddressFlag(),
-		network: networkFlag(),
-		gasPriceFee: gasPriceFeeFlag(),
-		confirmations: confirmationsFlag(),
-	};
+  static flags = {
+    help: Flags.help({ char: "h" }),
+    privateKey: privateKeyFlag(),
+    gatewayTokenAddress: gatewayTokenAddressFlag(),
+    tokenID: tokenIdFlag(),
+    network: networkFlag(),
+    gasPriceFee: gasPriceFeeFlag(),
+    confirmations: confirmationsFlag(),
+  };
 
-	static args = [
-		{
-			name: "tokenID",
-			required: true,
-			description: "Token ID number to freeze",
-			parse: (input: string) => BigNumber.from(input),
-		},
-	];
+  static args = [
+    {
+      name: "address",
+      required: true,
+      description: "Owner ethereum address to freeze the token for",
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
 
-	async run() {
-		const { args, flags } = this.parse(FreezeToken);
+        return input;
+      },
+    },
+  ];
 
-		const pk = flags.privateKey;
-		const provider:BaseProvider = flags.network;
-		let signer: Wallet
-		const confirmations = flags.confirmations;
+  async run(): Promise<void> {
+    const { args, flags } = await this.parse(FreezeToken);
 
-		if (utils.isValidMnemonic(pk)) {
-			signer = mnemonicSigner(pk, provider)
-		} else {
-			signer = privateKeySigner(pk, provider)
-		}
-		
-		const tokenID: BigNumber = args.tokenID;
-		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const confirmations = flags.confirmations;
+    const ownerAddress = args.address as string;
 
-		this.log(`Freezing existing token with TokenID:
-			${tokenID.toString()} 
-			on GatewayToken ${gatewayTokenAddress} contract`);
-		
-		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayTokenAddress = flags.gatewayTokenAddress;
 
-		const gasPrice = await flags.gasPriceFee;
-		const gasLimit = await gatewayToken.contract.estimateGas.freeze(tokenID);
+    this.log(`Freezing token for ${ownerAddress}`);
 
-		const txParams: TxBase = {
-			gasLimit: gasLimit,
-			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
-		};
+    const gateway = await makeGatewayTs(flags.network, flags.privateKey, gatewayTokenAddress, flags.gasPriceFee);
 
-		let tx: any;
+    const sendableTransaction = await gateway.freeze(
+      ownerAddress,
+      flags.tokenID,
+    );
 
-		if (confirmations > 0) {
-			tx = await(await gatewayToken.freeze(tokenID, txParams)).wait(confirmations);
-		} else {
-			tx = await gatewayToken.freeze(tokenID, txParams);
-		}
+    this.log(`Transaction hash: ${sendableTransaction.hash}`);
 
-		this.log(
-				`Freezed existing token with TokenID: ${tokenID.toString()} TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
-			);
-	}
+    const receipt = await sendableTransaction.wait(confirmations);
+
+    this.log(`Token frozen. TxHash: ${receipt.transactionHash}`);
+  }
 }

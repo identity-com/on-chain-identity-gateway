@@ -4,6 +4,7 @@ import { Keypair, PublicKey } from "@solana/web3.js";
 import { airdropTo } from "../util";
 import { GatekeeperNetworkService } from "../service";
 import {
+  airdropFlag,
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkKeyFlag,
@@ -23,6 +24,7 @@ export default class AddGatekeeper extends Command {
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
     cluster: clusterFlag(),
+    airdrop: airdropFlag,
   };
 
   static args = [
@@ -30,14 +32,15 @@ export default class AddGatekeeper extends Command {
       name: "address",
       required: true,
       description: "The address of the gatekeeper to add to the network",
-      parse: async (input: string) => new PublicKey(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(AddGatekeeper);
 
-    const gatekeeper: PublicKey = args.address;
+    const gatekeeper: PublicKey = args.address as PublicKey;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
     this.log(`Adding:
       gatekeeper ${gatekeeper.toBase58()} 
@@ -45,11 +48,13 @@ export default class AddGatekeeper extends Command {
 
     const connection = getConnectionFromEnv(flags.cluster);
 
-    await airdropTo(
-      connection,
-      gatekeeperNetwork.publicKey,
-      flags.cluster as string
-    );
+    if (flags.airdrop) {
+      await airdropTo(
+          connection,
+          gatekeeperNetwork.publicKey,
+          flags.cluster as string
+      );
+    }
 
     const networkService = new GatekeeperNetworkService(
       connection,
@@ -60,7 +65,11 @@ export default class AddGatekeeper extends Command {
       .then((t) => t.send())
       .then((t) => t.confirm());
     this.log(
-      `Added gatekeeper to network. Gatekeeper account: ${gatekeeperAccount?.toBase58()}`
+      `Added gatekeeper to network. Gatekeeper account: ${
+        gatekeeperAccount
+          ? gatekeeperAccount?.toBase58()
+          : "//GatekeeperAccount was undefined//"
+      }`
     );
   }
 }

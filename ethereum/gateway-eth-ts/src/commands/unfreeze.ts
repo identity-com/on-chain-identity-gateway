@@ -1,83 +1,69 @@
-import { Command, flags } from "@oclif/command";
-import { GatewayToken } from "../contracts/GatewayToken";
-import { BaseProvider } from '@ethersproject/providers';
 import {
-		privateKeyFlag,
-		gatewayTokenAddressFlag,
-		networkFlag,
-		gasPriceFeeFlag,
-		confirmationsFlag,
-} from "../utils/flags";
-import { TxBase } from "../utils/tx";
-import { BigNumber, utils, Wallet } from "ethers";
-import { mnemonicSigner, privateKeySigner } from "../utils/signer";
+  confirmationsFlag,
+  gasPriceFeeFlag,
+  gatewayTokenAddressFlag,
+  networkFlag,
+  privateKeyFlag, tokenIdFlag
+} from "../utils/oclif/flags";
+import {Command, Flags} from "@oclif/core";
+import {makeGatewayTs} from "../utils/oclif/utils";
+import {utils} from "ethers";
 
 export default class UnfreezeToken extends Command {
-	static description = "Unfreeze existing identity token using TokenID";
+  static description = "Unfreeze existing gateway token";
 
-	static examples = [
-		`$ gateway unfreeze 10
+  static examples = [
+    `$ gateway unfreeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 		`,
-	];
+  ];
 
-	static flags = {
-		help: flags.help({ char: "h" }),
-		privateKey: privateKeyFlag(),
-		gatewayTokenAddress: gatewayTokenAddressFlag(),
-		network: networkFlag(),
-		gasPriceFee: gasPriceFeeFlag(),
-		confirmations: confirmationsFlag(),
-	};
+  static flags = {
+    help: Flags.help({ char: "h" }),
+    privateKey: privateKeyFlag(),
+    gatewayTokenAddress: gatewayTokenAddressFlag(),
+    tokenID: tokenIdFlag(),
+    network: networkFlag(),
+    gasPriceFee: gasPriceFeeFlag(),
+    confirmations: confirmationsFlag(),
+  };
 
-	static args = [
-		{
-			name: "tokenID",
-			required: true,
-			description: "Token ID number to unfreeze",
-			parse: (input: string) => BigNumber.from(input),
-		},
-	];
+  static args = [
+    {
+      name: "address",
+      required: true,
+      description: "Owner ethereum address to unfreeze the token for",
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> => {
+        if (!utils.isAddress(input)) {
+          throw new Error("Invalid address");
+        }
 
-	async run() {
-		const { args, flags } = this.parse(UnfreezeToken);
+        return input;
+      },
+    },
+  ];
 
-		const pk = flags.privateKey;
-		const provider:BaseProvider = flags.network;
-		let signer: Wallet
-		const confirmations = flags.confirmations;
+  async run(): Promise<void> {
+    const { args, flags } = await this.parse(UnfreezeToken);
 
-		if (utils.isValidMnemonic(pk)) {
-			signer = mnemonicSigner(pk, provider)
-		} else {
-			signer = privateKeySigner(pk, provider)
-		}
-		
-		const tokenID: BigNumber = args.tokenID;
-		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
+    const confirmations = flags.confirmations;
+    const ownerAddress = args.address as string;
 
-		this.log(`Unfreezing existing token with TokenID:
-			${tokenID.toString()} 
-			on GatewayToken ${gatewayTokenAddress} contract`);
-		
-		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
+    const gatewayTokenAddress = flags.gatewayTokenAddress;
 
-		const gasPrice = await flags.gasPriceFee;
-		const gasLimit = await gatewayToken.contract.estimateGas.unfreeze(tokenID);
+    this.log(`Unfreezing token for ${ownerAddress}`);
 
-		const txParams: TxBase = {
-			gasLimit: gasLimit,
-			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
-		};
+    const gateway = await makeGatewayTs(flags.network, flags.privateKey, gatewayTokenAddress, flags.gasPriceFee);
 
-		let tx: any;
-		if (confirmations > 0) {
-			tx = await(await gatewayToken.unfreeze(tokenID, txParams)).wait(confirmations);
-		} else {
-			tx = await gatewayToken.unfreeze(tokenID, txParams);
-		}
+    const sendableTransaction = await gateway.unfreeze(
+      ownerAddress,
+      flags.tokenID,
+    );
 
-		this.log(
-			`Unfreezed existing token with TokenID: ${tokenID.toString()} TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
-		);
-	}
+    this.log(`Transaction hash: ${sendableTransaction.hash}`);
+
+    const receipt = await sendableTransaction.wait(confirmations);
+
+    this.log(`Token unfrozen. TxHash: ${receipt.transactionHash}`);
+  }
 }

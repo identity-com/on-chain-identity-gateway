@@ -5,10 +5,11 @@
     "dist"
   ],
   "include": [
-    "**/*.ts",
+    "**/*.ts"
   ],
   "compilerOptions": {
     "esModuleInterop": true,
     "rootDir": ".",
+    "sourceMap": true
   }
 }

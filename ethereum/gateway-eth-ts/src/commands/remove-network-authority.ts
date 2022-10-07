@@ -1,85 +1,65 @@
-import { Command, flags } from "@oclif/command";
-import { BigNumber, utils, Wallet } from "ethers";
-import { BaseProvider } from '@ethersproject/providers';
-import { GatewayToken } from "../contracts/GatewayToken";
+import { Command, Flags } from "@oclif/core";
+import { utils} from "ethers";
+
+import {makeGatewayTs} from "../utils/oclif/utils";
 import {
-		privateKeyFlag,
-		gatewayTokenAddressFlag,
-		networkFlag,
-		gasPriceFeeFlag,
-		confirmationsFlag,
-} from "../utils/flags";
-import { TxBase } from "../utils/tx";
-import { mnemonicSigner, privateKeySigner } from "../utils/signer";
+  confirmationsFlag,
+  gasPriceFeeFlag,
+  gatewayTokenAddressFlag,
+  networkFlag,
+  privateKeyFlag
+} from "../utils/oclif/flags";
 
 export default class RemoveNetworkAuthority extends Command {
-	static description = "Remove network authority to a GatewayToken contract";
+  static description = "Remove a network authority to a GatewayToken contract";
 
-	static examples = [
-		`$ gateway remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
+  static examples = [
+    `$ gateway remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 		`,
-	];
+  ];
 
-	static flags = {
-		help: flags.help({ char: "h" }),
-		privateKey: privateKeyFlag(),
-		gatewayTokenAddress: gatewayTokenAddressFlag(),
-		network: networkFlag(),
-		gasPriceFee: gasPriceFeeFlag(),
-		confirmations: confirmationsFlag(),
-	};
+  static flags = {
+    help: Flags.help({ char: "h" }),
+    privateKey: privateKeyFlag(),
+    gatewayTokenAddress: gatewayTokenAddressFlag(),
+    network: networkFlag(),
+    gasPriceFee: gasPriceFeeFlag(),
+    confirmations: confirmationsFlag(),
+  };
 
-	static args = [
-		{
-			name: "address",
-			required: true,
-			description: "Network authority address to remove to the GatewayToken contract",
-			parse: (input: string) => utils.isAddress(input) ? input : null,
-		},
-	];
+  static args = [
+    {
+      name: "address",
+      required: true,
+      description:
+        "Network authority address to remove from the GatewayToken contract",
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<string> =>
+        utils.isAddress(input) ? input : null,
+    },
+  ];
 
-	async run() {
-		const { args, flags } = this.parse(RemoveNetworkAuthority);
+  async run(): Promise<void> {
+    const { args, flags } = await this.parse(RemoveNetworkAuthority);
 
-		const pk = flags.privateKey;
-		const provider:BaseProvider = flags.network;
-		let signer: Wallet
-		const confirmations = flags.confirmations;
+    const confirmations = flags.confirmations;
 
-		if (utils.isValidMnemonic(pk)) {
-			signer = mnemonicSigner(pk, provider)
-		} else {
-			signer = privateKeySigner(pk, provider)
-		}
-		const authority: string = args.address;
+    const authority = args.address as string;
+    const gatewayTokenAddress: string = flags.gatewayTokenAddress;
 
-		signer = signer.connect(provider);
-
-		const gatewayTokenAddress: string = flags.gatewayTokenAddress;
-
-		this.log(`Removing:
-			network authority ${authority} 
+    this.log(`Removing:
+			authority ${authority} 
 			to GatewayToken ${gatewayTokenAddress}`);
-		
-		const gatewayToken = new GatewayToken(signer, gatewayTokenAddress);
 
-		const gasPrice = await flags.gasPriceFee;
-		const gasLimit = await gatewayToken.contract.estimateGas.removeNetworkAuthority(authority);
+    const gateway = await makeGatewayTs(flags.network, flags.privateKey, gatewayTokenAddress, flags.gasPriceFee);
+    const sendableTransaction = await gateway.removeNetworkAuthority(authority);
 
-		const txParams: TxBase = {
-			gasLimit: gasLimit,
-			gasPrice: BigNumber.from(utils.parseUnits(String(gasPrice), 'gwei') ),
-		};
+    this.log(`Transaction hash: ${sendableTransaction.hash}`);
 
-		let tx: any;
-		if (confirmations > 0) {
-			tx = await(await gatewayToken.removeNetworkAuthority(authority, txParams)).wait(confirmations);
-		} else {
-			tx = await gatewayToken.removeNetworkAuthority(authority, txParams);
-		}
+    const receipt = await sendableTransaction.wait(confirmations);
 
-		this.log(
-			`Removed network authority on Gateway Token contract. TxHash: ${(confirmations > 0) ? tx.transactionHash : tx.hash}`
-		);
-	}
+    this.log(
+      `Removeed network authority from Gateway Token contract. TxHash: ${receipt.transactionHash}`
+    );
+  }
 }

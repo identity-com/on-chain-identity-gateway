@@ -1,6 +1,7 @@
 import { Command, Flags } from "@oclif/core";
 import { PublicKey } from "@solana/web3.js";
 import {
+  airdropFlag,
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkPubkeyFlag,
@@ -21,6 +22,7 @@ Frozen
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkPubkeyFlag(),
     cluster: clusterFlag(),
+    airdrop: airdropFlag,
   };
 
   static args = [
@@ -28,11 +30,12 @@ Frozen
       name: "gatewayToken",
       required: true,
       description: "The gateway token to freeze",
-      parse: async (input: string) => new PublicKey(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(Freeze);
 
     const { gatewayToken, gatekeeper, service } =

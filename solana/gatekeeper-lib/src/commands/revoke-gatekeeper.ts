@@ -1,5 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import {
+  airdropFlag,
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkKeyFlag,
@@ -22,6 +23,7 @@ export default class RevokeGatekeeper extends Command {
     gatekeeperKey: gatekeeperKeyFlag(),
     gatekeeperNetworkKey: gatekeeperNetworkKeyFlag(),
     cluster: clusterFlag(),
+    airdrop: airdropFlag,
   };
 
   static args = [
@@ -29,14 +31,15 @@ export default class RevokeGatekeeper extends Command {
       name: "address",
       required: true,
       description: "The address of the gatekeeper to revoke from the network",
-      parse: async (input: string) => new PublicKey(input),
+      // eslint-disable-next-line @typescript-eslint/require-await
+      parse: async (input: string): Promise<PublicKey> => new PublicKey(input),
     },
   ];
 
-  async run() {
+  async run(): Promise<void> {
     const { args, flags } = await this.parse(RevokeGatekeeper);
 
-    const gatekeeper: PublicKey = args.address;
+    const gatekeeper: PublicKey = args.address as PublicKey;
     const gatekeeperNetwork = flags.gatekeeperNetworkKey as Keypair;
     this.log(`Revoking: 
       gatekeeper ${gatekeeper.toBase58()}
@@ -44,22 +47,28 @@ export default class RevokeGatekeeper extends Command {
 
     const connection = getConnectionFromEnv(flags.cluster);
 
-    await airdropTo(
-      connection,
-      gatekeeperNetwork.publicKey,
-      flags.cluster as string
-    );
+    if (flags.airdrop) {
+      await airdropTo(
+          connection,
+          gatekeeperNetwork.publicKey,
+          flags.cluster as string
+      );
+    }
 
     const networkService = new GatekeeperNetworkService(
-      connection,
-      gatekeeperNetwork
+        connection,
+        gatekeeperNetwork
     );
     const gatekeeperAccount = await networkService
-      .revokeGatekeeper(gatekeeper)
-      .then((t) => t.send())
-      .then((t) => t.confirm());
+        .revokeGatekeeper(gatekeeper)
+        .then((t) => t.send())
+        .then((t) => t.confirm());
     this.log(
-      `Revoked gatekeeper from network. Gatekeeper account: ${gatekeeperAccount?.toBase58()}`
+        `Revoked gatekeeper from network. Gatekeeper account: ${
+            gatekeeperAccount
+                ? gatekeeperAccount.toBase58()
+                : "//Gatekeeper Account Undefined//"
+        }`
     );
   }
 }

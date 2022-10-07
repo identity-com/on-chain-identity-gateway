@@ -1,11 +1,11 @@
 [workspace]
 members = [
     "integration-lib",
-    "program",
+    "program"
 ]
 
 [profile.release]
 lto = true
 
 [profile.test]
-opt-level = 2
+opt-level = 0

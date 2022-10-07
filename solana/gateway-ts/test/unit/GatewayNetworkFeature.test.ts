@@ -2,12 +2,12 @@ import chai from "chai";
 import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import { PublicKey, Keypair } from "@solana/web3.js";
-import { getFeatureAccountAddress } from "../../src";
 import { describe } from "mocha";
 import {
+  getFeatureAccountAddress,
   NetworkFeature,
   UserTokenExpiry,
-} from "../../src/lib/GatewayNetworkData";
+} from "../../src";
 
 chai.use(chaiSubset);
 const { expect } = chai;
