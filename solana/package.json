@@ -1,0 +1,22 @@
+{
+  "private": true,
+  "__workspaces_comment": "Order is build order, parent must come first",
+  "workspaces": [
+    "gateway-ts",
+    "gatekeeper-lib",
+    "gateway-http-client",
+    "program_v2/client"
+  ],
+  "scripts": {
+    "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs target/deploy/solana_gateway_program.so --reset",
+    "test": "start-server-and-test start-validator http://localhost:8899/health test:inner",
+    "test:inner": "yarn workspaces run test",
+    "build": "yarn workspaces run build",
+    "build-program": "cargo build-bpf",
+    "build-test": "yarn build-program && yarn test"
+  },
+  "devDependencies": {
+    "audit-ci": "^5.1.2",
+    "start-server-and-test": "^1.13.1"
+  }
+}
