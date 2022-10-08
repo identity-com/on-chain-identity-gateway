@@ -17,7 +17,7 @@
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
     "create-fixtures": "anchor run createTestFixtureAccount",
     "start-validator": "solana-test-validator --bpf-program FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe ./target/deploy/program_v2.so --reset",
-    "prepare": "cd ../../ && yarn prepare_program_v2"
+    "prepare": "cd ../../ && husky install solana/program_v2/.husky"
   },
   "dependencies": {
     "@project-serum/anchor": "^0.25.0",
