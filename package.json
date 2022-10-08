@@ -1,0 +1,23 @@
+{
+  "name": "on-chain-identity-gateway",
+  "version": "1.0.0",
+  "description": "Welcome to the Identity.com On-chain Identity Gateway monorepo.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "prepare_program_v2": "husky install solana/program_v2/.husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/identity-com/on-chain-identity-gateway.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/identity-com/on-chain-identity-gateway/issues"
+  },
+  "homepage": "https://github.com/identity-com/on-chain-identity-gateway#readme"
+}
