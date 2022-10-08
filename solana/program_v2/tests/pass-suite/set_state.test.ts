@@ -10,7 +10,7 @@ import {NetworkService} from "../../src/NetworkService";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe.only("Change pass state", () => {
+describe("Change pass state", () => {
     let service: GatekeeperService;
     let subject: PublicKey;
     let account: PublicKey;
@@ -39,7 +39,7 @@ describe.only("Change pass state", () => {
         )).to.eventually.be.rejectedWith(/InvalidStateChange/);
     });
 
-    it.only("Can activate a frozen pass", async () => {
+    it("Can activate a frozen pass", async () => {
         return expect(changeState(
             PassState.Frozen,
             PassState.Active

@@ -10,10 +10,10 @@ pub fn expire_pass(pass: &mut Account<Pass>,) -> Result<()> {
 #[instruction(subject: Pubkey, pass_number: u16)]
 pub struct PassExpire<'info> {
     #[account(
-    seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes() ],
-    bump,
-    constraint = gatekeeper.can_access(&authority.key(), GatekeeperKeyFlags::EXPIRE_PASS),
-    mut
+        seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes() ],
+        bump,
+        constraint = gatekeeper.can_access(&authority.key(), GatekeeperKeyFlags::EXPIRE_PASS),
+        mut
     )]
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,

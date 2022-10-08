@@ -20,12 +20,11 @@ pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> 
 
 #[derive(Accounts, Debug)]
 pub struct PassChangeGatekeeper<'info> {
-    // TODO: Fix validation
     #[account(
-    seeds = [PASS_SEED, pass.subject.as_ref(), network.key().as_ref(), &pass.pass_number.to_le_bytes()],
-    bump,
-    constraint = old_gatekeeper.can_access(&authority.key(), GatekeeperKeyFlags::CHANGE_PASS_GATEKEEPER),
-    mut
+        seeds = [PASS_SEED, pass.subject.as_ref(), network.key().as_ref(), &pass.pass_number.to_le_bytes()],
+        bump,
+        constraint = old_gatekeeper.can_access(&authority.key(), GatekeeperKeyFlags::CHANGE_PASS_GATEKEEPER),
+        mut
     )]
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,

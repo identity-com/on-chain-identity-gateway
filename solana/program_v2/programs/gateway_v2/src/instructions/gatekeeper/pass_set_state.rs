@@ -19,16 +19,15 @@ pub fn pass_set_state(
 #[derive(Accounts, Debug)]
 #[instruction(subject: Pubkey, pass_number: u16, state: PassState)]
 pub struct PassSetState<'info> {
-    // TODO: Fix validation
     #[account(
-    // seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
-    // bump,
-    constraint = gatekeeper.can_access(&authority.key(), match state {
-            PassState::Active => GatekeeperKeyFlags::UNFREEZE,
-            PassState::Frozen => GatekeeperKeyFlags::FREEZE,
-            PassState::Revoked => GatekeeperKeyFlags::REVOKE,
-        }),
-    mut
+        seeds = [PASS_SEED, pass.subject.as_ref(), network.key().as_ref(), &pass.pass_number.to_le_bytes()],
+        bump,
+        constraint = gatekeeper.can_access(&authority.key(), match state {
+                PassState::Active => GatekeeperKeyFlags::UNFREEZE,
+                PassState::Frozen => GatekeeperKeyFlags::FREEZE,
+                PassState::Revoked => GatekeeperKeyFlags::REVOKE,
+            }),
+        mut
     )]
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,
