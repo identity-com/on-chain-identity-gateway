@@ -5,8 +5,8 @@ mod state;
 mod util;
 
 use crate::instructions::admin::*;
-use crate::instructions::network::*;
 use crate::instructions::gatekeeper::*;
+use crate::instructions::network::*;
 use crate::state::{GatekeeperState, PassState};
 use anchor_lang::prelude::*;
 // TODO: Grind for better key
@@ -66,43 +66,35 @@ pub mod gateway_v2 {
         instructions::network::gatekeeper_withdraw(ctx, receiver)
     }
 
-    pub fn issue_pass(
-        ctx: Context<IssuePass>,
-        subject: Pubkey,
-        pass_number: u16,
-    ) -> Result<()> {
-        instructions::gatekeeper::issue_pass(
-            ctx,
-            subject,
-            pass_number,
-        )
+    pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) -> Result<()> {
+        instructions::gatekeeper::issue_pass(ctx, subject, pass_number)
     }
 
-    pub fn set_pass_state(ctx: Context<PassSetState>, state: PassState, subject: Pubkey, pass_number: u16) -> Result<()> {
+    pub fn set_pass_state(ctx: Context<PassSetState>, state: PassState) -> Result<()> {
         instructions::gatekeeper::pass_set_state(&mut ctx.accounts.pass, state)
     }
 
-    pub fn refresh_pass(ctx: Context<PassRefresh>, subject: Pubkey, pass_number: u16) -> Result<()> {
-        instructions::gatekeeper::refresh_pass(&mut ctx.accounts.pass, subject, pass_number)
+    pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
+        instructions::gatekeeper::refresh_pass(&mut ctx.accounts.pass)
     }
 
     pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> {
         instructions::gatekeeper::change_pass_gatekeeper(ctx)
     }
 
-    pub fn set_pass_data(ctx: Context<PassSetData>, gatekeeper_data: Option<[u8; 32]>, network_data: Option<[u8; 32]>) -> Result<()> {
-        instructions::gatekeeper::set_pass_data(
-            ctx,
-            gatekeeper_data,
-            network_data,
-        )
+    pub fn set_pass_data(
+        ctx: Context<PassSetData>,
+        gatekeeper_data: Option<[u8; 32]>,
+        network_data: Option<[u8; 32]>,
+    ) -> Result<()> {
+        instructions::gatekeeper::set_pass_data(ctx, gatekeeper_data, network_data)
     }
 
-    pub fn expire_pass(ctx: Context<PassExpire>, subject: Pubkey, pass_number: u16) -> Result<()> {
+    pub fn expire_pass(ctx: Context<PassExpire>) -> Result<()> {
         instructions::gatekeeper::expire_pass(ctx)
     }
 
-    pub fn verify_pass(ctx: Context<PassVerify>, subject: Pubkey, pass_number: u16) -> Result<()> {
+    pub fn verify_pass(ctx: Context<PassVerify>) -> Result<()> {
         instructions::gatekeeper::verify_pass(ctx)
     }
 }

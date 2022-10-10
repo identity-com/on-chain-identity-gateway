@@ -1,16 +1,15 @@
-use anchor_lang::prelude::*;
 use crate::constants::PASS_SEED;
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
+use anchor_lang::prelude::*;
 
-pub fn refresh_pass(pass: &mut Account<Pass>, _subject: Pubkey, _pass_number: u16) -> Result<()> {
+pub fn refresh_pass(pass: &mut Account<Pass>) -> Result<()> {
     pass.refresh()
 }
 
 #[derive(Accounts, Debug)]
-#[instruction(subject: Pubkey, pass_number: u16)]
 pub struct PassRefresh<'info> {
     #[account(
-        seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), & pass_number.to_le_bytes()],
+        seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), &pass.pass_number.to_le_bytes() ],
         bump,
         constraint = gatekeeper.can_access(&authority.key(), GatekeeperKeyFlags::REFRESH),
         mut
@@ -21,4 +20,3 @@ pub struct PassRefresh<'info> {
     pub network: Account<'info, GatekeeperNetwork>,
     pub gatekeeper: Account<'info, Gatekeeper>,
 }
-

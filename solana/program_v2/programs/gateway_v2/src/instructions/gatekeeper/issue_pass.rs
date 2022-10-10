@@ -1,13 +1,9 @@
-use anchor_lang::Key;
-use anchor_lang::prelude::*;
 use crate::constants::PASS_SEED;
 use crate::state::{Gatekeeper, GatekeeperNetwork, Pass, PassState};
+use anchor_lang::prelude::*;
+use anchor_lang::Key;
 
-pub fn issue_pass(
-    ctx: Context<IssuePass>,
-    subject: Pubkey,
-    pass_number: u16,
-) -> Result<()> {
+pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) -> Result<()> {
     let pass = &mut ctx.accounts.pass;
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;

@@ -66,6 +66,7 @@ describe('Gateway v2 Client', () => {
     // creates the network service with anchor
     networkService = await NetworkService.buildFromAnchor(
       program,
+      adminAuthority.publicKey,
       gatekeeperDataAccount,
       'localnet',
       programProvider,

@@ -1,6 +1,5 @@
 use crate::constants::PASS_SEED;
-use crate::errors::PassErrors;
-use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass, PassState};
+use crate::state::{Gatekeeper, GatekeeperKeyFlags, Pass};
 use anchor_lang::prelude::*;
 
 pub fn set_pass_data(
@@ -8,7 +7,6 @@ pub fn set_pass_data(
     gatekeeper_data: Option<[u8; 32]>,
     network_data: Option<[u8; 32]>,
 ) -> Result<()> {
-
     let pass = &mut ctx.accounts.pass;
 
     if let Some(data) = gatekeeper_data {
@@ -25,7 +23,7 @@ pub fn set_pass_data(
 #[derive(Accounts, Debug)]
 pub struct PassSetData<'info> {
     #[account(
-        seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.as_ref(), &pass.pass_number.to_le_bytes()],
+        seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), &pass.pass_number.to_le_bytes() ],
         bump = pass.signer_bump,
         constraint = gatekeeper.can_access(&authority.key(), GatekeeperKeyFlags::SET_PASS_DATA),
         mut

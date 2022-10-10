@@ -29,22 +29,20 @@ describe('Refresh a pass', () => {
     // Sleep a bit so the expiry time passes
     await new Promise((r) => setTimeout(r, 2000));
 
-    await service.refreshPass(account, subject).rpc();
+    await service.refreshPass(account).rpc();
 
     const updatedPass = await service.getPassAccount(subject);
 
-    expect(initialPass?.issueTime).to.be.lt(updatedPass?.issueTime as number);
+    expect(initialPass?.issueTime).to.be.lt(updatedPass?.issueTime);
   });
 
   it('Cannot refresh a frozen pass', async () => {
-    await service.setState(PassState.Frozen, account, subject).rpc();
-    return expect(service.refreshPass(account, subject).rpc()).to.eventually.be
-      .rejected;
+    await service.setState(PassState.Frozen, account).rpc();
+    return expect(service.refreshPass(account).rpc()).to.eventually.be.rejected;
   });
 
   it('Cannot refresh a revoked pass', async () => {
-    await service.setState(PassState.Revoked, account, subject).rpc();
-    return expect(service.refreshPass(account, subject).rpc()).to.eventually.be
-      .rejected;
+    await service.setState(PassState.Revoked, account).rpc();
+    return expect(service.refreshPass(account).rpc()).to.eventually.be.rejected;
   });
 });

@@ -4,20 +4,16 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { TEST_NETWORK } from '../util/constants';
-import { AnchorProvider } from "@project-serum/anchor";
+import { AnchorProvider } from '@project-serum/anchor';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 const envProvider = AnchorProvider.env();
 
-const logListener = envProvider.connection.onLogs("all", (log) =>
-  console.log(log.logs)
-);
-
-after("Remove log listener", () => {
-  envProvider.connection.removeOnLogsListener(logListener);
-});
+// after("Remove log listener", () => {
+//   envProvider.connection.removeOnLogsListener(logListener);
+// });
 
 describe('Change pass data', () => {
   let service: GatekeeperService;
@@ -54,7 +50,7 @@ describe('Change pass data', () => {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 1,
     ]);
-    console.log(account.toBase58(), subject.toBase58());
+
     await service.setPassData(account, data, null).rpc();
     const pass = await service.getPassAccount(subject);
     // Check: how to properly test this without toString

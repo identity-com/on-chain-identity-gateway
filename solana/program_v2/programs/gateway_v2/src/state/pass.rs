@@ -1,7 +1,7 @@
-use std::fmt::{Display, Formatter};
-use anchor_lang::prelude::*;
 use crate::errors::PassErrors;
 use crate::util::{OC_SIZE_DISCRIMINATOR, OC_SIZE_PUBKEY, OC_SIZE_U16, OC_SIZE_U64, OC_SIZE_U8};
+use anchor_lang::prelude::*;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 #[account]
@@ -58,7 +58,10 @@ impl Pass {
     }
 
     pub fn expire(&mut self) -> Result<()> {
-        require!(self.is_valid_state() && !self.has_expired(), PassErrors::InvalidPass);
+        require!(
+            self.is_valid_state() && !self.has_expired(),
+            PassErrors::InvalidPass
+        );
 
         self.issue_time = -1;
 
@@ -66,7 +69,10 @@ impl Pass {
     }
 
     pub fn verify(&mut self) -> Result<()> {
-        require!(self.is_valid_state() && !self.has_expired(), PassErrors::InvalidPass);
+        require!(
+            self.is_valid_state() && !self.has_expired(),
+            PassErrors::InvalidPass
+        );
 
         Ok(())
     }
@@ -113,7 +119,7 @@ impl Display for PassState {
         match self {
             PassState::Active => write!(f, "Active"),
             PassState::Frozen => write!(f, "Frozen"),
-            PassState::Revoked => write!(f, "Revoked")
+            PassState::Revoked => write!(f, "Revoked"),
         }
     }
 }
