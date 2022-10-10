@@ -4,9 +4,7 @@ import { BN } from '@project-serum/anchor';
 
 export interface Wallet {
   signTransaction(tx: Transaction): Promise<Transaction>;
-
   signAllTransactions(txs: Transaction[]): Promise<Transaction[]>;
-
   publicKey: PublicKey;
 }
 

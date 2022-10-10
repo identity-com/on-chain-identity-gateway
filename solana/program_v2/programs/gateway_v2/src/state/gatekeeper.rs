@@ -5,8 +5,6 @@ use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
 
-// TODO: Modify methods to require correct authorization.
-
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
 #[derive(Debug)]
 #[account]
@@ -46,19 +44,15 @@ impl Gatekeeper {
         // auth keys
     }
     // Checks if an authkey has enough authority for an action
-    pub fn can_access(&self, authority: &Pubkey, flag: GatekeeperKeyFlags) -> bool {
-
+    pub fn can_access(&self, authority: &Signer, flag: GatekeeperKeyFlags) -> bool {
         self.auth_keys
             .iter()
             .filter(|key| {
-                msg!("Testing {} against {}", authority, key.key);
                 GatekeeperKeyFlags::from_bits_truncate(key.flags).contains(flag)
-                    // && *authority.key == key.key
+                    && *authority.key == key.key
             })
             .count()
-            > 0;
-
-        true
+            > 0
     }
     // Adds auth keys to the gatekeeper
     pub fn add_auth_keys(
@@ -72,7 +66,7 @@ impl Gatekeeper {
             return Ok(());
         }
 
-        if !self.can_access(&authority.key(), GatekeeperKeyFlags::AUTH) {
+        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
             return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
         }
 
@@ -99,9 +93,9 @@ impl Gatekeeper {
                 // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                 if self.auth_keys[key_index].key == *authority.key
                     && !GatekeeperKeyFlags::contains(
-                    &GatekeeperKeyFlags::from_bits_truncate(key.flags),
-                    GatekeeperKeyFlags::AUTH,
-                )
+                        &GatekeeperKeyFlags::from_bits_truncate(key.flags),
+                        GatekeeperKeyFlags::AUTH,
+                    )
                 {
                     return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
                 }
@@ -124,7 +118,7 @@ impl Gatekeeper {
         }
 
         if !self.can_access(
-            &authority.key(),
+            authority,
             GatekeeperKeyFlags::ADJUST_FEES | GatekeeperKeyFlags::REMOVE_FEES,
         ) {
             return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
@@ -165,7 +159,7 @@ impl Gatekeeper {
         authority: &mut Signer,
     ) -> Result<()> {
         if *state != self.gatekeeper_state {
-            if !self.can_access(&authority.key(), GatekeeperKeyFlags::AUTH) {
+            if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
                 return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
             }
 
@@ -177,28 +171,6 @@ impl Gatekeeper {
         Ok(())
     }
 
-    // Allows the setting of a new associated gatekeeper network
-    pub fn set_network(
-        &mut self,
-        data: &UpdateGatekeeperData,
-        authority: &mut Signer,
-    ) -> Result<()> {
-        match data.gatekeeper_network {
-            Some(gatekeeper_network) => {
-                if gatekeeper_network != self.gatekeeper_network {
-                    if !self.can_access(&authority.key(), GatekeeperKeyFlags::AUTH) {
-                        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-                    }
-
-                    self.gatekeeper_network = gatekeeper_network;
-                }
-
-                Ok(())
-            }
-            None => Ok(()),
-        }
-    }
-
     // Sets the auth threshold for the gatekeeper
     pub fn set_auth_threshold(
         &mut self,
@@ -208,7 +180,7 @@ impl Gatekeeper {
         match data.auth_threshold {
             Some(auth_threshold) => {
                 if auth_threshold != self.auth_threshold {
-                    if !self.can_access(&authority.key(), GatekeeperKeyFlags::AUTH) {
+                    if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
                         return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
                     }
 
@@ -224,29 +196,23 @@ impl Gatekeeper {
     // sets the staking account for the gatekeeper
     pub fn set_staking_account(
         &mut self,
-        data: &UpdateGatekeeperData,
+        staking_account: &mut UncheckedAccount,
         authority: &mut Signer,
     ) -> Result<()> {
-        match data.staking_account {
-            Some(staking_account) => {
-                if staking_account != self.staking_account {
-                    if !self.can_access(&authority.key(), GatekeeperKeyFlags::AUTH) {
-                        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-                    }
-
-                    self.staking_account = staking_account;
-                }
-
-                Ok(())
+        if staking_account.key() != self.staking_account {
+            if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
+                return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
             }
-            None => Ok(()),
+            self.staking_account = staking_account.key();
         }
+        Ok(())
     }
 
     // TODO: Change Auth Access
+    // TODO: Change Receiver to Account
     // controls withdrawal of funds from the gatekeeper
     pub fn gatekeeper_withdraw(&mut self, _receiver: Pubkey, authority: &mut Signer) -> Result<()> {
-        if !self.can_access(&authority.key(), GatekeeperKeyFlags::AUTH) {
+        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
             return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
         }
         // TODO: Check type of currency,
@@ -355,10 +321,6 @@ bitflags! {
          const UNREVOKE_PASS = 1 << 12;
          /// Key can set gatekeeper state
          const SET_GATEKEEPER_STATE = 1 << 13;
-         /// Key can change gatekeepers for passes
-         const CHANGE_PASS_GATEKEEPER = 1 << 14;
-         /// Key can expire a for passes
-         const EXPIRE_PASS = 1 << 15;
      }
 }
 

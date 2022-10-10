@@ -1,6 +1,6 @@
 import * as anchor from '@project-serum/anchor';
 import { AnchorProvider, Program } from '@project-serum/anchor';
-import { ConfirmOptions, PublicKey } from '@solana/web3.js';
+import { ConfirmOptions, Keypair, PublicKey } from '@solana/web3.js';
 import {
   AuthKeyStructure,
   CreateGatekeeperData,
@@ -84,22 +84,22 @@ export class NetworkService extends AbstractService {
       GATEWAY_PROGRAM
     );
   }
+  //TODO! seeds derivation program side
+  static async createStakingAddress(
+    network: PublicKey
+  ): Promise<[PublicKey, number]> {
+    return PublicKey.findProgramAddress(
+      [anchor.utils.bytes.utf8.encode('gw-stake'), network.toBuffer()],
+      GATEWAY_PROGRAM
+    );
+  }
 
   // Creates a gatekeeper on a specified network
   // @authThreshold
   createGatekeeper(
     network: PublicKey,
+    stakingAccount: PublicKey,
     data: CreateGatekeeperData = {
-      gatekeeperBump: 0,
-      gatekeeperNetwork: network,
-      // TODO? Is this the correct way to derive the default staking account?
-      stakingAccount: PublicKey.findProgramAddressSync(
-        [
-          anchor.utils.bytes.utf8.encode('gw-stake'),
-          this._wallet.publicKey.toBuffer(),
-        ],
-        GATEWAY_PROGRAM
-      )[0],
       tokenFees: [],
       authThreshold: 1,
       authKeys: [
@@ -114,18 +114,16 @@ export class NetworkService extends AbstractService {
       console.log("Creating gatekeeper with authority: " + authority.toBase58());
     const instructionPromise = this._program.methods
       .createGatekeeper({
-        gatekeeperBump: data.gatekeeperBump,
-        gatekeeperNetwork: data.gatekeeperNetwork,
-        stakingAccount: data.stakingAccount,
         tokenFees: data.tokenFees,
         authThreshold: data.authThreshold,
         authKeys: data.authKeys,
       })
       .accounts({
         gatekeeper: this._dataAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network,
+        stakingAccount,
+        systemProgram: anchor.web3.SystemProgram.programId,
       })
       .instruction();
     return new ServiceBuilder(this, {
@@ -141,6 +139,7 @@ export class NetworkService extends AbstractService {
   // Allows a network to update a gatekeeper's data
   updateGatekeeper(
     data: UpdateGatekeeperData,
+    stakingAccount: PublicKey,
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
       console.log("Setting state for gatekeeper with authority: " + authority.toBase58());
@@ -149,8 +148,6 @@ export class NetworkService extends AbstractService {
       // @ts-ignore
       .updateGatekeeper({
         authThreshold: data.authThreshold,
-        gatekeeperNetwork: data.gatekeeperNetwork,
-        stakingAccount: data.stakingAccount,
         tokenFees: data.tokenFees,
         authKeys: data.authKeys,
       })
@@ -158,6 +155,7 @@ export class NetworkService extends AbstractService {
         gatekeeper: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
+        stakingAccount,
       })
       .instruction();
 
