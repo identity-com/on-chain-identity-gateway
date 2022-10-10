@@ -29,19 +29,6 @@ pub struct Pass {
 }
 
 impl Pass {
-    pub fn is_valid_gatekeeper_state_change(&self, new_state: &PassState) -> bool {
-        return true;
-
-        // FROM V1.. TODO
-        // // Only the issuing gatekeeper can freeze or unfreeze a GT
-        // // Any gatekeeper in the network (checked above) can revoke
-        // if (state == GatewayTokenState::Frozen || state == GatewayTokenState::Active)
-        //     && gateway_token.issuing_gatekeeper != *gatekeeper_authority_info.key
-        // {
-        //     msg!("Error: Only the issuing gatekeeper can freeze or unfreeze");
-        //     return Err(GatewayError::IncorrectGatekeeper.into());
-        // }
-    }
     pub fn is_valid_state_change(&self, new_state: &PassState) -> bool {
         match new_state {
             PassState::Active => match self.state {
@@ -71,9 +58,25 @@ impl Pass {
     }
 
     pub fn expire(&mut self) -> Result<()> {
-        self.issue_time = 0;
+        require!(self.is_valid_state() && !self.has_expired(), PassErrors::InvalidPass);
+
+        self.issue_time = -1;
 
         Ok(())
+    }
+
+    pub fn verify(&mut self) -> Result<()> {
+        require!(self.is_valid_state() && !self.has_expired(), PassErrors::InvalidPass);
+
+        Ok(())
+    }
+
+    pub fn is_valid_state(&mut self) -> bool {
+        self.state == PassState::Active
+    }
+
+    pub fn has_expired(&mut self) -> bool {
+        self.issue_time < 0
     }
 
     pub const ON_CHAIN_SIZE: usize = OC_SIZE_DISCRIMINATOR

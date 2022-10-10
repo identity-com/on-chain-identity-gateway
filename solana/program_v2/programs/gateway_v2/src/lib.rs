@@ -97,4 +97,12 @@ pub mod gateway_v2 {
             network_data,
         )
     }
+
+    pub fn expire_pass(ctx: Context<PassExpire>, subject: Pubkey, pass_number: u16) -> Result<()> {
+        instructions::gatekeeper::expire_pass(ctx)
+    }
+
+    pub fn verify_pass(ctx: Context<PassVerify>, subject: Pubkey, pass_number: u16) -> Result<()> {
+        instructions::gatekeeper::verify_pass(ctx)
+    }
 }

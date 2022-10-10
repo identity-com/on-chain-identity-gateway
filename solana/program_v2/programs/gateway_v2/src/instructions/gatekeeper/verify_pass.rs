@@ -1,21 +1,21 @@
 use anchor_lang::prelude::*;
+use crate::state::{Gatekeeper, GatekeeperNetwork, Pass};
 use crate::constants::PASS_SEED;
-use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
 
-pub fn expire_pass(ctx: Context<PassExpire>) -> Result<()> {
+pub fn verify_pass(ctx: Context<PassVerify>) -> Result<()> {
     let pass = &mut ctx.accounts.pass;
 
-    pass.expire()
+    pass.verify()
 }
 
 #[derive(Accounts, Debug)]
 #[instruction(subject: Pubkey, pass_number: u16)]
-pub struct PassExpire<'info> {
+pub struct PassVerify<'info> {
     #[account(
-        seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes() ],
-        bump,
-        constraint = gatekeeper.can_access(&authority.key(), GatekeeperKeyFlags::EXPIRE_PASS),
-        mut
+    seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), & pass_number.to_le_bytes() ],
+    bump,
+    // constraint = gatekeeper.can_access(& authority.key(), GatekeeperKeyFlags::EXPIRE_PASS),
+    mut
     )]
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,

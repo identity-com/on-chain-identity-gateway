@@ -8,7 +8,6 @@ pub fn pass_set_state(
     state: PassState,
 ) -> Result<()> {
     require!(pass.is_valid_state_change(&state), PassErrors::InvalidStateChange);
-    require!(pass.is_valid_gatekeeper_state_change(&state), PassErrors::InvalidStateChange);
 
     pass.state = state;
 

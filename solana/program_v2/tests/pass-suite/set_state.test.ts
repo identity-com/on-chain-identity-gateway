@@ -5,7 +5,6 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import {Keypair, PublicKey} from "@solana/web3.js";
 import {TEST_NETWORK} from "../util/constants";
-import {NetworkService} from "../../src/NetworkService";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

@@ -42,4 +42,6 @@ pub enum PassErrors {
     InvalidGatekeeper,
     #[msg("Invalid network")]
     InvalidNetwork,
+    #[msg("The pass is not active or has expired")]
+    InvalidPass,
 }
