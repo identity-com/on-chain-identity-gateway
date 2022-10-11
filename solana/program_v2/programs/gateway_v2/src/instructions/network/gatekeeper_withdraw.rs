@@ -24,6 +24,8 @@ pub struct GatekeeperWithdrawAccount<'info> {
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    /// CHECK: Receiver destination account does not need to satisfy the any constraints.
+    #[account(mut)]
     pub receiver: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
