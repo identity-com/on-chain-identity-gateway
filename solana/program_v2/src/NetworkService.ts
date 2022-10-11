@@ -224,11 +224,12 @@ export class NetworkService extends AbstractService {
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
-      .gatekeeperWithdraw(receiver)
+      .gatekeeperWithdraw()
       .accounts({
         gatekeeper: this._dataAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
+        receiver,
       })
       .instruction();
 
