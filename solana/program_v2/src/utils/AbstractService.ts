@@ -16,7 +16,8 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js';
-
+//import idl
+// TODO: import { GatewayV2 } from '@identity.com/gateway_v2-idl';
 import { Wallet } from '../lib/types';
 
 import { ExtendedCluster } from '../lib/connection';
@@ -35,7 +36,8 @@ export abstract class AbstractService {
     provider: anchor.Provider
   ): Promise<Program<GatewayV2>> {
     // TODO: Update IDL loading (IDCOM-2108)
-    let idl = await Program.fetchIdl<GatewayV2>(GATEWAY_PROGRAM, provider);
+    let idl;
+    idl = IDL;
 
     if (!idl) {
       console.warn(
