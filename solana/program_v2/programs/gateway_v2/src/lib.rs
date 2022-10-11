@@ -58,10 +58,7 @@ pub mod gateway_v2 {
         instructions::network::set_gatekeeper_state(ctx, state)
     }
 
-    pub fn gatekeeper_withdraw(
-        ctx: Context<GatekeeperWithdrawAccount>,
-        receiver: Pubkey,
-    ) -> Result<()> {
-        instructions::network::gatekeeper_withdraw(ctx, receiver)
+    pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>) -> Result<()> {
+        instructions::network::gatekeeper_withdraw(ctx)
     }
 }

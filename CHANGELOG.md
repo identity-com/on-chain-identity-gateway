@@ -10,49 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
     PROGRAM
-        src/
-            instructions/
-                - close_gatekeeper.rs
-                - create_gatekeeper.rs
-                - gatekeeper_withdraw.rs
-                - set_gatekeeper_state.rs
-                - update_gatekeeper.rs
+        - All gatekeeper instructions
+        - Gatekeeper state file
 
-            state/
-                - gatekeeper.rs
-                - network.rs
-
-        tests/
-            gatekeeper-suite/
-                - close-gatekeeper.test.ts
-                - create-gatekeeper.test.ts
-                - gatekeeper-withdraw.test.ts
-                - set-gatekeeper-state.test.ts
-                - update-gatekeeper.test.ts
-                - Test.toml
-            
-    - CHANGELOG.md
+    CLIENT
+        - Tests for all gatekeeper functions
 
 ### Changed
 
     PROGRAM
-        src/
-            instructions/
-                - mod.rs
-
-            state/
-                - mod.rs
-        
-        - errors.rs
-        - constants.rs
-        - lib.rs
+        - Added gatekeeper functions in lib
 
     CLIENT
-        src/
-            lib/
-                - types.ts
-                - utils.ts
-
-            - GatewayService.ts
+        - Updated NetworkService with all gatekeeper functionality
 
 [Unreleased]: https://github.com/identity-com/on-chain-identity-gateway

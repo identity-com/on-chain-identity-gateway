@@ -20,8 +20,7 @@
   },
   "dependencies": {
     "@project-serum/anchor": "^0.25.0",
-    "@solana/web3.js": "^1.41.3",
-    "husky": "^8.0.1"
+    "@solana/web3.js": "^1.41.3"
   },
   "devDependencies": {
     "@project-serum/anchor-cli": "https://github.com/kklas/anchor-nightly/releases/download/anchor-cli-latest/anchor-cli-0.25.0-7eb8ca8.tgz",
@@ -30,6 +29,7 @@
     "@types/mocha": "^8.2.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
+    "husky": "^8.0.1",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "prettier": "^2.6.2",
