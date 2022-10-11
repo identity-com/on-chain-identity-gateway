@@ -71,9 +71,10 @@ impl GatekeeperNetwork {
             + OC_SIZE_U8 // signer_bump
             + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * fees_count as usize // fees
             + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * auth_keys as usize // auth_keys
-            + OC_SIZE_VEC_PREFIX + OC_SIZE_PUBKEY * gatekeepers as usize // gatekeeper list
+            + OC_SIZE_VEC_PREFIX + (OC_SIZE_PUBKEY * gatekeepers) as usize // gatekeeper list
             + OC_SIZE_U16 // network_index
             + OC_SIZE_VEC_PREFIX + SupportedToken::ON_CHAIN_SIZE * supported_tokens as usize
+        + 1000
         // supported tokens list
     }
 
@@ -369,6 +370,37 @@ bitflags! {
         const ACCESS_VAULT = 1 << 11;
         /// Key can set [`GatekeeperNetwork::pass_expire_time`]
         const SET_EXPIRE_TIME = 1 << 12;
+    }
+    /// TODO: This should be in the gatekeeper state, but the build complains with multiple bitflags?
+    /// The flags for a key on a gatekeeper
+    #[derive(AnchorSerialize, AnchorDeserialize, Default)]
+    pub struct GatekeeperKeyFlags: u16{
+        /// Key can change keys
+        const AUTH = 1 << 0;
+        /// Key can issue passes
+        const ISSUE = 1 << 1;
+        /// Key can refresh passes
+        const REFRESH = 1 << 2;
+        /// Key can freeze passes
+        const FREEZE = 1 << 3;
+        /// Key can unfreeze passes
+        const UNFREEZE = 1 << 4;
+        /// Key can revoke passes
+        const REVOKE = 1 << 5;
+        /// Key can adjust gatekeeper fees
+        const ADJUST_FEES = 1 << 6;
+        /// Key can set gatekeeper addresses key
+        const SET_ADDRESSES = 1 << 7;
+        /// Key can set data on passes
+        const SET_PASS_DATA = 1 << 8;
+        /// Key can add new fee types to a gatekeeper
+        const ADD_FEES = 1 << 9;
+        /// Key can remove fee types from a gatekeeper
+        const REMOVE_FEES = 1 << 10;
+        /// Key can access the gatekeeper's vault
+        const ACCESS_VAULT = 1 << 11;
+        /// Key can unrevoke a pass with network concurrence.
+        const UNREVOKE_PASS = 1 << 12;
     }
 }
 impl OnChainSize for NetworkKeyFlags {

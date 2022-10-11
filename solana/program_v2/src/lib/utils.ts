@@ -2,7 +2,7 @@ import { PublicKey } from '@solana/web3.js';
 import { web3 } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
 
-import { DEFAULT_SEED_STRING, GATEWAY_PROGRAM } from './constants';
+import { GATEKEEPER_SEED, GATEWAY_PROGRAM } from './constants';
 
 export const airdrop = async (
   connection: web3.Connection,
@@ -19,19 +19,43 @@ export const airdrop = async (
   });
 };
 
-export const findProgramAddress = async (
-  authority: PublicKey,
-  network_index: number
-) => {
-  const network_index_buffer = Buffer.alloc(2);
-  network_index_buffer.writeInt16LE(network_index);
+type EnumMapping = {
+  [name: string]: any;
+};
 
-  return PublicKey.findProgramAddress(
-    [
-      anchor.utils.bytes.utf8.encode(DEFAULT_SEED_STRING),
-      authority.toBuffer(),
-      network_index_buffer,
-    ],
+type EnumType = {
+  [name: string]: {};
+};
+
+export const EnumMapper = {
+  /**
+   * Converts an anchor "enum" to a local enum
+   * @param obj The anchor enum object
+   * @param mapping The enum to maps it to
+   */
+  from(obj: EnumType, mapping: EnumMapping) {
+    for (const property in mapping) {
+      if (property in obj) return mapping[property];
+    }
+
+    throw new Error(`Invalid enum ${JSON.stringify(obj)}`);
+  },
+
+  to(type: any, mapping: EnumMapping) {
+    for (const property in mapping) {
+      if (type == mapping[property]) {
+        const obj: { [k: string]: {} } = {};
+        obj[property] = {};
+        return obj;
+      }
+    }
+
+    throw new Error(`Invalid num type ${type}`);
+  },
+};
+
+export const findProgramAddress = async (seed: string, authority: PublicKey) =>
+  PublicKey.findProgramAddress(
+    [anchor.utils.bytes.utf8.encode(seed), authority.toBuffer()],
     GATEWAY_PROGRAM
   );
-};
