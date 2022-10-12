@@ -28,7 +28,7 @@ pub struct PassChangeGatekeeper<'info> {
     #[account(
     seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), &pass.pass_number.to_le_bytes() ],
     bump,
-    constraint = old_gatekeeper.can_access(&authority.key(), GatekeeperKeyFlags::CHANGE_PASS_GATEKEEPER),
+    constraint = old_gatekeeper.can_access(&authority, GatekeeperKeyFlags::CHANGE_PASS_GATEKEEPER),
     mut
     )]
     pub pass: Account<'info, Pass>,
