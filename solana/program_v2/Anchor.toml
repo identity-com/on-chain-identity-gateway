@@ -1,5 +1,5 @@
 [workspace]
-types = "client/packages/idl/src/"
+types = "idl/src/"
 
 [features]
 seeds = false

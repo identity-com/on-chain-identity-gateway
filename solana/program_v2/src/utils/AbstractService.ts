@@ -1,5 +1,5 @@
 // TODO: Update this with refactor (IDCOM-2108)
-import { GatewayV2, IDL } from '../../target/types/gateway_v2';
+// import { GatewayV2, IDL } from '../../target/types/gateway_v2';
 import {
   AnchorProvider,
   Program,
@@ -17,7 +17,7 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 //import idl
-// TODO: import { GatewayV2 } from '@identity.com/gateway_v2-idl';
+import { GatewayV2, IDL } from '@identity.com/gateway_v2-idl';
 import { Wallet } from '../lib/types';
 
 import { ExtendedCluster } from '../lib/connection';
@@ -36,20 +36,8 @@ export abstract class AbstractService {
     provider: anchor.Provider
   ): Promise<Program<GatewayV2>> {
     // TODO: Update IDL loading (IDCOM-2108)
-    let idl;
-    idl = IDL;
-
-    if (!idl) {
-      console.warn(
-        'Could not fetch IDL from chain. Using build-in IDL as fallback.'
-      );
-      idl = IDL;
-    } else {
-      console.log('using idl on-chain');
-    }
-
     return new Program<GatewayV2>(
-      idl,
+      IDL,
       GATEWAY_PROGRAM,
       provider
     ) as Program<GatewayV2>;

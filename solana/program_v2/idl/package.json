@@ -21,30 +21,14 @@
         "node": ">=14"
     },
     "scripts": {
-        "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-        "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
         "clean": "shx rm -rf ./dist",
         "compile": "tsc -p tsconfig.json",
         "build": "yarn clean && yarn compile",
         "prepack": "yarn build"
-    },
-    "dependencies": {
-        "@identity.com/gateway_v2-idl": "^1.0.0",
-        "@project-serum/anchor": "0.25.0",
-        "@solana/web3.js": "^1.59.1"
-    },
+      },
+    "dependencies": {},
     "devDependencies": {
-        "@types/bn.js": "^5.1.0",
-        "@types/node": "^18.6.3",
-        "borsh": "^0.7.0",
-        "prettier": "^2.6.2",
         "shx": "^0.3.4",
         "typescript": "^4.3.5"
-    },
-    "prettier": {
-        "printWidth": 80,
-        "semi": true,
-        "singleQuote": true,
-        "trailingComma": "es5"
     }
 }
