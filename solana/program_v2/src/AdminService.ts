@@ -17,11 +17,7 @@ import {
   getConnectionByCluster,
 } from './lib/connection';
 import { findProgramAddress } from './lib/utils';
-import {
-  DEFAULT_SEED_STRING,
-  GATEWAY_PROGRAM,
-  SOLANA_MAINNET,
-} from './lib/constants';
+import { NETWORK_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2, IDL } from '../target/types/gateway_v2';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
@@ -77,7 +73,7 @@ export class AdminService extends AbstractService {
 
     return PublicKey.findProgramAddress(
       [
-        anchor.utils.bytes.utf8.encode(DEFAULT_SEED_STRING),
+        anchor.utils.bytes.utf8.encode(NETWORK_SEED),
         authority.toBuffer(),
         network_index_buffer,
       ],
@@ -107,6 +103,7 @@ export class AdminService extends AbstractService {
       authority,
     });
   }
+
   createNetwork(
     data: CreateNetworkData = {
       authThreshold: 1,

@@ -80,3 +80,37 @@ export type SupportedToken = {
 };
 
 export type SettlementInfo = {};
+
+export type CreateGatekeeperData = {
+  tokenFees: FeeStructure[];
+  authThreshold: number;
+  authKeys: AuthKeyStructure[];
+};
+
+export type UpdateGatekeeperData = {
+  tokenFees: UpdateFeeStructure;
+  authThreshold: number;
+  authKeys: UpdateAuthKeytructure;
+};
+
+export type GatekeeperAccount = {
+  version: number;
+  authority: PublicKey;
+  gatekeeperNetwork: PublicKey;
+  stakingAccount: PublicKey;
+  tokenFees: FeeStructure[];
+  authKeys: AuthKeyStructure[];
+  state: GatekeeperState;
+};
+
+export enum GatekeeperState {
+  Active,
+  Frozen,
+  Halted,
+}
+
+export const GatekeeperStateMapping = {
+  active: GatekeeperState.Active,
+  frozen: GatekeeperState.Frozen,
+  halted: GatekeeperState.Halted,
+};
