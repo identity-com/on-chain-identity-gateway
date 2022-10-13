@@ -24,7 +24,7 @@ import {
   SOLANA_MAINNET,
 } from './lib/constants';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
-import { GatewayV2 } from '../target/types/gateway_v2';
+import { GatewayV2 } from '@identity.com/gateway_v2-idl';
 
 // Service for a network. This will handle all aspects of the Gateway that a network is able to control... i.e. creating gatekeepers, updating gatekeepers, etc...
 export class NetworkService extends AbstractService {

@@ -18,7 +18,7 @@ import {
 } from './lib/connection';
 import { findProgramAddress } from './lib/utils';
 import { NETWORK_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
-import { GatewayV2, IDL } from '../target/types/gateway_v2';
+import { GatewayV2, IDL } from '@identity.com/gateway_v2-idl';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
 export class AdminService extends AbstractService {

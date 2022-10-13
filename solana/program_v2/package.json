@@ -1,5 +1,12 @@
 {
   "name": "@identity.com/solana-gateway-ts-v2",
+  "private": true,
+  "workspaces": [
+    "client/packages/cli",
+    "client/packages/core",
+    "client/packages/idl",
+    "tests"
+  ],
   "version": "0.8.2",
   "description": "Typescript adapters for interacting with Solana gateway program",
   "main": "dist/index",
