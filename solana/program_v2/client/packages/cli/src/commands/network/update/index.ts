@@ -1,15 +1,15 @@
-import { Command, Flags } from "@oclif/core";
-import { Wallet } from "@project-serum/anchor";
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { readFileSync } from "node:fs";
-import { GatewayService } from "solana/program_v2/src/AdminService";
-import { FeeStructure } from "@identity.com/solana-gateway-ts-v2/src/lib/types";
-import { airdrop } from "@identity.com/solana-gateway-ts-v2/src/lib/utils";
+import { Command, Flags } from '@oclif/core';
+import { Wallet } from '@project-serum/anchor';
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { readFileSync } from 'node:fs';
+import { GatewayService } from 'solana/program_v2/src/AdminService';
+import { FeeStructure } from '@identity.com/solana-gateway-ts-v2/src/lib/types';
+import { airdrop } from '@identity.com/solana-gateway-ts-v2/src/lib/utils';
 // import { readJSONSync } from "fs-extra";
 
 // import { updateNetwork } from "../../../utils/update-network";
 export default class Update extends Command {
-  static description = "Updates a gatekeeper network";
+  static description = 'Updates a gatekeeper network';
 
   static examples = [
     `$ gateway network update --data ./network.json --key ./funder-key.json
@@ -18,20 +18,20 @@ Latest Blockhash: [blockhash]
   ];
 
   static flags = {
-    help: Flags.help({ char: "h" }),
+    help: Flags.help({ char: 'h' }),
     data: Flags.string({
-      char: "d",
-      description: "Path to network data",
+      char: 'd',
+      description: 'Path to network data',
       required: false,
     }),
     key: Flags.string({
-      char: "k",
-      description: "Path to a solana keypair",
+      char: 'k',
+      description: 'Path to a solana keypair',
       required: false,
     }),
     program: Flags.string({
-      char: "p",
-      description: "The program id",
+      char: 'p',
+      description: 'The program id',
       hidden: false,
       multiple: false,
       required: false,
@@ -41,11 +41,11 @@ Latest Blockhash: [blockhash]
   static args = [];
 
   async run(): Promise<void> {
-    this.log("Update");
+    this.log('Update');
     const { flags } = await this.parse(Update);
     const programId = flags.program
       ? flags.program
-      : "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe";
+      : 'FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe';
     // eslint-disable-next-line unicorn/prefer-module
     const localSecretKey = flags.key ? require(flags.key) : null;
     const funder = localSecretKey
@@ -80,7 +80,7 @@ Latest Blockhash: [blockhash]
       network,
       new Wallet(funder),
       // TODO: mainnet is default
-      "localnet"
+      'localnet'
     );
     // TODO: Remove airdrop
     await airdrop(
