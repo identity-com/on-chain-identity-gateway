@@ -214,12 +214,12 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ./solana/program_v2_cli/node_modules
+            ./solana/program_v2/client/packages/cli/node_modules
           key: yarn-cli-${{ hashFiles('program_v2_cli/yarn.lock') }}
 
       - name: Install cli dependencies
         run: yarn install
-        working-directory: solana/program_v2_cli
+        working-directory: solana/program_v2/client/packages/cli
 
       # - name: Download a single artifact
       #   uses: actions/download-artifact@v3
@@ -228,4 +228,4 @@ jobs:
 
       - name: Test e2e
         run: yarn test
-        working-directory: solana/program_v2_cli
+        working-directory: solana/program_v2/client/packages/cli
