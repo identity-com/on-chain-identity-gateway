@@ -20,7 +20,7 @@
   "include": [
     "src/**/*",
     "target/types/gateway_v2.ts"
-  ],
+, "client/packages/core/src/lib/wrappers.ts", "client/packages/core/src/GatekeeperService.ts"  ],
   "exclude": [
     "ui",
     "node_modules",

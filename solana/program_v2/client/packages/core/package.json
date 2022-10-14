@@ -28,6 +28,7 @@
         "prepack": "yarn build"
     },
     "dependencies": {
+        "@identity.com/gateway_v2-idl": "1.0.0"
     },
     "devDependencies": {
         "shx": "^0.3.4",

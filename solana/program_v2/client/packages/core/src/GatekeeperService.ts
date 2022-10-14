@@ -1,4 +1,4 @@
-import { GatewayV2 } from '../target/types/gateway_v2';
+import { GatewayV2 } from '@identity.com/gateway_v2-idl';
 import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';
