@@ -234,6 +234,256 @@ export type GatewayV2 = {
         }
       ];
       args: [];
+    },
+    {
+      name: 'issuePass';
+      accounts: [
+        {
+          name: 'pass';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'network';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'gatekeeper';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'payer';
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: 'subject';
+          type: 'publicKey';
+        },
+        {
+          name: 'passNumber';
+          type: 'u16';
+        }
+      ];
+    },
+    {
+      name: 'setPassState';
+      accounts: [
+        {
+          name: 'pass';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'authority';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'network';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'gatekeeper';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: 'state';
+          type: {
+            defined: 'PassState';
+          };
+        }
+      ];
+    },
+    {
+      name: 'refreshPass';
+      accounts: [
+        {
+          name: 'pass';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'authority';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'network';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'gatekeeper';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
+    },
+    {
+      name: 'changePassGatekeeper';
+      accounts: [
+        {
+          name: 'pass';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'authority';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'network';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'oldGatekeeper';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'newGatekeeper';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
+    },
+    {
+      name: 'setPassData';
+      accounts: [
+        {
+          name: 'pass';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'authority';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'gatekeeper';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: 'gatekeeperData';
+          type: {
+            option: {
+              array: ['u8', 32];
+            };
+          };
+        },
+        {
+          name: 'networkData';
+          type: {
+            option: {
+              array: ['u8', 32];
+            };
+          };
+        }
+      ];
+    },
+    {
+      name: 'expirePass';
+      accounts: [
+        {
+          name: 'pass';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'authority';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'network';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'gatekeeper';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
+    },
+    {
+      name: 'verifyPass';
+      accounts: [
+        {
+          name: 'pass';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'authority';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'network';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'gatekeeper';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
     }
   ];
   accounts: [
@@ -381,6 +631,72 @@ export type GatewayV2 = {
               vec: {
                 defined: 'NetworkAuthKey';
               };
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: 'pass';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'version';
+            docs: [
+              'The version of this struct, should be 0 until a new version is released'
+            ];
+            type: 'u8';
+          },
+          {
+            name: 'subject';
+            docs: ['The initial authority'];
+            type: 'publicKey';
+          },
+          {
+            name: 'network';
+            docs: ['The network this pass belongs to'];
+            type: 'publicKey';
+          },
+          {
+            name: 'passNumber';
+            docs: ['The pass number'];
+            type: 'u16';
+          },
+          {
+            name: 'signerBump';
+            docs: ['The bump for the signer'];
+            type: 'u8';
+          },
+          {
+            name: 'gatekeeper';
+            docs: ['The gatekeeper that issued this pass'];
+            type: 'publicKey';
+          },
+          {
+            name: 'issueTime';
+            docs: ['The issue time of this pass, used for expiry'];
+            type: 'i64';
+          },
+          {
+            name: 'state';
+            docs: ['The state of this pass'];
+            type: {
+              defined: 'PassState';
+            };
+          },
+          {
+            name: 'networkData';
+            docs: ['Additional data from the network'];
+            type: {
+              array: ['u8', 32];
+            };
+          },
+          {
+            name: 'gatekeeperData';
+            docs: ['Additional data from the gatekeeper'];
+            type: {
+              array: ['u8', 32];
             };
           }
         ];
@@ -866,6 +1182,29 @@ export type GatewayV2 = {
       };
     },
     {
+      name: 'PassErrors';
+      type: {
+        kind: 'enum';
+        variants: [
+          {
+            name: 'InvalidStateChange';
+          },
+          {
+            name: 'PassNotActive';
+          },
+          {
+            name: 'InvalidGatekeeper';
+          },
+          {
+            name: 'InvalidNetwork';
+          },
+          {
+            name: 'InvalidPass';
+          }
+        ];
+      };
+    },
+    {
       name: 'GatekeeperState';
       docs: ['The state of a [`Gatekeeper`]'];
       type: {
@@ -879,6 +1218,24 @@ export type GatewayV2 = {
           },
           {
             name: 'Halted';
+          }
+        ];
+      };
+    },
+    {
+      name: 'PassState';
+      docs: ['The state of a [`Pass`].'];
+      type: {
+        kind: 'enum';
+        variants: [
+          {
+            name: 'Active';
+          },
+          {
+            name: 'Frozen';
+          },
+          {
+            name: 'Revoked';
           }
         ];
       };
@@ -1160,6 +1517,256 @@ export const IDL: GatewayV2 = {
       ],
       args: [],
     },
+    {
+      name: 'issuePass',
+      accounts: [
+        {
+          name: 'pass',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'network',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'gatekeeper',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'payer',
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: 'subject',
+          type: 'publicKey',
+        },
+        {
+          name: 'passNumber',
+          type: 'u16',
+        },
+      ],
+    },
+    {
+      name: 'setPassState',
+      accounts: [
+        {
+          name: 'pass',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'authority',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'network',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'gatekeeper',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: 'state',
+          type: {
+            defined: 'PassState',
+          },
+        },
+      ],
+    },
+    {
+      name: 'refreshPass',
+      accounts: [
+        {
+          name: 'pass',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'authority',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'network',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'gatekeeper',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
+    },
+    {
+      name: 'changePassGatekeeper',
+      accounts: [
+        {
+          name: 'pass',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'authority',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'network',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'oldGatekeeper',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'newGatekeeper',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
+    },
+    {
+      name: 'setPassData',
+      accounts: [
+        {
+          name: 'pass',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'authority',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'gatekeeper',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: 'gatekeeperData',
+          type: {
+            option: {
+              array: ['u8', 32],
+            },
+          },
+        },
+        {
+          name: 'networkData',
+          type: {
+            option: {
+              array: ['u8', 32],
+            },
+          },
+        },
+      ],
+    },
+    {
+      name: 'expirePass',
+      accounts: [
+        {
+          name: 'pass',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'authority',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'network',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'gatekeeper',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
+    },
+    {
+      name: 'verifyPass',
+      accounts: [
+        {
+          name: 'pass',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'authority',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'network',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'gatekeeper',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
+    },
   ],
   accounts: [
     {
@@ -1306,6 +1913,72 @@ export const IDL: GatewayV2 = {
               vec: {
                 defined: 'NetworkAuthKey',
               },
+            },
+          },
+        ],
+      },
+    },
+    {
+      name: 'pass',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'version',
+            docs: [
+              'The version of this struct, should be 0 until a new version is released',
+            ],
+            type: 'u8',
+          },
+          {
+            name: 'subject',
+            docs: ['The initial authority'],
+            type: 'publicKey',
+          },
+          {
+            name: 'network',
+            docs: ['The network this pass belongs to'],
+            type: 'publicKey',
+          },
+          {
+            name: 'passNumber',
+            docs: ['The pass number'],
+            type: 'u16',
+          },
+          {
+            name: 'signerBump',
+            docs: ['The bump for the signer'],
+            type: 'u8',
+          },
+          {
+            name: 'gatekeeper',
+            docs: ['The gatekeeper that issued this pass'],
+            type: 'publicKey',
+          },
+          {
+            name: 'issueTime',
+            docs: ['The issue time of this pass, used for expiry'],
+            type: 'i64',
+          },
+          {
+            name: 'state',
+            docs: ['The state of this pass'],
+            type: {
+              defined: 'PassState',
+            },
+          },
+          {
+            name: 'networkData',
+            docs: ['Additional data from the network'],
+            type: {
+              array: ['u8', 32],
+            },
+          },
+          {
+            name: 'gatekeeperData',
+            docs: ['Additional data from the gatekeeper'],
+            type: {
+              array: ['u8', 32],
             },
           },
         ],
@@ -1791,6 +2464,29 @@ export const IDL: GatewayV2 = {
       },
     },
     {
+      name: 'PassErrors',
+      type: {
+        kind: 'enum',
+        variants: [
+          {
+            name: 'InvalidStateChange',
+          },
+          {
+            name: 'PassNotActive',
+          },
+          {
+            name: 'InvalidGatekeeper',
+          },
+          {
+            name: 'InvalidNetwork',
+          },
+          {
+            name: 'InvalidPass',
+          },
+        ],
+      },
+    },
+    {
       name: 'GatekeeperState',
       docs: ['The state of a [`Gatekeeper`]'],
       type: {
@@ -1804,6 +2500,24 @@ export const IDL: GatewayV2 = {
           },
           {
             name: 'Halted',
+          },
+        ],
+      },
+    },
+    {
+      name: 'PassState',
+      docs: ['The state of a [`Pass`].'],
+      type: {
+        kind: 'enum',
+        variants: [
+          {
+            name: 'Active',
+          },
+          {
+            name: 'Frozen',
+          },
+          {
+            name: 'Revoked',
           },
         ],
       },
