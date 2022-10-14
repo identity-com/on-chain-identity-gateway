@@ -58,13 +58,12 @@
     }
   },
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b",
-    "lint": "eslint . --ext .ts --config .eslintrc",
-    "postpack": "shx rm -f oclif.manifest.json",
-    "posttest": "yarn lint",
-    "prepack": "yarn build && oclif manifest && oclif readme",
-    "test": "mocha --forbid-only \"test/**/*.test.ts\"",
-    "version": "oclif readme && git add README.md"
+    "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
+    "clean": "shx rm -rf ./dist",
+    "compile": "tsc -p tsconfig.json",
+    "build": "yarn clean && yarn compile",
+    "prepack": "yarn build"
   },
   "engines": {
     "node": ">=12.0.0"
