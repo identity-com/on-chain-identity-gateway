@@ -1,4 +1,5 @@
 import { PublicKey, Transaction } from '@solana/web3.js';
+import { BN } from '@project-serum/anchor';
 
 export interface Wallet {
   signTransaction(tx: Transaction): Promise<Transaction>;
@@ -113,4 +114,20 @@ export const GatekeeperStateMapping = {
   active: GatekeeperState.Active,
   frozen: GatekeeperState.Frozen,
   halted: GatekeeperState.Halted,
+};
+
+export type RawPassAccount = {
+  version: number;
+  issueTime: BN;
+  subject: PublicKey;
+  signerBump: number;
+  network: PublicKey;
+  gatekeeper: PublicKey;
+  state: {
+    active?: {};
+    revoked?: {};
+    frozen?: {};
+  };
+  networkData: Uint8Array;
+  gatekeeperData: Uint8Array;
 };

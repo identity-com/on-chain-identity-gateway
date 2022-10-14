@@ -325,6 +325,10 @@ bitflags! {
          const UNREVOKE_PASS = 1 << 12;
          /// Key can set gatekeeper state
          const SET_GATEKEEPER_STATE = 1 << 13;
+         /// Key can change gatekeepers for passes
+         const CHANGE_PASS_GATEKEEPER = 1 << 14;
+         /// Key can expire a for passes
+         const EXPIRE_PASS = 1 << 15;
      }
 }
 

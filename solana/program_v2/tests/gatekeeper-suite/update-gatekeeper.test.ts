@@ -60,6 +60,7 @@ describe('Gateway v2 Client', () => {
 
     networkService = await NetworkService.buildFromAnchor(
       program,
+      adminAuthority.publicKey,
       gatekeeperDataAccount,
       'localnet',
       programProvider,

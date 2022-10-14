@@ -23,12 +23,27 @@ import {
   GATEWAY_PROGRAM,
   SOLANA_MAINNET,
 } from './lib/constants';
-import { AbstractService, ServiceBuilder } from './utils/AbstractService';
+import {
+  AbstractService,
+  NonSigningWallet,
+  ServiceBuilder,
+} from './utils/AbstractService';
 import { GatewayV2 } from '../target/types/gateway_v2';
 
 // Service for a network. This will handle all aspects of the Gateway that a network is able to control... i.e. creating gatekeepers, updating gatekeepers, etc...
 export class NetworkService extends AbstractService {
+  constructor(
+    program: Program<GatewayV2>,
+    private _gatekeeper: PublicKey,
+    dataAccount: PublicKey,
+    cluster: ExtendedCluster = SOLANA_MAINNET,
+    wallet: Wallet = new NonSigningWallet(),
+    opts: ConfirmOptions = AnchorProvider.defaultOptions()
+  ) {
+    super(program, dataAccount, cluster, wallet, opts);
+  }
   static async build(
+    gatekeeper: PublicKey,
     dataAccount: PublicKey,
     wallet: Wallet,
     cluster: ExtendedCluster = SOLANA_MAINNET,
@@ -47,6 +62,7 @@ export class NetworkService extends AbstractService {
 
     return new NetworkService(
       program,
+      gatekeeper,
       dataAccount,
       cluster,
       wallet,
@@ -56,6 +72,7 @@ export class NetworkService extends AbstractService {
 
   static async buildFromAnchor(
     program: Program<GatewayV2>,
+    gatekeeper: PublicKey,
     dataAccount: PublicKey,
     cluster: ExtendedCluster,
     provider: AnchorProvider = program.provider as AnchorProvider,
@@ -63,6 +80,7 @@ export class NetworkService extends AbstractService {
   ): Promise<NetworkService> {
     return new NetworkService(
       program,
+      gatekeeper,
       dataAccount,
       cluster,
       wallet,
@@ -84,6 +102,7 @@ export class NetworkService extends AbstractService {
       GATEWAY_PROGRAM
     );
   }
+
   //TODO! seeds derivation program side
   static async createStakingAddress(
     network: PublicKey
@@ -104,8 +123,8 @@ export class NetworkService extends AbstractService {
       authThreshold: 1,
       authKeys: [
         {
-          flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.SET_EXPIRE_TIME,
-          key: this._wallet.publicKey,
+          flags: GatekeeperKeyFlags.AUTH,
+          key: this._gatekeeper,
         },
       ],
     },
@@ -125,6 +144,7 @@ export class NetworkService extends AbstractService {
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .instruction();
+
     return new ServiceBuilder(this, {
       instructionPromise,
       didAccountSizeDeltaCallback: () => {
@@ -245,7 +265,7 @@ export class NetworkService extends AbstractService {
 
   // Retrieves a gatekeeper's information
   async getGatekeeperAccount(
-    account: PublicKey = this._dataAccount
+    account: PublicKey = this._dataAccount as PublicKey // TODO: Update this once the interface has changed
   ): Promise<GatekeeperAccount | null> {
     const gatekeeperAccount = this._program.account.gatekeeper
       .fetchNullable(account)
