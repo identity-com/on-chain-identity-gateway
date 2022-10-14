@@ -1,5 +1,5 @@
 {
-    "name": "@identity.com/gateway-v2-client",
+    "name": "@identity.com/gateway_v2-client",
     "version": "1.0.0",
     "description": "gateway-v2-client",
     "license": "MIT",

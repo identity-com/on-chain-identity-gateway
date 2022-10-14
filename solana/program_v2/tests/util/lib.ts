@@ -1,5 +1,5 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { NetworkService } from '../../src/NetworkService';
+import { NetworkService } from '@identity.com/gateway_v2-client/src/NetworkService';
 
 export const loadPrivateKey = (publicKeyBs58: string) => {
   const data = require(`../fixtures/keypairs/${publicKeyBs58}.json`);

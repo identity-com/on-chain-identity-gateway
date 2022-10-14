@@ -1,6 +1,6 @@
-import { PassState } from '../../src/lib/wrappers';
+import { PassState } from '@identity.com/gateway_v2-client/src/lib/wrappers';
 import { createGatekeeperService } from './util';
-import { GatekeeperService } from '../../src/GatekeeperService';
+import { GatekeeperService } from '@identity.com/gateway_v2-client/src/GatekeeperService';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
@@ -27,7 +27,7 @@ describe('Expire a pass', () => {
     await service.expirePass(account).rpc();
     const updatedPass = await service.getPassAccount(subject);
 
-    expect(updatedPass.issueTime).to.be.lt(0);
+    expect(updatedPass?.issueTime).to.be.lt(0);
   });
 
   it('Cannot expire an inactive pass', async () => {

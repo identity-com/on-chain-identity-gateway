@@ -17,8 +17,8 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn clean && yarn compile",
-    "clean": "rimraf -rf ./dist && yarn workspace @identity.com/gateway_v2-idl clean && yarn workspace @identity.com/gateway-v2-client clean && yarn workspace @identity.com/gateway-v2-cli clean",
-    "compile": "yarn workspace @identity.com/gateway_v2-idl compile && yarn workspace @identity.com/gateway-v2-client compile && yarn workspace @identity.com/gateway-v2-cli compile && tsc -p tsconfig.json",
+    "clean": "rimraf -rf ./dist && yarn workspace @identity.com/gateway_v2-idl clean && yarn workspace @identity.com/gateway_v2-client clean && yarn workspace @identity.com/gateway-v2-cli clean",
+    "compile": "yarn workspace @identity.com/gateway_v2-idl compile && yarn workspace @identity.com/gateway_v2-client compile && yarn workspace @identity.com/gateway-v2-cli compile && tsc -p tsconfig.json",
     "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'tests/**/*.ts'",
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",

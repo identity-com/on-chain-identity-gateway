@@ -1,0 +1,17 @@
+{
+  "name": "@identity.com/gateway_v2-tests",
+  "version": "1.0.0",
+  "description": "gateway_v2 tests",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@identity.com/gateway_v2-client": "1.0.0",
+    "@identity.com/gateway_v2-idl": "1.0.0"
+  },
+  "devDependencies": {}
+}

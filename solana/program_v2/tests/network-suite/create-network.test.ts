@@ -1,8 +1,8 @@
-import { AdminService } from '../../client/packages/core/src/AdminService';
-import { GatewayV2, IDL } from '../../target/types/gateway_v2';
+import { AdminService } from '@identity.com/gateway_v2-client/src/AdminService';
+import { GatewayV2, IDL } from '@identity.com/gateway_v2-idl/src/gateway_v2';
 import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { airdrop } from '../../client/packages/core/src/lib/utils';
+import { airdrop } from '@identity.com/gateway_v2-client/src/lib/utils';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 
