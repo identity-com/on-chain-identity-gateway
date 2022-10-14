@@ -1,13 +1,13 @@
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { AdminService } from '../../src/AdminService';
+import { AdminService } from '../../client/packages/core/src/AdminService';
 import { GatewayV2 } from '../../target/types/gateway_v2';
 import * as anchor from '@project-serum/anchor';
-import { airdrop } from '../../src/lib/utils';
+import { airdrop } from '../../client/packages/core/src/lib/utils';
 import { expect, use } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
-import { NetworkAccount } from '../../src/lib/types';
-import { NetworkKeyFlags } from '../../src/lib/constants';
+import { NetworkAccount } from '../../client/packages/core/src/lib/types';
+import { NetworkKeyFlags } from '../../client/packages/core/src/lib/constants';
 import { Wallet } from '@project-serum/anchor/dist/cjs/provider';
 import chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);

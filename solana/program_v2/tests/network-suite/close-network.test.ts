@@ -1,8 +1,8 @@
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { AdminService } from '../../src/AdminService';
+import { AdminService } from '../../client/packages/core/src/AdminService';
 import { GatewayV2 } from '../../target/types/gateway_v2';
 import * as anchor from '@project-serum/anchor';
-import { airdrop } from '../../src/lib/utils';
+import { airdrop } from '../../client/packages/core/src/lib/utils';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
