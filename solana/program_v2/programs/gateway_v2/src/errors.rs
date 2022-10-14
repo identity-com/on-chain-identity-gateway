@@ -33,3 +33,17 @@ pub enum GatekeeperErrors {
     #[msg("Gatekeeper not found")]
     InvalidGatekeeper,
 }
+
+#[error_code]
+pub enum PassErrors {
+    #[msg("Invalid state change")]
+    InvalidStateChange,
+    #[msg("The pass is not active")]
+    PassNotActive,
+    #[msg("Invalid gatekeeper")]
+    InvalidGatekeeper,
+    #[msg("Invalid network")]
+    InvalidNetwork,
+    #[msg("The pass is not active or has expired")]
+    InvalidPass,
+}

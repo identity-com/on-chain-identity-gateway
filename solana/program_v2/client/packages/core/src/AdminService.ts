@@ -177,7 +177,7 @@ export class AdminService extends AbstractService {
   }
 
   async getNetworkAccount(
-    account: PublicKey = this._dataAccount
+    account: PublicKey = this._dataAccount as PublicKey // TODO: Update this once the interface has changed
   ): Promise<NetworkAccount | null> {
     const networkAccount = this._program.account.gatekeeperNetwork
       .fetchNullable(account)

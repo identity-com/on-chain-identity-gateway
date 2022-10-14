@@ -63,6 +63,7 @@ describe('Gateway v2 Client', () => {
 
     networkService = await NetworkService.buildFromAnchor(
       program,
+      adminAuthority.publicKey,
       gatekeeperDataAccount,
       'localnet',
       programProvider,
@@ -87,7 +88,3 @@ describe('Gateway v2 Client', () => {
     }).timeout(10000);
   });
 });
-
-// network: PublicKey,
-// stakingAccount: PublicKey,
-// authority: PublicKey = this._wallet.publicKey
