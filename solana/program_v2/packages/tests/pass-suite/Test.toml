@@ -1,7 +1,7 @@
 extends = ["../Test.base.account.toml"]
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/pass-suite/**/*.ts"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/pass-suite/**/*.ts"
 
 [[test.validator.account]]
 address = "8PyTqDcyDKbMQB99D2aoNLsBqgheQU3UV4xz28ZXJYmN"

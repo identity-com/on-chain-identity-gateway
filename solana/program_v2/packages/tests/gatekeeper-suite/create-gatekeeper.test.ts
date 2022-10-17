@@ -6,10 +6,10 @@ import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import {
   airdrop,
   findProgramAddress,
-} from '../../client/packages/core/src/lib/utils';
+} from '@identity.com/gateway_v2-client/src/lib/utils';
 import { expect } from 'chai';
 import { describe } from 'mocha';
-import { NetworkAccount } from '../../client/packages/core/src/lib/types';
+import { NetworkAccount } from '@identity.com/gateway_v2-client/src/lib/types';
 
 describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
