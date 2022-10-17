@@ -1,22 +1,22 @@
-import { AdminService } from '../../client/packages/core/src/AdminService';
-import { NetworkService } from '../../client/packages/core/src/NetworkService';
-import { GatewayV2 } from '../../target/types/gateway_v2';
+import { AdminService } from '@identity.com/gateway_v2-client/src/AdminService';
+import { NetworkService } from '@identity.com/gateway_v2-client/src/NetworkService';
+import { GatewayV2 } from '@identity.com/gateway_v2-idl/src/gateway_v2';
 import {
   GatekeeperState,
   GatekeeperStateMapping,
-} from '../../client/packages/core/src/lib/types';
+} from '@identity.com/gateway_v2-client/src/lib/types';
 import * as anchor from '@project-serum/anchor';
 import { Enum, Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import {
   airdrop,
   EnumMapper,
   findProgramAddress,
-} from '../../client/packages/core/src/lib/utils';
+} from '@identity.com/gateway_v2-client/src/lib/utils';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
-import { GatekeeperKeyFlags } from '../../client/packages/core/src/lib/constants';
+import { GatekeeperKeyFlags } from '@identity.com/gateway_v2-client/src/lib/constants';
 chai.use(chaiAsPromised);
 
 describe('Gateway v2 Client', () => {

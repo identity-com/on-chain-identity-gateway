@@ -1,5 +1,5 @@
 [workspace]
-types = "client/packages/idl/src/"
+types = "packages/client/idl/src/"
 
 [features]
 seeds = false
@@ -24,4 +24,3 @@ createTestFixtureAccount = "./node_modules/.bin/ts-node ./scripts/createTestFixt
 
 [test]
 startup_wait = 20000
-

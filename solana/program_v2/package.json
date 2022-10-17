@@ -2,9 +2,9 @@
   "name": "@identity.com/solana-gateway-ts-v2",
   "private": true,
   "workspaces": [
-    "client/packages/cli",
-    "client/packages/core",
-    "client/packages/idl",
+    "packages/client/cli",
+    "packages/client/core",
+    "packages/client/idl",
     "tests"
   ],
   "version": "0.8.2",
@@ -32,7 +32,8 @@
   "dependencies": {
     "@project-serum/anchor": "^0.25.0",
     "@solana/web3.js": "^1.41.3",
-    "@identity.com/gateway_v2-idl": "^1.0.0"
+    "@identity.com/gateway_v2-idl": "^1.0.0",
+    "@identity.com/gateway_v2-client": "^1.0.0"
   },
   "devDependencies": {
     "@project-serum/anchor-cli": "https://github.com/kklas/anchor-nightly/releases/download/anchor-cli-latest/anchor-cli-0.25.0-7eb8ca8.tgz",
