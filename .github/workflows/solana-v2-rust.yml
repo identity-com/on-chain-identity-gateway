@@ -228,4 +228,4 @@ jobs:
 
       - name: Test e2e
         run: yarn test
-        working-directory: solana/program_v2/client/packages/cli
+        working-directory: solana/program_v2/packages/client/cli
