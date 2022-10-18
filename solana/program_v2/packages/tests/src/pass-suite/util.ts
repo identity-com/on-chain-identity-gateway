@@ -54,7 +54,7 @@ export const createGatekeeperService = async (
   gatekeeper: PublicKey = TEST_GATEKEEPER_AUTHORITY,
   network: PublicKey = TEST_NETWORK
 ): Promise<GatekeeperService> => {
-  const authorityKeypair = loadPrivateKey(gatekeeper.toBase58());
+  const authorityKeypair = await loadPrivateKey(gatekeeper.toBase58());
   const authority = new anchor.Wallet(authorityKeypair);
 
   await airdrop(

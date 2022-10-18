@@ -1,11 +1,15 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { NetworkService } from '@identity.com/gateway_v2-client/src/NetworkService';
+import fsPromises from 'node:fs/promises';
 
-export const loadPrivateKey = (publicKeyBs58: string): Keypair => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const data = require(`../../fixtures/keypairs/${publicKeyBs58}.json`);
-
-  return Keypair.fromSecretKey(new Uint8Array(data));
+export const loadPrivateKey = async (
+  publicKeyBs58: string
+): Promise<Keypair> => {
+  const keyFileBuffer = await fsPromises.readFile(
+    `${__dirname}/../../fixtures/keypairs/${publicKeyBs58}.json`
+  );
+  const privateKey = Uint8Array.from(JSON.parse(keyFileBuffer.toString()));
+  return Keypair.fromSecretKey(privateKey);
 };
 
 export const setGatekeeperFlags = async (

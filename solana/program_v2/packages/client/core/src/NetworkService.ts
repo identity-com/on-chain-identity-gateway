@@ -161,6 +161,7 @@ export class NetworkService extends AbstractService {
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
+      // anchor IDL does not work with nested types
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .updateGatekeeper({
@@ -193,6 +194,7 @@ export class NetworkService extends AbstractService {
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
+      //anchor IDL does not work with nested types
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .closeGatekeeper()

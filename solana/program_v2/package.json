@@ -23,6 +23,7 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "yarn workspace @identity.com/gateway_v2-program-tests build && anchor test",
+    "start-validator": "solana-test-validator --bpf-program FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe ./target/deploy/gateway_v2.so --reset",
     "prepare": "cd ../../ && husky install solana/program_v2/.husky"
   },
   "devDependencies": {

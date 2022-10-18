@@ -4,17 +4,9 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { TEST_NETWORK } from '../util/constants';
-import { AnchorProvider } from '@project-serum/anchor';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const envProvider = AnchorProvider.env();
-
-// after("Remove log listener", () => {
-//   envProvider.connection.removeOnLogsListener(logListener);
-// });
 
 describe('Change pass data', () => {
   let service: GatekeeperService;

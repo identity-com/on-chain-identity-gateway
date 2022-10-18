@@ -1,6 +1,7 @@
 {
   "name": "@identity.com/gateway_v2-program-tests",
   "version": "1.0.0",
+  "license": "MIT",
   "scripts": {
     "build": "tsc --build",
     "lint": "eslint src/**/*.ts"
