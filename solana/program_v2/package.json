@@ -17,9 +17,11 @@
   "license": "MIT",
   "scripts": {
     "create-fixtures": "anchor run createTestFixtureAccount",
+    "cargo:lint": "cargo fmt --manifest-path Cargo.toml --all",
+    "cargo:fix": "cargo fmt --manifest-path Cargo.toml --all -- --check",
     "build": "anchor build && yarn workspace @identity.com/gateway_v2-idl build && yarn workspace @identity.com/gateway_v2-client build && yarn workspace @identity.com/gateway-v2-cli build",
-    "lint": "eslint . --ext .ts && cargo fmt --manifest-path Cargo.toml --all -- --check",
-    "lint:fix": "eslint . --ext .ts --fix && cargo fmt --manifest-path Cargo.toml --all",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "test": "yarn workspace @identity.com/gateway_v2-program-tests build && anchor test",
     "prepare": "cd ../../ && husky install solana/program_v2/.husky"
   },
