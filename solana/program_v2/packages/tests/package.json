@@ -1,0 +1,17 @@
+{
+  "name": "@identity.com/gateway_v2-program-tests",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc --build",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "@project-serum/anchor": "^0.25.0",
+    "@solana/web3.js": "^1.41.3",
+    "@identity.com/gateway_v2-idl": "^1.0.0",
+    "@identity.com/gateway_v2-client": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/chai-as-promised": "^7.1.5"
+  }
+}

@@ -62,8 +62,7 @@
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
     "clean": "shx rm -rf ./dist",
-    "compile": "tsc -p tsconfig.json",
-    "build": "yarn clean && yarn compile",
+    "build": "tsc --build",
     "prepack": "yarn build",
     "test": "ts-mocha --paths \"test/**/*.ts\""
   },
