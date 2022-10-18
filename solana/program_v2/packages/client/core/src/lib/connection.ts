@@ -46,7 +46,7 @@ export const clusterFromString = (
 export const getClusterUrl = (
   cluster: ExtendedCluster,
   customConfig?: CustomClusterUrlConfig
-) => {
+): string => {
   // return custom cluster url if it exists
   if (customConfig && customConfig[cluster]) {
     return customConfig[cluster];
@@ -92,7 +92,7 @@ export type HashOrNonce =
 export async function addHashOrNonce(
   transaction: TransactionHolder,
   hashOrNonce: HashOrNonce
-) {
+): Promise<void> {
   if (hashOrNonce === 'find') {
     transaction.transaction.recentBlockhash = await transaction.connection
       .getRecentBlockhash()

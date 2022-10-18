@@ -9,7 +9,7 @@ import { AdminService } from '@identity.com/gateway_v2-client/src/AdminService';
 import { NetworkService } from '@identity.com/gateway_v2-client/src/NetworkService';
 import { createMint } from '@solana/spl-token';
 import * as fs from 'fs';
-import { setGatekeeperFlags } from '../tests/util/lib';
+import { setGatekeeperFlags } from '../packages/tests/src/util/lib';
 
 const exec = util.promisify(execCB);
 
@@ -73,6 +73,7 @@ const createTestTokenAccount = async () => {
 
   if (!(await accountExists(mintAccount.publicKey))) {
     // Create and save the mint
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const mint = await createMint(
       programProvider.connection,
       mintAuthority,
@@ -95,7 +96,7 @@ const createNetworkAccount = async (
   filename: string
 ) => {
   const authorityKeypair = await loadKeypair(authorityBase58, LAMPORTS_PER_SOL);
-  let authority = new anchor.Wallet(authorityKeypair);
+  const authority = new anchor.Wallet(authorityKeypair);
 
   const [dataAccount] = await AdminService.createNetworkAddress(
     authority.publicKey
@@ -128,7 +129,7 @@ const createGatekeeperAccount = async (
   filename: string
 ) => {
   const authorityKeypair = await loadKeypair(authorityBase58, LAMPORTS_PER_SOL);
-  let authority = new anchor.Wallet(authorityKeypair);
+  const authority = new anchor.Wallet(authorityKeypair);
 
   await airdrop(
     programProvider.connection,

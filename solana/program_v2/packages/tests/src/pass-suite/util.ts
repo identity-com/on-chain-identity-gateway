@@ -28,7 +28,7 @@ before(() => {
 export const createNetworkService = async (
   authority: Keypair = Keypair.generate(),
   network: PublicKey = TEST_NETWORK
-) => {
+): Promise<NetworkService> => {
   await airdrop(
     programProvider.connection,
     authority.publicKey,
@@ -53,7 +53,7 @@ export const createNetworkService = async (
 export const createGatekeeperService = async (
   gatekeeper: PublicKey = TEST_GATEKEEPER_AUTHORITY,
   network: PublicKey = TEST_NETWORK
-) => {
+): Promise<GatekeeperService> => {
   const authorityKeypair = loadPrivateKey(gatekeeper.toBase58());
   const authority = new anchor.Wallet(authorityKeypair);
 
@@ -65,7 +65,7 @@ export const createGatekeeperService = async (
 
   const service = await GatekeeperService.buildFromAnchor(
     program,
-    TEST_NETWORK,
+    network,
     TEST_GATEKEEPER,
     'localnet',
     programProvider,

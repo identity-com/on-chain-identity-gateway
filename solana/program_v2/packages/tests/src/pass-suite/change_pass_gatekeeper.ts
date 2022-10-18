@@ -1,4 +1,3 @@
-import { PassState } from '@identity.com/gateway_v2-client/src/lib/wrappers';
 import { createGatekeeperService, createNetworkService } from './util';
 import { GatekeeperService } from '@identity.com/gateway_v2-client/src/GatekeeperService';
 import chai from 'chai';

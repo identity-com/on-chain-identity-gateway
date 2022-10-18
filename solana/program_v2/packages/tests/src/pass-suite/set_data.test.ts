@@ -9,6 +9,7 @@ import { AnchorProvider } from '@project-serum/anchor';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const envProvider = AnchorProvider.env();
 
 // after("Remove log listener", () => {

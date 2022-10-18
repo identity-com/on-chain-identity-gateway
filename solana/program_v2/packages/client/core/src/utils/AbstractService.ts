@@ -75,13 +75,15 @@ export class NonSigningWallet implements Wallet {
     this.publicKey = new PublicKey('11111111111111111111111111111111');
   }
 
-  signAllTransactions(txs: Transaction[]): Promise<Transaction[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  signAllTransactions(_txs: Transaction[]): Promise<Transaction[]> {
     return Promise.reject(
       'NonSigningWallet does not support signing transactions'
     );
   }
 
-  signTransaction(tx: Transaction): Promise<Transaction> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  signTransaction(_tx: Transaction): Promise<Transaction> {
     return Promise.reject(
       'NonSigningWallet does not support signing transactions'
     );
@@ -132,7 +134,7 @@ export class ServiceBuilder {
     return this;
   }
 
-  withPartialSigners(...signers: Signer[]) {
+  withPartialSigners(...signers: Signer[]): ServiceBuilder {
     this.partialSigners = signers;
     return this;
   }

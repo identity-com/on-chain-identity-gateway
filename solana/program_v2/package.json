@@ -16,17 +16,10 @@
   "author": "Martin Riedel <martin@identity.org>",
   "license": "MIT",
   "scripts": {
-    "clean": "rimraf -rf ./dist && yarn workspace @identity.com/gateway_v2-idl clean && yarn workspace @identity.com/gateway_v2-client clean && yarn workspace @identity.com/gateway-v2-cli clean",
-    "compile": "yarn workspace @identity.com/gateway_v2-idl compile && yarn workspace @identity.com/gateway_v2-client compile && yarn workspace @identity.com/gateway-v2-cli compile && tsc -p tsconfig.json",
-    "test": "STAGE=${STAGE:-dev} FORCE_COLOR=1 nyc --reporter=text ts-mocha --paths 'tests/**/*.ts'",
-    "lint:all": "yarn lint && yarn lint:cargo",
-    "lint:cargo": "cargo fmt --manifest-path Cargo.toml --all -- --check",
-    "lint:cargo:fix": "cargo fmt --manifest-path Cargo.toml --all",
     "create-fixtures": "anchor run createTestFixtureAccount",
-    "start-validator": "solana-test-validator --bpf-program FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe ./target/deploy/gateway_v2.so --reset",
     "build": "anchor build && yarn workspace @identity.com/gateway_v2-idl build && yarn workspace @identity.com/gateway_v2-client build && yarn workspace @identity.com/gateway-v2-cli build",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
+    "lint": "eslint . --ext .ts && cargo fmt --manifest-path Cargo.toml --all -- --check",
+    "lint:fix": "eslint . --ext .ts --fix && cargo fmt --manifest-path Cargo.toml --all",
     "test": "yarn workspace @identity.com/gateway_v2-program-tests build && anchor test",
     "prepare": "cd ../../ && husky install solana/program_v2/.husky"
   },
@@ -38,8 +31,7 @@
     "mocha": "^10.0.0",
     "prettier": "^2.7.1",
     "ts-mocha": "^10.0.0",
-    "typescript": "^4.8.3",
-    "husky": "^7.0.2"
+    "typescript": "^4.8.3"
   },
   "husky": {
     "hooks": {

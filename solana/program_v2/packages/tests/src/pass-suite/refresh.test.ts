@@ -1,4 +1,7 @@
-import { PassState } from '@identity.com/gateway_v2-client/src/lib/wrappers';
+import {
+  PassAccount,
+  PassState,
+} from '@identity.com/gateway_v2-client/src/lib/wrappers';
 import { createGatekeeperService } from './util';
 import { GatekeeperService } from '@identity.com/gateway_v2-client/src/GatekeeperService';
 import chai from 'chai';
@@ -31,9 +34,11 @@ describe('Refresh a pass', () => {
 
     await service.refreshPass(account).rpc();
 
-    const updatedPass = (await service.getPassAccount(subject)) as any;
+    const updatedPass = await service.getPassAccount(subject);
 
-    expect(initialPass?.issueTime).to.be.lt(updatedPass.issueTime);
+    expect(initialPass?.issueTime).to.be.lt(
+      (updatedPass as PassAccount).issueTime
+    );
   });
 
   it('Cannot refresh a frozen pass', async () => {

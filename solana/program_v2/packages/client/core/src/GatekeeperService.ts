@@ -84,7 +84,7 @@ export class GatekeeperService extends AbstractService {
   static async createPassAddress(
     subject: PublicKey,
     network: PublicKey,
-    pass_number: number = 0
+    pass_number = 0
   ): Promise<PublicKey> {
     const pass_number_buffer = Buffer.alloc(2);
     pass_number_buffer.writeInt16LE(pass_number);
@@ -105,7 +105,7 @@ export class GatekeeperService extends AbstractService {
   issue(
     passAccount: PublicKey,
     subject: PublicKey,
-    passNumber: number = 0,
+    passNumber = 0,
     authority: PublicKey = this.getWallet().publicKey
   ): ServiceBuilder {
     const instructionPromise = this.getProgram()
@@ -300,7 +300,7 @@ export class GatekeeperService extends AbstractService {
 
   async getPassAccount(
     subject: PublicKey,
-    passNumber: number = 0
+    passNumber = 0
   ): Promise<PassAccount | null> {
     const account = await GatekeeperService.createPassAddress(
       subject,
@@ -310,16 +310,17 @@ export class GatekeeperService extends AbstractService {
     return (
       this.getProgram()
         .account.pass.fetchNullable(account)
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         .then(PassAccount.from)
     );
   }
 
-  getGatekeeper() {
+  getGatekeeper(): PublicKey {
     return this._gatekeeper;
   }
 
-  getNetwork() {
+  getNetwork(): PublicKey {
     return this._network;
   }
 }

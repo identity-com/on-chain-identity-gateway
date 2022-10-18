@@ -6,12 +6,13 @@
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
-    "@project-serum/anchor": "^0.25.0",
-    "@solana/web3.js": "^1.41.3",
+    "@identity.com/gateway_v2-client": "^1.0.0",
     "@identity.com/gateway_v2-idl": "^1.0.0",
-    "@identity.com/gateway_v2-client": "^1.0.0"
+    "@project-serum/anchor": "^0.25.0",
+    "@solana/web3.js": "^1.41.3"
   },
   "devDependencies": {
-    "@types/chai-as-promised": "^7.1.5"
+    "@types/chai-as-promised": "^7.1.5",
+    "chai-as-promised": "^7.1.1"
   }
 }

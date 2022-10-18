@@ -6,17 +6,15 @@ import {
   GatekeeperStateMapping,
 } from '@identity.com/gateway_v2-client/src/lib/types';
 import * as anchor from '@project-serum/anchor';
-import { Enum, Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import {
   airdrop,
   EnumMapper,
-  findProgramAddress,
 } from '@identity.com/gateway_v2-client/src/lib/utils';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
-import { GatekeeperKeyFlags } from '@identity.com/gateway_v2-client/src/lib/constants';
 chai.use(chaiAsPromised);
 
 describe('Gateway v2 Client', () => {
@@ -31,7 +29,6 @@ describe('Gateway v2 Client', () => {
 
   let adminAuthority: anchor.Wallet;
   let networkAuthority: anchor.Wallet;
-  let adminAddress: PublicKey;
   let stakingDataAccount: PublicKey;
 
   before(async () => {
@@ -94,8 +91,10 @@ describe('Gateway v2 Client', () => {
       gatekeeperAccount = await networkService.getGatekeeperAccount();
       const newState = gatekeeperAccount?.state;
 
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore // Expects initial state of gatekeeper to be 0 (Active)
       expect(EnumMapper.from(initialState, GatekeeperStateMapping)).to.equal(0);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore // Expects modified state of gatekeeper to be 1 (Frozen)
       expect(EnumMapper.from(newState, GatekeeperStateMapping)).to.equal(1);
     }).timeout(10000);

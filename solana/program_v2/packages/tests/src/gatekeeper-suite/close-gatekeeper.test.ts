@@ -3,10 +3,7 @@ import { AdminService } from '@identity.com/gateway_v2-client/src/AdminService';
 import { GatewayV2 } from '@identity.com/gateway_v2-idl/src/gateway_v2';
 import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import {
-  airdrop,
-  findProgramAddress,
-} from '@identity.com/gateway_v2-client/src/lib/utils';
+import { airdrop } from '@identity.com/gateway_v2-client/src/lib/utils';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
@@ -25,7 +22,6 @@ describe('Gateway v2 Client', () => {
 
   let adminAuthority: anchor.Wallet;
   let networkAuthority: anchor.Wallet;
-  let adminAddress: PublicKey;
   let stakingDataAccount: PublicKey;
 
   before(async () => {

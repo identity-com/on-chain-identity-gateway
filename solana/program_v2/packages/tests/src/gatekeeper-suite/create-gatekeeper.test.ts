@@ -3,13 +3,9 @@ import { AdminService } from '@identity.com/gateway_v2-client/src/AdminService';
 import { GatewayV2 } from '@identity.com/gateway_v2-idl/src/gateway_v2';
 import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import {
-  airdrop,
-  findProgramAddress,
-} from '@identity.com/gateway_v2-client/src/lib/utils';
+import { airdrop } from '@identity.com/gateway_v2-client/src/lib/utils';
 import { expect } from 'chai';
 import { describe } from 'mocha';
-import { NetworkAccount } from '@identity.com/gateway_v2-client/src/lib/types';
 
 describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -23,7 +19,6 @@ describe('Gateway v2 Client', () => {
 
   let adminAuthority: anchor.Wallet;
   let networkAuthority: anchor.Wallet;
-  let adminAddress: PublicKey;
   let stakingDataAccount: PublicKey;
 
   before(async () => {
@@ -80,7 +75,7 @@ describe('Gateway v2 Client', () => {
         .rpc();
 
       // retrieves the gatekeeper
-      let gatekeeperAccount = await networkService.getGatekeeperAccount();
+      const gatekeeperAccount = await networkService.getGatekeeperAccount();
       // tests to see if the requested gatekeeper's associated network equals the adminAuthority (or network) public key
       expect(gatekeeperAccount?.gatekeeperNetwork.toBase58()).to.equal(
         networkDataAccount.toBase58()

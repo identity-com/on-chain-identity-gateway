@@ -55,7 +55,6 @@ describe('Gateway v2 Client', () => {
       expect(networkAccount).to.be.null;
     }).timeout(10000);
     it("Shouldn't allow a random authority to close the network", async function () {
-      let networkAccount = await service.getNetworkAccount();
       expect(
         service.closeNetwork(undefined, Keypair.generate().publicKey).rpc()
       ).to.be.eventually.rejected;

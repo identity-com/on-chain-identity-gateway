@@ -1,12 +1,10 @@
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import { AdminService } from '@identity.com/gateway_v2-client/src/AdminService';
 import { GatewayV2 } from '@identity.com/gateway_v2-idl/src/gateway_v2';
 import * as anchor from '@project-serum/anchor';
-import { airdrop } from '@identity.com/gateway_v2-client/src/lib/utils';
-import { expect, use } from 'chai';
+import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
-import { NetworkAccount } from '@identity.com/gateway_v2-client/src/lib/types';
 import { NetworkKeyFlags } from '@identity.com/gateway_v2-client/src/lib/constants';
 import { Wallet } from '@project-serum/anchor/dist/cjs/provider';
 import chaiAsPromised from 'chai-as-promised';
@@ -115,7 +113,7 @@ describe('Gateway v2 Client', () => {
       expect(networkAccount?.passExpireTime).to.equal(600);
     }).timeout(10000);
     it('Should add an authKey', async function () {
-      let authKeypair = Keypair.generate();
+      const authKeypair = Keypair.generate();
       let networkAccount = await service.getNetworkAccount();
       await service
         .updateNetwork({
@@ -293,7 +291,7 @@ describe('Gateway v2 Client', () => {
     }).timeout(10000);
     it('Can add fees correctly', async function () {
       let networkAccount = await service.getNetworkAccount();
-      let additionalFeeToken = Keypair.generate();
+      const additionalFeeToken = Keypair.generate();
       await service
         .updateNetwork({
           authThreshold: 1,

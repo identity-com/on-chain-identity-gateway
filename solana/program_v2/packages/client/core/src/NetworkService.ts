@@ -1,6 +1,6 @@
 import * as anchor from '@project-serum/anchor';
 import { AnchorProvider, Program } from '@project-serum/anchor';
-import { ConfirmOptions, Keypair, PublicKey } from '@solana/web3.js';
+import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 import {
   AuthKeyStructure,
   CreateGatekeeperData,
@@ -161,6 +161,7 @@ export class NetworkService extends AbstractService {
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .updateGatekeeper({
         authThreshold: data.authThreshold,
@@ -192,6 +193,7 @@ export class NetworkService extends AbstractService {
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .closeGatekeeper()
       .accounts({

@@ -2,13 +2,14 @@ import { PublicKey } from '@solana/web3.js';
 import { web3 } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
 
-import { GATEKEEPER_SEED, GATEWAY_PROGRAM } from './constants';
+import { GATEWAY_PROGRAM } from './constants';
+import { PassState } from './wrappers';
 
 export const airdrop = async (
   connection: web3.Connection,
   account: web3.PublicKey,
   amount = anchor.web3.LAMPORTS_PER_SOL
-) => {
+): Promise<void> => {
   const sigAirdrop = await connection.requestAirdrop(account, amount);
   const latestBlockHash = await connection.getLatestBlockhash();
 
@@ -20,10 +21,12 @@ export const airdrop = async (
 };
 
 type EnumMapping = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [name: string]: any;
 };
 
 type EnumType = {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   [name: string]: {};
 };
 
@@ -33,7 +36,7 @@ export const EnumMapper = {
    * @param obj The anchor enum object
    * @param mapping The enum to maps it to
    */
-  from(obj: EnumType, mapping: EnumMapping) {
+  from(obj: Record<string, unknown>, mapping: EnumMapping): PassState {
     for (const property in mapping) {
       if (property in obj) return mapping[property];
     }
@@ -41,9 +44,10 @@ export const EnumMapper = {
     throw new Error(`Invalid enum ${JSON.stringify(obj)}`);
   },
 
-  to(type: any, mapping: EnumMapping) {
+  to(type: unknown, mapping: EnumMapping): EnumType {
     for (const property in mapping) {
       if (type == mapping[property]) {
+        // eslint-disable-next-line @typescript-eslint/ban-types
         const obj: { [k: string]: {} } = {};
         obj[property] = {};
         return obj;
@@ -54,7 +58,10 @@ export const EnumMapper = {
   },
 };
 
-export const findProgramAddress = async (seed: string, authority: PublicKey) =>
+export const findProgramAddress = async (
+  seed: string,
+  authority: PublicKey
+): Promise<[PublicKey, number]> =>
   PublicKey.findProgramAddress(
     [anchor.utils.bytes.utf8.encode(seed), authority.toBuffer()],
     GATEWAY_PROGRAM

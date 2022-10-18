@@ -16,9 +16,8 @@ import {
   ExtendedCluster,
   getConnectionByCluster,
 } from './lib/connection';
-import { findProgramAddress } from './lib/utils';
 import { NETWORK_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
-import { GatewayV2, IDL } from '@identity.com/gateway_v2-idl';
+import { GatewayV2 } from '@identity.com/gateway_v2-idl';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
 export class AdminService extends AbstractService {
@@ -66,7 +65,7 @@ export class AdminService extends AbstractService {
 
   static async createNetworkAddress(
     authority: PublicKey,
-    networkIndex: number = 0
+    networkIndex = 0
   ): Promise<[PublicKey, number]> {
     const network_index_buffer = Buffer.alloc(2);
     network_index_buffer.writeInt16LE(networkIndex);
@@ -149,6 +148,7 @@ export class AdminService extends AbstractService {
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .updateNetwork({
         authThreshold: data.authThreshold,
@@ -199,6 +199,7 @@ export class AdminService extends AbstractService {
           return null;
         }
       });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     return networkAccount;
   }

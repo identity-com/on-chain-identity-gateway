@@ -3,13 +3,9 @@ import { NetworkService } from '@identity.com/gateway_v2-client/src/NetworkServi
 import { GatewayV2 } from '@identity.com/gateway_v2-idl/src/gateway_v2';
 import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import {
-  airdrop,
-  findProgramAddress,
-} from '@identity.com/gateway_v2-client/src/lib/utils';
+import { airdrop } from '@identity.com/gateway_v2-client/src/lib/utils';
 import { expect } from 'chai';
 import { describe } from 'mocha';
-import { NetworkAccount } from '@identity.com/gateway_v2-client/src/lib/types';
 
 describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -24,7 +20,7 @@ describe('Gateway v2 Client', () => {
 
   let adminAuthority: anchor.Wallet;
   let networkAuthority: anchor.Wallet;
-  let additionalAuthKey = Keypair.generate().publicKey;
+  const additionalAuthKey = Keypair.generate().publicKey;
 
   before(async () => {
     adminAuthority = new anchor.Wallet(Keypair.generate());
@@ -92,7 +88,7 @@ describe('Gateway v2 Client', () => {
         )
         .rpc();
       // retrieves the gatekeeper account
-      let gatekeeperAccount = await networkService.getGatekeeperAccount();
+      const gatekeeperAccount = await networkService.getGatekeeperAccount();
       // expects there to be an additional auth key matching the additionalKey defined above
       expect(
         gatekeeperAccount?.authKeys.filter(

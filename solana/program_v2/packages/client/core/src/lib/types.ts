@@ -80,7 +80,7 @@ export type SupportedToken = {
   settlementInfo: SettlementInfo;
 };
 
-export type SettlementInfo = {};
+export type SettlementInfo = unknown;
 
 export type CreateGatekeeperData = {
   tokenFees: FeeStructure[];
@@ -124,9 +124,9 @@ export type RawPassAccount = {
   network: PublicKey;
   gatekeeper: PublicKey;
   state: {
-    active?: {};
-    revoked?: {};
-    frozen?: {};
+    active?: unknown;
+    revoked?: unknown;
+    frozen?: unknown;
   };
   networkData: Uint8Array;
   gatekeeperData: Uint8Array;
