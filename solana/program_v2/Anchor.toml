@@ -1,3 +1,6 @@
+[workspace]
+types = "packages/client/idl/src/"
+
 [features]
 seeds = false
 
@@ -14,7 +17,7 @@ url = "https://anchor.projectserum.com"
 
 [provider]
 cluster = "localnet"
-wallet = "./tests/fixtures/keypairs/7aHML6LXPtEuUDu4Azv52KbgEqdSDk9syqFvCAE63ZT5.json"
+wallet = "./packages/tests/fixtures/keypairs/7aHML6LXPtEuUDu4Azv52KbgEqdSDk9syqFvCAE63ZT5.json"
 
 [scripts]
 createTestFixtureAccount = "./node_modules/.bin/ts-node ./scripts/createTestFixtureAccount.ts"

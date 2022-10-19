@@ -3,13 +3,12 @@ import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { exec as execCB } from 'child_process';
 import * as util from 'util';
 import { GatewayV2 } from '../target/types/gateway_v2';
-import { airdrop } from '../src/lib/utils';
-import { GATEWAY_PROGRAM } from '../src/lib/constants';
-import { AdminService } from '../src/AdminService';
-import { NetworkService } from '../src/NetworkService';
+import { airdrop } from '@identity.com/gateway_v2-client/src/lib/utils';
+import { AdminService } from '@identity.com/gateway_v2-client/src/AdminService';
+import { NetworkService } from '@identity.com/gateway_v2-client/src/NetworkService';
 import { createMint } from '@solana/spl-token';
 import * as fs from 'fs';
-import { setGatekeeperFlags } from '../tests/util/lib';
+import { setGatekeeperFlags } from '../packages/tests/src/util/lib';
 
 const exec = util.promisify(execCB);
 
@@ -73,6 +72,7 @@ const createTestTokenAccount = async () => {
 
   if (!(await accountExists(mintAccount.publicKey))) {
     // Create and save the mint
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const mint = await createMint(
       programProvider.connection,
       mintAuthority,
@@ -95,7 +95,7 @@ const createNetworkAccount = async (
   filename: string
 ) => {
   const authorityKeypair = await loadKeypair(authorityBase58, LAMPORTS_PER_SOL);
-  let authority = new anchor.Wallet(authorityKeypair);
+  const authority = new anchor.Wallet(authorityKeypair);
 
   const [dataAccount] = await AdminService.createNetworkAddress(
     authority.publicKey
@@ -128,7 +128,7 @@ const createGatekeeperAccount = async (
   filename: string
 ) => {
   const authorityKeypair = await loadKeypair(authorityBase58, LAMPORTS_PER_SOL);
-  let authority = new anchor.Wallet(authorityKeypair);
+  const authority = new anchor.Wallet(authorityKeypair);
 
   await airdrop(
     programProvider.connection,
@@ -182,27 +182,7 @@ const createGatekeeperAccount = async (
   );
 };
 
-// TODO (IDCOM-2108): This should be removed once the IDL refactor is done (remember to delete generated file)
-const saveIdl = async () => {
-  const idlAddr = await idlAddress(GATEWAY_PROGRAM);
-
-  // Deploy IDL
-  await exec(
-    `anchor idl init --filepath ./target/idl/gateway_v2.json ${GATEWAY_PROGRAM}`
-  );
-
-  await exec(
-    `solana account ${idlAddr.toBase58()} -ul -o ${accountsFixturePath}idl-account.json --output json`
-  );
-
-  // write account
-  console.log(`Saved IDL at ${idlAddr.toBase58()}`);
-};
-
 (async () => {
-  // TODO: Not working?!?
-  // await saveIdl();
-
   // Create the main network account to be used in tests
   const networkAccount = await createNetworkAccount(
     'B4951ZxztgHL98WT4eFUyaaRmsi6V4hBzkoYe1VSNweo',

@@ -1,6 +1,0 @@
-extends = ["./Test.base.toml"]
-
-# TODO: Remove this (IDCOM-2108)
-[[test.validator.account]]
-address = "7XWvA2XCeHw1HK7cu1ZECqodnyJLWaNsXSrGcwyDB65R"
-filename = "./fixtures/accounts/idl.json"
