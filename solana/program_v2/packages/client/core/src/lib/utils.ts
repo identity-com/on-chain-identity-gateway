@@ -20,6 +20,8 @@ export const airdrop = async (
   });
 };
 
+// TODO: Fix enum mapping by changing the Pass/GK State to be bitflags program-side
+
 type EnumMapping = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [name: string]: any;
