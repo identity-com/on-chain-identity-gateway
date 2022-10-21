@@ -12,8 +12,8 @@ import { setGatekeeperFlags } from '../packages/tests/src/util/lib';
 
 const exec = util.promisify(execCB);
 
-const accountsFixturePath = './tests/fixtures/accounts';
-const keypairsFixturePath = './tests/fixtures/keypairs';
+const accountsFixturePath = './packages/tests/fixtures/accounts';
+const keypairsFixturePath = './packages/tests/fixtures/keypairs';
 
 anchor.setProvider(anchor.AnchorProvider.env());
 const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
@@ -196,21 +196,21 @@ const createGatekeeperAccount = async (
   );
 
   // Create the main gatekeeper in the main network for tests
-  const gatekeeperAccount = await createGatekeeperAccount(
+  await createGatekeeperAccount(
     networkAccount,
     'B4951ZxztgHL98WT4eFUyaaRmsi6V4hBzkoYe1VSNweo',
     'gatekeeper'
   );
 
   // Create an alternative gatekeeper in the main network for tests
-  const altGatekeeperAccount = await createGatekeeperAccount(
+  await createGatekeeperAccount(
     networkAccount,
     'DuqrwqMDuVwgd2BNbCFQS5gwNuZcfgjuL6KpuvjGjaYa',
     'gatekeeper-alt'
   );
 
   // Create a gatekeeper in an alternative network for tests
-  const invalidGatekeeperAccount = await createGatekeeperAccount(
+  await createGatekeeperAccount(
     altNetworkAccount,
     '6ufu3BBssTiNhQ5ejtkNGfqksXQatAZ5aVFVPNQy8wu9',
     'gatekeeper-invalid'
