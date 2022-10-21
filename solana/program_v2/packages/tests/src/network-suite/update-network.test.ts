@@ -1,11 +1,11 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { AdminService } from '@identity.com/gateway_v2-client/src/AdminService';
-import { GatewayV2 } from '@identity.com/gateway_v2-idl/src/gateway_v2';
+import { AdminService } from '@identity.com/gateway-solana-client/src/AdminService';
+import { GatewayV2 } from '@identity.com/gateway-solana-idl/src/gateway_v2';
 import * as anchor from '@project-serum/anchor';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
-import { NetworkKeyFlags } from '@identity.com/gateway_v2-client/src/lib/constants';
+import { NetworkKeyFlags } from '@identity.com/gateway-solana-client/src/lib/constants';
 import { Wallet } from '@project-serum/anchor/dist/cjs/provider';
 import chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);

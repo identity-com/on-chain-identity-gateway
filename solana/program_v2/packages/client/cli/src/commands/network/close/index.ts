@@ -1,8 +1,8 @@
 import { Command, Flags } from '@oclif/core';
 // import { Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
 // // import * as anchor from "@project-serum/anchor";
-// import { AdminService } from '@identity.com/gateway-v2-client';
-// import { airdrop } from '@identity.com/gateway-v2-client';
+// import { AdminService } from '@identity.com/gateway-solana-client';
+// import { airdrop } from '@identity.com/gateway-solana-client';
 // import { Wallet } from '@project-serum/anchor';
 
 export default class Close extends Command {

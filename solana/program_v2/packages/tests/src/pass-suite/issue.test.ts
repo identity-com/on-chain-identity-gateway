@@ -1,5 +1,5 @@
-import { GatekeeperService } from '@identity.com/gateway_v2-client/src/GatekeeperService';
-import { PassState } from '@identity.com/gateway_v2-client/src/lib/wrappers';
+import { GatekeeperService } from '@identity.com/gateway-solana-client/src/GatekeeperService';
+import { PassState } from '@identity.com/gateway-solana-client/src/lib/wrappers';
 import { TEST_GATEKEEPER, TEST_NETWORK } from '../util/constants';
 import chai from 'chai';
 import { Keypair } from '@solana/web3.js';
