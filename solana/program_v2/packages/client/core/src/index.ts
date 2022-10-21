@@ -1,4 +1,4 @@
-export * from './AdminService';
-export * from './NetworkService';
-export * from './GatekeeperService';
+export { AdminService } from './AdminService';
+export { NetworkService } from './NetworkService';
+export { GatekeeperService } from './GatekeeperService';
 export * from './lib/types';
