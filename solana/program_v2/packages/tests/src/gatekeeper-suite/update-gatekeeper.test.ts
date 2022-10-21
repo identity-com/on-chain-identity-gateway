@@ -1,9 +1,11 @@
-import { AdminService } from '@identity.com/gateway-solana-client';
-import { NetworkService } from '@identity.com/gateway-solana-client';
+import {
+  AdminService,
+  NetworkService,
+  airdrop,
+} from '@identity.com/gateway-solana-client';
 import { GatewayV2 } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { airdrop } from '@identity.com/gateway-solana-client';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 

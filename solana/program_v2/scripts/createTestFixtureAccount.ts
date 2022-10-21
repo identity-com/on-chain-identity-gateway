@@ -3,9 +3,11 @@ import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { exec as execCB } from 'child_process';
 import * as util from 'util';
 import { GatewayV2 } from '../target/types/gateway_v2';
-import { airdrop } from '@identity.com/gateway-solana-client';
-import { AdminService } from '@identity.com/gateway-solana-client';
-import { NetworkService } from '@identity.com/gateway-solana-client';
+import {
+  airdrop,
+  AdminService,
+  NetworkService,
+} from '@identity.com/gateway-solana-client';
 import { createMint } from '@solana/spl-token';
 import * as fs from 'fs';
 import { setGatekeeperFlags } from '../packages/tests/src/util/lib';

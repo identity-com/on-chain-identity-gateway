@@ -1,6 +1,9 @@
 import * as anchor from '@project-serum/anchor';
-import { GatekeeperService } from '@identity.com/gateway-solana-client';
-import { airdrop } from '@identity.com/gateway-solana-client';
+import {
+  GatekeeperService,
+  NetworkService,
+  airdrop,
+} from '@identity.com/gateway-solana-client';
 import {
   TEST_GATEKEEPER,
   TEST_GATEKEEPER_AUTHORITY,
@@ -8,7 +11,6 @@ import {
 } from '../util/constants';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { GatewayV2 } from '@identity.com/gateway-solana-idl';
-import { NetworkService } from '@identity.com/gateway-solana-client';
 import { Wallet } from '@project-serum/anchor';
 import { loadPrivateKey } from '../util/lib';
 import { before } from 'mocha';
