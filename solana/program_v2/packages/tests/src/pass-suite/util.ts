@@ -1,14 +1,14 @@
 import * as anchor from '@project-serum/anchor';
-import { GatekeeperService } from '@identity.com/gateway-solana-client/src/GatekeeperService';
-import { airdrop } from '@identity.com/gateway-solana-client/src/lib/utils';
+import { GatekeeperService } from '@identity.com/gateway-solana-client';
+import { airdrop } from '@identity.com/gateway-solana-client';
 import {
   TEST_GATEKEEPER,
   TEST_GATEKEEPER_AUTHORITY,
   TEST_NETWORK,
 } from '../util/constants';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { GatewayV2 } from '@identity.com/gateway-solana-idl/src/gateway_v2';
-import { NetworkService } from '@identity.com/gateway-solana-client/src/NetworkService';
+import { GatewayV2 } from '@identity.com/gateway-solana-idl';
+import { NetworkService } from '@identity.com/gateway-solana-client';
 import { Wallet } from '@project-serum/anchor';
 import { loadPrivateKey } from '../util/lib';
 import { before } from 'mocha';

@@ -1,5 +1,5 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { NetworkService } from '@identity.com/gateway-solana-client/src/NetworkService';
+import { NetworkService } from '@identity.com/gateway-solana-client';
 import fsPromises from 'node:fs/promises';
 
 export const loadPrivateKey = async (

@@ -17,7 +17,7 @@ import {
   getConnectionByCluster,
 } from './lib/connection';
 import { NETWORK_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
-import { GatewayV2 } from '@identity.com/gateway-solana-idl/src/gateway_v2';
+import { GatewayV2 } from '@identity.com/gateway-solana-idl';
 import { AbstractService, ServiceBuilder } from './utils/AbstractService';
 
 export class AdminService extends AbstractService {

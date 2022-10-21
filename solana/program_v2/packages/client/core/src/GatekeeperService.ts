@@ -1,4 +1,4 @@
-import { GatewayV2 } from '@identity.com/gateway-solana-idl/src/gateway_v2';
+import { GatewayV2 } from '@identity.com/gateway-solana-idl';
 import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';

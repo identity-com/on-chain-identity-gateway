@@ -1,6 +1,6 @@
-import { PassState } from '@identity.com/gateway-solana-client/src/lib/wrappers';
+import { PassState } from '@identity.com/gateway-solana-client';
 import { createGatekeeperService } from './util';
-import { GatekeeperService } from '@identity.com/gateway-solana-client/src/GatekeeperService';
+import { GatekeeperService } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';

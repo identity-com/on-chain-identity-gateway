@@ -1,16 +1,13 @@
-import { AdminService } from '@identity.com/gateway-solana-client/src/AdminService';
-import { NetworkService } from '@identity.com/gateway-solana-client/src/NetworkService';
-import { GatewayV2 } from '@identity.com/gateway-solana-idl/src/gateway_v2';
+import { AdminService } from '@identity.com/gateway-solana-client';
+import { NetworkService } from '@identity.com/gateway-solana-client';
+import { GatewayV2 } from '@identity.com/gateway-solana-idl';
 import {
   GatekeeperState,
   GatekeeperStateMapping,
-} from '@identity.com/gateway-solana-client/src/lib/types';
+} from '@identity.com/gateway-solana-client';
 import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import {
-  airdrop,
-  EnumMapper,
-} from '@identity.com/gateway-solana-client/src/lib/utils';
+import { airdrop, EnumMapper } from '@identity.com/gateway-solana-client';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
