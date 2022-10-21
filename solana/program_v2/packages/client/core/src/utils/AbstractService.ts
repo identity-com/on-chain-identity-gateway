@@ -17,7 +17,7 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 //import idl
-import { GatewayV2, IDL } from '@identity.com/gateway_v2-idl/src/gateway_v2';
+import { GatewayV2, IDL } from '@identity.com/gateway-solana-idl';
 import { Wallet } from '../lib/types';
 
 import { ExtendedCluster } from '../lib/connection';

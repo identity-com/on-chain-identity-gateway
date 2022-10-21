@@ -1,13 +1,14 @@
 import { createGatekeeperService, createNetworkService } from './util';
-import { GatekeeperService } from '@identity.com/gateway_v2-client/src/GatekeeperService';
+import {
+  GatekeeperService,
+  NetworkService,
+  GatekeeperKeyFlags,
+} from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { NetworkService } from '@identity.com/gateway_v2-client/src/NetworkService';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { TEST_ALT_NETWORK, TEST_NETWORK } from '../util/constants';
 import { setGatekeeperFlags } from '../util/lib';
-import { GatekeeperKeyFlags } from '@identity.com/gateway_v2-client/src/lib/constants';
-
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
