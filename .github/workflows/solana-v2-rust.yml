@@ -219,7 +219,7 @@ jobs:
 
       - name: Install cli dependencies
         run: yarn install
-        working-directory: solana/program_v2/client/packages/cli
+        working-directory: solana/program_v2/packages/client/cli
 
       # - name: Download a single artifact
       #   uses: actions/download-artifact@v3
