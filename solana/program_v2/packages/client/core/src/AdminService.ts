@@ -19,7 +19,11 @@ import {
 } from './lib/connection';
 import { NETWORK_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2 } from '@identity.com/gateway-solana-idl';
-import { AbstractService, NonSigningWallet, ServiceBuilder } from './utils/AbstractService';
+import {
+  AbstractService,
+  NonSigningWallet,
+  ServiceBuilder,
+} from './utils/AbstractService';
 
 export class AdminService extends AbstractService {
   static async build(
@@ -29,12 +33,15 @@ export class AdminService extends AbstractService {
     options: GatewayServiceOptions = {}
   ): Promise<AdminService> {
     const wallet = options.wallet || new NonSigningWallet();
-    const confirmOptions = options.confirmOptions || AnchorProvider.defaultOptions();
-    const _connection = options.connection || getConnectionByCluster(
-      cluster,
-      confirmOptions.preflightCommitment,
-      customConfig
-    );
+    const confirmOptions =
+      options.confirmOptions || AnchorProvider.defaultOptions();
+    const _connection =
+      options.connection ||
+      getConnectionByCluster(
+        cluster,
+        confirmOptions.preflightCommitment,
+        customConfig
+      );
 
     const provider = new AnchorProvider(_connection, wallet, confirmOptions);
 

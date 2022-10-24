@@ -1,9 +1,6 @@
 import { PublicKey, Transaction } from '@solana/web3.js';
 import { BN } from '@project-serum/anchor';
-import {
-    ConfirmOptions,
-    Connection
-  } from '@solana/web3.js';
+import { ConfirmOptions, Connection } from '@solana/web3.js';
 
 export interface Wallet {
   signTransaction(tx: Transaction): Promise<Transaction>;
@@ -137,7 +134,7 @@ export type RawPassAccount = {
 };
 
 export type GatewayServiceOptions = {
-    connection?: Connection;
-    wallet?: Wallet;
-    confirmOptions?: ConfirmOptions;
+  connection?: Connection;
+  wallet?: Wallet;
+  confirmOptions?: ConfirmOptions;
 };
