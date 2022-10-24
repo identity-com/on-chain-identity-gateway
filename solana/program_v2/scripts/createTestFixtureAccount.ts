@@ -3,9 +3,11 @@ import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { exec as execCB } from 'child_process';
 import * as util from 'util';
 import { GatewayV2 } from '../target/types/gateway_v2';
-import { airdrop } from '@identity.com/gateway_v2-client/src/lib/utils';
-import { AdminService } from '@identity.com/gateway_v2-client/src/AdminService';
-import { NetworkService } from '@identity.com/gateway_v2-client/src/NetworkService';
+import {
+  airdrop,
+  AdminService,
+  NetworkService,
+} from '@identity.com/gateway-solana-client';
 import { createMint } from '@solana/spl-token';
 import * as fs from 'fs';
 import { setGatekeeperFlags } from '../packages/tests/src/util/lib';
@@ -196,21 +198,21 @@ const createGatekeeperAccount = async (
   );
 
   // Create the main gatekeeper in the main network for tests
-  const gatekeeperAccount = await createGatekeeperAccount(
+  await createGatekeeperAccount(
     networkAccount,
     'B4951ZxztgHL98WT4eFUyaaRmsi6V4hBzkoYe1VSNweo',
     'gatekeeper'
   );
 
   // Create an alternative gatekeeper in the main network for tests
-  const altGatekeeperAccount = await createGatekeeperAccount(
+  await createGatekeeperAccount(
     networkAccount,
     'DuqrwqMDuVwgd2BNbCFQS5gwNuZcfgjuL6KpuvjGjaYa',
     'gatekeeper-alt'
   );
 
   // Create a gatekeeper in an alternative network for tests
-  const invalidGatekeeperAccount = await createGatekeeperAccount(
+  await createGatekeeperAccount(
     altNetworkAccount,
     '6ufu3BBssTiNhQ5ejtkNGfqksXQatAZ5aVFVPNQy8wu9',
     'gatekeeper-invalid'

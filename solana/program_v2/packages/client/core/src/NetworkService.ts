@@ -23,7 +23,7 @@ import {
   GATEWAY_PROGRAM,
   SOLANA_MAINNET,
 } from './lib/constants';
-import { GatewayV2 } from '@identity.com/gateway_v2-idl/src/gateway_v2';
+import { GatewayV2 } from '@identity.com/gateway-solana-idl';
 import {
   AbstractService,
   NonSigningWallet,

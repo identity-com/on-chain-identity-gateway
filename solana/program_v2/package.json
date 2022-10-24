@@ -19,11 +19,11 @@
     "create-fixtures": "anchor run createTestFixtureAccount",
     "cargo:lint": "cargo fmt --manifest-path Cargo.toml --all",
     "cargo:fix": "cargo fmt --manifest-path Cargo.toml --all -- --check",
-    "build": "anchor build && yarn workspace @identity.com/gateway_v2-idl build && yarn workspace @identity.com/gateway_v2-client build && yarn workspace @identity.com/gateway-v2-cli build",
+    "build": "anchor build && yarn workspace @identity.com/gateway-solana-idl build && yarn workspace @identity.com/gateway-solana-client build && yarn workspace @identity.com/gateway-solana-cli build",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "lint:all": "yarn lint && yarn cargo:lint",
-    "test": "yarn workspace @identity.com/gateway_v2-program-tests build && anchor test",
+    "test": "yarn workspace @identity.com/gateway-solana-program-tests build && anchor test",
     "start-validator": "solana-test-validator --bpf-program FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe ./target/deploy/gateway_v2.so --reset",
     "prepare": "cd ../../ && husky install solana/program_v2/.husky"
   },
