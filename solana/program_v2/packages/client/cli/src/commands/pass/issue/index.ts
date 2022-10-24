@@ -1,4 +1,6 @@
+// import { GatekeeperService } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
+// import { Keypair, PublicKey } from '@solana/web3.js';
 
 export default class Hello extends Command {
   static description = 'Say hello';
@@ -22,10 +24,14 @@ hello friend from oclif! (./src/commands/hello/index.ts)
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(Hello);
-
-    this.log(
-      `hello ${args.person} from ${flags.from}! (./src/commands/hello/index.ts)`
-    );
+    // const { args, flags } = await this.parse(Hello);
+    // const service = await GatekeeperService.build();
+    // const subject = Keypair.generate().publicKey;
+    // const account = await GatekeeperService.createPassAddress(
+    //   subject,
+    //   new PublicKey('F75rU4fRqxiqG6gJCjkqaPHAARbmc276Y6ENrCTLPs6G')
+    // );
+    // await service.issue(account, subject).rpc();
+    // const pass = await service.getPassAccount(subject);
   }
 }
