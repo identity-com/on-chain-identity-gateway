@@ -91,14 +91,14 @@ export const findGatewayToken = async (
   return program.account.pass.fetchNullable(address).then(PassAccount.from);
 };
 
-export const onGatewayToken: number = async (
+export const onGatewayToken = async (
   connection: Connection,
   network: PublicKey,
   subject: PublicKey,
   passNumber = 0,
   callback: (pass: PassAccount) => void,
   opts: ConfirmOptions = AnchorProvider.defaultOptions()
-) => {
+): Promise<number> => {
   const provider = new AnchorProvider(connection, new NonSigningWallet(), opts);
   const program = await AbstractService.fetchProgram(provider);
 
