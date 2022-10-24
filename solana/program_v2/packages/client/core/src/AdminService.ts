@@ -6,6 +6,7 @@ import {
   AuthKeyStructure,
   CreateNetworkData,
   FeeStructure,
+  GatewayServiceOptions,
   NetworkAccount,
   UpdateNetworkData,
   Wallet,
@@ -18,23 +19,24 @@ import {
 } from './lib/connection';
 import { NETWORK_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2 } from '@identity.com/gateway_v2-idl/src/gateway_v2';
-import { AbstractService, ServiceBuilder } from './utils/AbstractService';
+import { AbstractService, NonSigningWallet, ServiceBuilder } from './utils/AbstractService';
 
 export class AdminService extends AbstractService {
   static async build(
     dataAccount: PublicKey,
-    wallet: Wallet,
     cluster: ExtendedCluster = SOLANA_MAINNET,
     customConfig?: CustomClusterUrlConfig,
-    opts: ConfirmOptions = AnchorProvider.defaultOptions()
+    options: GatewayServiceOptions = {}
   ): Promise<AdminService> {
-    const _connection = getConnectionByCluster(
+    const wallet = options.wallet || new NonSigningWallet();
+    const confirmOptions = options.confirmOptions || AnchorProvider.defaultOptions();
+    const _connection = options.connection || getConnectionByCluster(
       cluster,
-      opts.preflightCommitment,
+      confirmOptions.preflightCommitment,
       customConfig
     );
 
-    const provider = new AnchorProvider(_connection, wallet, opts);
+    const provider = new AnchorProvider(_connection, wallet, confirmOptions);
 
     const program = await AdminService.fetchProgram(provider);
 
