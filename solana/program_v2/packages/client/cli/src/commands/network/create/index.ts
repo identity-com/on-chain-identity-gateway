@@ -38,14 +38,10 @@ Latest Blockhash: [blockhash]
     const { flags } = await this.parse(Create);
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : null;
+      : await fsPromises.readFile(`${__dirname}/test-keypair.json`);
 
-    const privateKey = localSecretKey
-      ? Uint8Array.from(JSON.parse(localSecretKey.toString()))
-      : null;
-    const authorityKeypair = privateKey
-      ? Keypair.fromSecretKey(privateKey)
-      : Keypair.generate();
+    const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
+    const authorityKeypair = Keypair.fromSecretKey(privateKey);
 
     const authority = new Wallet(authorityKeypair);
     this.log(`Admin Authority: ${authority.publicKey.toBase58()}`);

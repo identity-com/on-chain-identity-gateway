@@ -1,9 +1,9 @@
 import { Command, Flags } from '@oclif/core';
-// import { Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
-// // import * as anchor from "@project-serum/anchor";
-// import { AdminService } from '@identity.com/gateway-solana-client';
-// import { airdrop } from '@identity.com/gateway-solana-client';
-// import { Wallet } from '@project-serum/anchor';
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+// import * as anchor from '@project-serum/anchor';
+import { AdminService, airdrop } from '@identity.com/gateway-solana-client';
+import { Wallet } from '@project-serum/anchor';
+import fsPromises from 'node:fs/promises';
 
 export default class Close extends Command {
   static description = 'Closes a gatekeeper network';
@@ -26,6 +26,7 @@ network closed
     network: Flags.string({
       char: 'n',
       description: 'The network id',
+      required: true,
     }),
     // TODO: Change to required: true
     funder: Flags.string({
@@ -47,45 +48,49 @@ network closed
 
   async run(): Promise<void> {
     this.log('run');
-    //   const { flags } = await this.parse(Close);
+    const { flags } = await this.parse(Close);
 
-    //   // TODO: Remove second option... necessary to pass program ID in with cli
-    //   const programId = flags.program
-    //     ? flags.program
-    //     : 'FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe';
+    // 'FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe';
+    // const programId = new PublicKey(flags.program);
+    const network = new PublicKey(flags.network);
 
-    //   // eslint-disable-next-line unicorn/prefer-module
-    //   const localSecretKey = require(flags.funder);
-    //   const funder = localSecretKey
-    //     ? Keypair.fromSecretKey(Buffer.from(localSecretKey))
-    //     : Keypair.generate();
+    const localSecretKey = flags.funder
+      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
+      : await fsPromises.readFile(`${__dirname}/test-keypair.json`);
 
-    //   // TODO: If program ID and and network match, and maybe a secret key? then close the network
+    const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
+    const authorityKeypair = Keypair.fromSecretKey(privateKey);
 
-    //   const [network] = await AdminService.createNetworkAddress(programId);
+    const authorityWallet = new Wallet(authorityKeypair);
+    this.log(`Admin Authority: ${authorityKeypair.publicKey.toBase58()}`);
 
-    //   const gatewayService = await GatewayService.build(
-    //     network,
-    //     new Wallet(funder),
-    //     flags.cluster ? flags.cluster : 'localnet'
-    //   );
+    const [dataAccount] = await AdminService.createNetworkAddress(
+      authorityKeypair.publicKey,
+      0
+    );
 
-    //   this.log('before airdrop');
-    //   await airdrop(
-    //     gatewayService.getConnection(),
-    //     funder.publicKey,
-    //     LAMPORTS_PER_SOL
-    //   );
-    //   this.log('after airdrop');
+    const service = await AdminService.build(
+      dataAccount,
+      authorityWallet,
+      'localnet'
+    );
 
-    //   const closedNetworkSignature = await gatewayService.closeNetwork().rpc();
-    //   this.log(`--${closedNetworkSignature}`);
-    //   this.log('network closed');
-    // }
+    this.log('before airdrop');
+    await airdrop(
+      service.getConnection(),
+      authorityWallet.publicKey,
+      LAMPORTS_PER_SOL
+    );
+
+    const networkAccount = await service.getNetworkAccount(network);
+    this.log(`Network Account: ${networkAccount}`);
+
+    const closedNetworkSignature = await service.closeNetwork().rpc();
+    this.log(`Transaction Signature: ${closedNetworkSignature}`);
   }
-
-  // programId: PublicKey,
-  // network: Keypair,
-  // funder: Keypair,
-  // networkData: NetworkData
 }
+
+// programId: PublicKey,
+// network: Keypair,
+// funder: Keypair,
+// networkData: NetworkData
