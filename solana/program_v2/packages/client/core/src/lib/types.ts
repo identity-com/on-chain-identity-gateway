@@ -1,10 +1,7 @@
 import { PublicKey, Transaction } from '@solana/web3.js';
 import { BN } from '@project-serum/anchor';
 import { ConfirmOptions, Connection } from '@solana/web3.js';
-import {
-    CustomClusterUrlConfig,
-    ExtendedCluster
-} from './connection';
+import { CustomClusterUrlConfig, ExtendedCluster } from './connection';
 
 export interface Wallet {
   signTransaction(tx: Transaction): Promise<Transaction>;

@@ -29,7 +29,7 @@ export class AdminService extends AbstractService {
   static async build(
     dataAccount: PublicKey,
     options: GatewayServiceOptions = {
-        clusterType: SOLANA_MAINNET,
+      clusterType: SOLANA_MAINNET,
     }
   ): Promise<AdminService> {
     const wallet = options.wallet || new NonSigningWallet();
@@ -61,9 +61,9 @@ export class AdminService extends AbstractService {
     dataAccount: PublicKey,
     provider: AnchorProvider = program.provider as AnchorProvider,
     options: GatewayServiceOptions = {
-        clusterType: SOLANA_MAINNET,
+      clusterType: SOLANA_MAINNET,
     },
-    wallet: Wallet = provider.wallet,
+    wallet: Wallet = provider.wallet
   ): Promise<AdminService> {
     return new AdminService(
       program,
