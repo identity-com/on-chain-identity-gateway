@@ -51,7 +51,7 @@ export class AdminService extends AbstractService {
       program,
       dataAccount,
       options.clusterType,
-      provider.wallet,
+      wallet,
       provider.opts
     );
   }
@@ -59,17 +59,17 @@ export class AdminService extends AbstractService {
   static async buildFromAnchor(
     program: Program<GatewayV2>,
     dataAccount: PublicKey,
-    provider: AnchorProvider = program.provider as AnchorProvider,
     options: GatewayServiceOptions = {
       clusterType: SOLANA_MAINNET,
     },
+    provider: AnchorProvider = program.provider as AnchorProvider,
     wallet: Wallet = provider.wallet
   ): Promise<AdminService> {
     return new AdminService(
       program,
       dataAccount,
       options.clusterType,
-      wallet ? wallet : provider.wallet,
+      wallet,
       provider.opts
     );
   }

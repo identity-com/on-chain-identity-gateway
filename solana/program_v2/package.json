@@ -47,5 +47,8 @@
     "semi": true,
     "singleQuote": true,
     "trailingComma": "es5"
+  },
+  "dependencies": {
+    "@identity.com/gateway-solana-client": "^2.0.0-beta.0"
   }
 }
