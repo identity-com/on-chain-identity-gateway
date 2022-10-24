@@ -1,23 +1,14 @@
-import {
-  AdminService,
-  // AdminService,
-  airdrop,
-  NetworkService,
-} from '@identity.com/gateway-solana-client';
+import { airdrop, NetworkService } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
-import {
-  Connection,
-  Keypair,
-  LAMPORTS_PER_SOL,
-  PublicKey,
-} from '@solana/web3.js';
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import fsPromises from 'node:fs/promises';
 
 export default class Create extends Command {
   static description = 'Creates a gatekeeper on an existing network';
 
   static examples = [
-    `$ gateway gatekeeper create --network [address] --funder ./funder-keypair.json
+    `$ gateway gatekeeper create --network [address] --funder [path_to_funder_key]
 `,
   ];
 
@@ -39,42 +30,38 @@ export default class Create extends Command {
 
   async run(): Promise<void> {
     const { flags } = await this.parse(Create);
-    const authority = Keypair.generate();
     const networkAddress = new PublicKey(flags.network);
-    const wallet = new Wallet(authority);
     const stakingAccount = Keypair.generate().publicKey;
+    const gkAddress = Keypair.generate().publicKey;
 
-    const [gatekeeperAddress] = await NetworkService.createGatekeeperAddress(
-      authority.publicKey,
+    const localSecretKey = flags.funder
+      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
+      : await fsPromises.readFile(`${__dirname}/gk-keypair.json`);
+
+    const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
+    const authorityKeypair = Keypair.fromSecretKey(privateKey);
+    const authorityWallet = new Wallet(authorityKeypair);
+
+    const [dataAccount] = await NetworkService.createGatekeeperAddress(
+      authorityWallet.publicKey,
       networkAddress
     );
-    this.log(`Gatekeeper Address: ${gatekeeperAddress}`);
-
-    // const adminService = await AdminService.build(
-    //   networkAddress,
-    //   wallet,
-    //   'localnet'
-    // );
-    const dataAccount = await AdminService.fetchProgram({
-      connection: new Connection('http://localhost:8899'),
-      publicKey: networkAddress,
-    });
-    this.log(`Network Data Account: ${dataAccount.programId}`);
+    this.log(`Gatekeeper Address: ${dataAccount}`);
 
     const networkService = await NetworkService.build(
-      gatekeeperAddress,
-      dataAccount.programId,
-      wallet,
+      gkAddress,
+      dataAccount,
+      authorityWallet,
       'localnet'
     );
     await airdrop(
       networkService.getConnection(),
-      authority.publicKey,
+      authorityWallet.publicKey,
       LAMPORTS_PER_SOL * 2
     );
 
     const gatekeeperSignature = await networkService
-      .createGatekeeper(dataAccount.programId, stakingAccount)
+      .createGatekeeper(networkAddress, stakingAccount)
       .rpc();
 
     this.log(`Gatekeeper Signature: ${gatekeeperSignature}`);
