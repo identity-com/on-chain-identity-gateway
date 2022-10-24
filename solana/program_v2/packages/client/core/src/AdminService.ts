@@ -28,9 +28,9 @@ import {
 export class AdminService extends AbstractService {
   static async build(
     dataAccount: PublicKey,
-    cluster: ExtendedCluster = SOLANA_MAINNET,
-    customConfig?: CustomClusterUrlConfig,
-    options: GatewayServiceOptions = {}
+    options: GatewayServiceOptions = {
+        clusterType: SOLANA_MAINNET,
+    }
   ): Promise<AdminService> {
     const wallet = options.wallet || new NonSigningWallet();
     const confirmOptions =
@@ -38,9 +38,9 @@ export class AdminService extends AbstractService {
     const _connection =
       options.connection ||
       getConnectionByCluster(
-        cluster,
+        options.clusterType,
         confirmOptions.preflightCommitment,
-        customConfig
+        options.customConfig
       );
 
     const provider = new AnchorProvider(_connection, wallet, confirmOptions);
@@ -50,8 +50,8 @@ export class AdminService extends AbstractService {
     return new AdminService(
       program,
       dataAccount,
-      cluster,
-      wallet,
+      options.clusterType,
+      provider.wallet,
       provider.opts
     );
   }
@@ -59,15 +59,17 @@ export class AdminService extends AbstractService {
   static async buildFromAnchor(
     program: Program<GatewayV2>,
     dataAccount: PublicKey,
-    cluster: ExtendedCluster,
     provider: AnchorProvider = program.provider as AnchorProvider,
-    wallet: Wallet = provider.wallet
+    options: GatewayServiceOptions = {
+        clusterType: SOLANA_MAINNET,
+    },
+    wallet: Wallet = provider.wallet,
   ): Promise<AdminService> {
     return new AdminService(
       program,
       dataAccount,
-      cluster,
-      wallet,
+      options.clusterType,
+      wallet ? wallet : provider.wallet,
       provider.opts
     );
   }
