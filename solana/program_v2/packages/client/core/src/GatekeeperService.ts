@@ -302,12 +302,17 @@ export class GatekeeperService extends AbstractService {
     subject: PublicKey,
     passNumber = 0
   ): Promise<PassAccount | null> {
-    return findGatewayToken(
-      this.getConnection(),
-      this._gatekeeper,
+    const account = await GatekeeperService.createPassAddress(
       subject,
-      passNumber,
-      this._opts
+      this._network,
+      passNumber
+    );
+    return (
+      this.getProgram()
+        .account.pass.fetchNullable(account)
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        .then(PassAccount.from)
     );
   }
 
