@@ -47,7 +47,6 @@ network closed
   static args = [];
 
   async run(): Promise<void> {
-    this.log('run');
     const { flags } = await this.parse(Close);
 
     // 'FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe';
