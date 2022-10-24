@@ -5,7 +5,7 @@ import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
 import { Wallet } from './lib/types';
 
-import { EnumMapper } from './lib/utils';
+import { EnumMapper, findGatewayToken } from './lib/utils';
 import {
   DEFAULT_PASS_SEED,
   GATEWAY_PROGRAM,
@@ -302,17 +302,12 @@ export class GatekeeperService extends AbstractService {
     subject: PublicKey,
     passNumber = 0
   ): Promise<PassAccount | null> {
-    const account = await GatekeeperService.createPassAddress(
+    return findGatewayToken(
+      this.getConnection(),
+      this._gatekeeper,
       subject,
-      this._network,
-      passNumber
-    );
-    return (
-      this.getProgram()
-        .account.pass.fetchNullable(account)
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        .then(PassAccount.from)
+      passNumber,
+      this._opts
     );
   }
 

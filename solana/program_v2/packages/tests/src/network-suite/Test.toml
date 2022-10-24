@@ -1,4 +1,0 @@
-extends = ["../../Test.base.account.toml"]
-
-[scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/src/network-suite/**/*.ts"

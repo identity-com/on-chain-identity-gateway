@@ -1,9 +1,12 @@
-import { PublicKey } from '@solana/web3.js';
-import { web3 } from '@project-serum/anchor';
+import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
+import { AnchorProvider, web3 } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
 
 import { GATEWAY_PROGRAM } from './constants';
-import { PassState } from './wrappers';
+import { PassAccount, PassState } from './wrappers';
+import { AbstractService, NonSigningWallet } from '../utils/AbstractService';
+import { GatekeeperService } from '../GatekeeperService';
+import { RawPassAccount } from './types';
 
 export const airdrop = async (
   connection: web3.Connection,
@@ -68,3 +71,56 @@ export const findProgramAddress = async (
     [anchor.utils.bytes.utf8.encode(seed), authority.toBuffer()],
     GATEWAY_PROGRAM
   );
+
+export const findGatewayToken = async (
+  connection: Connection,
+  gatekeeperNetwork: PublicKey,
+  subject: PublicKey,
+  passNumber = 0,
+  opts: ConfirmOptions = AnchorProvider.defaultOptions()
+): Promise<PassAccount | null> => {
+  const provider = new AnchorProvider(connection, new NonSigningWallet(), opts);
+  const program = await AbstractService.fetchProgram(provider);
+
+  const address = await GatekeeperService.createPassAddress(
+    subject,
+    gatekeeperNetwork,
+    passNumber
+  );
+
+  return program.account.pass.fetchNullable(address).then(PassAccount.from);
+};
+
+export const onGatewayToken: number = async (
+  connection: Connection,
+  network: PublicKey,
+  subject: PublicKey,
+  passNumber = 0,
+  callback: (pass: PassAccount) => void,
+  opts: ConfirmOptions = AnchorProvider.defaultOptions()
+) => {
+  const provider = new AnchorProvider(connection, new NonSigningWallet(), opts);
+  const program = await AbstractService.fetchProgram(provider);
+
+  const address = await GatekeeperService.createPassAddress(
+    subject,
+    network,
+    passNumber
+  );
+
+  return connection.onAccountChange(
+    address,
+    async (accountInfo: anchor.web3.AccountInfo<Buffer>) => {
+      // Manually deserialize from the account info
+      const rawAccount: RawPassAccount = program.coder.accounts.decode(
+        'pass',
+        accountInfo.data
+      );
+
+      const pass = PassAccount.from(rawAccount);
+
+      if (pass) callback(pass);
+    },
+    opts.commitment
+  );
+};

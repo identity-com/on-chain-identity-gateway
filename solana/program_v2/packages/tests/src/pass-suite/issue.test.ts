@@ -1,6 +1,8 @@
 import {
   GatekeeperService,
+  PassAccount,
   PassState,
+  onGatewayToken,
 } from '@identity.com/gateway-solana-client';
 import { TEST_GATEKEEPER, TEST_NETWORK } from '../util/constants';
 import chai from 'chai';
@@ -38,5 +40,36 @@ describe('Issue pass', () => {
     // CHECK: that the issueTime is recent (is this best?)
     expect(pass?.issueTime).to.be.greaterThan(new Date().getTime() - 5000);
     expect(pass?.issueTime).to.be.lessThan(new Date().getTime() + 5000);
+  });
+
+  it('listens for a gateway pass to be created', async () => {
+    // The promise will resolve when the token is created
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    let heardCreationCallback: (pass: PassAccount) => void = () => {};
+
+    const heardCreation = new Promise((resolve) => {
+      heardCreationCallback = resolve;
+    });
+
+    const subject = Keypair.generate().publicKey;
+
+    const subscriptionId = await onGatewayToken(
+      service.getConnection(),
+      TEST_NETWORK,
+      subject,
+      0,
+      heardCreationCallback
+    );
+
+    const account = await GatekeeperService.createPassAddress(
+      subject,
+      TEST_NETWORK
+    );
+
+    service.issue(account, subject).rpc();
+
+    await heardCreation;
+
+    await service.getConnection().removeAccountChangeListener(subscriptionId);
   });
 });
