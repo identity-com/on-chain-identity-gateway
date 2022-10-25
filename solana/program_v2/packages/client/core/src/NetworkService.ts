@@ -96,13 +96,17 @@ export class NetworkService extends AbstractService {
   // Creates a gatekeeper's public key from a given seed and authority.
   static async createGatekeeperAddress(
     authority: PublicKey,
-    network: PublicKey
+    network: PublicKey,
+    gatekeeperIndex: number
   ): Promise<[PublicKey, number]> {
+    const gatekeeper_index_buffer = Buffer.alloc(2);
+    gatekeeper_index_buffer.writeInt16LE(gatekeeperIndex);
     return PublicKey.findProgramAddress(
       [
         anchor.utils.bytes.utf8.encode(GATEKEEPER_SEED),
         authority.toBuffer(),
         network.toBuffer(),
+        gatekeeper_index_buffer,
       ],
       GATEWAY_PROGRAM
     );
@@ -129,10 +133,12 @@ export class NetworkService extends AbstractService {
       authThreshold: 1,
       authKeys: [
         {
-          flags: GatekeeperKeyFlags.AUTH,
+          // TODO: Set default flags to 1
+          flags: 4095,
           key: this._gatekeeper,
         },
       ],
+      gatekeeperIndex: 0,
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
@@ -141,6 +147,7 @@ export class NetworkService extends AbstractService {
         tokenFees: data.tokenFees,
         authThreshold: data.authThreshold,
         authKeys: data.authKeys,
+        gatekeeperIndex: data.gatekeeperIndex,
       })
       .accounts({
         gatekeeper: this._gatekeeperAccount,

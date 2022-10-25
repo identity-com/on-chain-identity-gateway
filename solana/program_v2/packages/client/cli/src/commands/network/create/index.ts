@@ -24,17 +24,22 @@ Latest Blockhash: [blockhash]
       description: 'Path to a solana keypair',
       required: false,
     }),
+    // TODO: Implement Properly
     cluster: Flags.string({
       char: 'c',
       description: 'The cluster you wish to use',
       required: false,
+    }),
+    index: Flags.integer({
+      char: 'i',
+      description: 'The index of the network to create',
+      required: true,
     }),
   };
 
   static args = [];
 
   async run(): Promise<void> {
-    this.log('run');
     const { flags } = await this.parse(Create);
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
@@ -42,13 +47,15 @@ Latest Blockhash: [blockhash]
 
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
+    const networkIndex = flags.index;
+    this.log(`Network Index: ${networkIndex}`);
 
     const authority = new Wallet(authorityKeypair);
     this.log(`Admin Authority: ${authority.publicKey.toBase58()}`);
 
     const [dataAccount] = await AdminService.createNetworkAddress(
       authority.publicKey,
-      0
+      networkIndex
     );
     this.log(`Network Address: ${dataAccount}`);
     const adminService = await AdminService.build(
@@ -61,8 +68,18 @@ Latest Blockhash: [blockhash]
       authority.publicKey,
       LAMPORTS_PER_SOL * 2
     );
-
-    const networkSignature = await adminService.createNetwork().rpc();
+    const networkData = {
+      authThreshold: 1,
+      passExpireTime: 16,
+      fees: [],
+      authKeys: [{ flags: 4095, key: authority.publicKey }],
+      networkIndex: networkIndex,
+      gatekeepers: [],
+      supportedTokens: [],
+    };
+    const networkSignature = await adminService
+      .createNetwork(networkData)
+      .rpc();
 
     this.log(`Network Signature: ${networkSignature}`);
   }

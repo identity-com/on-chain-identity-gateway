@@ -1,7 +1,10 @@
 // import { GatekeeperService } from '@identity.com/gateway-solana-client';
-import { GatekeeperService } from '@identity.com/gateway-solana-client';
+import {
+  airdrop,
+  GatekeeperService,
+} from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 import { Wallet } from '@project-serum/anchor';
 
@@ -44,7 +47,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
 
     const subject = flags.subject
       ? new PublicKey(flags.subject)
-      : new PublicKey('EN2jJhd8j75vb8svcQ1hV8VCdz8osUQz7LcWesN1Lbkd');
+      : new PublicKey('F75rU4fRqxiqG6gJCjkqaPHAARbmc276Y6ENrCTLPs6G');
     const network = new PublicKey(flags.network);
     const gatekeeper = new PublicKey(flags.gatekeeper);
     const localSecretKey = flags.funder
@@ -61,6 +64,12 @@ hello friend from oclif! (./src/commands/hello/index.ts)
       gatekeeper,
       authorityWallet,
       'localnet'
+    );
+
+    await airdrop(
+      gatekeeperService.getConnection(),
+      authorityWallet.publicKey,
+      LAMPORTS_PER_SOL * 2
     );
 
     const account = await GatekeeperService.createPassAddress(subject, network);
