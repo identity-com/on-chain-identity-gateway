@@ -15,14 +15,6 @@ network closed
   ];
 
   static flags = {
-    // TODO: Change to required: true
-    program: Flags.string({
-      char: 'p',
-      description: 'The program id',
-      hidden: false,
-      multiple: false,
-      required: false,
-    }),
     network: Flags.string({
       char: 'n',
       description: 'The network id',
@@ -49,8 +41,6 @@ network closed
   async run(): Promise<void> {
     const { flags } = await this.parse(Close);
 
-    // 'FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe';
-    // const programId = new PublicKey(flags.program);
     const network = new PublicKey(flags.network);
 
     const localSecretKey = flags.funder
@@ -61,35 +51,20 @@ network closed
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
 
     const authorityWallet = new Wallet(authorityKeypair);
-    this.log(`Admin Authority: ${authorityKeypair.publicKey.toBase58()}`);
-
-    const [dataAccount] = await AdminService.createNetworkAddress(
-      authorityKeypair.publicKey,
-      0
-    );
 
     const service = await AdminService.build(
-      dataAccount,
+      network,
       authorityWallet,
       'localnet'
     );
 
-    this.log('before airdrop');
     await airdrop(
       service.getConnection(),
       authorityWallet.publicKey,
       LAMPORTS_PER_SOL
     );
 
-    const networkAccount = await service.getNetworkAccount(network);
-    this.log(`Network Account: ${networkAccount}`);
-
     const closedNetworkSignature = await service.closeNetwork().rpc();
-    this.log(`Transaction Signature: ${closedNetworkSignature}`);
+    this.log(`Network Closure TX Signature: ${closedNetworkSignature}`);
   }
 }
-
-// programId: PublicKey,
-// network: Keypair,
-// funder: Keypair,
-// networkData: NetworkData

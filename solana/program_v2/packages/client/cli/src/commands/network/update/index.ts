@@ -1,39 +1,45 @@
 import { Command, Flags } from '@oclif/core';
-// import { Wallet } from '@project-serum/anchor';
-// import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-// import { readFileSync } from 'node:fs';
-// import { GatewayService } from 'solana/program_v2/src/AdminService';
-// import { FeeStructure } from '@identity.com/solana-gateway-ts-v2/src/lib/types';
-// import { airdrop } from '@identity.com/solana-gateway-ts-v2/src/lib/utils';
-// import { readJSONSync } from "fs-extra";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+// import * as anchor from '@project-serum/anchor';
+import {
+  AdminService,
+  airdrop,
+  UpdateNetworkData,
+} from '@identity.com/gateway-solana-client';
+import { Wallet } from '@project-serum/anchor';
+import fsPromises from 'node:fs/promises';
 
-// import { updateNetwork } from "../../../utils/update-network";
-export default class Update extends Command {
-  static description = 'Updates a gatekeeper network';
+export default class Close extends Command {
+  static description = 'Closes a gatekeeper network';
 
   static examples = [
-    `$ gateway network update --data ./network.json --key ./funder-key.json
-Latest Blockhash: [blockhash]
+    `$ gateway network close
+network closed
 `,
   ];
 
   static flags = {
-    help: Flags.help({ char: 'h' }),
+    network: Flags.string({
+      char: 'n',
+      description: 'The network id',
+      required: true,
+    }),
     data: Flags.string({
       char: 'd',
-      description: 'Path to network data',
+      description:
+        'Path to a JSON data file representing the new state of the network',
+      required: true,
+    }),
+    // TODO: Change to required: true
+    funder: Flags.string({
+      char: 'f',
+      description: 'The funder account',
       required: false,
     }),
-    key: Flags.string({
-      char: 'k',
-      description: 'Path to a solana keypair',
-      required: false,
-    }),
-    program: Flags.string({
-      char: 'p',
-      description: 'The program id',
-      hidden: false,
-      multiple: false,
+    // TODO: Is this necessary?
+    cluster: Flags.string({
+      char: 'c',
+      description: 'The type of cluster',
       required: false,
     }),
   };
@@ -41,61 +47,38 @@ Latest Blockhash: [blockhash]
   static args = [];
 
   async run(): Promise<void> {
-    this.log('Update');
-    //   const { flags } = await this.parse(Update);
-    //   const programId = flags.program
-    //     ? flags.program
-    //     : 'FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe';
-    //   // eslint-disable-next-line unicorn/prefer-module
-    //   const localSecretKey = flags.key ? require(flags.key) : null;
-    //   const funder = localSecretKey
-    //     ? Keypair.fromSecretKey(Buffer.from(localSecretKey))
-    //     : Keypair.generate();
-    //   const suppliedDataFile = readFileSync(flags.data).toString();
-    //   const updateData = suppliedDataFile
-    //     ? JSON.parse(suppliedDataFile)
-    //     : {
-    //         authThreshold: 1,
-    //         passExpireTime: 600,
-    //         fees: {
-    //           add: [
-    //             {
-    //               token: Keypair.generate().publicKey,
-    //               issue: 1,
-    //               refresh: 2,
-    //               expire: 3,
-    //               verify: 4,
-    //             },
-    //           ],
-    //           remove: [],
-    //         },
-    //         authKeys: {
-    //           add: [],
-    //           remove: [],
-    //         },
-    //       };
+    const { flags } = await this.parse(Close);
 
-    //   const [network] = await GatewayService.createNetworkAddress(programId);
-    //   const gatewayService = await GatewayService.build(
-    //     network,
-    //     new Wallet(funder),
-    //     // TODO: mainnet is default
-    //     'localnet'
-    //   );
-    //   // TODO: Remove airdrop
-    //   await airdrop(
-    //     gatewayService.getConnection(),
-    //     funder.publicKey,
-    //     LAMPORTS_PER_SOL
-    //   );
-    //   updateData.fees = updateData.fees.map((fee: FeeStructure) => {
-    //     fee.token = new PublicKey(fee.token);
-    //     return fee;
-    //   });
+    const network = new PublicKey(flags.network);
+    const data = await fsPromises.readFile(`${__dirname}/${flags.data}`);
+    // TODO!: Parse this data correctly so that it matches to UpdateNetworkData
+    const parsedData = JSON.parse(data.toLocaleString()) as UpdateNetworkData;
+    const localSecretKey = flags.funder
+      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
+      : await fsPromises.readFile(`${__dirname}/../../../admin-keypair.json`);
 
-    //   const createdNetworkSignature = await gatewayService
-    //     .updateNetwork(updateData)
-    //     .rpc();
-    //   this.log(`--${createdNetworkSignature}`);
+    const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
+    const authorityKeypair = Keypair.fromSecretKey(privateKey);
+
+    const authorityWallet = new Wallet(authorityKeypair);
+    this.log(`Admin Authority: ${authorityKeypair.publicKey.toBase58()}`);
+
+    const service = await AdminService.build(
+      network,
+      authorityWallet,
+      'localnet'
+    );
+
+    await airdrop(
+      service.getConnection(),
+      authorityWallet.publicKey,
+      LAMPORTS_PER_SOL
+    );
+    const updateNetworkSignature = await service
+      .updateNetwork(parsedData)
+      .rpc();
+    this.log(updateNetworkSignature);
+    const updatedNetwork = await service.getNetworkAccount();
+    this.log(updatedNetwork?.fees[0].token.toBase58());
   }
 }

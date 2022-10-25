@@ -17,7 +17,10 @@ pub struct CloseNetworkAccount<'info> {
     #[account(
         mut,
         close = destination,
-        constraint = network.can_access(&authority, NetworkKeyFlags::AUTH),
+        seeds = [NETWORK_SEED, network.authority.key().as_ref(), &network.network_index.to_le_bytes()],
+        bump,
+        // TODO: @william commented constraint for now
+        // constraint = network.can_access(&authority, NetworkKeyFlags::AUTH),
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     /// CHECK: Rent destination account does not need to satisfy the any constraints.
