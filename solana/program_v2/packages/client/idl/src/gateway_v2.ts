@@ -1010,6 +1010,10 @@ export type GatewayV2 = {
                 "defined": "GatekeeperAuthKey"
               }
             }
+          },
+          {
+            "name": "gatekeeperIndex",
+            "type": "u16"
           }
         ]
       }
@@ -2408,6 +2412,10 @@ export const IDL: GatewayV2 = {
                 "defined": "GatekeeperAuthKey"
               }
             }
+          },
+          {
+            "name": "gatekeeperIndex",
+            "type": "u16"
           }
         ]
       }

@@ -53,6 +53,7 @@ pub struct CreateGatekeeperData {
     pub token_fees: Vec<GatekeeperFees>,
     pub auth_threshold: u8,
     pub auth_keys: Vec<GatekeeperAuthKey>,
+    pub gatekeeper_index: u16,
 }
 
 #[derive(Accounts, Debug)]
@@ -65,7 +66,7 @@ pub struct CreateGatekeeperAccount<'info> {
             data.auth_keys.len(),
             data.token_fees.len(),
         ),
-        seeds = [GATEKEEPER_SEED, authority.key().as_ref(), network.key().as_ref()],
+        seeds = [GATEKEEPER_SEED, authority.key().as_ref(), network.key().as_ref(), & data.gatekeeper_index.to_le_bytes()],
         bump
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,

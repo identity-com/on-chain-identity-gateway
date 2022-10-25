@@ -1,8 +1,4 @@
-import {
-  AdminService,
-  airdrop,
-  NetworkService,
-} from '@identity.com/gateway-solana-client';
+import { airdrop, NetworkService } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
@@ -25,7 +21,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
       required: true,
     }),
     gatekeeper: Flags.string({
-      char: 'n',
+      char: 'g',
       description: "String representing the gatekeeper's address",
       required: true,
     }),
@@ -53,20 +49,12 @@ hello friend from oclif! (./src/commands/hello/index.ts)
 
     const authorityWallet = new Wallet(authorityKeypair);
     this.log(`Admin Authority: ${authorityKeypair.publicKey.toBase58()}`);
-    const adminService = await AdminService.build(
-      network,
-      authorityWallet,
-      'localnet'
-    );
-    const networkAccount = await adminService.getNetworkAccount(network);
-
-    this.log(`Gatekeepers: ${networkAccount?.gatekeepers[0]}`);
 
     const [dataAccount] = await NetworkService.createGatekeeperAddress(
       authorityKeypair.publicKey,
-      network
+      network,
+      0
     );
-    this.log(`New GK Address derivation: ${dataAccount}`);
 
     const networkService = await NetworkService.build(
       gatekeeper,
@@ -75,13 +63,11 @@ hello friend from oclif! (./src/commands/hello/index.ts)
       'localnet'
     );
 
-    this.log('service built');
     await airdrop(
       networkService.getConnection(),
       authorityWallet.publicKey,
       LAMPORTS_PER_SOL * 2
     );
-    this.log('airdrop completed');
     const gatekeeperAccount = await networkService.getGatekeeperAccount(
       dataAccount
     );

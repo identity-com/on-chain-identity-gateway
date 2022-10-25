@@ -13,7 +13,8 @@ pub struct PassExpire<'info> {
     #[account(
         seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), &pass.pass_number.to_le_bytes() ],
         bump,
-        constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::EXPIRE_PASS),
+        // TODO: @william removed constraint
+        // constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::EXPIRE_PASS),
         mut
     )]
     pub pass: Account<'info, Pass>,
