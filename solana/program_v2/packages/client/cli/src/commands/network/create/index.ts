@@ -14,11 +14,6 @@ Latest Blockhash: [blockhash]
 
   static flags = {
     help: Flags.help({ char: 'h' }),
-    address: Flags.string({
-      char: 'a',
-      description: 'Path to network data',
-      required: false,
-    }),
     funder: Flags.string({
       char: 'f',
       description: 'Path to a solana keypair',

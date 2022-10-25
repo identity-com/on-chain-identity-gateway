@@ -28,7 +28,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
     gatekeeper: Flags.string({
       char: 'g',
       description:
-        "String representing the gatekeeper's address to which the pass will be assigned",
+        'String representing the new gatekeeper address to which the pass will be assigned',
       required: true,
     }),
     funder: Flags.string({
@@ -63,6 +63,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
       authorityWallet,
       'localnet'
     );
+    // TODO: Error occurring 'Error Code: InvalidGatekeeper'
 
     const account = await GatekeeperService.createPassAddress(subject, network);
     const originalPass = await gatekeeperService.getPassAccount(subject);
