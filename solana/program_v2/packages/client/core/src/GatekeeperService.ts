@@ -5,7 +5,7 @@ import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
 import { Wallet } from './lib/types';
 
-import { EnumMapper, findGatewayToken } from './lib/utils';
+import { EnumMapper } from './lib/utils';
 import {
   DEFAULT_PASS_SEED,
   GATEWAY_PROGRAM,
