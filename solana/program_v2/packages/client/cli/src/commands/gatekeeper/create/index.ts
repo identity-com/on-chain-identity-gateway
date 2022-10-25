@@ -36,7 +36,7 @@ export default class Create extends Command {
 
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(`${__dirname}/test-keypair.json`);
+      : await fsPromises.readFile(`${__dirname}/../../../admin-keypair.json`);
 
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
