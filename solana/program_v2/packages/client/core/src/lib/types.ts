@@ -128,6 +128,6 @@ export type RawPassAccount = {
     revoked?: unknown;
     frozen?: unknown;
   };
-  networkData: Uint8Array;
-  gatekeeperData: Uint8Array;
+  networkData: number[];
+  gatekeeperData: number[];
 };
