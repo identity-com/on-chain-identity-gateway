@@ -1006,10 +1006,6 @@ export type SolanaAnchorGateway = {
                 "defined": "GatekeeperAuthKey"
               }
             }
-          },
-          {
-            "name": "gatekeeperIndex",
-            "type": "u16"
           }
         ]
       }
@@ -2404,10 +2400,6 @@ export const IDL: SolanaAnchorGateway = {
                 "defined": "GatekeeperAuthKey"
               }
             }
-          },
-          {
-            "name": "gatekeeperIndex",
-            "type": "u16"
           }
         ]
       }

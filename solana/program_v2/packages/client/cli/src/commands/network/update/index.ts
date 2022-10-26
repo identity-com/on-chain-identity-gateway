@@ -52,6 +52,7 @@ network closed
     const network = new PublicKey(flags.network);
     const data = await fsPromises.readFile(`${__dirname}/${flags.data}`);
     // TODO!: Parse this data correctly so that it matches to UpdateNetworkData
+    // TODO: Map input to parsed input
     const parsedData = JSON.parse(data.toLocaleString()) as UpdateNetworkData;
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)

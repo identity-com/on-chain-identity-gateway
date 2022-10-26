@@ -85,7 +85,6 @@ export type CreateGatekeeperData = {
   tokenFees: FeeStructure[];
   authThreshold: number;
   authKeys: AuthKeyStructure[];
-  gatekeeperIndex: number;
 };
 
 export type UpdateGatekeeperData = {
