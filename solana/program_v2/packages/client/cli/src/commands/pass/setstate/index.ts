@@ -69,10 +69,10 @@ hello friend from oclif! (./src/commands/hello/index.ts)
     );
 
     const account = await GatekeeperService.createPassAddress(subject, network);
-    const expiredPassSignature = await gatekeeperService
+    const modifiedPassSignature = await gatekeeperService
       .setState(PassState.Frozen, account)
       .rpc();
 
-    this.log(`Pass SetState Signature: ${expiredPassSignature}`);
+    this.log(`Pass SetState Signature: ${modifiedPassSignature}`);
   }
 }
