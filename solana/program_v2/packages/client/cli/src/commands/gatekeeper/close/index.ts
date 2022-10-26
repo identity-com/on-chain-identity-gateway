@@ -52,8 +52,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
 
     const [dataAccount] = await NetworkService.createGatekeeperAddress(
       authorityKeypair.publicKey,
-      network,
-      0
+      network
     );
 
     const networkService = await NetworkService.build(

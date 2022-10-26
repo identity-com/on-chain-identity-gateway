@@ -24,11 +24,6 @@ export default class Create extends Command {
       description: 'Path to a solana keypair',
       required: false,
     }),
-    index: Flags.integer({
-      char: 'i',
-      description: 'The index of the gatekeeper to create',
-      required: true,
-    }),
   };
 
   static args = [];
@@ -47,11 +42,9 @@ export default class Create extends Command {
     const authorityWallet = new Wallet(authorityKeypair);
     // const gkAddress = authorityKeypair.publicKey;
     const gkAddress = Keypair.generate().publicKey;
-    const gkIndex = flags.index;
     const [dataAccount] = await NetworkService.createGatekeeperAddress(
       authorityWallet.publicKey,
-      networkAddress,
-      gkIndex
+      networkAddress
     );
     this.log(`Generated GK Address: ${gkAddress}`);
     this.log(`Derived GK Data Account: ${dataAccount}`);
@@ -77,7 +70,6 @@ export default class Create extends Command {
           key: gkAddress,
         },
       ],
-      gatekeeperIndex: gkIndex,
     };
     const gatekeeperSignature = await networkService
       .createGatekeeper(networkAddress, stakingAccount, gatekeeperData)
