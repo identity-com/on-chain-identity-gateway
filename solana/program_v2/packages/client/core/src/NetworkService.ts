@@ -12,11 +12,7 @@ import {
   GatekeeperState,
   GatekeeperStateMapping,
 } from './lib/types';
-import {
-  CustomClusterUrlConfig,
-  ExtendedCluster,
-  getConnectionByCluster,
-} from './lib/connection';
+import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { EnumMapper } from './lib/utils';
 import {
   GatekeeperKeyFlags,

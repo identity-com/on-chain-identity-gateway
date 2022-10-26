@@ -16,11 +16,7 @@ import {
   AbstractService,
   NonSigningWallet,
 } from './utils/AbstractService';
-import {
-  CustomClusterUrlConfig,
-  ExtendedCluster,
-  getConnectionByCluster,
-} from './lib/connection';
+import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { PassAccount, PassState, PassStateMapping } from './lib/wrappers';
 
 export class GatekeeperService extends AbstractService {
