@@ -26,7 +26,7 @@ pub struct PassSetData<'info> {
         seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), &pass.pass_number.to_le_bytes() ],
         bump = pass.signer_bump,
         // TODO: @william commented out constraint for now
-        // constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::SET_PASS_DATA),
+        constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::SET_PASS_DATA),
         mut
     )]
     pub pass: Account<'info, Pass>,

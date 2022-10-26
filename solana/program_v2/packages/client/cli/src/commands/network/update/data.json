@@ -17,11 +17,6 @@
         "add":[],
         "remove":[]
     },
-    "networkIndex": 0,
-    "gatekeepers": {
-        "add": [],
-        "remove": []
-    },
     "supportedTokens": {
         "add": [],
         "remove":[]

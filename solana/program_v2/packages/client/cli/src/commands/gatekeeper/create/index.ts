@@ -35,22 +35,29 @@ export default class Create extends Command {
 
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(`${__dirname}/../../../admin-keypair.json`);
+      : await fsPromises.readFile(
+          `${__dirname}/../../../keypairs/network-authority-2.json`
+        );
+
+    const authKey = await fsPromises.readFile(
+      `${__dirname}/../../../keypairs/gatekeeper-authority.json`
+    );
+
+    const authKeyArr = Uint8Array.from(JSON.parse(authKey.toString()));
+    const authPair = Keypair.fromSecretKey(authKeyArr);
 
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
     const authorityWallet = new Wallet(authorityKeypair);
     // const gkAddress = authorityKeypair.publicKey;
-    const gkAddress = Keypair.generate().publicKey;
     const [dataAccount] = await NetworkService.createGatekeeperAddress(
       authorityWallet.publicKey,
       networkAddress
     );
-    this.log(`Generated GK Address: ${gkAddress}`);
     this.log(`Derived GK Data Account: ${dataAccount}`);
 
     const networkService = await NetworkService.build(
-      gkAddress,
+      authPair.publicKey,
       dataAccount,
       authorityWallet,
       'localnet'
@@ -67,7 +74,7 @@ export default class Create extends Command {
       authKeys: [
         {
           flags: 4095,
-          key: gkAddress,
+          key: authPair.publicKey,
         },
       ],
     };

@@ -45,7 +45,9 @@ network closed
 
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(`${__dirname}/../../../admin-keypair.json`);
+      : await fsPromises.readFile(
+          `${__dirname}/../../../keypairs/guardian-authority.json`
+        );
 
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);

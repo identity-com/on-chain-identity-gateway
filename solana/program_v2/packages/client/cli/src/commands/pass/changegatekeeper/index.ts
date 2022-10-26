@@ -50,7 +50,9 @@ hello friend from oclif! (./src/commands/hello/index.ts)
     const network = new PublicKey(flags.network);
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(`${__dirname}/../../../gk-keypair.json`);
+      : await fsPromises.readFile(
+          `${__dirname}/../../../keypairs/gatekeeper-authority.json`
+        );
 
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
