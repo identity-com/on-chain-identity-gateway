@@ -47,6 +47,7 @@ export type UpdateNetworkData = {
   authKeys: UpdateAuthKeytructure;
   networkFeatures: number;
   supportedTokens: UpdateSupportedTokens;
+  // TODO: Remove gatekeepers
   gatekeepers: UpdateGatekeepers;
 };
 
@@ -89,6 +90,7 @@ export type CreateGatekeeperData = {
 };
 
 export type UpdateGatekeeperData = {
+  // TODO: Maybe set these to be optional
   tokenFees: UpdateFeeStructure;
   authThreshold: number;
   authKeys: UpdateAuthKeytructure;

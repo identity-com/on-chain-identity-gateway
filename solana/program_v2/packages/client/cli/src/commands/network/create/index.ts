@@ -1,7 +1,11 @@
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { AdminService, airdrop } from '@identity.com/gateway-solana-client';
+import {
+  AdminService,
+  airdrop,
+  GatekeeperKeyFlags,
+} from '@identity.com/gateway-solana-client';
 import fsPromises from 'node:fs/promises';
 export default class Create extends Command {
   static description = 'Creates a gatekeeper network';
@@ -38,7 +42,9 @@ Latest Blockhash: [blockhash]
     const { flags } = await this.parse(Create);
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(`${__dirname}/../../../admin-keypair.json`);
+      : await fsPromises.readFile(
+          `${__dirname}/../../../keypairs/guardian-authority.json`
+        );
 
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
@@ -67,7 +73,16 @@ Latest Blockhash: [blockhash]
       authThreshold: 1,
       passExpireTime: 16,
       fees: [],
-      authKeys: [{ flags: 4095, key: authority.publicKey }],
+      authKeys: [
+        {
+          flags:
+            GatekeeperKeyFlags.FREEZE |
+            GatekeeperKeyFlags.UNFREEZE |
+            GatekeeperKeyFlags.AUTH |
+            GatekeeperKeyFlags.ISSUE,
+          key: authority.publicKey,
+        },
+      ],
       networkIndex: networkIndex,
       gatekeepers: [],
       supportedTokens: [],
