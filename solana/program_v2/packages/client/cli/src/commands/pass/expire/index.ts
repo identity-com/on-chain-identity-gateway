@@ -4,6 +4,7 @@ import { Command, Flags } from '@oclif/core';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 import { Wallet } from '@project-serum/anchor';
+import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 
 export default class Expire extends Command {
   static description = 'Expires a gateway pass';
@@ -61,8 +62,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
     const gatekeeperService = await GatekeeperService.build(
       network,
       gatekeeper,
-      authorityWallet,
-      'localnet'
+      { wallet: authorityWallet, clusterType: 'localnet' as ExtendedCluster }
     );
 
     const account = await GatekeeperService.createPassAddress(subject, network);

@@ -7,6 +7,7 @@ import {
   NetworkKeyFlags,
 } from '@identity.com/gateway-solana-client';
 import fsPromises from 'node:fs/promises';
+import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 export default class Create extends Command {
   static description = 'Creates a gatekeeper network';
 
@@ -59,11 +60,12 @@ Latest Blockhash: [blockhash]
       networkIndex
     );
     this.log(`Network Address: ${dataAccount}`);
-    const adminService = await AdminService.build(
-      dataAccount,
-      authority,
-      'localnet'
-    );
+
+    const adminService = await AdminService.build(dataAccount, {
+      wallet: authority,
+      clusterType: 'localnet' as ExtendedCluster,
+    });
+
     await airdrop(
       adminService.getConnection(),
       authority.publicKey,

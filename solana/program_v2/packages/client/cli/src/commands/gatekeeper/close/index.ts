@@ -1,4 +1,5 @@
 import { airdrop, NetworkService } from '@identity.com/gateway-solana-client';
+import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
@@ -57,12 +58,10 @@ hello friend from oclif! (./src/commands/hello/index.ts)
       network
     );
 
-    const networkService = await NetworkService.build(
-      gatekeeper,
-      dataAccount,
-      authorityWallet,
-      'localnet'
-    );
+    const networkService = await NetworkService.build(gatekeeper, dataAccount, {
+      wallet: authorityWallet,
+      clusterType: 'localnet' as ExtendedCluster,
+    });
 
     await airdrop(
       networkService.getConnection(),

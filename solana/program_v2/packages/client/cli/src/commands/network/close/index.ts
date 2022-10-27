@@ -4,6 +4,7 @@ import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { AdminService, airdrop } from '@identity.com/gateway-solana-client';
 import { Wallet } from '@project-serum/anchor';
 import fsPromises from 'node:fs/promises';
+import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 
 export default class Close extends Command {
   static description = 'Closes a gatekeeper network';
@@ -54,11 +55,10 @@ network closed
 
     const authorityWallet = new Wallet(authorityKeypair);
 
-    const service = await AdminService.build(
-      network,
-      authorityWallet,
-      'localnet'
-    );
+    const service = await AdminService.build(network, {
+      wallet: authorityWallet,
+      clusterType: 'localnet' as ExtendedCluster,
+    });
 
     await airdrop(
       service.getConnection(),

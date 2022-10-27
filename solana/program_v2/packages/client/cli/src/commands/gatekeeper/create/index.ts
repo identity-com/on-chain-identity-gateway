@@ -1,4 +1,5 @@
 import { airdrop, NetworkService } from '@identity.com/gateway-solana-client';
+import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
@@ -60,8 +61,10 @@ export default class Create extends Command {
     const networkService = await NetworkService.build(
       authPair.publicKey,
       dataAccount,
-      authorityWallet,
-      'localnet'
+      {
+        wallet: authorityWallet,
+        clusterType: 'localnet' as ExtendedCluster,
+      }
     );
 
     await airdrop(
