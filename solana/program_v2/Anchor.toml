@@ -4,16 +4,15 @@ types = "packages/client/idl/src/"
 [features]
 seeds = false
 
-#TODO: Updated program id
 [programs.localnet]
-gateway_v2 = "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
+gateway_v2 = "gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft"
 [programs.devnet]
-gateway_v2 = "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
+gateway_v2 = "gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft"
 [programs.mainnet]
-gateway_v2 = "FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe"
+gateway_v2 = "gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft"
 
 [registry]
-url = "https://anchor.projectserum.com"
+url = "https://api.apr.dev"
 
 [provider]
 cluster = "localnet"

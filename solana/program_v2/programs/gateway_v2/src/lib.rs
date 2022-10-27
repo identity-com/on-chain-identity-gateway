@@ -9,8 +9,8 @@ use crate::instructions::gatekeeper::*;
 use crate::instructions::network::*;
 use crate::state::{GatekeeperState, PassState};
 use anchor_lang::prelude::*;
-// TODO: Grind for better key
-declare_id!("FSgDgZoNxiUarRWJYrMDWcsZycNyEXaME5i3ZXPnhrWe");
+
+declare_id!("gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft");
 
 #[program]
 pub mod gateway_v2 {
