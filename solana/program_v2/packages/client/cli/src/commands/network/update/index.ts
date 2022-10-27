@@ -6,6 +6,7 @@ import {
   airdrop,
   UpdateNetworkData,
 } from '@identity.com/gateway-solana-client';
+import { parseNetworkUpdateData } from '../../../util/util';
 import { Wallet } from '@project-serum/anchor';
 import fsPromises from 'node:fs/promises';
 
@@ -53,7 +54,7 @@ network closed
     const data = await fsPromises.readFile(`${__dirname}/${flags.data}`);
     // TODO!: Parse this data correctly so that it matches to UpdateNetworkData
     // TODO: Map input to parsed input
-    const parsedData = JSON.parse(data.toLocaleString()) as UpdateNetworkData;
+    const updateData = JSON.parse(data.toString()) as UpdateNetworkData;
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
       : await fsPromises.readFile(
@@ -77,6 +78,9 @@ network closed
       authorityWallet.publicKey,
       LAMPORTS_PER_SOL
     );
+
+    const parsedData = parseNetworkUpdateData(updateData);
+
     const updateNetworkSignature = await service
       .updateNetwork(parsedData)
       .rpc();

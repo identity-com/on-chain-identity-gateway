@@ -74,7 +74,7 @@ export default class Create extends Command {
       authThreshold: 1,
       authKeys: [
         {
-          flags: 4095,
+          flags: 65535,
           key: authPair.publicKey,
         },
       ],

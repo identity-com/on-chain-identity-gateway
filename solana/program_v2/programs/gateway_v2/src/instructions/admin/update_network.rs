@@ -11,7 +11,6 @@ pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkDa
     network.update_fees(data, authority)?;
     network.update_network_features(data, authority)?;
     network.update_supported_tokens(data, authority)?;
-    network.update_gatekeepers(data, authority)?;
 
     Ok(())
 }
@@ -30,8 +29,6 @@ pub struct UpdateNetworkData {
     pub network_features: u32,
     /// The [`GatekeeperNetwork::supported_tokens`].
     pub supported_tokens: UpdateSupportedTokens,
-    /// The [`GatekeeperNetwork::gatekeepers`].
-    pub gatekeepers: UpdateGatekeepers,
 }
 
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
@@ -66,7 +63,7 @@ pub struct UpdateNetworkAccount<'info> {
     realloc = GatekeeperNetwork::size(
     network.fees.len() + data.fees.add.len() - data.fees.remove.len(),
     network.auth_keys.len() + data.auth_keys.add.len() - data.auth_keys.remove.len(),
-    network.gatekeepers.len() + data.gatekeepers.add.len() - data.gatekeepers.remove.len(),
+    network.gatekeepers.len(),
     network.supported_tokens.len() + data.supported_tokens.add.len() - data.supported_tokens.remove.len()
     ),
     realloc::payer = authority,

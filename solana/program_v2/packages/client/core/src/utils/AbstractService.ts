@@ -1,5 +1,3 @@
-// TODO: Update this with refactor (IDCOM-2108)
-// import { GatewayV2, IDL } from '../../target/types/gateway_v2';
 import {
   AnchorProvider,
   Program,
