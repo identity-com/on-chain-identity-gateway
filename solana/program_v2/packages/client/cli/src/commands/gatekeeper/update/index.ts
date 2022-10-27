@@ -25,10 +25,8 @@ export default class Update extends Command {
   static args = [];
 
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(Update);
+    const { flags } = await this.parse(Update);
 
-    this.log(
-      `hello ${args.person} from ${flags.from}! (./src/commands/hello/index.ts)`
-    );
+    this.log(`network: ${flags.network}`);
   }
 }

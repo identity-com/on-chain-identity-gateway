@@ -33,7 +33,7 @@ export default class SetState extends Command {
   static args = [];
 
   async run(): Promise<void> {
-    const { flags } = await this.parse(Create);
+    const { flags } = await this.parse(SetState);
     const networkAddress = new PublicKey(flags.network);
     const stakingAccount = Keypair.generate().publicKey;
 
