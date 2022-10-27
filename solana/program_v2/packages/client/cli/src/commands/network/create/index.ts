@@ -4,7 +4,7 @@ import { Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import {
   AdminService,
   airdrop,
-  GatekeeperKeyFlags,
+  NetworkKeyFlags,
 } from '@identity.com/gateway-solana-client';
 import fsPromises from 'node:fs/promises';
 export default class Create extends Command {
@@ -76,10 +76,10 @@ Latest Blockhash: [blockhash]
       authKeys: [
         {
           flags:
-            GatekeeperKeyFlags.FREEZE |
-            GatekeeperKeyFlags.UNFREEZE |
-            GatekeeperKeyFlags.AUTH |
-            GatekeeperKeyFlags.ISSUE,
+            NetworkKeyFlags.AUTH |
+            NetworkKeyFlags.ADD_FEES |
+            NetworkKeyFlags.ADJUST_FEES |
+            NetworkKeyFlags.SET_EXPIRE_TIME,
           key: authority.publicKey,
         },
       ],
