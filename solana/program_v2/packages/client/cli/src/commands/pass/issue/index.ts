@@ -7,6 +7,7 @@ import { Command, Flags } from '@oclif/core';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 import { Wallet } from '@project-serum/anchor';
+import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 
 export default class Issue extends Command {
   static description = 'Issues a gateway pass';
@@ -64,8 +65,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
     const gatekeeperService = await GatekeeperService.build(
       network,
       gatekeeper,
-      authorityWallet,
-      'localnet'
+      { wallet: authorityWallet, clusterType: 'localnet' as ExtendedCluster }
     );
 
     await airdrop(

@@ -3,6 +3,7 @@ import {
   NetworkService,
   GatekeeperState,
 } from '@identity.com/gateway-solana-client';
+import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
@@ -33,7 +34,7 @@ export default class SetState extends Command {
   static args = [];
 
   async run(): Promise<void> {
-    const { flags } = await this.parse(Create);
+    const { flags } = await this.parse(SetState);
     const networkAddress = new PublicKey(flags.network);
     const stakingAccount = Keypair.generate().publicKey;
 
@@ -53,12 +54,10 @@ export default class SetState extends Command {
     this.log(`Generated GK Address: ${gkAddress}`);
     this.log(`Derived GK Data Account: ${dataAccount}`);
 
-    const networkService = await NetworkService.build(
-      gkAddress,
-      dataAccount,
-      authorityWallet,
-      'localnet'
-    );
+    const networkService = await NetworkService.build(gkAddress, dataAccount, {
+      wallet: authorityWallet,
+      clusterType: 'localnet' as ExtendedCluster,
+    });
 
     await airdrop(
       networkService.getConnection(),
