@@ -3,6 +3,7 @@ import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
+import SetState from '../setstate';
 
 export default class Create extends Command {
   static description = 'Creates a gatekeeper on an existing network';
@@ -29,7 +30,7 @@ export default class Create extends Command {
   static args = [];
 
   async run(): Promise<void> {
-    const { flags } = await this.parse(Create);
+    const { flags } = await this.parse(SetState);
     const networkAddress = new PublicKey(flags.network);
     const stakingAccount = Keypair.generate().publicKey;
 
@@ -62,6 +63,7 @@ export default class Create extends Command {
       authorityWallet,
       'localnet'
     );
+
     await airdrop(
       networkService.getConnection(),
       authorityWallet.publicKey,
