@@ -37,7 +37,7 @@ export default class Create extends Command {
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
       : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/network-authority-2.json`
+          `${__dirname}/../../../keypairs/network-authority.json`
         );
 
     const authKey = await fsPromises.readFile(
@@ -79,6 +79,10 @@ export default class Create extends Command {
         {
           flags: 65535,
           key: authPair.publicKey,
+        },
+        {
+          flags: 65535,
+          key: authorityKeypair.publicKey,
         },
       ],
     };

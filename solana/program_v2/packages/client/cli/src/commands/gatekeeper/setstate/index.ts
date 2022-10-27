@@ -1,7 +1,7 @@
 import {
   airdrop,
-  NetworkService,
   GatekeeperState,
+  NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 import { Command, Flags } from '@oclif/core';
@@ -19,9 +19,15 @@ export default class SetState extends Command {
 
   static flags = {
     help: Flags.help({ char: 'h' }),
-    network: Flags.string({
-      char: 'n',
-      description: "String representing the network's address",
+    gatekeeper: Flags.string({
+      char: 'g',
+      description: "String representing the gatekeeper's address",
+      required: true,
+    }),
+    state: Flags.integer({
+      char: 's',
+      description:
+        'Desired state of the gatekeeper (0 = Active, 1 = Frozen, 2 = Halted)',
       required: true,
     }),
     funder: Flags.string({
@@ -35,29 +41,44 @@ export default class SetState extends Command {
 
   async run(): Promise<void> {
     const { flags } = await this.parse(SetState);
-    const networkAddress = new PublicKey(flags.network);
-    const stakingAccount = Keypair.generate().publicKey;
-
+    const gatekeeper = new PublicKey(flags.gatekeeper);
+    let state = flags.state;
+    if (state === 0 || state === 1 || state === 2) {
+      if (state === 0) {
+        state = GatekeeperState.Active;
+      }
+      if (state === 1) {
+        state = GatekeeperState.Frozen;
+      }
+      if (state === 2) {
+        state = GatekeeperState.Halted;
+      }
+    }
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(`${__dirname}/../../../admin-keypair.json`);
+      : await fsPromises.readFile(
+          `${__dirname}/../../../keypairs/network-authority.json`
+        );
+
+    const authKey = await fsPromises.readFile(
+      `${__dirname}/../../../keypairs/gatekeeper-authority.json`
+    );
+
+    const authKeyArr = Uint8Array.from(JSON.parse(authKey.toString()));
+    const authPair = Keypair.fromSecretKey(authKeyArr);
 
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
     const authorityWallet = new Wallet(authorityKeypair);
 
-    const gkAddress = Keypair.generate().publicKey;
-    const [dataAccount] = await NetworkService.createGatekeeperAddress(
-      authorityWallet.publicKey,
-      networkAddress
+    const networkService = await NetworkService.build(
+      authPair.publicKey,
+      gatekeeper,
+      {
+        wallet: authorityWallet,
+        clusterType: 'localnet' as ExtendedCluster,
+      }
     );
-    this.log(`Generated GK Address: ${gkAddress}`);
-    this.log(`Derived GK Data Account: ${dataAccount}`);
-
-    const networkService = await NetworkService.build(gkAddress, dataAccount, {
-      wallet: authorityWallet,
-      clusterType: 'localnet' as ExtendedCluster,
-    });
 
     await airdrop(
       networkService.getConnection(),
@@ -65,30 +86,19 @@ export default class SetState extends Command {
       LAMPORTS_PER_SOL * 2
     );
 
-    const gatekeeperData = {
-      tokenFees: [],
-      authThreshold: 1,
-      authKeys: [
-        {
-          flags: 4095,
-          key: gkAddress,
-        },
-      ],
-    };
-
-    await networkService
-      .createGatekeeper(networkAddress, stakingAccount, gatekeeperData)
-      .rpc();
-
     let gatekeeperAccount = await networkService.getGatekeeperAccount();
-    const initialState = gatekeeperAccount?.state;
+    const initialState = gatekeeperAccount?.state as GatekeeperState;
 
-    await networkService.setGatekeeperState(GatekeeperState.Frozen).rpc();
-    this.log(`Gatekeeper state set to Frozen`);
-
+    const stateChangeSignature = await networkService
+      .setGatekeeperState(state)
+      .rpc();
     gatekeeperAccount = await networkService.getGatekeeperAccount();
-    const newState = gatekeeperAccount?.state;
-
-    this.log(`Gatekeeper state: ${initialState} -> ${newState}`);
+    const newState = gatekeeperAccount?.state as GatekeeperState;
+    this.log(`State Change TX Signature: ${stateChangeSignature}`);
+    this.log(
+      `Gatekeeper state: ${Object.keys(initialState)} -> ${Object.keys(
+        newState
+      )}`
+    );
   }
 }
