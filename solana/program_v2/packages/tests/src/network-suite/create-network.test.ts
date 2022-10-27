@@ -29,10 +29,17 @@ describe('Gateway v2 Client', () => {
     service = await AdminService.buildFromAnchor(
       program,
       dataAccount,
-      'localnet',
+      { clusterType: 'localnet' },
       programProvider,
       authority
     );
+    //   export declare type GatewayServiceOptions = {
+    //     connection?: Connection;
+    //     wallet?: Wallet;
+    //     confirmOptions?: ConfirmOptions;
+    //     clusterType: ExtendedCluster;
+    //     customConfig?: CustomClusterUrlConfig;
+    // };
   });
   describe('Create Network', () => {
     it('Creates a network with default values', async function () {

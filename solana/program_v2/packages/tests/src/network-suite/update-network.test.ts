@@ -34,7 +34,7 @@ describe('Gateway v2 Client', () => {
     service = await AdminService.buildFromAnchor(
       program,
       dataAccount,
-      'localnet',
+      { clusterType: 'localnet' },
       programProvider
     );
 
