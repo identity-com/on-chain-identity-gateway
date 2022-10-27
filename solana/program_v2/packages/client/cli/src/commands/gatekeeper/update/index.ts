@@ -1,28 +1,31 @@
 import { Command, Flags } from '@oclif/core';
 
-export default class Hello extends Command {
-  static description = 'Say hello';
+export default class Update extends Command {
+  static description = 'Updates a gatekeeper on an existing network';
 
   static examples = [
-    `$ oex hello friend --from oclif
-hello friend from oclif! (./src/commands/hello/index.ts)
+    `$ gateway gatekeeper update --network [address] --funder [path_to_funder_key]
 `,
   ];
 
   static flags = {
-    from: Flags.string({
-      char: 'f',
-      description: 'Who is saying hello',
+    help: Flags.help({ char: 'h' }),
+    network: Flags.string({
+      char: 'n',
+      description: "String representing the network's address",
       required: true,
+    }),
+    funder: Flags.string({
+      char: 'f',
+      description: 'Path to a solana keypair',
+      required: false,
     }),
   };
 
-  static args = [
-    { name: 'person', description: 'Person to say hello to', required: true },
-  ];
+  static args = [];
 
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(Hello);
+    const { args, flags } = await this.parse(Update);
 
     this.log(
       `hello ${args.person} from ${flags.from}! (./src/commands/hello/index.ts)`

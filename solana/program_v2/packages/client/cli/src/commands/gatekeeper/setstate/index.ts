@@ -8,7 +8,7 @@ import { Wallet } from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 
-export default class Create extends Command {
+export default class SetState extends Command {
   static description = 'Set the states of a gatekeeper on an existing network';
 
   static examples = [
