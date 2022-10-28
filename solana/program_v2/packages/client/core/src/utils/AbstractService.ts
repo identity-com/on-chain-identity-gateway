@@ -23,7 +23,6 @@ import { GATEWAY_PROGRAM, SOLANA_MAINNET } from '../lib/constants';
 export abstract class AbstractService {
   protected constructor(
     protected _program: Program<GatewayV2>,
-    protected _dataAccount: PublicKey | undefined,
     protected _cluster: ExtendedCluster = SOLANA_MAINNET,
     protected _wallet: Wallet = new NonSigningWallet(),
     protected _opts: ConfirmOptions = AnchorProvider.defaultOptions()
@@ -41,10 +40,6 @@ export abstract class AbstractService {
 
   getWallet(): Wallet {
     return this._wallet;
-  }
-
-  getDataAccount(): PublicKey | undefined {
-    return this._dataAccount;
   }
 
   getProgram(): Program<GatewayV2> {

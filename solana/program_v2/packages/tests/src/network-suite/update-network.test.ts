@@ -101,10 +101,6 @@ describe('Gateway v2 Client', () => {
             add: [],
             remove: [],
           },
-          gatekeepers: {
-            add: [],
-            remove: [],
-          },
         })
         .rpc();
 
@@ -143,10 +139,6 @@ describe('Gateway v2 Client', () => {
           },
           networkFeatures: 1,
           supportedTokens: {
-            add: [],
-            remove: [],
-          },
-          gatekeepers: {
             add: [],
             remove: [],
           },

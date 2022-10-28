@@ -23,13 +23,13 @@ import {
 
 export class AdminService extends AbstractService {
   constructor(
-    _program: Program<GatewayV2>,
+    program: Program<GatewayV2>,
     protected _network: PublicKey,
-    _cluster: ExtendedCluster = SOLANA_MAINNET,
-    _wallet: Wallet = new NonSigningWallet(),
-    _opts: ConfirmOptions = AnchorProvider.defaultOptions()
+    cluster: ExtendedCluster = SOLANA_MAINNET,
+    wallet: Wallet = new NonSigningWallet(),
+    opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {
-    super(_program, undefined, _cluster, _wallet, _opts);
+    super(program, cluster, wallet, opts);
   }
 
   static async build(

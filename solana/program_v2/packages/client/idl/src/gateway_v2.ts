@@ -874,15 +874,6 @@ export type GatewayV2 = {
             "type": {
               "defined": "UpdateSupportedTokens"
             }
-          },
-          {
-            "name": "gatekeepers",
-            "docs": [
-              "The [`GatekeeperNetwork::gatekeepers`]."
-            ],
-            "type": {
-              "defined": "UpdateGatekeepers"
-            }
           }
         ]
       }
@@ -2261,15 +2252,6 @@ export const IDL: GatewayV2 = {
             ],
             "type": {
               "defined": "UpdateSupportedTokens"
-            }
-          },
-          {
-            "name": "gatekeepers",
-            "docs": [
-              "The [`GatekeeperNetwork::gatekeepers`]."
-            ],
-            "type": {
-              "defined": "UpdateGatekeepers"
             }
           }
         ]

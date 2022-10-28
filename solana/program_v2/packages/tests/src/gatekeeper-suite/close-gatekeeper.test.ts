@@ -83,10 +83,18 @@ describe('Gateway v2 Client', () => {
 
   describe('Close Gatekeeper', () => {
     it('Should close a gatekeeper properly', async function () {
+      let network = await adminService.getNetworkAccount();
+      expect(network?.gatekeepers.length).to.equal(1);
+
       // runs closeGatekeeper
       await networkService.closeGatekeeper(networkAuthority.publicKey).rpc();
+
+      network = await adminService.getNetworkAccount();
+      expect(network?.gatekeepers.length).to.equal(0);
+
       // tries to request the gatekeeper account, which we expect to fail after closure
-      expect(networkService.getGatekeeperAccount()).to.eventually.be.rejected;
+      return expect(networkService.getGatekeeperAccount()).to.eventually.be
+        .null;
     }).timeout(10000);
   });
 });

@@ -26,18 +26,20 @@ import {
   NonSigningWallet,
   ServiceBuilder,
 } from './utils/AbstractService';
+
 // Service for a network. This will handle all aspects of the Gateway that a network is able to control... i.e. creating gatekeepers, updating gatekeepers, etc...
 export class NetworkService extends AbstractService {
   constructor(
     program: Program<GatewayV2>,
     private _gatekeeper: PublicKey,
-    dataAccount: PublicKey,
+    private _gatekeeperAccount: PublicKey,
     cluster: ExtendedCluster = SOLANA_MAINNET,
     wallet: Wallet = new NonSigningWallet(),
     opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {
-    super(program, dataAccount, cluster, wallet, opts);
+    super(program, cluster, wallet, opts);
   }
+
   static async build(
     gatekeeper: PublicKey,
     dataAccount: PublicKey,
@@ -73,7 +75,7 @@ export class NetworkService extends AbstractService {
   static async buildFromAnchor(
     program: Program<GatewayV2>,
     gatekeeper: PublicKey,
-    dataAccount: PublicKey,
+    gatekeeperAccount: PublicKey,
     options: GatewayServiceOptions = {
       clusterType: SOLANA_MAINNET,
     },
@@ -84,7 +86,7 @@ export class NetworkService extends AbstractService {
     return new NetworkService(
       program,
       gatekeeper,
-      dataAccount,
+      gatekeeperAccount,
       options.clusterType,
       wallet,
       provider.opts
@@ -140,7 +142,7 @@ export class NetworkService extends AbstractService {
         authKeys: data.authKeys,
       })
       .accounts({
-        gatekeeper: this._dataAccount,
+        gatekeeper: this._gatekeeperAccount,
         authority,
         network,
         stakingAccount,
@@ -174,7 +176,7 @@ export class NetworkService extends AbstractService {
         authKeys: data.authKeys,
       })
       .accounts({
-        gatekeeper: this._dataAccount,
+        gatekeeper: this._gatekeeperAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         stakingAccount,
@@ -203,7 +205,7 @@ export class NetworkService extends AbstractService {
       // @ts-ignore
       .closeGatekeeper()
       .accounts({
-        gatekeeper: this._dataAccount,
+        gatekeeper: this._gatekeeperAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         destination,
         authority,
@@ -229,7 +231,7 @@ export class NetworkService extends AbstractService {
     const instructionPromise = this._program.methods
       .setGatekeeperState(EnumMapper.to(state, GatekeeperStateMapping))
       .accounts({
-        gatekeeper: this._dataAccount,
+        gatekeeper: this._gatekeeperAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
       })
@@ -253,7 +255,7 @@ export class NetworkService extends AbstractService {
     const instructionPromise = this._program.methods
       .gatekeeperWithdraw()
       .accounts({
-        gatekeeper: this._dataAccount,
+        gatekeeper: this._gatekeeperAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         receiver,
@@ -272,7 +274,7 @@ export class NetworkService extends AbstractService {
 
   // Retrieves a gatekeeper's information
   async getGatekeeperAccount(
-    account: PublicKey = this._dataAccount as PublicKey // TODO: Update this once the interface has changed
+    account: PublicKey = this._gatekeeperAccount
   ): Promise<GatekeeperAccount | null> {
     const gatekeeperAccount = this._program.account.gatekeeper
       .fetchNullable(account)
@@ -292,5 +294,9 @@ export class NetworkService extends AbstractService {
         }
       });
     return gatekeeperAccount;
+  }
+
+  getGatekeeperAddress(): PublicKey {
+    return this._gatekeeperAccount;
   }
 }

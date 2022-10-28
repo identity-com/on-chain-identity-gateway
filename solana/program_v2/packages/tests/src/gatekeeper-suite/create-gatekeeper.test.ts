@@ -86,6 +86,9 @@ describe('Gateway v2 Client', () => {
       expect(gatekeeperAccount?.gatekeeperNetwork.toBase58()).to.equal(
         networkAuthority.publicKey.toBase58()
       );
+
+      const network = await adminService.getNetworkAccount();
+      expect(network?.gatekeepers.length).to.equal(1);
     }).timeout(10000);
   });
 });

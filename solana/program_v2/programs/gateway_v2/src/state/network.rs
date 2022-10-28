@@ -261,48 +261,6 @@ impl GatekeeperNetwork {
         Ok(())
     }
 
-    pub fn update_gatekeepers(
-        &mut self,
-        data: &UpdateNetworkData,
-        authority: &mut Signer,
-    ) -> Result<()> {
-        if data.gatekeepers.add.is_empty() && data.gatekeepers.remove.is_empty() {
-            // no fees to add/remove
-            return Ok(());
-        }
-        if !self.can_access(authority, NetworkKeyFlags::AUTH) {
-            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-        }
-        for gatekeeper in data.gatekeepers.remove.iter() {
-            let index: Option<usize> = self
-                .gatekeepers
-                .iter()
-                .position(|pubkey| pubkey == gatekeeper);
-
-            if index.is_none() {
-                return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-            }
-
-            let gatekeeper_index = index.unwrap();
-
-            self.gatekeepers.remove(gatekeeper_index);
-        }
-        for gatekeeper in data.gatekeepers.add.iter() {
-            let index: Option<usize> = self
-                .gatekeepers
-                .iter()
-                .position(|pubkey| pubkey == gatekeeper);
-
-            if let Some(gatekeeper_index) = index {
-                // update the existing key with new fees
-                self.gatekeepers[gatekeeper_index] = *gatekeeper;
-            } else {
-                self.gatekeepers.push(*gatekeeper);
-            }
-        }
-        Ok(())
-    }
-
     pub fn is_closeable(&self) -> bool {
         self.gatekeepers.is_empty()
     }
