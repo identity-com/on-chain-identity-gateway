@@ -68,9 +68,10 @@ export class AdminService extends AbstractService {
     options: GatewayServiceOptions = {
       clusterType: SOLANA_MAINNET,
     },
-    provider: AnchorProvider = program.provider as AnchorProvider,
-    wallet: Wallet = provider.wallet
+    provider: AnchorProvider = program.provider as AnchorProvider
   ): Promise<AdminService> {
+    const wallet = options.wallet || new NonSigningWallet();
+
     return new AdminService(
       program,
       network,

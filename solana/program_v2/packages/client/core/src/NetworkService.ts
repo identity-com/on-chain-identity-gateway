@@ -77,9 +77,10 @@ export class NetworkService extends AbstractService {
     options: GatewayServiceOptions = {
       clusterType: SOLANA_MAINNET,
     },
-    provider: AnchorProvider = program.provider as AnchorProvider,
-    wallet: Wallet = provider.wallet
+    provider: AnchorProvider = program.provider as AnchorProvider
   ): Promise<NetworkService> {
+    const wallet = options.wallet || new NonSigningWallet();
+
     return new NetworkService(
       program,
       gatekeeper,
