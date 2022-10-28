@@ -5,9 +5,9 @@ import {
   AdminService,
   airdrop,
   NetworkKeyFlags,
+  ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
 import fsPromises from 'node:fs/promises';
-import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 export default class Create extends Command {
   static description = 'Creates a gatekeeper network';
 

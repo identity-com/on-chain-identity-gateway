@@ -2,8 +2,8 @@ import {
   airdrop,
   GatekeeperState,
   NetworkService,
+  ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
-import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';

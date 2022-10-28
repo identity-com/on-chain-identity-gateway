@@ -1,13 +1,12 @@
-// import { GatekeeperService } from '@identity.com/gateway-solana-client';
 import {
   GatekeeperService,
   PassState,
+  ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 import { Wallet } from '@project-serum/anchor';
-import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 
 export default class SetState extends Command {
   static description = 'Sets the state of a gateway pass';
