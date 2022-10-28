@@ -10,19 +10,18 @@ import { Wallet } from '@project-serum/anchor';
 import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 
 export default class SetState extends Command {
-  static description = 'Expires a gateway pass';
+  static description = 'Sets the state of a gateway pass';
 
   static examples = [
-    `$ oex hello friend --from oclif
-hello friend from oclif! (./src/commands/hello/index.ts)
+    `$ gateway pass setstate --subject [address] --network [address] --gatekeeper [address] --funder [path to keypair] --cluster [cluster type]
 `,
   ];
 
   static flags = {
     subject: Flags.string({
-      char: 's',
+      char: 'S',
       description: 'Pubkey to which a pass shall be issued',
-      required: false,
+      required: true,
     }),
     network: Flags.string({
       char: 'n',
@@ -37,7 +36,18 @@ hello friend from oclif! (./src/commands/hello/index.ts)
     funder: Flags.string({
       char: 'f',
       description: 'Path to a solana keypair',
-      required: false,
+      required: true,
+    }),
+    state: Flags.integer({
+      char: 's',
+      description:
+        'The target pass state (0 = Active, 1 = Frozen, 2 = Revoked)',
+      required: true,
+    }),
+    cluster: Flags.string({
+      char: 'c',
+      description: 'The cluster you wish to use',
+      required: true,
     }),
   };
 
@@ -46,11 +56,16 @@ hello friend from oclif! (./src/commands/hello/index.ts)
   async run(): Promise<void> {
     const { flags } = await this.parse(SetState);
 
-    const subject = flags.subject
-      ? new PublicKey(flags.subject)
-      : new PublicKey('F75rU4fRqxiqG6gJCjkqaPHAARbmc276Y6ENrCTLPs6G');
+    const subject = new PublicKey(flags.subject);
     const network = new PublicKey(flags.network);
     const gatekeeper = new PublicKey(flags.gatekeeper);
+    const state = flags.state;
+    const cluster =
+      flags.cluster === 'localnet' ||
+      flags.cluster === 'devnet' ||
+      flags.cluster === 'mainnet'
+        ? flags.cluster
+        : 'localnet';
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
       : await fsPromises.readFile(
@@ -60,18 +75,28 @@ hello friend from oclif! (./src/commands/hello/index.ts)
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
 
-    const authorityWallet = new Wallet(authorityKeypair);
+    let targetState = PassState.Active;
+    if (state === 0 || state === 1 || state === 2) {
+      if (state === 0) targetState = PassState.Active;
+      if (state === 1) targetState = PassState.Frozen;
+      if (state === 2) targetState = PassState.Revoked;
 
-    const gatekeeperService = await GatekeeperService.build(
-      network,
-      gatekeeper,
-      { wallet: authorityWallet, clusterType: 'localnet' as ExtendedCluster }
-    );
-    const account = await GatekeeperService.createPassAddress(subject, network);
-    const modifiedPassSignature = await gatekeeperService
-      .setState(PassState.Frozen, account)
-      .rpc();
+      const authorityWallet = new Wallet(authorityKeypair);
 
-    this.log(`Pass SetState Signature: ${modifiedPassSignature}`);
+      const gatekeeperService = await GatekeeperService.build(
+        network,
+        gatekeeper,
+        { wallet: authorityWallet, clusterType: cluster as ExtendedCluster }
+      );
+      const account = await GatekeeperService.createPassAddress(
+        subject,
+        network
+      );
+      const modifiedPassSignature = await gatekeeperService
+        .setState(targetState, account)
+        .rpc();
+
+      this.log(`Pass SetState Signature: ${modifiedPassSignature}`);
+    }
   }
 }

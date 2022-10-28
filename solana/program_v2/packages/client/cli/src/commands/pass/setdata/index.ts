@@ -7,11 +7,10 @@ import { Wallet } from '@project-serum/anchor';
 import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 
 export default class SetData extends Command {
-  static description = 'Expires a gateway pass';
+  static description = 'Sets the data for a gateway pass';
 
   static examples = [
-    `$ oex hello friend --from oclif
-hello friend from oclif! (./src/commands/hello/index.ts)
+    `$ gateway pass setdata --subject [address] --network [address] --gatekeeper [address] --data [path to data] --funder [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -19,7 +18,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
     subject: Flags.string({
       char: 's',
       description: 'Pubkey to which a pass shall be issued',
-      required: false,
+      required: true,
     }),
     network: Flags.string({
       char: 'n',
@@ -39,7 +38,12 @@ hello friend from oclif! (./src/commands/hello/index.ts)
     funder: Flags.string({
       char: 'f',
       description: 'Path to a solana keypair',
-      required: false,
+      required: true,
+    }),
+    cluster: Flags.string({
+      char: 'c',
+      description: 'The cluster you wish to use',
+      required: true,
     }),
   };
 
@@ -48,11 +52,15 @@ hello friend from oclif! (./src/commands/hello/index.ts)
   async run(): Promise<void> {
     const { flags } = await this.parse(SetData);
 
-    const subject = flags.subject
-      ? new PublicKey(flags.subject)
-      : new PublicKey('F75rU4fRqxiqG6gJCjkqaPHAARbmc276Y6ENrCTLPs6G');
+    const subject = new PublicKey(flags.subject);
     const network = new PublicKey(flags.network);
     const gatekeeper = new PublicKey(flags.gatekeeper);
+    const cluster =
+      flags.cluster === 'localnet' ||
+      flags.cluster === 'devnet' ||
+      flags.cluster === 'mainnet'
+        ? flags.cluster
+        : 'localnet';
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
       : await fsPromises.readFile(
@@ -73,7 +81,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
     const gatekeeperService = await GatekeeperService.build(
       network,
       gatekeeper,
-      { wallet: authorityWallet, clusterType: 'localnet' as ExtendedCluster }
+      { wallet: authorityWallet, clusterType: cluster as ExtendedCluster }
     );
 
     const account = await GatekeeperService.createPassAddress(subject, network);

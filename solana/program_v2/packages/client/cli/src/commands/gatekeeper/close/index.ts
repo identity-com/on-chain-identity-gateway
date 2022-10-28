@@ -6,11 +6,10 @@ import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 
 export default class Close extends Command {
-  static description = 'Say hello';
+  static description = 'Closes an existing gatekeeper';
 
   static examples = [
-    `$ oex hello friend --from oclif
-hello friend from oclif! (./src/commands/hello/index.ts)
+    `$ gateway gatekeeper close --network [address] --gatekeeper [address] --funder [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -31,6 +30,11 @@ hello friend from oclif! (./src/commands/hello/index.ts)
       description: 'Path to a solana keypair',
       required: false,
     }),
+    cluster: Flags.string({
+      char: 'c',
+      description: 'The cluster you wish to use',
+      required: true,
+    }),
   };
 
   static args = [];
@@ -40,7 +44,12 @@ hello friend from oclif! (./src/commands/hello/index.ts)
 
     const gatekeeper = new PublicKey(flags.gatekeeper);
     const network = new PublicKey(flags.network);
-
+    const cluster =
+      flags.cluster === 'localnet' ||
+      flags.cluster === 'devnet' ||
+      flags.cluster === 'mainnet'
+        ? flags.cluster
+        : 'localnet';
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
       : await fsPromises.readFile(
@@ -60,7 +69,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
 
     const networkService = await NetworkService.build(gatekeeper, dataAccount, {
       wallet: authorityWallet,
-      clusterType: 'localnet' as ExtendedCluster,
+      clusterType: cluster as ExtendedCluster,
     });
 
     await airdrop(

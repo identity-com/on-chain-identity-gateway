@@ -10,8 +10,7 @@ export default class Close extends Command {
   static description = 'Closes a gatekeeper network';
 
   static examples = [
-    `$ gateway network close
-network closed
+    `$ gateway network close --network [address] --funder [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -21,19 +20,15 @@ network closed
       description: 'The network id',
       required: true,
     }),
-    // TODO: Change to required: true
     funder: Flags.string({
       char: 'f',
       description: 'The funder account',
-      hidden: false,
-      multiple: false,
-      required: false,
+      required: true,
     }),
-    // TODO: Is this necessary?
     cluster: Flags.string({
       char: 'c',
       description: 'The type of cluster',
-      required: false,
+      required: true,
     }),
   };
 
@@ -43,7 +38,12 @@ network closed
     const { flags } = await this.parse(Close);
 
     const network = new PublicKey(flags.network);
-
+    const cluster =
+      flags.cluster === 'localnet' ||
+      flags.cluster === 'devnet' ||
+      flags.cluster === 'mainnet'
+        ? flags.cluster
+        : 'localnet';
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
       : await fsPromises.readFile(
@@ -57,7 +57,7 @@ network closed
 
     const service = await AdminService.build(network, {
       wallet: authorityWallet,
-      clusterType: 'localnet' as ExtendedCluster,
+      clusterType: cluster as ExtendedCluster,
     });
 
     await airdrop(

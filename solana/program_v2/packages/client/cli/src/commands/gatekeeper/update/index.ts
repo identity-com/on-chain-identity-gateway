@@ -14,12 +14,17 @@ export default class Update extends Command {
   static description = 'Updates a gatekeeper on an existing network';
 
   static examples = [
-    `$ gateway gatekeeper update --network [address] --funder [path_to_funder_key]
+    `$ gateway gatekeeper update ---network [address] --gatekeeper [address] --data [path to JSON file] --stake [address] --funder [path to keypair] --cluster [cluster type]
 `,
   ];
 
   static flags = {
     help: Flags.help({ char: 'h' }),
+    network: Flags.string({
+      char: 'n',
+      description: "String representing the network's address",
+      required: true,
+    }),
     gatekeeper: Flags.string({
       char: 'g',
       description: "String representing the gatekeeper's address",
@@ -31,11 +36,6 @@ export default class Update extends Command {
         'Path to a JSON data file representing the new state of the network',
       required: true,
     }),
-    network: Flags.string({
-      char: 'n',
-      description: "String representing the network's address",
-      required: true,
-    }),
     stake: Flags.string({
       char: 's',
       description: "String representing the gatekeeper's staking account",
@@ -44,7 +44,12 @@ export default class Update extends Command {
     funder: Flags.string({
       char: 'f',
       description: 'Path to a solana keypair',
-      required: false,
+      required: true,
+    }),
+    cluster: Flags.string({
+      char: 'c',
+      description: 'The type of cluster',
+      required: true,
     }),
   };
 
@@ -55,6 +60,12 @@ export default class Update extends Command {
 
     const gatekeeper = new PublicKey(flags.gatekeeper);
     const stakingAccount = new PublicKey(flags.stake);
+    const cluster =
+      flags.cluster === 'localnet' ||
+      flags.cluster === 'devnet' ||
+      flags.cluster === 'mainnet'
+        ? flags.cluster
+        : 'localnet';
     const data = await fsPromises.readFile(`${__dirname}/${flags.data}`);
     const updateData = JSON.parse(data.toString()) as UpdateGatekeeperData;
 
@@ -80,7 +91,7 @@ export default class Update extends Command {
       gatekeeper,
       {
         wallet: authorityWallet,
-        clusterType: 'localnet' as ExtendedCluster,
+        clusterType: cluster as ExtendedCluster,
       }
     );
 
