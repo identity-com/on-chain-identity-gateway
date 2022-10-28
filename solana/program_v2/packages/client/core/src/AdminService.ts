@@ -1,21 +1,18 @@
 import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
-import { ConfirmOptions, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 
 import {
   AuthKeyStructure,
   CreateNetworkData,
   FeeStructure,
+  GatewayServiceOptions,
   NetworkAccount,
   UpdateNetworkData,
   Wallet,
 } from './lib/types';
 
-import {
-  CustomClusterUrlConfig,
-  ExtendedCluster,
-  getConnectionByCluster,
-} from './lib/connection';
+import { getConnectionByCluster } from './lib/connection';
 import { SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2 } from '@identity.com/gateway-solana-idl';
 import {
@@ -25,44 +22,52 @@ import {
 } from './utils/AbstractService';
 
 export class AdminService extends AbstractService {
-  constructor(
-    program: Program<GatewayV2>,
-    private _network: PublicKey,
-    cluster: ExtendedCluster = SOLANA_MAINNET,
-    wallet: Wallet = new NonSigningWallet(),
-    opts: ConfirmOptions = AnchorProvider.defaultOptions()
-  ) {
-    super(program, undefined, cluster, wallet, opts);
-  }
-
   static async build(
     network: PublicKey,
-    wallet: Wallet,
-    cluster: ExtendedCluster = SOLANA_MAINNET,
-    customConfig?: CustomClusterUrlConfig,
-    opts: ConfirmOptions = AnchorProvider.defaultOptions()
+    options: GatewayServiceOptions = {
+      clusterType: SOLANA_MAINNET,
+    }
   ): Promise<AdminService> {
-    const _connection = getConnectionByCluster(
-      cluster,
-      opts.preflightCommitment,
-      customConfig
-    );
+    const wallet = options.wallet || new NonSigningWallet();
+    const confirmOptions =
+      options.confirmOptions || AnchorProvider.defaultOptions();
+    const _connection =
+      options.connection ||
+      getConnectionByCluster(
+        options.clusterType,
+        confirmOptions.preflightCommitment,
+        options.customConfig
+      );
 
-    const provider = new AnchorProvider(_connection, wallet, opts);
+    const provider = new AnchorProvider(_connection, wallet, confirmOptions);
 
     const program = await AdminService.fetchProgram(provider);
 
-    return new AdminService(program, network, cluster, wallet, provider.opts);
+    return new AdminService(
+      program,
+      network,
+      options.clusterType,
+      wallet,
+      provider.opts
+    );
   }
 
   static async buildFromAnchor(
     program: Program<GatewayV2>,
     network: PublicKey,
-    cluster: ExtendedCluster,
+    options: GatewayServiceOptions = {
+      clusterType: SOLANA_MAINNET,
+    },
     provider: AnchorProvider = program.provider as AnchorProvider,
     wallet: Wallet = provider.wallet
   ): Promise<AdminService> {
-    return new AdminService(program, network, cluster, wallet, provider.opts);
+    return new AdminService(
+      program,
+      network,
+      options.clusterType,
+      wallet,
+      provider.opts
+    );
   }
 
   closeNetwork(
