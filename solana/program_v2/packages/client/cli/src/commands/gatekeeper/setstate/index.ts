@@ -13,7 +13,7 @@ export default class SetState extends Command {
   static description = 'Set the states of a gatekeeper on an existing network';
 
   static examples = [
-    `$ gateway gatekeeper setState --network [address] --funder [path_to_funder_key]
+    `$ gateway gatekeeper setState --gatekeeper [address] --state [0, 1, 2, Active, Frozen, Halted]
 `,
   ];
 

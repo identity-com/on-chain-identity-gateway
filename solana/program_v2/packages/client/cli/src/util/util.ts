@@ -46,7 +46,7 @@ export const parseGatekeeperUpdateData = (
   const keysArr = Object.keys(updateData);
   // eslint-disable-next-line unicorn/no-array-for-each
   keysArr.forEach((key) => {
-    if (key === 'fees') {
+    if (key === 'tokenFees') {
       updateData[key].add.map((fee: FeeStructure) => {
         fee.token = new PublicKey(fee.token);
         return fee;

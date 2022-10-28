@@ -14,7 +14,7 @@ export default class Update extends Command {
   static description = 'Updates a gatekeeper on an existing network';
 
   static examples = [
-    `$ gateway gatekeeper update --network [address] --funder [path_to_funder_key]
+    `$ gateway gatekeeper update --gatekeeper [address] --data [PATH to JSON data file]
 `,
   ];
 
@@ -34,7 +34,7 @@ export default class Update extends Command {
     network: Flags.string({
       char: 'n',
       description: "String representing the network's address",
-      required: true,
+      required: false,
     }),
     funder: Flags.string({
       char: 'f',
@@ -44,7 +44,6 @@ export default class Update extends Command {
   };
 
   static args = [];
-
   async run(): Promise<void> {
     const { flags } = await this.parse(Update);
 
