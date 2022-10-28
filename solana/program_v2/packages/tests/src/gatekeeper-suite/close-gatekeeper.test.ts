@@ -19,19 +19,17 @@ describe('Gateway v2 Client', () => {
 
   let adminService: AdminService;
   let networkService: NetworkService;
-  let networkDataAccount: PublicKey;
   let gatekeeperDataAccount: PublicKey;
-
-  let adminAuthority: anchor.Wallet;
-  let networkAuthority: anchor.Wallet;
   let stakingDataAccount: PublicKey;
 
-  before(async () => {
-    // Creates both necessary authorities
-    adminAuthority = new anchor.Wallet(Keypair.generate());
-    networkAuthority = new anchor.Wallet(Keypair.generate());
+  let adminAuthority: anchor.Wallet;
+  let networkAuthority: Keypair;
 
-    // airdrop to admin authority and network authority
+  before(async () => {
+    adminAuthority = new anchor.Wallet(Keypair.generate());
+    networkAuthority = Keypair.generate();
+
+    //network airdrop
     await airdrop(
       programProvider.connection,
       adminAuthority.publicKey,
@@ -43,28 +41,22 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
-    // Creates the address for both the network and gatekeeper
-    [networkDataAccount] = await AdminService.createNetworkAddress(
-      adminAuthority.publicKey
-    );
     [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
       adminAuthority.publicKey,
-      networkDataAccount
+      networkAuthority.publicKey
     );
     [stakingDataAccount] = await NetworkService.createStakingAddress(
       networkAuthority.publicKey
     );
 
-    // creates the admin service with anchor
     adminService = await AdminService.buildFromAnchor(
       program,
-      networkDataAccount,
+      networkAuthority.publicKey,
       'localnet',
       programProvider,
       adminAuthority
     );
 
-    // creates the network service with anchor
     networkService = await NetworkService.buildFromAnchor(
       program,
       adminAuthority.publicKey,
@@ -74,15 +66,20 @@ describe('Gateway v2 Client', () => {
       adminAuthority
     );
 
-    await adminService.createNetwork().rpc();
+    await adminService
+      .createNetwork()
+      .withPartialSigners(networkAuthority)
+      .rpc();
+
     await networkService
-      .createGatekeeper(networkDataAccount, stakingDataAccount)
+      .createGatekeeper(networkAuthority.publicKey, stakingDataAccount)
       .rpc();
   });
+
   describe('Close Gatekeeper', () => {
     it('Should close a gatekeeper properly', async function () {
       // runs closeGatekeeper
-      await networkService.closeGatekeeper(networkDataAccount).rpc();
+      await networkService.closeGatekeeper(networkAuthority.publicKey).rpc();
       // tries to request the gatekeeper account, which we expect to fail after closure
       expect(networkService.getGatekeeperAccount()).to.eventually.be.rejected;
     }).timeout(10000);
