@@ -54,7 +54,6 @@ export default class Update extends Command {
   };
 
   static args = [];
-
   async run(): Promise<void> {
     const { flags } = await this.parse(Update);
 
