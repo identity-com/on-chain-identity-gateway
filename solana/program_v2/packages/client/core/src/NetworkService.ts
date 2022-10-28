@@ -125,7 +125,7 @@ export class NetworkService extends AbstractService {
       authKeys: [
         {
           // TODO: Set default flags to 1
-          flags: 4095,
+          flags: 65535,
           key: this._gatekeeper,
         },
       ],

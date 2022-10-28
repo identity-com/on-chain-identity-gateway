@@ -53,7 +53,7 @@ describe('Gateway v2 Client', () => {
     adminService = await AdminService.buildFromAnchor(
       program,
       networkDataAccount,
-      'localnet',
+      { clusterType: 'localnet' },
       programProvider,
       adminAuthority
     );
@@ -62,7 +62,7 @@ describe('Gateway v2 Client', () => {
       program,
       adminAuthority.publicKey,
       gatekeeperDataAccount,
-      'localnet',
+      { clusterType: 'localnet' },
       programProvider,
       adminAuthority
     );

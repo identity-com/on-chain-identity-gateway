@@ -46,7 +46,7 @@ export const createNetworkService = async (
     program,
     authority.publicKey,
     dataAccount,
-    'localnet',
+    { clusterType: 'localnet' },
     programProvider,
     new Wallet(authority)
   );
@@ -69,7 +69,7 @@ export const createGatekeeperService = async (
     program,
     network,
     TEST_GATEKEEPER,
-    'localnet',
+    { clusterType: 'localnet' },
     programProvider,
     authority
   );
