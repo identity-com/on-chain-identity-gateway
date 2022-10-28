@@ -35,9 +35,7 @@ export type CreateNetworkData = {
   passExpireTime: number;
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
-  networkIndex: number;
   supportedTokens: SupportedToken[];
-  gatekeepers: PublicKey[];
 };
 
 export type UpdateNetworkData = {

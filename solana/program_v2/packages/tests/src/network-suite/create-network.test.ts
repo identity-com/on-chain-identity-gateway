@@ -1,7 +1,7 @@
 import { AdminService, airdrop } from '@identity.com/gateway-solana-client';
 import { GatewayV2 } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 
@@ -11,37 +11,40 @@ describe('Gateway v2 Client', () => {
 
   const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
+  let authorityKeypair: Keypair;
+  let authority: anchor.Wallet;
 
-  let dataAccount: PublicKey;
+  let networkAuthority: Keypair;
 
   beforeEach(async () => {
-    const authority = new anchor.Wallet(Keypair.generate());
+    authorityKeypair = Keypair.generate();
+    authority = new anchor.Wallet(authorityKeypair);
+    networkAuthority = Keypair.generate();
+
     await airdrop(
       programProvider.connection,
       authority.publicKey,
       LAMPORTS_PER_SOL * 2
     );
-    [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey,
-      0
-    );
 
     service = await AdminService.buildFromAnchor(
       program,
-      dataAccount,
+      networkAuthority.publicKey,
       'localnet',
       programProvider,
       authority
     );
   });
+
   describe('Create Network', () => {
     it('Creates a network with default values', async function () {
-      await service.createNetwork().rpc();
+      await service.createNetwork().withPartialSigners(networkAuthority).rpc();
 
       const createdNetwork = await service.getNetworkAccount();
 
       expect(createdNetwork).to.not.be.null;
     }).timeout(10000);
+
     it('Creates a network with non-default values', async function () {
       await service
         .createNetwork({
@@ -59,13 +62,12 @@ describe('Gateway v2 Client', () => {
           authKeys: [
             {
               flags: 1,
-              key: programProvider.wallet.publicKey,
+              key: networkAuthority.publicKey,
             },
           ],
-          networkIndex: 0, // TODO: This should probably not be part of the network data
           supportedTokens: [],
-          gatekeepers: [],
         })
+        .withPartialSigners(networkAuthority)
         .rpc();
 
       const createdNetwork = await service.getNetworkAccount();

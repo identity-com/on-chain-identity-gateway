@@ -16,13 +16,27 @@ import {
   ExtendedCluster,
   getConnectionByCluster,
 } from './lib/connection';
-import { NETWORK_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
+import { SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2 } from '@identity.com/gateway-solana-idl';
-import { AbstractService, ServiceBuilder } from './utils/AbstractService';
+import {
+  AbstractService,
+  NonSigningWallet,
+  ServiceBuilder,
+} from './utils/AbstractService';
 
 export class AdminService extends AbstractService {
+  constructor(
+    program: Program<GatewayV2>,
+    private _network: PublicKey,
+    cluster: ExtendedCluster = SOLANA_MAINNET,
+    wallet: Wallet = new NonSigningWallet(),
+    opts: ConfirmOptions = AnchorProvider.defaultOptions()
+  ) {
+    super(program, undefined, cluster, wallet, opts);
+  }
+
   static async build(
-    dataAccount: PublicKey,
+    network: PublicKey,
     wallet: Wallet,
     cluster: ExtendedCluster = SOLANA_MAINNET,
     customConfig?: CustomClusterUrlConfig,
@@ -38,46 +52,17 @@ export class AdminService extends AbstractService {
 
     const program = await AdminService.fetchProgram(provider);
 
-    return new AdminService(
-      program,
-      dataAccount,
-      cluster,
-      wallet,
-      provider.opts
-    );
+    return new AdminService(program, network, cluster, wallet, provider.opts);
   }
 
   static async buildFromAnchor(
     program: Program<GatewayV2>,
-    dataAccount: PublicKey,
+    network: PublicKey,
     cluster: ExtendedCluster,
     provider: AnchorProvider = program.provider as AnchorProvider,
     wallet: Wallet = provider.wallet
   ): Promise<AdminService> {
-    return new AdminService(
-      program,
-      dataAccount,
-      cluster,
-      wallet,
-      provider.opts
-    );
-  }
-
-  static async createNetworkAddress(
-    authority: PublicKey,
-    networkIndex = 0
-  ): Promise<[PublicKey, number]> {
-    const network_index_buffer = Buffer.alloc(2);
-    network_index_buffer.writeInt16LE(networkIndex);
-
-    return PublicKey.findProgramAddress(
-      [
-        anchor.utils.bytes.utf8.encode(NETWORK_SEED),
-        authority.toBuffer(),
-        network_index_buffer,
-      ],
-      GATEWAY_PROGRAM
-    );
+    return new AdminService(program, network, cluster, wallet, provider.opts);
   }
 
   closeNetwork(
@@ -87,7 +72,7 @@ export class AdminService extends AbstractService {
     const instructionPromise = this._program.methods
       .closeNetwork()
       .accounts({
-        network: this._dataAccount,
+        network: this._network,
         destination,
         authority,
       })
@@ -109,8 +94,6 @@ export class AdminService extends AbstractService {
       passExpireTime: 16,
       fees: [],
       authKeys: [{ flags: 4097, key: this._wallet.publicKey }],
-      networkIndex: 0,
-      gatekeepers: [],
       supportedTokens: [],
     },
     authority: PublicKey = this._wallet.publicKey
@@ -121,12 +104,10 @@ export class AdminService extends AbstractService {
         passExpireTime: new anchor.BN(data.passExpireTime),
         fees: data.fees,
         authKeys: data.authKeys,
-        networkIndex: data.networkIndex,
-        gatekeepers: data.gatekeepers,
         supportedTokens: data.supportedTokens,
       })
       .accounts({
-        network: this._dataAccount,
+        network: this._network,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
       })
@@ -160,7 +141,7 @@ export class AdminService extends AbstractService {
         networkFeatures: data.networkFeatures,
       })
       .accounts({
-        network: this._dataAccount,
+        network: this._network,
         authority,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
@@ -177,27 +158,25 @@ export class AdminService extends AbstractService {
   }
 
   async getNetworkAccount(
-    account: PublicKey = this._dataAccount as PublicKey // TODO: Update this once the interface has changed
+    account: PublicKey = this._network
   ): Promise<NetworkAccount | null> {
     const networkAccount = this._program.account.gatekeeperNetwork
       .fetchNullable(account)
       .then((acct) => {
-        if (acct) {
-          return {
-            version: acct?.version,
-            authority: acct?.authority,
-            networkIndex: acct?.networkIndex,
-            authThreshold: acct?.authThreshold,
-            passExpireTime: acct?.passExpireTime.toNumber(),
-            fees: acct?.fees as FeeStructure[],
-            authKeys: acct?.authKeys as AuthKeyStructure[],
-            networkFeatures: acct?.networkFeatures,
-            supportedTokens: acct?.supportedTokens,
-            gatekeepers: acct?.gatekeepers,
-          };
-        } else {
-          return null;
-        }
+        if (!acct) return null;
+
+        return {
+          version: acct?.version,
+          authority: acct?.authority,
+          networkIndex: acct?.networkIndex,
+          authThreshold: acct?.authThreshold,
+          passExpireTime: acct?.passExpireTime.toNumber(),
+          fees: acct?.fees as FeeStructure[],
+          authKeys: acct?.authKeys as AuthKeyStructure[],
+          networkFeatures: acct?.networkFeatures,
+          supportedTokens: acct?.supportedTokens,
+          gatekeepers: acct?.gatekeepers,
+        };
       });
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore

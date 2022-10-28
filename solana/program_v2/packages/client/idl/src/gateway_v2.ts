@@ -8,7 +8,7 @@ export type GatewayV2 = {
         {
           "name": "network",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "authority",
@@ -807,16 +807,6 @@ export type GatewayV2 = {
               "vec": {
                 "defined": "NetworkAuthKey"
               }
-            }
-          },
-          {
-            "name": "networkIndex",
-            "type": "u16"
-          },
-          {
-            "name": "gatekeepers",
-            "type": {
-              "vec": "publicKey"
             }
           },
           {
@@ -1406,7 +1396,7 @@ export const IDL: GatewayV2 = {
         {
           "name": "network",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "authority",
@@ -2205,16 +2195,6 @@ export const IDL: GatewayV2 = {
               "vec": {
                 "defined": "NetworkAuthKey"
               }
-            }
-          },
-          {
-            "name": "networkIndex",
-            "type": "u16"
-          },
-          {
-            "name": "gatekeepers",
-            "type": {
-              "vec": "publicKey"
             }
           },
           {
