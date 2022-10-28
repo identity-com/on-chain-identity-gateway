@@ -16,7 +16,7 @@ import chaiAsPromised from 'chai-as-promised';
 
 chai.use(chaiAsPromised);
 
-describe.only('Gateway v2 Client', () => {
+describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
