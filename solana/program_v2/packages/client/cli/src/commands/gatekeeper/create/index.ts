@@ -9,7 +9,7 @@ export default class Create extends Command {
   static description = 'Creates a gatekeeper on an existing network';
 
   static examples = [
-    `$ gateway gatekeeper create --network [address] --funder [path_to_funder_key]
+    `$ gateway gatekeeper create --network [address] --funder [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -23,7 +23,12 @@ export default class Create extends Command {
     funder: Flags.string({
       char: 'f',
       description: 'Path to a solana keypair',
-      required: false,
+      required: true,
+    }),
+    cluster: Flags.string({
+      char: 'c',
+      description: 'The cluster you wish to use',
+      required: true,
     }),
   };
 
@@ -33,6 +38,12 @@ export default class Create extends Command {
     const { flags } = await this.parse(Create);
     const networkAddress = new PublicKey(flags.network);
     const stakingAccount = Keypair.generate().publicKey;
+    const cluster =
+      flags.cluster === 'localnet' ||
+      flags.cluster === 'devnet' ||
+      flags.cluster === 'mainnet'
+        ? flags.cluster
+        : 'localnet';
 
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
@@ -62,7 +73,7 @@ export default class Create extends Command {
       dataAccount,
       {
         wallet: authorityWallet,
-        clusterType: 'localnet' as ExtendedCluster,
+        clusterType: cluster as ExtendedCluster,
       }
     );
 

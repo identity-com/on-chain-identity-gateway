@@ -13,7 +13,7 @@ export default class SetState extends Command {
   static description = 'Set the states of a gatekeeper on an existing network';
 
   static examples = [
-    `$ gateway gatekeeper setState --network [address] --funder [path_to_funder_key]
+    `$ gateway gatekeeper setState --network [address] --funder [path to keypair] --state [target state] --cluster [cluster type]
 `,
   ];
 
@@ -33,7 +33,12 @@ export default class SetState extends Command {
     funder: Flags.string({
       char: 'f',
       description: 'Path to a solana keypair',
-      required: false,
+      required: true,
+    }),
+    cluster: Flags.string({
+      char: 'c',
+      description: 'The cluster you wish to use',
+      required: true,
     }),
   };
 
@@ -42,17 +47,18 @@ export default class SetState extends Command {
   async run(): Promise<void> {
     const { flags } = await this.parse(SetState);
     const gatekeeper = new PublicKey(flags.gatekeeper);
-    let state = flags.state;
+    const state = flags.state;
+    const cluster =
+      flags.cluster === 'localnet' ||
+      flags.cluster === 'devnet' ||
+      flags.cluster === 'mainnet'
+        ? flags.cluster
+        : 'localnet';
+    let targetState = GatekeeperState.Active;
     if (state === 0 || state === 1 || state === 2) {
-      if (state === 0) {
-        state = GatekeeperState.Active;
-      }
-      if (state === 1) {
-        state = GatekeeperState.Frozen;
-      }
-      if (state === 2) {
-        state = GatekeeperState.Halted;
-      }
+      if (state === 0) targetState = GatekeeperState.Active;
+      if (state === 1) targetState = GatekeeperState.Frozen;
+      if (state === 2) targetState = GatekeeperState.Halted;
     }
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
@@ -76,7 +82,7 @@ export default class SetState extends Command {
       gatekeeper,
       {
         wallet: authorityWallet,
-        clusterType: 'localnet' as ExtendedCluster,
+        clusterType: cluster as ExtendedCluster,
       }
     );
 
@@ -90,7 +96,7 @@ export default class SetState extends Command {
     const initialState = gatekeeperAccount?.state as GatekeeperState;
 
     const stateChangeSignature = await networkService
-      .setGatekeeperState(state)
+      .setGatekeeperState(targetState)
       .rpc();
     gatekeeperAccount = await networkService.getGatekeeperAccount();
     const newState = gatekeeperAccount?.state as GatekeeperState;

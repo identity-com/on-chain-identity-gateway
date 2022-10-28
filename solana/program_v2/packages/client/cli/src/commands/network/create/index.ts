@@ -12,8 +12,7 @@ export default class Create extends Command {
   static description = 'Creates a gatekeeper network';
 
   static examples = [
-    `$ gateway network create --address ./network.json --funder ./funder-keypair.json --cluster localnet
-Latest Blockhash: [blockhash]
+    `$ gateway network create --funder ./funder-keypair.json --index 0 --cluster [cluster type]
 `,
   ];
 
@@ -24,11 +23,10 @@ Latest Blockhash: [blockhash]
       description: 'Path to a solana keypair',
       required: false,
     }),
-    // TODO: Implement Properly
     cluster: Flags.string({
       char: 'c',
       description: 'The cluster you wish to use',
-      required: false,
+      required: true,
     }),
     index: Flags.integer({
       char: 'i',
@@ -41,6 +39,14 @@ Latest Blockhash: [blockhash]
 
   async run(): Promise<void> {
     const { flags } = await this.parse(Create);
+    const networkIndex = flags.index;
+    const cluster =
+      flags.cluster === 'localnet' ||
+      flags.cluster === 'devnet' ||
+      flags.cluster === 'mainnet'
+        ? flags.cluster
+        : 'localnet';
+    this.log(`Network Index: ${networkIndex}`);
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
       : await fsPromises.readFile(
@@ -49,9 +55,6 @@ Latest Blockhash: [blockhash]
 
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
-    const networkIndex = flags.index;
-    this.log(`Network Index: ${networkIndex}`);
-
     const authority = new Wallet(authorityKeypair);
     this.log(`Admin Authority: ${authority.publicKey.toBase58()}`);
 
@@ -59,11 +62,11 @@ Latest Blockhash: [blockhash]
       authority.publicKey,
       networkIndex
     );
-    this.log(`Network Address: ${dataAccount}`);
+    this.log(`Derived Network Address: ${dataAccount}`);
 
     const adminService = await AdminService.build(dataAccount, {
       wallet: authority,
-      clusterType: 'localnet' as ExtendedCluster,
+      clusterType: cluster as ExtendedCluster,
     });
 
     await airdrop(

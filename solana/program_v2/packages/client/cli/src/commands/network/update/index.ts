@@ -12,11 +12,10 @@ import fsPromises from 'node:fs/promises';
 import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 
 export default class Close extends Command {
-  static description = 'Closes a gatekeeper network';
+  static description = 'Updates a gatekeeper network';
 
   static examples = [
-    `$ gateway network close
-network closed
+    `$ gateway network update --network [address] --data [path to JSON update data] --funder [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -32,17 +31,15 @@ network closed
         'Path to a JSON data file representing the new state of the network',
       required: true,
     }),
-    // TODO: Change to required: true
     funder: Flags.string({
       char: 'f',
       description: 'The funder account',
-      required: false,
+      required: true,
     }),
-    // TODO: Is this necessary?
     cluster: Flags.string({
       char: 'c',
       description: 'The type of cluster',
-      required: false,
+      required: true,
     }),
   };
 
@@ -52,9 +49,13 @@ network closed
     const { flags } = await this.parse(Close);
 
     const network = new PublicKey(flags.network);
+    const cluster =
+      flags.cluster === 'localnet' ||
+      flags.cluster === 'devnet' ||
+      flags.cluster === 'mainnet'
+        ? flags.cluster
+        : 'localnet';
     const data = await fsPromises.readFile(`${__dirname}/${flags.data}`);
-    // TODO!: Parse this data correctly so that it matches to UpdateNetworkData
-    // TODO: Map input to parsed input
     const updateData = JSON.parse(data.toString()) as UpdateNetworkData;
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
@@ -70,7 +71,7 @@ network closed
 
     const service = await AdminService.build(network, {
       wallet: authorityWallet,
-      clusterType: 'localnet' as ExtendedCluster,
+      clusterType: cluster as ExtendedCluster,
     });
 
     await airdrop(
