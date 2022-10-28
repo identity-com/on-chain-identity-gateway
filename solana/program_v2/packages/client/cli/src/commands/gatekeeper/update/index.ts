@@ -14,7 +14,7 @@ export default class Update extends Command {
   static description = 'Updates a gatekeeper on an existing network';
 
   static examples = [
-    `$ gateway gatekeeper update ---network [address] --gatekeeper [address] --data [path to JSON file] --stake [address] --funder [path to keypair] --cluster [cluster type]
+    `$ gateway gatekeeper update --gatekeeper [address] --data [PATH to JSON data file]
 `,
   ];
 
@@ -36,11 +36,6 @@ export default class Update extends Command {
         'Path to a JSON data file representing the new state of the network',
       required: true,
     }),
-    stake: Flags.string({
-      char: 's',
-      description: "String representing the gatekeeper's staking account",
-      required: true,
-    }),
     funder: Flags.string({
       char: 'f',
       description: 'Path to a solana keypair',
@@ -54,7 +49,6 @@ export default class Update extends Command {
   };
 
   static args = [];
-
   async run(): Promise<void> {
     const { flags } = await this.parse(Update);
 
