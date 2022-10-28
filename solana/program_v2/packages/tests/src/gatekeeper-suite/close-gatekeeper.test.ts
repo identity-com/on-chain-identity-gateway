@@ -10,6 +10,7 @@ import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
+
 chai.use(chaiAsPromised);
 
 describe('Gateway v2 Client', () => {
@@ -52,18 +53,22 @@ describe('Gateway v2 Client', () => {
     adminService = await AdminService.buildFromAnchor(
       program,
       networkAuthority.publicKey,
-      'localnet',
-      programProvider,
-      adminAuthority
+      {
+        clusterType: 'localnet',
+        wallet: adminAuthority,
+      },
+      programProvider
     );
 
     networkService = await NetworkService.buildFromAnchor(
       program,
       adminAuthority.publicKey,
       gatekeeperDataAccount,
-      'localnet',
-      programProvider,
-      adminAuthority
+      {
+        clusterType: 'localnet',
+        wallet: adminAuthority,
+      },
+      programProvider
     );
 
     await adminService

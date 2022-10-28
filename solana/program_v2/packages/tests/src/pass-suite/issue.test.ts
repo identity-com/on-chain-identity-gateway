@@ -19,7 +19,7 @@ describe('Issue pass', () => {
     service = await createGatekeeperService();
   });
 
-  it.only('Issues a pass', async () => {
+  it('Issues a pass', async () => {
     const subject = Keypair.generate().publicKey;
 
     const account = await GatekeeperService.createPassAddress(

@@ -31,9 +31,11 @@ describe('Gateway v2 Client', () => {
     service = await AdminService.buildFromAnchor(
       program,
       networkAuthority.publicKey,
-      'localnet',
-      programProvider,
-      authority
+      {
+        clusterType: 'localnet',
+        wallet: authority,
+      },
+      programProvider
     );
 
     await service
