@@ -482,11 +482,6 @@ export type GatewayV2 = {
           "name": "network",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "gatekeeper",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
@@ -1869,11 +1864,6 @@ export const IDL: GatewayV2 = {
         },
         {
           "name": "network",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "gatekeeper",
           "isMut": false,
           "isSigner": false
         }

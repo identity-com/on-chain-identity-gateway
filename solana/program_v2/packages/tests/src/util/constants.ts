@@ -1,13 +1,13 @@
 import { PublicKey } from '@solana/web3.js';
 
 export const TEST_NETWORK = new PublicKey(
-  'F75rU4fRqxiqG6gJCjkqaPHAARbmc276Y6ENrCTLPs6G'
+  '6npWzRhH5YqDBZz7LF85Y2UdeG7Zhmi5oPmfELk5RXSf'
 );
 export const TEST_ALT_NETWORK = new PublicKey(
-  '89YHuQyHzscgH29wFs2QkE49K1PoLHqY9ggtLQVshMb6'
+  '6Boz9sR8PEyrGvhCG42aRRfqz5BZ7Yo3rUUyBf9Eew4z'
 );
 export const TEST_GATEKEEPER = new PublicKey(
-  'DrbTzfYLsrWbQ1ioC69L2VMBfuFeDjnYH9DoWPZn5qZA'
+  '7kxayzw8vYXMxH2TCy1na6x2LNctES8ndNbut559mTko'
 );
 export const TEST_GATEKEEPER_AUTHORITY = new PublicKey(
   'B4951ZxztgHL98WT4eFUyaaRmsi6V4hBzkoYe1VSNweo'
