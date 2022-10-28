@@ -52,7 +52,9 @@ export default class Close extends Command {
     const cluster =
       flags.cluster === 'localnet' ||
       flags.cluster === 'devnet' ||
-      flags.cluster === 'mainnet'
+      flags.cluster === 'mainnet' ||
+      flags.cluster === 'civicnet' ||
+      flags.cluster === 'testnet'
         ? flags.cluster
         : 'localnet';
     const data = await fsPromises.readFile(`${__dirname}/${flags.data}`);
