@@ -74,13 +74,18 @@ impl GatekeeperNetwork {
             + OC_SIZE_VEC_PREFIX + (OC_SIZE_PUBKEY * gatekeepers) as usize // gatekeeper list
             + OC_SIZE_U16 // network_index
             + OC_SIZE_VEC_PREFIX + SupportedToken::ON_CHAIN_SIZE * supported_tokens as usize
-        + 1000
         // supported tokens list
     }
 
     /// Checks if the provided authority exists within the [`GatekeeperNetwork::auth_keys`]
-    /// and has the requested flag set
+    /// and has the requested flag set or is the guardian authority
     pub fn can_access(&self, authority: &Signer, flag: NetworkKeyFlags) -> bool {
+        // Check if the current authority is the guardian authority
+        if self.authority == authority.key() {
+            return true;
+        }
+
+        // Check if the authority is in the list of auth keys with the correct access
         self.auth_keys
             .iter()
             .filter(|key| {

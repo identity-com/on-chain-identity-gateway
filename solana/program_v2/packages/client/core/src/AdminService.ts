@@ -109,7 +109,7 @@ export class AdminService extends AbstractService {
       authThreshold: 1,
       passExpireTime: 16,
       fees: [],
-      authKeys: [{ flags: 4097, key: this._wallet.publicKey }],
+      authKeys: [{ flags: 4097, key: this._network }],
       supportedTokens: [],
     },
     authority: PublicKey = this._wallet.publicKey
@@ -179,20 +179,22 @@ export class AdminService extends AbstractService {
     const networkAccount = this._program.account.gatekeeperNetwork
       .fetchNullable(account)
       .then((acct) => {
-        if (!acct) return null;
-
-        return {
-          version: acct?.version,
-          authority: acct?.authority,
-          networkIndex: acct?.networkIndex,
-          authThreshold: acct?.authThreshold,
-          passExpireTime: acct?.passExpireTime.toNumber(),
-          fees: acct?.fees as FeeStructure[],
-          authKeys: acct?.authKeys as AuthKeyStructure[],
-          networkFeatures: acct?.networkFeatures,
-          supportedTokens: acct?.supportedTokens,
-          gatekeepers: acct?.gatekeepers,
-        };
+        if (acct) {
+          return {
+            version: acct?.version,
+            authority: acct?.authority,
+            networkIndex: acct?.networkIndex,
+            authThreshold: acct?.authThreshold,
+            passExpireTime: acct?.passExpireTime.toNumber(),
+            fees: acct?.fees as FeeStructure[],
+            authKeys: acct?.authKeys as AuthKeyStructure[],
+            networkFeatures: acct?.networkFeatures,
+            supportedTokens: acct?.supportedTokens,
+            gatekeepers: acct?.gatekeepers,
+          };
+        } else {
+          return null;
+        }
       });
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore

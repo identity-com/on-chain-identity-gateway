@@ -12,18 +12,18 @@ describe('Gateway v2 Client', () => {
   const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
   let authorityKeypair: Keypair;
-  let authority: anchor.Wallet;
+  let gaurdianAuthority: anchor.Wallet;
 
   let networkAuthority: Keypair;
 
   beforeEach(async () => {
     authorityKeypair = Keypair.generate();
-    authority = new anchor.Wallet(authorityKeypair);
+    gaurdianAuthority = new anchor.Wallet(authorityKeypair);
     networkAuthority = Keypair.generate();
 
     await airdrop(
       programProvider.connection,
-      authority.publicKey,
+      gaurdianAuthority.publicKey,
       LAMPORTS_PER_SOL * 2
     );
 
@@ -32,7 +32,7 @@ describe('Gateway v2 Client', () => {
       networkAuthority.publicKey,
       {
         clusterType: 'localnet',
-        wallet: authority,
+        wallet: gaurdianAuthority,
       },
       programProvider
     );
