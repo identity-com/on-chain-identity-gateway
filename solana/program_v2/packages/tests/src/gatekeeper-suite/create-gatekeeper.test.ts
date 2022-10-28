@@ -21,10 +21,12 @@ describe('Gateway v2 Client', () => {
 
   let adminAuthority: Keypair;
   let networkAuthority: Keypair;
+  let gatekeeperAuthority: Keypair;
 
   before(async () => {
     adminAuthority = Keypair.generate();
     networkAuthority = Keypair.generate();
+    gatekeeperAuthority = Keypair.generate();
 
     //network airdrop
     await airdrop(
@@ -37,9 +39,14 @@ describe('Gateway v2 Client', () => {
       networkAuthority.publicKey,
       LAMPORTS_PER_SOL * 2
     );
+    await airdrop(
+      programProvider.connection,
+      gatekeeperAuthority.publicKey,
+      LAMPORTS_PER_SOL * 2
+    );
 
     [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
-      adminAuthority.publicKey,
+      gatekeeperAuthority.publicKey,
       networkAuthority.publicKey
     );
     [stakingDataAccount] = await NetworkService.createStakingAddress(
@@ -58,11 +65,11 @@ describe('Gateway v2 Client', () => {
 
     networkService = await NetworkService.buildFromAnchor(
       program,
-      adminAuthority.publicKey,
+      gatekeeperAuthority.publicKey,
       gatekeeperDataAccount,
       {
         clusterType: 'localnet',
-        wallet: new anchor.Wallet(adminAuthority),
+        wallet: new anchor.Wallet(gatekeeperAuthority),
       },
       programProvider
     );

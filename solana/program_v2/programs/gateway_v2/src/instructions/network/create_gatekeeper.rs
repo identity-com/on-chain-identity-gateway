@@ -81,7 +81,7 @@ pub struct CreateGatekeeperAccount<'info> {
             network.gatekeepers.len() + 1,
             network.supported_tokens.len(),
         ),
-        realloc::payer = authority,
+        realloc::payer = payer,
         realloc::zero = false,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
