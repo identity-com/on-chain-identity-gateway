@@ -6,12 +6,16 @@ import { createGatekeeperService } from './util';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { TEST_NETWORK } from '../util/constants';
+import {
+  TEST_ALT_NETWORK,
+  TEST_GATEKEEPER_AUTHORITY,
+  TEST_NETWORK,
+} from '../util/constants';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe('Expire a pass', () => {
+describe.only('Verify a pass', () => {
   let service: GatekeeperService;
   let subject: PublicKey;
   let account: PublicKey;
@@ -32,9 +36,9 @@ describe('Expire a pass', () => {
   it('Fails to verify an expired pass', async () => {
     await service.expirePass(account).rpc();
 
-    expect(service.verifyPass(account).rpc()).to.eventually.be.rejectedWith(
-      /InvalidPass/
-    );
+    return expect(
+      service.verifyPass(account).rpc()
+    ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
 
   it('Fails to verify an inactive pass', async () => {
@@ -43,5 +47,16 @@ describe('Expire a pass', () => {
     expect(service.verifyPass(account).rpc()).to.eventually.be.rejectedWith(
       /InvalidPass/
     );
+  });
+
+  it('Fails to verify a pass in a different network', async () => {
+    const altService = await createGatekeeperService(
+      TEST_GATEKEEPER_AUTHORITY,
+      TEST_ALT_NETWORK
+    );
+
+    return expect(
+      altService.verifyPass(account).rpc()
+    ).to.eventually.be.rejectedWith(/A seeds constraint was violated/);
   });
 });
