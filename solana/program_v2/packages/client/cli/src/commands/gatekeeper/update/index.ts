@@ -5,10 +5,10 @@ import {
   airdrop,
   UpdateGatekeeperData,
   NetworkService,
+  ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
 import { Wallet } from '@project-serum/anchor';
 import fsPromises from 'node:fs/promises';
-import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 
 export default class Update extends Command {
   static description = 'Updates a gatekeeper on an existing network';

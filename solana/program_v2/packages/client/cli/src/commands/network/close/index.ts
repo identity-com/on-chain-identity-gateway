@@ -1,10 +1,13 @@
 import { Command, Flags } from '@oclif/core';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 // import * as anchor from '@project-serum/anchor';
-import { AdminService, airdrop } from '@identity.com/gateway-solana-client';
+import {
+  AdminService,
+  airdrop,
+  ExtendedCluster,
+} from '@identity.com/gateway-solana-client';
 import { Wallet } from '@project-serum/anchor';
 import fsPromises from 'node:fs/promises';
-import { ExtendedCluster } from '@identity.com/gateway-solana-client/dist/lib/connection';
 
 export default class Close extends Command {
   static description = 'Closes a gatekeeper network';
