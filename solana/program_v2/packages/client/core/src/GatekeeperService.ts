@@ -1,9 +1,9 @@
-import { GatewayV2 } from '@identity.com/gateway_v2-idl/src/gateway_v2';
+import { GatewayV2 } from '@identity.com/gateway-solana-idl';
 import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
-import { Wallet } from './lib/types';
+import { GatewayServiceOptions, Wallet } from './lib/types';
 
 import { EnumMapper } from './lib/utils';
 import {
@@ -16,11 +16,7 @@ import {
   AbstractService,
   NonSigningWallet,
 } from './utils/AbstractService';
-import {
-  CustomClusterUrlConfig,
-  ExtendedCluster,
-  getConnectionByCluster,
-} from './lib/connection';
+import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { PassAccount, PassState, PassStateMapping } from './lib/wrappers';
 
 export class GatekeeperService extends AbstractService {
@@ -38,18 +34,22 @@ export class GatekeeperService extends AbstractService {
   static async build(
     network: PublicKey,
     gatekeeper: PublicKey,
-    wallet: Wallet,
-    cluster: ExtendedCluster = SOLANA_MAINNET,
-    customConfig?: CustomClusterUrlConfig,
-    opts: ConfirmOptions = AnchorProvider.defaultOptions()
+    options: GatewayServiceOptions = {
+      clusterType: SOLANA_MAINNET,
+    }
   ): Promise<GatekeeperService> {
-    const _connection = getConnectionByCluster(
-      cluster,
-      opts.preflightCommitment,
-      customConfig
-    );
+    const wallet = options.wallet || new NonSigningWallet();
+    const confirmOptions =
+      options.confirmOptions || AnchorProvider.defaultOptions();
+    const _connection =
+      options.connection ||
+      getConnectionByCluster(
+        options.clusterType,
+        confirmOptions.preflightCommitment,
+        options.customConfig
+      );
 
-    const provider = new AnchorProvider(_connection, wallet, opts);
+    const provider = new AnchorProvider(_connection, wallet, confirmOptions);
 
     const program = await AbstractService.fetchProgram(provider);
 
@@ -57,7 +57,7 @@ export class GatekeeperService extends AbstractService {
       program,
       network,
       gatekeeper,
-      cluster,
+      options.clusterType,
       wallet,
       provider.opts
     );
@@ -67,7 +67,9 @@ export class GatekeeperService extends AbstractService {
     program: Program<GatewayV2>,
     network: PublicKey,
     gatekeeper: PublicKey,
-    cluster: ExtendedCluster,
+    options: GatewayServiceOptions = {
+      clusterType: SOLANA_MAINNET,
+    },
     provider: AnchorProvider = program.provider as AnchorProvider,
     wallet: Wallet = provider.wallet
   ): Promise<GatekeeperService> {
@@ -75,7 +77,7 @@ export class GatekeeperService extends AbstractService {
       program,
       network,
       gatekeeper,
-      cluster,
+      options.clusterType,
       wallet,
       provider.opts
     );
