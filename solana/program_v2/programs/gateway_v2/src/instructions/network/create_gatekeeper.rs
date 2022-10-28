@@ -60,7 +60,7 @@ pub struct CreateGatekeeperData {
 pub struct CreateGatekeeperAccount<'info> {
     #[account(
         init,
-        payer = authority,
+        payer = payer,
         space = Gatekeeper::size(
             data.auth_keys.len(),
             data.token_fees.len(),
@@ -71,6 +71,8 @@ pub struct CreateGatekeeperAccount<'info> {
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
     #[account(
         mut,
         realloc = GatekeeperNetwork::size(

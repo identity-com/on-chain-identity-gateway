@@ -123,6 +123,7 @@ export class NetworkService extends AbstractService {
   createGatekeeper(
     network: PublicKey,
     stakingAccount: PublicKey,
+    payer: PublicKey = this._wallet.publicKey,
     data: CreateGatekeeperData = {
       tokenFees: [],
       authThreshold: 1,
@@ -147,6 +148,7 @@ export class NetworkService extends AbstractService {
         network,
         stakingAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
+        payer,
       })
       .instruction();
 
@@ -164,6 +166,7 @@ export class NetworkService extends AbstractService {
   updateGatekeeper(
     data: UpdateGatekeeperData,
     stakingAccount: PublicKey,
+    payer: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
@@ -180,6 +183,7 @@ export class NetworkService extends AbstractService {
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         stakingAccount,
+        payer,
       })
       .instruction();
 
@@ -197,6 +201,7 @@ export class NetworkService extends AbstractService {
   closeGatekeeper(
     network: PublicKey,
     destination: PublicKey = this._wallet.publicKey,
+    payer: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
@@ -210,6 +215,7 @@ export class NetworkService extends AbstractService {
         destination,
         authority,
         network,
+        payer,
       })
       .instruction();
 

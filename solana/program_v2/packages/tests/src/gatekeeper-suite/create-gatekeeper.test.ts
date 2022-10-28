@@ -19,11 +19,11 @@ describe('Gateway v2 Client', () => {
   let gatekeeperDataAccount: PublicKey;
   let stakingDataAccount: PublicKey;
 
-  let adminAuthority: anchor.Wallet;
+  let adminAuthority: Keypair;
   let networkAuthority: Keypair;
 
   before(async () => {
-    adminAuthority = new anchor.Wallet(Keypair.generate());
+    adminAuthority = Keypair.generate();
     networkAuthority = Keypair.generate();
 
     //network airdrop
@@ -51,7 +51,7 @@ describe('Gateway v2 Client', () => {
       networkAuthority.publicKey,
       {
         clusterType: 'localnet',
-        wallet: adminAuthority,
+        wallet: new anchor.Wallet(adminAuthority),
       },
       programProvider
     );
@@ -62,7 +62,7 @@ describe('Gateway v2 Client', () => {
       gatekeeperDataAccount,
       {
         clusterType: 'localnet',
-        wallet: adminAuthority,
+        wallet: new anchor.Wallet(adminAuthority),
       },
       programProvider
     );
@@ -77,7 +77,12 @@ describe('Gateway v2 Client', () => {
     it('Creates a gatekeeper w/ default data on an established network', async function () {
       // creates a gatekeeper with the admin's authority
       await networkService
-        .createGatekeeper(networkAuthority.publicKey, stakingDataAccount)
+        .createGatekeeper(
+          networkAuthority.publicKey,
+          stakingDataAccount,
+          adminAuthority.publicKey
+        )
+        .withPartialSigners(adminAuthority)
         .rpc();
 
       // retrieves the gatekeeper

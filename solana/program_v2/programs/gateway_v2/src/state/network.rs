@@ -14,7 +14,7 @@ pub struct GatekeeperNetwork {
     /// The initial authority key
     pub authority: Pubkey,
     /// the index of the network
-    pub network_index: u16,
+    pub network_index: u16, // TODO: Remove this
     /// The bump for the signer
     pub network_bump: u8,
     /// The length of time a pass lasts in seconds. `0` means does not expire.

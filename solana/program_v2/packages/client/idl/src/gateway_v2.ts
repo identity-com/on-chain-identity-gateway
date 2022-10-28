@@ -93,6 +93,11 @@ export type GatewayV2 = {
           "isSigner": true
         },
         {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "network",
           "isMut": true,
           "isSigner": false
@@ -127,6 +132,11 @@ export type GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -170,6 +180,11 @@ export type GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -1467,6 +1482,11 @@ export const IDL: GatewayV2 = {
           "isSigner": true
         },
         {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "network",
           "isMut": true,
           "isSigner": false
@@ -1501,6 +1521,11 @@ export const IDL: GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -1544,6 +1569,11 @@ export const IDL: GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },

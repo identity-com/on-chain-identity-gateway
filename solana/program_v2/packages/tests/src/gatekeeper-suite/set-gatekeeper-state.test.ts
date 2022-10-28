@@ -13,9 +13,10 @@ import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
+
 chai.use(chaiAsPromised);
 
-describe('Gateway v2 Client', () => {
+describe.only('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
   const programProvider = program.provider as anchor.AnchorProvider;
@@ -25,11 +26,11 @@ describe('Gateway v2 Client', () => {
   let gatekeeperDataAccount: PublicKey;
   let stakingDataAccount: PublicKey;
 
-  let adminAuthority: anchor.Wallet;
+  let adminAuthority: Keypair;
   let networkAuthority: Keypair;
 
   before(async () => {
-    adminAuthority = new anchor.Wallet(Keypair.generate());
+    adminAuthority = Keypair.generate();
     networkAuthority = Keypair.generate();
 
     //network airdrop
@@ -57,7 +58,7 @@ describe('Gateway v2 Client', () => {
       networkAuthority.publicKey,
       {
         clusterType: 'localnet',
-        wallet: adminAuthority,
+        wallet: new anchor.Wallet(adminAuthority),
       },
       programProvider
     );
@@ -68,7 +69,7 @@ describe('Gateway v2 Client', () => {
       gatekeeperDataAccount,
       {
         clusterType: 'localnet',
-        wallet: adminAuthority,
+        wallet: new anchor.Wallet(adminAuthority),
       },
       programProvider
     );
@@ -79,7 +80,12 @@ describe('Gateway v2 Client', () => {
       .rpc();
 
     await networkService
-      .createGatekeeper(networkAuthority.publicKey, stakingDataAccount)
+      .createGatekeeper(
+        networkAuthority.publicKey,
+        stakingDataAccount,
+        adminAuthority.publicKey
+      )
+      .withPartialSigners(adminAuthority)
       .rpc();
   });
 
