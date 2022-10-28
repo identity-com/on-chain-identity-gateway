@@ -36,6 +36,11 @@ export default class Update extends Command {
       description: "String representing the network's address",
       required: false,
     }),
+    stake: Flags.string({
+      char: 's',
+      description: "String representing the gatekeeper's staking account",
+      required: true,
+    }),
     funder: Flags.string({
       char: 'f',
       description: 'Path to a solana keypair',
@@ -48,9 +53,9 @@ export default class Update extends Command {
     const { flags } = await this.parse(Update);
 
     const gatekeeper = new PublicKey(flags.gatekeeper);
+    const stakingAccount = new PublicKey(flags.stake);
     const data = await fsPromises.readFile(`${__dirname}/${flags.data}`);
     const updateData = JSON.parse(data.toString()) as UpdateGatekeeperData;
-    const stakingAccount = Keypair.generate().publicKey;
 
     const localSecretKey = flags.funder
       ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
