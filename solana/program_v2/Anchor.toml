@@ -19,7 +19,7 @@ cluster = "localnet"
 wallet = "./packages/tests/fixtures/keypairs/7aHML6LXPtEuUDu4Azv52KbgEqdSDk9syqFvCAE63ZT5.json"
 
 [scripts]
-createTestFixtureAccount = "./node_modules/.bin/ts-node ./scripts/createTestFixtureAccount.ts"
+createTestFixtureAccount = "./node_modules/.bin/ts-node ./packages/tests/scripts/createTestFixtureAccount.ts"
 
 [test]
 startup_wait = 20000
