@@ -17,7 +17,7 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@identity.com/gateway-solana-client": "^2.0.0-beta.1",
+    "@identity.com/gateway-solana-client": "^2.0.0-beta.0",
     "@oclif/core": "^1",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.0.1",
