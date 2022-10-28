@@ -144,11 +144,11 @@ jobs:
       - name: Install
         run: yarn install --ignore-scripts --frozen-lockfile
 
-      - name: Lint
-        run: yarn lint
-
       - name: Build program
         run: yarn build
+
+      - name: Lint
+        run: yarn lint
 
       - name: Run integration tests
         run: |
