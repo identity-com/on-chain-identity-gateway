@@ -14,7 +14,6 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js';
-//import idl
 import { GatewayV2, IDL } from '@identity.com/gateway-solana-idl';
 import { Wallet } from '../lib/types';
 
@@ -33,7 +32,6 @@ export abstract class AbstractService {
   static async fetchProgram(
     provider: anchor.Provider
   ): Promise<Program<GatewayV2>> {
-    // TODO: Update IDL loading (IDCOM-2108)
     return new Program<GatewayV2>(
       IDL,
       GATEWAY_PROGRAM,

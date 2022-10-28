@@ -1,6 +1,6 @@
 import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
-import { PublicKey } from '@solana/web3.js';
+import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
 import {
   AuthKeyStructure,
@@ -12,7 +12,7 @@ import {
   Wallet,
 } from './lib/types';
 
-import { getConnectionByCluster } from './lib/connection';
+import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2 } from '@identity.com/gateway-solana-idl';
 import {
@@ -22,6 +22,16 @@ import {
 } from './utils/AbstractService';
 
 export class AdminService extends AbstractService {
+  constructor(
+    _program: Program<GatewayV2>,
+    protected _network: PublicKey,
+    _cluster: ExtendedCluster = SOLANA_MAINNET,
+    _wallet: Wallet = new NonSigningWallet(),
+    _opts: ConfirmOptions = AnchorProvider.defaultOptions()
+  ) {
+    super(_program, undefined, _cluster, _wallet, _opts);
+  }
+
   static async build(
     network: PublicKey,
     options: GatewayServiceOptions = {

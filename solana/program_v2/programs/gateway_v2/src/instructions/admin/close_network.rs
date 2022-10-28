@@ -1,4 +1,3 @@
-use crate::constants::NETWORK_SEED;
 use crate::errors::NetworkErrors;
 use crate::state::*;
 use anchor_lang::prelude::*;

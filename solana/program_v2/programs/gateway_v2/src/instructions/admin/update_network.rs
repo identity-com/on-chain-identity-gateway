@@ -1,4 +1,3 @@
-use crate::constants::NETWORK_SEED;
 use crate::state::{GatekeeperNetwork, NetworkAuthKey, NetworkFees, SupportedToken};
 use anchor_lang::prelude::*;
 
