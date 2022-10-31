@@ -8,29 +8,28 @@ import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 import { Wallet } from '@project-serum/anchor';
 
-export default class ChangeGatekeeper extends Command {
-  static description = "Changes a pass's assigned gatekeeper";
+export default class Inspect extends Command {
+  static description = 'Inspects a gateway pass';
 
   static examples = [
-    `$ gateway pass changegatekeeper --subject [address] --network [address] --gatekeeper [address] --keypair [path to keypair] --cluster [cluster type]
+    `$ gateway pass refresh --subject [address] --network [address] --gatekeeper [address] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
   static flags = {
     subject: Flags.string({
       char: 's',
-      description: 'Public Key to which a pass shall be issued',
+      description: 'Pubkey to which a pass shall be issued',
       required: true,
     }),
     network: Flags.string({
       char: 'n',
-      description: "Public Key representing the network's address",
+      description: "String representing the network's address",
       required: true,
     }),
     gatekeeper: Flags.string({
       char: 'g',
-      description:
-        'String representing the new gatekeeper address to which the pass will be assigned',
+      description: "String representing the gatekeeper's address",
       required: true,
     }),
     keypair: Flags.string({
@@ -48,11 +47,11 @@ export default class ChangeGatekeeper extends Command {
   static args = [];
 
   async run(): Promise<void> {
-    const { flags } = await this.parse(ChangeGatekeeper);
+    const { flags } = await this.parse(Inspect);
 
     const subject = new PublicKey(flags.subject);
-    const gatekeeper = new PublicKey(flags.gatekeeper);
     const network = new PublicKey(flags.network);
+    const gatekeeper = new PublicKey(flags.gatekeeper);
     const cluster =
       flags.cluster === 'localnet' ||
       flags.cluster === 'devnet' ||
@@ -63,7 +62,7 @@ export default class ChangeGatekeeper extends Command {
         : 'localnet';
 
     const localSecretKey = await fsPromises.readFile(
-      `${__dirname}/${flags.auth}`
+      `${__dirname}/${flags.keypair}`
     );
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
@@ -75,16 +74,10 @@ export default class ChangeGatekeeper extends Command {
       { wallet: authorityWallet, clusterType: cluster as ExtendedCluster }
     );
 
-    // TODO: Error occurring 'Error Code: InvalidGatekeeper'
-
     const account = await GatekeeperService.createPassAddress(subject, network);
-    const originalPass = await gatekeeperService.getPassAccount(subject);
-    this.log(`Original Pass GK: ${originalPass?.gatekeeper}`);
-    const gatekeeperChangeSignature = await gatekeeperService
-      .changePassGatekeeper(gatekeeper, account)
+    const refreshedPassSignature = await gatekeeperService
+      .refreshPass(account)
       .rpc();
-    this.log(`Change Gatekeeper TX Signature: ${gatekeeperChangeSignature}`);
-    const updatedPass = await gatekeeperService.getPassAccount(subject);
-    this.log(`New Pass Gatekeeper: ${updatedPass?.gatekeeper}`);
+    this.log(`Pass Refresh TX Signature: ${refreshedPassSignature}`);
   }
 }
