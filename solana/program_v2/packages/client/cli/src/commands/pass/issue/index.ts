@@ -1,11 +1,10 @@
 // import { GatekeeperService } from '@identity.com/gateway-solana-client';
 import {
-  airdrop,
   GatekeeperService,
   ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 import { Wallet } from '@project-serum/anchor';
 
@@ -13,7 +12,7 @@ export default class Issue extends Command {
   static description = 'Issues a gateway pass';
 
   static examples = [
-    `$ gateway pass issue --subject [address] --network [address] --gatekeeper [address] --funder [path to keypair] --cluster [cluster type]
+    `$ gateway pass issue --subject [address] --network [address] --gatekeeper [address] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -33,8 +32,8 @@ export default class Issue extends Command {
       description: "String representing the gatekeeper's address",
       required: true,
     }),
-    funder: Flags.string({
-      char: 'f',
+    keypair: Flags.string({
+      char: 'k',
       description: 'Path to a solana keypair',
       required: true,
     }),
@@ -61,27 +60,18 @@ export default class Issue extends Command {
       flags.cluster === 'testnet'
         ? flags.cluster
         : 'localnet';
-    const localSecretKey = flags.funder
-      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/gatekeeper-authority.json`
-        );
 
+    const localSecretKey = await fsPromises.readFile(
+      `${__dirname}/${flags.keypair}`
+    );
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
-
     const authorityWallet = new Wallet(authorityKeypair);
 
     const gatekeeperService = await GatekeeperService.build(
       network,
       gatekeeper,
       { wallet: authorityWallet, clusterType: cluster as ExtendedCluster }
-    );
-
-    await airdrop(
-      gatekeeperService.getConnection(),
-      authorityWallet.publicKey,
-      LAMPORTS_PER_SOL * 2
     );
 
     const account = await GatekeeperService.createPassAddress(subject, network);

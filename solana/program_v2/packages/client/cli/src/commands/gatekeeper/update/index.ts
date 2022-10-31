@@ -1,8 +1,7 @@
 import { Command, Flags } from '@oclif/core';
 import { parseGatekeeperUpdateData } from '../../../util/util';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import {
-  airdrop,
   UpdateGatekeeperData,
   NetworkService,
   ExtendedCluster,
@@ -65,36 +64,21 @@ export default class Update extends Command {
     const data = await fsPromises.readFile(`${__dirname}/${flags.data}`);
     const updateData = JSON.parse(data.toString()) as UpdateGatekeeperData;
 
-    const localSecretKey = flags.funder
-      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/network-authority.json`
-        );
-
-    const authKey = await fsPromises.readFile(
-      `${__dirname}/../../../keypairs/gatekeeper-authority.json`
+    const localSecretKey = await fsPromises.readFile(
+      `${__dirname}/${flags.auth}`
     );
-
-    const authKeyArr = Uint8Array.from(JSON.parse(authKey.toString()));
-    const authPair = Keypair.fromSecretKey(authKeyArr);
 
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
     const authorityWallet = new Wallet(authorityKeypair);
 
     const networkService = await NetworkService.build(
-      authPair.publicKey,
+      authorityKeypair.publicKey,
       gatekeeper,
       {
         wallet: authorityWallet,
         clusterType: cluster as ExtendedCluster,
       }
-    );
-
-    await airdrop(
-      networkService.getConnection(),
-      authorityWallet.publicKey,
-      LAMPORTS_PER_SOL * 2
     );
 
     const parsedData = parseGatekeeperUpdateData(updateData);

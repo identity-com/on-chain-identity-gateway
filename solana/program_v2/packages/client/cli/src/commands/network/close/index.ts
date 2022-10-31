@@ -1,9 +1,8 @@
 import { Command, Flags } from '@oclif/core';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 // import * as anchor from '@project-serum/anchor';
 import {
   AdminService,
-  airdrop,
   ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
 import { Wallet } from '@project-serum/anchor';
@@ -13,7 +12,7 @@ export default class Close extends Command {
   static description = 'Closes a gatekeeper network';
 
   static examples = [
-    `$ gateway network close --network [address] --funder [path to keypair] --cluster [cluster type]
+    `$ gateway network close --network [address] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -23,9 +22,9 @@ export default class Close extends Command {
       description: 'The network id',
       required: true,
     }),
-    funder: Flags.string({
-      char: 'f',
-      description: 'The funder account',
+    keypair: Flags.string({
+      char: 'k',
+      description: 'Path to a Solana keypair',
       required: true,
     }),
     cluster: Flags.string({
@@ -49,27 +48,17 @@ export default class Close extends Command {
       flags.cluster === 'testnet'
         ? flags.cluster
         : 'localnet';
-    const localSecretKey = flags.funder
-      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/guardian-authority.json`
-        );
-
+    const localSecretKey = await fsPromises.readFile(
+      `${__dirname}/${flags.auth}`
+    );
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
-
     const authorityWallet = new Wallet(authorityKeypair);
 
     const service = await AdminService.build(network, {
       wallet: authorityWallet,
       clusterType: cluster as ExtendedCluster,
     });
-
-    await airdrop(
-      service.getConnection(),
-      authorityWallet.publicKey,
-      LAMPORTS_PER_SOL
-    );
 
     const closedNetworkSignature = await service.closeNetwork().rpc();
     this.log(`Network Closure TX Signature: ${closedNetworkSignature}`);

@@ -11,7 +11,7 @@ hello friend from oclif! (./src/commands/hello/index.ts)
 
   static flags = {
     from: Flags.string({
-      char: 'f',
+      char: 'k',
       description: 'Who is saying hello',
       required: true,
     }),
