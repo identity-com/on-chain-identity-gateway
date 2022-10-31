@@ -12,14 +12,14 @@ export default class SetData extends Command {
   static description = 'Sets the data for a gateway pass';
 
   static examples = [
-    `$ gateway pass setdata --subject [address] --network [address] --gatekeeper [address] --data [path to data] --funder [path to keypair] --cluster [cluster type]
+    `$ gateway pass setdata --subject [address] --network [address] --gatekeeper [address] --data [path to data] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
   static flags = {
     subject: Flags.string({
       char: 's',
-      description: 'Pubkey to which a pass shall be issued',
+      description: 'Address to which a pass shall be issued',
       required: true,
     }),
     network: Flags.string({
@@ -37,8 +37,8 @@ export default class SetData extends Command {
       description: 'Path to new pass and network data',
       required: true,
     }),
-    funder: Flags.string({
-      char: 'f',
+    keypair: Flags.string({
+      char: 'k',
       description: 'Path to a solana keypair',
       required: true,
     }),
@@ -65,15 +65,12 @@ export default class SetData extends Command {
       flags.cluster === 'testnet'
         ? flags.cluster
         : 'localnet';
-    const localSecretKey = flags.funder
-      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/gatekeeper-authority.json`
-        );
 
+    const localSecretKey = await fsPromises.readFile(
+      `${__dirname}/${flags.keypair}`
+    );
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
-
     const authorityWallet = new Wallet(authorityKeypair);
 
     const dataFile = JSON.parse(
@@ -81,7 +78,7 @@ export default class SetData extends Command {
     );
     const gatekeeperData = Uint8Array.from(dataFile.gatekeeperData);
     const networkData = Uint8Array.from(dataFile.networkData);
-    // this.log(`${passData}, ${networkData}`);
+
     const gatekeeperService = await GatekeeperService.build(
       network,
       gatekeeper,
@@ -92,7 +89,6 @@ export default class SetData extends Command {
     const modifiedPassSignature = await gatekeeperService
       .setPassData(account, gatekeeperData, networkData)
       .rpc();
-
     this.log(`Pass SetState Signature: ${modifiedPassSignature}`);
   }
 }

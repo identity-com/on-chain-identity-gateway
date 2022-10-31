@@ -1,18 +1,17 @@
 import {
-  airdrop,
   NetworkService,
   ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 
 export default class Close extends Command {
   static description = 'Closes an existing gatekeeper';
 
   static examples = [
-    `$ gateway gatekeeper close --network [address] --gatekeeper [address] --funder [path to keypair] --cluster [cluster type]
+    `$ gateway gatekeeper close --network [address] --gatekeeper [address] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -28,10 +27,10 @@ export default class Close extends Command {
       description: "String representing the gatekeeper's address",
       required: true,
     }),
-    funder: Flags.string({
-      char: 'f',
+    keypair: Flags.string({
+      char: 'k',
       description: 'Path to a solana keypair',
-      required: false,
+      required: true,
     }),
     cluster: Flags.string({
       char: 'c',
@@ -55,15 +54,12 @@ export default class Close extends Command {
       flags.cluster === 'testnet'
         ? flags.cluster
         : 'localnet';
-    const localSecretKey = flags.funder
-      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/network-authority.json`
-        );
 
+    const localSecretKey = await fsPromises.readFile(
+      `${__dirname}/${flags.auth}`
+    );
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
-
     const authorityWallet = new Wallet(authorityKeypair);
     this.log(`Admin Authority: ${authorityKeypair.publicKey.toBase58()}`);
 
@@ -77,11 +73,6 @@ export default class Close extends Command {
       clusterType: cluster as ExtendedCluster,
     });
 
-    await airdrop(
-      networkService.getConnection(),
-      authorityWallet.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
     const gatekeeperAccount = await networkService.getGatekeeperAccount(
       dataAccount
     );

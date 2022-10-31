@@ -12,7 +12,7 @@ export default class ChangeGatekeeper extends Command {
   static description = 'Expires a gateway pass';
 
   static examples = [
-    `$ gateway pass changegatekeeper --subject [address] --network [address] --gatekeeper [address] --funder [path to keypair] --cluster [cluster type]
+    `$ gateway pass changegatekeeper --subject [address] --network [address] --gatekeeper [address] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -33,8 +33,8 @@ export default class ChangeGatekeeper extends Command {
         'String representing the new gatekeeper address to which the pass will be assigned',
       required: true,
     }),
-    funder: Flags.string({
-      char: 'f',
+    keypair: Flags.string({
+      char: 'k',
       description: 'Path to a solana keypair',
       required: true,
     }),
@@ -61,15 +61,12 @@ export default class ChangeGatekeeper extends Command {
       flags.cluster === 'testnet'
         ? flags.cluster
         : 'localnet';
-    const localSecretKey = flags.funder
-      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/gatekeeper-authority.json`
-        );
 
+    const localSecretKey = await fsPromises.readFile(
+      `${__dirname}/${flags.auth}`
+    );
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
-
     const authorityWallet = new Wallet(authorityKeypair);
 
     const gatekeeperService = await GatekeeperService.build(

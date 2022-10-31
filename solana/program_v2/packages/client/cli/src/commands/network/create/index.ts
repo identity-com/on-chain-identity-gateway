@@ -1,9 +1,8 @@
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
-import { Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Keypair } from '@solana/web3.js';
 import {
   AdminService,
-  airdrop,
   NetworkKeyFlags,
   ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
@@ -12,16 +11,16 @@ export default class Create extends Command {
   static description = 'Creates a gatekeeper network';
 
   static examples = [
-    `$ gateway network create --funder ./funder-keypair.json --index 0 --cluster [cluster type]
+    `$ gateway network create --keypair [path to keypair] --index [network index] --cluster [cluster type]
 `,
   ];
 
   static flags = {
     help: Flags.help({ char: 'h' }),
-    funder: Flags.string({
-      char: 'f',
-      description: 'Path to a solana keypair',
-      required: false,
+    keypair: Flags.string({
+      char: 'k',
+      description: 'Path to a Solana keypair',
+      required: true,
     }),
     cluster: Flags.string({
       char: 'c',
@@ -49,12 +48,9 @@ export default class Create extends Command {
         ? flags.cluster
         : 'localnet';
     this.log(`Network Index: ${networkIndex}`);
-    const localSecretKey = flags.funder
-      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/guardian-authority.json`
-        );
-
+    const localSecretKey = await fsPromises.readFile(
+      `${__dirname}/${flags.auth}`
+    );
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
     const authority = new Wallet(authorityKeypair);
@@ -71,11 +67,6 @@ export default class Create extends Command {
       clusterType: cluster as ExtendedCluster,
     });
 
-    await airdrop(
-      adminService.getConnection(),
-      authority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
     const networkData = {
       authThreshold: 1,
       passExpireTime: 16,

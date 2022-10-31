@@ -1,8 +1,7 @@
 import { Command, Flags } from '@oclif/core';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import {
   AdminService,
-  airdrop,
   UpdateNetworkData,
   ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
@@ -14,7 +13,7 @@ export default class Close extends Command {
   static description = 'Updates a gatekeeper network';
 
   static examples = [
-    `$ gateway network update --network [address] --data [path to JSON update data] --funder [path to keypair] --cluster [cluster type]
+    `$ gateway network update --network [address] --data [path to JSON update data] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -30,9 +29,9 @@ export default class Close extends Command {
         'Path to a JSON data file representing the new state of the network',
       required: true,
     }),
-    funder: Flags.string({
-      char: 'f',
-      description: 'The funder account',
+    keypair: Flags.string({
+      char: 'k',
+      description: 'Path to Solana keypair',
       required: true,
     }),
     cluster: Flags.string({
@@ -58,15 +57,11 @@ export default class Close extends Command {
         : 'localnet';
     const data = await fsPromises.readFile(`${__dirname}/${flags.data}`);
     const updateData = JSON.parse(data.toString()) as UpdateNetworkData;
-    const localSecretKey = flags.funder
-      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/guardian-authority.json`
-        );
-
+    const localSecretKey = await fsPromises.readFile(
+      `${__dirname}/${flags.auth}`
+    );
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
-
     const authorityWallet = new Wallet(authorityKeypair);
     this.log(`Admin Authority: ${authorityKeypair.publicKey.toBase58()}`);
 
@@ -74,12 +69,6 @@ export default class Close extends Command {
       wallet: authorityWallet,
       clusterType: cluster as ExtendedCluster,
     });
-
-    await airdrop(
-      service.getConnection(),
-      authorityWallet.publicKey,
-      LAMPORTS_PER_SOL
-    );
 
     const parsedData = parseNetworkUpdateData(updateData);
 

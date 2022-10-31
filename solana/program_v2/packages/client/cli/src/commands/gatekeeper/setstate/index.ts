@@ -1,19 +1,18 @@
 import {
-  airdrop,
   GatekeeperState,
   NetworkService,
   ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 
 export default class SetState extends Command {
   static description = 'Set the states of a gatekeeper on an existing network';
 
   static examples = [
-    `$ gateway gatekeeper setState --network [address] --funder [path to keypair] --state [target state] --cluster [cluster type]
+    `$ gateway gatekeeper setState --network [address] --state [target state] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -30,8 +29,8 @@ export default class SetState extends Command {
         'Desired state of the gatekeeper (0 = Active, 1 = Frozen, 2 = Halted)',
       required: true,
     }),
-    funder: Flags.string({
-      char: 'f',
+    keypair: Flags.string({
+      char: 'k',
       description: 'Path to a solana keypair',
       required: true,
     }),
@@ -62,22 +61,10 @@ export default class SetState extends Command {
       if (state === 1) targetState = GatekeeperState.Frozen;
       if (state === 2) targetState = GatekeeperState.Halted;
     }
-    const localSecretKey = flags.funder
-      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/network-authority.json`
-        );
-
-    const authKey = await fsPromises.readFile(
-      `${__dirname}/../../../keypairs/gatekeeper-authority.json`
-    );
-
+    const authKey = await fsPromises.readFile(`${__dirname}/${flags.auth}`);
     const authKeyArr = Uint8Array.from(JSON.parse(authKey.toString()));
     const authPair = Keypair.fromSecretKey(authKeyArr);
-
-    const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
-    const authorityKeypair = Keypair.fromSecretKey(privateKey);
-    const authorityWallet = new Wallet(authorityKeypair);
+    const authorityWallet = new Wallet(authPair);
 
     const networkService = await NetworkService.build(
       authPair.publicKey,
@@ -86,12 +73,6 @@ export default class SetState extends Command {
         wallet: authorityWallet,
         clusterType: cluster as ExtendedCluster,
       }
-    );
-
-    await airdrop(
-      networkService.getConnection(),
-      authorityWallet.publicKey,
-      LAMPORTS_PER_SOL * 2
     );
 
     let gatekeeperAccount = await networkService.getGatekeeperAccount();

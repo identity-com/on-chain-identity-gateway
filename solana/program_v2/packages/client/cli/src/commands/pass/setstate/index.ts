@@ -12,7 +12,7 @@ export default class SetState extends Command {
   static description = 'Sets the state of a gateway pass';
 
   static examples = [
-    `$ gateway pass setstate --subject [address] --network [address] --gatekeeper [address] --funder [path to keypair] --cluster [cluster type]
+    `$ gateway pass setstate --subject [address] --network [address] --gatekeeper [address] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -32,8 +32,8 @@ export default class SetState extends Command {
       description: "String representing the gatekeeper's address",
       required: true,
     }),
-    funder: Flags.string({
-      char: 'f',
+    keypair: Flags.string({
+      char: 'k',
       description: 'Path to a solana keypair',
       required: true,
     }),
@@ -67,23 +67,23 @@ export default class SetState extends Command {
       flags.cluster === 'testnet'
         ? flags.cluster
         : 'localnet';
-    const localSecretKey = flags.funder
-      ? await fsPromises.readFile(`${__dirname}/${flags.funder}`)
-      : await fsPromises.readFile(
-          `${__dirname}/../../../keypairs/gatekeeper-authority.json`
-        );
 
+    const localSecretKey = await fsPromises.readFile(
+      `${__dirname}/${flags.keypair}`
+    );
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
+    const authorityWallet = new Wallet(authorityKeypair);
 
-    let targetState = PassState.Active;
+    let targetState = null;
     if (state === 0 || state === 1 || state === 2) {
       if (state === 0) targetState = PassState.Active;
       if (state === 1) targetState = PassState.Frozen;
       if (state === 2) targetState = PassState.Revoked;
 
-      const authorityWallet = new Wallet(authorityKeypair);
-
+      if (targetState === null) {
+        return this.error('Invalid Pass State');
+      }
       const gatekeeperService = await GatekeeperService.build(
         network,
         gatekeeper,
