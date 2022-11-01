@@ -1,8 +1,8 @@
-mod constants;
-mod errors;
+pub mod constants;
+pub mod errors;
 mod instructions;
-mod state;
-mod util;
+pub mod state;
+pub mod util;
 
 use crate::instructions::admin::*;
 use crate::instructions::gatekeeper::*;
