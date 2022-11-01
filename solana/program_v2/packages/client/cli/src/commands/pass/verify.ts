@@ -9,17 +9,18 @@ import fsPromises from 'node:fs/promises';
 import { Wallet } from '@project-serum/anchor';
 
 export default class Verify extends Command {
-  static description = 'Expires a gateway pass';
+  static description = 'Verifies a gateway pass';
 
   static examples = [
-    `$ gateway pass verify --subject [address] --network [address] --gatekeeper [address] --keypair [path to keypair] --cluster [cluster type]
+    `$ gateway pass verify --pass [address] --network [address] --gatekeeper [address] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
   static flags = {
-    subject: Flags.string({
+    help: Flags.help({ char: 'h' }),
+    pass: Flags.string({
       char: 's',
-      description: 'Pubkey to which a pass shall be issued',
+      description: 'The address of the issued pass',
       required: true,
     }),
     network: Flags.string({
@@ -49,7 +50,7 @@ export default class Verify extends Command {
   async run(): Promise<void> {
     const { flags } = await this.parse(Verify);
 
-    const subject = new PublicKey(flags.subject);
+    const pass = new PublicKey(flags.pass);
     const network = new PublicKey(flags.network);
     const gatekeeper = new PublicKey(flags.gatekeeper);
     const cluster =
@@ -74,9 +75,9 @@ export default class Verify extends Command {
       { wallet: authorityWallet, clusterType: cluster as ExtendedCluster }
     );
 
-    const account = await GatekeeperService.createPassAddress(subject, network);
+    // const account = await GatekeeperService.createPassAddress(subject, network);
     const verifiedPassSignature = await gatekeeperService
-      .verifyPass(account, authorityKeypair.publicKey)
+      .verifyPass(pass, authorityKeypair.publicKey)
       .rpc();
     this.log(
       `Pass Verified — Verification TX Signature: ${verifiedPassSignature}`

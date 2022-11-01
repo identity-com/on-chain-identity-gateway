@@ -17,6 +17,7 @@ export default class ChangeGatekeeper extends Command {
   ];
 
   static flags = {
+    help: Flags.help({ char: 'h' }),
     subject: Flags.string({
       char: 's',
       description: 'Public Key to which a pass shall be issued',

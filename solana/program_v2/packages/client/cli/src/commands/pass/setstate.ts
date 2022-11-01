@@ -17,6 +17,7 @@ export default class SetState extends Command {
   ];
 
   static flags = {
+    help: Flags.help({ char: 'h' }),
     subject: Flags.string({
       char: 'S',
       description: 'Pubkey to which a pass shall be issued',
