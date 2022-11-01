@@ -1,7 +1,11 @@
-import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
+import {
+  ConfirmOptions,
+  Connection,
+  PublicKey,
+  Keypair,
+} from '@solana/web3.js';
 import { AnchorProvider, web3 } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
-
 import { GATEWAY_PROGRAM } from './constants';
 import { PassAccount, PassState } from './wrappers';
 import { AbstractService, NonSigningWallet } from '../utils/AbstractService';
@@ -91,6 +95,20 @@ export const findGatewayToken = async (
   return program.account.pass.fetchNullable(address).then(PassAccount.from);
 };
 
+export const verifyGatewayPass = async (
+  connection: Connection,
+  gatekeeperNetwork: PublicKey,
+  passAddress: PublicKey
+): Promise<string | null> => {
+  const provider = new AnchorProvider(connection, new NonSigningWallet(), {});
+  const program = await AbstractService.fetchProgram(provider);
+  const service = await GatekeeperService.buildFromAnchor(
+    program,
+    gatekeeperNetwork,
+    Keypair.generate().publicKey
+  );
+  return service.verifyPass(passAddress).rpc();
+};
 export const onGatewayToken = async (
   connection: Connection,
   network: PublicKey,
