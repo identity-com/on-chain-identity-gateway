@@ -5,3 +5,4 @@ export { NetworkKeyFlags, GatekeeperKeyFlags } from './lib/constants';
 export * from './lib/wrappers';
 export * from './lib/utils';
 export * from './lib/types';
+export { ExtendedCluster } from './lib/connection';
