@@ -99,10 +99,10 @@ export const verifyGatewayPass = async (
   connection: Connection,
   gatekeeperNetwork: PublicKey,
   pass: PublicKey
-): Promise<void> => {
+): Promise<string | null> => {
   const provider = new AnchorProvider(connection, new NonSigningWallet(), {});
   const program = await AbstractService.fetchProgram(provider);
-  const instructionPromise = program.methods
+  return program.methods
     .verifyPass()
     .accounts({
       pass,
