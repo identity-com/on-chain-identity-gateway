@@ -7,8 +7,8 @@
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
-    "@identity.com/gateway-solana-client": "^2.0.0-beta.4",
-    "@identity.com/gateway-solana-idl": "^2.0.0-beta.4",
+    "@identity.com/gateway-solana-client": "^2.0.0-beta.5",
+    "@identity.com/gateway-solana-idl": "^2.0.0-beta.5",
     "@project-serum/anchor": "^0.25.0",
     "@solana/spl-token": "^0.3.5",
     "@solana/web3.js": "^1.41.3"
