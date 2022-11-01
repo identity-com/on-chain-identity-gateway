@@ -49,7 +49,7 @@ export default class Create extends Command {
         ? flags.cluster
         : 'localnet';
 
-    const authKey = await fsPromises.readFile(`${__dirname}/${flags.auth}`);
+    const authKey = await fsPromises.readFile(`${flags.auth}`);
     const authKeyArr = Uint8Array.from(JSON.parse(authKey.toString()));
     const authPair = Keypair.fromSecretKey(authKeyArr);
     const authorityWallet = new Wallet(authPair);

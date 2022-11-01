@@ -48,9 +48,7 @@ export default class Create extends Command {
         ? flags.cluster
         : 'localnet';
     this.log(`Network Index: ${networkIndex}`);
-    const localSecretKey = await fsPromises.readFile(
-      `${__dirname}/${flags.auth}`
-    );
+    const localSecretKey = await fsPromises.readFile(`${flags.auth}`);
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
     const authority = new Wallet(authorityKeypair);

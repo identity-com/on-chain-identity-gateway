@@ -67,15 +67,13 @@ export default class SetData extends Command {
         ? flags.cluster
         : 'localnet';
 
-    const localSecretKey = await fsPromises.readFile(
-      `${__dirname}/${flags.keypair}`
-    );
+    const localSecretKey = await fsPromises.readFile(`${flags.keypair}`);
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
     const authorityWallet = new Wallet(authorityKeypair);
 
     const dataFile = JSON.parse(
-      (await fsPromises.readFile(`${__dirname}/${flags.data}`)).toString()
+      (await fsPromises.readFile(`${flags.data}`)).toString()
     );
     const gatekeeperData = Uint8Array.from(dataFile.gatekeeperData);
     const networkData = Uint8Array.from(dataFile.networkData);
