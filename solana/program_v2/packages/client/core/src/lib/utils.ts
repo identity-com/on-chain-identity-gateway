@@ -98,16 +98,18 @@ export const findGatewayToken = async (
 export const verifyGatewayPass = async (
   connection: Connection,
   gatekeeperNetwork: PublicKey,
-  passAddress: PublicKey
-): Promise<string | null> => {
+  pass: PublicKey
+): Promise<void> => {
   const provider = new AnchorProvider(connection, new NonSigningWallet(), {});
   const program = await AbstractService.fetchProgram(provider);
-  const service = await GatekeeperService.buildFromAnchor(
-    program,
-    gatekeeperNetwork,
-    Keypair.generate().publicKey
-  );
-  return service.verifyPass(passAddress).rpc();
+  const instructionPromise = program.methods
+    .verifyPass()
+    .accounts({
+      pass,
+      systemProgram: anchor.web3.SystemProgram.programId,
+      network: gatekeeperNetwork,
+    })
+    .rpc();
 };
 export const onGatewayToken = async (
   connection: Connection,
