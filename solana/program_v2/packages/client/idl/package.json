@@ -1,6 +1,6 @@
 {
     "name": "@identity.com/gateway-solana-idl",
-    "version": "2.0.0-beta.1",
+    "version": "2.0.0-beta.4",
     "description": "Gateway IDL on Solana",
     "license": "MIT",
     "main": "dist/index.js",

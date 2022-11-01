@@ -14,7 +14,7 @@ pub struct GatekeeperNetwork {
     /// The initial authority key
     pub authority: Pubkey,
     /// the index of the network
-    pub network_index: u16,
+    pub network_index: u16, // TODO: Remove this
     /// The bump for the signer
     pub network_bump: u8,
     /// The length of time a pass lasts in seconds. `0` means does not expire.
@@ -74,13 +74,18 @@ impl GatekeeperNetwork {
             + OC_SIZE_VEC_PREFIX + (OC_SIZE_PUBKEY * gatekeepers) as usize // gatekeeper list
             + OC_SIZE_U16 // network_index
             + OC_SIZE_VEC_PREFIX + SupportedToken::ON_CHAIN_SIZE * supported_tokens as usize
-        + 1000
         // supported tokens list
     }
 
     /// Checks if the provided authority exists within the [`GatekeeperNetwork::auth_keys`]
-    /// and has the requested flag set
+    /// and has the requested flag set or is the guardian authority
     pub fn can_access(&self, authority: &Signer, flag: NetworkKeyFlags) -> bool {
+        // Check if the current authority is the guardian authority
+        if self.authority == authority.key() {
+            return true;
+        }
+
+        // Check if the authority is in the list of auth keys with the correct access
         self.auth_keys
             .iter()
             .filter(|key| {
@@ -256,48 +261,6 @@ impl GatekeeperNetwork {
                 self.supported_tokens[token_index] = *token;
             } else {
                 self.supported_tokens.push(*token);
-            }
-        }
-        Ok(())
-    }
-
-    pub fn update_gatekeepers(
-        &mut self,
-        data: &UpdateNetworkData,
-        authority: &mut Signer,
-    ) -> Result<()> {
-        if data.gatekeepers.add.is_empty() && data.gatekeepers.remove.is_empty() {
-            // no fees to add/remove
-            return Ok(());
-        }
-        if !self.can_access(authority, NetworkKeyFlags::AUTH) {
-            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-        }
-        for gatekeeper in data.gatekeepers.remove.iter() {
-            let index: Option<usize> = self
-                .gatekeepers
-                .iter()
-                .position(|pubkey| pubkey == gatekeeper);
-
-            if index.is_none() {
-                return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-            }
-
-            let gatekeeper_index = index.unwrap();
-
-            self.gatekeepers.remove(gatekeeper_index);
-        }
-        for gatekeeper in data.gatekeepers.add.iter() {
-            let index: Option<usize> = self
-                .gatekeepers
-                .iter()
-                .position(|pubkey| pubkey == gatekeeper);
-
-            if let Some(gatekeeper_index) = index {
-                // update the existing key with new fees
-                self.gatekeepers[gatekeeper_index] = *gatekeeper;
-            } else {
-                self.gatekeepers.push(*gatekeeper);
             }
         }
         Ok(())

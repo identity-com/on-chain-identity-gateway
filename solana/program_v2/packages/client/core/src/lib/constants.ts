@@ -4,7 +4,6 @@ export const GATEWAY_PROGRAM = new PublicKey(
   'gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft'
 );
 
-export const NETWORK_SEED = 'gw-network';
 export const GATEKEEPER_SEED = 'gw-gatekeeper';
 export const DEFAULT_PASS_SEED = 'gw-pass';
 

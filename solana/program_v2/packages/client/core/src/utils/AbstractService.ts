@@ -14,7 +14,6 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js';
-//import idl
 import { GatewayV2, IDL } from '@identity.com/gateway-solana-idl';
 import { Wallet } from '../lib/types';
 
@@ -24,7 +23,6 @@ import { GATEWAY_PROGRAM, SOLANA_MAINNET } from '../lib/constants';
 export abstract class AbstractService {
   protected constructor(
     protected _program: Program<GatewayV2>,
-    protected _dataAccount: PublicKey | undefined,
     protected _cluster: ExtendedCluster = SOLANA_MAINNET,
     protected _wallet: Wallet = new NonSigningWallet(),
     protected _opts: ConfirmOptions = AnchorProvider.defaultOptions()
@@ -33,7 +31,6 @@ export abstract class AbstractService {
   static async fetchProgram(
     provider: anchor.Provider
   ): Promise<Program<GatewayV2>> {
-    // TODO: Update IDL loading (IDCOM-2108)
     return new Program<GatewayV2>(
       IDL,
       GATEWAY_PROGRAM,
@@ -43,10 +40,6 @@ export abstract class AbstractService {
 
   getWallet(): Wallet {
     return this._wallet;
-  }
-
-  getDataAccount(): PublicKey | undefined {
-    return this._dataAccount;
   }
 
   getProgram(): Program<GatewayV2> {

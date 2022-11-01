@@ -1,4 +1,3 @@
-use crate::constants::NETWORK_SEED;
 use crate::errors::NetworkErrors;
 use crate::state::*;
 use anchor_lang::prelude::*;
@@ -18,8 +17,6 @@ pub struct CloseNetworkAccount<'info> {
     #[account(
         mut,
         close = destination,
-        seeds = [NETWORK_SEED, network.authority.key().as_ref(), &network.network_index.to_le_bytes()],
-        bump,
         constraint = network.can_access(&authority, NetworkKeyFlags::AUTH),
     )]
     pub network: Account<'info, GatekeeperNetwork>,

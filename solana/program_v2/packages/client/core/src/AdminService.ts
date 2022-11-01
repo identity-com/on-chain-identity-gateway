@@ -1,6 +1,6 @@
 import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
-import { PublicKey } from '@solana/web3.js';
+import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
 import {
   AuthKeyStructure,
@@ -12,8 +12,8 @@ import {
   Wallet,
 } from './lib/types';
 
-import { getConnectionByCluster } from './lib/connection';
-import { NETWORK_SEED, GATEWAY_PROGRAM, SOLANA_MAINNET } from './lib/constants';
+import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
+import { SOLANA_MAINNET } from './lib/constants';
 import { GatewayV2 } from '@identity.com/gateway-solana-idl';
 import {
   AbstractService,
@@ -22,8 +22,18 @@ import {
 } from './utils/AbstractService';
 
 export class AdminService extends AbstractService {
+  constructor(
+    program: Program<GatewayV2>,
+    protected _network: PublicKey,
+    cluster: ExtendedCluster = SOLANA_MAINNET,
+    wallet: Wallet = new NonSigningWallet(),
+    opts: ConfirmOptions = AnchorProvider.defaultOptions()
+  ) {
+    super(program, cluster, wallet, opts);
+  }
+
   static async build(
-    dataAccount: PublicKey,
+    network: PublicKey,
     options: GatewayServiceOptions = {
       clusterType: SOLANA_MAINNET,
     }
@@ -45,7 +55,7 @@ export class AdminService extends AbstractService {
 
     return new AdminService(
       program,
-      dataAccount,
+      network,
       options.clusterType,
       wallet,
       provider.opts
@@ -54,36 +64,20 @@ export class AdminService extends AbstractService {
 
   static async buildFromAnchor(
     program: Program<GatewayV2>,
-    dataAccount: PublicKey,
+    network: PublicKey,
     options: GatewayServiceOptions = {
       clusterType: SOLANA_MAINNET,
     },
-    provider: AnchorProvider = program.provider as AnchorProvider,
-    wallet: Wallet = provider.wallet
+    provider: AnchorProvider = program.provider as AnchorProvider
   ): Promise<AdminService> {
+    const wallet = options.wallet || new NonSigningWallet();
+
     return new AdminService(
       program,
-      dataAccount,
+      network,
       options.clusterType,
       wallet,
       provider.opts
-    );
-  }
-
-  static async createNetworkAddress(
-    authority: PublicKey,
-    networkIndex = 0
-  ): Promise<[PublicKey, number]> {
-    const network_index_buffer = Buffer.alloc(2);
-    network_index_buffer.writeInt16LE(networkIndex);
-
-    return PublicKey.findProgramAddress(
-      [
-        anchor.utils.bytes.utf8.encode(NETWORK_SEED),
-        authority.toBuffer(),
-        network_index_buffer,
-      ],
-      GATEWAY_PROGRAM
     );
   }
 
@@ -94,7 +88,7 @@ export class AdminService extends AbstractService {
     const instructionPromise = this._program.methods
       .closeNetwork()
       .accounts({
-        network: this._dataAccount,
+        network: this._network,
         destination,
         authority,
       })
@@ -115,9 +109,7 @@ export class AdminService extends AbstractService {
       authThreshold: 1,
       passExpireTime: 16,
       fees: [],
-      authKeys: [{ flags: 4097, key: this._wallet.publicKey }],
-      networkIndex: 0,
-      gatekeepers: [],
+      authKeys: [{ flags: 4097, key: this._network }],
       supportedTokens: [],
     },
     authority: PublicKey = this._wallet.publicKey
@@ -128,12 +120,10 @@ export class AdminService extends AbstractService {
         passExpireTime: new anchor.BN(data.passExpireTime),
         fees: data.fees,
         authKeys: data.authKeys,
-        networkIndex: data.networkIndex,
-        gatekeepers: data.gatekeepers,
         supportedTokens: data.supportedTokens,
       })
       .accounts({
-        network: this._dataAccount,
+        network: this._network,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
       })
@@ -167,7 +157,7 @@ export class AdminService extends AbstractService {
         networkFeatures: data.networkFeatures,
       })
       .accounts({
-        network: this._dataAccount,
+        network: this._network,
         authority,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
@@ -184,7 +174,7 @@ export class AdminService extends AbstractService {
   }
 
   async getNetworkAccount(
-    account: PublicKey = this._dataAccount as PublicKey // TODO: Update this once the interface has changed
+    account: PublicKey = this._network
   ): Promise<NetworkAccount | null> {
     const networkAccount = this._program.account.gatekeeperNetwork
       .fetchNullable(account)

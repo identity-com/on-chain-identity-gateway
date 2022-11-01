@@ -8,7 +8,7 @@ export type GatewayV2 = {
         {
           "name": "network",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "authority",
@@ -93,6 +93,11 @@ export type GatewayV2 = {
           "isSigner": true
         },
         {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "network",
           "isMut": true,
           "isSigner": false
@@ -127,6 +132,11 @@ export type GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -170,6 +180,11 @@ export type GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -805,16 +820,6 @@ export type GatewayV2 = {
             }
           },
           {
-            "name": "networkIndex",
-            "type": "u16"
-          },
-          {
-            "name": "gatekeepers",
-            "type": {
-              "vec": "publicKey"
-            }
-          },
-          {
             "name": "supportedTokens",
             "type": {
               "vec": {
@@ -878,15 +883,6 @@ export type GatewayV2 = {
             ],
             "type": {
               "defined": "UpdateSupportedTokens"
-            }
-          },
-          {
-            "name": "gatekeepers",
-            "docs": [
-              "The [`GatekeeperNetwork::gatekeepers`]."
-            ],
-            "type": {
-              "defined": "UpdateGatekeepers"
             }
           }
         ]
@@ -1401,7 +1397,7 @@ export const IDL: GatewayV2 = {
         {
           "name": "network",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "authority",
@@ -1486,6 +1482,11 @@ export const IDL: GatewayV2 = {
           "isSigner": true
         },
         {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "network",
           "isMut": true,
           "isSigner": false
@@ -1520,6 +1521,11 @@ export const IDL: GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -1563,6 +1569,11 @@ export const IDL: GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -2198,16 +2209,6 @@ export const IDL: GatewayV2 = {
             }
           },
           {
-            "name": "networkIndex",
-            "type": "u16"
-          },
-          {
-            "name": "gatekeepers",
-            "type": {
-              "vec": "publicKey"
-            }
-          },
-          {
             "name": "supportedTokens",
             "type": {
               "vec": {
@@ -2271,15 +2272,6 @@ export const IDL: GatewayV2 = {
             ],
             "type": {
               "defined": "UpdateSupportedTokens"
-            }
-          },
-          {
-            "name": "gatekeepers",
-            "docs": [
-              "The [`GatekeeperNetwork::gatekeepers`]."
-            ],
-            "type": {
-              "defined": "UpdateGatekeepers"
             }
           }
         ]

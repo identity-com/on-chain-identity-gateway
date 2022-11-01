@@ -16,17 +16,16 @@ describe('Gateway v2 Client', () => {
 
   let adminService: AdminService;
   let networkService: NetworkService;
-  let networkDataAccount: PublicKey;
   let gatekeeperDataAccount: PublicKey;
   let stakingDataAccount: PublicKey;
 
-  let adminAuthority: anchor.Wallet;
-  let networkAuthority: anchor.Wallet;
+  let adminAuthority: Keypair;
+  let networkAuthority: Keypair;
   const additionalAuthKey = Keypair.generate().publicKey;
 
   before(async () => {
-    adminAuthority = new anchor.Wallet(Keypair.generate());
-    networkAuthority = new anchor.Wallet(Keypair.generate());
+    adminAuthority = Keypair.generate();
+    networkAuthority = Keypair.generate();
 
     //network airdrop
     await airdrop(
@@ -40,12 +39,9 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
-    [networkDataAccount] = await AdminService.createNetworkAddress(
-      adminAuthority.publicKey
-    );
     [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
       adminAuthority.publicKey,
-      networkDataAccount
+      networkAuthority.publicKey
     );
     [stakingDataAccount] = await NetworkService.createStakingAddress(
       networkAuthority.publicKey
@@ -53,26 +49,40 @@ describe('Gateway v2 Client', () => {
 
     adminService = await AdminService.buildFromAnchor(
       program,
-      networkDataAccount,
-      'localnet',
-      programProvider,
-      adminAuthority
+      networkAuthority.publicKey,
+      {
+        clusterType: 'localnet',
+        wallet: new anchor.Wallet(adminAuthority),
+      },
+      programProvider
     );
 
     networkService = await NetworkService.buildFromAnchor(
       program,
       adminAuthority.publicKey,
       gatekeeperDataAccount,
-      'localnet',
-      programProvider,
-      adminAuthority
+      {
+        clusterType: 'localnet',
+        wallet: new anchor.Wallet(adminAuthority),
+      },
+      programProvider
     );
 
-    await adminService.createNetwork().rpc();
+    await adminService
+      .createNetwork()
+      .withPartialSigners(networkAuthority)
+      .rpc();
+
     await networkService
-      .createGatekeeper(networkDataAccount, stakingDataAccount)
+      .createGatekeeper(
+        networkAuthority.publicKey,
+        stakingDataAccount,
+        adminAuthority.publicKey
+      )
+      .withPartialSigners(adminAuthority)
       .rpc();
   });
+
   describe('Update Gatekeeper', () => {
     it('Updates a gatekeeper on an established network', async function () {
       // updates gatekeeper with new data
@@ -86,8 +96,10 @@ describe('Gateway v2 Client', () => {
               remove: [],
             },
           },
-          stakingDataAccount
+          stakingDataAccount,
+          adminAuthority.publicKey
         )
+        .withPartialSigners(adminAuthority)
         .rpc();
       // retrieves the gatekeeper account
       const gatekeeperAccount = await networkService.getGatekeeperAccount();

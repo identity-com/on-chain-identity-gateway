@@ -28,7 +28,7 @@ export class GatekeeperService extends AbstractService {
     _wallet: Wallet = new NonSigningWallet(),
     _opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {
-    super(_program, undefined, _cluster, _wallet, _opts);
+    super(_program, _cluster, _wallet, _opts);
   }
 
   static async build(
@@ -70,9 +70,10 @@ export class GatekeeperService extends AbstractService {
     options: GatewayServiceOptions = {
       clusterType: SOLANA_MAINNET,
     },
-    provider: AnchorProvider = program.provider as AnchorProvider,
-    wallet: Wallet = provider.wallet
+    provider: AnchorProvider = program.provider as AnchorProvider
   ): Promise<GatekeeperService> {
+    const wallet = options.wallet || new NonSigningWallet();
+
     return new GatekeeperService(
       program,
       network,
