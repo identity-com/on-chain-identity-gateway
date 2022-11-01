@@ -2,7 +2,7 @@ import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { exec as execCB } from 'child_process';
 import * as util from 'util';
-import { GatewayV2 } from '@identity.com/gateway-solana-idl';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   airdrop,
   AdminService,
@@ -18,7 +18,8 @@ const accountsFixturePath = './packages/tests/fixtures/accounts';
 const keypairsFixturePath = './packages/tests/fixtures/keypairs';
 
 anchor.setProvider(anchor.AnchorProvider.env());
-const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
+const program = anchor.workspace
+  .SolanaAnchorGateway as anchor.Program<GatewayV2>;
 const programProvider = program.provider as anchor.AnchorProvider;
 
 const saveAccountToFile = async (publicKeyBase58: string, filename: string) => {

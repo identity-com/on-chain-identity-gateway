@@ -17,7 +17,7 @@ import { before } from 'mocha';
 
 anchor.setProvider(anchor.AnchorProvider.env());
 const program = anchor.workspace
-  .GatewayV2 as anchor.Program<SolanaAnchorGateway>;
+  .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
 const programProvider = program.provider as anchor.AnchorProvider;
 
 before(() => {
