@@ -56,11 +56,9 @@ export default class Close extends Command {
       flags.cluster === 'testnet'
         ? flags.cluster
         : 'localnet';
-    const data = await fsPromises.readFile(`${__dirname}/${flags.data}`);
+    const data = await fsPromises.readFile(`${flags.data}`);
     const updateData = JSON.parse(data.toString()) as UpdateNetworkData;
-    const localSecretKey = await fsPromises.readFile(
-      `${__dirname}/${flags.auth}`
-    );
+    const localSecretKey = await fsPromises.readFile(`${flags.auth}`);
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
     const authorityWallet = new Wallet(authorityKeypair);

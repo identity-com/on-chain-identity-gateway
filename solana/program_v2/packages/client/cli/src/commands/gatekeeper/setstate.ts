@@ -61,7 +61,7 @@ export default class SetState extends Command {
       if (state === 1) targetState = GatekeeperState.Frozen;
       if (state === 2) targetState = GatekeeperState.Halted;
     }
-    const authKey = await fsPromises.readFile(`${__dirname}/${flags.auth}`);
+    const authKey = await fsPromises.readFile(`${flags.auth}`);
     const authKeyArr = Uint8Array.from(JSON.parse(authKey.toString()));
     const authPair = Keypair.fromSecretKey(authKeyArr);
     const authorityWallet = new Wallet(authPair);
