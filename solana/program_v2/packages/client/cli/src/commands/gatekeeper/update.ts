@@ -1,5 +1,5 @@
 import { Command, Flags } from '@oclif/core';
-import { parseGatekeeperUpdateData } from '../../../util/util';
+import { parseGatekeeperUpdateData } from '../../util/util';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import {
   UpdateGatekeeperData,

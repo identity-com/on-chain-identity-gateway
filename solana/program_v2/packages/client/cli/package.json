@@ -46,7 +46,7 @@
   },
   "oclif": {
     "bin": "gateway",
-    "dirname": "gateway",
+    "dirname": "commands",
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",

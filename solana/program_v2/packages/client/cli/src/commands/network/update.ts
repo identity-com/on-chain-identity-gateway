@@ -5,7 +5,7 @@ import {
   UpdateNetworkData,
   ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
-import { parseNetworkUpdateData } from '../../../util/util';
+import { parseNetworkUpdateData } from '../../util/util';
 import { Wallet } from '@project-serum/anchor';
 import fsPromises from 'node:fs/promises';
 
