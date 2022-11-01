@@ -24,7 +24,7 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "lint:all": "yarn lint && yarn cargo:lint",
     "test": "yarn workspace @identity.com/gateway-solana-program-tests build && anchor test",
-    "start-validator": "solana-test-validator --bpf-program gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft ./target/deploy/gateway_v2.so --reset",
+    "start-validator": "solana-test-validator --bpf-program gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft ./target/deploy/solana_anchor_gateway.so --reset",
     "prepare": "cd ../../ && husky install solana/program_v2/.husky"
   },
   "devDependencies": {
