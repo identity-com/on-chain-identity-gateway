@@ -253,20 +253,6 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@identity.com/gateway-solana-client@^2.0.0-beta.5":
-  version "2.0.0-beta.5"
-  resolved "https://registry.yarnpkg.com/@identity.com/gateway-solana-client/-/gateway-solana-client-2.0.0-beta.5.tgz#5a9eb2e28065428af16da4889f935d677a1b4f0a"
-  integrity sha512-7nevdKfrqTuz1U2v6XX/SDPqFawbth4FWM/ULScoOtfPIE8wKhy0w+n1ug6taVjdXaQYUyU+rsSB2kyoUsPJog==
-  dependencies:
-    "@identity.com/gateway-solana-idl" "2.0.0-beta.5"
-    "@project-serum/anchor" "^0.25.0"
-    "@project-serum/anchor-cli" "https://github.com/kklas/anchor-nightly/releases/download/anchor-cli-latest/anchor-cli-0.25.0-7eb8ca8.tgz#62b7697003fe6f7b1c0e26f7374f2ac25029eb18"
-
-"@identity.com/gateway-solana-idl@2.0.0-beta.5":
-  version "2.0.0-beta.5"
-  resolved "https://registry.yarnpkg.com/@identity.com/gateway-solana-idl/-/gateway-solana-idl-2.0.0-beta.5.tgz#a7e81ea06c9d62bdb11f2d5adf9b6947d04af5d7"
-  integrity sha512-F3av5/aFxXx9lktEUTmIeRHK8nQwOyiNe5iHsguWJlYDKLT3Ey3RXFf9NnO/vH/QZIIu6FZ5aq/vCRvUhClprQ==
-
 "@isaacs/string-locale-compare@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@isaacs/string-locale-compare/-/string-locale-compare-1.1.0.tgz#291c227e93fd407a96ecd59879a35809120e432b"
