@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/gateway-solana-cli",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.5",
   "description": "Gateway V2 CLI",
   "author": "Identity.com",
   "bin": {

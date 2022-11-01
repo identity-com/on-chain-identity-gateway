@@ -41,7 +41,7 @@ pub struct CloseGatekeeperAccount<'info> {
             network.gatekeepers.len() - 1,
             network.supported_tokens.len(),
         ),
-        realloc::payer = authority,
+        realloc::payer = payer,
         realloc::zero = false,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
@@ -50,5 +50,7 @@ pub struct CloseGatekeeperAccount<'info> {
     pub destination: UncheckedAccount<'info>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
 }

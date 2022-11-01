@@ -32,7 +32,7 @@ describe('Change pass gatekeeper', () => {
     );
     const networkService = await createNetworkService(Keypair.generate());
     await networkService.createGatekeeper(TEST_NETWORK, stakingAccount).rpc();
-    const dataAcct = networkService.getDataAccount();
+    const dataAcct = networkService.getGatekeeperAddress();
 
     await setGatekeeperFlags(
       stakingAccount,
@@ -43,7 +43,7 @@ describe('Change pass gatekeeper', () => {
     await service.changePassGatekeeper(dataAcct, account).rpc();
 
     const pass = await service.getPassAccount(subject);
-    const newDataAcct = networkService.getDataAccount()?.toBase58();
+    const newDataAcct = networkService.getGatekeeperAddress()?.toBase58();
 
     expect(pass?.gatekeeper.toBase58()).to.equal(newDataAcct);
   });
@@ -63,7 +63,7 @@ describe('Change pass gatekeeper', () => {
 
     return expect(
       service
-        .changePassGatekeeper(networkService.getDataAccount(), account)
+        .changePassGatekeeper(networkService.getGatekeeperAddress(), account)
         .rpc()
     ).to.eventually.be.rejectedWith(/InvalidNetwork/);
   });

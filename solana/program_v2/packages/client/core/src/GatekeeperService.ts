@@ -1,4 +1,4 @@
-import { GatewayV2 } from '@identity.com/gateway-solana-idl';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';
@@ -21,14 +21,14 @@ import { PassAccount, PassState, PassStateMapping } from './lib/wrappers';
 
 export class GatekeeperService extends AbstractService {
   private constructor(
-    _program: Program<GatewayV2>,
+    _program: Program<SolanaAnchorGateway>,
     private _network: PublicKey,
     private _gatekeeper: PublicKey,
     _cluster: ExtendedCluster = SOLANA_MAINNET,
     _wallet: Wallet = new NonSigningWallet(),
     _opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {
-    super(_program, undefined, _cluster, _wallet, _opts);
+    super(_program, _cluster, _wallet, _opts);
   }
 
   static async build(
@@ -64,15 +64,16 @@ export class GatekeeperService extends AbstractService {
   }
 
   static async buildFromAnchor(
-    program: Program<GatewayV2>,
+    program: Program<SolanaAnchorGateway>,
     network: PublicKey,
     gatekeeper: PublicKey,
     options: GatewayServiceOptions = {
       clusterType: SOLANA_MAINNET,
     },
-    provider: AnchorProvider = program.provider as AnchorProvider,
-    wallet: Wallet = provider.wallet
+    provider: AnchorProvider = program.provider as AnchorProvider
   ): Promise<GatekeeperService> {
+    const wallet = options.wallet || new NonSigningWallet();
+
     return new GatekeeperService(
       program,
       network,

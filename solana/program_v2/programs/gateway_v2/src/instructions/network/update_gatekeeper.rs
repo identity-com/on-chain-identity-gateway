@@ -27,7 +27,7 @@ pub struct UpdateGatekeeperAccount<'info> {
                 gatekeeper.token_fees.len() + data.token_fees.add.len() - data.token_fees.remove.len(),
                 gatekeeper.auth_keys.len() + data.auth_keys.add.len() - data.auth_keys.remove.len(),
         ),
-        realloc::payer = authority,
+        realloc::payer = payer,
         realloc::zero = false,
         seeds = [GATEKEEPER_SEED, authority.key().as_ref(), gatekeeper.gatekeeper_network.key().as_ref()],
         bump = gatekeeper.gatekeeper_bump,
@@ -35,6 +35,8 @@ pub struct UpdateGatekeeperAccount<'info> {
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
     #[account(mut)]
     /// CHECK: Add Check Later
     pub staking_account: UncheckedAccount<'info>,

@@ -3,35 +3,35 @@ import {
   AdminService,
   airdrop,
 } from '@identity.com/gateway-solana-client';
-import { GatewayV2 } from '@identity.com/gateway-solana-idl';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
+
 chai.use(chaiAsPromised);
 
 describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
-  const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
+  const program = anchor.workspace
+    .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
   const programProvider = program.provider as anchor.AnchorProvider;
 
   let adminService: AdminService;
   let networkService: NetworkService;
-  let networkDataAccount: PublicKey;
   let gatekeeperDataAccount: PublicKey;
-
-  let adminAuthority: anchor.Wallet;
-  let networkAuthority: anchor.Wallet;
   let stakingDataAccount: PublicKey;
 
-  before(async () => {
-    // Creates both necessary authorities
-    adminAuthority = new anchor.Wallet(Keypair.generate());
-    networkAuthority = new anchor.Wallet(Keypair.generate());
+  let adminAuthority: Keypair;
+  let networkAuthority: Keypair;
 
-    // airdrop to admin authority and network authority
+  before(async () => {
+    adminAuthority = Keypair.generate();
+    networkAuthority = Keypair.generate();
+
+    //network airdrop
     await airdrop(
       programProvider.connection,
       adminAuthority.publicKey,
@@ -43,48 +43,71 @@ describe('Gateway v2 Client', () => {
       LAMPORTS_PER_SOL * 2
     );
 
-    // Creates the address for both the network and gatekeeper
-    [networkDataAccount] = await AdminService.createNetworkAddress(
-      adminAuthority.publicKey
-    );
     [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
       adminAuthority.publicKey,
-      networkDataAccount
+      networkAuthority.publicKey
     );
     [stakingDataAccount] = await NetworkService.createStakingAddress(
       networkAuthority.publicKey
     );
 
-    // creates the admin service with anchor
     adminService = await AdminService.buildFromAnchor(
       program,
-      networkDataAccount,
-      { clusterType: 'localnet' },
-      programProvider,
-      adminAuthority
+      networkAuthority.publicKey,
+      {
+        clusterType: 'localnet',
+        wallet: new anchor.Wallet(adminAuthority),
+      },
+      programProvider
     );
 
-    // creates the network service with anchor
     networkService = await NetworkService.buildFromAnchor(
       program,
       adminAuthority.publicKey,
       gatekeeperDataAccount,
-      { clusterType: 'localnet' },
-      programProvider,
-      adminAuthority
+      {
+        clusterType: 'localnet',
+        wallet: new anchor.Wallet(adminAuthority),
+      },
+      programProvider
     );
 
-    await adminService.createNetwork().rpc();
+    await adminService
+      .createNetwork()
+      .withPartialSigners(networkAuthority)
+      .rpc();
+
     await networkService
-      .createGatekeeper(networkDataAccount, stakingDataAccount)
+      .createGatekeeper(
+        networkAuthority.publicKey,
+        stakingDataAccount,
+        adminAuthority.publicKey
+      )
+      .withPartialSigners(adminAuthority)
       .rpc();
   });
+
   describe('Close Gatekeeper', () => {
     it('Should close a gatekeeper properly', async function () {
+      let network = await adminService.getNetworkAccount();
+      expect(network?.gatekeepers.length).to.equal(1);
+
       // runs closeGatekeeper
-      await networkService.closeGatekeeper(networkDataAccount).rpc();
+      await networkService
+        .closeGatekeeper(
+          networkAuthority.publicKey,
+          undefined,
+          adminAuthority.publicKey
+        )
+        .withPartialSigners(adminAuthority)
+        .rpc();
+
+      network = await adminService.getNetworkAccount();
+      expect(network?.gatekeepers.length).to.equal(0);
+
       // tries to request the gatekeeper account, which we expect to fail after closure
-      expect(networkService.getGatekeeperAccount()).to.eventually.be.rejected;
+      return expect(networkService.getGatekeeperAccount()).to.eventually.be
+        .null;
     }).timeout(10000);
   });
 });

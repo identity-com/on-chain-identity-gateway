@@ -1,4 +1,3 @@
-use crate::constants::NETWORK_SEED;
 use crate::errors::NetworkErrors;
 use crate::state::{
     GatekeeperNetwork, NetworkAuthKey, NetworkFees, NetworkKeyFlags, SupportedToken,
@@ -30,7 +29,6 @@ pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkDat
     network.auth_threshold = data.auth_threshold;
     network.authority = *authority.key;
     network.pass_expire_time = data.pass_expire_time;
-    network.network_bump = *ctx.bumps.get("network").unwrap();
     network.auth_keys = data.auth_keys;
     network.fees = data.fees;
 
@@ -47,8 +45,6 @@ pub struct CreateNetworkData {
     pub fees: Vec<NetworkFees>,
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: Vec<NetworkAuthKey>,
-    pub network_index: u16,
-    pub gatekeepers: Vec<Pubkey>,
     pub supported_tokens: Vec<SupportedToken>,
 }
 
@@ -61,11 +57,9 @@ pub struct CreateNetworkAccount<'info> {
         space = GatekeeperNetwork::size(
             data.fees.len(),
             data.auth_keys.len(),
-            data.gatekeepers.len(),
+            0,
             data.supported_tokens.len()
-        ),
-        seeds = [NETWORK_SEED, authority.key().as_ref(), & data.network_index.to_le_bytes()],
-        bump
+        )
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]

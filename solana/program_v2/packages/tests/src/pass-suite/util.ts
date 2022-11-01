@@ -10,13 +10,14 @@ import {
   TEST_NETWORK,
 } from '../util/constants';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { GatewayV2 } from '@identity.com/gateway-solana-idl';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import { Wallet } from '@project-serum/anchor';
 import { loadPrivateKey } from '../util/lib';
 import { before } from 'mocha';
 
 anchor.setProvider(anchor.AnchorProvider.env());
-const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
+const program = anchor.workspace
+  .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
 const programProvider = program.provider as anchor.AnchorProvider;
 
 before(() => {
@@ -46,9 +47,11 @@ export const createNetworkService = async (
     program,
     authority.publicKey,
     dataAccount,
-    { clusterType: 'localnet' },
-    programProvider,
-    new Wallet(authority)
+    {
+      clusterType: 'localnet',
+      wallet: new Wallet(authority),
+    },
+    programProvider
   );
 };
 
@@ -69,9 +72,11 @@ export const createGatekeeperService = async (
     program,
     network,
     TEST_GATEKEEPER,
-    { clusterType: 'localnet' },
-    programProvider,
-    authority
+    {
+      clusterType: 'localnet',
+      wallet: authority,
+    },
+    programProvider
   );
 
   return service;

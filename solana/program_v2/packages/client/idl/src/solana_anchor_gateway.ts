@@ -1,6 +1,6 @@
-export type GatewayV2 = {
-  "version": "0.1.0",
-  "name": "gateway_v2",
+export type SolanaAnchorGateway = {
+  "version": "2.0.1",
+  "name": "solana_anchor_gateway",
   "instructions": [
     {
       "name": "createNetwork",
@@ -8,7 +8,7 @@ export type GatewayV2 = {
         {
           "name": "network",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "authority",
@@ -93,6 +93,11 @@ export type GatewayV2 = {
           "isSigner": true
         },
         {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "network",
           "isMut": true,
           "isSigner": false
@@ -127,6 +132,11 @@ export type GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -170,6 +180,11 @@ export type GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -802,16 +817,6 @@ export type GatewayV2 = {
               "vec": {
                 "defined": "NetworkAuthKey"
               }
-            }
-          },
-          {
-            "name": "networkIndex",
-            "type": "u16"
-          },
-          {
-            "name": "gatekeepers",
-            "type": {
-              "vec": "publicKey"
             }
           },
           {
@@ -1382,9 +1387,9 @@ export type GatewayV2 = {
   ]
 };
 
-export const IDL: GatewayV2 = {
-  "version": "0.1.0",
-  "name": "gateway_v2",
+export const IDL: SolanaAnchorGateway = {
+  "version": "2.0.1",
+  "name": "solana_anchor_gateway",
   "instructions": [
     {
       "name": "createNetwork",
@@ -1392,7 +1397,7 @@ export const IDL: GatewayV2 = {
         {
           "name": "network",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "authority",
@@ -1477,6 +1482,11 @@ export const IDL: GatewayV2 = {
           "isSigner": true
         },
         {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "network",
           "isMut": true,
           "isSigner": false
@@ -1511,6 +1521,11 @@ export const IDL: GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -1554,6 +1569,11 @@ export const IDL: GatewayV2 = {
         },
         {
           "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
           "isMut": true,
           "isSigner": true
         },
@@ -2186,16 +2206,6 @@ export const IDL: GatewayV2 = {
               "vec": {
                 "defined": "NetworkAuthKey"
               }
-            }
-          },
-          {
-            "name": "networkIndex",
-            "type": "u16"
-          },
-          {
-            "name": "gatekeepers",
-            "type": {
-              "vec": "publicKey"
             }
           },
           {

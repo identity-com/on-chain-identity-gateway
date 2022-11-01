@@ -1,46 +1,59 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair } from '@solana/web3.js';
 import {
   AdminService,
+  airdrop,
   NetworkKeyFlags,
 } from '@identity.com/gateway-solana-client';
-import { GatewayV2 } from '@identity.com/gateway-solana-idl';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
-import { Wallet } from '@project-serum/anchor/dist/cjs/provider';
 import chaiAsPromised from 'chai-as-promised';
+
 chai.use(chaiAsPromised);
 
 describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
-  const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
+  const program = anchor.workspace
+    .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
   const programProvider = program.provider as anchor.AnchorProvider;
 
-  let service: AdminService;
-  let dataAccount: PublicKey;
-  let authority: Wallet;
+  let serviceAsGuardian: AdminService;
+  let serviceAsNetwork: AdminService;
+  let guardianAuthority: Keypair;
+  let networkAuthority: Keypair;
   const extraAuthKey = Keypair.generate();
   const feeKeypair = Keypair.generate();
 
   before(async () => {
-    authority = programProvider.wallet;
+    networkAuthority = Keypair.generate();
+    guardianAuthority = Keypair.generate();
 
-    [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey,
-      0
-    );
+    await airdrop(programProvider.connection, networkAuthority.publicKey);
+    await airdrop(programProvider.connection, guardianAuthority.publicKey);
 
-    service = await AdminService.buildFromAnchor(
+    serviceAsGuardian = await AdminService.buildFromAnchor(
       program,
-      dataAccount,
-      { clusterType: 'localnet' },
+      networkAuthority.publicKey,
+      {
+        clusterType: 'localnet',
+        wallet: new anchor.Wallet(guardianAuthority),
+      },
       programProvider
     );
 
-    // service = await AdminService.build(dataAccount, authority, "localnet")
+    serviceAsNetwork = await AdminService.buildFromAnchor(
+      program,
+      networkAuthority.publicKey,
+      {
+        clusterType: 'localnet',
+        wallet: new anchor.Wallet(networkAuthority),
+      },
+      programProvider
+    );
 
-    await service
+    await serviceAsGuardian
       .createNetwork({
         authThreshold: 1,
         passExpireTime: 400,
@@ -70,17 +83,15 @@ describe('Gateway v2 Client', () => {
             key: extraAuthKey.publicKey,
           },
         ],
-        networkIndex: 0,
-        gatekeepers: [],
         supportedTokens: [],
       })
+      .withPartialSigners(networkAuthority)
       .rpc();
   });
 
   describe('Update Network', () => {
     it('Should update passExpireTime', async function () {
-      let networkAccount = await service.getNetworkAccount();
-      await service
+      await serviceAsGuardian
         .updateNetwork({
           authThreshold: 1,
           passExpireTime: 600,
@@ -107,13 +118,16 @@ describe('Gateway v2 Client', () => {
           },
         })
         .rpc();
-      networkAccount = await service.getNetworkAccount();
+
+      const networkAccount = await serviceAsGuardian.getNetworkAccount();
+
       expect(networkAccount?.passExpireTime).to.equal(600);
     }).timeout(10000);
+
     it('Should add an authKey', async function () {
       const authKeypair = Keypair.generate();
-      let networkAccount = await service.getNetworkAccount();
-      await service
+
+      await serviceAsGuardian
         .updateNetwork({
           authThreshold: 1,
           passExpireTime: 400,
@@ -145,7 +159,9 @@ describe('Gateway v2 Client', () => {
           },
         })
         .rpc();
-      networkAccount = await service.getNetworkAccount();
+
+      const networkAccount = await serviceAsGuardian.getNetworkAccount();
+
       expect(
         networkAccount?.authKeys.filter(
           (authKey) =>
@@ -153,8 +169,9 @@ describe('Gateway v2 Client', () => {
         )
       ).to.have.lengthOf(1);
     }).timeout(10000);
+
     it('Should remove an authKey', async function () {
-      await service
+      await serviceAsGuardian
         .updateNetwork({
           authThreshold: 1,
           passExpireTime: 400,
@@ -182,7 +199,7 @@ describe('Gateway v2 Client', () => {
         })
         .rpc();
 
-      const networkAccount = await service.getNetworkAccount();
+      const networkAccount = await serviceAsGuardian.getNetworkAccount();
       expect(
         networkAccount?.authKeys.filter(
           (authKey) =>
@@ -190,9 +207,10 @@ describe('Gateway v2 Client', () => {
         )
       ).to.have.lengthOf(0);
     }).timeout(10000);
+
     it('Should not be able to remove own account from authKeys', async function () {
       return expect(
-        service
+        serviceAsNetwork
           .updateNetwork({
             authThreshold: 1,
             passExpireTime: 400,
@@ -221,13 +239,14 @@ describe('Gateway v2 Client', () => {
           .rpc()
       ).to.eventually.be.rejected;
     }).timeout(10000);
+
     it("Updates an existing authKey's flags", async function () {
-      let networkAccount = await service.getNetworkAccount();
+      let networkAccount = await serviceAsGuardian.getNetworkAccount();
       const originalKeyBeforeUpdate = networkAccount?.authKeys.filter(
         (authKey) =>
           authKey.key.toBase58() === programProvider.wallet.publicKey.toBase58()
       )[0];
-      await service
+      await serviceAsGuardian
         .updateNetwork({
           authThreshold: 1,
           passExpireTime: 400,
@@ -262,7 +281,7 @@ describe('Gateway v2 Client', () => {
           },
         })
         .rpc();
-      networkAccount = await service.getNetworkAccount();
+      networkAccount = await serviceAsGuardian.getNetworkAccount();
       const originalKeyAfterUpdate = networkAccount?.authKeys.filter(
         (authKey) =>
           authKey.key.toBase58() === programProvider.wallet.publicKey.toBase58()
@@ -272,9 +291,9 @@ describe('Gateway v2 Client', () => {
       );
     }).timeout(10000);
     it('Can add fees correctly', async function () {
-      let networkAccount = await service.getNetworkAccount();
+      let networkAccount = await serviceAsGuardian.getNetworkAccount();
       const additionalFeeToken = Keypair.generate();
-      await service
+      await serviceAsGuardian
         .updateNetwork({
           authThreshold: 1,
           passExpireTime: 400,
@@ -301,7 +320,7 @@ describe('Gateway v2 Client', () => {
           },
         })
         .rpc();
-      networkAccount = await service.getNetworkAccount();
+      networkAccount = await serviceAsGuardian.getNetworkAccount();
       expect(
         networkAccount?.fees.filter(
           (fee) =>
@@ -309,9 +328,10 @@ describe('Gateway v2 Client', () => {
         ).length
       ).to.equal(1);
     }).timeout(10000);
+
     it('Can remove fees correctly', async function () {
-      let networkAccount = await service.getNetworkAccount();
-      await service
+      let networkAccount = await serviceAsGuardian.getNetworkAccount();
+      await serviceAsGuardian
         .updateNetwork({
           authThreshold: 1,
           passExpireTime: 400,
@@ -330,13 +350,12 @@ describe('Gateway v2 Client', () => {
           },
         })
         .rpc();
-      networkAccount = await service.getNetworkAccount();
+      networkAccount = await serviceAsGuardian.getNetworkAccount();
       expect(
         networkAccount?.fees.filter(
           (fee) => fee.token.toBase58() === feeKeypair.publicKey.toBase58()
         ).length
       ).to.equal(0);
     }).timeout(10000);
-    // TODO: Add test covering the removal of an auth key combined with addition of flags... expect to fail
   });
 });
