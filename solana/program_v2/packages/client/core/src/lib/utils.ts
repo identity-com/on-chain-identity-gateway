@@ -1,9 +1,4 @@
-import {
-  ConfirmOptions,
-  Connection,
-  PublicKey,
-  Keypair,
-} from '@solana/web3.js';
+import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
 import { AnchorProvider, web3 } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
 import { GATEWAY_PROGRAM } from './constants';
