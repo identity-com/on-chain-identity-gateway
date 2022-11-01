@@ -1,6 +1,6 @@
 [package]
 name = "solana_anchor_gateway"
-version = "2.0.0-beta.0"
+version = "2.0.0"
 description = "Solana Identity Gateway"
 edition = "2021"
 
