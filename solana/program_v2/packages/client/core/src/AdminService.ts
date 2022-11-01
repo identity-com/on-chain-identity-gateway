@@ -152,7 +152,6 @@ export class AdminService extends AbstractService {
         passExpireTime: new anchor.BN(data.passExpireTime),
         fees: data.fees,
         authKeys: data.authKeys,
-        gatekeepers: data.gatekeepers,
         supportedTokens: data.supportedTokens,
         networkFeatures: data.networkFeatures,
       })

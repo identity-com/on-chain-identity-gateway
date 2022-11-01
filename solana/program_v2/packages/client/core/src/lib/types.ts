@@ -47,7 +47,6 @@ export type UpdateNetworkData = {
   authKeys: UpdateAuthKeytructure;
   networkFeatures: number;
   supportedTokens: UpdateSupportedTokens;
-  gatekeepers: UpdateGatekeepers;
 };
 
 export type UpdateSupportedTokens = {
