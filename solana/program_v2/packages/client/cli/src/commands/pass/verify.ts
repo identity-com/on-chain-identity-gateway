@@ -78,6 +78,8 @@ export default class Verify extends Command {
     const verifiedPassSignature = await gatekeeperService
       .verifyPass(account, authorityKeypair.publicKey)
       .rpc();
-    this.log(`Pass Verify TX Signature: ${verifiedPassSignature}`);
+    this.log(
+      `Pass Verified — Verification TX Signature: ${verifiedPassSignature}`
+    );
   }
 }
