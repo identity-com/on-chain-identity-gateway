@@ -54,8 +54,7 @@ export class NetworkService extends AbstractService {
       options.connection ||
       getConnectionByCluster(
         options.clusterType,
-        confirmOptions.preflightCommitment,
-        options.customConfig
+        confirmOptions.preflightCommitment
       );
 
     const provider = new AnchorProvider(_connection, wallet, confirmOptions);

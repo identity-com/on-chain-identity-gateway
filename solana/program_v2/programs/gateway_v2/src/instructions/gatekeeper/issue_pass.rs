@@ -1,5 +1,5 @@
 use crate::constants::PASS_SEED;
-use crate::state::{Gatekeeper, GatekeeperNetwork, Pass, PassState};
+use crate::state::{Gatekeeper, GatekeeperNetwork, Pass, PassState, GatekeeperKeyFlags};
 use anchor_lang::prelude::*;
 use anchor_lang::Key;
 
@@ -28,6 +28,7 @@ pub struct IssuePass<'info> {
         payer = payer,
         space = Pass::ON_CHAIN_SIZE,
         seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), &pass_number.to_le_bytes()],
+        constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::ISSUE),
         bump
     )]
     pub pass: Account<'info, Pass>,
@@ -35,5 +36,6 @@ pub struct IssuePass<'info> {
     pub gatekeeper: Account<'info, Gatekeeper>,
     #[account(mut)]
     pub payer: Signer<'info>,
+    pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
 }

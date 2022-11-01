@@ -15,7 +15,7 @@ import {
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe.only('Verify a pass', () => {
+describe('Verify a pass', () => {
   let service: GatekeeperService;
   let subject: PublicKey;
   let account: PublicKey;

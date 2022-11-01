@@ -47,7 +47,6 @@ export type UpdateNetworkData = {
   authKeys: UpdateAuthKeytructure;
   networkFeatures: number;
   supportedTokens: UpdateSupportedTokens;
-  gatekeepers: UpdateGatekeepers;
 };
 
 export type UpdateSupportedTokens = {
@@ -136,6 +135,6 @@ export type GatewayServiceOptions = {
   connection?: Connection;
   wallet?: Wallet;
   confirmOptions?: ConfirmOptions;
-  clusterType: ExtendedCluster;
+  clusterType?: ExtendedCluster;
   customConfig?: CustomClusterUrlConfig;
 };
