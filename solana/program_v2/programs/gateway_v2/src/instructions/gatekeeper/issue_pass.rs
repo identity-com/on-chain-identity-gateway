@@ -1,5 +1,5 @@
 use crate::constants::PASS_SEED;
-use crate::state::{Gatekeeper, GatekeeperNetwork, Pass, PassState, GatekeeperKeyFlags};
+use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass, PassState};
 use anchor_lang::prelude::*;
 use anchor_lang::Key;
 
