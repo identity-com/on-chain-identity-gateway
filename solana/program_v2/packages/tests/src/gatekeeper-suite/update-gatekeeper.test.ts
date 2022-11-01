@@ -3,7 +3,7 @@ import {
   NetworkService,
   airdrop,
 } from '@identity.com/gateway-solana-client';
-import { GatewayV2 } from '@identity.com/gateway-solana-idl';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
@@ -11,7 +11,8 @@ import { describe } from 'mocha';
 
 describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
-  const program = anchor.workspace.GatewayV2 as anchor.Program<GatewayV2>;
+  const program = anchor.workspace
+    .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
   const programProvider = program.provider as anchor.AnchorProvider;
 
   let adminService: AdminService;

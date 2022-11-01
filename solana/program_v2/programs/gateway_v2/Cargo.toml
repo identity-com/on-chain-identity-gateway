@@ -1,12 +1,16 @@
 [package]
-name = "gateway_v2"
-version = "0.1.0"
-description = "Created with Anchor"
+name = "solana_anchor_gateway"
+version = "2.0.1"
+description = "Solana Identity Gateway"
 edition = "2021"
+authors = ["Identity.com <daniel@identity.com>"]
+license = "MIT"
+keywords = ["solana", "identity",  "gateway"]
+homepage = "https://www.identity.com"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "gateway_v2"
+name = "solana_anchor_gateway"
 
 [features]
 no-entrypoint = []

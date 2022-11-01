@@ -1,8 +1,8 @@
-mod constants;
-mod errors;
+pub mod constants;
+pub mod errors;
 mod instructions;
-mod state;
-mod util;
+pub mod state;
+pub mod util;
 
 use crate::instructions::admin::*;
 use crate::instructions::gatekeeper::*;
@@ -13,7 +13,7 @@ use anchor_lang::prelude::*;
 declare_id!("gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft");
 
 #[program]
-pub mod gateway_v2 {
+pub mod solana_anchor_gateway {
     use super::*;
 
     pub fn create_network(

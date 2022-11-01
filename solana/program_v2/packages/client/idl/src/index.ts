@@ -1,1 +1,1 @@
-export * from './gateway_v2';
+export * from './solana_anchor_gateway';

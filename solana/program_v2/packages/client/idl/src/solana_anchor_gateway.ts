@@ -1,6 +1,6 @@
-export type GatewayV2 = {
-  "version": "0.1.0",
-  "name": "gateway_v2",
+export type SolanaAnchorGateway = {
+  "version": "2.0.1",
+  "name": "solana_anchor_gateway",
   "instructions": [
     {
       "name": "createNetwork",
@@ -1392,9 +1392,9 @@ export type GatewayV2 = {
   ]
 };
 
-export const IDL: GatewayV2 = {
-  "version": "0.1.0",
-  "name": "gateway_v2",
+export const IDL: SolanaAnchorGateway = {
+  "version": "2.0.1",
+  "name": "solana_anchor_gateway",
   "instructions": [
     {
       "name": "createNetwork",

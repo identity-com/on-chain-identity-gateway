@@ -20,7 +20,7 @@ import {
   GATEWAY_PROGRAM,
   SOLANA_MAINNET,
 } from './lib/constants';
-import { GatewayV2 } from '@identity.com/gateway-solana-idl';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   AbstractService,
   NonSigningWallet,
@@ -30,7 +30,7 @@ import {
 // Service for a network. This will handle all aspects of the Gateway that a network is able to control... i.e. creating gatekeepers, updating gatekeepers, etc...
 export class NetworkService extends AbstractService {
   constructor(
-    program: Program<GatewayV2>,
+    program: Program<SolanaAnchorGateway>,
     private _gatekeeper: PublicKey,
     private _gatekeeperAccount: PublicKey,
     cluster: ExtendedCluster = SOLANA_MAINNET,
@@ -72,7 +72,7 @@ export class NetworkService extends AbstractService {
   }
 
   static async buildFromAnchor(
-    program: Program<GatewayV2>,
+    program: Program<SolanaAnchorGateway>,
     gatekeeper: PublicKey,
     gatekeeperAccount: PublicKey,
     options: GatewayServiceOptions = {
