@@ -62,7 +62,9 @@
   "scripts": {
     "lint": "eslint src/**/*.ts",
     "build": "tsc --build",
-    "test": "ts-mocha --paths \"test/**/*.ts\""
+    "test": "ts-mocha --paths \"test/**/*.ts\"",
+    "prepack": "yarn build && oclif manifest && oclif readme",
+    "version": "oclif readme && git add README.md"
   },
   "engines": {
     "node": ">=12.0.0"
