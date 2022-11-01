@@ -16,7 +16,6 @@ pub struct PassVerify<'info> {
     mut,
     )]
     pub pass: Account<'info, Pass>,
-    pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub network: Account<'info, GatekeeperNetwork>,
 }

@@ -221,7 +221,6 @@ export class GatekeeperService extends AbstractService {
       .accounts({
         pass,
         systemProgram: anchor.web3.SystemProgram.programId,
-        authority,
         network: this._network,
       })
       .instruction();

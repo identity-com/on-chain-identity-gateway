@@ -484,11 +484,6 @@ export type GatewayV2 = {
           "isSigner": false
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -1871,11 +1866,6 @@ export const IDL: GatewayV2 = {
           "name": "pass",
           "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
         },
         {
           "name": "systemProgram",
