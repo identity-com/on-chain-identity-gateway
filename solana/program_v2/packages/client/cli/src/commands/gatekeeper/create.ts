@@ -79,7 +79,12 @@ export default class Create extends Command {
       ],
     };
     const gatekeeperSignature = await networkService
-      .createGatekeeper(networkAddress, stakingAccount, gatekeeperData)
+      .createGatekeeper(
+        networkAddress,
+        stakingAccount,
+        undefined,
+        gatekeeperData
+      )
       .rpc();
     this.log(`Staking Account: ${stakingAccount}`);
     this.log(`Gatekeeper Signature: ${gatekeeperSignature}`);

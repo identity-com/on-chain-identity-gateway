@@ -56,13 +56,7 @@ export default class Create extends Command {
     const authority = new Wallet(authorityKeypair);
     this.log(`Admin Authority: ${authority.publicKey.toBase58()}`);
 
-    const [dataAccount] = await AdminService.createNetworkAddress(
-      authority.publicKey,
-      networkIndex
-    );
-    this.log(`Derived Network Address: ${dataAccount}`);
-
-    const adminService = await AdminService.build(dataAccount, {
+    const adminService = await AdminService.build(authorityKeypair.publicKey, {
       wallet: authority,
       clusterType: cluster as ExtendedCluster,
     });
