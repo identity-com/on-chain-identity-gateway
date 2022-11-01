@@ -18,6 +18,7 @@ export default class Close extends Command {
   ];
 
   static flags = {
+    help: Flags.help({ char: 'h' }),
     network: Flags.string({
       char: 'n',
       description: 'The network id',

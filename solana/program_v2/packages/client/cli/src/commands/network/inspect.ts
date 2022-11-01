@@ -17,6 +17,7 @@ export default class Inspect extends Command {
   ];
 
   static flags = {
+    help: Flags.help({ char: 'h' }),
     network: Flags.string({
       char: 'n',
       description: 'The network id',
