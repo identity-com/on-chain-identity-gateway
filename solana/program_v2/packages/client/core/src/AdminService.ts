@@ -14,7 +14,7 @@ import {
 
 import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { SOLANA_MAINNET } from './lib/constants';
-import { GatewayV2 } from '@identity.com/gateway-solana-idl';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   AbstractService,
   NonSigningWallet,
@@ -23,7 +23,7 @@ import {
 
 export class AdminService extends AbstractService {
   constructor(
-    program: Program<GatewayV2>,
+    program: Program<SolanaAnchorGateway>,
     protected _network: PublicKey,
     cluster: ExtendedCluster = SOLANA_MAINNET,
     wallet: Wallet = new NonSigningWallet(),
@@ -63,7 +63,7 @@ export class AdminService extends AbstractService {
   }
 
   static async buildFromAnchor(
-    program: Program<GatewayV2>,
+    program: Program<SolanaAnchorGateway>,
     network: PublicKey,
     options: GatewayServiceOptions = {
       clusterType: SOLANA_MAINNET,
