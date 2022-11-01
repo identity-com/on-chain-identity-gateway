@@ -6,13 +6,12 @@ import {
 import { Command, Flags } from '@oclif/core';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
-import { Wallet } from '@project-serum/anchor';
 
 export default class Verify extends Command {
   static description = 'Verifies a gateway pass';
 
   static examples = [
-    `$ gateway pass verify --pass [address] --network [address] --gatekeeper [address] --keypair [path to keypair] --cluster [cluster type]
+    `$ gateway pass verify --pass [address] --network [address] --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
@@ -26,11 +25,6 @@ export default class Verify extends Command {
     network: Flags.string({
       char: 'n',
       description: "String representing the network's address",
-      required: true,
-    }),
-    gatekeeper: Flags.string({
-      char: 'g',
-      description: "String representing the gatekeeper's address",
       required: true,
     }),
     keypair: Flags.string({
@@ -52,7 +46,7 @@ export default class Verify extends Command {
 
     const pass = new PublicKey(flags.pass);
     const network = new PublicKey(flags.network);
-    const gatekeeper = new PublicKey(flags.gatekeeper);
+    const gatekeeper = Keypair.generate().publicKey;
     const cluster =
       flags.cluster === 'localnet' ||
       flags.cluster === 'devnet' ||
@@ -65,12 +59,11 @@ export default class Verify extends Command {
     const localSecretKey = await fsPromises.readFile(`${flags.keypair}`);
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
-    const authorityWallet = new Wallet(authorityKeypair);
 
     const gatekeeperService = await GatekeeperService.build(
       network,
       gatekeeper,
-      { wallet: authorityWallet, clusterType: cluster as ExtendedCluster }
+      { clusterType: cluster as ExtendedCluster }
     );
 
     const verifiedPassSignature = await gatekeeperService
