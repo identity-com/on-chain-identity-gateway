@@ -17,7 +17,7 @@
     "/oclif.manifest.json"
   ],
   "dependencies": { 
-    "@identity.com/gateway-solana-client": "^2.0.0-beta.1",
+    "@identity.com/gateway-solana-client": "^2.0.0-beta.5",
     "@project-serum/anchor": "^0.25.0",
     "@project-serum/anchor-cli": "https://github.com/kklas/anchor-nightly/releases/download/anchor-cli-latest/anchor-cli-0.25.0-7eb8ca8.tgz#62b7697003fe6f7b1c0e26f7374f2ac25029eb18",
     "@oclif/core": "^1",

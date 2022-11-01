@@ -62,9 +62,7 @@ export default class Verify extends Command {
         ? flags.cluster
         : 'localnet';
 
-    const localSecretKey = await fsPromises.readFile(
-      `${__dirname}/${flags.keypair}`
-    );
+    const localSecretKey = await fsPromises.readFile(`${flags.keypair}`);
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
     const authorityWallet = new Wallet(authorityKeypair);
@@ -75,7 +73,6 @@ export default class Verify extends Command {
       { wallet: authorityWallet, clusterType: cluster as ExtendedCluster }
     );
 
-    // const account = await GatekeeperService.createPassAddress(subject, network);
     const verifiedPassSignature = await gatekeeperService
       .verifyPass(pass, authorityKeypair.publicKey)
       .rpc();
