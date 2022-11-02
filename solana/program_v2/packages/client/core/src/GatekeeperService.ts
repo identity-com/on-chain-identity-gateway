@@ -109,14 +109,15 @@ export class GatekeeperService extends AbstractService {
     passAccount: PublicKey,
     subject: PublicKey,
     passNumber = 0,
-    authority: PublicKey = this.getWallet().publicKey
+    authority: PublicKey = this.getWallet().publicKey,
+    payer = authority
   ): ServiceBuilder {
     const instructionPromise = this.getProgram()
       .methods.issuePass(subject, passNumber)
       .accounts({
         pass: passAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
-        payer: authority,
+        payer,
         authority,
         network: this._network,
         gatekeeper: this._gatekeeper,
