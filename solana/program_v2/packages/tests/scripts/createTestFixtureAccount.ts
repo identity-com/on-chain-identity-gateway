@@ -2,7 +2,6 @@ import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { exec as execCB } from 'child_process';
 import * as util from 'util';
-import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   airdrop,
   AdminService,
