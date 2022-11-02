@@ -135,6 +135,6 @@ export type GatewayServiceOptions = {
   connection?: Connection;
   wallet?: Wallet;
   confirmOptions?: ConfirmOptions;
-  clusterType: ExtendedCluster;
+  clusterType?: ExtendedCluster;
   customConfig?: CustomClusterUrlConfig;
 };
