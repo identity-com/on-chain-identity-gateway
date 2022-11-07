@@ -155,7 +155,7 @@ When manipulating a network one generally needs two authoritative elements:
 
 ### Create a Network Account
 
-// TODO: Add description
+creates a new network account
 
 ```ts
   await adminService.createNetwork(data: CreateNetworkData, authority?: PublicKey).rpc();
@@ -163,7 +163,7 @@ When manipulating a network one generally needs two authoritative elements:
 
 ### Update a Network Account
 
-// TODO: Add description
+upaates an existing network account
 
 ```ts
     await adminService.updateNetwork(data: UpdateNetworkData, authority?: PublicKey).rpc();
@@ -171,7 +171,7 @@ When manipulating a network one generally needs two authoritative elements:
 
 ### Close a Network Account
 
-// TODO: Add description
+Close a network account. This will also close all gatekeepers associated with the network.
 
 ```ts
     await adminService.closeNetwork(destination: PublicKey, authority?: PublicKey).rpc();
@@ -179,7 +179,7 @@ When manipulating a network one generally needs two authoritative elements:
 
 ### Retrieve a Network Account
 
-// TODO: Add description
+Retrieves a network account information
 
 ```ts
     await adminService.getNetworkAccount(account: PublicKey).rpc();
@@ -196,7 +196,7 @@ When manipulating a DID one generally needs two authoritative elements:
 
 ### Create a Gatekeeper Account
 
-// TODO: Add description
+creates a new gatekeeper account
 
 ```ts
   await networkService.createGatekeeper(
@@ -209,7 +209,7 @@ When manipulating a DID one generally needs two authoritative elements:
 
 ### Update a Gatekeeper Account
 
-// TODO: Add description
+updates an existing gatekeeper account
 
 ```ts
     await networkService.updateGatekeeper(
@@ -222,7 +222,16 @@ When manipulating a DID one generally needs two authoritative elements:
 
 ### Set a Gatekeeper Account's State
 
-// TODO: Add description
+sets the state of an existing gatekeeper account 0,1,2 = active, frozen, halted
+
+```ts
+    await networkService.setGatekeeperState(
+        state: GatekeeperState,
+        stakingAccount: PublicKey,
+        payer?: PublicKey,
+        authority?: PublicKey
+    ).rpc()
+```
 
 ```ts
     await networkService.setGatekeeperState(
@@ -233,7 +242,7 @@ When manipulating a DID one generally needs two authoritative elements:
 
 ### Close a Gatekeeper Account
 
-// TODO: Add description
+Close a gatekeeper account. This will also close all passes associated with the gatekeeper.
 
 ```ts
     await networkService.closeNetwork(
@@ -246,7 +255,7 @@ When manipulating a DID one generally needs two authoritative elements:
 
 ### Retrieve a Gatekeeper Account
 
-// TODO: Add description
+Retrieves a gatekeeper account information
 
 ```ts
     await networkService.getGatekeeperAccount(account: PublicKey).rpc();
@@ -258,17 +267,90 @@ When manipulating a DID one generally needs two authoritative elements:
 
 ### Issue a Pass Account
 
+issues a new pass account
+
+```ts
+    await gatekeeperService.issuePass(
+        data: IssuePassData,
+        payer?: PublicKey,
+        authority?: PublicKey
+    ).rpc();
+```
+
 ### Refresh a Pass Account
+
+refreshes an existing pass account
+
+```ts
+    await gatekeeperService.refreshPass(
+        data: RefreshPassData,
+        payer?: PublicKey,
+        authority?: PublicKey
+    ).rpc();
+```
 
 ### Set State for a Pass Account
 
+sets the state of an existing pass account 0,1,2 = active, frozen, halted
+
+```ts
+    await gatekeeperService.setPassState(
+        state: PassState,
+        pass: PublicKey,
+        payer?: PublicKey,
+        authority?: PublicKey
+    ).rpc();
+```
+
 ### Set Data for a Pass Account
+
+sets the data of an existing pass account
+
+```ts
+    await gatekeeperService.setPassData(
+        data: SetPassDataData,
+        pass: PublicKey,
+        payer?: PublicKey,
+        authority?: PublicKey
+    ).rpc();
+``` 
 
 ### Change the Associated Gatekeeper for a Pass Account
 
+changes the associated gatekeeper of an existing pass account
+
+```ts
+    await gatekeeperService.changePassGatekeeper(
+        gatekeeper: PublicKey,
+        pass: PublicKey,
+        payer?: PublicKey,
+        authority?: PublicKey
+    ).rpc();
+```
+
 ### Expire a Pass Account
 
+expires an existing pass account
+
+```ts
+    await gatekeeperService.expirePass(
+        pass: PublicKey,
+        payer?: PublicKey,
+        authority?: PublicKey
+    ).rpc();
+```
+
 ### Verify a Pass Account
+
+verifies an existing pass account
+
+```ts
+    await gatekeeperService.verifyPass(
+        pass: PublicKey,
+        payer?: PublicKey,
+        authority?: PublicKey
+    ).rpc();
+```
 
 ## Contributing
 
