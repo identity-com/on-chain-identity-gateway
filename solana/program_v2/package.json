@@ -28,7 +28,7 @@
     "prepare": "cd ../../ && husky install solana/program_v2/.husky"
   },
   "devDependencies": {
-    "@project-serum/anchor-cli": "https://github.com/kklas/anchor-nightly/releases/download/anchor-cli-latest/anchor-cli-0.25.0-7eb8ca8.tgz",
+    "@project-serum/anchor-cli": "0.25.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^7.0.4",
