@@ -161,14 +161,96 @@ creates a new network account
   await adminService.createNetwork(data: CreateNetworkData, authority?: PublicKey).rpc();
 ```
 
+In order to use createNetwork instruction, you need to pass in the parameter, CreateNetworkData. 
+
+```ts
+  export type CreateNetworkData = {
+  authThreshold: number;
+  passExpireTime: number;
+  fees: FeeStructure[];
+  authKeys: AuthKeyStructure[];
+  supportedTokens: SupportedToken[];
+};
+```
+authThreshold - the number of keys needed to change the `auth_keys`.
+
+passExpireTime - the length of time a pass lasts in seconds. `0` means does not expire.
+
+fees - The fees for this network, it's type feeStructure is defined below.
+```ts
+export type FeeStructure = {
+  token: PublicKey;
+  issue: number;
+  refresh: number;
+  expire: number;
+  verify: number;
+};
+```
+
+authkeys - Keys with permissions on the network, it's type AuthKeyStructure is defined below.
+
+```ts
+export type AuthKeyStructure = {
+  flags: number;
+  key: PublicKey;
+};
+```
+
+supportedTokens - A set of all supported tokens on the network, it's type supportedToken is defined below.
+
+```ts
+export type SupportedToken = {
+  key: PublicKey;
+  settlementInfo: SettlementInfo;
+};
+```
+
 ### Update a Network Account
 
-upaates an existing network account
+updates an existing network account with new data (e.g. new guardian authority)
 
 ```ts
     await adminService.updateNetwork(data: UpdateNetworkData, authority?: PublicKey).rpc();
 ```
+In order to use updateNetwork instruction, you need to pass in the parameter, UpdateNetworkData. 
 
+```ts
+export type UpdateNetworkData = {
+  authThreshold: number;
+  passExpireTime: number;
+  fees: UpdateFeeStructure;
+  authKeys: UpdateAuthKeytructure;
+  networkFeatures: number;
+  supportedTokens: UpdateSupportedTokens;
+};
+```
+authThreshold - the number of keys needed to change the `auth_keys`.
+
+passExpireTime - the length of time a pass lasts in seconds. `0` means does not expire.
+
+fees - The fees for this network, it's type feeStructure is defined below.
+
+authkeys - Keys with permissions on the network, it's type AuthKeyStructure is defined below.
+
+```ts
+export type AuthKeyStructure = {
+  flags: number;
+  key: PublicKey;
+};
+```
+networkFeatures - Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
+
+supportedTokens - A set of all supported tokens on the network, it's type UpdateSupportedToken is defined below.
+
+```ts
+export type UpdateSupportedTokens = {
+  add: SupportedToken[];
+  remove: PublicKey[];
+};
+```
+
+```ts
+ 
 ### Close a Network Account
 
 Close a network account. This will also close all gatekeepers associated with the network.
@@ -179,7 +261,7 @@ Close a network account. This will also close all gatekeepers associated with th
 
 ### Retrieve a Network Account
 
-Retrieves a network account information
+Retrieves a network account information 
 
 ```ts
     await adminService.getNetworkAccount(account: PublicKey).rpc();
@@ -196,7 +278,7 @@ When manipulating a DID one generally needs two authoritative elements:
 
 ### Create a Gatekeeper Account
 
-creates a new gatekeeper account
+creates a new gatekeeper account 
 
 ```ts
   await networkService.createGatekeeper(
@@ -209,7 +291,7 @@ creates a new gatekeeper account
 
 ### Update a Gatekeeper Account
 
-updates an existing gatekeeper account
+updates an existing gatekeeper account 
 
 ```ts
     await networkService.updateGatekeeper(
