@@ -9,9 +9,16 @@ import {
 } from '@identity.com/gateway-solana-client';
 import { createMint } from '@solana/spl-token';
 import * as fs from 'fs';
-import { setGatekeeperFlags } from '../src/util/lib';
+import { setGatekeeperFlagsAndFees } from '../src/util/lib';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
-import { TEST_GUARDIAN } from '../src/util/constants';
+import {
+  TEST_ALT_GATEKEEPER,
+  TEST_ALT_NETWORK,
+  TEST_GATEKEEPER,
+  TEST_GUARDIAN,
+  TEST_MINT,
+  TEST_NETWORK,
+} from '../src/util/constants';
 
 const exec = util.promisify(execCB);
 
@@ -92,13 +99,11 @@ const createNetworkAccount = async (
   authorityBase58: string,
   filename: string
 ): Promise<PublicKey> => {
-  const authorityKeypair = await loadKeypair(authorityBase58, LAMPORTS_PER_SOL);
+  const authorityKeypair = await loadKeypair(authorityBase58);
   const authority = new anchor.Wallet(authorityKeypair);
   const guardian = new anchor.Wallet(
-    await loadKeypair(TEST_GUARDIAN.toBase58())
+    await loadKeypair(TEST_GUARDIAN.toBase58(), LAMPORTS_PER_SOL)
   );
-
-  await airdrop(programProvider.connection, guardian.publicKey);
 
   const service = await AdminService.buildFromAnchor(
     program,
@@ -106,13 +111,19 @@ const createNetworkAccount = async (
     {
       clusterType: 'localnet',
       wallet: guardian,
-    },
-    programProvider
+    }
   );
+
   const foundAccount = await service.getNetworkAccount();
 
   if (!foundAccount) {
     await service.createNetwork().withPartialSigners(authorityKeypair).rpc();
+
+    await airdrop(
+      programProvider.connection,
+      authorityKeypair.publicKey,
+      LAMPORTS_PER_SOL
+    );
   }
 
   const authBase58 = authority.publicKey.toBase58();
@@ -131,12 +142,14 @@ const createGatekeeperAccount = async (
 ) => {
   const authorityKeypair = await loadKeypair(authorityBase58, LAMPORTS_PER_SOL);
   const authority = new anchor.Wallet(authorityKeypair);
-
+  const networkKeypair = await loadKeypair(TEST_NETWORK.toBase58());
   await airdrop(
     programProvider.connection,
     authority.publicKey,
     LAMPORTS_PER_SOL * 2
   );
+
+  await airdrop(programProvider.connection, network, LAMPORTS_PER_SOL * 2);
 
   const [dataAccount] = await NetworkService.createGatekeeperAddress(
     authority.publicKey,
@@ -154,20 +167,30 @@ const createGatekeeperAccount = async (
     {
       clusterType: 'localnet',
       wallet: authority,
-    },
-    programProvider
+    }
   );
 
   const foundAccount = await service.getGatekeeperAccount();
 
   if (!foundAccount) {
     console.log(
-      'Creating data account with staking account: ' + stakingDataAccount
+      `Creating data account ${dataAccount.toBase58()} with staking account: ${stakingDataAccount}`
     );
+
+    const kp = Keypair.generate();
+    await airdrop(programProvider.connection, kp.publicKey, LAMPORTS_PER_SOL);
 
     await service.createGatekeeper(network, stakingDataAccount).rpc();
 
-    await setGatekeeperFlags(stakingDataAccount, service, 65535);
+    await setGatekeeperFlagsAndFees(stakingDataAccount, service, 65535, [
+      {
+        token: TEST_MINT,
+        issue: 0.01,
+        refresh: 0.01,
+        expire: 0.01,
+        verify: 0.01,
+      },
+    ]);
   }
 
   await saveAccountToFile(dataAccount.toBase58(), filename);
@@ -180,34 +203,33 @@ const createGatekeeperAccount = async (
 (async () => {
   // Create the main network account to be used in tests
   const networkAccount = await createNetworkAccount(
-    'B4951ZxztgHL98WT4eFUyaaRmsi6V4hBzkoYe1VSNweo',
+    TEST_NETWORK.toBase58(),
     'network'
   );
 
   // Create an alternative network account to be used in tests
   const altNetworkAccount = await createNetworkAccount(
-    'DuqrwqMDuVwgd2BNbCFQS5gwNuZcfgjuL6KpuvjGjaYa',
+    TEST_ALT_NETWORK.toBase58(),
     'network-alt'
   );
 
   // Create the main gatekeeper in the main network for tests
   await createGatekeeperAccount(
     networkAccount,
-    'B4951ZxztgHL98WT4eFUyaaRmsi6V4hBzkoYe1VSNweo',
+    TEST_GATEKEEPER.toBase58(),
     'gatekeeper'
   );
-
   // Create an alternative gatekeeper in the main network for tests
   await createGatekeeperAccount(
     networkAccount,
-    'DuqrwqMDuVwgd2BNbCFQS5gwNuZcfgjuL6KpuvjGjaYa',
+    TEST_ALT_GATEKEEPER.toBase58(),
     'gatekeeper-alt'
   );
 
   // Create a gatekeeper in an alternative network for tests
   await createGatekeeperAccount(
     altNetworkAccount,
-    '6ufu3BBssTiNhQ5ejtkNGfqksXQatAZ5aVFVPNQy8wu9',
+    TEST_ALT_GATEKEEPER.toBase58(),
     'gatekeeper-invalid'
   );
 
