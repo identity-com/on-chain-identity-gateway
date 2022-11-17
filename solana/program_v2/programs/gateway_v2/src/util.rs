@@ -27,11 +27,11 @@ pub trait OnChainSizeWithArg<Arg> {
     fn on_chain_size_with_arg(arg: Arg) -> usize;
 }
 
-pub fn get_gatekeeper_fees(fees: &Vec<GatekeeperFees>, mint: Pubkey) -> &GatekeeperFees {
+pub fn get_gatekeeper_fees(fees: &[GatekeeperFees], mint: Pubkey) -> &GatekeeperFees {
     fees.iter().find(|&&x| x.token == mint).unwrap()
 }
 
-pub fn get_network_fees(fees: &Vec<NetworkFees>, mint: Pubkey) -> &NetworkFees {
+pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> &NetworkFees {
     fees.iter().find(|&&x| x.token == mint).unwrap()
 }
 
@@ -40,13 +40,10 @@ pub fn get_network_fees(fees: &Vec<NetworkFees>, mint: Pubkey) -> &NetworkFees {
 /// First result returns the fee for the guardian
 /// Second result returns the gatekeeper fee
 pub fn work_out_fees(fee: u64, split: u16) -> (u64, u64) {
-    let guardian_fee: f64;
-    let gatekeeper_fee: f64;
+    let percentage = (split as f64).div(100_f64);
+    let guardian_fee = (fee as f64).mul(percentage);
 
-    let percentage: f64 = (split as f64).div(100 as f64);
-    guardian_fee = (fee as f64).mul(percentage);
-
-    gatekeeper_fee = (fee as f64) - guardian_fee;
+    let gatekeeper_fee = (fee as f64) - guardian_fee;
     (guardian_fee as u64, gatekeeper_fee as u64)
 }
 
