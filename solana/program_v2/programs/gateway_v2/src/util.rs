@@ -1,4 +1,7 @@
 //! Utility functions and types.
+use crate::state::{GatekeeperFees, NetworkFees};
+use anchor_lang::prelude::Pubkey;
+use std::ops::{Div, Mul};
 
 // pub const OC_SIZE_BOOL: usize = 1;
 pub const OC_SIZE_U8: usize = 1;
@@ -22,4 +25,105 @@ pub trait OnChainSize {
 pub trait OnChainSizeWithArg<Arg> {
     /// Gets the size with an argument
     fn on_chain_size_with_arg(arg: Arg) -> usize;
+}
+
+pub fn get_gatekeeper_fees(fees: &Vec<GatekeeperFees>, mint: Pubkey) -> &GatekeeperFees {
+    fees.iter().find(|&&x| x.token == mint).unwrap()
+}
+
+pub fn get_network_fees(fees: &Vec<NetworkFees>, mint: Pubkey) -> &NetworkFees {
+    fees.iter().find(|&&x| x.token == mint).unwrap()
+}
+
+/// get_fees
+/// Returns two fees in the correct unit
+/// First result returns the fee for the guardian
+/// Second result returns the gatekeeper fee
+pub fn work_out_fees(fee: u64, split: u16) -> (u64, u64) {
+    let guardian_fee: f64;
+    let gatekeeper_fee: f64;
+
+    let percentage: f64 = (split as f64).div(100 as f64);
+    guardian_fee = (fee as f64).mul(percentage);
+
+    gatekeeper_fee = (fee as f64) - guardian_fee;
+    (guardian_fee as u64, gatekeeper_fee as u64)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::state::{GatekeeperFees, NetworkFees};
+
+    #[test]
+    fn get_fees_test() {
+        let fees = crate::util::work_out_fees(100, 10);
+        assert_eq!(fees.0, 10);
+        assert_eq!(fees.1, 90);
+    }
+
+    #[test]
+    fn get_fees_test_split_5() {
+        let fees = crate::util::work_out_fees(100, 5);
+        assert_eq!(fees.0, 5);
+        assert_eq!(fees.1, 95);
+    }
+
+    #[test]
+    fn get_fees_test_split_zero() {
+        let fees = crate::util::work_out_fees(100, 0);
+        assert_eq!(fees.0, 0);
+        assert_eq!(fees.1, 100);
+    }
+
+    #[test]
+    fn get_gatekeeper_fees_test() {
+        let mint = "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtveqn4esJGX"
+            .parse()
+            .unwrap();
+        let fee1 = GatekeeperFees {
+            token: mint,
+            issue: 100,
+            verify: 10,
+            refresh: 10,
+            expire: 10,
+        };
+        let fee2 = GatekeeperFees {
+            token: "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtvdqn4esJGX"
+                .parse()
+                .unwrap(),
+            issue: 0,
+            verify: 0,
+            refresh: 0,
+            expire: 0,
+        };
+        let fees: Vec<GatekeeperFees> = vec![fee1, fee2];
+        let fee = crate::util::get_gatekeeper_fees(&fees, mint);
+        assert_eq!(fee, &fee1);
+    }
+
+    #[test]
+    fn get_network_fees() {
+        let mint = "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtveqn4esJGX"
+            .parse()
+            .unwrap();
+        let fee1 = NetworkFees {
+            token: mint,
+            issue: 100,
+            verify: 10,
+            refresh: 10,
+            expire: 10,
+        };
+        let fee2 = NetworkFees {
+            token: "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtvdqn4esJGX"
+                .parse()
+                .unwrap(),
+            issue: 0,
+            verify: 0,
+            refresh: 0,
+            expire: 0,
+        };
+        let fees: Vec<NetworkFees> = vec![fee1, fee2];
+        let fee = crate::util::get_network_fees(&fees, mint);
+        assert_eq!(fee, &fee1);
+    }
 }
