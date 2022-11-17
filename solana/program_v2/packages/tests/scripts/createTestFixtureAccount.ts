@@ -6,6 +6,7 @@ import {
   airdrop,
   AdminService,
   NetworkService,
+  GatekeeperKeyFlags,
 } from '@identity.com/gateway-solana-client';
 import { createMint } from '@solana/spl-token';
 import * as fs from 'fs';
@@ -142,7 +143,7 @@ const createGatekeeperAccount = async (
 ) => {
   const authorityKeypair = await loadKeypair(authorityBase58, LAMPORTS_PER_SOL);
   const authority = new anchor.Wallet(authorityKeypair);
-  const networkKeypair = await loadKeypair(TEST_NETWORK.toBase58());
+
   await airdrop(
     programProvider.connection,
     authority.publicKey,
@@ -180,7 +181,26 @@ const createGatekeeperAccount = async (
     const kp = Keypair.generate();
     await airdrop(programProvider.connection, kp.publicKey, LAMPORTS_PER_SOL);
 
-    await service.createGatekeeper(network, stakingDataAccount).rpc();
+    await service
+      .createGatekeeper(network, stakingDataAccount, undefined, {
+        tokenFees: [
+          {
+            token: TEST_MINT,
+            issue: 1,
+            expire: 1,
+            refresh: 1,
+            verify: 1,
+          },
+        ],
+        authThreshold: 1,
+        authKeys: [
+          {
+            flags: GatekeeperKeyFlags.AUTH,
+            key: authorityKeypair.publicKey,
+          },
+        ],
+      })
+      .rpc();
 
     await setGatekeeperFlagsAndFees(stakingDataAccount, service, 65535, [
       {
