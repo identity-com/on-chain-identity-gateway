@@ -21,6 +21,8 @@ The `gateway-solana-client` library provides the following features:
 13. Introduced `DID_DOC_HIDDEN` flag that enables hiding a Verification Method from the DID resolution.
 14. Account Size can grow beyond transaction size limits (an improvement from the legacy program).
 
+TODO: Update above feature information.
+
 ## Client library
 
 ### Installation
@@ -467,6 +469,7 @@ sets the state of an existing pass account 0,1,2 = active, frozen, halted
         authority?: PublicKey
     ).rpc();
 ```
+TODO: PassState
 
 ### Set Data for a Pass Account
 
@@ -480,6 +483,7 @@ sets the data of an existing pass account
         authority?: PublicKey
     ).rpc();
 ``` 
+TODO: SetPassData
 
 ### Change the Associated Gatekeeper for a Pass Account
 
