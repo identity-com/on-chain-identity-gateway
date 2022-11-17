@@ -165,18 +165,14 @@ In order to use createNetwork instruction, you need to pass in the parameter, Cr
 
 ```ts
   export type CreateNetworkData = {
-  authThreshold: number;
-  passExpireTime: number;
-  fees: FeeStructure[];
-  authKeys: AuthKeyStructure[];
-  supportedTokens: SupportedToken[];
+  authThreshold: number; // the number of keys needed to change the `auth_keys`.
+  passExpireTime: number; // the length of time a pass lasts in seconds. `0` means does not expire.
+  fees: FeeStructure[]; // The fees for this network, it's type feeStructure is defined below.
+  authKeys: AuthKeyStructure[]; // Keys with permissions on the network, it's type AuthKeyStructure is defined below.
+  supportedTokens: SupportedToken[]; // A set of all supported tokens on the network, it's type supportedToken is defined below.
 };
 ```
-authThreshold - the number of keys needed to change the `auth_keys`.
 
-passExpireTime - the length of time a pass lasts in seconds. `0` means does not expire.
-
-fees - The fees for this network, it's type feeStructure is defined below.
 ```ts
 export type FeeStructure = {
   token: PublicKey;
@@ -187,16 +183,12 @@ export type FeeStructure = {
 };
 ```
 
-authkeys - Keys with permissions on the network, it's type AuthKeyStructure is defined below.
-
 ```ts
 export type AuthKeyStructure = {
   flags: number;
   key: PublicKey;
 };
 ```
-
-supportedTokens - A set of all supported tokens on the network, it's type supportedToken is defined below.
 
 ```ts
 export type SupportedToken = {
@@ -392,15 +384,20 @@ export type GatekeeperAccount = {
   version: number; // The version of this struct, should be 0 until a new version is released
   authority: PublicKey; // The initial authority key
   gatekeeperNetwork: PublicKey; // The [`GatekeeperNetwork`] this gatekeeper is on
-  stakingAccount: PublicKey;
-  tokenFees: FeeStructure[];
-  authKeys: AuthKeyStructure[];
-  state: GatekeeperState;
+  stakingAccount: PublicKey; // The staking account of this gatekeeper
+  tokenFees: FeeStructure[]; // The fees for this gatekeeper
+  authKeys: AuthKeyStructure[]; // The keys with permissions on this gatekeeper
+  state: GatekeeperState; // The state of gatekeeper, default is Active, it can be frozen or be revoked.
 };
 ```
 
-
-
+```ts
+export enum GatekeeperState {
+  Active,
+  Frozen,
+  Halted,
+}
+```
 
 ## Usage - `pass` Manipulation
 
