@@ -46,19 +46,19 @@ The AdminService class controls all network operations within the client. It can
 
     // with anchor 
     const service = await AdminService.buildFromAnchor(
-    program,
-    networkAuthority.publicKey,
-    {
-        clusterType: 'localnet',
-        wallet: guardianAuthority,
-    },
-    programProvider
+        program,
+        networkAuthority.publicKey,
+        {
+            clusterType: 'localnet',
+            wallet: guardianAuthority,
+        },
+        programProvider
     );
     
     // without anchor
     const service = await AdminService.build(
-    network: PublicKey,
-    options: GatewayServiceOptions = {
+        network: PublicKey,
+        options: GatewayServiceOptions = {
             clusterType: SOLANA_MAINNET,
         }
     );
@@ -95,11 +95,11 @@ The NetworkService class controls all gatekeeper operations within the client. I
 
     // without anchor
     const service = await AdminService.build(
-        gatekeeperAuthority.publicKey,
-        gatekeeperDataAccount,
-        options: GatewayServiceOptions = {
-            clusterType: SOLANA_MAINNET,
-        }
+      gatekeeperAuthority.publicKey,
+      gatekeeperDataAccount,
+      options: GatewayServiceOptions = {
+        clusterType: SOLANA_MAINNET,
+      }
     );
 ```
 
@@ -221,7 +221,8 @@ In order to use updateNetwork instruction, you need to pass in the parameter, Up
       fees: UpdateFeeStructure; 
       // Keys with permissions on the network, it's type AuthKeyStructure is defined below.
       authKeys: UpdateAuthKeytructure; 
-      // Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
+      // Features on the network, index relates to which feature it is. 
+      // There are 32 bytes of data available for each feature.
       networkFeatures: number; 
       // A set of all supported tokens on the network, it's type UpdateSupportedToken is defined below.
       supportedTokens: UpdateSupportedTokens; 
