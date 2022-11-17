@@ -1,5 +1,8 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { NetworkService } from '@identity.com/gateway-solana-client';
+import {
+  FeeStructure,
+  NetworkService,
+} from '@identity.com/gateway-solana-client';
 import fsPromises from 'node:fs/promises';
 
 export const loadPrivateKey = async (
@@ -12,16 +15,20 @@ export const loadPrivateKey = async (
   return Keypair.fromSecretKey(privateKey);
 };
 
-export const setGatekeeperFlags = async (
+export const setGatekeeperFlagsAndFees = async (
   stakingAccount: PublicKey,
   service: NetworkService,
-  flags: number
+  flags: number,
+  feesToAdd: FeeStructure[] = []
 ): Promise<void> => {
   await service
     .updateGatekeeper(
       {
         authThreshold: 1,
-        tokenFees: { remove: [], add: [] },
+        tokenFees: {
+          remove: [],
+          add: feesToAdd,
+        },
         authKeys: {
           add: [
             {

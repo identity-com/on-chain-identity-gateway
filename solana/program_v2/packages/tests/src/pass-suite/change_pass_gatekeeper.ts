@@ -8,7 +8,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { TEST_ALT_NETWORK, TEST_NETWORK } from '../util/constants';
-import { setGatekeeperFlags } from '../util/lib';
+import { setGatekeeperFlagsAndFees } from '../util/lib';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -34,7 +34,7 @@ describe('Change pass gatekeeper', () => {
     await networkService.createGatekeeper(TEST_NETWORK, stakingAccount).rpc();
     const dataAcct = networkService.getGatekeeperAddress();
 
-    await setGatekeeperFlags(
+    await setGatekeeperFlagsAndFees(
       stakingAccount,
       networkService,
       GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.CHANGE_PASS_GATEKEEPER

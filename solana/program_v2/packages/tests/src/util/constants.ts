@@ -1,17 +1,23 @@
 import { PublicKey } from '@solana/web3.js';
 
 export const TEST_NETWORK = new PublicKey(
-  '6npWzRhH5YqDBZz7LF85Y2UdeG7Zhmi5oPmfELk5RXSf'
+  'B4951ZxztgHL98WT4eFUyaaRmsi6V4hBzkoYe1VSNweo'
 );
 export const TEST_ALT_NETWORK = new PublicKey(
-  '6Boz9sR8PEyrGvhCG42aRRfqz5BZ7Yo3rUUyBf9Eew4z'
+  'DuqrwqMDuVwgd2BNbCFQS5gwNuZcfgjuL6KpuvjGjaYa'
 );
 export const TEST_GATEKEEPER = new PublicKey(
-  '7kxayzw8vYXMxH2TCy1na6x2LNctES8ndNbut559mTko'
+  'BsRxCB1j3MWEf8wCjVtyRG2DAq1qvNLpVHRbEtT6YtE1'
+);
+export const TEST_ALT_GATEKEEPER = new PublicKey(
+  '6ufu3BBssTiNhQ5ejtkNGfqksXQatAZ5aVFVPNQy8wu9'
 );
 export const TEST_GATEKEEPER_AUTHORITY = new PublicKey(
-  'B4951ZxztgHL98WT4eFUyaaRmsi6V4hBzkoYe1VSNweo'
+  'F4iX5k5ATWB4dsSvRjTSARBiFqzDSY6BXFYwrv9d2bBC'
 );
 export const TEST_MINT = new PublicKey(
   'wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtveqn4esJGX'
+);
+export const TEST_GUARDIAN = new PublicKey(
+  '2CbngPgbkkG8Ygvtma6HaufYqCajmfHazbbosJZwUyNL'
 );
