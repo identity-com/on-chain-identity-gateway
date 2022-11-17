@@ -46,22 +46,22 @@ The AdminService class controls all network operations within the client. It can
 
     // with anchor 
     const service = await AdminService.buildFromAnchor(
-      program,
-      networkAuthority.publicKey,
-      {
+    program,
+    networkAuthority.publicKey,
+    {
         clusterType: 'localnet',
         wallet: guardianAuthority,
-      },
-      programProvider
+    },
+    programProvider
     );
     
     // without anchor
     const service = await AdminService.build(
-        network: PublicKey,
-        options: GatewayServiceOptions = {
+    network: PublicKey,
+    options: GatewayServiceOptions = {
             clusterType: SOLANA_MAINNET,
         }
-    )
+    );
 ```
 
 #### NetworkService
@@ -100,7 +100,7 @@ The NetworkService class controls all gatekeeper operations within the client. I
         options: GatewayServiceOptions = {
             clusterType: SOLANA_MAINNET,
         }
-    )
+    );
 ```
 
 #### GatekeeperService
@@ -158,43 +158,48 @@ When manipulating a network one generally needs two authoritative elements:
 creates a new network account
 
 ```ts
-  await adminService.createNetwork(data: CreateNetworkData, authority?: PublicKey).rpc();
+    await adminService.createNetwork(data: CreateNetworkData, authority?: PublicKey).rpc();
 ```
 
 In order to use createNetwork instruction, you need to pass in the parameter, CreateNetworkData. 
 
 ```ts
-  export type CreateNetworkData = {
-  authThreshold: number; // the number of keys needed to change the `auth_keys`.
-  passExpireTime: number; // the length of time a pass lasts in seconds. `0` means does not expire.
-  fees: FeeStructure[]; // The fees for this network, it's type feeStructure is defined below.
-  authKeys: AuthKeyStructure[]; // Keys with permissions on the network, it's type AuthKeyStructure is defined below.
-  supportedTokens: SupportedToken[]; // A set of all supported tokens on the network, it's type supportedToken is defined below.
-};
+    export type CreateNetworkData = {
+      // the number of keys needed to change the `auth_keys`.  
+      authThreshold: number;
+      // the length of time a pass lasts in seconds. `0` means does not expire. 
+      passExpireTime: number;
+      // The fees for this network, it's type feeStructure is defined below. 
+      fees: FeeStructure[]; 
+      // Keys with permissions on the network, it's type AuthKeyStructure is defined below.
+      authKeys: AuthKeyStructure[]; 
+      // A set of all supported tokens on the network, it's type supportedToken is defined below.
+      supportedTokens: SupportedToken[]; 
+    };
 ```
 
 ```ts
-export type FeeStructure = {
-  token: PublicKey;
-  issue: number;
-  refresh: number;
-  expire: number;
-  verify: number;
-};
+    export type FeeStructure = {
+      token: PublicKey;
+      issue: number;
+      refresh: number;
+      expire: number;
+      verify: number;
+    };
 ```
 
 ```ts
-export type AuthKeyStructure = {
-  flags: number;
-  key: PublicKey;
-};
+    export type AuthKeyStructure = {
+      flags: number;
+      key: PublicKey;
+    };
 ```
 
 ```ts
-export type SupportedToken = {
-  key: PublicKey;
-  settlementInfo: SettlementInfo;
-};
+    export type SupportedToken = {
+      key: PublicKey;
+      settlementInfo: SettlementInfo;
+    };
 ```
 
 ### Update a Network Account
@@ -207,28 +212,34 @@ updates an existing network account with new data (e.g. new guardian authority)
 In order to use updateNetwork instruction, you need to pass in the parameter, UpdateNetworkData. 
 
 ```ts
-export type UpdateNetworkData = {
-  authThreshold: number; // The number of keys needed to change the `auth_keys`.
-  passExpireTime: number; // The length of time a pass lasts in seconds. `0` means does not expire.
-  fees: UpdateFeeStructure; // The fees for this network, it's type feeStructure is defined below.
-  authKeys: UpdateAuthKeytructure; // Keys with permissions on the network, it's type AuthKeyStructure is defined below.
-  networkFeatures: number; // Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
-  supportedTokens: UpdateSupportedTokens; // A set of all supported tokens on the network, it's type UpdateSupportedToken is defined below.
-};
+    export type UpdateNetworkData = {
+      // The number of keys needed to change the `auth_keys`.  
+      authThreshold: number;
+      // The length of time a pass lasts in seconds. `0` means does not expire.
+      passExpireTime: number; 
+      // The fees for this network, it's type feeStructure is defined below.
+      fees: UpdateFeeStructure; 
+      // Keys with permissions on the network, it's type AuthKeyStructure is defined below.
+      authKeys: UpdateAuthKeytructure; 
+      // Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
+      networkFeatures: number; 
+      // A set of all supported tokens on the network, it's type UpdateSupportedToken is defined below.
+      supportedTokens: UpdateSupportedTokens; 
+    };
 ```
 
 ```ts
-export type AuthKeyStructure = {
-  flags: number;
-  key: PublicKey;
-};
+    export type AuthKeyStructure = {
+      flags: number;
+      key: PublicKey;
+    };
 ```
 
 ```ts
-export type UpdateSupportedTokens = {
-  add: SupportedToken[];
-  remove: PublicKey[];
-};
+    export type UpdateSupportedTokens = {
+      add: SupportedToken[];
+      remove: PublicKey[];
+    };
 ```
  
 ### Close a Network Account
@@ -236,8 +247,9 @@ export type UpdateSupportedTokens = {
 Close a network account. This will also close all gatekeepers associated with the network.
 
 ```ts
+    // destination - account that receives the rent back.
     await adminService.closeNetwork(destination: PublicKey, authority?: PublicKey).rpc();
-    // destination - account that receives the rent back. 
+     
 ```
 
 
@@ -252,20 +264,20 @@ Retrieves a network account information
 Below is the return types.
 
 ```ts
-export type NetworkAccount = {
-  version: number;
-  authority: PublicKey;
-  networkIndex: number;
-  authThreshold: number;
-  passExpireTime: number;
-  fees: FeeStructure[];
-  authKeys: AuthKeyStructure[];
-  networkFeatures: number;
-  // Hash Set
-  supportedTokens: SupportedToken[];
-  // Hash Set
-  gatekeepers: PublicKey[];
-};
+    export type NetworkAccount = {
+      version: number;
+      authority: PublicKey;
+      networkIndex: number;
+      authThreshold: number;
+      passExpireTime: number;
+      fees: FeeStructure[];
+      authKeys: AuthKeyStructure[];
+      networkFeatures: number;
+      // Hash Set
+      supportedTokens: SupportedToken[];
+      // Hash Set
+      gatekeepers: PublicKey[];
+    };
 ```
 
 ## Usage - `gatekeeper` Manipulation
@@ -282,22 +294,25 @@ When manipulating a DID one generally needs two authoritative elements:
 creates a new gatekeeper account 
 
 ```ts
-  await networkService.createGatekeeper(
-    network: PublicKey, 
-    stakingAccount: PublicKey, 
-    payer: PublicKey, 
-    data: CreateGatekeeperData
+    await networkService.createGatekeeper(
+      network: PublicKey, 
+      stakingAccount: PublicKey, 
+      payer: PublicKey, 
+      data: CreateGatekeeperData
     ).rpc();
 ```
 
 In order to use createGatekeeper instruction, you need to pass in the parameter, CreateGatekeeperData.
 
 ```ts
-export type CreateGatekeeperData = {
-  tokenFees: FeeStructure[]; // The fees for this gatekeeper
-  authThreshold: number; // The number of keys needed to change the `auth_keys`
-  authKeys: AuthKeyStructure[]; // The keys with permissions on this gatekeeper
-};
+    export type CreateGatekeeperData = {
+      // The fees for this gatekeeper  
+      tokenFees: FeeStructure[];
+      // The number of keys needed to change the `auth_keys`
+      authThreshold: number;
+      // The keys with permissions on this gatekeeper
+      authKeys: AuthKeyStructure[]; 
+    };
 ```
 
 ### Update a Gatekeeper Account
@@ -310,31 +325,34 @@ updates an existing gatekeeper account
         stakingAccount: PublicKey,
         payer?: PublicKey,
         authority?: PublicKey
-    ).rpc()
+    ).rpc();
 ```
 
 In order to use updateGatekeeper instruction, you need to pass in the parameter, UpdateGatekeeperData.
 
 ```ts
-export type UpdateGatekeeperData = {
-  tokenFees: UpdateFeeStructure; // The fees for this gatekeeper, it's type UpdateFeeStructure is defined below.
-  authThreshold: number; // The number of keys needed to change the `auth_keys`
-  authKeys: UpdateAuthKeytructure; // The keys with permissions on this gatekeeper, it's type UpdateAuthKeytructure is defined below.
-};
+    export type UpdateGatekeeperData = {
+      // The fees for this gatekeeper, it's type UpdateFeeStructure is defined below.  
+      tokenFees: UpdateFeeStructure;
+      // The number of keys needed to change the `auth_keys` 
+      authThreshold: number;
+      // The keys with permissions on this   gatekeeper, it's type UpdateAuthKeytructure is defined below.
+      authKeys: UpdateAuthKeytructure; 
+    };
 ```
 
 ```ts
-export type UpdateFeeStructure = {
-  add: FeeStructure[];
-  remove: PublicKey[];
-};
+    export type UpdateFeeStructure = {
+      add: FeeStructure[];
+      remove: PublicKey[];
+    };
 ```
 
 ```ts
-export type UpdateAuthKeytructure = {
-  add: AuthKeyStructure[];
-  remove: PublicKey[];
-};
+    export type UpdateAuthKeytructure = {
+      add: AuthKeyStructure[];
+      remove: PublicKey[];
+    };
 ```
 
 ### Set a Gatekeeper Account's State
@@ -347,14 +365,14 @@ sets the state of an existing gatekeeper account 0,1,2 = active, frozen, halted
         stakingAccount: PublicKey,
         payer?: PublicKey,
         authority?: PublicKey
-    ).rpc()
+    ).rpc();
 ```
 
 ```ts
     await networkService.setGatekeeperState(
         state: GatekeeperState,
         authority?: PublicKey
-    ).rpc()
+    ).rpc();
 ```
 
 ### Close a Gatekeeper Account
@@ -367,7 +385,7 @@ Close a gatekeeper account. This will also close all passes associated with the 
         destination?: PublicKey,
         payer?: PublicKey,
         authority?: PublicKey
-        ).rpc();
+    ).rpc();
 ```
 
 ### Retrieve a Gatekeeper Account
@@ -380,23 +398,30 @@ Retrieves a gatekeeper account information
 Below is the return types.
 
 ```ts
-export type GatekeeperAccount = {
-  version: number; // The version of this struct, should be 0 until a new version is released
-  authority: PublicKey; // The initial authority key
-  gatekeeperNetwork: PublicKey; // The [`GatekeeperNetwork`] this gatekeeper is on
-  stakingAccount: PublicKey; // The staking account of this gatekeeper
-  tokenFees: FeeStructure[]; // The fees for this gatekeeper
-  authKeys: AuthKeyStructure[]; // The keys with permissions on this gatekeeper
-  state: GatekeeperState; // The state of gatekeeper, default is Active, it can be frozen or be revoked.
-};
+    export type GatekeeperAccount = {
+      // The version of this struct, should be 0 until a new version is released  
+      version: number; 
+      // The initial authority key
+      authority: PublicKey; 
+      // The [`GatekeeperNetwork`] this gatekeeper is on
+      gatekeeperNetwork: PublicKey;
+      // The staking account of this gatekeeper 
+      stakingAccount: PublicKey;
+      // The fees for this gatekeeper
+      tokenFees: FeeStructure[]; 
+      // The keys with permissions on this gatekeeper
+      authKeys: AuthKeyStructure[]; 
+      // The state of gatekeeper, default is   Active, it can be frozen or be revoked.
+      state: GatekeeperState; 
+    };
 ```
 
 ```ts
-export enum GatekeeperState {
-  Active,
-  Frozen,
-  Halted,
-}
+    export enum GatekeeperState {
+      Active,
+      Frozen,
+      Halted,
+    };
 ```
 
 ## Usage - `pass` Manipulation
@@ -413,6 +438,8 @@ issues a new pass account
     ).rpc();
 ```
 
+TODO: IssuePassData 
+
 ### Refresh a Pass Account
 
 refreshes an existing pass account
@@ -424,6 +451,8 @@ refreshes an existing pass account
         authority?: PublicKey
     ).rpc();
 ```
+
+TODO: RefreshPassData 
 
 ### Set State for a Pass Account
 
@@ -444,7 +473,7 @@ sets the data of an existing pass account
 
 ```ts
     await gatekeeperService.setPassData(
-        data: SetPassDataData,
+        data: SetPassData,
         pass: PublicKey,
         payer?: PublicKey,
         authority?: PublicKey
