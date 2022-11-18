@@ -6,12 +6,12 @@ A typescript client library for interacting with Identity.com's On-Chain Identit
 
 The `gateway-solana-client` library provides the following features:
 
-1. Typescript Client and CLI for AdminService, NetworkService, and GatewayService.
-2. Built on solana blockchain.
-3. Based on the versatile Anchor framework.
-4. Supports multiple networks (devnet, testnet, mainnet-beta, etc).
-5. Supports multiple wallets (sollet, solflare, etc).
-6. 
+1. Typescript Client library for AdminService, NetworkService, and GatewayService.
+2. It is built on solana blockchain and is based on the versatile Anchor framework.
+3. Supports multiple networks (devnet, testnet, mainnet-beta, etc) and multiple wallets (sollet, solflare, etc).
+4. AdminService provides create, update, close, and retrieve Network account methods.
+5. NetworkService provides create, update, close, retreive and setState of Gatekeeper methods.
+6. gatekeeperService provides issue, refresh, setState, setData, expire, verify, and changing the Associated Gatekeeper of pass account methods.
 
 ## Client library
 
