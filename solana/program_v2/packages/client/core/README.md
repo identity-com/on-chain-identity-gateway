@@ -6,22 +6,12 @@ A typescript client library for interacting with Identity.com's On-Chain Identit
 
 The `gateway-solana-client` library provides the following features:
 
-1. A W3C [DID core spec (v1.0)](https://www.w3.org/TR/did-core/) compliant DID method and resolver operating on the Solana Blockchain.
-2. TS Client and CLI for creating, manipulating, and resolving `did:sol`.
-3. Generic Support for VerificationMethods of any Type and Key length.
-4. Native on-chain support for `Ed25519VerificationKey2018`, `EcdsaSecp256k1RecoveryMethod2020` and `EcdsaSecp256k1VerificationKey2019`. This means DID state changes can be performed by only providing a valid secp256k1 signature to the program (it still requires a permissionless proxy).
-5. On-Chain nonce protection for replay protection.
-6. Dynamic (perfect) Solana account resizing for any DID manipulation.
-7. Permissionless instruction to migrate any `did:sol` state to the new authoritative program.
-8. A web-service driver, compatible with [uniresolver.io](https://unresolver.io) and [uniregistrar.io](https://uniregistrar.io).
-9. A [did-io](https://github.com/digitalbazaar/did-io) compatible driver.
-10. Based on the versatile [Anchor framework](https://github.com/coral-xyz/anchor).
-11. Improved data model (`enum` for types and `bit-flags` for certain properties).
-12. Introduced `OWNERSHIP_PROOF` to indicate that a Verification Method Key signature was verified on-chain.
-13. Introduced `DID_DOC_HIDDEN` flag that enables hiding a Verification Method from the DID resolution.
-14. Account Size can grow beyond transaction size limits (an improvement from the legacy program).
-
-TODO: Update above feature information.
+1. Typescript Client and CLI for AdminService, NetworkService, and GatewayService.
+2. Built on solana blockchain.
+3. Based on the versatile Anchor framework.
+4. Supports multiple networks (devnet, testnet, mainnet-beta, etc).
+5. Supports multiple wallets (sollet, solflare, etc).
+6. 
 
 ## Client library
 
