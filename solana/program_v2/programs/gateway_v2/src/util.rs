@@ -35,16 +35,16 @@ pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> &NetworkFees {
     fees.iter().find(|&&x| x.token == mint).unwrap()
 }
 
-/// get_fees
+/// calculate_network_and_gatekeeper_fee
 /// Returns two fees in the correct unit
 /// First result returns the fee for the guardian
 /// Second result returns the gatekeeper fee
-pub fn work_out_fees(fee: u64, split: u16) -> (u64, u64) {
+pub fn calculate_network_and_gatekeeper_fee(fee: u64, split: u16) -> (u64, u64) {
     let percentage = (split as f64).div(100_f64);
-    let guardian_fee = (fee as f64).mul(percentage);
+    let network_fee = (fee as f64).mul(percentage);
 
-    let gatekeeper_fee = (fee as f64) - guardian_fee;
-    (guardian_fee as u64, gatekeeper_fee as u64)
+    let gatekeeper_fee = (fee as f64) - network_fee;
+    (network_fee as u64, gatekeeper_fee as u64)
 }
 
 #[cfg(test)]
@@ -53,21 +53,21 @@ mod tests {
 
     #[test]
     fn get_fees_test() {
-        let fees = crate::util::work_out_fees(100, 10);
+        let fees = crate::util::calculate_network_and_gatekeeper_fee(100, 10);
         assert_eq!(fees.0, 10);
         assert_eq!(fees.1, 90);
     }
 
     #[test]
     fn get_fees_test_split_5() {
-        let fees = crate::util::work_out_fees(100, 5);
+        let fees = crate::util::calculate_network_and_gatekeeper_fee(100, 5);
         assert_eq!(fees.0, 5);
         assert_eq!(fees.1, 95);
     }
 
     #[test]
     fn get_fees_test_split_zero() {
-        let fees = crate::util::work_out_fees(100, 0);
+        let fees = crate::util::calculate_network_and_gatekeeper_fee(100, 0);
         assert_eq!(fees.0, 0);
         assert_eq!(fees.1, 100);
     }
