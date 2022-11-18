@@ -37,7 +37,7 @@ pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> &NetworkFees {
 
 /// calculate_network_and_gatekeeper_fee
 /// Returns two fees in the correct unit
-/// First result returns the fee for the guardian
+/// First result returns the fee for the network_fee
 /// Second result returns the gatekeeper fee
 pub fn calculate_network_and_gatekeeper_fee(fee: u64, split: u16) -> (u64, u64) {
     let percentage = (split as f64).div(100_f64);
