@@ -4,32 +4,79 @@ import {
   PassState,
   onGatewayPass,
   findGatewayPass,
+  airdrop,
 } from '@identity.com/gateway-solana-client';
-import { TEST_GATEKEEPER, TEST_NETWORK } from '../util/constants';
+import {
+  TEST_GATEKEEPER,
+  TEST_GATEKEEPER_AUTHORITY,
+  TEST_MINT,
+  TEST_NETWORK,
+} from '../util/constants';
 import chai from 'chai';
-import { Keypair } from '@solana/web3.js';
+import { Keypair, PublicKey, Signer } from '@solana/web3.js';
 import { createGatekeeperService } from './util';
+import {
+  getOrCreateAssociatedTokenAccount,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
+import { Account } from '@solana/spl-token/src/state/account';
 
 const expect = chai.expect;
 
-describe('Issue pass', () => {
+describe.only('Issue pass', () => {
   let service: GatekeeperService;
+  let account: PublicKey;
+  let network: Account;
+  let gatekeeper: Account;
+  let funder: Account;
+
+  const subject = Keypair.generate().publicKey;
+  const signer: Signer = Keypair.generate();
 
   beforeEach(async () => {
     service = await createGatekeeperService();
+    account = await GatekeeperService.createPassAddress(subject, TEST_NETWORK);
+    await airdrop(service.getConnection(), signer.publicKey);
+
+    network = await getOrCreateAssociatedTokenAccount(
+      service.getConnection(),
+      signer,
+      TEST_MINT,
+      TEST_NETWORK,
+      true
+    );
+    gatekeeper = await getOrCreateAssociatedTokenAccount(
+      service.getConnection(),
+      signer,
+      TEST_MINT,
+      TEST_GATEKEEPER,
+      true
+    );
+    funder = await getOrCreateAssociatedTokenAccount(
+      service.getConnection(),
+      signer,
+      TEST_MINT,
+      TEST_GATEKEEPER_AUTHORITY,
+      true
+    );
   });
 
-  it('Issues a pass', async () => {
-    const subject = Keypair.generate().publicKey;
-
-    const account = await GatekeeperService.createPassAddress(
-      subject,
-      TEST_NETWORK
-    );
-
-    await service.issue(account, subject).rpc();
+  it.only('Issues a pass', async () => {
+    // Act
+    await service
+      .issue(
+        account,
+        subject,
+        TOKEN_PROGRAM_ID,
+        TEST_MINT,
+        gatekeeper.address,
+        network.address,
+        funder.address
+      )
+      .rpc();
     const pass = await service.getPassAccount(subject);
 
+    // Assert
     expect(pass).to.deep.include({
       version: 0,
       subject,
@@ -52,8 +99,6 @@ describe('Issue pass', () => {
       heardCreationCallback = resolve;
     });
 
-    const subject = Keypair.generate().publicKey;
-
     const subscriptionId = await onGatewayPass(
       service.getConnection(),
       TEST_NETWORK,
@@ -67,7 +112,17 @@ describe('Issue pass', () => {
       TEST_NETWORK
     );
 
-    service.issue(account, subject).rpc();
+    service
+      .issue(
+        account,
+        subject,
+        TEST_MINT,
+        TEST_MINT,
+        gatekeeper.address,
+        network.address,
+        funder.address
+      )
+      .rpc();
 
     await heardCreation;
 
@@ -75,20 +130,27 @@ describe('Issue pass', () => {
   });
 
   it('Finds a gateway token after issue', async () => {
-    const subject = Keypair.generate().publicKey;
+    // Assemble
+    await service
+      .issue(
+        account,
+        subject,
+        TEST_MINT,
+        TEST_MINT,
+        gatekeeper.address,
+        network.address,
+        funder.address
+      )
+      .rpc();
 
-    const account = await GatekeeperService.createPassAddress(
-      subject,
-      TEST_NETWORK
-    );
-
-    await service.issue(account, subject).rpc();
+    // Act
     const pass = await findGatewayPass(
       service.getConnection(),
       TEST_NETWORK,
       subject
     );
 
+    // Assert
     expect(pass).to.deep.include({
       version: 0,
       subject,

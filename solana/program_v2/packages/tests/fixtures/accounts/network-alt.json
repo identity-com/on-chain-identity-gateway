@@ -1,9 +1,9 @@
 {
   "pubkey": "DuqrwqMDuVwgd2BNbCFQS5gwNuZcfgjuL6KpuvjGjaYa",
   "account": {
-    "lamports": 7001635600,
+    "lamports": 1001635600,
     "data": [
-      "msEbnJx1KMsAEdRpBrmCPfQTCPVHHiOoE1zncifayaEA6SqnI7wDtY0AAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAEAAADFNYwgh4hoWV8I/pG3Q8/7r99fWwhOPM30yVe1vWMG/wEBAAAAARC/1bFQ8auNSE/PQI6peogSVIcP6aDnoyT31SMnVJfPyw==",
+      "msEbnJx1KMsAEdRpBrmCPfQTCPVHHiOoE1zncifayaEA6SqnI7wDtY0AAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQAAAAEQv9WxUPGrjUhPz0COqXqIElSHD+mg56Mk99UjJ1SXz8s=",
       "base64"
     ],
     "owner": "gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft",

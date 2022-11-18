@@ -143,6 +143,11 @@ export class GatekeeperService extends AbstractService {
   issue(
     passAccount: PublicKey,
     subject: PublicKey,
+    splToken?: PublicKey,
+    mint?: PublicKey,
+    networkTokenAccount?: PublicKey,
+    gatekeeperTokenAccount?: PublicKey,
+    funderTokenAccount?: PublicKey,
     passNumber = 0,
     authority: PublicKey = this.getWallet().publicKey,
     payer = authority
@@ -154,8 +159,13 @@ export class GatekeeperService extends AbstractService {
         systemProgram: anchor.web3.SystemProgram.programId,
         payer,
         authority,
+        splTokenProgram: splToken,
         network: this._network,
         gatekeeper: this._gatekeeper,
+        mintAddress: mint,
+        networkTokenAccount,
+        gatekeeperTokenAccount,
+        funderTokenAccount,
       })
       .instruction();
 

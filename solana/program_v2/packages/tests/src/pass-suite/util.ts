@@ -12,7 +12,7 @@ import {
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import { Wallet } from '@project-serum/anchor';
-import { loadPrivateKey } from '../util/lib';
+import { loadPrivateKey, setGatekeeperFlagsAndFees } from '../util/lib';
 import { before } from 'mocha';
 
 anchor.setProvider(anchor.AnchorProvider.env());
@@ -78,6 +78,5 @@ export const createGatekeeperService = async (
     },
     programProvider
   );
-
   return service;
 };

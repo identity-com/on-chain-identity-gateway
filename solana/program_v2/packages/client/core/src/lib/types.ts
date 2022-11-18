@@ -93,6 +93,21 @@ export type UpdateGatekeeperData = {
   authKeys: UpdateAuthKeytructure;
 };
 
+export type GatekeeperFees = {
+  /// The token for these fees. None value for this means native SOL price
+  token: PublicKey;
+  /// Fees taken at issuance of a new pass in token units or lamports for SOL.
+  issue: string;
+  /// Fees taken when a pass is refreshed in token units or lamports for SOL.
+  refresh: string;
+  /// The fee taken when a pass is expired in token units or lamports for SOL.
+  /// This should only be used where pass value comes from one-time use.
+  expire: string;
+  /// The fee taken when a pass is verified in token units or lamports for SOL.
+  /// This should only be used where pass value comes from proper use
+  verify: string;
+};
+
 export type GatekeeperAccount = {
   version: number;
   authority: PublicKey;
