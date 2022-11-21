@@ -2,7 +2,7 @@
 use crate::state::{GatekeeperFees, NetworkFees};
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
 use anchor_lang::{Key, ToAccountInfo};
-use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_spl::token::{Token, TokenAccount};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::invoke;
 use spl_token::instruction::transfer;

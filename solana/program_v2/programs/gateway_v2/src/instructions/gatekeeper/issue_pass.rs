@@ -1,5 +1,5 @@
 use crate::constants::PASS_SEED;
-use crate::state::{Gatekeeper, GatekeeperNetwork, NetworkFees, Pass, PassState};
+use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass, PassState};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
     get_network_fees,
@@ -15,8 +15,8 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let payer = &mut ctx.accounts.payer;
 
-    let spl_token_address = &mut ctx.accounts.spl_token_program;
-    let mint_address = &mut ctx.accounts.mint_address.key();
+    let spl_token_program = &mut ctx.accounts.spl_token_program;
+    let mint_address = &mut ctx.accounts.mint_account.key();
     let network_ata = &mut ctx.accounts.network_token_account;
     let gatekeeper_ata = &mut ctx.accounts.gatekeeper_token_account;
     let funder_ata = &mut ctx.accounts.funder_token_account;
@@ -26,7 +26,7 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
     let fees = calculate_network_and_gatekeeper_fee(raw_gatekeeper_fee, raw_network_fee);
 
     create_and_invoke_transfer(
-        spl_token_address.to_owned(),
+        spl_token_program.to_owned(),
         funder_ata.to_owned(),
         gatekeeper_ata.to_owned(),
         payer.to_owned(),
@@ -35,7 +35,7 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
     )?;
 
     create_and_invoke_transfer(
-        spl_token_address.to_owned(),
+        spl_token_program.to_owned(),
         funder_ata.to_owned(),
         network_ata.to_owned(),
         payer.to_owned(),
@@ -74,7 +74,7 @@ pub struct IssuePass<'info> {
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
-    pub mint_address: Account<'info, Mint>,
+    pub mint_account: Account<'info, Mint>,
     #[account(mut)]
     pub funder_token_account: Account<'info, TokenAccount>,
     #[account(mut)]

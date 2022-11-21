@@ -25,7 +25,7 @@ import { Account } from '@solana/spl-token/src/state/account';
 
 const expect = chai.expect;
 
-describe.only('Issue pass', () => {
+describe('Issue pass', () => {
   let service: GatekeeperService;
   let account: PublicKey;
   let network: Account;
@@ -82,7 +82,7 @@ describe.only('Issue pass', () => {
     );
   });
 
-  it.only('Issues a pass', async () => {
+  it('Issues a pass', async () => {
     // Act
     await service
       .issue(
