@@ -1,12 +1,12 @@
 //! Utility functions and types.
 use crate::state::{GatekeeperFees, NetworkFees};
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
-use std::ops::{Div, Mul};
 use anchor_lang::{Key, ToAccountInfo};
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use solana_program::program::invoke;
 use solana_program::entrypoint::ProgramResult;
+use solana_program::program::invoke;
 use spl_token::instruction::transfer;
+use std::ops::{Div, Mul};
 
 // pub const OC_SIZE_BOOL: usize = 1;
 pub const OC_SIZE_U8: usize = 1;
@@ -54,7 +54,7 @@ pub fn calculate_network_and_gatekeeper_fee(fee: u64, split: u16) -> (u64, u64) 
     (network_fee as u64, gatekeeper_fee as u64)
 }
 
-pub fn create_and_invoke_transfer<'a> (
+pub fn create_and_invoke_transfer<'a>(
     spl_token_address: Program<'a, Token>,
     source_account: Account<'a, TokenAccount>,
     destination_account: Account<'a, TokenAccount>,

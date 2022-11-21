@@ -1,9 +1,7 @@
 use crate::constants::PASS_SEED;
 use crate::state::{Gatekeeper, GatekeeperNetwork, NetworkFees, Pass, PassState};
 use crate::util::{
-    calculate_network_and_gatekeeper_fee,
-    create_and_invoke_transfer,
-    get_gatekeeper_fees,
+    calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
     get_network_fees,
 };
 use anchor_lang::prelude::*;

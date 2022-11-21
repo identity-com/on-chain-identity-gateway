@@ -100,6 +100,7 @@ describe.only('Issue pass', () => {
     const tokenNetworkAccountInfo = await service
       .getConnection()
       .getAccountInfo(funder.address);
+
     const funderAccount = AccountLayout.decode(tokenNetworkAccountInfo!.data);
 
     // Assert
