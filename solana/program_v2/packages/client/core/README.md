@@ -6,12 +6,15 @@ A typescript client library for interacting with Identity.com's On-Chain Identit
 
 The `gateway-solana-client` library provides the following features:
 
-1. Typescript Client library for AdminService, NetworkService, and GatewayService.
-2. It is built on solana blockchain and is based on the versatile Anchor framework.
-3. Supports multiple networks (devnet, testnet, mainnet-beta, etc) and multiple wallets (sollet, solflare, etc).
-4. AdminService provides create, update, close, and retrieve Network account methods.
-5. NetworkService provides create, update, close, retreive and setState of Gatekeeper methods.
-6. gatekeeperService provides issue, refresh, setState, setData, expire, verify, and changing the Associated Gatekeeper of pass account methods.
+1. AdminService provides create, update, close, and retrieve Network account methods.
+2. NetworkService provides create, update, close, retreive and setState of Gatekeeper methods.
+3. gatekeeperService provides issue, refresh, setState, setData, change the Associated Gatekeeper, expire, and verify of pass account methods.
+4. Typescript Client library for AdminService, NetworkService, and GatewayService.
+5. It is built on solana blockchain and is based on the versatile Anchor framework.
+6. Supports multiple networks (devnet, testnet, mainnet-beta, etc) and multiple wallets (sollet, solflare, etc).
+7. On a Network and Gatekeeper level, the gateway protocol offers flexible payment configuration for Gateway Passes (e.g. pay for pass on issue, pay for pass on refresh, pay for pass on verify, etc).
+8. The Gateway protocol enables the usage of non-transferrable permissioned Gateway passes (mirroring properties of SBTs) that convey some property to the pass holder. 
+9. Requirements and characteristics of a pass are defined within a Gatekeeper Network. Gatekeeper, belonging to Gatekeeper Networks are authoritative Issuers of Gateway Passes.
 
 ## Client library
 
