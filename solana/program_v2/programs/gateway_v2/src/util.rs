@@ -1,7 +1,12 @@
 //! Utility functions and types.
 use crate::state::{GatekeeperFees, NetworkFees};
-use anchor_lang::prelude::Pubkey;
+use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
 use std::ops::{Div, Mul};
+use anchor_lang::{Key, ToAccountInfo};
+use anchor_spl::token::{Mint, Token, TokenAccount};
+use solana_program::program::invoke;
+use solana_program::entrypoint::ProgramResult;
+use spl_token::instruction::transfer;
 
 // pub const OC_SIZE_BOOL: usize = 1;
 pub const OC_SIZE_U8: usize = 1;
@@ -27,10 +32,12 @@ pub trait OnChainSizeWithArg<Arg> {
     fn on_chain_size_with_arg(arg: Arg) -> usize;
 }
 
+// TODO(julian): Add descriptive error message on fail here
 pub fn get_gatekeeper_fees(fees: &[GatekeeperFees], mint: Pubkey) -> &GatekeeperFees {
     fees.iter().find(|&&x| x.token == mint).unwrap()
 }
 
+// TODO(julian): Add descriptive error message on fail here
 pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> &NetworkFees {
     fees.iter().find(|&&x| x.token == mint).unwrap()
 }
@@ -47,15 +54,47 @@ pub fn calculate_network_and_gatekeeper_fee(fee: u64, split: u16) -> (u64, u64) 
     (network_fee as u64, gatekeeper_fee as u64)
 }
 
+pub fn create_and_invoke_transfer<'a> (
+    spl_token_address: Program<'a, Token>,
+    source_account: Account<'a, TokenAccount>,
+    destination_account: Account<'a, TokenAccount>,
+    authority_account: Signer<'a>,
+    signer_pubkeys: &[&Pubkey],
+    amount: u64,
+) -> ProgramResult {
+    let transfer_instruction_network_result = transfer(
+        &spl_token_address.key(),
+        &source_account.key(),
+        &destination_account.key(),
+        &authority_account.key(),
+        signer_pubkeys,
+        amount,
+    );
+    let instruction = match transfer_instruction_network_result {
+        Ok(instruction) => instruction,
+        Err(error) => panic!("Transfer failed: {:?}", error),
+    };
+
+    invoke(
+        &instruction,
+        &[
+            source_account.to_account_info(),
+            destination_account.to_account_info(),
+            authority_account.to_account_info(),
+            spl_token_address.to_account_info(),
+        ],
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use crate::state::{GatekeeperFees, NetworkFees};
 
     #[test]
     fn get_fees_test() {
-        let fees = crate::util::calculate_network_and_gatekeeper_fee(100, 10);
+        let fees = crate::util::calculate_network_and_gatekeeper_fee(1000, 1);
         assert_eq!(fees.0, 10);
-        assert_eq!(fees.1, 90);
+        assert_eq!(fees.1, 990);
     }
 
     #[test]

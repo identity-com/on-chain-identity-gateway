@@ -1250,6 +1250,8 @@ dependencies = [
  "anchor-spl",
  "bitflags",
  "borsh",
+ "solana-program",
+ "spl-token",
 ]
 
 [[package]]

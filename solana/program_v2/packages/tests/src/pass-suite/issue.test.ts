@@ -16,7 +16,9 @@ import chai from 'chai';
 import { Keypair, PublicKey, Signer } from '@solana/web3.js';
 import { createGatekeeperService } from './util';
 import {
+  AccountLayout,
   getOrCreateAssociatedTokenAccount,
+  mintTo,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import { Account } from '@solana/spl-token/src/state/account';
@@ -59,6 +61,25 @@ describe.only('Issue pass', () => {
       TEST_GATEKEEPER_AUTHORITY,
       true
     );
+
+    // TODO(julian): Load from file instead, TEST_MINT_AUTH, and create constant
+    const key = Keypair.fromSecretKey(
+      new Uint8Array([
+        78, 42, 249, 225, 72, 184, 149, 57, 44, 150, 231, 167, 78, 240, 192,
+        131, 12, 54, 141, 146, 157, 115, 170, 30, 84, 139, 47, 103, 109, 248,
+        155, 12, 125, 118, 182, 55, 27, 167, 226, 69, 222, 147, 190, 3, 135, 96,
+        212, 50, 226, 83, 86, 202, 26, 182, 253, 60, 165, 248, 130, 60, 223,
+        235, 110, 142,
+      ])
+    );
+    await mintTo(
+      service.getConnection(),
+      key,
+      TEST_MINT,
+      funder.address,
+      new PublicKey('9SkxBuj9kuaJQ3yAXEuRESjYt14BcPUTac25Mbi1n8ny'),
+      100
+    );
   });
 
   it.only('Issues a pass', async () => {
@@ -76,6 +97,11 @@ describe.only('Issue pass', () => {
       .rpc();
     const pass = await service.getPassAccount(subject);
 
+    const tokenNetworkAccountInfo = await service
+      .getConnection()
+      .getAccountInfo(funder.address);
+    const funderAccount = AccountLayout.decode(tokenNetworkAccountInfo!.data);
+
     // Assert
     expect(pass).to.deep.include({
       version: 0,
@@ -88,6 +114,9 @@ describe.only('Issue pass', () => {
     // CHECK: that the issueTime is recent (is this best?)
     expect(pass?.issueTime).to.be.greaterThan(new Date().getTime() - 5000);
     expect(pass?.issueTime).to.be.lessThan(new Date().getTime() + 5000);
+
+    // Check if fee was taken
+    expect(funderAccount.amount).to.equal(90);
   });
 
   it('listens for a gateway pass to be created', async () => {

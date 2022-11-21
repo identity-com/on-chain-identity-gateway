@@ -1,6 +1,10 @@
 use crate::constants::PASS_SEED;
-use crate::state::{
-    Gatekeeper, GatekeeperFees, GatekeeperKeyFlags, GatekeeperNetwork, Pass, PassState,
+use crate::state::{Gatekeeper, GatekeeperNetwork, NetworkFees, Pass, PassState};
+use crate::util::{
+    calculate_network_and_gatekeeper_fee,
+    create_and_invoke_transfer,
+    get_gatekeeper_fees,
+    get_network_fees,
 };
 use anchor_lang::prelude::*;
 use anchor_lang::Key;
@@ -11,6 +15,35 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
     let pass = &mut ctx.accounts.pass;
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
+    let payer = &mut ctx.accounts.payer;
+
+    let spl_token_address = &mut ctx.accounts.spl_token_program;
+    let mint_address = &mut ctx.accounts.mint_address.key();
+    let network_ata = &mut ctx.accounts.network_token_account;
+    let gatekeeper_ata = &mut ctx.accounts.gatekeeper_token_account;
+    let funder_ata = &mut ctx.accounts.funder_token_account;
+
+    let raw_network_fee = get_network_fees(&network.fees, *mint_address).issue;
+    let raw_gatekeeper_fee = get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address).issue;
+    let fees = calculate_network_and_gatekeeper_fee(raw_gatekeeper_fee, raw_network_fee);
+
+    create_and_invoke_transfer(
+        spl_token_address.to_owned(),
+        funder_ata.to_owned(),
+        gatekeeper_ata.to_owned(),
+        payer.to_owned(),
+        &[&payer.key()],
+        fees.0,
+    )?;
+
+    create_and_invoke_transfer(
+        spl_token_address.to_owned(),
+        funder_ata.to_owned(),
+        network_ata.to_owned(),
+        payer.to_owned(),
+        &[&payer.key()],
+        fees.1,
+    )?;
 
     pass.signer_bump = *ctx.bumps.get("pass").unwrap();
     pass.subject = subject;
@@ -32,8 +65,7 @@ pub struct IssuePass<'info> {
         payer = payer,
         space = Pass::ON_CHAIN_SIZE,
         seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), & pass_number.to_le_bytes()],
-        // FIXME(julian): Fix this before merging, working around a fixture issue
-        // constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::ISSUE),
+        constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::ISSUE),
         bump
     )]
     pub pass: Box<Account<'info, Pass>>,
@@ -45,7 +77,10 @@ pub struct IssuePass<'info> {
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
     pub mint_address: Account<'info, Mint>,
+    #[account(mut)]
     pub funder_token_account: Account<'info, TokenAccount>,
+    #[account(mut)]
     pub network_token_account: Account<'info, TokenAccount>,
+    #[account(mut)]
     pub gatekeeper_token_account: Account<'info, TokenAccount>,
 }

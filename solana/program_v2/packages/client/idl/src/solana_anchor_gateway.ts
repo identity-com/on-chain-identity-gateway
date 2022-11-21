@@ -295,17 +295,17 @@ export type SolanaAnchorGateway = {
         },
         {
           "name": "funderTokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "networkTokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "gatekeeperTokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1714,17 +1714,17 @@ export const IDL: SolanaAnchorGateway = {
         },
         {
           "name": "funderTokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "networkTokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "gatekeeperTokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
