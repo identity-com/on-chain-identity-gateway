@@ -285,7 +285,7 @@ impl OnChainSize for NetworkAuthKey {
 }
 
 /// Fees that a [`GatekeeperNetwork`] can charge
-#[derive(Clone, Debug, Default, PartialEq, Copy, AnchorDeserialize, AnchorSerialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Copy, AnchorDeserialize, AnchorSerialize)]
 pub struct NetworkFees {
     /// The token for the fee, `None` means fee is invalid
     pub token: Pubkey,
