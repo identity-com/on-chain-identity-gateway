@@ -8,8 +8,8 @@ This IDL allows for the simple interaction with the `gateway protocol` on-chain 
 
 ### Deployments
 
-- Mainnet-beta: TODO...
-- Devnet: TODO...
+- Mainnet-beta: gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft
+- Devnet: gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft
 - Testnet: TODO...
 
 ### APR Reference
