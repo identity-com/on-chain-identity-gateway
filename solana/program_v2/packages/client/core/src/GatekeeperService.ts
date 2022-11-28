@@ -19,6 +19,9 @@ import {
 import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { PassAccount, PassState, PassStateMapping } from './lib/wrappers';
 
+/**
+ * The GatekeeperService is responsible for creating and managing passes within a network
+ */
 export class GatekeeperService extends AbstractService {
   private constructor(
     _program: Program<SolanaAnchorGateway>,
@@ -31,6 +34,13 @@ export class GatekeeperService extends AbstractService {
     super(_program, _cluster, _wallet, _opts);
   }
 
+  /**
+   * Builds and returns an instance of an GatekeeperService
+   *
+   * @param network The network for this instance of the GatekeeperService
+   * @param gatekeeper The gatekeeper account this service will be managing
+   * @param options Options to override default values for the GatekeeperService
+   */
   static async build(
     network: PublicKey,
     gatekeeper: PublicKey,
@@ -63,6 +73,15 @@ export class GatekeeperService extends AbstractService {
     );
   }
 
+  /**
+   * Builds and returns an instance of an AdminService using an instance of the anchor program
+   *
+   * @param program The Anchor program to build the GatekeeperService instance from
+   * @param network The network this GatekeeperService operates in
+   * @param gatekeeper The gatekeeper the service is created for
+   * @param options Options to override default values for the GatekeeperService
+   * @param provider The anchor provider to use (defaults to the provider from the program)
+   */
   static async buildFromAnchor(
     program: Program<SolanaAnchorGateway>,
     network: PublicKey,
@@ -84,6 +103,13 @@ export class GatekeeperService extends AbstractService {
     );
   }
 
+  /**
+   * Creates the PDA for the pass
+   *
+   * @param subject The subject (public key) for account the pass is issued to
+   * @param network The network this pass is issued to (TODO: Should this not default to the network provided on build)
+   * @param pass_number The pass number (to allow multiple passes to a subject in a network)
+   */
   static async createPassAddress(
     subject: PublicKey,
     network: PublicKey,
@@ -105,6 +131,15 @@ export class GatekeeperService extends AbstractService {
     return address;
   }
 
+  /**
+   * Issues a pass to the provided subject
+   *
+   * @param passAccount The PDA for the pass
+   * @param subject The subject (account) the pass is issued to
+   * @param passNumber The pass number to allow for multiple passes in a network
+   * @param authority The authority creating the account
+   * @param payer The fee payer for crating the pass
+   */
   issue(
     passAccount: PublicKey,
     subject: PublicKey,
@@ -126,15 +161,17 @@ export class GatekeeperService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      // TODO: Implement this...
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
+  /**
+   * Sets the state on a pass
+   *
+   * @param state The state of the pass
+   * @param passAccount The PDA for the pass
+   * @param authority The gatekeeper authority for setting the pass
+   */
   setState(
     state: PassState,
     passAccount: PublicKey,
@@ -153,15 +190,16 @@ export class GatekeeperService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      // TODO: Implement this...
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
+  /**
+   * Refreshes a pass by updating the date it was issued so that is can be reused past expiry
+   *
+   * @param passAccount The ODA for the pass
+   * @param authority The gatekeeper authority for setting the pass state
+   */
   refreshPass(
     passAccount: PublicKey,
     authority: PublicKey = this.getWallet().publicKey
@@ -179,23 +217,24 @@ export class GatekeeperService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      // TODO: Implement this...
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
+  /**
+   * Expires a pass so that it can no longer be used
+   *
+   * @param passAccount The PDA for the pass
+   * @param authority The gatekeeper authority for expiring a pass
+   */
   expirePass(
-    pass: PublicKey,
+    passAccount: PublicKey,
     authority: PublicKey = this.getWallet().publicKey
   ): ServiceBuilder {
     const instructionPromise = this.getProgram()
       .methods.expirePass()
       .accounts({
-        pass,
+        pass: passAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network: this._network,
@@ -205,23 +244,24 @@ export class GatekeeperService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      // TODO: Implement this...
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
+  /**
+   * Calls an on-chain instruction to verify a pass is active and not expired.
+   *
+   * @param passAccount The PDA for the pass to verify
+   * @param authority The gatekeeper authority for verifying a pass (TODO: do we need this as it is "public info")
+   */
   verifyPass(
-    pass: PublicKey,
+    passAccount: PublicKey,
     authority: PublicKey = this.getWallet().publicKey
   ): ServiceBuilder {
     const instructionPromise = this.getProgram()
       .methods.verifyPass()
       .accounts({
-        pass,
+        pass: passAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network: this._network,
@@ -230,15 +270,17 @@ export class GatekeeperService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      // TODO: Implement this...
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
+  /**
+   * Changes the gatekeeper for a pass (this has to be a gatekeeper within the same network)
+   *
+   * @param gatekeeper The new gatekeeper for the pass
+   * @param passAccount The PDA for the pass
+   * @param authority The gatekeeper authority able to change a gatekeeper
+   */
   changePassGatekeeper(
     gatekeeper: PublicKey | undefined,
     passAccount: PublicKey,
@@ -258,15 +300,18 @@ export class GatekeeperService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      // TODO: Implement this...
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
+  /**
+   * Sets network/gatekeeper specific data for a pass
+   *
+   * @param passAccount The PDA for the pass
+   * @param gatekeeperData
+   * @param networkData
+   * @param authority
+   */
   setPassData(
     passAccount: PublicKey,
     gatekeeperData: Uint8Array | null,
@@ -293,15 +338,16 @@ export class GatekeeperService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      // TODO: Implement this...
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
+  /**
+   * Looks up the on-chain state of a pass
+   *
+   * @param subject The subject (account owner) for the pass
+   * @param passNumber The pass number if more than one pass exists in the network for the same subject
+   */
   async getPassAccount(
     subject: PublicKey,
     passNumber = 0
@@ -320,10 +366,16 @@ export class GatekeeperService extends AbstractService {
     );
   }
 
+  /**
+   * Returns the gatekeeper the service was built with
+   */
   getGatekeeper(): PublicKey {
     return this._gatekeeper;
   }
 
+  /**
+   * Returns the network the service was built with
+   */
   getNetwork(): PublicKey {
     return this._network;
   }

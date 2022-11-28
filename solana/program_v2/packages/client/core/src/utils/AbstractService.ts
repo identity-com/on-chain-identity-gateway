@@ -155,7 +155,5 @@ export class ServiceBuilder {
 
 export type BuilderInstruction = {
   instructionPromise: Promise<TransactionInstruction>;
-  didAccountSizeDeltaCallback: (didAccountBefore: null) => number;
-  allowsDynamicAlloc: boolean;
   authority: PublicKey;
 };
