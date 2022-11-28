@@ -191,10 +191,6 @@ export class AdminService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
       authority,
     });
   }
