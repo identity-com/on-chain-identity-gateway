@@ -27,7 +27,9 @@ import {
   ServiceBuilder,
 } from './utils/AbstractService';
 
-// Service for a network. This will handle all aspects of the Gateway that a network is able to control... i.e. creating gatekeepers, updating gatekeepers, etc...
+/**
+ * The NetworkService is used to manage gatekeepers within a network
+ */
 export class NetworkService extends AbstractService {
   constructor(
     program: Program<SolanaAnchorGateway>,
@@ -40,9 +42,16 @@ export class NetworkService extends AbstractService {
     super(program, cluster, wallet, opts);
   }
 
+  /**
+   * Builds an instance of the NetworkService
+   *
+   * @param gatekeeper The gatekeeper this network service manages
+   * @param gatekeeperAccount The PDA for the gatekeeper
+   * @param options Options to override default values for the NetworkService
+   */
   static async build(
     gatekeeper: PublicKey,
-    dataAccount: PublicKey,
+    gatekeeperAccount: PublicKey,
     options: GatewayServiceOptions = {
       clusterType: SOLANA_MAINNET,
     }
@@ -65,13 +74,22 @@ export class NetworkService extends AbstractService {
     return new NetworkService(
       program,
       gatekeeper,
-      dataAccount,
+      gatekeeperAccount,
       options.clusterType,
       wallet,
       provider.opts
     );
   }
 
+  /**
+   * Builds and returns an instance of an NetworkService using an instance of the anchor program
+   *
+   * @param program The Anchor program to build the GatekeeperService instance from
+   * @param gatekeeper The gatekeeper this network service manages
+   * @param gatekeeperAccount The PDA for the gatekeeper
+   * @param options Options to override default values for the NetworkService
+   * @param provider The anchor provider to use (defaults to the provider from the program)
+   */
   static async buildFromAnchor(
     program: Program<SolanaAnchorGateway>,
     gatekeeper: PublicKey,
@@ -93,7 +111,12 @@ export class NetworkService extends AbstractService {
     );
   }
 
-  // Creates a gatekeeper's public key from a given seed and authority.
+  /**
+   * Creates the gatekeeper PDA
+   *
+   * @param authority The initial gatekeeper authority
+   * @param network The network the gatekeeper belongs to
+   */
   static async createGatekeeperAddress(
     authority: PublicKey,
     network: PublicKey
@@ -118,8 +141,15 @@ export class NetworkService extends AbstractService {
     );
   }
 
-  // Creates a gatekeeper on a specified network
-  // @authThreshold
+  /**
+   * Creates a gatekeeper within the network
+   *
+   * @param network The network to create the gatekeeper account in (TODO: should this default to the network provided on build)
+   * @param stakingAccount The staking account for the gatekeeper
+   * @param payer The fee payer
+   * @param data The initial state to create the gatekeeper with
+   * @param authority The authority used to create the gatekeeper
+   */
   createGatekeeper(
     network: PublicKey,
     stakingAccount: PublicKey,
@@ -154,15 +184,18 @@ export class NetworkService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
-  // Allows a network to update a gatekeeper's data
+  /**
+   * Updates the gatekeeper state within the network
+   *
+   * @param data The new state for the gatekeeper
+   * @param stakingAccount The staking account for the gatekeeper
+   * @param payer The fee payer for the update in case of an account resize
+   * @param authority The authority for the making the change
+   */
   updateGatekeeper(
     data: UpdateGatekeeperData,
     stakingAccount: PublicKey,
@@ -189,18 +222,21 @@ export class NetworkService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
-  // Closes a gatekeeper on a network
+  /**
+   * Closes a gatekeeper and claims back the rent
+   *
+   * @param network The network the gatekeeper is in
+   * @param receiver The receiever of the rent reclaimed
+   * @param payer The fee payer
+   * @param authority The authority required to close the account
+   */
   closeGatekeeper(
     network: PublicKey,
-    destination: PublicKey = this._wallet.publicKey,
+    receiver: PublicKey = this._wallet.publicKey,
     payer: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
@@ -212,7 +248,7 @@ export class NetworkService extends AbstractService {
       .accounts({
         gatekeeper: this._gatekeeperAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
-        destination,
+        destination: receiver,
         authority,
         network,
         payer,
@@ -221,15 +257,16 @@ export class NetworkService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
-  // Allows an authority to update the state of a gatekeeper (Active, Frozen, Halted)
+  /**
+   * Changes the gatekeeper state
+   *
+   * @param state The new state for the gatekeeper
+   * @param authority An authority allowed to change gatekeeper state
+   */
   setGatekeeperState(
     state: GatekeeperState = GatekeeperState.Active,
     authority: PublicKey = this._wallet.publicKey
@@ -245,15 +282,10 @@ export class NetworkService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
-  // Controls withdrawal of funds from a gatekeeper
   gatekeeperWithdraw(
     receiver: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
@@ -270,15 +302,15 @@ export class NetworkService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
-  // Retrieves a gatekeeper's information
+  /**
+   * Retrieves the on-chain gatekeeper account state
+   *
+   * @param account The account to lookup
+   */
   async getGatekeeperAccount(
     account: PublicKey = this._gatekeeperAccount
   ): Promise<GatekeeperAccount | null> {
@@ -302,6 +334,9 @@ export class NetworkService extends AbstractService {
     return gatekeeperAccount;
   }
 
+  /**
+   * Returns the gatekeeper address
+   */
   getGatekeeperAddress(): PublicKey {
     return this._gatekeeperAccount;
   }
