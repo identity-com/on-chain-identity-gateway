@@ -190,11 +190,6 @@ export class GatekeeperService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      // TODO: Implement this...
-      allowsDynamicAlloc: false,
       authority,
     });
   }
