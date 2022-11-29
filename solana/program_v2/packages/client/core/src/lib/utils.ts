@@ -41,8 +41,6 @@ export const EnumMapper = {
    *
    * @param obj The anchor enum object
    * @param mapping The enum to maps it to
-   *
-   * @returns A Typescript enum represenation of the anchor enum
    */
   from(obj: Record<string, unknown>, mapping: EnumMapping): PassState {
     for (const property in mapping) {
