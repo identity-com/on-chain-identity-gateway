@@ -1,5 +1,6 @@
 //! Utility functions and types.
 use crate::state::{GatekeeperFees, NetworkFees};
+use anchor_lang::error::Error;
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
 use anchor_lang::{error, Key, ToAccountInfo};
 use anchor_spl::token::{Token, TokenAccount};
@@ -7,7 +8,6 @@ use solana_program::entrypoint::ProgramResult;
 use solana_program::program::invoke;
 use spl_token::instruction::transfer;
 use std::ops::{Div, Mul};
-use anchor_lang::error::Error;
 
 // pub const OC_SIZE_BOOL: usize = 1;
 pub const OC_SIZE_U8: usize = 1;
