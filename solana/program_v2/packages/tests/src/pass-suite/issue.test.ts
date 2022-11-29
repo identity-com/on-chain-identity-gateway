@@ -4,8 +4,8 @@ import {
   AdminService,
   PassState,
   PassAccount,
-  onGatewayToken,
-  findGatewayToken,
+  onGatewayPass,
+  findGatewayPass,
 } from '@identity.com/gateway-solana-client';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
@@ -163,7 +163,7 @@ describe('issue', () => {
       heardCreationCallback = resolve;
     });
 
-    const subscriptionId = await onGatewayToken(
+    const subscriptionId = await onGatewayPass(
       gatekeeperService.getConnection(),
       networkAuthority.publicKey,
       subject.publicKey,
@@ -221,7 +221,7 @@ describe('issue', () => {
       .rpc();
 
     // Act
-    const pass = await findGatewayToken(
+    const pass = await findGatewayPass(
       gatekeeperService.getConnection(),
       networkAuthority.publicKey,
       subject.publicKey
