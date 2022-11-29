@@ -6,11 +6,6 @@ import { createGatekeeperService } from './util';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import {
-  TEST_ALT_NETWORK,
-  TEST_GATEKEEPER_AUTHORITY,
-  TEST_NETWORK,
-} from '../util/constants';
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {

@@ -3,7 +3,6 @@ import {
   GatekeeperService,
   NetworkService,
   GatekeeperKeyFlags,
-  AdminService,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';

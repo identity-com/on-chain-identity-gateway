@@ -136,6 +136,11 @@ export class GatekeeperService extends AbstractService {
    *
    * @param passAccount The PDA for the pass
    * @param subject The subject (account) the pass is issued to
+   * @param splToken The spl token program
+   * @param mint The mintAccount for the spl token
+   * @param networkTokenAccount The ATA for the network
+   * @param gatekeeperTokenAccount The ATA for the gatekeeper
+   * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
    * @param passNumber The pass number to allow for multiple passes in a network
    * @param authority The authority creating the account
    * @param payer The fee payer for crating the pass

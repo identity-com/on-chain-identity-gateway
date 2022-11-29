@@ -28,7 +28,6 @@ before(() => {
   }
 });
 
-/** @Deprecate */
 export const createNetworkService = async (
   authority: Keypair = Keypair.generate(),
   network: PublicKey = TEST_NETWORK

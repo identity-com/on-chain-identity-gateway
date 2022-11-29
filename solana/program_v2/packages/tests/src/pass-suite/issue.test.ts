@@ -23,12 +23,9 @@ describe('issue', () => {
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
   const programProvider = program.provider as anchor.AnchorProvider;
 
-  let adminService: AdminService;
-  let networkService: NetworkService;
   let gatekeeperService: GatekeeperService;
 
   let gatekeeperPDA: PublicKey;
-  let stakingPDA: PublicKey;
   let passAccount: PublicKey;
   let mint: PublicKey;
 
@@ -41,11 +38,8 @@ describe('issue', () => {
 
   beforeEach(async () => {
     ({
-      adminService,
-      networkService,
       gatekeeperService,
       gatekeeperPDA,
-      stakingPDA,
       passAccount,
       mint,
       adminAuthority,

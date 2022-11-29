@@ -1,13 +1,10 @@
 import {
   PassState,
   GatekeeperService,
-  NetworkService,
 } from '@identity.com/gateway-solana-client';
-import { createGatekeeperService } from './util';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { TEST_NETWORK } from '../util/constants';
 import {
   makeAssociatedTokenAccountsForIssue,
   setUpAdminNetworkGatekeeper,
