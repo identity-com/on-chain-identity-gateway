@@ -162,7 +162,7 @@ export class GatekeeperService extends AbstractService {
         splTokenProgram: splToken,
         network: this._network,
         gatekeeper: this._gatekeeper,
-        mintAddress: mint,
+        mintAccount: mint,
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,

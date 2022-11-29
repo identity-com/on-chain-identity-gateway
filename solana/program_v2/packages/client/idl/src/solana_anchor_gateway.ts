@@ -289,7 +289,7 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAddress",
+          "name": "mintAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -1310,6 +1310,9 @@ export type SolanaAnchorGateway = {
           },
           {
             "name": "InvalidGatekeeper"
+          },
+          {
+            "name": "GatekeeperFeeNotProvided"
           }
         ]
       }
@@ -1413,6 +1416,11 @@ export type SolanaAnchorGateway = {
       "code": 6006,
       "name": "AccountInUse",
       "msg": "The network account is in use"
+    },
+    {
+      "code": 6007,
+      "name": "NetworkFeeNotProvided",
+      "msg": "Network Fee was not provided"
     }
   ]
 };
@@ -1708,7 +1716,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAddress",
+          "name": "mintAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -2729,6 +2737,9 @@ export const IDL: SolanaAnchorGateway = {
           },
           {
             "name": "InvalidGatekeeper"
+          },
+          {
+            "name": "GatekeeperFeeNotProvided"
           }
         ]
       }
@@ -2832,6 +2843,11 @@ export const IDL: SolanaAnchorGateway = {
       "code": 6006,
       "name": "AccountInUse",
       "msg": "The network account is in use"
+    },
+    {
+      "code": 6007,
+      "name": "NetworkFeeNotProvided",
+      "msg": "Network Fee was not provided"
     }
   ]
 };

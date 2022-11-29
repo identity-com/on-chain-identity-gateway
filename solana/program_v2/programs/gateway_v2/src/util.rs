@@ -1,12 +1,13 @@
 //! Utility functions and types.
 use crate::state::{GatekeeperFees, NetworkFees};
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
-use anchor_lang::{Key, ToAccountInfo};
+use anchor_lang::{error, Key, ToAccountInfo};
 use anchor_spl::token::{Token, TokenAccount};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::invoke;
 use spl_token::instruction::transfer;
 use std::ops::{Div, Mul};
+use anchor_lang::error::Error;
 
 // pub const OC_SIZE_BOOL: usize = 1;
 pub const OC_SIZE_U8: usize = 1;
@@ -33,13 +34,13 @@ pub trait OnChainSizeWithArg<Arg> {
 }
 
 // TODO(julian): Add descriptive error message on fail here
-pub fn get_gatekeeper_fees(fees: &[GatekeeperFees], mint: Pubkey) -> &GatekeeperFees {
-    fees.iter().find(|&&x| x.token == mint).unwrap()
+pub fn get_gatekeeper_fees(fees: &[GatekeeperFees], mint: Pubkey) -> Option<&GatekeeperFees> {
+    fees.iter().find(|&&x| x.token == mint)
 }
 
-// TODO(julian): Add descriptive error message on fail here
-pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> &NetworkFees {
-    fees.iter().find(|&&x| x.token == mint).unwrap()
+// TODO(julian): Add descriptive error message on fail
+pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> Option<&NetworkFees> {
+    fees.iter().find(|&&x| x.token == mint)
 }
 
 /// calculate_network_and_gatekeeper_fee
@@ -92,9 +93,9 @@ mod tests {
 
     #[test]
     fn get_fees_test() {
-        let fees = crate::util::calculate_network_and_gatekeeper_fee(1000, 1);
-        assert_eq!(fees.0, 10);
-        assert_eq!(fees.1, 990);
+        let fees = crate::util::calculate_network_and_gatekeeper_fee(1000, 5);
+        assert_eq!(fees.0, 50);
+        assert_eq!(fees.1, 950);
     }
 
     #[test]
@@ -159,7 +160,7 @@ mod tests {
             expire: 0,
         };
         let fees: Vec<NetworkFees> = vec![fee1, fee2];
-        let fee = crate::util::get_network_fees(&fees, mint);
+        let fee = crate::util::get_network_fees(&fees, mint).unwrap();
         assert_eq!(fee, &fee1);
     }
 }
