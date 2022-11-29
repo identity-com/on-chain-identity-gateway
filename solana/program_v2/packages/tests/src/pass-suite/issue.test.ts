@@ -2,8 +2,8 @@ import {
   GatekeeperService,
   PassAccount,
   PassState,
-  onGatewayToken,
-  findGatewayToken,
+  onGatewayPass,
+  findGatewayPass,
 } from '@identity.com/gateway-solana-client';
 import { TEST_GATEKEEPER, TEST_NETWORK } from '../util/constants';
 import chai from 'chai';
@@ -54,7 +54,7 @@ describe('Issue pass', () => {
 
     const subject = Keypair.generate().publicKey;
 
-    const subscriptionId = await onGatewayToken(
+    const subscriptionId = await onGatewayPass(
       service.getConnection(),
       TEST_NETWORK,
       subject,
@@ -83,7 +83,7 @@ describe('Issue pass', () => {
     );
 
     await service.issue(account, subject).rpc();
-    const pass = await findGatewayToken(
+    const pass = await findGatewayPass(
       service.getConnection(),
       TEST_NETWORK,
       subject

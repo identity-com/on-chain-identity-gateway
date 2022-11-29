@@ -73,7 +73,16 @@ export const findProgramAddress = async (
     GATEWAY_PROGRAM
   );
 
-export const findGatewayToken = async (
+/**
+ * Finds a gateway pass for a given subject
+ *
+ * @param connection The Solana connection to use
+ * @param gatekeeperNetwork The gatekeeper network the pass is in
+ * @param subject The address for the subject the pass belongs to
+ * @param passNumber The pass number if more than one pass is issued
+ * @param opts The Solana confirm options to use
+ */
+export const findGatewayPass = async (
   connection: Connection,
   gatekeeperNetwork: PublicKey,
   subject: PublicKey,
@@ -92,9 +101,19 @@ export const findGatewayToken = async (
   return program.account.pass.fetchNullable(address).then(PassAccount.from);
 };
 
-export const onGatewayToken = async (
+/**
+ * Fires an event when a gateway pass is issued or updated
+ *
+ * @param connection The Solana connection to use
+ * @param gatekeeperNetwork The gatekeeper network the pass is in
+ * @param subject The address for the subject the pass belongs to
+ * @param passNumber The pass number if more than one pass is issued
+ * @param callback The function called when the pass is issued or updated
+ * @param opts The Solana confirm options to use
+ */
+export const onGatewayPass = async (
   connection: Connection,
-  network: PublicKey,
+  gatekeeperNetwork: PublicKey,
   subject: PublicKey,
   passNumber = 0,
   callback: (pass: PassAccount) => void,
@@ -105,7 +124,7 @@ export const onGatewayToken = async (
 
   const address = await GatekeeperService.createPassAddress(
     subject,
-    network,
+    gatekeeperNetwork,
     passNumber
   );
 
