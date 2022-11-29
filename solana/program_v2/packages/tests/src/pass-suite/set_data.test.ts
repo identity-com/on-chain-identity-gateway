@@ -1,29 +1,71 @@
-import { createGatekeeperService } from './util';
 import { GatekeeperService } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { TEST_NETWORK } from '../util/constants';
+import * as anchor from '@project-serum/anchor';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
+import {
+  makeAssociatedTokenAccountsForIssue,
+  setUpAdminNetworkGatekeeper,
+} from '../test-set-up';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('Change pass data', () => {
-  let service: GatekeeperService;
-  let subject: PublicKey;
-  let account: PublicKey;
+  anchor.setProvider(anchor.AnchorProvider.env());
+  const program = anchor.workspace
+    .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
+  const programProvider = program.provider as anchor.AnchorProvider;
+
+  let gatekeeperService: GatekeeperService;
+
+  let gatekeeperPDA: PublicKey;
+  let passAccount: PublicKey;
+  let mint: PublicKey;
+
+  let adminAuthority: Keypair;
+  let networkAuthority: Keypair;
+  let gatekeeperAuthority: Keypair;
+  let mintAuthority: Keypair;
+  let subject: Keypair;
+  let mintAccount: Keypair;
 
   beforeEach(async () => {
-    service = await createGatekeeperService();
-
-    subject = Keypair.generate().publicKey;
-    account = await GatekeeperService.createPassAddress(
+    ({
+      gatekeeperService,
+      gatekeeperPDA,
+      passAccount,
+      mint,
+      adminAuthority,
+      networkAuthority,
+      gatekeeperAuthority,
+      mintAuthority,
       subject,
-      TEST_NETWORK,
-      0
-    );
-
-    await service.issue(account, subject).rpc();
+      mintAccount,
+    } = await setUpAdminNetworkGatekeeper(program, programProvider));
+    const { gatekeeperAta, networkAta, funderAta } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
+    await gatekeeperService
+      .issue(
+        passAccount,
+        subject.publicKey,
+        TOKEN_PROGRAM_ID,
+        mint,
+        gatekeeperAta.address,
+        networkAta.address,
+        funderAta.address
+      )
+      .rpc();
   });
 
   it('Should be able to set network data', async () => {
@@ -31,8 +73,8 @@ describe('Change pass data', () => {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 1,
     ]);
-    await service.setPassData(account, null, data).rpc();
-    const pass = await service.getPassAccount(subject);
+    await gatekeeperService.setPassData(passAccount, null, data).rpc();
+    const pass = await gatekeeperService.getPassAccount(subject.publicKey);
 
     // Check: how to properly test this without toString
     expect(pass?.networkData.toString()).to.equal(data.toString());
@@ -44,8 +86,8 @@ describe('Change pass data', () => {
       0, 0, 0, 0, 0, 0, 1,
     ]);
 
-    await service.setPassData(account, data, null).rpc();
-    const pass = await service.getPassAccount(subject);
+    await gatekeeperService.setPassData(passAccount, data, null).rpc();
+    const pass = await gatekeeperService.getPassAccount(subject.publicKey);
     // Check: how to properly test this without toString
     expect(pass?.gatekeeperData.toString()).to.equal(data.toString());
   });
@@ -56,9 +98,9 @@ describe('Change pass data', () => {
       0, 0, 0, 1,
     ]);
 
-    expect(() => service.setPassData(account, null, data)).to.throw(
-      /Data provided needs to be 32 bytes/
-    );
+    expect(() =>
+      gatekeeperService.setPassData(passAccount, null, data)
+    ).to.throw(/Data provided needs to be 32 bytes/);
   });
 
   it('Should not be able set gatekeeper data if not 32 bytes', async () => {
@@ -67,8 +109,8 @@ describe('Change pass data', () => {
       0, 0, 0, 1,
     ]);
 
-    expect(() => service.setPassData(account, data, null)).to.throw(
-      /Data provided needs to be 32 bytes/
-    );
+    expect(() =>
+      gatekeeperService.setPassData(passAccount, data, null)
+    ).to.throw(/Data provided needs to be 32 bytes/);
   });
 });

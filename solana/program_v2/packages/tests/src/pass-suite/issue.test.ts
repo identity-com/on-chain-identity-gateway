@@ -17,7 +17,7 @@ import {
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
 
-describe.only('issue', () => {
+describe('issue', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
