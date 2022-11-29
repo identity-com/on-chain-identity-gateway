@@ -1,40 +1,89 @@
 import {
   GatekeeperService,
-  PassAccount,
+  NetworkService,
+  AdminService,
   PassState,
-  onGatewayPass,
-  findGatewayPass,
+  PassAccount,
+  onGatewayToken,
+  findGatewayToken,
 } from '@identity.com/gateway-solana-client';
-import { TEST_GATEKEEPER, TEST_NETWORK } from '../util/constants';
-import chai from 'chai';
-import { Keypair } from '@solana/web3.js';
-import { createGatekeeperService } from './util';
+import { Keypair, PublicKey } from '@solana/web3.js';
+import * as anchor from '@project-serum/anchor';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
+import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { expect } from 'chai';
+import {
+  makeAssociatedTokenAccountsForIssue,
+  setUpAdminNetworkGatekeeper,
+} from '../test-set-up';
 
-const expect = chai.expect;
+describe('issue', () => {
+  anchor.setProvider(anchor.AnchorProvider.env());
+  const program = anchor.workspace
+    .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
+  const programProvider = program.provider as anchor.AnchorProvider;
 
-describe('Issue pass', () => {
-  let service: GatekeeperService;
+  let gatekeeperService: GatekeeperService;
+
+  let gatekeeperPDA: PublicKey;
+  let passAccount: PublicKey;
+  let mint: PublicKey;
+
+  let adminAuthority: Keypair;
+  let networkAuthority: Keypair;
+  let gatekeeperAuthority: Keypair;
+  let mintAuthority: Keypair;
+  let subject: Keypair;
+  let mintAccount: Keypair;
 
   beforeEach(async () => {
-    service = await createGatekeeperService();
+    ({
+      gatekeeperService,
+      gatekeeperPDA,
+      passAccount,
+      mint,
+      adminAuthority,
+      networkAuthority,
+      gatekeeperAuthority,
+      mintAuthority,
+      subject,
+      mintAccount,
+    } = await setUpAdminNetworkGatekeeper(program, programProvider));
   });
 
-  it('Issues a pass', async () => {
-    const subject = Keypair.generate().publicKey;
+  it('should issue pass', async () => {
+    // Assemble
+    const { gatekeeperAta, networkAta, funderAta } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
 
-    const account = await GatekeeperService.createPassAddress(
-      subject,
-      TEST_NETWORK
-    );
+    // Act
+    await gatekeeperService
+      .issue(
+        passAccount,
+        subject.publicKey,
+        TOKEN_PROGRAM_ID,
+        mint,
+        gatekeeperAta.address,
+        networkAta.address,
+        funderAta.address
+      )
+      .rpc();
+    const pass = await gatekeeperService.getPassAccount(subject.publicKey);
 
-    await service.issue(account, subject).rpc();
-    const pass = await service.getPassAccount(subject);
-
+    // Assert
     expect(pass).to.deep.include({
       version: 0,
-      subject,
-      network: TEST_NETWORK,
-      gatekeeper: TEST_GATEKEEPER,
+      subject: subject.publicKey,
+      network: networkAuthority.publicKey,
+      gatekeeper: gatekeeperPDA,
       state: PassState.Active,
     });
 
@@ -43,8 +92,70 @@ describe('Issue pass', () => {
     expect(pass?.issueTime).to.be.lessThan(new Date().getTime() + 5000);
   });
 
+  it('should transfer fees correctly to network and gatekeeper', async () => {
+    // Assemble
+    const { gatekeeperAta, networkAta, funderAta } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
+
+    // Act
+    await gatekeeperService
+      .issue(
+        passAccount,
+        subject.publicKey,
+        TOKEN_PROGRAM_ID,
+        mint,
+        gatekeeperAta.address,
+        networkAta.address,
+        funderAta.address
+      )
+      .rpc()
+      .catch((e) => console.log(e));
+    const funderAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(funderAta.address);
+
+    const networkAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(networkAta.address);
+
+    const gatekeeperAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(gatekeeperAta.address);
+
+    const funderAccount = AccountLayout.decode(funderAtaAccountInfo!.data);
+    const networkAccount = AccountLayout.decode(networkAtaAccountInfo!.data);
+    const gatekeeperAccount = AccountLayout.decode(
+      gatekeeperAtaAccountInfo!.data
+    );
+
+    // Assert
+    expect(funderAccount.amount).to.equal(1000n);
+    expect(networkAccount.amount).to.equal(100n);
+    expect(gatekeeperAccount.amount).to.equal(900n);
+  });
+
   it('listens for a gateway pass to be created', async () => {
     // The promise will resolve when the token is created
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    const { gatekeeperAta, networkAta, funderAta } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
+
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     let heardCreationCallback: (pass: PassAccount) => void = () => {};
 
@@ -52,48 +163,76 @@ describe('Issue pass', () => {
       heardCreationCallback = resolve;
     });
 
-    const subject = Keypair.generate().publicKey;
-
-    const subscriptionId = await onGatewayPass(
-      service.getConnection(),
-      TEST_NETWORK,
-      subject,
+    const subscriptionId = await onGatewayToken(
+      gatekeeperService.getConnection(),
+      networkAuthority.publicKey,
+      subject.publicKey,
       0,
       heardCreationCallback
     );
 
     const account = await GatekeeperService.createPassAddress(
-      subject,
-      TEST_NETWORK
+      subject.publicKey,
+      networkAuthority.publicKey
     );
 
-    service.issue(account, subject).rpc();
+    gatekeeperService
+      .issue(
+        account,
+        subject.publicKey,
+        TOKEN_PROGRAM_ID,
+        mint,
+        gatekeeperAta.address,
+        networkAta.address,
+        funderAta.address
+      )
+      .rpc();
 
     await heardCreation;
 
-    await service.getConnection().removeAccountChangeListener(subscriptionId);
+    await gatekeeperService
+      .getConnection()
+      .removeAccountChangeListener(subscriptionId);
   });
 
   it('Finds a gateway token after issue', async () => {
-    const subject = Keypair.generate().publicKey;
+    // Assemble
+    const { gatekeeperAta, networkAta, funderAta } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
 
-    const account = await GatekeeperService.createPassAddress(
-      subject,
-      TEST_NETWORK
+    await gatekeeperService
+      .issue(
+        passAccount,
+        subject.publicKey,
+        TOKEN_PROGRAM_ID,
+        mint,
+        gatekeeperAta.address,
+        networkAta.address,
+        funderAta.address
+      )
+      .rpc();
+
+    // Act
+    const pass = await findGatewayToken(
+      gatekeeperService.getConnection(),
+      networkAuthority.publicKey,
+      subject.publicKey
     );
 
-    await service.issue(account, subject).rpc();
-    const pass = await findGatewayPass(
-      service.getConnection(),
-      TEST_NETWORK,
-      subject
-    );
-
+    // Assert
     expect(pass).to.deep.include({
       version: 0,
-      subject,
-      network: TEST_NETWORK,
-      gatekeeper: TEST_GATEKEEPER,
+      subject: subject.publicKey,
+      network: networkAuthority.publicKey,
+      gatekeeper: gatekeeperPDA,
       state: PassState.Active,
     });
 

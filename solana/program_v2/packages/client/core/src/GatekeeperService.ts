@@ -136,6 +136,11 @@ export class GatekeeperService extends AbstractService {
    *
    * @param passAccount The PDA for the pass
    * @param subject The subject (account) the pass is issued to
+   * @param splToken The spl token program
+   * @param mint The mintAccount for the spl token
+   * @param networkTokenAccount The ATA for the network
+   * @param gatekeeperTokenAccount The ATA for the gatekeeper
+   * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
    * @param passNumber The pass number to allow for multiple passes in a network
    * @param authority The authority creating the account
    * @param payer The fee payer for crating the pass
@@ -143,6 +148,11 @@ export class GatekeeperService extends AbstractService {
   issue(
     passAccount: PublicKey,
     subject: PublicKey,
+    splToken?: PublicKey,
+    mint?: PublicKey,
+    networkTokenAccount?: PublicKey,
+    gatekeeperTokenAccount?: PublicKey,
+    funderTokenAccount?: PublicKey,
     passNumber = 0,
     authority: PublicKey = this.getWallet().publicKey,
     payer = authority
@@ -154,8 +164,13 @@ export class GatekeeperService extends AbstractService {
         systemProgram: anchor.web3.SystemProgram.programId,
         payer,
         authority,
+        splTokenProgram: splToken,
         network: this._network,
         gatekeeper: this._gatekeeper,
+        mintAccount: mint,
+        networkTokenAccount,
+        gatekeeperTokenAccount,
+        funderTokenAccount,
       })
       .instruction();
 

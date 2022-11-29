@@ -4,18 +4,21 @@ extends = ["../../Test.base.account.toml"]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/src/pass-suite/**/*.ts"
 
 [[test.validator.account]]
-address = "8PyTqDcyDKbMQB99D2aoNLsBqgheQU3UV4xz28ZXJYmN"
+address = "B4951ZxztgHL98WT4eFUyaaRmsi6V4hBzkoYe1VSNweo"
 filename = "../../fixtures/accounts/network.json"
 [[test.validator.account]]
-address = "89YHuQyHzscgH29wFs2QkE49K1PoLHqY9ggtLQVshMb6"
+address = "DuqrwqMDuVwgd2BNbCFQS5gwNuZcfgjuL6KpuvjGjaYa"
 filename = "../../fixtures/accounts/network-alt.json"
 
 [[test.validator.account]]
-address = "56vtYZv5VatmSKGnzWmCd5TbutNi2f4eWEfcU18i8QsJ"
+address = "BFgADDHV6SPYfnL2h35tRwrkcmdaQgbrg99uXKn41EqL"
 filename = "../../fixtures/accounts/gatekeeper.json"
+[[test.validator.account]]
+address="6ufu3BBssTiNhQ5ejtkNGfqksXQatAZ5aVFVPNQy8wu9"
+filename = "../../fixtures/accounts/gatekeeper-alt.json"
 
 [[test.validator.account]]
-address = "CCxNLk6pq5oADpSRjrLsJPeUWXR6z1BAaf7j5jNe8pPV"
+address = "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtveqn4esJGX"
 filename = "../../fixtures/accounts/mint-account.json"
 
 [[test.validator.account]]
