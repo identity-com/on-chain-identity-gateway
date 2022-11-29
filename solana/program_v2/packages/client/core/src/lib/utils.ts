@@ -124,7 +124,7 @@ export const onGatewayPass = async (
 
   const address = await GatekeeperService.createPassAddress(
     subject,
-    network,
+    gatekeeperNetwork,
     passNumber
   );
 
