@@ -24,6 +24,7 @@ export type CustomClusterUrlConfig = {
 
 /**
  * Try to map a generic (optional) string to a ExtendedCluster string
+ *
  * @param cluster optional cluster string
  */
 export const clusterFromString = (
@@ -89,6 +90,13 @@ export type HashOrNonce =
     }
   | { nonce: NonceInformation }
   | 'find';
+
+/**
+ * Adds a hash or nonce to a transaction
+ *
+ * @param transaction The transaction to update
+ * @param hashOrNonce The hash or nonce to add
+ */
 export async function addHashOrNonce(
   transaction: TransactionHolder,
   hashOrNonce: HashOrNonce

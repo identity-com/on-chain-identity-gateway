@@ -5,6 +5,11 @@ plugins:
 extends:
   - plugin:@typescript-eslint/recommended
   - plugin:prettier/recommended
+  - plugin:jsdoc/recommended
+rules:
+  'jsdoc/require-param-type': 0
+  'jsdoc/require-returns-type': 0
+  'jsdoc/require-returns': 0
 overrides:
   - files:
       - "test/**/*.ts"

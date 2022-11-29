@@ -40,8 +40,8 @@ const saveAccountToFile = async (publicKeyBase58: string, filename: string) => {
 /**
  * Loads a keypair from file in the fixtures, and optionally airdrop
  *
- * @param publicKey The public key of the keypair to load
- * @param airdrop The amount to airdrop
+ * @param publicKeyBase58 The public key of the keypair to load
+ * @param airdropAmount The amount to airdrop
  */
 const loadKeypair = async (
   publicKeyBase58: string,
@@ -78,8 +78,7 @@ const createTestTokenAccount = async () => {
 
   if (!(await accountExists(mintAccount.publicKey))) {
     // Create and save the mint
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const mint = await createMint(
+    await createMint(
       programProvider.connection,
       mintAuthority,
       mintAuthority.publicKey,

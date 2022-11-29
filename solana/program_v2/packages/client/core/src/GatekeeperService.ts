@@ -308,9 +308,9 @@ export class GatekeeperService extends AbstractService {
    * Sets network/gatekeeper specific data for a pass
    *
    * @param passAccount The PDA for the pass
-   * @param gatekeeperData
-   * @param networkData
-   * @param authority
+   * @param gatekeeperData Freeform 32 bytes for setting gatekeeper related data
+   * @param networkData Freeform 32 bytes for setting network related data
+   * @param authority The authority required for setting network data
    */
   setPassData(
     passAccount: PublicKey,
