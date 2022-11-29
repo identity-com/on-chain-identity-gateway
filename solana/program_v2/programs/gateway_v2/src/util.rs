@@ -1,8 +1,7 @@
 //! Utility functions and types.
 use crate::state::{GatekeeperFees, NetworkFees};
-use anchor_lang::error::Error;
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
-use anchor_lang::{error, Key, ToAccountInfo};
+use anchor_lang::{Key, ToAccountInfo};
 use anchor_spl::token::{Token, TokenAccount};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::invoke;
@@ -48,7 +47,7 @@ pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> Option<&NetworkFe
 /// First result returns the fee for the network_fee
 /// Second result returns the gatekeeper fee
 pub fn calculate_network_and_gatekeeper_fee(fee: u64, split: u16) -> (u64, u64) {
-    let percentage = (split as f64).div(100_f64);
+    let percentage = (split as f64).div(10000_f64);
     let network_fee = (fee as f64).mul(percentage);
 
     let gatekeeper_fee = (fee as f64) - network_fee;
@@ -93,14 +92,14 @@ mod tests {
 
     #[test]
     fn get_fees_test() {
-        let fees = crate::util::calculate_network_and_gatekeeper_fee(1000, 5);
-        assert_eq!(fees.0, 50);
-        assert_eq!(fees.1, 950);
+        let fees = crate::util::calculate_network_and_gatekeeper_fee(10000, 500);
+        assert_eq!(fees.0, 500);
+        assert_eq!(fees.1, 9500);
     }
 
     #[test]
     fn get_fees_test_split_5() {
-        let fees = crate::util::calculate_network_and_gatekeeper_fee(100, 5);
+        let fees = crate::util::calculate_network_and_gatekeeper_fee(100, 500);
         assert_eq!(fees.0, 5);
         assert_eq!(fees.1, 95);
     }
@@ -134,7 +133,7 @@ mod tests {
             expire: 0,
         };
         let fees: Vec<GatekeeperFees> = vec![fee1, fee2];
-        let fee = crate::util::get_gatekeeper_fees(&fees, mint);
+        let fee = crate::util::get_gatekeeper_fees(&fees, mint).unwrap();
         assert_eq!(fee, &fee1);
     }
 
