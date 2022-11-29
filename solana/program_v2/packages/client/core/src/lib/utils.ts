@@ -108,11 +108,12 @@ export const findGatewayPass = async (
  * @param gatekeeperNetwork The gatekeeper network the pass is in
  * @param subject The address for the subject the pass belongs to
  * @param passNumber The pass number if more than one pass is issued
+ * @param callback The function called when the pass is issued or updated
  * @param opts The Solana confirm options to use
  */
 export const onGatewayPass = async (
   connection: Connection,
-  network: PublicKey,
+  gatekeeperNetwork: PublicKey,
   subject: PublicKey,
   passNumber = 0,
   callback: (pass: PassAccount) => void,
