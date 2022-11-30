@@ -59,7 +59,8 @@ describe('Expire a pass', () => {
       networkAuthority.publicKey,
       gatekeeperAuthority.publicKey,
       mintAccount.publicKey,
-      gatekeeperPDA
+      gatekeeperPDA,
+      3000
     );
 
     gatekeeperAta = accounts.gatekeeperAta;
@@ -114,7 +115,7 @@ describe('Expire a pass', () => {
     );
 
     // Assert
-    expect(funderAccount.amount).to.equal(0n);
+    expect(funderAccount.amount).to.equal(1000n);
     expect(networkAccount.amount).to.equal(2n);
     expect(gatekeeperAccount.amount).to.equal(1998n);
 
