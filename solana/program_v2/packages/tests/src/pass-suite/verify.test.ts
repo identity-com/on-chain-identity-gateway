@@ -1,6 +1,6 @@
 import {
-  PassState,
   GatekeeperService,
+  PassState,
 } from '@identity.com/gateway-solana-client';
 import { createGatekeeperService } from './util';
 import chai from 'chai';
@@ -12,7 +12,7 @@ import {
   makeAssociatedTokenAccountsForIssue,
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { Account, AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -35,6 +35,9 @@ describe('Verify a pass', () => {
   let mintAuthority: Keypair;
   let subject: Keypair;
   let mintAccount: Keypair;
+  let gatekeeperAta: Account;
+  let networkAta: Account;
+  let funderAta: Account;
 
   beforeEach(async () => {
     ({
@@ -49,16 +52,22 @@ describe('Verify a pass', () => {
       subject,
       mintAccount,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
-    const { gatekeeperAta, networkAta, funderAta } =
-      await makeAssociatedTokenAccountsForIssue(
-        programProvider.connection,
-        adminAuthority,
-        mintAuthority,
-        networkAuthority.publicKey,
-        gatekeeperAuthority.publicKey,
-        mintAccount.publicKey,
-        gatekeeperPDA
-      );
+
+    const accounts = await makeAssociatedTokenAccountsForIssue(
+      programProvider.connection,
+      adminAuthority,
+      mintAuthority,
+      networkAuthority.publicKey,
+      gatekeeperAuthority.publicKey,
+      mintAccount.publicKey,
+      gatekeeperPDA,
+      3000
+    );
+
+    gatekeeperAta = accounts.gatekeeperAta;
+    networkAta = accounts.networkAta;
+    funderAta = accounts.funderAta;
+
     await gatekeeperService
       .issue(
         passAccount,
@@ -73,14 +82,64 @@ describe('Verify a pass', () => {
   });
 
   it('Verifies a valid pass', async () => {
-    await gatekeeperService.verifyPass(passAccount).rpc();
+    await gatekeeperService
+      .verifyPass(
+        passAccount,
+        TOKEN_PROGRAM_ID,
+        mint,
+        gatekeeperAta.address,
+        networkAta.address,
+        funderAta.address
+      )
+      .rpc();
+
+    const funderAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(funderAta.address);
+
+    const networkAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(networkAta.address);
+
+    const gatekeeperAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(gatekeeperAta.address);
+
+    const funderAccount = AccountLayout.decode(funderAtaAccountInfo!.data);
+    const networkAccount = AccountLayout.decode(networkAtaAccountInfo!.data);
+    const gatekeeperAccount = AccountLayout.decode(
+      gatekeeperAtaAccountInfo!.data
+    );
+
+    // Assert
+    expect(funderAccount.amount).to.equal(1000n);
+    expect(networkAccount.amount).to.equal(2n);
+    expect(gatekeeperAccount.amount).to.equal(1998n);
   });
 
   it('Fails to verify an expired pass', async () => {
-    await gatekeeperService.expirePass(passAccount).rpc();
+    await gatekeeperService
+      .expirePass(
+        passAccount,
+        TOKEN_PROGRAM_ID,
+        mint,
+        gatekeeperAta.address,
+        networkAta.address,
+        funderAta.address
+      )
+      .rpc();
 
     return expect(
-      gatekeeperService.verifyPass(passAccount).rpc()
+      gatekeeperService
+        .verifyPass(
+          passAccount,
+          TOKEN_PROGRAM_ID,
+          mint,
+          gatekeeperAta.address,
+          networkAta.address,
+          funderAta.address
+        )
+        .rpc()
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
 
@@ -88,7 +147,16 @@ describe('Verify a pass', () => {
     await gatekeeperService.setState(PassState.Revoked, passAccount).rpc();
 
     expect(
-      gatekeeperService.verifyPass(passAccount).rpc()
+      gatekeeperService
+        .verifyPass(
+          passAccount,
+          TOKEN_PROGRAM_ID,
+          mint,
+          gatekeeperAta.address,
+          networkAta.address,
+          funderAta.address
+        )
+        .rpc()
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
 
@@ -101,7 +169,16 @@ describe('Verify a pass', () => {
     );
 
     return expect(
-      altService.verifyPass(passAccount).rpc()
+      altService
+        .verifyPass(
+          passAccount,
+          TOKEN_PROGRAM_ID,
+          mint,
+          gatekeeperAta.address,
+          networkAta.address,
+          funderAta.address
+        )
+        .rpc()
     ).to.eventually.be.rejectedWith(/A seeds constraint was violated/);
   });
 });

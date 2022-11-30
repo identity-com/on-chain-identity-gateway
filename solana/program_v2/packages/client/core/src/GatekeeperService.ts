@@ -285,11 +285,23 @@ export class GatekeeperService extends AbstractService {
    * Calls an on-chain instruction to verify a pass is active and not expired.
    *
    * @param passAccount The PDA for the pass to verify
-   * @param authority The gatekeeper authority for verifying a pass (TODO: do we need this as it is "public info")
+   * @param splToken The spl token program
+   * @param mint The mintAccount for the spl token
+   * @param networkTokenAccount The ATA for the network
+   * @param gatekeeperTokenAccount The ATA for the gatekeeper
+   * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
+   * @param authority The gatekeeper authority for expiring a pass
+   * @param payer The fee payer for expiring the pass
    */
   verifyPass(
     passAccount: PublicKey,
-    authority: PublicKey = this.getWallet().publicKey
+    splToken?: PublicKey,
+    mint?: PublicKey,
+    networkTokenAccount?: PublicKey,
+    gatekeeperTokenAccount?: PublicKey,
+    funderTokenAccount?: PublicKey,
+    authority: PublicKey = this.getWallet().publicKey,
+    payer = authority
   ): ServiceBuilder {
     const instructionPromise = this.getProgram()
       .methods.verifyPass()
@@ -298,6 +310,13 @@ export class GatekeeperService extends AbstractService {
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network: this._network,
+        gatekeeper: this._gatekeeper,
+        payer,
+        splTokenProgram: splToken,
+        mintAccount: mint,
+        networkTokenAccount,
+        gatekeeperTokenAccount,
+        funderTokenAccount,
       })
       .instruction();
 

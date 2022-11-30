@@ -172,7 +172,8 @@ export const makeAssociatedTokenAccountsForIssue = async (
   networkPublicKey: PublicKey,
   gatekeeperPublicKey: PublicKey,
   mintPublicKey: PublicKey,
-  gatekeeperPDA: PublicKey
+  gatekeeperPDA: PublicKey,
+  funderMintAmount = 2000
 ): Promise<{
   gatekeeperAta: Account;
   networkAta: Account;
@@ -214,7 +215,7 @@ export const makeAssociatedTokenAccountsForIssue = async (
     mintPublicKey,
     funderAta.address,
     mintAuthority,
-    2000
+    funderMintAmount
   );
 
   return {
