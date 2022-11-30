@@ -23,12 +23,12 @@ pub fn expire_pass(ctx: Context<PassExpire>) -> Result<()> {
 
     // TODO(julian): Fix error handling
     let raw_gatekeeper_fee = match get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address) {
-        Some(fee) => fee.issue,
+        Some(fee) => fee.expire,
         None => return Err(error!(GatekeeperErrors::GatekeeperFeeNotProvided)),
     };
 
     let raw_network_fee = match get_network_fees(&network.fees, *mint_address) {
-        Some(fee) => fee.issue,
+        Some(fee) => fee.expire,
         None => return Err(error!(NetworkErrors::NetworkFeeNotProvided)),
     };
     let fees = calculate_network_and_gatekeeper_fee(raw_gatekeeper_fee, raw_network_fee);
