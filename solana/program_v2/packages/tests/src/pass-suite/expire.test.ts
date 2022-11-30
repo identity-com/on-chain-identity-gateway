@@ -122,17 +122,6 @@ describe('Expire a pass', () => {
   });
 
   it('Cannot expire an inactive pass', async () => {
-    const { gatekeeperAta, networkAta, funderAta } =
-      await makeAssociatedTokenAccountsForIssue(
-        programProvider.connection,
-        adminAuthority,
-        mintAuthority,
-        networkAuthority.publicKey,
-        gatekeeperAuthority.publicKey,
-        mintAccount.publicKey,
-        gatekeeperPDA
-      );
-
     await gatekeeperService.setState(PassState.Revoked, passAccount).rpc();
 
     return expect(
@@ -150,17 +139,6 @@ describe('Expire a pass', () => {
   });
 
   it('Cannot expire an expired pass', async () => {
-    const { gatekeeperAta, networkAta, funderAta } =
-      await makeAssociatedTokenAccountsForIssue(
-        programProvider.connection,
-        adminAuthority,
-        mintAuthority,
-        networkAuthority.publicKey,
-        gatekeeperAuthority.publicKey,
-        mintAccount.publicKey,
-        gatekeeperPDA
-      );
-
     await gatekeeperService
       .expirePass(
         passAccount,
