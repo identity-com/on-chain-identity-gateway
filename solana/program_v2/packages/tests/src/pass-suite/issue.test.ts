@@ -14,7 +14,6 @@ import {
   makeAssociatedTokenAccountsForIssue,
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
-import { TEST_NETWORK } from '../util/constants';
 
 describe('issue', () => {
   anchor.setProvider(anchor.AnchorProvider.env());

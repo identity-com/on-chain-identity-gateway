@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   Connection,
   Keypair,
@@ -101,13 +100,9 @@ export const setUpAdminNetworkGatekeeper = async (
       fees: [
         {
           token: mint,
-          //@ts-ignore
           issue: new anchor.BN(10),
-          //@ts-ignore
           refresh: new anchor.BN(10),
-          //@ts-ignore
           expire: new anchor.BN(10),
-          //@ts-ignore
           verify: new anchor.BN(10),
         },
       ],
@@ -129,14 +124,9 @@ export const setUpAdminNetworkGatekeeper = async (
   await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
     {
       token: mint,
-
-      // @ts-ignore
       issue: new anchor.BN(1000),
-      // @ts-ignore
       refresh: new anchor.BN(1000),
-      // @ts-ignore
       expire: new anchor.BN(1000),
-      // @ts-ignore
       verify: new anchor.BN(1000),
     },
   ]);
