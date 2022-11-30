@@ -172,7 +172,7 @@ jobs:
         node: [ "16.x" ]
         os: [ ubuntu-latest ]
         solana: [ "v1.10.29" ]
-        rust: [ "1.61" ]
+        rust: [ "stable" ]
 
     steps:
       - name: Checkout repo

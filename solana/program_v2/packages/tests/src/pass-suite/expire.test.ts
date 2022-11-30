@@ -9,7 +9,7 @@ import {
   makeAssociatedTokenAccountsForIssue,
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { Account, AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 
@@ -34,6 +34,9 @@ describe('Expire a pass', () => {
   let mintAuthority: Keypair;
   let subject: Keypair;
   let mintAccount: Keypair;
+  let gatekeeperAta: Account;
+  let networkAta: Account;
+  let funderAta: Account;
 
   beforeEach(async () => {
     ({
@@ -48,16 +51,21 @@ describe('Expire a pass', () => {
       subject,
       mintAccount,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
-    const { gatekeeperAta, networkAta, funderAta } =
-      await makeAssociatedTokenAccountsForIssue(
-        programProvider.connection,
-        adminAuthority,
-        mintAuthority,
-        networkAuthority.publicKey,
-        gatekeeperAuthority.publicKey,
-        mintAccount.publicKey,
-        gatekeeperPDA
-      );
+
+    const accounts = await makeAssociatedTokenAccountsForIssue(
+      programProvider.connection,
+      adminAuthority,
+      mintAuthority,
+      networkAuthority.publicKey,
+      gatekeeperAuthority.publicKey,
+      mintAccount.publicKey,
+      gatekeeperPDA
+    );
+
+    gatekeeperAta = accounts.gatekeeperAta;
+    networkAta = accounts.networkAta;
+    funderAta = accounts.funderAta;
+
     await gatekeeperService
       .issue(
         passAccount,
@@ -72,17 +80,6 @@ describe('Expire a pass', () => {
   });
 
   it('Expires a pass', async () => {
-    const { gatekeeperAta, networkAta, funderAta } =
-      await makeAssociatedTokenAccountsForIssue(
-        programProvider.connection,
-        adminAuthority,
-        mintAuthority,
-        networkAuthority.publicKey,
-        gatekeeperAuthority.publicKey,
-        mintAccount.publicKey,
-        gatekeeperPDA
-      );
-
     await gatekeeperService
       .expirePass(
         passAccount,
@@ -93,9 +90,33 @@ describe('Expire a pass', () => {
         funderAta.address
       )
       .rpc();
+
     const updatedPass = await gatekeeperService.getPassAccount(
       subject.publicKey
     );
+
+    const funderAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(funderAta.address);
+
+    const networkAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(networkAta.address);
+
+    const gatekeeperAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(gatekeeperAta.address);
+
+    const funderAccount = AccountLayout.decode(funderAtaAccountInfo!.data);
+    const networkAccount = AccountLayout.decode(networkAtaAccountInfo!.data);
+    const gatekeeperAccount = AccountLayout.decode(
+      gatekeeperAtaAccountInfo!.data
+    );
+
+    // Assert
+    expect(funderAccount.amount).to.equal(0n);
+    expect(networkAccount.amount).to.equal(2n);
+    expect(gatekeeperAccount.amount).to.equal(1998n);
 
     expect(updatedPass?.issueTime).to.be.lt(0);
   });
