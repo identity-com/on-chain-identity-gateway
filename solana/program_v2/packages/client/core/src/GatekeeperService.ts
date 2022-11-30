@@ -1,6 +1,6 @@
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
-import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
+import { AnchorProvider, Program } from '@project-serum/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
 import { GatewayServiceOptions, Wallet } from './lib/types';
@@ -12,9 +12,9 @@ import {
   SOLANA_MAINNET,
 } from './lib/constants';
 import {
-  ServiceBuilder,
   AbstractService,
   NonSigningWallet,
+  ServiceBuilder,
 } from './utils/AbstractService';
 import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { PassAccount, PassState, PassStateMapping } from './lib/wrappers';
@@ -143,7 +143,7 @@ export class GatekeeperService extends AbstractService {
    * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
    * @param passNumber The pass number to allow for multiple passes in a network
    * @param authority The authority creating the account
-   * @param payer The fee payer for crating the pass
+   * @param payer The fee payer for creating the pass
    */
   issue(
     passAccount: PublicKey,
@@ -240,11 +240,23 @@ export class GatekeeperService extends AbstractService {
    * Expires a pass so that it can no longer be used
    *
    * @param passAccount The PDA for the pass
+   * @param splToken The spl token program
+   * @param mint The mintAccount for the spl token
+   * @param networkTokenAccount The ATA for the network
+   * @param gatekeeperTokenAccount The ATA for the gatekeeper
+   * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
    * @param authority The gatekeeper authority for expiring a pass
+   * @param payer The fee payer for expiring the pass
    */
   expirePass(
     passAccount: PublicKey,
-    authority: PublicKey = this.getWallet().publicKey
+    splToken?: PublicKey,
+    mint?: PublicKey,
+    networkTokenAccount?: PublicKey,
+    gatekeeperTokenAccount?: PublicKey,
+    funderTokenAccount?: PublicKey,
+    authority: PublicKey = this.getWallet().publicKey,
+    payer: PublicKey = authority
   ): ServiceBuilder {
     const instructionPromise = this.getProgram()
       .methods.expirePass()
@@ -254,6 +266,12 @@ export class GatekeeperService extends AbstractService {
         authority,
         network: this._network,
         gatekeeper: this._gatekeeper,
+        payer,
+        splTokenProgram: splToken,
+        mintAccount: mint,
+        networkTokenAccount,
+        gatekeeperTokenAccount,
+        funderTokenAccount,
       })
       .instruction();
 

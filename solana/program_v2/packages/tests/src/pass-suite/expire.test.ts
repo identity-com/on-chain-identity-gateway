@@ -1,6 +1,6 @@
 import {
-  PassState,
   GatekeeperService,
+  PassState,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -72,7 +72,27 @@ describe('Expire a pass', () => {
   });
 
   it('Expires a pass', async () => {
-    await gatekeeperService.expirePass(passAccount).rpc();
+    const { gatekeeperAta, networkAta, funderAta } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
+
+    await gatekeeperService
+      .expirePass(
+        passAccount,
+        TOKEN_PROGRAM_ID,
+        mint,
+        gatekeeperAta.address,
+        networkAta.address,
+        funderAta.address
+      )
+      .rpc();
     const updatedPass = await gatekeeperService.getPassAccount(
       subject.publicKey
     );
@@ -81,18 +101,67 @@ describe('Expire a pass', () => {
   });
 
   it('Cannot expire an inactive pass', async () => {
+    const { gatekeeperAta, networkAta, funderAta } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
+
     await gatekeeperService.setState(PassState.Revoked, passAccount).rpc();
 
-    expect(
-      gatekeeperService.expirePass(passAccount).rpc()
+    return expect(
+      gatekeeperService
+        .expirePass(
+          passAccount,
+          TOKEN_PROGRAM_ID,
+          mint,
+          gatekeeperAta.address,
+          networkAta.address,
+          funderAta.address
+        )
+        .rpc()
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
 
   it('Cannot expire an expired pass', async () => {
-    await gatekeeperService.expirePass(passAccount).rpc();
+    const { gatekeeperAta, networkAta, funderAta } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
 
-    expect(
-      gatekeeperService.expirePass(passAccount).rpc()
+    await gatekeeperService
+      .expirePass(
+        passAccount,
+        TOKEN_PROGRAM_ID,
+        mint,
+        gatekeeperAta.address,
+        networkAta.address,
+        funderAta.address
+      )
+      .rpc();
+
+    return expect(
+      gatekeeperService
+        .expirePass(
+          passAccount,
+          TOKEN_PROGRAM_ID,
+          mint,
+          gatekeeperAta.address,
+          networkAta.address,
+          funderAta.address
+        )
+        .rpc()
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
 });
