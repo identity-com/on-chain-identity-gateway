@@ -483,6 +483,21 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
+          "name": "network",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -493,13 +508,28 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "network",
+          "name": "splTokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "gatekeeper",
+          "name": "mintAccount",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funderTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "networkTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1910,6 +1940,21 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
+          "name": "network",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -1920,13 +1965,28 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "network",
+          "name": "splTokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "gatekeeper",
+          "name": "mintAccount",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funderTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "networkTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
+          "isMut": true,
           "isSigner": false
         }
       ],

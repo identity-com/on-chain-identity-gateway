@@ -11,8 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ["nightly-2022-05-18"]
-        os: [ubuntu-latest]
+        rust: [ "stable" ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Checkout repo
@@ -53,8 +53,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ["nightly-2022-05-18"]
-        os: [ubuntu-latest]
+        rust: [ "stable" ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Checkout repo
@@ -92,10 +92,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: ["16.x"]
-        rust: ["nightly-2022-05-18"]
-        solana: ["v1.10.29"]
-        os: [ubuntu-latest]
+        node: [ "16.x" ]
+        rust: [ "stable" ]
+        solana: [ "v1.10.29" ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Checkout repo
@@ -160,7 +160,7 @@ jobs:
       #   with:
       #     path: /solana/program_v2
       #     name: latest-program_v2_version
-      
+
 
   E2E:
     name: Test the gateway_v2 cli against the on-chain program on Solana ${{ matrix.solana }}, Node ${{ matrix.node }}, Rust ${{ matrix.rust }}, and ${{ matrix.os }}
@@ -169,10 +169,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: ["16.x"]
-        os: [ubuntu-latest]
-        solana: ["v1.10.29"]
-        rust: ["1.61"]
+        node: [ "16.x" ]
+        os: [ ubuntu-latest ]
+        solana: [ "v1.10.29" ]
+        rust: [ "stable" ]
 
     steps:
       - name: Checkout repo
