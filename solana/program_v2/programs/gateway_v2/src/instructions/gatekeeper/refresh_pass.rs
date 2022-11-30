@@ -1,15 +1,14 @@
 use crate::constants::PASS_SEED;
+use crate::errors::{GatekeeperErrors, NetworkErrors};
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
-use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
     get_network_fees,
 };
-use crate::errors::{GatekeeperErrors, NetworkErrors};
+use anchor_lang::prelude::*;
+use anchor_spl::token::{Mint, Token, TokenAccount};
 
 pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
-
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let authority = &mut ctx.accounts.authority;
@@ -67,7 +66,7 @@ pub struct PassRefresh<'info> {
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub network: Box<Account<'info, GatekeeperNetwork>>,
-    pub gatekeeper:Box<Account<'info, Gatekeeper>>,
+    pub gatekeeper: Box<Account<'info, Gatekeeper>>,
     pub spl_token_program: Program<'info, Token>,
     pub mint_account: Account<'info, Mint>,
     #[account(mut)]
