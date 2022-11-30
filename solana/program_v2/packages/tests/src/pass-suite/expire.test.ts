@@ -52,19 +52,17 @@ describe('Expire a pass', () => {
       mintAccount,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
 
-    const accounts = await makeAssociatedTokenAccountsForIssue(
-      programProvider.connection,
-      adminAuthority,
-      mintAuthority,
-      networkAuthority.publicKey,
-      gatekeeperAuthority.publicKey,
-      mintAccount.publicKey,
-      gatekeeperPDA
-    );
-
-    gatekeeperAta = accounts.gatekeeperAta;
-    networkAta = accounts.networkAta;
-    funderAta = accounts.funderAta;
+    ({ gatekeeperAta, networkAta, funderAta } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA,
+        3000
+      ));
 
     await gatekeeperService
       .issue(
@@ -114,7 +112,7 @@ describe('Expire a pass', () => {
     );
 
     // Assert
-    expect(funderAccount.amount).to.equal(0n);
+    expect(funderAccount.amount).to.equal(1000n);
     expect(networkAccount.amount).to.equal(2n);
     expect(gatekeeperAccount.amount).to.equal(1998n);
 
