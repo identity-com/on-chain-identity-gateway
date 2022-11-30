@@ -1,3 +1,5 @@
+#![allow(clippy::result_large_err)]
+
 pub mod constants;
 pub mod errors;
 mod instructions;
@@ -72,7 +74,7 @@ pub mod solana_anchor_gateway {
     }
 
     pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
-        instructions::gatekeeper::refresh_pass(&mut ctx.accounts.pass)
+        instructions::gatekeeper::refresh_pass(ctx)
     }
 
     pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> {

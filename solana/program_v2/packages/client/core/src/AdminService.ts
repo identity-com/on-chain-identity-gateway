@@ -21,6 +21,9 @@ import {
   ServiceBuilder,
 } from './utils/AbstractService';
 
+/**
+ * The AdminService is responsible for administrative functions for creating and managing gatekeepers within a network
+ */
 export class AdminService extends AbstractService {
   constructor(
     program: Program<SolanaAnchorGateway>,
@@ -32,6 +35,12 @@ export class AdminService extends AbstractService {
     super(program, cluster, wallet, opts);
   }
 
+  /**
+   * Builds and returns an instance of an AdminService
+   *
+   * @param network The network this AdminService will be managing
+   * @param options Options to override default values for the AdminService
+   */
   static async build(
     network: PublicKey,
     options: GatewayServiceOptions = {
@@ -62,6 +71,14 @@ export class AdminService extends AbstractService {
     );
   }
 
+  /**
+   * Builds and returns an instance of an AdminService using an instance of the anchor program
+   *
+   * @param program The Anchor program to build the AdminService instance from
+   * @param network The network this AdminService will be managing
+   * @param options Options to override default values for the AdminService
+   * @param provider The anchor provider to use (defaults to the provider from the program)
+   */
   static async buildFromAnchor(
     program: Program<SolanaAnchorGateway>,
     network: PublicKey,
@@ -81,29 +98,38 @@ export class AdminService extends AbstractService {
     );
   }
 
+  /**
+   * Closes a network (deletes it on-chain)
+   *
+   * @param receiver The receiving account that rent is returned to
+   * @param authority The authority for closing the network account. The authority needs to be loaded on the auth keys
+   *                  for the network
+   */
   closeNetwork(
-    destination: PublicKey = this._wallet.publicKey,
+    receiver: PublicKey = this._wallet.publicKey,
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .closeNetwork()
       .accounts({
         network: this._network,
-        destination,
+        destination: receiver, // TODO: Rename to receiver on the program
         authority,
       })
       .instruction();
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
+  /**
+   * Creates the network the AdminService was build for
+   *
+   * @param data Initial data to create the etwork with
+   * @param authority The initial authority for creating the account
+   */
   createNetwork(
     data: CreateNetworkData = {
       authThreshold: 1,
@@ -131,15 +157,16 @@ export class AdminService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      // TODO: Implement this...
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
+  /**
+   * Updates the network configuration
+   *
+   * @param data The data required for updating the network
+   * @param authority A valid authority required for managing the network
+   */
   updateNetwork(
     data: UpdateNetworkData,
     authority: PublicKey = this._wallet.publicKey
@@ -164,14 +191,16 @@ export class AdminService extends AbstractService {
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      didAccountSizeDeltaCallback: () => {
-        throw new Error('Dynamic Alloc not supported');
-      },
-      allowsDynamicAlloc: false,
       authority,
     });
   }
 
+  /**
+   * Looks up and returns a network account as it exists on chain.
+   *
+   * @param account An optional network account to lookup if looking up a different network account than the one
+   *                specified on the builder.
+   */
   async getNetworkAccount(
     account: PublicKey = this._network
   ): Promise<NetworkAccount | null> {

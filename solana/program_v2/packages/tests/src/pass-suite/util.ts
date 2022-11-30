@@ -78,6 +78,5 @@ export const createGatekeeperService = async (
     },
     programProvider
   );
-
   return service;
 };

@@ -282,6 +282,31 @@ export type SolanaAnchorGateway = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "splTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funderTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "networkTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
+          "isMut": true,
+          "isSigner": false
         }
       ],
       "args": [
@@ -359,6 +384,31 @@ export type SolanaAnchorGateway = {
         {
           "name": "gatekeeper",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "splTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funderTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "networkTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -458,6 +508,21 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
+          "name": "network",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -468,13 +533,28 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "network",
+          "name": "splTokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "gatekeeper",
+          "name": "mintAccount",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funderTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "networkTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -489,6 +569,21 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
+          "name": "network",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -499,8 +594,28 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "network",
+          "name": "splTokenProgram",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funderTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "networkTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1285,6 +1400,9 @@ export type SolanaAnchorGateway = {
           },
           {
             "name": "InvalidGatekeeper"
+          },
+          {
+            "name": "GatekeeperFeeNotProvided"
           }
         ]
       }
@@ -1388,6 +1506,11 @@ export type SolanaAnchorGateway = {
       "code": 6006,
       "name": "AccountInUse",
       "msg": "The network account is in use"
+    },
+    {
+      "code": 6007,
+      "name": "NetworkFeeNotProvided",
+      "msg": "Network Fee was not provided"
     }
   ]
 };
@@ -1676,6 +1799,31 @@ export const IDL: SolanaAnchorGateway = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "splTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funderTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "networkTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
+          "isMut": true,
+          "isSigner": false
         }
       ],
       "args": [
@@ -1753,6 +1901,31 @@ export const IDL: SolanaAnchorGateway = {
         {
           "name": "gatekeeper",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "splTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funderTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "networkTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1852,6 +2025,21 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
+          "name": "network",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -1862,13 +2050,28 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "network",
+          "name": "splTokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "gatekeeper",
+          "name": "mintAccount",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funderTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "networkTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1883,6 +2086,21 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
+          "name": "network",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -1893,8 +2111,28 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "network",
+          "name": "splTokenProgram",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funderTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "networkTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -2679,6 +2917,9 @@ export const IDL: SolanaAnchorGateway = {
           },
           {
             "name": "InvalidGatekeeper"
+          },
+          {
+            "name": "GatekeeperFeeNotProvided"
           }
         ]
       }
@@ -2782,6 +3023,11 @@ export const IDL: SolanaAnchorGateway = {
       "code": 6006,
       "name": "AccountInUse",
       "msg": "The network account is in use"
+    },
+    {
+      "code": 6007,
+      "name": "NetworkFeeNotProvided",
+      "msg": "Network Fee was not provided"
     }
   ]
 };

@@ -20,6 +20,9 @@ import { Wallet } from '../lib/types';
 import { ExtendedCluster } from '../lib/connection';
 import { GATEWAY_PROGRAM, SOLANA_MAINNET } from '../lib/constants';
 
+/**
+ * The AbstractService provides base functionality for other services
+ */
 export abstract class AbstractService {
   protected constructor(
     protected _program: Program<SolanaAnchorGateway>,
@@ -28,6 +31,11 @@ export abstract class AbstractService {
     protected _opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {}
 
+  /**
+   * Fetches an instance of the Anchor Program based on the provider
+   *
+   * @param provider The provider to create the program from
+   */
   static async fetchProgram(
     provider: anchor.Provider
   ): Promise<Program<SolanaAnchorGateway>> {
@@ -38,27 +46,45 @@ export abstract class AbstractService {
     ) as Program<SolanaAnchorGateway>;
   }
 
+  /**
+   * Gets the wallet used for the service
+   */
   getWallet(): Wallet {
     return this._wallet;
   }
 
+  /**
+   * Gets the program used for the service
+   */
   getProgram(): Program<SolanaAnchorGateway> {
     return this._program;
   }
 
+  /**
+   * Gets the connection used for the service
+   */
   getConnection(): Connection {
     return this._program.provider.connection;
   }
 
+  /**
+   * Gets the solana confirm options used for the service
+   */
   getConfirmOptions(): ConfirmOptions {
     return this._opts;
   }
 
+  /**
+   * Gets the IDL used for the service
+   */
   getIdl(): Idl {
     return this._program.idl;
   }
 }
 
+/**
+ * A non-signing wallet used if no signing functionality is required
+ */
 export class NonSigningWallet implements Wallet {
   publicKey: PublicKey;
 
@@ -81,6 +107,9 @@ export class NonSigningWallet implements Wallet {
   }
 }
 
+/**
+ * The ServiceBuilder is used to provide a builder to create and execute instructions
+ */
 export class ServiceBuilder {
   private wallet: Wallet;
   private connection: Connection;
@@ -100,36 +129,56 @@ export class ServiceBuilder {
     this.idlErrors = parseIdlErrors(service.getIdl());
   }
 
+  /**
+   * Gets the intruction to be executed
+   */
   get instruction(): BuilderInstruction {
     return this._instruction;
   }
 
+  /**
+   * Allows providing an alternative connection to be used when executing the instruction
+   *
+   * @param connection The connection to use
+   */
   withConnection(connection: Connection): ServiceBuilder {
     this.connection = connection;
     return this;
   }
 
+  /**
+   * Allows providing an alternative confirm options to be used when executing the instruction
+   *
+   * @param confirmOptions The confirm options to use
+   */
   withConfirmOptions(confirmOptions: ConfirmOptions): ServiceBuilder {
     this.confirmOptions = confirmOptions;
     return this;
   }
 
+  /**
+   * Allows providing an alternative wallet to be used when executing the instruction
+   *
+   * @param wallet The wallet to use
+   */
   withWallet(wallet: Wallet): ServiceBuilder {
     this.wallet = wallet;
     return this;
   }
 
-  // TODO
-  withAutomaticAlloc(payer: PublicKey): ServiceBuilder {
-    this.authority = payer;
-    return this;
-  }
-
+  /**
+   * Allows providing additional signers when executing the instruction
+   *
+   * @param signers The signers to use
+   */
   withPartialSigners(...signers: Signer[]): ServiceBuilder {
     this.partialSigners = signers;
     return this;
   }
 
+  /**
+   * Returns the transaction for the instructions
+   */
   async transaction(): Promise<Transaction> {
     const tx = new Transaction();
     const instructions = await this._instruction.instructionPromise;
@@ -137,6 +186,11 @@ export class ServiceBuilder {
     return tx;
   }
 
+  /**
+   * Executes the instruction this service builder was created for
+   *
+   * @param opts Optionally allows overriding the confirm options
+   */
   async rpc(opts?: ConfirmOptions): Promise<string> {
     const provider = new AnchorProvider(
       this.connection,
@@ -155,7 +209,5 @@ export class ServiceBuilder {
 
 export type BuilderInstruction = {
   instructionPromise: Promise<TransactionInstruction>;
-  didAccountSizeDeltaCallback: (didAccountBefore: null) => number;
-  allowsDynamicAlloc: boolean;
   authority: PublicKey;
 };

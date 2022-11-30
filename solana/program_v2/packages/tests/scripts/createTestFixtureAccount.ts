@@ -40,8 +40,8 @@ const saveAccountToFile = async (publicKeyBase58: string, filename: string) => {
 /**
  * Loads a keypair from file in the fixtures, and optionally airdrop
  *
- * @param publicKey The public key of the keypair to load
- * @param airdrop The amount to airdrop
+ * @param publicKeyBase58 The public key of the keypair to load
+ * @param airdropAmount The amount to airdrop
  */
 const loadKeypair = async (
   publicKeyBase58: string,
@@ -78,8 +78,7 @@ const createTestTokenAccount = async () => {
 
   if (!(await accountExists(mintAccount.publicKey))) {
     // Create and save the mint
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const mint = await createMint(
+    await createMint(
       programProvider.connection,
       mintAuthority,
       mintAuthority.publicKey,
@@ -183,19 +182,11 @@ const createGatekeeperAccount = async (
 
     await service
       .createGatekeeper(network, stakingDataAccount, undefined, {
-        tokenFees: [
-          {
-            token: TEST_MINT,
-            issue: 1,
-            expire: 1,
-            refresh: 1,
-            verify: 1,
-          },
-        ],
+        tokenFees: [],
         authThreshold: 1,
         authKeys: [
           {
-            flags: GatekeeperKeyFlags.AUTH,
+            flags: GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.ISSUE,
             key: authorityKeypair.publicKey,
           },
         ],
@@ -205,10 +196,10 @@ const createGatekeeperAccount = async (
     await setGatekeeperFlagsAndFees(stakingDataAccount, service, 65535, [
       {
         token: TEST_MINT,
-        issue: 0.01,
-        refresh: 0.01,
-        expire: 0.01,
-        verify: 0.01,
+        issue: new anchor.BN(1),
+        refresh: new anchor.BN(1),
+        expire: new anchor.BN(1),
+        verify: new anchor.BN(1),
       },
     ]);
   }
