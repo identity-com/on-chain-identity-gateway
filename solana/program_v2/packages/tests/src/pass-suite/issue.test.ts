@@ -14,6 +14,7 @@ import {
   makeAssociatedTokenAccountsForIssue,
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
+import { TEST_NETWORK } from '../util/constants';
 
 describe('issue', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -246,9 +247,9 @@ describe('issue', () => {
       TEST_NETWORK
     );
 
-    await service.issue(account, subject).rpc();
-    const pass = await findGatewayTokenByAccount(
-      service.getConnection(),
+    await gatekeeperService.issue(account, subject).rpc();
+    const pass = await findGatewayPass(
+      gatekeeperService.getConnection(),
       TEST_NETWORK,
       account
     );

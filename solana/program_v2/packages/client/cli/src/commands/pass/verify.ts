@@ -1,5 +1,5 @@
 // import { GatekeeperService } from '@identity.com/gateway-solana-client';
-import { findGatewayToken } from '@identity.com/gateway-solana-client';
+import { findGatewayPass } from '@identity.com/gateway-solana-client';
 import {
   ExtendedCluster,
   getConnectionByCluster,
@@ -50,7 +50,7 @@ export default class Verify extends Command {
         ? flags.cluster
         : 'localnet';
     const connection = getConnectionByCluster(cluster as ExtendedCluster);
-    const acct = await findGatewayToken(connection, network, subject);
+    const acct = await findGatewayPass(connection, network, subject);
     if (!acct) {
       return this.log('No gateway pass associated with subject');
     }
