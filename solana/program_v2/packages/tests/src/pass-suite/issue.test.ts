@@ -1,11 +1,9 @@
 import {
-  GatekeeperService,
-  NetworkService,
-  AdminService,
-  PassState,
-  PassAccount,
-  onGatewayPass,
   findGatewayPass,
+  GatekeeperService,
+  onGatewayPass,
+  PassAccount,
+  PassState,
 } from '@identity.com/gateway-solana-client';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
