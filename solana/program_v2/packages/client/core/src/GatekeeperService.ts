@@ -214,10 +214,20 @@ export class GatekeeperService extends AbstractService {
    *
    * @param passAccount The ODA for the pass
    * @param authority The gatekeeper authority for setting the pass state
+   * @param splTokenProgram The spl token program
+   * @param mintAccount The mintAccount for the spl token
+   * @param networkTokenAccount The ATA for the network
+   * @param gatekeeperTokenAccount The ATA for the gatekeeper
+   * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
    */
   refreshPass(
     passAccount: PublicKey,
-    authority: PublicKey = this.getWallet().publicKey
+    authority: PublicKey = this.getWallet().publicKey,
+    splTokenProgram?: PublicKey,
+    mintAccount?: PublicKey,
+    networkTokenAccount?: PublicKey,
+    gatekeeperTokenAccount?: PublicKey,
+    funderTokenAccount?: PublicKey
   ): ServiceBuilder {
     const instructionPromise = this.getProgram()
       .methods.refreshPass()
@@ -227,6 +237,11 @@ export class GatekeeperService extends AbstractService {
         authority,
         network: this._network,
         gatekeeper: this._gatekeeper,
+        splTokenProgram: splTokenProgram,
+        mintAccount,
+        networkTokenAccount: networkTokenAccount,
+        gatekeeperTokenAccount: gatekeeperTokenAccount,
+        funderTokenAccount: funderTokenAccount,
       })
       .instruction();
 

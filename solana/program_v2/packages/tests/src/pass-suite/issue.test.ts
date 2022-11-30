@@ -136,8 +136,8 @@ describe('issue', () => {
 
     // Assert
     expect(funderAccount.amount).to.equal(1000n);
-    expect(networkAccount.amount).to.equal(100n);
-    expect(gatekeeperAccount.amount).to.equal(900n);
+    expect(networkAccount.amount).to.equal(1n);
+    expect(gatekeeperAccount.amount).to.equal(999n);
   });
 
   it('listens for a gateway pass to be created', async () => {

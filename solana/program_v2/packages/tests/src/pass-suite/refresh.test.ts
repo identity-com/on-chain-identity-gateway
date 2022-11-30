@@ -6,16 +6,16 @@ import {
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
+import { Account } from '@solana/spl-token/src/state/account';
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   makeAssociatedTokenAccountsForIssue,
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-
+import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { expect } from 'chai';
 chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe('Refresh a pass', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -35,6 +35,9 @@ describe('Refresh a pass', () => {
   let mintAuthority: Keypair;
   let subject: Keypair;
   let mintAccount: Keypair;
+  let gatekeeperAta: Account;
+  let networkAta: Account;
+  let funderAta: Account;
 
   beforeEach(async () => {
     ({
@@ -49,7 +52,7 @@ describe('Refresh a pass', () => {
       subject,
       mintAccount,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
-    const { gatekeeperAta, networkAta, funderAta } =
+    ({ gatekeeperAta, networkAta, funderAta } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
         adminAuthority,
@@ -58,7 +61,7 @@ describe('Refresh a pass', () => {
         gatekeeperAuthority.publicKey,
         mintAccount.publicKey,
         gatekeeperPDA
-      );
+      ));
     await gatekeeperService
       .issue(
         passAccount,
@@ -72,7 +75,8 @@ describe('Refresh a pass', () => {
       .rpc();
   });
 
-  it('Refreshes a pass', async () => {
+  it('should refresh a pass', async () => {
+    // Assemble
     const initialPass = await gatekeeperService.getPassAccount(
       subject.publicKey
     );
@@ -80,26 +84,104 @@ describe('Refresh a pass', () => {
     // Sleep a bit so the expiry time passes
     await new Promise((r) => setTimeout(r, 2000));
 
-    await gatekeeperService.refreshPass(passAccount).rpc();
-
+    // Act
+    await gatekeeperService
+      .refreshPass(
+        passAccount,
+        gatekeeperAuthority.publicKey,
+        TOKEN_PROGRAM_ID,
+        mint,
+        networkAta.address,
+        gatekeeperAta.address,
+        funderAta.address
+      )
+      .rpc();
     const updatedPass = await gatekeeperService.getPassAccount(
       subject.publicKey
     );
 
+    // Assert
     expect(initialPass?.issueTime).to.be.lt(
       (updatedPass as PassAccount).issueTime
     );
   });
 
-  it('Cannot refresh a frozen pass', async () => {
+  it('Should not refresh a frozen pass', async () => {
+    // Assemble
     await gatekeeperService.setState(PassState.Frozen, passAccount).rpc();
-    return expect(gatekeeperService.refreshPass(passAccount).rpc()).to
-      .eventually.be.rejected;
+
+    // Act + Assert
+    return expect(
+      gatekeeperService
+        .refreshPass(
+          passAccount,
+          gatekeeperAuthority.publicKey,
+          TOKEN_PROGRAM_ID,
+          mint,
+          networkAta.address,
+          gatekeeperAta.address,
+          funderAta.address
+        )
+        .rpc()
+    ).to.eventually.be.rejectedWith(/PassNotActive/);
   });
 
-  it('Cannot refresh a revoked pass', async () => {
+  it('should transfer fees to gatekeeper and network', async () => {
+    // Assemble
+    // Act
+    await gatekeeperService
+      .refreshPass(
+        passAccount,
+        gatekeeperAuthority.publicKey,
+        TOKEN_PROGRAM_ID,
+        mint,
+        networkAta.address,
+        gatekeeperAta.address,
+        funderAta.address
+      )
+      .rpc();
+
+    const funderAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(funderAta.address);
+
+    const networkAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(networkAta.address);
+
+    const gatekeeperAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(gatekeeperAta.address);
+
+    const funderAccount = AccountLayout.decode(funderAtaAccountInfo!.data);
+    const networkAccount = AccountLayout.decode(networkAtaAccountInfo!.data);
+    const gatekeeperAccount = AccountLayout.decode(
+      gatekeeperAtaAccountInfo!.data
+    );
+
+    // Assert
+    expect(funderAccount.amount).to.equal(0n);
+    expect(networkAccount.amount).to.equal(1000n);
+    expect(gatekeeperAccount.amount).to.equal(1000n);
+  });
+
+  it('should not refresh a revoked pass', async () => {
+    // Assemble
     await gatekeeperService.setState(PassState.Revoked, passAccount).rpc();
-    return expect(gatekeeperService.refreshPass(passAccount).rpc()).to
-      .eventually.be.rejected;
+
+    // Act + Assert
+    return expect(
+      gatekeeperService
+        .refreshPass(
+          passAccount,
+          gatekeeperAuthority.publicKey,
+          TOKEN_PROGRAM_ID,
+          mint,
+          networkAta.address,
+          gatekeeperAta.address,
+          funderAta.address
+        )
+        .rpc()
+    ).to.eventually.be.rejectedWith(/PassNotActive/);
   });
 });
