@@ -27,18 +27,12 @@ export default class Create extends Command {
       description: 'The cluster you wish to use',
       required: true,
     }),
-    index: Flags.integer({
-      char: 'i',
-      description: 'The index of the network to create',
-      required: true,
-    }),
   };
 
   static args = [];
 
   async run(): Promise<void> {
     const { flags } = await this.parse(Create);
-    const networkIndex = flags.index;
     const cluster =
       flags.cluster === 'localnet' ||
       flags.cluster === 'devnet' ||
@@ -47,7 +41,6 @@ export default class Create extends Command {
       flags.cluster === 'testnet'
         ? flags.cluster
         : 'localnet';
-    this.log(`Network Index: ${networkIndex}`);
     const localSecretKey = await fsPromises.readFile(`${flags.auth}`);
     const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
     const authorityKeypair = Keypair.fromSecretKey(privateKey);
@@ -73,7 +66,6 @@ export default class Create extends Command {
           key: authority.publicKey,
         },
       ],
-      networkIndex: networkIndex,
       gatekeepers: [],
       supportedTokens: [],
     };
