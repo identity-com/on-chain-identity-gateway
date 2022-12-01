@@ -38,9 +38,9 @@ impl Gatekeeper {
             + OC_SIZE_PUBKEY // gatekeeper_network
             + OC_SIZE_PUBKEY // staking account
             + GatekeeperState::ON_CHAIN_SIZE // gatekeeper state
-            + OC_SIZE_VEC_PREFIX + GatekeeperFees::ON_CHAIN_SIZE * fees_count as usize // fees
+            + OC_SIZE_VEC_PREFIX + GatekeeperFees::ON_CHAIN_SIZE * fees_count // fees
             + OC_SIZE_U8 // auth_threshold
-            + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * auth_keys as usize
+            + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * auth_keys
         // auth keys
     }
     // Checks if an authkey has enough authority for an action
