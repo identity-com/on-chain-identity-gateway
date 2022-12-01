@@ -1,3 +1,7 @@
+use anchor_lang::Key;
+use anchor_lang::prelude::*;
+use anchor_spl::token::{Mint, Token, TokenAccount};
+
 use crate::constants::PASS_SEED;
 use crate::errors::{GatekeeperErrors, NetworkErrors};
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass, PassState};
@@ -5,15 +9,13 @@ use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
     get_network_fees,
 };
-use anchor_lang::prelude::*;
-use anchor_lang::Key;
-use anchor_spl::token::{Mint, Token, TokenAccount};
 
 pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) -> Result<()> {
     let pass = &mut ctx.accounts.pass;
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let payer = &mut ctx.accounts.payer;
+    let funder = &mut ctx.accounts.funder;
 
     let spl_token_program = &mut ctx.accounts.spl_token_program;
     let mint_address = &mut ctx.accounts.mint_account.key();
@@ -40,6 +42,7 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
         payer.to_owned(),
         &[&payer.key()],
         fees.0,
+        funder,
     )?;
 
     create_and_invoke_transfer(
@@ -49,6 +52,7 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
         payer.to_owned(),
         &[&payer.key()],
         fees.1,
+        funder,
     )?;
 
     pass.signer_bump = *ctx.bumps.get("pass").unwrap();
@@ -67,12 +71,12 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
 #[instruction(subject: Pubkey, pass_number: u16)]
 pub struct IssuePass<'info> {
     #[account(
-        init,
-        payer = payer,
-        space = Pass::ON_CHAIN_SIZE,
-        seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), & pass_number.to_le_bytes()],
-        constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::ISSUE),
-        bump
+    init,
+    payer = payer,
+    space = Pass::ON_CHAIN_SIZE,
+    seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), & pass_number.to_le_bytes()],
+    constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::ISSUE),
+    bump
     )]
     pub pass: Box<Account<'info, Pass>>,
     pub network: Box<Account<'info, GatekeeperNetwork>>,
@@ -80,6 +84,8 @@ pub struct IssuePass<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub authority: Signer<'info>,
+    #[account(mut)]
+    pub funder: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
     pub mint_account: Account<'info, Mint>,

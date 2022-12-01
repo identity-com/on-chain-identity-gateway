@@ -1,12 +1,14 @@
 //! Utility functions and types.
-use crate::state::{GatekeeperFees, NetworkFees};
-use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
+use std::ops::{Div, Mul};
+
 use anchor_lang::{Key, ToAccountInfo};
+use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
 use anchor_spl::token::{Token, TokenAccount};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::invoke;
 use spl_token::instruction::transfer;
-use std::ops::{Div, Mul};
+
+use crate::state::{GatekeeperFees, NetworkFees};
 
 // pub const OC_SIZE_BOOL: usize = 1;
 pub const OC_SIZE_U8: usize = 1;
@@ -61,12 +63,13 @@ pub fn create_and_invoke_transfer<'a>(
     authority_account: Signer<'a>,
     signer_pubkeys: &[&Pubkey],
     amount: u64,
+    funder: &mut Signer,
 ) -> ProgramResult {
     let transfer_instruction_network_result = transfer(
         &spl_token_address.key(),
         &source_account.key(),
         &destination_account.key(),
-        &authority_account.key(),
+        &funder.key(),
         signer_pubkeys,
         amount,
     );

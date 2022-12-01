@@ -178,13 +178,12 @@ export const makeAssociatedTokenAccountsForIssue = async (
   gatekeeperAta: Account;
   networkAta: Account;
   funderAta: Account;
+  funderKeypair: Keypair;
 }> => {
-  const signer = Keypair.generate();
   const funderKeypair = Keypair.generate();
-
-  await airdrop(connection, signer.publicKey);
   await airdrop(connection, funderKeypair.publicKey);
 
+  console.log('A.1');
   const gatekeeperAta = await getOrCreateAssociatedTokenAccount(
     connection,
     adminAuthority,
@@ -192,35 +191,36 @@ export const makeAssociatedTokenAccountsForIssue = async (
     gatekeeperPDA,
     true
   );
-
+  console.log('A.2');
   const networkAta = await getOrCreateAssociatedTokenAccount(
     connection,
     adminAuthority,
     mintPublicKey,
     adminAuthority.publicKey,
-    true
+    false
   );
-
+  console.log('A.3');
   const funderAta = await getOrCreateAssociatedTokenAccount(
     connection,
     adminAuthority,
     mintPublicKey,
-    gatekeeperPublicKey,
+    funderKeypair.publicKey,
     true
   );
-
+  console.log('A.4');
   await mintTo(
     connection,
-    mintAuthority,
+    funderKeypair,
     mintPublicKey,
     funderAta.address,
     mintAuthority,
     funderMintAmount
   );
-
+  console.log('A.5');
   return {
     gatekeeperAta,
     networkAta,
     funderAta,
+    funderKeypair,
   };
 };

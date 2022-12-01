@@ -40,6 +40,7 @@ pub fn verify_pass(ctx: Context<PassVerify>) -> Result<()> {
         payer.to_owned(),
         &[&payer.key()],
         fees.0,
+        payer,
     )?;
 
     create_and_invoke_transfer(
@@ -49,6 +50,7 @@ pub fn verify_pass(ctx: Context<PassVerify>) -> Result<()> {
         payer.to_owned(),
         &[&payer.key()],
         fees.1,
+        payer,
     )?;
     pass.verify()
 }

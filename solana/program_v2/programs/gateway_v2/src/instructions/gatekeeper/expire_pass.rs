@@ -40,6 +40,7 @@ pub fn expire_pass(ctx: Context<PassExpire>) -> Result<()> {
         payer.to_owned(),
         &[&payer.key()],
         fees.0,
+        payer,
     )?;
 
     create_and_invoke_transfer(
@@ -49,6 +50,7 @@ pub fn expire_pass(ctx: Context<PassExpire>) -> Result<()> {
         payer.to_owned(),
         &[&payer.key()],
         fees.1,
+        payer,
     )?;
 
     pass.expire()

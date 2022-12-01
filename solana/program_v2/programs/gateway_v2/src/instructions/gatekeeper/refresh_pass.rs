@@ -1,3 +1,6 @@
+use anchor_lang::prelude::*;
+use anchor_spl::token::{Mint, Token, TokenAccount};
+
 use crate::constants::PASS_SEED;
 use crate::errors::{GatekeeperErrors, NetworkErrors};
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
@@ -5,8 +8,6 @@ use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
     get_network_fees,
 };
-use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
 
 pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
     let network = &mut ctx.accounts.network;
@@ -40,6 +41,7 @@ pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
         authority.to_owned(),
         &[&authority.key()],
         fees.0,
+        authority,
     )?;
 
     create_and_invoke_transfer(
@@ -49,6 +51,7 @@ pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
         authority.to_owned(),
         &[&authority.key()],
         fees.1,
+        authority,
     )?;
 
     pass.refresh()
@@ -57,10 +60,10 @@ pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
 #[derive(Accounts)]
 pub struct PassRefresh<'info> {
     #[account(
-        seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), &pass.pass_number.to_le_bytes() ],
-        bump,
-        constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::REFRESH),
-        mut
+    seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), & pass.pass_number.to_le_bytes() ],
+    bump,
+    constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::REFRESH),
+    mut
     )]
     pub pass: Box<Account<'info, Pass>>,
     pub authority: Signer<'info>,
