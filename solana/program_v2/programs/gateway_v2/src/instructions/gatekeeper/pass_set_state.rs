@@ -20,7 +20,6 @@ pub struct PassSetState<'info> {
     #[account(
         seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), &pass.pass_number.to_le_bytes() ],
         bump,
-        // TODO: @william commented constraint for now
         constraint = gatekeeper.can_access(&authority, match state {
                 PassState::Active => GatekeeperKeyFlags::UNFREEZE,
                 PassState::Frozen => GatekeeperKeyFlags::FREEZE,
