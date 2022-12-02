@@ -114,11 +114,11 @@ export class GatekeeperService {
   ): Promise<SendableDataTransaction<GatewayToken | null>> {
     const normalizedOptions = await this.optionsWithDefaults(options);
     const gatewayTokenAddress: PublicKey =
-      await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
+      getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
         owner,
         this.gatekeeperNetwork
       );
-    const gatekeeperAccount: PublicKey = await getGatekeeperAccountAddress(
+    const gatekeeperAccount: PublicKey = getGatekeeperAccountAddress(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
     );
@@ -202,7 +202,7 @@ export class GatekeeperService {
     gatewayTokenKey: PublicKey,
     options?: TransactionOptions
   ): Promise<SendableDataTransaction<GatewayToken>> {
-    const gatekeeperAccount = await getGatekeeperAccountAddress(
+    const gatekeeperAccount = getGatekeeperAccountAddress(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
     );
@@ -232,7 +232,7 @@ export class GatekeeperService {
     const instruction: TransactionInstruction = freeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
-      await this.gatekeeperAccountAddress()
+      this.gatekeeperAccountAddress()
     );
     return this.updateToken(gatewayTokenKey, instruction, Action.FREEZE, options);
   }
@@ -251,7 +251,7 @@ export class GatekeeperService {
     const instruction: TransactionInstruction = unfreeze(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
-      await this.gatekeeperAccountAddress()
+      this.gatekeeperAccountAddress()
     );
     return this.updateToken(gatewayTokenKey, instruction, Action.UNFREEZE, options);
   }
@@ -284,7 +284,7 @@ export class GatekeeperService {
     const instruction: TransactionInstruction = updateExpiry(
       gatewayTokenKey,
       this.gatekeeperAuthority.publicKey,
-      await this.gatekeeperAccountAddress(),
+      this.gatekeeperAccountAddress(),
       expireTime
     );
     return this.updateToken(gatewayTokenKey, instruction, Action.REFRESH, options);
@@ -292,7 +292,7 @@ export class GatekeeperService {
 
   // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key
   async isRegistered(): Promise<boolean> {
-    const gatekeeperAccount = await getGatekeeperAccountAddress(
+    const gatekeeperAccount = getGatekeeperAccountAddress(
       this.gatekeeperAuthority.publicKey,
       this.gatekeeperNetwork
     );

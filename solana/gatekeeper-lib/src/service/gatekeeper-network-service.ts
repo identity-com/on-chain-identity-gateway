@@ -66,7 +66,7 @@ export class GatekeeperNetworkService {
     options?: TransactionOptions
   ): Promise<SendableDataTransaction<PublicKey>> {
     const normalizedOptions = await this.optionsWithDefaults(options);
-    const gatekeeperAccount = await getGatekeeperAccountAddress(
+    const gatekeeperAccount = getGatekeeperAccountAddress(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
     );
@@ -92,7 +92,7 @@ export class GatekeeperNetworkService {
     options?: TransactionOptions
   ): Promise<SendableDataTransaction<PublicKey>> {
     const normalizedOptions = await this.optionsWithDefaults(options);
-    const gatekeeperAccount = await getGatekeeperAccountAddress(
+    const gatekeeperAccount = getGatekeeperAccountAddress(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
     );
@@ -120,7 +120,7 @@ export class GatekeeperNetworkService {
    * @returns Promise<boolean>
    */
   async hasGatekeeper(gatekeeperAuthority: PublicKey): Promise<boolean> {
-    const gatekeeperAccount = await getGatekeeperAccountAddress(
+    const gatekeeperAccount = getGatekeeperAccountAddress(
       gatekeeperAuthority,
       this.gatekeeperNetwork.publicKey
     );

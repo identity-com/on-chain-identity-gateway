@@ -1,81 +1,78 @@
-import {
-  AccountInfo,
-  Commitment,
-  Connection,
-  DataSlice,
-  GetProgramAccountsFilter,
-  PublicKey,
-} from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import {
   GATEKEEPER_NONCE_SEED_STRING,
   GATEWAY_TOKEN_ADDRESS_SEED,
   PROGRAM_ID,
   SOLANA_COMMITMENT,
 } from "./constants";
-import { GatewayToken, ProgramAccountResponse, State } from "../types";
+import { GatewayToken, State } from "../types";
 import { GatewayTokenData, GatewayTokenState } from "./GatewayTokenData";
 import { mapEnumToFeatureName, NetworkFeature } from "./GatewayNetworkData";
-import { encode } from "bs58";
 
 /**
  * Derive the address of the gatekeeper PDA for this gatekeeper
  * @param authority The gatekeeper
  * @param network The network
  */
-export const getGatekeeperAccountAddress = async (
+export const getGatekeeperAccountAddress = (
   authority: PublicKey,
   network: PublicKey
-): Promise<PublicKey> => {
-  const publicKeyNonce = await PublicKey.findProgramAddress(
+): PublicKey =>
+  PublicKey.findProgramAddressSync(
     [
       authority.toBuffer(),
       network.toBuffer(),
       Buffer.from(GATEKEEPER_NONCE_SEED_STRING, "utf8"),
     ],
     PROGRAM_ID
-  );
-  return publicKeyNonce[0];
-};
+  )[0];
 
 /**
  * Derive the address of the gateway token PDA for this owner address and optional seed.
  * @param owner The owner of the gateway token
  * @param gatekeeperNetwork The network of the gateway token
- * @param seed An 8-byte seed array, used to add multiple tokens to the same owner. Must be unique to each token, if present
+ * @param index The index of the gateway token (default 0)
  */
-export const getGatewayTokenAddressForOwnerAndGatekeeperNetwork = async (
+export const getGatewayTokenAddressForOwnerAndGatekeeperNetwork = (
   owner: PublicKey,
   gatekeeperNetwork: PublicKey,
-  seed?: Uint8Array
-): Promise<PublicKey> => {
-  const additionalSeed = seed
-    ? Buffer.from(seed)
-    : Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);
-  if (additionalSeed.length != 8) {
+  index = 0
+): PublicKey => {
+  // The index is converted to an 8-byte uint array. Ensure no overflow here.
+  if (index > 2 ** (8 * 8)) {
     throw new Error(
-      "Additional Seed has length " +
-        additionalSeed.length +
+      "index must be < max(8 bytes) when calling getGatewayTokenAddressForOwnerAndGatekeeperNetwork."
+    );
+  }
+
+  const seed = numToBuffer(index);
+  const paddedSeed = Buffer.concat([Buffer.alloc(8 - seed.length, 0), seed]);
+
+  if (paddedSeed.length > 8) {
+    throw new Error(
+      "Seed has length " +
+        paddedSeed.length +
         " instead of 8 when calling getGatewayTokenAddressForOwnerAndGatekeeperNetwork."
     );
   }
   const seeds = [
     owner.toBuffer(),
     Buffer.from(GATEWAY_TOKEN_ADDRESS_SEED, "utf8"),
-    additionalSeed,
+    paddedSeed,
     gatekeeperNetwork.toBuffer(),
   ];
 
-  const publicKeyNonce = await PublicKey.findProgramAddress(seeds, PROGRAM_ID);
-  return publicKeyNonce[0];
+  return PublicKey.findProgramAddressSync(seeds, PROGRAM_ID)[0];
 };
 
 // Based on solana/integration-lib/src/state.rs
 // If the optional the parent-gateway-token field is populated, this value will be
 // 34 (2 + 32) instead. TODO IDCOM-320 restructure the gateway token accounts to put
 // all optional values at the end of the struct to simplify account parsing a little
-const GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET = 2;
+export const GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET = 2;
+
 // As above, if optional fields are present, this will differ. TODO IDCOM-320 fixes this
-const GATEWAY_TOKEN_ACCOUNT_GATEKEEPER_NETWORK_FIELD_OFFSET = 35;
+export const GATEWAY_TOKEN_ACCOUNT_GATEKEEPER_NETWORK_FIELD_OFFSET = 35;
 
 function fromGatewayTokenState(state: GatewayTokenState): State {
   if (!!state.active) return State.ACTIVE;
@@ -100,139 +97,6 @@ export const dataToGatewayToken = (
   );
 
 /**
- * Find all gateway tokens (optionally for a user) on a gatekeeper network, optionally filtering out revoked tokens.
- *
- * Warning - this uses the Solana getProgramAccounts RPC endpoint, which is inefficient and may be
- * blocked by some RPC services.
- *
- * @param connection A solana connection object
- * @param owner The token owner (optional)
- * @param gatekeeperNetwork The network to find a token for
- * @param {boolean=false} includeRevoked If false (default), filter out revoked tokens
- * @param page If a large number of tokens has been issued, the request to the RPC endpoint may time out.
- * In this case, enable pagination by setting page variable
- * Pagination is not supported in the RPC API per-se, but this approximates it by
- * adding another filter on the first byte of the owner address.
- * Each page requests the accounts that match that byte.
- * @returns {Promise<GatewayToken[]>} All tokens for the owner
- */
-export const findGatewayTokens = async (
-  connection: Connection,
-  owner: PublicKey | undefined,
-  gatekeeperNetwork: PublicKey,
-  includeRevoked = false,
-  page?: number
-): Promise<GatewayToken[]> => {
-  // if owner is specified, filter on the gateway token owner
-  const ownerFilter = owner
-    ? {
-        memcmp: {
-          offset: GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET,
-          bytes: owner.toBase58(),
-        },
-      }
-    : undefined;
-
-  // filter on the gatekeeper network
-  const gatekeeperNetworkFilter = {
-    memcmp: {
-      offset: GATEWAY_TOKEN_ACCOUNT_GATEKEEPER_NETWORK_FIELD_OFFSET,
-      bytes: gatekeeperNetwork.toBase58(),
-    },
-  };
-
-  const pageFilter =
-    page !== undefined
-      ? {
-          memcmp: {
-            offset: GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET,
-            bytes: encode([page]),
-          },
-        }
-      : undefined;
-
-  const filters = [ownerFilter, gatekeeperNetworkFilter, pageFilter].filter(
-    Boolean
-  ) as GetProgramAccountsFilter[];
-
-  const accountsResponse = await connection.getProgramAccounts(PROGRAM_ID, {
-    filters,
-  });
-
-  if (!accountsResponse) return [];
-
-  const toGatewayToken = ({
-    pubkey,
-    account,
-  }: ProgramAccountResponse): GatewayToken =>
-    dataToGatewayToken(GatewayTokenData.fromAccount(account.data), pubkey);
-
-  return accountsResponse
-    .map(toGatewayToken)
-    .filter(
-      (gatewayToken) => gatewayToken.state !== State.REVOKED || includeRevoked
-    );
-};
-
-/**
- * Get a gateway token for the owner and network, if it exists.
- * @param connection A solana connection object
- * @param owner The token owner
- * @param gatekeeperNetwork The network to find a token for
- * @returns Promise<GatewayToken | null> An unrevoked token, if one exists for the owner
- */
-export const findGatewayToken = async (
-  connection: Connection,
-  owner: PublicKey,
-  gatekeeperNetwork: PublicKey
-): Promise<GatewayToken | null> => {
-  const gatewayTokenAddress: PublicKey =
-    await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
-      owner,
-      gatekeeperNetwork
-    );
-  const account = await connection.getAccountInfo(
-    gatewayTokenAddress,
-    SOLANA_COMMITMENT
-  );
-
-  if (!account) return null;
-
-  return dataToGatewayToken(
-    GatewayTokenData.fromAccount(account.data),
-    gatewayTokenAddress
-  );
-};
-
-/**
- * Register a callback to be called whenever a gateway token changes state
- * @param connection A solana connection object
- * @param gatewayTokenAddress The address of the gateway token
- * @param callback The callback to register
- * @param commitment The solana commitment level at which to register gateway token changes. Defaults to 'confirmed'
- * @return The subscription id
- */
-export const onGatewayTokenChange = (
-  connection: Connection,
-  gatewayTokenAddress: PublicKey,
-  callback: (gatewayToken: GatewayToken) => void,
-  commitment: Commitment = SOLANA_COMMITMENT
-): number => {
-  const accountCallback = (accountInfo: AccountInfo<Buffer>) => {
-    const gatewayToken = dataToGatewayToken(
-      GatewayTokenData.fromAccount(accountInfo.data),
-      gatewayTokenAddress
-    );
-    callback(gatewayToken);
-  };
-  return connection.onAccountChange(
-    gatewayTokenAddress,
-    accountCallback,
-    commitment
-  );
-};
-
-/**
  * Stops listening to gateway state changes
  * @param connection A solana connection object
  * @param id The subscription id to deregister
@@ -241,28 +105,6 @@ export const removeAccountChangeListener = (
   connection: Connection,
   id: number
 ): Promise<void> => connection.removeAccountChangeListener(id);
-
-/**
- * Lookup the gateway token at a given address
- * @param connection A solana connection object
- * @param gatewayTokenAddress The address of the gateway token
- */
-export const getGatewayToken = async (
-  connection: Connection,
-  gatewayTokenAddress: PublicKey
-): Promise<GatewayToken | null> => {
-  const account = await connection.getAccountInfo(
-    gatewayTokenAddress,
-    SOLANA_COMMITMENT
-  );
-
-  if (!account) return null;
-
-  return dataToGatewayToken(
-    GatewayTokenData.fromAccount(account.data),
-    gatewayTokenAddress
-  );
-};
 
 /**
  * Returns whether or not a gatekeeper exists from a network and authority
@@ -275,7 +117,7 @@ export const gatekeeperExists = async (
   gatekeeperAuthority: PublicKey,
   gatekeeperNetwork: PublicKey
 ): Promise<boolean> => {
-  const gatekeeperAccount = await getGatekeeperAccountAddress(
+  const gatekeeperAccount = getGatekeeperAccountAddress(
     gatekeeperAuthority,
     gatekeeperNetwork
   );
@@ -288,43 +130,38 @@ export const gatekeeperExists = async (
 };
 
 /**
- * Derive the address of the feature PDA
- * @param featureName The name of the feature to set.
- * @param network The network
+ * Converts a number to a buffer of U8 integers, for use in the gateway token address
+ * derivation as the seed value.
+ * @param num
  */
-export const getFeatureAccountAddress = async (
-  feature: NetworkFeature,
-  network: PublicKey
-): Promise<PublicKey> => {
-  const featureName = mapEnumToFeatureName(feature.enum);
+export const numToBuffer = (num: number): Buffer => {
+  const numToArray = (num: number, arr: number[]): number[] => {
+    if (num === 0) return arr;
+    arr.unshift(num % 256);
+    return numToArray(Math.floor(num / 256), arr);
+  };
 
-  const publicKeyNonce = await PublicKey.findProgramAddress(
-    [network.toBytes(), Buffer.from(featureName, "utf8")],
-    PROGRAM_ID
-  );
-  return publicKeyNonce[0];
+  if (num < 0) throw new Error("Cannot convert negative number to buffer");
+  if (Number.isNaN(num)) throw new Error("Cannot convert NaN to buffer");
+
+  if (num === 0) return Buffer.from([0]);
+
+  return Buffer.from(numToArray(num, []));
 };
 
 /**
- * Return true if an address feature exists.
- * @param connection
- * @param feature The feature to check
- * @param network The gatekeeper network
+ * Derive the address of the feature PDA
+ * @param feature The feature to set.
+ * @param network The network
  */
-export const featureExists = async (
-  connection: Connection,
+export const getFeatureAccountAddress = (
   feature: NetworkFeature,
   network: PublicKey
-): Promise<boolean> => {
-  const featureAccountAddress = await getFeatureAccountAddress(
-    feature,
-    network
-  );
+): PublicKey => {
+  const featureName = mapEnumToFeatureName(feature.enum);
 
-  const account = await connection.getAccountInfo(
-    featureAccountAddress,
-    SOLANA_COMMITMENT
-  );
-
-  return account != null && PROGRAM_ID.equals(account.owner);
+  return PublicKey.findProgramAddressSync(
+    [network.toBytes(), Buffer.from(featureName, "utf8")],
+    PROGRAM_ID
+  )[0];
 };
