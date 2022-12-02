@@ -1,4 +1,4 @@
-use crate::errors::NetworkErrors;
+use crate::errors::*;
 use crate::state::*;
 use anchor_lang::prelude::*;
 

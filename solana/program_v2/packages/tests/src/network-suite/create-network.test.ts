@@ -37,6 +37,13 @@ describe('Gateway v2 Client', () => {
       },
       programProvider
     );
+    //   export declare type GatewayServiceOptions = {
+    //     connection?: Connection;
+    //     wallet?: Wallet;
+    //     confirmOptions?: ConfirmOptions;
+    //     clusterType: ExtendedCluster;
+    //     customConfig?: CustomClusterUrlConfig;
+    // };
   });
 
   describe('Create Network', () => {

@@ -91,7 +91,7 @@ describe('Gateway v2 Client', () => {
   });
 
   describe('Set Gatekeeper State', () => {
-    it("Should set a gatekeeper's state", async function () {
+    it.skip("Should set a gatekeeper's state", async function () {
       // retrieves gatekeeper account before state change and stores its state as a const
       let gatekeeperAccount = await networkService.getGatekeeperAccount();
       const initialState = gatekeeperAccount?.state;

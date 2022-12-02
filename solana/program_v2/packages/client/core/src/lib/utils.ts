@@ -86,19 +86,39 @@ export const findGatewayPass = async (
   connection: Connection,
   gatekeeperNetwork: PublicKey,
   subject: PublicKey,
-  passNumber = 0,
-  opts: ConfirmOptions = AnchorProvider.defaultOptions()
+  passNumber = 0
 ): Promise<PassAccount | null> => {
-  const provider = new AnchorProvider(connection, new NonSigningWallet(), opts);
-  const program = await AbstractService.fetchProgram(provider);
-
   const address = await GatekeeperService.createPassAddress(
     subject,
     gatekeeperNetwork,
     passNumber
   );
 
-  return program.account.pass.fetchNullable(address).then(PassAccount.from);
+  return findGatewayTokenByAccount(connection, gatekeeperNetwork, address);
+};
+
+export const findGatewayTokenByAccount = async (
+  connection: Connection,
+  gatekeeperNetwork: PublicKey,
+  passAccount: PublicKey,
+  opts: ConfirmOptions = AnchorProvider.defaultOptions()
+): Promise<PassAccount | null> => {
+  const provider = new AnchorProvider(connection, new NonSigningWallet(), opts);
+  const program = await AbstractService.fetchProgram(provider);
+
+  const acct = await program.account.pass
+    .fetchNullable(passAccount)
+    .then(PassAccount.from);
+  if (!acct) {
+    return null;
+  }
+  if (acct.state !== 0) {
+    return null;
+  }
+  if (acct.network.toBase58() !== gatekeeperNetwork.toBase58()) {
+    return null;
+  }
+  return acct;
 };
 
 /**

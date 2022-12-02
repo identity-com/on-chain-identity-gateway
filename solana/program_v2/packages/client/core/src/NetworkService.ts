@@ -15,7 +15,6 @@ import {
 import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { EnumMapper } from './lib/utils';
 import {
-  GatekeeperKeyFlags,
   GATEKEEPER_SEED,
   GATEWAY_PROGRAM,
   SOLANA_MAINNET,
@@ -159,7 +158,8 @@ export class NetworkService extends AbstractService {
       authThreshold: 1,
       authKeys: [
         {
-          flags: GatekeeperKeyFlags.AUTH,
+          // TODO: Set default flags to 1
+          flags: 65535,
           key: this._gatekeeper,
         },
       ],

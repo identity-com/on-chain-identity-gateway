@@ -88,6 +88,7 @@ export type CreateGatekeeperData = {
 };
 
 export type UpdateGatekeeperData = {
+  // TODO: Maybe set these to be optional
   tokenFees: UpdateFeeStructure;
   authThreshold: number;
   authKeys: UpdateAuthKeytructure;
