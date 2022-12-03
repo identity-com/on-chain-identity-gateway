@@ -259,13 +259,14 @@ export class GatekeeperService {
   /**
    * Returns a gateway token owned by this owner, if it exists
    * @param owner PublicKey
-   *
+   * @param includeRevoked boolean - whether to include revoked tokens (default: false)
    * @returns Promise<GatewayToken | null>
    */
   async findGatewayTokenForOwner(
-    owner: PublicKey
+    owner: PublicKey,
+    includeRevoked = false
   ): Promise<GatewayToken | null> {
-    return findGatewayToken(this.connection, owner, this.gatekeeperNetwork);
+    return findGatewayToken(this.connection, owner, this.gatekeeperNetwork, includeRevoked);
   }
 
   /**
