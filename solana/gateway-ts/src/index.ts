@@ -168,17 +168,20 @@ export const findGatewayTokensForOwnerAndNetwork = async (
  * @param connection A solana connection object
  * @param owner The token owner
  * @param gatekeeperNetwork The network to find a token for
- * @returns Promise<GatewayToken | null> An unrevoked token, if one exists for the owner
+ * @param includeRevoked If false (default), filter out revoked tokens
+ * @returns Promise<GatewayToken | null> A gateway token, if one exists for the owner
  */
 export const findGatewayToken = async (
   connection: Connection,
   owner: PublicKey,
-  gatekeeperNetwork: PublicKey
+  gatekeeperNetwork: PublicKey,
+  includeRevoked = false
 ): Promise<GatewayToken | null> => {
   const gatewayTokens = await findGatewayTokensForOwnerAndNetwork(
     connection,
     owner,
-    gatekeeperNetwork
+    gatekeeperNetwork,
+    includeRevoked
   );
 
   return gatewayTokens.length > 0 ? gatewayTokens[0] : null;

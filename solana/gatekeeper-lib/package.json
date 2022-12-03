@@ -1,14 +1,14 @@
 {
   "name": "@identity.com/solana-gatekeeper-lib",
   "description": "Library and CLI to manage Gateway Tokens",
-  "version": "4.1.0",
+  "version": "4.1.1-alpha.2",
   "author": "dankelleher @dankelleher",
   "bin": {
     "gateway": "./bin/run"
   },
   "bugs": "https://github.com/identity-com/on-chain-identity-gateway/issues",
   "dependencies": {
-    "@identity.com/solana-gateway-ts": "^0.10.0",
+    "@identity.com/solana-gateway-ts": "0.11.0-alpha.2",
     "@oclif/core": "^1.5.2",
     "@oclif/plugin-help": "^5.1.11",
     "@oclif/plugin-plugins": "^2.0.1",
