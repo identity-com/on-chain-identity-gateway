@@ -2,7 +2,6 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::constants::PASS_SEED;
-use crate::errors::{GatekeeperErrors, NetworkErrors};
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
@@ -21,18 +20,9 @@ pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
     let gatekeeper_ata = &mut ctx.accounts.gatekeeper_token_account;
     let funder_ata = &mut ctx.accounts.funder_token_account;
 
-    // TODO(julian): Fix error handling
-    // IDCOM-2223
-    let raw_gatekeeper_fee = match get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address) {
-        Some(fee) => fee.refresh,
-        None => return Err(error!(GatekeeperErrors::GatekeeperFeeNotProvided)),
-    };
-
-    let raw_network_fee = match get_network_fees(&network.fees, *mint_address) {
-        Some(fee) => fee.refresh,
-        None => return Err(error!(NetworkErrors::NetworkFeeNotProvided)),
-    };
-    let fees = calculate_network_and_gatekeeper_fee(raw_gatekeeper_fee, raw_network_fee);
+    let absolut_fee = get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address)?.refresh;
+    let network_percentage = get_network_fees(&network.fees, *mint_address)?.refresh;
+    let fees = calculate_network_and_gatekeeper_fee(absolut_fee, network_percentage);
 
     create_and_invoke_transfer(
         spl_token_program.to_owned(),
@@ -41,7 +31,6 @@ pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
         authority.to_owned(),
         &[&authority.key()],
         fees.0,
-        authority,
     )?;
 
     create_and_invoke_transfer(
@@ -51,7 +40,6 @@ pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
         authority.to_owned(),
         &[&authority.key()],
         fees.1,
-        authority,
     )?;
 
     pass.refresh()

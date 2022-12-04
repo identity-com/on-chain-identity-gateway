@@ -284,6 +284,7 @@ impl OnChainSize for NetworkAuthKey {
     const ON_CHAIN_SIZE: usize = OC_SIZE_U16 + OC_SIZE_PUBKEY;
 }
 
+// TODO(julian): Change name to FeePercentage
 /// Fees that a [`GatekeeperNetwork`] can charge
 #[derive(Clone, Debug, Default, Eq, PartialEq, Copy, AnchorDeserialize, AnchorSerialize)]
 pub struct NetworkFees {

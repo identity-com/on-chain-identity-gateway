@@ -2,6 +2,7 @@
 use std::ops::{Div, Mul};
 
 use anchor_lang::{Key, ToAccountInfo};
+use crate::errors::{GatekeeperErrors, NetworkErrors};
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
 use anchor_spl::token::{Token, TokenAccount};
 use solana_program::entrypoint::ProgramResult;
@@ -34,25 +35,25 @@ pub trait OnChainSizeWithArg<Arg> {
     fn on_chain_size_with_arg(arg: Arg) -> usize;
 }
 
-// TODO(julian): Add descriptive error message on fail here
-pub fn get_gatekeeper_fees(fees: &[GatekeeperFees], mint: Pubkey) -> Option<&GatekeeperFees> {
-    fees.iter().find(|&&x| x.token == mint)
+pub fn get_gatekeeper_fees(fees: &[GatekeeperFees], mint: Pubkey) -> Result<&GatekeeperFees, GatekeeperErrors> {
+    fees.iter().find(|&&x| x.token == mint).ok_or(GatekeeperErrors::FeesNotProvided)
 }
 
-// TODO(julian): Add descriptive error message on fail
-pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> Option<&NetworkFees> {
-    fees.iter().find(|&&x| x.token == mint)
+pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> Result<&NetworkFees, NetworkErrors> {
+    fees.iter().find(|&&x| x.token == mint).ok_or(NetworkErrors::FeesNotProvided)
 }
 
 /// calculate_network_and_gatekeeper_fee
 /// Returns two fees in the correct unit
 /// First result returns the fee for the network_fee
 /// Second result returns the gatekeeper fee
+/// Split -> percent
 pub fn calculate_network_and_gatekeeper_fee(fee: u64, split: u16) -> (u64, u64) {
+    let split = if split > 10000 { 10000 } else { split };
     let percentage = (split as f64).div(10000_f64);
     let network_fee = (fee as f64).mul(percentage);
 
-    let gatekeeper_fee = (fee as f64) - network_fee;
+    let gatekeeper_fee = (fee) - (network_fee as u64);
     (network_fee as u64, gatekeeper_fee as u64)
 }
 
@@ -63,23 +64,18 @@ pub fn create_and_invoke_transfer<'a>(
     authority_account: Signer<'a>,
     signer_pubkeys: &[&Pubkey],
     amount: u64,
-    funder: &mut Signer,
 ) -> ProgramResult {
     let transfer_instruction_network_result = transfer(
         &spl_token_address.key(),
         &source_account.key(),
         &destination_account.key(),
-        &funder.key(),
+        &authority_account.key(),
         signer_pubkeys,
         amount,
-    );
-    let instruction = match transfer_instruction_network_result {
-        Ok(instruction) => instruction,
-        Err(error) => panic!("Transfer failed: {:?}", error),
-    };
+    )?;
 
     invoke(
-        &instruction,
+        &transfer_instruction_network_result,
         &[
             source_account.to_account_info(),
             destination_account.to_account_info(),
@@ -92,6 +88,13 @@ pub fn create_and_invoke_transfer<'a>(
 #[cfg(test)]
 mod tests {
     use crate::state::{GatekeeperFees, NetworkFees};
+
+    #[test]
+    fn get_fees_test_split_100() {
+        let fees = crate::util::calculate_network_and_gatekeeper_fee(100, 10000);
+        assert_eq!(fees.0, 100);
+        assert_eq!(fees.1, 0);
+    }
 
     #[test]
     fn get_fees_test() {

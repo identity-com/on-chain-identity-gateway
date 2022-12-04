@@ -17,7 +17,7 @@ pub enum NetworkErrors {
     #[msg("The network account is in use")]
     AccountInUse,
     #[msg("Network Fee was not provided")]
-    NetworkFeeNotProvided,
+    FeesNotProvided,
 }
 
 #[error_code]
@@ -35,7 +35,7 @@ pub enum GatekeeperErrors {
     #[msg("Gatekeeper not found")]
     InvalidGatekeeper,
     #[msg("Gatekeeper Fee was not provided")]
-    GatekeeperFeeNotProvided,
+    FeesNotProvided,
 }
 
 #[error_code]

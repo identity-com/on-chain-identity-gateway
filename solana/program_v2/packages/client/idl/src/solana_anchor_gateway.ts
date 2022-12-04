@@ -320,8 +320,8 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "funder",
-          "isMut": false,
+          "name": "feePayer",
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -1448,7 +1448,7 @@ export type SolanaAnchorGateway = {
             "name": "InvalidGatekeeper"
           },
           {
-            "name": "GatekeeperFeeNotProvided"
+            "name": "FeesNotProvided"
           }
         ]
       }
@@ -1555,7 +1555,7 @@ export type SolanaAnchorGateway = {
     },
     {
       "code": 6007,
-      "name": "NetworkFeeNotProvided",
+      "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
     }
   ]
@@ -1883,8 +1883,8 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "funder",
-          "isMut": false,
+          "name": "feePayer",
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -3011,7 +3011,7 @@ export const IDL: SolanaAnchorGateway = {
             "name": "InvalidGatekeeper"
           },
           {
-            "name": "GatekeeperFeeNotProvided"
+            "name": "FeesNotProvided"
           }
         ]
       }
@@ -3118,7 +3118,7 @@ export const IDL: SolanaAnchorGateway = {
     },
     {
       "code": 6007,
-      "name": "NetworkFeeNotProvided",
+      "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
     }
   ]

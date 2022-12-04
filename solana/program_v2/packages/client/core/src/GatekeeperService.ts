@@ -140,8 +140,8 @@ export class GatekeeperService extends AbstractService {
    * @param mint The mintAccount for the spl token
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
-   * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
-   * @param funder
+   * @param funderTokenAccount The ATA for the feePayer of the network and gatekeeper fees
+   * @param feePayer The payer of the network and gatekeeper fees
    * @param passNumber The pass number to allow for multiple passes in a network
    * @param authority The authority creating the account
    * @param payer The fee payer for creating the pass
@@ -154,13 +154,11 @@ export class GatekeeperService extends AbstractService {
     networkTokenAccount?: PublicKey,
     gatekeeperTokenAccount?: PublicKey,
     funderTokenAccount?: PublicKey,
-    funder?: PublicKey,
+    feePayer?: PublicKey,
     passNumber = 0,
     authority: PublicKey = this.getWallet().publicKey,
     payer = authority
   ): ServiceBuilder {
-    console.log(funder?.toBase58());
-
     const instructionPromise = this.getProgram()
       .methods.issuePass(subject, passNumber)
       .accounts({
@@ -175,7 +173,7 @@ export class GatekeeperService extends AbstractService {
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
-        funder,
+        feePayer,
       })
       .instruction();
 
