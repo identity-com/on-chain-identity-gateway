@@ -1,6 +1,4 @@
 extends = ["./Test.base.toml"]
 
-# # TODO: Remove this (IDCOM-2108)
-# [[test.validator.account]]
-# address = "7XWvA2XCeHw1HK7cu1ZECqodnyJLWaNsXSrGcwyDB65R"
-# filename = "./fixtures/accounts/idl.json"
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/src/**/**/*.ts"
