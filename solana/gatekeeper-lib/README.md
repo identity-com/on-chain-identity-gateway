@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-lib
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-lib/4.1.1-alpha.2 darwin-arm64 node-v16.17.1
+@identity.com/solana-gatekeeper-lib/4.1.1-alpha.3 darwin-arm64 node-v16.17.1
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -77,7 +77,7 @@ EXAMPLE
   $ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.2/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.3/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway freeze GATEWAYTOKEN`
 
@@ -111,7 +111,7 @@ EXAMPLE
   Frozen
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.2/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.3/dist/commands/freeze.ts)_
 
 ## `gateway help [COMMAND]`
 
@@ -164,7 +164,7 @@ EXAMPLE
   $ gateway issue EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv2QJjjrzdPSrcZUuAH2KrEU61crWz49KnSLSzwjDUnLSV
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.2/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.3/dist/commands/issue.ts)_
 
 ## `gateway network-feature FEATURE`
 
@@ -196,7 +196,7 @@ EXAMPLE
   $ gateway network-feature userTokenExpiry
 ```
 
-_See code: [dist/commands/network-feature.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.2/dist/commands/network-feature.ts)_
+_See code: [dist/commands/network-feature.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.3/dist/commands/network-feature.ts)_
 
 ## `gateway plugins`
 
@@ -369,7 +369,7 @@ EXAMPLE
   Refreshed
 ```
 
-_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.2/dist/commands/refresh.ts)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.3/dist/commands/refresh.ts)_
 
 ## `gateway revoke GATEWAYTOKEN`
 
@@ -403,7 +403,7 @@ EXAMPLE
   Revoked
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.2/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.3/dist/commands/revoke.ts)_
 
 ## `gateway revoke-gatekeeper ADDRESS`
 
@@ -436,7 +436,7 @@ EXAMPLE
   $ gateway revoke-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
 ```
 
-_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.2/dist/commands/revoke-gatekeeper.ts)_
+_See code: [dist/commands/revoke-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.3/dist/commands/revoke-gatekeeper.ts)_
 
 ## `gateway unfreeze GATEWAYTOKEN`
 
@@ -470,7 +470,7 @@ EXAMPLE
   Unfrozen
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.2/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.3/dist/commands/unfreeze.ts)_
 
 ## `gateway verify OWNER`
 
@@ -506,7 +506,7 @@ EXAMPLE
   }
 ```
 
-_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.2/dist/commands/verify.ts)_
+_See code: [dist/commands/verify.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v4.1.1-alpha.3/dist/commands/verify.ts)_
 
 ## `gateway version`
 
