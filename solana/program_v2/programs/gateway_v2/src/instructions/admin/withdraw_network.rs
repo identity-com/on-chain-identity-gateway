@@ -1,4 +1,4 @@
-use crate::state::{GatekeeperNetwork};
+use crate::state::GatekeeperNetwork;
 use crate::util::create_and_invoke_transfer;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount};
