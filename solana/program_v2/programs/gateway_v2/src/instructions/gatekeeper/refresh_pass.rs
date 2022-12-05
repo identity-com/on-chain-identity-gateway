@@ -20,9 +20,9 @@ pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
     let gatekeeper_ata = &mut ctx.accounts.gatekeeper_token_account;
     let funder_ata = &mut ctx.accounts.funder_token_account;
 
-    let absolut_fee = get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address)?.refresh;
+    let absolute_fee = get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address)?.refresh;
     let network_percentage = get_network_fees(&network.fees, *mint_address)?.refresh;
-    let fees = calculate_network_and_gatekeeper_fee(absolut_fee, network_percentage);
+    let fees = calculate_network_and_gatekeeper_fee(absolute_fee, network_percentage);
 
     create_and_invoke_transfer(
         spl_token_program.to_owned(),

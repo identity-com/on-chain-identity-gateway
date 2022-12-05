@@ -225,11 +225,6 @@ describe.only('issue', () => {
       heardCreationCallback
     );
 
-    const account = await GatekeeperService.createPassAddress(
-      subject.publicKey,
-      networkAuthority.publicKey
-    );
-
     gatekeeperService
       .issue(
         passAccount,
