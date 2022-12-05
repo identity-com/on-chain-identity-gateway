@@ -17,7 +17,7 @@ import {
 } from '../test-set-up';
 import { setGatekeeperFlagsAndFees } from '../util/lib';
 
-describe.only('issue', () => {
+describe('issue', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
