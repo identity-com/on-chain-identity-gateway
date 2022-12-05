@@ -3,7 +3,6 @@ use crate::state::{
     GatekeeperNetwork, NetworkAuthKey, NetworkFees, NetworkKeyFlags, SupportedToken,
 };
 use anchor_lang::prelude::*;
-use anchor_spl::token::TokenAccount;
 
 pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;

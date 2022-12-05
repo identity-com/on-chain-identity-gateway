@@ -1,7 +1,7 @@
-use crate::state::{GatekeeperNetwork, Pass};
+use crate::state::{GatekeeperNetwork};
 use crate::util::create_and_invoke_transfer;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Token, TokenAccount, Transfer};
+use anchor_spl::token::{Token, TokenAccount};
 
 pub fn withdraw_network(ctx: Context<WithdrawNetwork>, mut amount: u64) -> Result<()> {
     // Amount 0 means withdraw all
