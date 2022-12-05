@@ -1,9 +1,9 @@
 //! Utility functions and types.
 use std::ops::{Div, Mul};
 
-use anchor_lang::{Key, ToAccountInfo};
 use crate::errors::{GatekeeperErrors, NetworkErrors};
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
+use anchor_lang::{Key, ToAccountInfo};
 use anchor_spl::token::{Token, TokenAccount};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::invoke;
@@ -35,12 +35,19 @@ pub trait OnChainSizeWithArg<Arg> {
     fn on_chain_size_with_arg(arg: Arg) -> usize;
 }
 
-pub fn get_gatekeeper_fees(fees: &[GatekeeperFees], mint: Pubkey) -> Result<&GatekeeperFees, GatekeeperErrors> {
-    fees.iter().find(|&&x| x.token == mint).ok_or(GatekeeperErrors::FeesNotProvided)
+pub fn get_gatekeeper_fees(
+    fees: &[GatekeeperFees],
+    mint: Pubkey,
+) -> Result<&GatekeeperFees, GatekeeperErrors> {
+    fees.iter()
+        .find(|&&x| x.token == mint)
+        .ok_or(GatekeeperErrors::FeesNotProvided)
 }
 
 pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> Result<&NetworkFees, NetworkErrors> {
-    fees.iter().find(|&&x| x.token == mint).ok_or(NetworkErrors::FeesNotProvided)
+    fees.iter()
+        .find(|&&x| x.token == mint)
+        .ok_or(NetworkErrors::FeesNotProvided)
 }
 
 /// calculate_network_and_gatekeeper_fee
