@@ -197,7 +197,7 @@ export class AdminService extends AbstractService {
 
   withdraw(
     amount: number,
-    authority: PublicKey = this._wallet.publicKey,
+    authority: PublicKey,
     tokenProgram: PublicKey,
     networkTokenAccount: PublicKey,
     toTokenAccount: PublicKey

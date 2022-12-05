@@ -197,7 +197,7 @@ export const makeAssociatedTokenAccountsForIssue = async (
     connection,
     adminAuthority,
     mintPublicKey,
-    networkPublicKey,
+    adminAuthority.publicKey,
     true
   );
 

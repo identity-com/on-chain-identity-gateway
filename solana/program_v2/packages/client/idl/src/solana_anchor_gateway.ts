@@ -63,8 +63,8 @@ export type SolanaAnchorGateway = {
       "accounts": [
         {
           "name": "network",
-          "isMut": true,
-          "isSigner": true
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "authority",
@@ -1621,8 +1621,8 @@ export const IDL: SolanaAnchorGateway = {
       "accounts": [
         {
           "name": "network",
-          "isMut": true,
-          "isSigner": true
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "authority",
