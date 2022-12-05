@@ -9,7 +9,7 @@ use solana_program::entrypoint::ProgramResult;
 use solana_program::program::invoke;
 use spl_token::instruction::transfer;
 
-use crate::state::{GatekeeperFees, NetworkFees};
+use crate::state::{GatekeeperFees, NetworkFeesPercentage};
 
 // pub const OC_SIZE_BOOL: usize = 1;
 pub const OC_SIZE_U8: usize = 1;
@@ -44,7 +44,10 @@ pub fn get_gatekeeper_fees(
         .ok_or(GatekeeperErrors::FeesNotProvided)
 }
 
-pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> Result<&NetworkFees, NetworkErrors> {
+pub fn get_network_fees(
+    fees: &[NetworkFeesPercentage],
+    mint: Pubkey,
+) -> Result<&NetworkFeesPercentage, NetworkErrors> {
     fees.iter()
         .find(|&&x| x.token == mint)
         .ok_or(NetworkErrors::FeesNotProvided)
@@ -54,10 +57,9 @@ pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> Result<&NetworkFe
 /// Returns two fees in the correct unit
 /// First result returns the fee for the network_fee
 /// Second result returns the gatekeeper fee
-/// Split -> percent
-pub fn calculate_network_and_gatekeeper_fee(fee: u64, split: u16) -> (u64, u64) {
-    let split = if split > 10000 { 10000 } else { split };
-    let percentage = (split as f64).div(10000_f64);
+pub fn calculate_network_and_gatekeeper_fee(fee: u64, percent: u16) -> (u64, u64) {
+    let percent = if percent > 10000 { 10000 } else { percent };
+    let percentage = (percent as f64).div(10000_f64);
     let network_fee = (fee as f64).mul(percentage);
 
     let gatekeeper_fee = (fee) - (network_fee as u64);
@@ -94,7 +96,7 @@ pub fn create_and_invoke_transfer<'a>(
 
 #[cfg(test)]
 mod tests {
-    use crate::state::{GatekeeperFees, NetworkFees};
+    use crate::state::{GatekeeperFees, NetworkFeesPercentage};
 
     #[test]
     fn get_fees_test_split_100() {
@@ -155,14 +157,14 @@ mod tests {
         let mint = "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtveqn4esJGX"
             .parse()
             .unwrap();
-        let fee1 = NetworkFees {
+        let fee1 = NetworkFeesPercentage {
             token: mint,
             issue: 100,
             verify: 10,
             refresh: 10,
             expire: 10,
         };
-        let fee2 = NetworkFees {
+        let fee2 = NetworkFeesPercentage {
             token: "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtvdqn4esJGX"
                 .parse()
                 .unwrap(),
@@ -171,7 +173,7 @@ mod tests {
             refresh: 0,
             expire: 0,
         };
-        let fees: Vec<NetworkFees> = vec![fee1, fee2];
+        let fees: Vec<NetworkFeesPercentage> = vec![fee1, fee2];
         let fee = crate::util::get_network_fees(&fees, mint).unwrap();
         assert_eq!(fee, &fee1);
     }

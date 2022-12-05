@@ -810,7 +810,7 @@ export type SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -970,7 +970,7 @@ export type SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -1105,7 +1105,7 @@ export type SolanaAnchorGateway = {
             "name": "add",
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -1379,7 +1379,7 @@ export type SolanaAnchorGateway = {
       }
     },
     {
-      "name": "NetworkFees",
+      "name": "NetworkFeesPercentage",
       "docs": [
         "Fees that a [`GatekeeperNetwork`] can charge"
       ],
@@ -2373,7 +2373,7 @@ export const IDL: SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -2533,7 +2533,7 @@ export const IDL: SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -2668,7 +2668,7 @@ export const IDL: SolanaAnchorGateway = {
             "name": "add",
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -2942,7 +2942,7 @@ export const IDL: SolanaAnchorGateway = {
       }
     },
     {
-      "name": "NetworkFees",
+      "name": "NetworkFeesPercentage",
       "docs": [
         "Fees that a [`GatekeeperNetwork`] can charge"
       ],

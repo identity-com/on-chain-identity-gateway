@@ -22,7 +22,7 @@ pub struct GatekeeperNetwork {
     /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.
     pub network_features: u32,
     /// The fees for this network
-    pub fees: Vec<NetworkFees>,
+    pub fees: Vec<NetworkFeesPercentage>,
     // A set of all supported tokens on the network
     pub supported_tokens: Vec<SupportedToken>,
     /// A set of all active gatekeepers in the network
@@ -69,7 +69,7 @@ impl GatekeeperNetwork {
             + OC_SIZE_U8 // auth_threshold
             + OC_SIZE_U64 // pass_expire_time
             + OC_SIZE_U8 // signer_bump
-            + OC_SIZE_VEC_PREFIX + NetworkFees::ON_CHAIN_SIZE * fees_count // fees
+            + OC_SIZE_VEC_PREFIX + NetworkFeesPercentage::ON_CHAIN_SIZE * fees_count // fees
             + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * auth_keys // auth_keys
             + OC_SIZE_VEC_PREFIX + (OC_SIZE_PUBKEY * gatekeepers) // gatekeeper list
             + OC_SIZE_U16 // network_index
@@ -284,10 +284,9 @@ impl OnChainSize for NetworkAuthKey {
     const ON_CHAIN_SIZE: usize = OC_SIZE_U16 + OC_SIZE_PUBKEY;
 }
 
-// TODO(julian): Change name to FeePercentage
 /// Fees that a [`GatekeeperNetwork`] can charge
 #[derive(Clone, Debug, Default, Eq, PartialEq, Copy, AnchorDeserialize, AnchorSerialize)]
-pub struct NetworkFees {
+pub struct NetworkFeesPercentage {
     /// The token for the fee, `None` means fee is invalid
     pub token: Pubkey,
     /// Percentage taken on issue. In Hundredths of a percent (0.01% or 0.0001).
@@ -300,7 +299,7 @@ pub struct NetworkFees {
     pub verify: u16,
 }
 
-impl OnChainSize for NetworkFees {
+impl OnChainSize for NetworkFeesPercentage {
     const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + OC_SIZE_U16 * 4;
 }
 
