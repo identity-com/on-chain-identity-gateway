@@ -32,6 +32,10 @@ pub mod solana_anchor_gateway {
         instructions::admin::update_network(ctx, &data)
     }
 
+    pub fn withdraw_network(ctx: Context<WithdrawNetwork>, amount: u64) -> Result<()> {
+        instructions::admin::withdraw_network(ctx, amount)
+    }
+
     pub fn close_network(ctx: Context<CloseNetworkAccount>) -> Result<()> {
         instructions::admin::close_network(ctx)
     }
