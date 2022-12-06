@@ -1,6 +1,6 @@
 use crate::errors::NetworkErrors;
 use crate::state::{
-    GatekeeperNetwork, NetworkAuthKey, NetworkFees, NetworkKeyFlags, SupportedToken,
+    GatekeeperNetwork, NetworkAuthKey, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
 };
 use anchor_lang::prelude::*;
 
@@ -42,7 +42,7 @@ pub struct CreateNetworkData {
     /// The [`GatekeeperNetwork::pass_expire_time`].
     pub pass_expire_time: i64,
     /// The [`GatekeeperNetwork::fees`].
-    pub fees: Vec<NetworkFees>,
+    pub fees: Vec<NetworkFeesPercentage>,
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: Vec<NetworkAuthKey>,
     pub supported_tokens: Vec<SupportedToken>,

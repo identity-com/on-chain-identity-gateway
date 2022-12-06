@@ -320,6 +320,11 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
+          "name": "feePayer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -805,7 +810,7 @@ export type SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -965,7 +970,7 @@ export type SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -1100,7 +1105,7 @@ export type SolanaAnchorGateway = {
             "name": "add",
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -1374,7 +1379,7 @@ export type SolanaAnchorGateway = {
       }
     },
     {
-      "name": "NetworkFees",
+      "name": "NetworkFeesPercentage",
       "docs": [
         "Fees that a [`GatekeeperNetwork`] can charge"
       ],
@@ -1443,7 +1448,7 @@ export type SolanaAnchorGateway = {
             "name": "InvalidGatekeeper"
           },
           {
-            "name": "GatekeeperFeeNotProvided"
+            "name": "FeesNotProvided"
           }
         ]
       }
@@ -1550,7 +1555,7 @@ export type SolanaAnchorGateway = {
     },
     {
       "code": 6007,
-      "name": "NetworkFeeNotProvided",
+      "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
     }
   ]
@@ -1878,6 +1883,11 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
+          "name": "feePayer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -2363,7 +2373,7 @@ export const IDL: SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -2523,7 +2533,7 @@ export const IDL: SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -2658,7 +2668,7 @@ export const IDL: SolanaAnchorGateway = {
             "name": "add",
             "type": {
               "vec": {
-                "defined": "NetworkFees"
+                "defined": "NetworkFeesPercentage"
               }
             }
           },
@@ -2932,7 +2942,7 @@ export const IDL: SolanaAnchorGateway = {
       }
     },
     {
-      "name": "NetworkFees",
+      "name": "NetworkFeesPercentage",
       "docs": [
         "Fees that a [`GatekeeperNetwork`] can charge"
       ],
@@ -3001,7 +3011,7 @@ export const IDL: SolanaAnchorGateway = {
             "name": "InvalidGatekeeper"
           },
           {
-            "name": "GatekeeperFeeNotProvided"
+            "name": "FeesNotProvided"
           }
         ]
       }
@@ -3108,7 +3118,7 @@ export const IDL: SolanaAnchorGateway = {
     },
     {
       "code": 6007,
-      "name": "NetworkFeeNotProvided",
+      "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
     }
   ]

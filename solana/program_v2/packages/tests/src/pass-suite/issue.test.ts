@@ -1,6 +1,7 @@
 import {
   findGatewayPass,
   GatekeeperService,
+  NetworkService,
   onGatewayPass,
   PassAccount,
   PassState,
@@ -14,6 +15,7 @@ import {
   makeAssociatedTokenAccountsForIssue,
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
+import { setGatekeeperFlagsAndFees } from '../util/lib';
 
 describe('issue', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -22,8 +24,10 @@ describe('issue', () => {
   const programProvider = program.provider as anchor.AnchorProvider;
 
   let gatekeeperService: GatekeeperService;
+  let networkService: NetworkService;
 
   let gatekeeperPDA: PublicKey;
+  let stakingPDA: PublicKey;
   let passAccount: PublicKey;
   let mint: PublicKey;
 
@@ -37,7 +41,9 @@ describe('issue', () => {
   beforeEach(async () => {
     ({
       gatekeeperService,
+      networkService,
       gatekeeperPDA,
+      stakingPDA,
       passAccount,
       mint,
       adminAuthority,
@@ -51,7 +57,7 @@ describe('issue', () => {
 
   it('should issue pass', async () => {
     // Assemble
-    const { gatekeeperAta, networkAta, funderAta } =
+    const { gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
         adminAuthority,
@@ -71,9 +77,12 @@ describe('issue', () => {
         mint,
         gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
+
     const pass = await gatekeeperService.getPassAccount(subject.publicKey);
 
     // Assert
@@ -92,7 +101,7 @@ describe('issue', () => {
 
   it('should transfer fees correctly to network and gatekeeper', async () => {
     // Assemble
-    const { gatekeeperAta, networkAta, funderAta } =
+    const { gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
         adminAuthority,
@@ -112,10 +121,11 @@ describe('issue', () => {
         mint,
         gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        funderAta.address,
+        funderKeypair.publicKey
       )
-      .rpc()
-      .catch((e) => console.log(e));
+      .withPartialSigners(funderKeypair)
+      .rpc();
     const funderAtaAccountInfo = await gatekeeperService
       .getConnection()
       .getAccountInfo(funderAta.address);
@@ -140,10 +150,56 @@ describe('issue', () => {
     expect(gatekeeperAccount.amount).to.equal(999n);
   });
 
+  it('should issue a free pass', async () => {
+    // Assemble
+    const { gatekeeperAta, networkAta, funderAta, funderKeypair } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
+    await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
+      {
+        token: mint,
+        issue: new anchor.BN(0),
+        refresh: new anchor.BN(0),
+        expire: new anchor.BN(0),
+        verify: new anchor.BN(0),
+      },
+    ]);
+
+    // Act
+    await gatekeeperService
+      .issue(
+        passAccount,
+        subject.publicKey,
+        TOKEN_PROGRAM_ID,
+        mint,
+        gatekeeperAta.address,
+        networkAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
+      )
+      .withPartialSigners(funderKeypair)
+      .rpc();
+
+    const funderAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(funderAta.address);
+    const funderAccount = AccountLayout.decode(funderAtaAccountInfo!.data);
+
+    // Assert
+    expect(funderAccount.amount).to.equal(2000n);
+  });
+
   it('listens for a gateway pass to be created', async () => {
     // The promise will resolve when the token is created
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    const { gatekeeperAta, networkAta, funderAta } =
+    const { gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
         adminAuthority,
@@ -169,21 +225,18 @@ describe('issue', () => {
       heardCreationCallback
     );
 
-    const account = await GatekeeperService.createPassAddress(
-      subject.publicKey,
-      networkAuthority.publicKey
-    );
-
     gatekeeperService
       .issue(
-        account,
+        passAccount,
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
         gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
 
     await heardCreation;
@@ -195,7 +248,7 @@ describe('issue', () => {
 
   it('Finds a gateway token after issue', async () => {
     // Assemble
-    const { gatekeeperAta, networkAta, funderAta } =
+    const { gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
         adminAuthority,
@@ -214,8 +267,10 @@ describe('issue', () => {
         mint,
         gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
 
     // Act

@@ -178,11 +178,9 @@ export const makeAssociatedTokenAccountsForIssue = async (
   gatekeeperAta: Account;
   networkAta: Account;
   funderAta: Account;
+  funderKeypair: Keypair;
 }> => {
-  const signer = Keypair.generate();
   const funderKeypair = Keypair.generate();
-
-  await airdrop(connection, signer.publicKey);
   await airdrop(connection, funderKeypair.publicKey);
 
   const gatekeeperAta = await getOrCreateAssociatedTokenAccount(
@@ -198,20 +196,20 @@ export const makeAssociatedTokenAccountsForIssue = async (
     adminAuthority,
     mintPublicKey,
     adminAuthority.publicKey,
-    true
+    false
   );
 
   const funderAta = await getOrCreateAssociatedTokenAccount(
     connection,
     adminAuthority,
     mintPublicKey,
-    gatekeeperPublicKey,
+    funderKeypair.publicKey,
     true
   );
 
   await mintTo(
     connection,
-    mintAuthority,
+    funderKeypair,
     mintPublicKey,
     funderAta.address,
     mintAuthority,
@@ -222,5 +220,6 @@ export const makeAssociatedTokenAccountsForIssue = async (
     gatekeeperAta,
     networkAta,
     funderAta,
+    funderKeypair,
   };
 };

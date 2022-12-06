@@ -2,7 +2,6 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::constants::PASS_SEED;
-use crate::errors::{GatekeeperErrors, NetworkErrors};
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
@@ -21,17 +20,9 @@ pub fn verify_pass(ctx: Context<PassVerify>) -> Result<()> {
     let gatekeeper_ata = &mut ctx.accounts.gatekeeper_token_account;
     let funder_ata = &mut ctx.accounts.funder_token_account;
 
-    // TODO(julian): Fix error handling
-    let raw_gatekeeper_fee = match get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address) {
-        Some(fee) => fee.verify,
-        None => return Err(error!(GatekeeperErrors::GatekeeperFeeNotProvided)),
-    };
-
-    let raw_network_fee = match get_network_fees(&network.fees, *mint_address) {
-        Some(fee) => fee.verify,
-        None => return Err(error!(NetworkErrors::NetworkFeeNotProvided)),
-    };
-    let fees = calculate_network_and_gatekeeper_fee(raw_gatekeeper_fee, raw_network_fee);
+    let absolute_fee = get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address)?.verify;
+    let network_percentage = get_network_fees(&network.fees, *mint_address)?.verify;
+    let fees = calculate_network_and_gatekeeper_fee(absolute_fee, network_percentage);
 
     create_and_invoke_transfer(
         spl_token_program.to_owned(),

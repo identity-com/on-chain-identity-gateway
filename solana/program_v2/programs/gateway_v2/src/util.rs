@@ -1,12 +1,15 @@
 //! Utility functions and types.
-use crate::state::{GatekeeperFees, NetworkFees};
+use std::ops::{Div, Mul};
+
+use crate::errors::{GatekeeperErrors, NetworkErrors};
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
 use anchor_lang::{Key, ToAccountInfo};
 use anchor_spl::token::{Token, TokenAccount};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::invoke;
 use spl_token::instruction::transfer;
-use std::ops::{Div, Mul};
+
+use crate::state::{GatekeeperFees, NetworkFeesPercentage};
 
 // pub const OC_SIZE_BOOL: usize = 1;
 pub const OC_SIZE_U8: usize = 1;
@@ -32,25 +35,34 @@ pub trait OnChainSizeWithArg<Arg> {
     fn on_chain_size_with_arg(arg: Arg) -> usize;
 }
 
-// TODO(julian): Add descriptive error message on fail here
-pub fn get_gatekeeper_fees(fees: &[GatekeeperFees], mint: Pubkey) -> Option<&GatekeeperFees> {
-    fees.iter().find(|&&x| x.token == mint)
+pub fn get_gatekeeper_fees(
+    fees: &[GatekeeperFees],
+    mint: Pubkey,
+) -> Result<&GatekeeperFees, GatekeeperErrors> {
+    fees.iter()
+        .find(|&&x| x.token == mint)
+        .ok_or(GatekeeperErrors::FeesNotProvided)
 }
 
-// TODO(julian): Add descriptive error message on fail
-pub fn get_network_fees(fees: &[NetworkFees], mint: Pubkey) -> Option<&NetworkFees> {
-    fees.iter().find(|&&x| x.token == mint)
+pub fn get_network_fees(
+    fees: &[NetworkFeesPercentage],
+    mint: Pubkey,
+) -> Result<&NetworkFeesPercentage, NetworkErrors> {
+    fees.iter()
+        .find(|&&x| x.token == mint)
+        .ok_or(NetworkErrors::FeesNotProvided)
 }
 
 /// calculate_network_and_gatekeeper_fee
 /// Returns two fees in the correct unit
 /// First result returns the fee for the network_fee
 /// Second result returns the gatekeeper fee
-pub fn calculate_network_and_gatekeeper_fee(fee: u64, split: u16) -> (u64, u64) {
-    let percentage = (split as f64).div(10000_f64);
+pub fn calculate_network_and_gatekeeper_fee(fee: u64, percent: u16) -> (u64, u64) {
+    let percent = if percent > 10000 { 10000 } else { percent };
+    let percentage = (percent as f64).div(10000_f64);
     let network_fee = (fee as f64).mul(percentage);
 
-    let gatekeeper_fee = (fee as f64) - network_fee;
+    let gatekeeper_fee = (fee) - (network_fee as u64);
     (network_fee as u64, gatekeeper_fee as u64)
 }
 
@@ -69,14 +81,10 @@ pub fn create_and_invoke_transfer<'a>(
         &authority_account.key(),
         signer_pubkeys,
         amount,
-    );
-    let instruction = match transfer_instruction_network_result {
-        Ok(instruction) => instruction,
-        Err(error) => panic!("Transfer failed: {:?}", error),
-    };
+    )?;
 
     invoke(
-        &instruction,
+        &transfer_instruction_network_result,
         &[
             source_account.to_account_info(),
             destination_account.to_account_info(),
@@ -88,7 +96,14 @@ pub fn create_and_invoke_transfer<'a>(
 
 #[cfg(test)]
 mod tests {
-    use crate::state::{GatekeeperFees, NetworkFees};
+    use crate::state::{GatekeeperFees, NetworkFeesPercentage};
+
+    #[test]
+    fn get_fees_test_split_100() {
+        let fees = crate::util::calculate_network_and_gatekeeper_fee(100, 10000);
+        assert_eq!(fees.0, 100);
+        assert_eq!(fees.1, 0);
+    }
 
     #[test]
     fn get_fees_test() {
@@ -142,14 +157,14 @@ mod tests {
         let mint = "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtveqn4esJGX"
             .parse()
             .unwrap();
-        let fee1 = NetworkFees {
+        let fee1 = NetworkFeesPercentage {
             token: mint,
             issue: 100,
             verify: 10,
             refresh: 10,
             expire: 10,
         };
-        let fee2 = NetworkFees {
+        let fee2 = NetworkFeesPercentage {
             token: "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtvdqn4esJGX"
                 .parse()
                 .unwrap(),
@@ -158,7 +173,7 @@ mod tests {
             refresh: 0,
             expire: 0,
         };
-        let fees: Vec<NetworkFees> = vec![fee1, fee2];
+        let fees: Vec<NetworkFeesPercentage> = vec![fee1, fee2];
         let fee = crate::util::get_network_fees(&fees, mint).unwrap();
         assert_eq!(fee, &fee1);
     }
