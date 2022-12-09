@@ -2,9 +2,9 @@
 use std::ops::{Div, Mul};
 
 use crate::errors::{GatekeeperErrors, NetworkErrors};
-use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
+use anchor_lang::prelude::{Account, CpiContext, Program, Pubkey, Signer};
 use anchor_lang::{Key, ToAccountInfo};
-use anchor_spl::token::{Token, TokenAccount};
+use anchor_spl::token::{Token, TokenAccount, Transfer};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::invoke;
 use spl_token::instruction::transfer;

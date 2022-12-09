@@ -74,6 +74,8 @@ describe.only('withdraw gatekeeper', () => {
         TOKEN_PROGRAM_ID,
         gatekeeperAta.address,
         toTokenAta.address,
+        mintAuthority.publicKey,
+        gatekeeperPDA,
         1
       )
       .rpc()
