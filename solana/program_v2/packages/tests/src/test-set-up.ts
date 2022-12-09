@@ -8,6 +8,7 @@ import {
 import {
   AdminService,
   airdrop,
+  CreateGatekeeperData,
   GatekeeperService,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
@@ -126,6 +127,15 @@ export const setUpAdminNetworkGatekeeper = async (
     .withPartialSigners(networkAuthority)
     .rpc();
 
+  const data = {
+    authKeys: [
+      {
+        flags: 65535,
+        key: gatekeeperPDA,
+      },
+    ],
+  } as CreateGatekeeperData;
+
   await networkService
     .createGatekeeper(
       networkAuthority.publicKey,
@@ -218,7 +228,7 @@ export const makeAssociatedTokenAccountsForIssue = async (
     adminAuthority,
     mintPublicKey,
     funderKeypair.publicKey,
-    true
+    false
   );
 
   await mintTo(

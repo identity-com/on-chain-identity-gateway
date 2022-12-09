@@ -61,8 +61,9 @@ pub mod solana_anchor_gateway {
         instructions::network::set_gatekeeper_state(ctx, state)
     }
 
-    pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>) -> Result<()> {
-        instructions::network::gatekeeper_withdraw(ctx)
+    pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, amount: u64) -> Result<()> {
+        msg!("Withdrawing {} from gatekeeper", amount);
+        instructions::network::gatekeeper_withdraw(ctx, amount)
     }
 
     pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) -> Result<()> {

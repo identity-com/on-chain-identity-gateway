@@ -3,6 +3,7 @@ use crate::instructions::network::UpdateGatekeeperData;
 use crate::util::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
+use anchor_spl::token::{Token, TokenAccount};
 use bitflags::bitflags;
 
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
@@ -206,23 +207,6 @@ impl Gatekeeper {
             }
             self.staking_account = staking_account.key();
         }
-        Ok(())
-    }
-
-    // TODO: Change Auth Access
-    // TODO: Change Receiver to Account
-    // controls withdrawal of funds from the gatekeeper
-    pub fn gatekeeper_withdraw(
-        &mut self,
-        _receiver: &mut UncheckedAccount,
-        authority: &mut Signer,
-    ) -> Result<()> {
-        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
-            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
-        }
-        // TODO: Check type of currency,
-        // TODO: Transfer to _receiver
-
         Ok(())
     }
 }

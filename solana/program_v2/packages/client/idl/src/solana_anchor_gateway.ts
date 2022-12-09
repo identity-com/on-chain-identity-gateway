@@ -229,7 +229,7 @@ export type SolanaAnchorGateway = {
       "accounts": [
         {
           "name": "gatekeeper",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -238,17 +238,32 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "receiver",
-          "isMut": true,
+          "name": "systemProgram",
+          "isMut": false,
           "isSigner": false
         },
         {
-          "name": "systemProgram",
+          "name": "splTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receiverTokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
           "isMut": false,
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "issuePass",
@@ -1766,7 +1781,7 @@ export const IDL: SolanaAnchorGateway = {
       "accounts": [
         {
           "name": "gatekeeper",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -1775,17 +1790,32 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "receiver",
-          "isMut": true,
+          "name": "systemProgram",
+          "isMut": false,
           "isSigner": false
         },
         {
-          "name": "systemProgram",
+          "name": "splTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receiverTokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "gatekeeperTokenAccount",
           "isMut": false,
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "issuePass",
