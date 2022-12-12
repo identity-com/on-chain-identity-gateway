@@ -64,10 +64,10 @@ describe.only('withdraw gatekeeper', () => {
       mintAccount.publicKey,
       toAccount.publicKey,
       true
-    ).catch((e) => console.log(e));
+    );
 
-    console.log('gatekeeperAuthority', gatekeeperAuthority.publicKey);
-    console.log('gatekeeperService', gatekeeperService.getGatekeeper());
+    console.log('gatekeeperService', gatekeeperAuthority.publicKey.toBase58());
+
     // Act
     try {
       console.log('withdraw!');
@@ -82,6 +82,7 @@ describe.only('withdraw gatekeeper', () => {
           gatekeeperPDA,
           1
         )
+        .withPartialSigners(gatekeeperAuthority)
         .rpc();
     } catch (e) {
       console.log(e);
