@@ -68,6 +68,10 @@ describe('issue', () => {
         gatekeeperPDA
       );
 
+    console.log(gatekeeperPDA.toBase58());
+    console.log(gatekeeperService.getGatekeeper().toBase58());
+    console.log(gatekeeperAuthority.publicKey.toBase58());
+
     // Act
     await gatekeeperService
       .issue(
@@ -81,7 +85,8 @@ describe('issue', () => {
         funderKeypair.publicKey
       )
       .withPartialSigners(funderKeypair)
-      .rpc();
+      .rpc()
+      .catch((e) => console.log(e));
 
     const pass = await gatekeeperService.getPassAccount(subject.publicKey);
 
