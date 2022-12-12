@@ -144,7 +144,13 @@ export class AdminService extends AbstractService {
       .createNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        fees: data.fees,
+        fees: data.fees.map((fee) => ({
+          token: fee.token,
+          issue: new anchor.BN(fee.issue),
+          expire: new anchor.BN(fee.expire),
+          verify: new anchor.BN(fee.verify),
+          refresh: new anchor.BN(fee.refresh),
+        })),
         authKeys: data.authKeys,
         supportedTokens: data.supportedTokens,
       })

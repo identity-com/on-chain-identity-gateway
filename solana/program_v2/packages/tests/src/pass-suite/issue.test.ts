@@ -68,6 +68,10 @@ describe('issue', () => {
         gatekeeperPDA
       );
 
+    console.log(gatekeeperPDA.toBase58());
+    console.log(gatekeeperService.getGatekeeper().toBase58());
+    console.log(gatekeeperAuthority.publicKey.toBase58());
+
     // Act
     await gatekeeperService
       .issue(
@@ -81,7 +85,8 @@ describe('issue', () => {
         funderKeypair.publicKey
       )
       .withPartialSigners(funderKeypair)
-      .rpc();
+      .rpc()
+      .catch((e) => console.log(e));
 
     const pass = await gatekeeperService.getPassAccount(subject.publicKey);
 
@@ -165,10 +170,10 @@ describe('issue', () => {
     await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
       {
         token: mint,
-        issue: new anchor.BN(0),
-        refresh: new anchor.BN(0),
-        expire: new anchor.BN(0),
-        verify: new anchor.BN(0),
+        issue: 0,
+        refresh: 0,
+        expire: 0,
+        verify: 0,
       },
     ]);
 

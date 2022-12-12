@@ -43,6 +43,10 @@ impl Gatekeeper {
             + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * auth_keys
         // auth keys
     }
+    // Checks if the network_token_account is a valid token account for the network
+    pub fn check_network_ownership(&self, gatekeeper: &[Pubkey], owner: Pubkey) -> bool {
+        gatekeeper.iter().any(|&key| key == owner)
+    }
     // Checks if an authkey has enough authority for an action
     pub fn can_access(&self, authority: &Signer, flag: GatekeeperKeyFlags) -> bool {
         self.auth_keys

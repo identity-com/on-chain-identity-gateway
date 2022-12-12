@@ -100,10 +100,10 @@ export const setUpAdminNetworkGatekeeper = async (
       fees: [
         {
           token: mint,
-          issue: new anchor.BN(10),
-          refresh: new anchor.BN(10),
-          expire: new anchor.BN(10),
-          verify: new anchor.BN(10),
+          issue: 10,
+          refresh: 10,
+          expire: 10,
+          verify: 10,
         },
       ],
       authKeys: [{ flags: 4097, key: networkAuthority.publicKey }],
@@ -124,10 +124,10 @@ export const setUpAdminNetworkGatekeeper = async (
   await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
     {
       token: mint,
-      issue: new anchor.BN(1000),
-      refresh: new anchor.BN(1000),
-      expire: new anchor.BN(1000),
-      verify: new anchor.BN(1000),
+      issue: 1000,
+      refresh: 1000,
+      expire: 1000,
+      verify: 1000,
     },
   ]);
 

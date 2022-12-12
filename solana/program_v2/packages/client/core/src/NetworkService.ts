@@ -208,7 +208,16 @@ export class NetworkService extends AbstractService {
       // @ts-ignore
       .updateGatekeeper({
         authThreshold: data.authThreshold,
-        tokenFees: data.tokenFees,
+        tokenFees: {
+          add: data.tokenFees.add.map((fee) => ({
+            token: fee?.token,
+            issue: new anchor.BN(fee.issue),
+            expire: new anchor.BN(fee.expire),
+            verify: new anchor.BN(fee.verify),
+            refresh: new anchor.BN(fee.refresh),
+          })),
+          remove: data.tokenFees.remove,
+        },
         authKeys: data.authKeys,
       })
       .accounts({

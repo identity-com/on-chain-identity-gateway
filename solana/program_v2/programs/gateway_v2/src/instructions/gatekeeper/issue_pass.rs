@@ -79,8 +79,14 @@ pub struct IssuePass<'info> {
     pub mint_account: Account<'info, Mint>,
     #[account(mut)]
     pub funder_token_account: Account<'info, TokenAccount>,
-    #[account(mut)]
+    #[account(
+    mut,
+    constraint = gatekeeper.check_network_ownership(& network.gatekeepers, network_token_account.owner),
+    )]
     pub network_token_account: Account<'info, TokenAccount>,
-    #[account(mut)]
+    #[account(
+    mut,
+    constraint = gatekeeper_token_account.owner == network.authority
+    )]
     pub gatekeeper_token_account: Account<'info, TokenAccount>,
 }
