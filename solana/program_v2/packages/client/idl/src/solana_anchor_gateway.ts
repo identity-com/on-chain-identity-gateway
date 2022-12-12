@@ -238,6 +238,11 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
+          "name": "gatekeeperPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -259,11 +264,6 @@ export type SolanaAnchorGateway = {
         },
         {
           "name": "gatekeeperTokenAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "gatekeeperPda",
           "isMut": false,
           "isSigner": false
         }
@@ -1800,6 +1800,11 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
+          "name": "gatekeeperPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -1821,11 +1826,6 @@ export const IDL: SolanaAnchorGateway = {
         },
         {
           "name": "gatekeeperTokenAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "gatekeeperPda",
           "isMut": false,
           "isSigner": false
         }

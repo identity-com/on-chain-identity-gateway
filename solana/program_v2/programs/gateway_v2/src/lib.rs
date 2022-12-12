@@ -1,5 +1,7 @@
 #![allow(clippy::result_large_err)]
 
+extern crate core;
+
 pub mod constants;
 pub mod errors;
 mod instructions;

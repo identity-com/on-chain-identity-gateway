@@ -10,6 +10,7 @@ import {
   airdrop,
   CreateGatekeeperData,
   GatekeeperService,
+  GATEWAY_PROGRAM_ID,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import * as anchor from '@project-serum/anchor';
@@ -82,6 +83,8 @@ export const setUpAdminNetworkGatekeeper = async (
     gatekeeperAuthority.publicKey,
     networkAuthority.publicKey
   );
+
+  console.log(gatekeeperPDA, gatekeeperAuthority.publicKey);
 
   const [stakingPDA] = await NetworkService.createStakingAddress(
     gatekeeperAuthority.publicKey
