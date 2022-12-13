@@ -16,10 +16,9 @@ pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: 
     let spl_token_program = &mut ctx.accounts.spl_token_program;
     let receiver_token_account = &mut ctx.accounts.receiver_token_account;
     let gatekeeper_token_account = &mut ctx.accounts.gatekeeper_token_account;
-    let gatekeeper_pda = &mut ctx.accounts.gatekeeper_pda;
 
     let gatekeeper_authority_key = gatekeeper.authority.key().clone();
-    let gatekeeper_bump = ctx.bumps.get("gatekeeper_pda").unwrap().to_le_bytes();
+    let gatekeeper_bump = gatekeeper.gatekeeper_bump.to_le_bytes();
 
     let authority_seed = &[
         GATEKEEPER_SEED.as_ref(),
@@ -33,7 +32,7 @@ pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: 
     let pubkey = Pubkey::create_program_address(authority_seed.clone(), &GATEWAY_PROGRAM).unwrap();
 
     msg!("New Program address: {}", pubkey.to_string());
-    msg!("PDA {}", gatekeeper_pda.key().to_string());
+    msg!("PDA {}", gatekeeper.to_account_info().key().to_string());
 
     let transfer_instruction = Transfer {
         from: gatekeeper_token_account.to_account_info(),
@@ -58,23 +57,29 @@ pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: 
 #[derive(Accounts)]
 #[instruction(amount: u64)]
 pub struct GatekeeperWithdrawAccount<'info> {
-    pub gatekeeper: Account<'info, Gatekeeper>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    /// CHECK: PDA IS THE PDA OF THE GATEKEEPER
     #[account(
-    mut,
-    seeds = [
-    GATEKEEPER_SEED.as_ref(),
-    gatekeeper.authority.key().as_ref(),
-    gatekeeper.gatekeeper_network.as_ref(),
-    ],
-    bump
+        seeds = [GATEKEEPER_SEED, authority.key().as_ref(), gatekeeper.gatekeeper_network.key().as_ref()],
+        bump = gatekeeper.gatekeeper_bump
     )]
-    pub gatekeeper_pda: UncheckedAccount<'info>,
+    pub gatekeeper: Account<'info, Gatekeeper>,
+    #[account()]
+    pub authority: Signer<'info>,
+    // /// CHECK: PDA IS THE PDA OF THE GATEKEEPER
+    // #[account(
+    // mut,
+    // seeds = [
+    // GATEKEEPER_SEED.as_ref(),
+    // gatekeeper.authority.key().as_ref(),
+    // gatekeeper.gatekeeper_network.as_ref(),
+    // ],
+    // bump
+    // )]
+    // pub gatekeeper_pda: UncheckedAccount<'info>, // THIS SHOULD NOT BE UNCHECKED
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
     pub mint_account: Account<'info, Mint>,
+    #[account(mut)]
     pub receiver_token_account: Account<'info, TokenAccount>,
+    #[account(mut)]
     pub gatekeeper_token_account: Account<'info, TokenAccount>,
 }

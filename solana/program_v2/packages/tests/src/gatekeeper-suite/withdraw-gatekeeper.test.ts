@@ -71,6 +71,16 @@ describe.only('withdraw gatekeeper', () => {
     // Act
     try {
       console.log('withdraw!');
+
+      console.log(`gatekeeperPda: ${gatekeeperService.getGatekeeper().toBase58()}`);
+      console.log(`gatekeeperAuthority: ${gatekeeperAuthority.publicKey.toBase58()}`);
+      console.log(`mintAccount: ${mintAccount.publicKey.toBase58()}`);
+      console.log(`toAccount: ${toAccount.publicKey.toBase58()}`);
+      console.log(`toTokenAta: ${toTokenAta!.address.toBase58()}`);
+      console.log(`gatekeeperAta: ${gatekeeperAta.address}`);
+      console.log(`gatekeeperPDA: ${gatekeeperPDA.toBase58()}`);
+
+
       await networkService
         .gatekeeperWithdraw(
           gatekeeperService.getGatekeeper(),
@@ -79,7 +89,6 @@ describe.only('withdraw gatekeeper', () => {
           TOKEN_PROGRAM_ID,
           toTokenAta!.address,
           gatekeeperAta.address,
-          gatekeeperPDA,
           1
         )
         .withPartialSigners(gatekeeperAuthority)

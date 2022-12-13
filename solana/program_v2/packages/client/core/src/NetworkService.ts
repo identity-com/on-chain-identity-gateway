@@ -302,7 +302,6 @@ export class NetworkService extends AbstractService {
     splTokenProgram: PublicKey,
     receiverTokenAccount: PublicKey,
     gatekeeperTokenAccount: PublicKey,
-    gatekeeperPDA: PublicKey,
     amount: number
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
@@ -315,7 +314,6 @@ export class NetworkService extends AbstractService {
         splTokenProgram,
         receiverTokenAccount,
         gatekeeperTokenAccount,
-        gatekeeperPda: gatekeeperPDA,
       })
       .instruction();
 
