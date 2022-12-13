@@ -329,6 +329,7 @@ export class GatekeeperService extends AbstractService {
     authority: PublicKey = this.getWallet().publicKey,
     payer = authority
   ): ServiceBuilder {
+    console.log(this._network.toBase58())
     const instructionPromise = this.getProgram()
       .methods.verifyPass()
       .accounts({
