@@ -239,7 +239,7 @@ export type SolanaAnchorGateway = {
         },
         {
           "name": "gatekeeperPda",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1801,7 +1801,7 @@ export const IDL: SolanaAnchorGateway = {
         },
         {
           "name": "gatekeeperPda",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {

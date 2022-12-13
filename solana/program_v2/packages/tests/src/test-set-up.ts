@@ -215,7 +215,7 @@ export const makeAssociatedTokenAccountsForIssue = async (
     adminAuthority,
     mintPublicKey,
     gatekeeperPDA,
-    false
+    true
   );
 
   const networkAta = await getOrCreateAssociatedTokenAccount(
@@ -223,7 +223,7 @@ export const makeAssociatedTokenAccountsForIssue = async (
     adminAuthority,
     mintPublicKey,
     networkPublicKey,
-    false
+    true
   );
 
   const funderAta = await getOrCreateAssociatedTokenAccount(
@@ -231,7 +231,7 @@ export const makeAssociatedTokenAccountsForIssue = async (
     adminAuthority,
     mintPublicKey,
     funderKeypair.publicKey,
-    false
+    true
   );
 
   await mintTo(

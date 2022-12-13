@@ -19,17 +19,18 @@ pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: 
     let gatekeeper_pda = &mut ctx.accounts.gatekeeper_pda;
 
     let gatekeeper_authority_key = gatekeeper.authority.key().clone();
+    let gatekeeper_bump = ctx.bumps.get("gatekeeper_pda").unwrap().to_le_bytes();
 
     let authority_seed = &[
         GATEKEEPER_SEED.as_ref(),
         gatekeeper_authority_key.as_ref(),
         gatekeeper.gatekeeper_network.as_ref(),
+        gatekeeper_bump.as_ref(),
     ][..];
 
     // Output the pda, should be the same as the gatekeeper_token_account
     let GATEWAY_PROGRAM = Pubkey::from_str("gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft").unwrap();
-
-    let (pubkey, _) = Pubkey::find_program_address(authority_seed.clone(), &GATEWAY_PROGRAM);
+    let pubkey = Pubkey::create_program_address(authority_seed.clone(), &GATEWAY_PROGRAM).unwrap();
 
     msg!("New Program address: {}", pubkey.to_string());
     msg!("PDA {}", gatekeeper_pda.key().to_string());
@@ -37,7 +38,7 @@ pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: 
     let transfer_instruction = Transfer {
         from: gatekeeper_token_account.to_account_info(),
         to: receiver_token_account.to_account_info(),
-        authority: gatekeeper_pda.to_account_info(),
+        authority: gatekeeper.to_account_info(),
     };
 
     let signer = &[authority_seed][..];
@@ -61,6 +62,15 @@ pub struct GatekeeperWithdrawAccount<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
     /// CHECK: PDA IS THE PDA OF THE GATEKEEPER
+    #[account(
+    mut,
+    seeds = [
+    GATEKEEPER_SEED.as_ref(),
+    gatekeeper.authority.key().as_ref(),
+    gatekeeper.gatekeeper_network.as_ref(),
+    ],
+    bump
+    )]
     pub gatekeeper_pda: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
