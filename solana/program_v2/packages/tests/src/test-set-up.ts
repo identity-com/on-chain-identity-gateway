@@ -84,8 +84,6 @@ export const setUpAdminNetworkGatekeeper = async (
     networkAuthority.publicKey
   );
 
-  console.log(gatekeeperPDA, gatekeeperAuthority.publicKey);
-
   const [stakingPDA] = await NetworkService.createStakingAddress(
     gatekeeperAuthority.publicKey
   );
