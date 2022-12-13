@@ -48,7 +48,7 @@ describe('Change pass state', () => {
       subject,
       mintAccount,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
-    const { gatekeeperAta, networkAta, funderAta } =
+    const { gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
         adminAuthority,
@@ -64,10 +64,12 @@ describe('Change pass state', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
   });
 

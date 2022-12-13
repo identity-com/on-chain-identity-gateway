@@ -34,6 +34,7 @@ describe('Expire a pass', () => {
   let mintAuthority: Keypair;
   let subject: Keypair;
   let mintAccount: Keypair;
+  let funderKeypair: Keypair;
   let gatekeeperAta: Account;
   let networkAta: Account;
   let funderAta: Account;
@@ -52,7 +53,7 @@ describe('Expire a pass', () => {
       mintAccount,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
 
-    ({ gatekeeperAta, networkAta, funderAta } =
+    ({ gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
         adminAuthority,
@@ -70,10 +71,12 @@ describe('Expire a pass', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
   });
 
@@ -83,10 +86,12 @@ describe('Expire a pass', () => {
         passAccount,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
 
     const updatedPass = await gatekeeperService.getPassAccount(
@@ -128,10 +133,12 @@ describe('Expire a pass', () => {
           passAccount,
           TOKEN_PROGRAM_ID,
           mint,
-          gatekeeperAta.address,
           networkAta.address,
-          funderAta.address
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
         )
+        .withPartialSigners(funderKeypair)
         .rpc()
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
@@ -142,10 +149,12 @@ describe('Expire a pass', () => {
         passAccount,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
 
     return expect(
@@ -154,10 +163,12 @@ describe('Expire a pass', () => {
           passAccount,
           TOKEN_PROGRAM_ID,
           mint,
-          gatekeeperAta.address,
           networkAta.address,
-          funderAta.address
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
         )
+        .withPartialSigners(funderKeypair)
         .rpc()
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });

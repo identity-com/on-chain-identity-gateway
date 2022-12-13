@@ -201,31 +201,6 @@ export class AdminService extends AbstractService {
     });
   }
 
-  withdraw(
-    amount: number,
-    authority: PublicKey,
-    tokenProgram: PublicKey,
-    networkTokenAccount: PublicKey,
-    toTokenAccount: PublicKey
-  ): ServiceBuilder {
-    const instructionPromise = this._program.methods
-      .withdrawNetwork(new anchor.BN(amount))
-      .accounts({
-        network: this._network,
-        authority,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram,
-        networkTokenAccount,
-        toTokenAccount,
-      })
-      .instruction();
-
-    return new ServiceBuilder(this, {
-      instructionPromise,
-      authority,
-    });
-  }
-
   /**
    * Looks up and returns a network account as it exists on chain.
    *

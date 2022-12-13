@@ -75,13 +75,14 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
+        gatekeeperAta.address,
         funderAta.address,
         funderKeypair.publicKey
       )
       .withPartialSigners(funderKeypair)
-      .rpc();
+      .rpc()
+      .catch((e) => console.log(e));
 
     const pass = await gatekeeperService.getPassAccount(subject.publicKey);
 
@@ -119,8 +120,8 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
+        gatekeeperAta.address,
         funderAta.address,
         funderKeypair.publicKey
       )
@@ -179,8 +180,8 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
+        gatekeeperAta.address,
         funderAta.address,
         funderKeypair.publicKey
       )
@@ -231,8 +232,8 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
+        gatekeeperAta.address,
         funderAta.address,
         funderKeypair.publicKey
       )
@@ -265,8 +266,8 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
+        gatekeeperAta.address,
         funderAta.address,
         funderKeypair.publicKey
       )

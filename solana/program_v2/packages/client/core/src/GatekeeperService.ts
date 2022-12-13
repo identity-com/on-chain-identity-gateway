@@ -230,7 +230,8 @@ export class GatekeeperService extends AbstractService {
     mintAccount?: PublicKey,
     networkTokenAccount?: PublicKey,
     gatekeeperTokenAccount?: PublicKey,
-    funderTokenAccount?: PublicKey
+    funderTokenAccount?: PublicKey,
+    funderAuthority?: PublicKey
   ): ServiceBuilder {
     const instructionPromise = this.getProgram()
       .methods.refreshPass()
@@ -245,6 +246,7 @@ export class GatekeeperService extends AbstractService {
         networkTokenAccount: networkTokenAccount,
         gatekeeperTokenAccount: gatekeeperTokenAccount,
         funderTokenAccount: funderTokenAccount,
+        feePayer: funderAuthority,
       })
       .instruction();
 
@@ -273,6 +275,7 @@ export class GatekeeperService extends AbstractService {
     networkTokenAccount?: PublicKey,
     gatekeeperTokenAccount?: PublicKey,
     funderTokenAccount?: PublicKey,
+    funderAuthority?: PublicKey,
     authority: PublicKey = this.getWallet().publicKey,
     payer: PublicKey = authority
   ): ServiceBuilder {
@@ -290,6 +293,7 @@ export class GatekeeperService extends AbstractService {
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
+        feePayer: funderAuthority,
       })
       .instruction();
 
@@ -318,6 +322,7 @@ export class GatekeeperService extends AbstractService {
     networkTokenAccount?: PublicKey,
     gatekeeperTokenAccount?: PublicKey,
     funderTokenAccount?: PublicKey,
+    funderAuthority?: PublicKey,
     authority: PublicKey = this.getWallet().publicKey,
     payer = authority
   ): ServiceBuilder {
@@ -335,6 +340,7 @@ export class GatekeeperService extends AbstractService {
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
+        feePayer: funderAuthority,
       })
       .instruction();
 

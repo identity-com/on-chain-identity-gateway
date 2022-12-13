@@ -35,6 +35,8 @@ describe('Verify a pass', () => {
   let mintAuthority: Keypair;
   let subject: Keypair;
   let mintAccount: Keypair;
+  let funderKeypair: Keypair;
+
   let gatekeeperAta: Account;
   let networkAta: Account;
   let funderAta: Account;
@@ -53,7 +55,7 @@ describe('Verify a pass', () => {
       mintAccount,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
 
-    ({ gatekeeperAta, networkAta, funderAta } =
+    ({ gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
         adminAuthority,
@@ -71,10 +73,12 @@ describe('Verify a pass', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
   });
 
@@ -84,10 +88,12 @@ describe('Verify a pass', () => {
         passAccount,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
 
     const funderAtaAccountInfo = await gatekeeperService
@@ -120,10 +126,12 @@ describe('Verify a pass', () => {
         passAccount,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
 
     return expect(
@@ -132,10 +140,12 @@ describe('Verify a pass', () => {
           passAccount,
           TOKEN_PROGRAM_ID,
           mint,
-          gatekeeperAta.address,
           networkAta.address,
-          funderAta.address
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
         )
+        .withPartialSigners(funderKeypair)
         .rpc()
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
@@ -149,10 +159,12 @@ describe('Verify a pass', () => {
           passAccount,
           TOKEN_PROGRAM_ID,
           mint,
-          gatekeeperAta.address,
           networkAta.address,
-          funderAta.address
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
         )
+        .withPartialSigners(funderKeypair)
         .rpc()
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
@@ -171,10 +183,12 @@ describe('Verify a pass', () => {
           passAccount,
           TOKEN_PROGRAM_ID,
           mint,
-          gatekeeperAta.address,
           networkAta.address,
-          funderAta.address
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
         )
+        .withPartialSigners(funderKeypair)
         .rpc()
     ).to.eventually.be.rejectedWith(/A seeds constraint was violated/);
   });
