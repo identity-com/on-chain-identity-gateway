@@ -3,7 +3,6 @@ use crate::instructions::network::UpdateGatekeeperData;
 use crate::util::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
-use anchor_spl::token::{Token, TokenAccount};
 use bitflags::bitflags;
 
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes

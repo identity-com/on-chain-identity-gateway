@@ -10,13 +10,15 @@ import {
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
+  airdrop,
   GatekeeperService,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
+import { Account } from '@solana/spl-token/src/state/account';
 
-describe.only('withdraw gatekeeper', () => {
+describe('withdraw gatekeeper', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
@@ -26,39 +28,64 @@ describe.only('withdraw gatekeeper', () => {
   let networkService: NetworkService;
 
   let gatekeeperPDA: PublicKey;
+  let passAccount: PublicKey;
+  let mint: PublicKey;
 
   let adminAuthority: Keypair;
   let networkAuthority: Keypair;
   let gatekeeperAuthority: Keypair;
   let mintAuthority: Keypair;
+  let subject: Keypair;
   let mintAccount: Keypair;
+  let funderKeypair: Keypair;
+
+  let gatekeeperAta: Account;
+  let networkAta: Account;
+  let funderAta: Account;
 
   beforeEach(async () => {
     ({
       gatekeeperService,
-      networkService,
       gatekeeperPDA,
+      networkService,
+      passAccount,
+      mint,
       adminAuthority,
       networkAuthority,
       gatekeeperAuthority,
       mintAuthority,
+      subject,
       mintAccount,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
+    ({ gatekeeperAta, networkAta, funderAta, funderKeypair } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      ));
+    await gatekeeperService
+      .issue(
+        passAccount,
+        subject.publicKey,
+        TOKEN_PROGRAM_ID,
+        mint,
+        networkAta.address,
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
+      )
+      .withPartialSigners(funderKeypair)
+      .rpc();
   });
 
-  it.only('should withdraw gatekeeper', async () => {
+  it('should withdraw gatekeeper', async () => {
     // Assemble
-    const { gatekeeperAta } = await makeAssociatedTokenAccountsForIssue(
-      programProvider.connection,
-      adminAuthority,
-      mintAuthority,
-      networkAuthority.publicKey,
-      gatekeeperAuthority.publicKey,
-      mintAccount.publicKey,
-      gatekeeperPDA
-    );
     const toAccount = Keypair.generate();
-    const toTokenAta = await getOrCreateAssociatedTokenAccount(
+    const receiverTokenAta = await getOrCreateAssociatedTokenAccount(
       programProvider.connection,
       adminAuthority,
       mintAccount.publicKey,
@@ -66,35 +93,74 @@ describe.only('withdraw gatekeeper', () => {
       true
     );
 
-    console.log('gatekeeperService', gatekeeperAuthority.publicKey.toBase58());
+    await airdrop(programProvider.connection, gatekeeperAta.address, 1000);
 
     // Act
-    try {
-      console.log('withdraw!');
+    await networkService
+      .gatekeeperWithdraw(
+        gatekeeperService.getGatekeeper(),
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        TOKEN_PROGRAM_ID,
+        receiverTokenAta!.address,
+        gatekeeperAta.address,
+        1
+      )
+      .withPartialSigners(gatekeeperAuthority)
+      .rpc();
 
-      console.log(`gatekeeperPda: ${gatekeeperService.getGatekeeper().toBase58()}`);
-      console.log(`gatekeeperAuthority: ${gatekeeperAuthority.publicKey.toBase58()}`);
-      console.log(`mintAccount: ${mintAccount.publicKey.toBase58()}`);
-      console.log(`toAccount: ${toAccount.publicKey.toBase58()}`);
-      console.log(`toTokenAta: ${toTokenAta!.address.toBase58()}`);
-      console.log(`gatekeeperAta: ${gatekeeperAta.address}`);
-      console.log(`gatekeeperPDA: ${gatekeeperPDA.toBase58()}`);
+    const gatekeeperAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(gatekeeperAta.address);
+    const receiverAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(receiverTokenAta.address);
 
+    const gatekeeperData = AccountLayout.decode(gatekeeperAccountInfo!.data);
+    const receiverData = AccountLayout.decode(receiverAccountInfo!.data);
 
-      await networkService
-        .gatekeeperWithdraw(
-          gatekeeperService.getGatekeeper(),
-          gatekeeperAuthority.publicKey,
-          mintAccount.publicKey,
-          TOKEN_PROGRAM_ID,
-          toTokenAta!.address,
-          gatekeeperAta.address,
-          1
-        )
-        .withPartialSigners(gatekeeperAuthority)
-        .rpc();
-    } catch (e) {
-      console.log(e);
-    }
+    // Assert
+    expect(gatekeeperData.amount).to.equal(998n);
+    expect(receiverData.amount).to.equal(1n);
+  });
+
+  it('should withdraw all', async () => {
+    // Assemble
+    const toAccount = Keypair.generate();
+    const receiverTokenAta = await getOrCreateAssociatedTokenAccount(
+      programProvider.connection,
+      adminAuthority,
+      mintAccount.publicKey,
+      toAccount.publicKey,
+      true
+    );
+
+    // Act
+    await networkService
+      .gatekeeperWithdraw(
+        gatekeeperService.getGatekeeper(),
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        TOKEN_PROGRAM_ID,
+        receiverTokenAta!.address,
+        gatekeeperAta.address,
+        0
+      )
+      .withPartialSigners(gatekeeperAuthority)
+      .rpc();
+
+    const gatekeeperAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(gatekeeperAta.address);
+    const receiverAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(receiverTokenAta.address);
+
+    const gatekeeperData = AccountLayout.decode(gatekeeperAccountInfo!.data);
+    const receiverData = AccountLayout.decode(receiverAccountInfo!.data);
+
+    // Assert
+    expect(gatekeeperData.amount).to.equal(0n);
+    expect(receiverData.amount).to.equal(999n);
   });
 });
