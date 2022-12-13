@@ -1,11 +1,13 @@
 import {
+  airdrop,
   GatekeeperService,
+  NetworkService,
   PassState,
 } from '@identity.com/gateway-solana-client';
 import { createGatekeeperService } from './util';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
@@ -169,13 +171,33 @@ describe('Verify a pass', () => {
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
 
-  it.skip('Fails to verify a pass in a different network', async () => {
+  it.only('Fails to verify a pass in a different network', async () => {
     const auth = Keypair.generate();
     const network = Keypair.generate();
-    const altService = await createGatekeeperService(
+    const wallet = new anchor.Wallet(funderKeypair);
+
+    await airdrop(
+      programProvider.connection,
       auth.publicKey,
-      network.publicKey
+      LAMPORTS_PER_SOL * 2
     );
+    await airdrop(
+      programProvider.connection,
+      network.publicKey,
+      LAMPORTS_PER_SOL * 2
+    );
+
+    const altService = await GatekeeperService.buildFromAnchor(
+      program,
+      network.publicKey,
+      funderKeypair.publicKey,
+      {
+        clusterType: 'localnet',
+        wallet: wallet,
+      },
+      programProvider
+    );
+    console.log(altService);
 
     return expect(
       altService

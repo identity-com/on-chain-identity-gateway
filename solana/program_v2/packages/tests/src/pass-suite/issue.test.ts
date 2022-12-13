@@ -295,8 +295,8 @@ describe('issue', () => {
     expect(pass?.issueTime).to.be.lessThan(new Date().getTime() + 5000);
   });
 
-  it.skip('Finds a gateway token after issue with verification util', async () => {
-    const { gatekeeperAta, networkAta, funderAta } =
+  it('Finds a gateway token after issue with verification util', async () => {
+    const { gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
         adminAuthority,
@@ -313,16 +313,14 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
-    const pass = await findGatewayPass(
-      programProvider.connection,
-      networkAuthority.publicKey,
-      passAccount
-    );
+    const pass = await gatekeeperService.getPassAccount(subject.publicKey);
     expect(pass?.state).to.equal(0);
   });
 });
