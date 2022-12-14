@@ -222,7 +222,7 @@ export class GatekeeperService extends AbstractService {
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
    * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
-   * @param funderAuthority
+   * @param funderAuthority The authority for the payer of the network and gatekeeper fees
    */
   refreshPass(
     passAccount: PublicKey,
@@ -266,7 +266,7 @@ export class GatekeeperService extends AbstractService {
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
    * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
-   * @param funderAuthority
+   * @param funderAuthority The authority for the payer of the network and gatekeeper fees
    * @param authority The gatekeeper authority for expiring a pass
    * @param payer The fee payer for expiring the pass
    */
@@ -314,7 +314,7 @@ export class GatekeeperService extends AbstractService {
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
    * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
-   * @param funderAuthority
+   * @param funderAuthority The authority for the payer of the network and gatekeeper fees
    * @param authority The gatekeeper authority for expiring a pass
    * @param payer The fee payer for expiring the pass
    */
