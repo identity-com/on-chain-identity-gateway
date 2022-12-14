@@ -5,6 +5,7 @@ import {
 import {
   AccountLayout,
   getOrCreateAssociatedTokenAccount,
+  mintTo,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import * as anchor from '@project-serum/anchor';
@@ -28,64 +29,37 @@ describe('withdraw gatekeeper', () => {
   let networkService: NetworkService;
 
   let gatekeeperPDA: PublicKey;
-  let passAccount: PublicKey;
-  let mint: PublicKey;
 
   let adminAuthority: Keypair;
   let networkAuthority: Keypair;
   let gatekeeperAuthority: Keypair;
   let mintAuthority: Keypair;
-  let subject: Keypair;
   let mintAccount: Keypair;
-  let funderKeypair: Keypair;
-
+  let receiverTokenAta: Account;
   let gatekeeperAta: Account;
-  let networkAta: Account;
-  let funderAta: Account;
 
   beforeEach(async () => {
     ({
       gatekeeperService,
       gatekeeperPDA,
       networkService,
-      passAccount,
-      mint,
       adminAuthority,
       networkAuthority,
       gatekeeperAuthority,
       mintAuthority,
-      subject,
       mintAccount,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
-    ({ gatekeeperAta, networkAta, funderAta, funderKeypair } =
-      await makeAssociatedTokenAccountsForIssue(
-        programProvider.connection,
-        adminAuthority,
-        mintAuthority,
-        networkAuthority.publicKey,
-        gatekeeperAuthority.publicKey,
-        mintAccount.publicKey,
-        gatekeeperPDA
-      ));
-    await gatekeeperService
-      .issue(
-        passAccount,
-        subject.publicKey,
-        TOKEN_PROGRAM_ID,
-        mint,
-        networkAta.address,
-        gatekeeperAta.address,
-        funderAta.address,
-        funderKeypair.publicKey
-      )
-      .withPartialSigners(funderKeypair)
-      .rpc();
-  });
-
-  it('should withdraw gatekeeper', async () => {
-    // Assemble
+    ({ gatekeeperAta } = await makeAssociatedTokenAccountsForIssue(
+      programProvider.connection,
+      adminAuthority,
+      mintAuthority,
+      networkAuthority.publicKey,
+      gatekeeperAuthority.publicKey,
+      mintAccount.publicKey,
+      gatekeeperPDA
+    ));
     const toAccount = Keypair.generate();
-    const receiverTokenAta = await getOrCreateAssociatedTokenAccount(
+    receiverTokenAta = await getOrCreateAssociatedTokenAccount(
       programProvider.connection,
       adminAuthority,
       mintAccount.publicKey,
@@ -93,8 +67,17 @@ describe('withdraw gatekeeper', () => {
       true
     );
 
-    await airdrop(programProvider.connection, gatekeeperAta.address, 1000);
+    await mintTo(
+      programProvider.connection,
+      gatekeeperAuthority,
+      mintAccount.publicKey,
+      gatekeeperAta.address,
+      mintAuthority,
+      1000
+    );
+  });
 
+  it('should withdraw gatekeeper', async () => {
     // Act
     await networkService
       .gatekeeperWithdraw(
@@ -102,7 +85,7 @@ describe('withdraw gatekeeper', () => {
         gatekeeperAuthority.publicKey,
         mintAccount.publicKey,
         TOKEN_PROGRAM_ID,
-        receiverTokenAta!.address,
+        receiverTokenAta.address,
         gatekeeperAta.address,
         1
       )
@@ -120,7 +103,7 @@ describe('withdraw gatekeeper', () => {
     const receiverData = AccountLayout.decode(receiverAccountInfo!.data);
 
     // Assert
-    expect(gatekeeperData.amount).to.equal(998n);
+    expect(gatekeeperData.amount).to.equal(999n);
     expect(receiverData.amount).to.equal(1n);
   });
 
