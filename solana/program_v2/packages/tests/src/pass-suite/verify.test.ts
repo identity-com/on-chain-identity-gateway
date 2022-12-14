@@ -121,7 +121,7 @@ describe('Verify a pass', () => {
     );
 
     // Assert
-    expect(funderAccount.amount).to.equal(1000n);
+    expect(funderAccount.amount).to.equal(8000n);
     expect(networkAccount.amount).to.equal(2n);
     expect(gatekeeperAccount.amount).to.equal(1998n);
   });
@@ -175,7 +175,7 @@ describe('Verify a pass', () => {
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
 
-  it.only('Fails to verify a pass in a different network', async () => {
+  it('Fails to verify a pass in a different network', async () => {
     const altNetwork = Keypair.generate();
     const wallet = new anchor.Wallet(adminAuthority);
 

@@ -4,6 +4,8 @@ import {
   NetworkService,
   GatekeeperKeyFlags,
   airdrop,
+  AdminService,
+  NetworkAccount,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -15,7 +17,11 @@ import {
 } from '../test-set-up';
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
-import { Account, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  Account,
+  getOrCreateAssociatedTokenAccount,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -103,42 +109,78 @@ describe('Change pass gatekeeper', () => {
     expect(pass?.gatekeeper.toBase58()).to.equal(newDataAcct);
   });
 
-  it.skip('Cannot change to gatekeeper within a different network', async () => {
+  it('Cannot change to gatekeeper within a different network', async () => {
     // Assemble
-    const altNetworkAuthority = Keypair.generate();
-    const newFunder = Keypair.generate();
-    const [altStakingAccount] = await NetworkService.createStakingAddress(
-      altNetworkAuthority.publicKey
-    );
+    const newAdminAuthority = Keypair.generate();
+    const newNetworkAuthority = Keypair.generate();
+    const newGatekeeperAuthority = Keypair.generate();
+
+    //network airdrop
     await airdrop(
       programProvider.connection,
-      altNetworkAuthority.publicKey,
+      newAdminAuthority.publicKey,
       LAMPORTS_PER_SOL * 2
     );
     await airdrop(
       programProvider.connection,
-      newFunder.publicKey,
+      newNetworkAuthority.publicKey,
       LAMPORTS_PER_SOL * 2
     );
-    const altNetworkService = await createNetworkService(
-      altNetworkAuthority,
-      altNetworkAuthority.publicKey
+    await airdrop(
+      programProvider.connection,
+      newGatekeeperAuthority.publicKey,
+      LAMPORTS_PER_SOL * 2
     );
-    await altNetworkService
-      .createGatekeeper(
-        altNetworkAuthority.publicKey,
-        altStakingAccount,
-        newFunder.publicKey
-      )
-      .withPartialSigners(newFunder)
+
+    const [gatekeeperDataAccount] =
+      await NetworkService.createGatekeeperAddress(
+        newGatekeeperAuthority.publicKey,
+        newNetworkAuthority.publicKey
+      );
+    const [stakingDataAccount] = await NetworkService.createStakingAddress(
+      newNetworkAuthority.publicKey
+    );
+
+    const newAdminService = await AdminService.buildFromAnchor(
+      program,
+      newNetworkAuthority.publicKey,
+      {
+        clusterType: 'localnet',
+        wallet: new anchor.Wallet(newAdminAuthority),
+      },
+      programProvider
+    );
+
+    const newNetworkService = await NetworkService.buildFromAnchor(
+      program,
+      newGatekeeperAuthority.publicKey,
+      gatekeeperDataAccount,
+      {
+        clusterType: 'localnet',
+        wallet: new anchor.Wallet(newGatekeeperAuthority),
+      },
+      programProvider
+    );
+
+    await newAdminService
+      .createNetwork()
+      .withPartialSigners(newNetworkAuthority)
       .rpc();
+
+    await newNetworkService
+      .createGatekeeper(
+        newNetworkAuthority.publicKey,
+        stakingDataAccount,
+        newAdminAuthority.publicKey
+      )
+      .withPartialSigners(newAdminAuthority)
+      .rpc();
+
     // Act + Assert
-    return expect(
+
+    expect(
       gatekeeperService
-        .changePassGatekeeper(
-          altNetworkService.getGatekeeperAddress(),
-          passAccount
-        )
+        .changePassGatekeeper(gatekeeperDataAccount, passAccount)
         .rpc()
     ).to.eventually.be.rejectedWith(/InvalidNetwork/);
   });
