@@ -279,7 +279,7 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "feePayer",
+          "name": "funder",
           "isMut": true,
           "isSigner": true
         },
@@ -377,7 +377,7 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "feePayer",
+          "name": "funder",
           "isMut": true,
           "isSigner": true
         },
@@ -533,7 +533,7 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "feePayer",
+          "name": "funder",
           "isMut": false,
           "isSigner": true
         },
@@ -599,7 +599,7 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "feePayer",
+          "name": "funder",
           "isMut": false,
           "isSigner": true
         },
@@ -1816,7 +1816,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "feePayer",
+          "name": "funder",
           "isMut": true,
           "isSigner": true
         },
@@ -1914,7 +1914,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "feePayer",
+          "name": "funder",
           "isMut": true,
           "isSigner": true
         },
@@ -2070,7 +2070,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "feePayer",
+          "name": "funder",
           "isMut": false,
           "isSigner": true
         },
@@ -2136,7 +2136,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "feePayer",
+          "name": "funder",
           "isMut": false,
           "isSigner": true
         },

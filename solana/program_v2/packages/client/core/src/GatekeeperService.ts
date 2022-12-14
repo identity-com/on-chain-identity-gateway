@@ -141,7 +141,7 @@ export class GatekeeperService extends AbstractService {
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
    * @param funderTokenAccount The ATA for the feePayer of the network and gatekeeper fees
-   * @param feePayer The payer of the network and gatekeeper fees
+   * @param funder The payer of the network and gatekeeper fees
    * @param passNumber The pass number to allow for multiple passes in a network
    * @param authority The authority creating the account
    * @param payer The fee payer for creating the pass
@@ -154,7 +154,7 @@ export class GatekeeperService extends AbstractService {
     networkTokenAccount?: PublicKey,
     gatekeeperTokenAccount?: PublicKey,
     funderTokenAccount?: PublicKey,
-    feePayer?: PublicKey,
+    funder?: PublicKey,
     passNumber = 0,
     authority: PublicKey = this.getWallet().publicKey,
     payer = authority
@@ -173,7 +173,7 @@ export class GatekeeperService extends AbstractService {
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
-        feePayer,
+        funder,
       })
       .instruction();
 
@@ -222,7 +222,7 @@ export class GatekeeperService extends AbstractService {
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
    * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
-   * @param funderAuthority The authority for the payer of the network and gatekeeper fees
+   * @param funder The authority for the payer of the network and gatekeeper fees
    */
   refreshPass(
     passAccount: PublicKey,
@@ -232,7 +232,7 @@ export class GatekeeperService extends AbstractService {
     networkTokenAccount?: PublicKey,
     gatekeeperTokenAccount?: PublicKey,
     funderTokenAccount?: PublicKey,
-    funderAuthority?: PublicKey
+    funder?: PublicKey
   ): ServiceBuilder {
     const instructionPromise = this.getProgram()
       .methods.refreshPass()
@@ -247,7 +247,7 @@ export class GatekeeperService extends AbstractService {
         networkTokenAccount: networkTokenAccount,
         gatekeeperTokenAccount: gatekeeperTokenAccount,
         funderTokenAccount: funderTokenAccount,
-        feePayer: funderAuthority,
+        funder,
       })
       .instruction();
 
@@ -266,7 +266,7 @@ export class GatekeeperService extends AbstractService {
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
    * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
-   * @param funderAuthority The authority for the payer of the network and gatekeeper fees
+   * @param funder The authority for the payer of the network and gatekeeper fees
    * @param authority The gatekeeper authority for expiring a pass
    * @param payer The fee payer for expiring the pass
    */
@@ -277,7 +277,7 @@ export class GatekeeperService extends AbstractService {
     networkTokenAccount?: PublicKey,
     gatekeeperTokenAccount?: PublicKey,
     funderTokenAccount?: PublicKey,
-    funderAuthority?: PublicKey,
+    funder?: PublicKey,
     authority: PublicKey = this.getWallet().publicKey,
     payer: PublicKey = authority
   ): ServiceBuilder {
@@ -295,7 +295,7 @@ export class GatekeeperService extends AbstractService {
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
-        feePayer: funderAuthority,
+        funder,
       })
       .instruction();
 
@@ -314,7 +314,7 @@ export class GatekeeperService extends AbstractService {
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
    * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
-   * @param funderAuthority The authority for the payer of the network and gatekeeper fees
+   * @param funder The authority for the payer of the network and gatekeeper fees
    * @param authority The gatekeeper authority for expiring a pass
    * @param payer The fee payer for expiring the pass
    */
@@ -325,7 +325,7 @@ export class GatekeeperService extends AbstractService {
     networkTokenAccount?: PublicKey,
     gatekeeperTokenAccount?: PublicKey,
     funderTokenAccount?: PublicKey,
-    funderAuthority?: PublicKey,
+    funder?: PublicKey,
     authority: PublicKey = this.getWallet().publicKey,
     payer = authority
   ): ServiceBuilder {
@@ -343,7 +343,7 @@ export class GatekeeperService extends AbstractService {
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
-        feePayer: funderAuthority,
+        funder,
       })
       .instruction();
 

@@ -12,7 +12,7 @@ pub fn verify_pass(ctx: Context<PassVerify>) -> Result<()> {
     let pass = &mut ctx.accounts.pass;
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
-    let funder = &mut ctx.accounts.fee_payer;
+    let funder = &mut ctx.accounts.funder;
 
     let spl_token_program = &mut ctx.accounts.spl_token_program;
     let mint_address = &mut ctx.accounts.mint_account.key();
@@ -59,7 +59,7 @@ pub struct PassVerify<'info> {
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
     #[account(mut)]
     pub payer: Signer<'info>,
-    pub fee_payer: Signer<'info>,
+    pub funder: Signer<'info>,
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
