@@ -11,7 +11,6 @@ import {
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
-  airdrop,
   GatekeeperService,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
