@@ -1,10 +1,9 @@
 import {
+  AdminService,
   airdrop,
   GatekeeperService,
-  NetworkService,
   PassState,
 } from '@identity.com/gateway-solana-client';
-import { createGatekeeperService } from './util';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
@@ -14,7 +13,12 @@ import {
   makeAssociatedTokenAccountsForIssue,
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
-import { Account, AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  Account,
+  AccountLayout,
+  getOrCreateAssociatedTokenAccount,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -172,24 +176,43 @@ describe('Verify a pass', () => {
   });
 
   it.only('Fails to verify a pass in a different network', async () => {
-    const auth = Keypair.generate();
-    const network = Keypair.generate();
-    const wallet = new anchor.Wallet(network);
-    // const wallet = new anchor.Wallet(auth);
+    const altNetwork = Keypair.generate();
+    const wallet = new anchor.Wallet(adminAuthority);
+
     await airdrop(
       programProvider.connection,
-      auth.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
-    await airdrop(
-      programProvider.connection,
-      network.publicKey,
+      adminAuthority.publicKey,
       LAMPORTS_PER_SOL * 2
     );
 
+    await airdrop(
+      programProvider.connection,
+      altNetwork.publicKey,
+      LAMPORTS_PER_SOL * 2
+    );
+
+    const altNetworkAta = await getOrCreateAssociatedTokenAccount(
+      programProvider.connection,
+      adminAuthority,
+      mint,
+      altNetwork.publicKey,
+      false
+    );
+
+    const altAdminService = await AdminService.buildFromAnchor(
+      program,
+      altNetwork.publicKey,
+      {
+        clusterType: 'localnet',
+        wallet: wallet,
+      }
+    );
+
+    await altAdminService.createNetwork().withPartialSigners(altNetwork).rpc();
+
     const altService = await GatekeeperService.buildFromAnchor(
       program,
-      network.publicKey,
+      altNetwork.publicKey,
       gatekeeperPDA,
       {
         clusterType: 'localnet',
@@ -198,24 +221,19 @@ describe('Verify a pass', () => {
       programProvider
     );
 
-    try {
-      await altService
+    return expect(
+      altService
         .verifyPass(
           passAccount,
           TOKEN_PROGRAM_ID,
           mint,
-          networkAta.address,
+          altNetworkAta.address,
           gatekeeperAta.address,
           funderAta.address,
           funderKeypair.publicKey
         )
         .withPartialSigners(funderKeypair)
-        .rpc();
-    } catch (err) {
-      console.error(err);
-    }
-    //
-    expect(auth.publicKey.toBase58()).to.equal(auth.publicKey.toBase58());
-    // ).to.eventually.be.rejectedWith(/A seeds constraint was violated/);
+        .rpc()
+    ).to.eventually.be.rejectedWith(/A seeds constraint was violated/);
   });
 });
