@@ -10,7 +10,6 @@ import {
   airdrop,
   CreateGatekeeperData,
   GatekeeperService,
-  GATEWAY_PROGRAM_ID,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import * as anchor from '@project-serum/anchor';
@@ -127,15 +126,6 @@ export const setUpAdminNetworkGatekeeper = async (
     })
     .withPartialSigners(networkAuthority)
     .rpc();
-
-  const data = {
-    authKeys: [
-      {
-        flags: 65535,
-        key: gatekeeperPDA,
-      },
-    ],
-  } as CreateGatekeeperData;
 
   await networkService
     .createGatekeeper(

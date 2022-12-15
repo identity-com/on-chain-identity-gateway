@@ -64,7 +64,6 @@ pub mod solana_anchor_gateway {
     }
 
     pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, amount: u64) -> Result<()> {
-        msg!("Withdrawing {} from gatekeeper", amount);
         instructions::network::gatekeeper_withdraw(ctx, amount)
     }
 

@@ -54,6 +54,7 @@ pub struct GatekeeperWithdrawAccount<'info> {
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
+    // Verification is done in code
     pub mint_account: Account<'info, Mint>,
     #[account(mut)]
     pub receiver_token_account: Account<'info, TokenAccount>,
