@@ -59,47 +59,6 @@ export type SolanaAnchorGateway = {
       ]
     },
     {
-      "name": "withdrawNetwork",
-      "accounts": [
-        {
-          "name": "network",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "networkTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "toTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "closeNetwork",
       "accounts": [
         {
@@ -320,7 +279,7 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "feePayer",
+          "name": "funder",
           "isMut": true,
           "isSigner": true
         },
@@ -415,6 +374,11 @@ export type SolanaAnchorGateway = {
         {
           "name": "authority",
           "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "funder",
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -569,6 +533,11 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
+          "name": "funder",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -627,6 +596,11 @@ export type SolanaAnchorGateway = {
         {
           "name": "payer",
           "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "funder",
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -1622,47 +1596,6 @@ export const IDL: SolanaAnchorGateway = {
       ]
     },
     {
-      "name": "withdrawNetwork",
-      "accounts": [
-        {
-          "name": "network",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "networkTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "toTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "closeNetwork",
       "accounts": [
         {
@@ -1883,7 +1816,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "feePayer",
+          "name": "funder",
           "isMut": true,
           "isSigner": true
         },
@@ -1978,6 +1911,11 @@ export const IDL: SolanaAnchorGateway = {
         {
           "name": "authority",
           "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "funder",
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -2132,6 +2070,11 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
+          "name": "funder",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -2190,6 +2133,11 @@ export const IDL: SolanaAnchorGateway = {
         {
           "name": "payer",
           "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "funder",
+          "isMut": false,
           "isSigner": true
         },
         {

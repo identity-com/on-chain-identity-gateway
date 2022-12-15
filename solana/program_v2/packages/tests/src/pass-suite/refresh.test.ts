@@ -35,6 +35,8 @@ describe('Refresh a pass', () => {
   let mintAuthority: Keypair;
   let subject: Keypair;
   let mintAccount: Keypair;
+  let funderKeypair: Keypair;
+
   let gatekeeperAta: Account;
   let networkAta: Account;
   let funderAta: Account;
@@ -52,7 +54,7 @@ describe('Refresh a pass', () => {
       subject,
       mintAccount,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
-    ({ gatekeeperAta, networkAta, funderAta } =
+    ({ gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
         adminAuthority,
@@ -68,10 +70,12 @@ describe('Refresh a pass', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
-        funderAta.address
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
   });
 
@@ -93,8 +97,10 @@ describe('Refresh a pass', () => {
         mint,
         networkAta.address,
         gatekeeperAta.address,
-        funderAta.address
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
     const updatedPass = await gatekeeperService.getPassAccount(
       subject.publicKey
@@ -120,8 +126,10 @@ describe('Refresh a pass', () => {
           mint,
           networkAta.address,
           gatekeeperAta.address,
-          funderAta.address
+          funderAta.address,
+          funderKeypair.publicKey
         )
+        .withPartialSigners(funderKeypair)
         .rpc()
     ).to.eventually.be.rejectedWith(/PassNotActive/);
   });
@@ -137,8 +145,10 @@ describe('Refresh a pass', () => {
         mint,
         networkAta.address,
         gatekeeperAta.address,
-        funderAta.address
+        funderAta.address,
+        funderKeypair.publicKey
       )
+      .withPartialSigners(funderKeypair)
       .rpc();
 
     const funderAtaAccountInfo = await gatekeeperService
@@ -179,8 +189,10 @@ describe('Refresh a pass', () => {
           mint,
           networkAta.address,
           gatekeeperAta.address,
-          funderAta.address
+          funderAta.address,
+          funderKeypair.publicKey
         )
+        .withPartialSigners(funderKeypair)
         .rpc()
     ).to.eventually.be.rejectedWith(/PassNotActive/);
   });

@@ -43,6 +43,7 @@ impl Gatekeeper {
             + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * auth_keys
         // auth keys
     }
+
     // Checks if an authkey has enough authority for an action
     pub fn can_access(&self, authority: &Signer, flag: GatekeeperKeyFlags) -> bool {
         self.auth_keys

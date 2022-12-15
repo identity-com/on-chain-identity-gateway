@@ -75,8 +75,8 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
+        gatekeeperAta.address,
         funderAta.address,
         funderKeypair.publicKey
       )
@@ -119,8 +119,8 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
+        gatekeeperAta.address,
         funderAta.address,
         funderKeypair.publicKey
       )
@@ -165,10 +165,10 @@ describe('issue', () => {
     await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
       {
         token: mint,
-        issue: new anchor.BN(0),
-        refresh: new anchor.BN(0),
-        expire: new anchor.BN(0),
-        verify: new anchor.BN(0),
+        issue: 0,
+        refresh: 0,
+        expire: 0,
+        verify: 0,
       },
     ]);
 
@@ -179,8 +179,8 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
+        gatekeeperAta.address,
         funderAta.address,
         funderKeypair.publicKey
       )
@@ -231,8 +231,8 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
+        gatekeeperAta.address,
         funderAta.address,
         funderKeypair.publicKey
       )
@@ -265,8 +265,8 @@ describe('issue', () => {
         subject.publicKey,
         TOKEN_PROGRAM_ID,
         mint,
-        gatekeeperAta.address,
         networkAta.address,
+        gatekeeperAta.address,
         funderAta.address,
         funderKeypair.publicKey
       )

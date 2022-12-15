@@ -144,7 +144,13 @@ export class AdminService extends AbstractService {
       .createNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        fees: data.fees,
+        fees: data.fees.map((fee) => ({
+          token: fee.token,
+          issue: new anchor.BN(fee.issue),
+          expire: new anchor.BN(fee.expire),
+          verify: new anchor.BN(fee.verify),
+          refresh: new anchor.BN(fee.refresh),
+        })),
         authKeys: data.authKeys,
         supportedTokens: data.supportedTokens,
       })
@@ -186,31 +192,6 @@ export class AdminService extends AbstractService {
         network: this._network,
         authority,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .instruction();
-
-    return new ServiceBuilder(this, {
-      instructionPromise,
-      authority,
-    });
-  }
-
-  withdraw(
-    amount: number,
-    authority: PublicKey,
-    tokenProgram: PublicKey,
-    networkTokenAccount: PublicKey,
-    toTokenAccount: PublicKey
-  ): ServiceBuilder {
-    const instructionPromise = this._program.methods
-      .withdrawNetwork(new anchor.BN(amount))
-      .accounts({
-        network: this._network,
-        authority,
-        systemProgram: anchor.web3.SystemProgram.programId,
-        tokenProgram,
-        networkTokenAccount,
-        toTokenAccount,
       })
       .instruction();
 

@@ -13,7 +13,7 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
     let pass = &mut ctx.accounts.pass;
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
-    let funder = &mut ctx.accounts.fee_payer;
+    let funder = &mut ctx.accounts.funder;
 
     let spl_token_program = &mut ctx.accounts.spl_token_program;
     let mint_address = &mut ctx.accounts.mint_account.key();
@@ -23,7 +23,8 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
 
     let absolute_fee = get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address)?.issue;
     let network_percentage = get_network_fees(&network.fees, *mint_address)?.issue;
-    let fees = calculate_network_and_gatekeeper_fee(absolute_fee, network_percentage);
+    let (network_fee, gatekeeper_fee) =
+        calculate_network_and_gatekeeper_fee(absolute_fee, network_percentage);
 
     create_and_invoke_transfer(
         spl_token_program.to_owned(),
@@ -31,7 +32,7 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
         gatekeeper_ata.to_owned(),
         funder.to_owned(),
         &[&funder.key()],
-        fees.0,
+        gatekeeper_fee,
     )?;
 
     create_and_invoke_transfer(
@@ -40,7 +41,7 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
         network_ata.to_owned(),
         funder.to_owned(),
         &[&funder.key()],
-        fees.1,
+        network_fee,
     )?;
 
     pass.signer_bump = *ctx.bumps.get("pass").unwrap();
@@ -73,14 +74,20 @@ pub struct IssuePass<'info> {
     pub payer: Signer<'info>,
     pub authority: Signer<'info>,
     #[account(mut)]
-    pub fee_payer: Signer<'info>,
+    pub funder: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
     pub mint_account: Account<'info, Mint>,
     #[account(mut)]
     pub funder_token_account: Account<'info, TokenAccount>,
-    #[account(mut)]
+    #[account(
+    mut,
+    constraint = network_token_account.owner == *network.to_account_info().key,
+    )]
     pub network_token_account: Account<'info, TokenAccount>,
-    #[account(mut)]
+    #[account(
+    mut,
+    constraint = gatekeeper_token_account.owner ==  *gatekeeper.to_account_info().key,
+    )]
     pub gatekeeper_token_account: Account<'info, TokenAccount>,
 }

@@ -24,7 +24,21 @@ import { setGatekeeperFlagsAndFees } from './util/lib';
 export const setUpAdminNetworkGatekeeper = async (
   program: anchor.Program<SolanaAnchorGateway>,
   programProvider: anchor.AnchorProvider
-) => {
+): Promise<{
+  adminService: AdminService;
+  networkService: NetworkService;
+  gatekeeperService: GatekeeperService;
+  gatekeeperPDA: PublicKey;
+  stakingPDA: PublicKey;
+  passAccount: PublicKey;
+  mint: PublicKey;
+  adminAuthority: Keypair;
+  networkAuthority: Keypair;
+  gatekeeperAuthority: Keypair;
+  mintAuthority: Keypair;
+  subject: Keypair;
+  mintAccount: Keypair;
+}> => {
   const adminAuthority = Keypair.generate();
   const networkAuthority = Keypair.generate();
   const gatekeeperAuthority = Keypair.generate();
@@ -100,10 +114,10 @@ export const setUpAdminNetworkGatekeeper = async (
       fees: [
         {
           token: mint,
-          issue: new anchor.BN(10),
-          refresh: new anchor.BN(10),
-          expire: new anchor.BN(10),
-          verify: new anchor.BN(10),
+          issue: 10,
+          refresh: 10,
+          expire: 10,
+          verify: 10,
         },
       ],
       authKeys: [{ flags: 4097, key: networkAuthority.publicKey }],
@@ -124,10 +138,10 @@ export const setUpAdminNetworkGatekeeper = async (
   await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
     {
       token: mint,
-      issue: new anchor.BN(1000),
-      refresh: new anchor.BN(1000),
-      expire: new anchor.BN(1000),
-      verify: new anchor.BN(1000),
+      issue: 1000,
+      refresh: 1000,
+      expire: 1000,
+      verify: 1000,
     },
   ]);
 
@@ -195,7 +209,7 @@ export const makeAssociatedTokenAccountsForIssue = async (
     connection,
     adminAuthority,
     mintPublicKey,
-    adminAuthority.publicKey,
+    networkPublicKey,
     false
   );
 
