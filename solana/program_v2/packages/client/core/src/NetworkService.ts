@@ -307,7 +307,7 @@ export class NetworkService extends AbstractService {
     const instructionPromise = this._program.methods
       .gatekeeperWithdraw(new anchor.BN(amount))
       .accounts({
-        gatekeeper: gatekeeper,
+        gatekeeper,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         mintAccount,
