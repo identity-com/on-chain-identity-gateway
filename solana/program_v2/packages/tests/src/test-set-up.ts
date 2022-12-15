@@ -24,7 +24,21 @@ import { setGatekeeperFlagsAndFees } from './util/lib';
 export const setUpAdminNetworkGatekeeper = async (
   program: anchor.Program<SolanaAnchorGateway>,
   programProvider: anchor.AnchorProvider
-) => {
+): Promise<{
+  adminService: AdminService;
+  networkService: NetworkService;
+  gatekeeperService: GatekeeperService;
+  gatekeeperPDA: PublicKey;
+  stakingPDA: PublicKey;
+  passAccount: PublicKey;
+  mint: PublicKey;
+  adminAuthority: Keypair;
+  networkAuthority: Keypair;
+  gatekeeperAuthority: Keypair;
+  mintAuthority: Keypair;
+  subject: Keypair;
+  mintAccount: Keypair;
+}> => {
   const adminAuthority = Keypair.generate();
   const networkAuthority = Keypair.generate();
   const gatekeeperAuthority = Keypair.generate();

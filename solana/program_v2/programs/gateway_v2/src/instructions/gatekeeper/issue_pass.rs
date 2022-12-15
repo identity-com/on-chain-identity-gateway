@@ -13,7 +13,7 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
     let pass = &mut ctx.accounts.pass;
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
-    let funder = &mut ctx.accounts.fee_payer;
+    let funder = &mut ctx.accounts.funder;
 
     let spl_token_program = &mut ctx.accounts.spl_token_program;
     let mint_address = &mut ctx.accounts.mint_account.key();
@@ -74,7 +74,7 @@ pub struct IssuePass<'info> {
     pub payer: Signer<'info>,
     pub authority: Signer<'info>,
     #[account(mut)]
-    pub fee_payer: Signer<'info>,
+    pub funder: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
     pub mint_account: Account<'info, Mint>,

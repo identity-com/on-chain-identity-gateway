@@ -11,7 +11,7 @@ use crate::util::{
 pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
-    let funder = &mut ctx.accounts.fee_payer;
+    let funder = &mut ctx.accounts.funder;
 
     let pass = &mut ctx.accounts.pass;
     let spl_token_program = &mut ctx.accounts.spl_token_program;
@@ -57,7 +57,7 @@ pub struct PassRefresh<'info> {
     pub pass: Box<Account<'info, Pass>>,
     pub authority: Signer<'info>,
     #[account(mut)]
-    pub fee_payer: Signer<'info>,
+    pub funder: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub network: Box<Account<'info, GatekeeperNetwork>>,
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,

@@ -70,7 +70,7 @@ describe('Verify a pass', () => {
         gatekeeperAuthority.publicKey,
         mintAccount.publicKey,
         gatekeeperPDA,
-        3000
+        10000
       ));
 
     await gatekeeperService
