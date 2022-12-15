@@ -58,6 +58,7 @@ pub struct PassExpire<'info> {
     pub network: Box<Account<'info, GatekeeperNetwork>>,
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
     #[account(mut)]
+    pub payer: Signer<'info>,
     pub funder: Signer<'info>,
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
