@@ -51,7 +51,7 @@ pub struct PassVerify<'info> {
     #[account(
     seeds = [PASS_SEED, pass.subject.as_ref(), network.key().as_ref(), & pass.pass_number.to_le_bytes()],
     bump,
-    // TODO!: Constraint is incorrect here
+    // TODO!: Constraint is incorrect here (IDCOM-2232)
     constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::EXPIRE_PASS),
     mut
     )]

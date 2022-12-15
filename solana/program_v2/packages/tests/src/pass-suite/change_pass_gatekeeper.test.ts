@@ -1,11 +1,9 @@
-import { createNetworkService } from './util';
 import {
   GatekeeperService,
   NetworkService,
   GatekeeperKeyFlags,
   airdrop,
   AdminService,
-  NetworkAccount,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -17,11 +15,7 @@ import {
 } from '../test-set-up';
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
-import {
-  Account,
-  getOrCreateAssociatedTokenAccount,
-  TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
+import { Account, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
