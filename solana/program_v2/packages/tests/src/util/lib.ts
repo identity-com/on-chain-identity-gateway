@@ -3,7 +3,7 @@ import {
   FeeStructure,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
-import fsPromises from 'node:fs/promises';
+import * as fsPromises from 'node:fs/promises';
 
 export const loadPrivateKey = async (
   publicKeyBs58: string

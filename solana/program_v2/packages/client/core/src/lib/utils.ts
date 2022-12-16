@@ -80,7 +80,6 @@ export const findProgramAddress = async (
  * @param gatekeeperNetwork The gatekeeper network the pass is in
  * @param subject The address for the subject the pass belongs to
  * @param passNumber The pass number if more than one pass is issued
- * @param opts The Solana confirm options to use
  */
 export const findGatewayPass = async (
   connection: Connection,

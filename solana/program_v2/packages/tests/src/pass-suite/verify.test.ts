@@ -1,18 +1,24 @@
 import {
+  AdminService,
+  airdrop,
   GatekeeperService,
   PassState,
 } from '@identity.com/gateway-solana-client';
-import { createGatekeeperService } from './util';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   makeAssociatedTokenAccountsForIssue,
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
-import { Account, AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  Account,
+  AccountLayout,
+  getOrCreateAssociatedTokenAccount,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -64,7 +70,7 @@ describe('Verify a pass', () => {
         gatekeeperAuthority.publicKey,
         mintAccount.publicKey,
         gatekeeperPDA,
-        3000
+        10000
       ));
 
     await gatekeeperService
@@ -115,7 +121,7 @@ describe('Verify a pass', () => {
     );
 
     // Assert
-    expect(funderAccount.amount).to.equal(1000n);
+    expect(funderAccount.amount).to.equal(8000n);
     expect(networkAccount.amount).to.equal(2n);
     expect(gatekeeperAccount.amount).to.equal(1998n);
   });
@@ -169,12 +175,50 @@ describe('Verify a pass', () => {
     ).to.eventually.be.rejectedWith(/InvalidPass/);
   });
 
-  it.skip('Fails to verify a pass in a different network', async () => {
-    const auth = Keypair.generate();
-    const network = Keypair.generate();
-    const altService = await createGatekeeperService(
-      auth.publicKey,
-      network.publicKey
+  it('Fails to verify a pass in a different network', async () => {
+    const altNetwork = Keypair.generate();
+    const wallet = new anchor.Wallet(adminAuthority);
+
+    await airdrop(
+      programProvider.connection,
+      adminAuthority.publicKey,
+      LAMPORTS_PER_SOL * 2
+    );
+
+    await airdrop(
+      programProvider.connection,
+      altNetwork.publicKey,
+      LAMPORTS_PER_SOL * 2
+    );
+
+    const altNetworkAta = await getOrCreateAssociatedTokenAccount(
+      programProvider.connection,
+      adminAuthority,
+      mint,
+      altNetwork.publicKey,
+      false
+    );
+
+    const altAdminService = await AdminService.buildFromAnchor(
+      program,
+      altNetwork.publicKey,
+      {
+        clusterType: 'localnet',
+        wallet: wallet,
+      }
+    );
+
+    await altAdminService.createNetwork().withPartialSigners(altNetwork).rpc();
+
+    const altService = await GatekeeperService.buildFromAnchor(
+      program,
+      altNetwork.publicKey,
+      gatekeeperPDA,
+      {
+        clusterType: 'localnet',
+        wallet: wallet,
+      },
+      programProvider
     );
 
     return expect(
@@ -183,7 +227,7 @@ describe('Verify a pass', () => {
           passAccount,
           TOKEN_PROGRAM_ID,
           mint,
-          networkAta.address,
+          altNetworkAta.address,
           gatekeeperAta.address,
           funderAta.address,
           funderKeypair.publicKey
