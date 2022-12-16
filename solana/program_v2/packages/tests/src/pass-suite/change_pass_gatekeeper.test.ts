@@ -110,77 +110,13 @@ describe('Change pass gatekeeper', () => {
 
   it('Cannot change to gatekeeper within a different network', async () => {
     // Assemble
-    const newAdminAuthority = Keypair.generate();
-    const newNetworkAuthority = Keypair.generate();
-    const newGatekeeperAuthority = Keypair.generate();
-
-    //network airdrop
-    await airdrop(
-      programProvider.connection,
-      newAdminAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
-    await airdrop(
-      programProvider.connection,
-      newNetworkAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
-    await airdrop(
-      programProvider.connection,
-      newGatekeeperAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
-
-    const [gatekeeperDataAccount] =
-      await NetworkService.createGatekeeperAddress(
-        newGatekeeperAuthority.publicKey,
-        newNetworkAuthority.publicKey
-      );
-    const [stakingDataAccount] = await NetworkService.createStakingAddress(
-      newNetworkAuthority.publicKey
-    );
-
-    const newAdminService = await AdminService.buildFromAnchor(
+    const { gatekeeperPDA } = await setUpAdminNetworkGatekeeper(
       program,
-      newNetworkAuthority.publicKey,
-      {
-        clusterType: 'localnet',
-        wallet: new anchor.Wallet(newAdminAuthority),
-      },
       programProvider
     );
-
-    const newNetworkService = await NetworkService.buildFromAnchor(
-      program,
-      newGatekeeperAuthority.publicKey,
-      gatekeeperDataAccount,
-      {
-        clusterType: 'localnet',
-        wallet: new anchor.Wallet(newGatekeeperAuthority),
-      },
-      programProvider
-    );
-
-    await newAdminService
-      .createNetwork()
-      .withPartialSigners(newNetworkAuthority)
-      .rpc();
-
-    await newNetworkService
-      .createGatekeeper(
-        newNetworkAuthority.publicKey,
-        stakingDataAccount,
-        newAdminAuthority.publicKey
-      )
-      .withPartialSigners(newAdminAuthority)
-      .rpc();
-
-    // Act + Assert
 
     expect(
-      gatekeeperService
-        .changePassGatekeeper(gatekeeperDataAccount, passAccount)
-        .rpc()
+      gatekeeperService.changePassGatekeeper(gatekeeperPDA, passAccount).rpc()
     ).to.eventually.be.rejectedWith(/InvalidNetwork/);
   });
 });
