@@ -8,7 +8,6 @@ import {
 import {
   AdminService,
   airdrop,
-  CreateGatekeeperData,
   GatekeeperService,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
