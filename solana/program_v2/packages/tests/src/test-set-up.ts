@@ -210,7 +210,7 @@ export const makeAssociatedTokenAccountsForIssue = async (
     adminAuthority,
     mintPublicKey,
     networkPublicKey,
-    false
+    true
   );
 
   const funderAta = await getOrCreateAssociatedTokenAccount(

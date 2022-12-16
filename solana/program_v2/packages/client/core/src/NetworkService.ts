@@ -296,16 +296,24 @@ export class NetworkService extends AbstractService {
   }
 
   gatekeeperWithdraw(
-    receiver: PublicKey = this._wallet.publicKey,
-    authority: PublicKey = this._wallet.publicKey
+    gatekeeper: PublicKey,
+    authority: PublicKey = this._wallet.publicKey,
+    mintAccount: PublicKey,
+    splTokenProgram: PublicKey,
+    receiverTokenAccount: PublicKey,
+    gatekeeperTokenAccount: PublicKey,
+    amount: number
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
-      .gatekeeperWithdraw()
+      .gatekeeperWithdraw(new anchor.BN(amount))
       .accounts({
-        gatekeeper: this._gatekeeperAccount,
+        gatekeeper,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
-        receiver,
+        mintAccount,
+        splTokenProgram,
+        receiverTokenAccount,
+        gatekeeperTokenAccount,
       })
       .instruction();
 

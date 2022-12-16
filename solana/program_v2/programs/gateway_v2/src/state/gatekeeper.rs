@@ -208,23 +208,6 @@ impl Gatekeeper {
         }
         Ok(())
     }
-
-    // TODO: Change Auth Access
-    // TODO: Change Receiver to Account
-    // controls withdrawal of funds from the gatekeeper
-    pub fn gatekeeper_withdraw(
-        &mut self,
-        _receiver: &mut UncheckedAccount,
-        authority: &mut Signer,
-    ) -> Result<()> {
-        if !self.can_access(authority, GatekeeperKeyFlags::AUTH) {
-            return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
-        }
-        // TODO: Check type of currency,
-        // TODO: Transfer to _receiver
-
-        Ok(())
-    }
 }
 
 /// The state of a [`Gatekeeper`]
