@@ -145,7 +145,7 @@ describe('issue', () => {
     );
 
     // Assert
-    expect(funderAccount.amount).to.equal(1000n);
+    expect(funderAccount.amount).to.equal(0n);
     expect(networkAccount.amount).to.equal(1n);
     expect(gatekeeperAccount.amount).to.equal(999n);
   });
