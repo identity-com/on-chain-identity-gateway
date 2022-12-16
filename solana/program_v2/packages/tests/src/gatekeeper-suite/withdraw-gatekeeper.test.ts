@@ -143,6 +143,6 @@ describe('withdraw gatekeeper', () => {
 
     // Assert
     expect(gatekeeperData.amount).to.equal(0n);
-    expect(receiverData.amount).to.equal(999n);
+    expect(receiverData.amount).to.equal(1000n);
   });
 });
