@@ -152,7 +152,7 @@ jobs:
 
       - name: Run integration tests
         run: |
-          yarn anchor test
+          yarn test
 
       # yarn anchor build
       # - name: Upload a single artifact

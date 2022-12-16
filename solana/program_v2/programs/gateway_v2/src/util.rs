@@ -63,7 +63,7 @@ pub fn calculate_network_and_gatekeeper_fee(fee: u64, percent: u16) -> (u64, u64
     let network_fee = (fee as f64).mul(percentage);
 
     let gatekeeper_fee = (fee) - (network_fee as u64);
-    (network_fee as u64, gatekeeper_fee as u64)
+    (network_fee as u64, gatekeeper_fee)
 }
 
 pub fn create_and_invoke_transfer<'a>(
