@@ -11,6 +11,8 @@ pub fn update_gatekeeper(
     let authority = &mut ctx.accounts.authority;
     let staking_account = &mut ctx.accounts.staking_account;
 
+    // TODO: Not all Data should be passed to these functions
+    // TODO: Access/Auth Checks need to be performed outside/independent of the update functions
     gatekeeper.add_auth_keys(&data, authority)?;
     gatekeeper.add_fees(&data, authority)?;
     gatekeeper.set_staking_account(staking_account, authority)?;

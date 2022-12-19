@@ -6,21 +6,24 @@ use crate::state::gatekeeper::{
 use crate::state::GatekeeperNetwork;
 use anchor_lang::prelude::*;
 
+// TODO: Right now ANYONE can create a Gatekeeper in a Network. This should be restricted to an authority
+// in network.auth_keys.
 pub fn create_gatekeeper(
     ctx: Context<CreateGatekeeperAccount>,
     data: CreateGatekeeperData,
 ) -> Result<()> {
     let authority = &mut ctx.accounts.authority;
-    let bump = *ctx.bumps.get("gatekeeper").unwrap();
-    // let stake_bump = *ctx.bumps.get("stake").unwrap();
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let network = &mut ctx.accounts.network;
+    // TODO: Does not need to be mutable.
     let staking_account = &mut ctx.accounts.staking_account;
 
+    // TODO: can this case not be covered in combination with the code below.
     if data.auth_keys.is_empty() {
         return Err(error!(GatekeeperErrors::NoAuthKeys));
     }
     // Checks if there are enough auth keys to create the gatekeeper, should maybe check in NetworkKeyFlags
+    // TODO: Move into dedicated trait.
     if data
         .auth_keys
         .iter()
@@ -34,7 +37,7 @@ pub fn create_gatekeeper(
     }
 
     gatekeeper.authority = *authority.key;
-    gatekeeper.gatekeeper_bump = bump;
+    gatekeeper.gatekeeper_bump = *ctx.bumps.get("gatekeeper").unwrap();
     gatekeeper.gatekeeper_network = network.key();
     gatekeeper.staking_account = staking_account.key();
     gatekeeper.token_fees = data.token_fees;
