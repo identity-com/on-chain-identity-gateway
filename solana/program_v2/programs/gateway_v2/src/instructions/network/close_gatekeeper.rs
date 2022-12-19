@@ -3,6 +3,8 @@ use crate::errors::*;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
+// TODO: Think about it: Should Gatekeepers only be able to remove themselves WITH a signoff of the
+// Network
 pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
@@ -47,6 +49,7 @@ pub struct CloseGatekeeperAccount<'info> {
     /// CHECK: Rent destination account does not need to satisfy the any constraints.
     #[account(mut)]
     pub destination: UncheckedAccount<'info>,
+    // TODO: Why is authority mut?
     #[account(mut)]
     pub authority: Signer<'info>,
     #[account(mut)]

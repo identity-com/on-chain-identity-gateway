@@ -3,8 +3,11 @@ use anchor_lang::prelude::*;
 
 pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
+    // TODO: authority should not need to be mutable.
     let authority = &mut ctx.accounts.authority;
 
+    // TODO: Why is the whole `UpdateNetworkData` going into these setters?
+    // TODO: Access checks and functional logic (updates) need to be separated.
     network.set_expire_time(data, authority)?;
     network.update_auth_keys(data, authority)?;
     network.update_fees(data, authority)?;
@@ -69,6 +72,7 @@ pub struct UpdateNetworkAccount<'info> {
     realloc::zero = false,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
+    // TODO: Separate payer and authority
     #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
