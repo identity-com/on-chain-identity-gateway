@@ -10,7 +10,9 @@ pub fn set_gatekeeper_state(
 ) -> Result<()> {
     let gatekeeper = &mut ctx.accounts.gatekeeper;
 
-    gatekeeper.set_gatekeeper_state(&state)?;
+    // TODO: Should the authority net be checked against the NETWORK Auth_Keys
+    // and not the Gatekeeper Auth_Keys?
+    gatekeeper.set_gatekeeper_state(&state, authority)?;
 
     Ok(())
 }
@@ -24,7 +26,9 @@ pub struct SetGatekeeperStateAccount<'info> {
         bump = gatekeeper.gatekeeper_bump,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
+    // TODO: Why is authority mut?
+    #[account(mut)]
     pub authority: Signer<'info>,
-    #[account(constraint = network.can_access(&authority, NetworkKeyFlags::AUTH) @ GatekeeperErrors::InsufficientAccessAuthKeys)]
-    pub network: Account<'info, GatekeeperNetwork>,
+    // TODO: Why do i need the system program? I don't see it being used in the instruction.
+    pub system_program: Program<'info, System>,
 }

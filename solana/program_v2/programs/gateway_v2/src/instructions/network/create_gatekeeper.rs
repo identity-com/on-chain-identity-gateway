@@ -15,13 +15,26 @@ pub fn create_gatekeeper(
     let authority = &mut ctx.accounts.authority;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let network = &mut ctx.accounts.network;
-    let staking_account = &ctx.accounts.staking_account;
-    let auth_keys = data.auth_keys;
+    // TODO: Does not need to be mutable.
+    let staking_account = &mut ctx.accounts.staking_account;
 
-    require!(
-        check_gatekeeper_auth_threshold(&auth_keys, data.auth_threshold),
-        GatekeeperErrors::InsufficientAuthKeys
-    );
+    // TODO: can this case not be covered in combination with the code below.
+    if data.auth_keys.is_empty() {
+        return Err(error!(GatekeeperErrors::NoAuthKeys));
+    }
+    // Checks if there are enough auth keys to create the gatekeeper, should maybe check in NetworkKeyFlags
+    // TODO: Move into dedicated trait.
+    if data
+        .auth_keys
+        .iter()
+        .filter(|key| {
+            GatekeeperKeyFlags::from_bits_truncate(key.flags).contains(GatekeeperKeyFlags::AUTH)
+        })
+        .count()
+        < data.auth_threshold as usize
+    {
+        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
+    }
 
     gatekeeper.authority = *authority.key;
     gatekeeper.gatekeeper_bump = *ctx.bumps.get("gatekeeper").unwrap();
