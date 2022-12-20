@@ -233,24 +233,14 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "splTokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "authority",
           "isMut": false,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "receiverTokenAccount",
@@ -1762,24 +1752,14 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "splTokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "authority",
           "isMut": false,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "receiverTokenAccount",
