@@ -1,10 +1,11 @@
+use anchor_lang::prelude::*;
+
 use crate::constants::GATEKEEPER_SEED;
 use crate::errors::GatekeeperErrors;
 use crate::state::gatekeeper::{
     Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, GatekeeperState,
 };
 use crate::state::GatekeeperNetwork;
-use anchor_lang::prelude::*;
 
 // TODO: Right now ANYONE can create a Gatekeeper in a Network. This should be restricted to an authority
 // in network.auth_keys.
@@ -15,14 +16,13 @@ pub fn create_gatekeeper(
     let authority = &mut ctx.accounts.authority;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let network = &mut ctx.accounts.network;
-    // TODO: Does not need to be mutable.
-    let staking_account = &mut ctx.accounts.staking_account;
+    let staking_account = &ctx.accounts.staking_account;
 
     // TODO: can this case not be covered in combination with the code below.
     if data.auth_keys.is_empty() {
         return Err(error!(GatekeeperErrors::NoAuthKeys));
     }
-    // Checks if there are enough auth keys to create the gatekeeper, should maybe check in NetworkKeyFlags
+    // Checks if there are enough auth keys to create the gatekeeper
     // TODO: Move into dedicated trait.
     if data
         .auth_keys
@@ -49,6 +49,7 @@ pub fn create_gatekeeper(
 
     Ok(())
 }
+
 /// Data for [`CreateGatekeeper`]
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct CreateGatekeeperData {
@@ -62,30 +63,29 @@ pub struct CreateGatekeeperData {
 #[instruction(data: CreateGatekeeperData)]
 pub struct CreateGatekeeperAccount<'info> {
     #[account(
-        init,
-        payer = payer,
-        space = Gatekeeper::size(
-            data.auth_keys.len(),
-            data.token_fees.len(),
-        ),
-        seeds = [GATEKEEPER_SEED, authority.key().as_ref(), network.key().as_ref()],
-        bump
+    init,
+    payer = payer,
+    space = Gatekeeper::size(
+    data.auth_keys.len(),
+    data.token_fees.len(),
+    ),
+    seeds = [GATEKEEPER_SEED, authority.key().as_ref(), network.key().as_ref()],
+    bump
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
-    #[account(mut)]
     pub authority: Signer<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account(
-        mut,
-        realloc = GatekeeperNetwork::size(
-            network.fees.len(),
-            network.auth_keys.len(),
-            network.gatekeepers.len() + 1,
-            network.supported_tokens.len(),
-        ),
-        realloc::payer = payer,
-        realloc::zero = false,
+    mut,
+    realloc = GatekeeperNetwork::size(
+    network.fees.len(),
+    network.auth_keys.len(),
+    network.gatekeepers.len() + 1,
+    network.supported_tokens.len(),
+    ),
+    realloc::payer = payer,
+    realloc::zero = false,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]
