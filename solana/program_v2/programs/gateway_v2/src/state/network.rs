@@ -105,44 +105,25 @@ impl GatekeeperNetwork {
             .any(|token| token.key == *mint_account)
     }
 
-    pub fn set_expire_time(
-        &mut self,
-        data: &UpdateNetworkData,
-        authority: &mut Signer,
-    ) -> Result<()> {
-        match data.pass_expire_time {
-            Some(pass_expire_time) => {
-                if pass_expire_time != self.pass_expire_time {
-                    if !self.can_access(authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
-                        return Err(error!(NetworkErrors::InsufficientAccessExpiry));
-                    }
-
-                    self.pass_expire_time = pass_expire_time;
-                }
-
-                Ok(())
+    pub fn set_expire_time(&mut self, pass_expire_time: Option<i64>) -> Result<()> {
+        if let Some(pass_expire_time) = pass_expire_time {
+            if pass_expire_time != self.pass_expire_time {
+                self.pass_expire_time = pass_expire_time;
             }
-            None => Ok(()),
         }
+
+        Ok(())
     }
 
-    pub fn update_auth_keys(
-        &mut self,
-        data: &UpdateNetworkData,
-        authority: &mut Signer,
-    ) -> Result<()> {
+    pub fn update_auth_keys(&mut self, update_keys: &UpdateKeys, authority: &Signer) -> Result<()> {
         // This will skip the next auth check which isn't required if there are no keys
-        if data.auth_keys.add.is_empty() && data.auth_keys.remove.is_empty() {
+        if update_keys.add.is_empty() && update_keys.remove.is_empty() {
             // no auth keys to add/remove
             return Ok(());
         }
 
-        if !self.can_access(authority, NetworkKeyFlags::AUTH) {
-            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-        }
-
         // remove the keys if they exist
-        for key in data.auth_keys.remove.iter() {
+        for key in update_keys.remove.iter() {
             let index: Option<usize> = self.auth_keys.iter().position(|x| x.key == *key);
 
             if let Some(key_index) = index {
@@ -157,7 +138,7 @@ impl GatekeeperNetwork {
             }
         }
 
-        for key in data.auth_keys.add.iter() {
+        for key in update_keys.add.iter() {
             let index: Option<usize> = self.auth_keys.iter().position(|x| x.key == key.key);
 
             if let Some(key_index) = index {
@@ -181,56 +162,39 @@ impl GatekeeperNetwork {
         Ok(())
     }
 
-    pub fn update_fees(&mut self, data: &UpdateNetworkData, authority: &mut Signer) -> Result<()> {
+    pub fn update_fees(&mut self, fees: &UpdateFees) -> Result<()> {
         // This will skip the next auth check which isn't required if there are no fees
-        if data.fees.add.is_empty() && data.fees.remove.is_empty() {
+        if fees.add.is_empty() && fees.remove.is_empty() {
             // no fees to add/remove
             return Ok(());
         }
 
-        if !self.can_access(authority, NetworkKeyFlags::AUTH) {
-            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-        }
+        // Remove the fees if they exist
+        for fee in fees.remove.iter() {
+            let fee_index = self.fees.iter().position(|x| x.token == *fee);
 
-        // remove the fees if they exist
-        for fee in data.fees.remove.iter() {
-            let index: Option<usize> = self.fees.iter().position(|x| x.token == *fee);
-
-            if index.is_none() {
-                return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-            }
-
-            let fee_index = index.unwrap();
-
-            self.fees.remove(fee_index);
+            match fee_index {
+                Some(index) => self.fees.remove(index),
+                None => return Err(error!(NetworkErrors::InsufficientAccessAuthKeys)),
+            };
         }
 
         // Add or update fees
-        for fee in data.fees.add.iter() {
-            let index: Option<usize> = self.fees.iter().position(|x| x.token == fee.token);
+        for fee in fees.add.iter() {
+            let fee_index = self.fees.iter().position(|x| x.token == fee.token);
 
-            if let Some(fee_index) = index {
-                // update the existing key with new fees
-                self.fees[fee_index] = *fee;
-            } else {
-                self.fees.push(*fee);
+            match fee_index {
+                Some(index) => self.fees[index] = *fee,
+                None => self.fees.push(*fee),
             }
         }
 
         Ok(())
     }
 
-    pub fn update_network_features(
-        &mut self,
-        data: &UpdateNetworkData,
-        authority: &mut Signer,
-    ) -> Result<()> {
-        if data.network_features != self.network_features {
-            if !self.can_access(authority, NetworkKeyFlags::SET_EXPIRE_TIME) {
-                return Err(error!(NetworkErrors::InsufficientAccessExpiry));
-            }
-
-            self.network_features = data.network_features
+    pub fn update_network_features(&mut self, network_features: u32) -> Result<()> {
+        if network_features != self.network_features {
+            self.network_features = network_features
         }
 
         Ok(())
@@ -238,38 +202,33 @@ impl GatekeeperNetwork {
 
     pub fn update_supported_tokens(
         &mut self,
-        data: &UpdateNetworkData,
-        authority: &mut Signer,
+        supported_tokens: &UpdateSupportedTokens,
     ) -> Result<()> {
-        if data.supported_tokens.add.is_empty() && data.supported_tokens.remove.is_empty() {
+        if supported_tokens.add.is_empty() && supported_tokens.remove.is_empty() {
             // no fees to add/remove
             return Ok(());
         }
-        if !self.can_access(authority, NetworkKeyFlags::AUTH) {
-            return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
+
+        // Remove the supported tokens if they exist
+        for token in supported_tokens.remove.iter() {
+            let existing_token = self.supported_tokens.iter().position(|x| x.key == *token);
+
+            match existing_token {
+                Some(index) => self.supported_tokens.remove(index),
+                None => return Err(error!(NetworkErrors::InsufficientAccessAuthKeys)),
+            };
         }
-        for token in data.supported_tokens.remove.iter() {
-            let index: Option<usize> = self.supported_tokens.iter().position(|x| x.key == *token);
 
-            if index.is_none() {
-                return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-            }
-
-            let token_index = index.unwrap();
-
-            self.supported_tokens.remove(token_index);
-        }
-        for token in data.supported_tokens.add.iter() {
-            let index: Option<usize> = self
+        // Add or update the supported tokens
+        for token in supported_tokens.add.iter() {
+            let existing_token = self
                 .supported_tokens
                 .iter()
                 .position(|x| x.key == token.key);
 
-            if let Some(token_index) = index {
-                // update the existing key with new fees
-                self.supported_tokens[token_index] = *token;
-            } else {
-                self.supported_tokens.push(*token);
+            match existing_token {
+                Some(index) => self.supported_tokens[index] = *token,
+                None => self.supported_tokens.push(*token),
             }
         }
         Ok(())

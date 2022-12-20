@@ -1,19 +1,30 @@
+use crate::errors::NetworkErrors;
+use crate::state::{
+    AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
+};
 use anchor_lang::prelude::*;
 
-use crate::state::{AuthKey, GatekeeperNetwork, NetworkFeesPercentage, SupportedToken};
-
 pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkData) -> Result<()> {
-    let network = &mut ctx.accounts.network;
-    // TODO: authority should not need to be mutable.
-    let authority = &mut ctx.accounts.authority;
+    require!(
+        ctx.accounts
+            .network
+            .can_access(&ctx.accounts.authority, NetworkKeyFlags::SET_EXPIRE_TIME),
+        NetworkErrors::InsufficientAccessExpiry
+    );
+    require!(
+        ctx.accounts
+            .network
+            .can_access(&ctx.accounts.authority, NetworkKeyFlags::AUTH),
+        NetworkErrors::InsufficientAccessAuthKeys
+    );
 
-    // TODO: Why is the whole `UpdateNetworkData` going into these setters?
-    // TODO: Access checks and functional logic (updates) need to be separated.
-    network.set_expire_time(data, authority)?;
-    network.update_auth_keys(data, authority)?;
-    network.update_fees(data, authority)?;
-    network.update_network_features(data, authority)?;
-    network.update_supported_tokens(data, authority)?;
+    let network = &mut ctx.accounts.network;
+
+    network.set_expire_time(data.pass_expire_time)?;
+    network.update_auth_keys(&data.auth_keys, &ctx.accounts.authority)?;
+    network.update_fees(&data.fees)?;
+    network.update_network_features(data.network_features)?;
+    network.update_supported_tokens(&data.supported_tokens)?;
 
     Ok(())
 }
@@ -69,12 +80,12 @@ pub struct UpdateNetworkAccount<'info> {
     network.gatekeepers.len(),
     network.supported_tokens.len() + data.supported_tokens.add.len() - data.supported_tokens.remove.len()
     ),
-    realloc::payer = authority,
+    realloc::payer = payer,
     realloc::zero = false,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
-    // TODO: Separate payer and authority
     #[account(mut)]
+    pub payer: Signer<'info>,
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
 }

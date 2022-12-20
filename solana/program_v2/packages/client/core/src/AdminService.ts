@@ -175,10 +175,12 @@ export class AdminService extends AbstractService {
    *
    * @param data The data required for updating the network
    * @param authority A valid authority required for managing the network
+   * @param payer The payer for the transaction
    */
   updateNetwork(
     data: UpdateNetworkData,
-    authority: PublicKey = this._wallet.publicKey
+    authority: PublicKey = this._wallet.publicKey,
+    payer: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -194,6 +196,7 @@ export class AdminService extends AbstractService {
       .accounts({
         network: this._network,
         authority,
+        payer,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .instruction();
