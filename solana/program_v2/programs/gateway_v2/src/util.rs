@@ -1,11 +1,10 @@
 //! Utility functions and types.
 use std::ops::{Div, Mul};
 
-use anchor_lang::{Key, ToAccountInfo};
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
+use anchor_lang::{Key, ToAccountInfo};
 use anchor_spl::token::{Token, TokenAccount};
 use solana_program::entrypoint::ProgramResult;
-use solana_program::msg;
 use solana_program::program::invoke;
 use spl_token::instruction::transfer;
 
@@ -95,19 +94,20 @@ pub fn create_and_invoke_transfer<'a>(
     )
 }
 
-pub fn check_gatekeeper_auth_threshold(auth_keys: &Vec<AuthKey>, auth_threshold: u8) -> bool {
+pub fn check_gatekeeper_auth_threshold(auth_keys: &[AuthKey], auth_threshold: u8) -> bool {
     let auth_key_count = auth_keys
         .iter()
-        .filter(|key| GatekeeperKeyFlags::from_bits_truncate(key.flags).contains(GatekeeperKeyFlags::AUTH))
+        .filter(|key| {
+            GatekeeperKeyFlags::from_bits_truncate(key.flags).contains(GatekeeperKeyFlags::AUTH)
+        })
         .count();
 
-    msg!("COUNT {} {} ", auth_key_count, auth_threshold);
     auth_key_count >= auth_threshold as usize
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::state::{AuthKey, GatekeeperFees, GatekeeperKeyFlags, NetworkFeesPercentage};
+    use crate::state::{AuthKey, GatekeeperFees, NetworkFeesPercentage};
     use crate::util::check_gatekeeper_auth_threshold;
 
     #[test]
@@ -210,7 +210,7 @@ mod tests {
         let auth_keys = vec![key1, key2];
         let valid = check_gatekeeper_auth_threshold(&auth_keys, 2);
 
-        assert_eq!(valid, true);
+        assert!(valid);
     }
 
     #[test]
@@ -232,7 +232,7 @@ mod tests {
         let auth_keys = vec![key1, key2];
         let valid = check_gatekeeper_auth_threshold(&auth_keys, 3);
 
-        assert_eq!(valid, false);
+        assert!(!valid);
     }
 
     #[test]
@@ -244,10 +244,9 @@ mod tests {
             flags: 0,
         };
 
-
         let auth_keys = vec![key];
         let valid = check_gatekeeper_auth_threshold(&auth_keys, 1);
 
-        assert_eq!(valid, false);
+        assert!(!valid);
     }
 }

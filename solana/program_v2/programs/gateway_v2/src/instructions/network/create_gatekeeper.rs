@@ -2,10 +2,8 @@ use anchor_lang::prelude::*;
 
 use crate::constants::GATEKEEPER_SEED;
 use crate::errors::GatekeeperErrors;
+use crate::state::gatekeeper::{Gatekeeper, GatekeeperFees, GatekeeperState};
 use crate::state::{AuthKey, GatekeeperNetwork};
-use crate::state::gatekeeper::{
-    Gatekeeper, GatekeeperFees, GatekeeperState,
-};
 use crate::util::check_gatekeeper_auth_threshold;
 
 // TODO: Right now ANYONE can create a Gatekeeper in a Network. This should be restricted to an authority

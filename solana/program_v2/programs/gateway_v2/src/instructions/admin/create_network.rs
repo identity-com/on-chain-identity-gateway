@@ -1,7 +1,9 @@
 use anchor_lang::prelude::*;
 
 use crate::errors::NetworkErrors;
-use crate::state::{AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken};
+use crate::state::{
+    AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
+};
 
 pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
