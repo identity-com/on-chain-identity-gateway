@@ -1,6 +1,6 @@
 use crate::constants::GATEKEEPER_SEED;
-use crate::errors::{GatekeeperErrors};
-use crate::state::{Gatekeeper, GatekeeperState, GatekeeperKeyFlags, GatekeeperNetwork, NetworkKeyFlags};
+use crate::errors::{NetworkErrors};
+use crate::state::{Gatekeeper, GatekeeperState, GatekeeperNetwork, NetworkKeyFlags};
 use anchor_lang::prelude::*;
 
 // Allows a network to set the state of a gatekeeper (Active, Frozen, Halted)
@@ -14,7 +14,7 @@ pub fn set_gatekeeper_state(
 
     require!(
         network
-            .can_access(&authority, NetworkKeyFlags::AUTH), 
+            .can_access(authority, NetworkKeyFlags::AUTH), 
         NetworkErrors::InsufficientAccessAuthKeys
     );
 
