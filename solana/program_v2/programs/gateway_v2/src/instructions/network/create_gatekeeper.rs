@@ -4,8 +4,9 @@ use crate::constants::GATEKEEPER_SEED;
 use crate::errors::GatekeeperErrors;
 use crate::state::{AuthKey, GatekeeperNetwork};
 use crate::state::gatekeeper::{
-    Gatekeeper, GatekeeperFees, GatekeeperKeyFlags, GatekeeperState,
+    Gatekeeper, GatekeeperFees, GatekeeperState,
 };
+use crate::util::check_gatekeeper_auth_threshold;
 
 // TODO: Right now ANYONE can create a Gatekeeper in a Network. This should be restricted to an authority
 // in network.auth_keys.
@@ -17,24 +18,12 @@ pub fn create_gatekeeper(
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let network = &mut ctx.accounts.network;
     let staking_account = &ctx.accounts.staking_account;
+    let auth_keys = data.auth_keys;
 
-    // TODO: can this case not be covered in combination with the code below.
-    if data.auth_keys.is_empty() {
-        return Err(error!(GatekeeperErrors::NoAuthKeys));
-    }
-    // Checks if there are enough auth keys to create the gatekeeper
-    // TODO: Move into dedicated trait.
-    if data
-        .auth_keys
-        .iter()
-        .filter(|key| {
-            GatekeeperKeyFlags::from_bits_truncate(key.flags).contains(GatekeeperKeyFlags::AUTH)
-        })
-        .count()
-        < data.auth_threshold as usize
-    {
-        return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-    }
+    require!(
+        check_gatekeeper_auth_threshold(&auth_keys, data.auth_threshold),
+        GatekeeperErrors::InsufficientAuthKeys
+    );
 
     gatekeeper.authority = *authority.key;
     gatekeeper.gatekeeper_bump = *ctx.bumps.get("gatekeeper").unwrap();
@@ -42,7 +31,7 @@ pub fn create_gatekeeper(
     gatekeeper.staking_account = staking_account.key();
     gatekeeper.token_fees = data.token_fees;
     gatekeeper.auth_threshold = data.auth_threshold;
-    gatekeeper.auth_keys = data.auth_keys;
+    gatekeeper.auth_keys = auth_keys;
     gatekeeper.gatekeeper_state = GatekeeperState::Active;
 
     network.gatekeepers.push(gatekeeper.key());
