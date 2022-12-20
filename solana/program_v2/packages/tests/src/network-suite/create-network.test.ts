@@ -2,6 +2,7 @@ import {
   AdminService,
   airdrop,
   NetworkAccount,
+  NetworkKeyFlags,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
@@ -65,7 +66,6 @@ describe('Gateway v2 Client', () => {
       const createdNetwork = await service.getNetworkAccount();
 
       // Assert
-      expect(createdNetwork).to.not.be.null;
       expect(createdNetwork).to.deep.equal(expectedAccountData);
     }).timeout(10000);
 
@@ -85,7 +85,7 @@ describe('Gateway v2 Client', () => {
           ],
           authKeys: [
             {
-              flags: 1,
+              flags: NetworkKeyFlags.AUTH,
               key: networkAuthority.publicKey,
             },
           ],

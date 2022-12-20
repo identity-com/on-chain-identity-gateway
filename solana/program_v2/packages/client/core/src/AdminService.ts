@@ -13,7 +13,7 @@ import {
 } from './lib/types';
 
 import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
-import { SOLANA_MAINNET } from './lib/constants';
+import { NetworkKeyFlags, SOLANA_MAINNET } from './lib/constants';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   AbstractService,
@@ -136,7 +136,7 @@ export class AdminService extends AbstractService {
       authThreshold: 1,
       passExpireTime: 16,
       fees: [],
-      authKeys: [{ flags: 4097, key: this._network }],
+      authKeys: [{ flags: NetworkKeyFlags.AUTH, key: this._network }],
       supportedTokens: [],
     },
     authority: PublicKey = this._wallet.publicKey,

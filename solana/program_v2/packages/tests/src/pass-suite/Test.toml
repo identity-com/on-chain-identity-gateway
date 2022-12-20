@@ -1,0 +1,26 @@
+extends = ["../../Test.base.account.toml"]
+
+[scripts]
+test = "yarn run ts-mocha --exit -p ./tsconfig.json -t 1000000 packages/tests/src/pass-suite/**/*.ts"
+
+[[test.validator.account]]
+address = "B4951ZxztgHL98WT4eFUyaaRmsi6V4hBzkoYe1VSNweo"
+filename = "../../fixtures/accounts/network.json"
+[[test.validator.account]]
+address = "DuqrwqMDuVwgd2BNbCFQS5gwNuZcfgjuL6KpuvjGjaYa"
+filename = "../../fixtures/accounts/network-alt.json"
+
+[[test.validator.account]]
+address = "BFgADDHV6SPYfnL2h35tRwrkcmdaQgbrg99uXKn41EqL"
+filename = "../../fixtures/accounts/gatekeeper.json"
+[[test.validator.account]]
+address="6ufu3BBssTiNhQ5ejtkNGfqksXQatAZ5aVFVPNQy8wu9"
+filename = "../../fixtures/accounts/gatekeeper-alt.json"
+
+[[test.validator.account]]
+address = "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtveqn4esJGX"
+filename = "../../fixtures/accounts/mint-account.json"
+
+[[test.validator.account]]
+address = "9SkxBuj9kuaJQ3yAXEuRESjYt14BcPUTac25Mbi1n8ny"
+filename = "../../fixtures/accounts/mint-authority.json"

@@ -1,15 +1,17 @@
 use anchor_lang::prelude::*;
 
 use crate::errors::NetworkErrors;
-use crate::state::{
-    AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
-};
+use crate::state::{AuthKey, GatekeeperNetwork, NetworkFeesPercentage, SupportedToken};
+use crate::util::check_network_auth_threshold;
 
 pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkData) -> Result<()> {
-    let network = &mut ctx.accounts.network;
-    let authority = &mut ctx.accounts.authority;
+    require!(
+        check_network_auth_threshold(&data.auth_keys, data.auth_threshold),
+        NetworkErrors::InsufficientAuthKeys
+    );
 
-    data.check_threshold()?;
+    let network = &mut ctx.accounts.network;
+    let authority = &ctx.accounts.authority;
 
     network.auth_threshold = data.auth_threshold;
     // TODO: Do we even need this dedicated authority if we implement the auth_keys system?
@@ -20,32 +22,6 @@ pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkDat
     network.supported_tokens = data.supported_tokens;
 
     Ok(())
-}
-
-pub trait CheckAuthKeys {
-    fn check_threshold(&self) -> Result<()>;
-}
-
-impl CheckAuthKeys for CreateNetworkData {
-    fn check_threshold(&self) -> Result<()> {
-        if self.auth_keys.is_empty() {
-            return Err(error!(NetworkErrors::NoAuthKeys));
-        }
-
-        if self
-            .auth_keys
-            .iter()
-            .filter(|key| {
-                NetworkKeyFlags::from_bits_truncate(key.flags).contains(NetworkKeyFlags::AUTH)
-            })
-            .count()
-            < self.auth_threshold as usize
-        {
-            return Err(error!(NetworkErrors::InsufficientAuthKeys));
-        }
-
-        Ok(())
-    }
 }
 
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
