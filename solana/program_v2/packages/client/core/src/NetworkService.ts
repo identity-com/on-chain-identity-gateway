@@ -275,17 +275,19 @@ export class NetworkService extends AbstractService {
    *
    * @param state The new state for the gatekeeper
    * @param authority An authority allowed to change gatekeeper state
+   * @param network The network to which the gatekeeper belongs
    */
   setGatekeeperState(
     state: GatekeeperState = GatekeeperState.Active,
-    authority: PublicKey = this._wallet.publicKey
+    authority: PublicKey = this._wallet.publicKey,
+    network: PublicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .setGatekeeperState(EnumMapper.to(state, GatekeeperStateMapping))
       .accounts({
         gatekeeper: this._gatekeeperAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
+        network,
       })
       .instruction();
 
