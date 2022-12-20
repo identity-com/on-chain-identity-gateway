@@ -1,9 +1,11 @@
-use crate::errors::NetworkErrors;
-use crate::instructions::admin::*;
-use crate::util::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
+
+use crate::errors::NetworkErrors;
+use crate::instructions::admin::*;
+use crate::state::AuthKey;
+use crate::util::*;
 
 /// A gatekeeper network which manages many [`Gatekeeper`]s.
 #[account]
@@ -14,7 +16,8 @@ pub struct GatekeeperNetwork {
     /// The initial authority key
     pub authority: Pubkey,
     /// the index of the network
-    pub network_index: u16, // TODO: Remove this
+    pub network_index: u16,
+    // TODO: Remove this
     /// The bump for the signer
     pub network_bump: u8,
     /// The length of time a pass lasts in seconds. `0` means does not expire.
@@ -30,7 +33,7 @@ pub struct GatekeeperNetwork {
     /// The number of auth keys needed to change the `auth_keys`
     pub auth_threshold: u8,
     /// Keys with permissions on the network
-    pub auth_keys: Vec<NetworkAuthKey>,
+    pub auth_keys: Vec<AuthKey>,
     // possible data for network features
     // pub network_features_data: Vec<u8>
 }
@@ -70,7 +73,7 @@ impl GatekeeperNetwork {
             + OC_SIZE_U64 // pass_expire_time
             + OC_SIZE_U8 // signer_bump
             + OC_SIZE_VEC_PREFIX + NetworkFeesPercentage::ON_CHAIN_SIZE * fees_count // fees
-            + OC_SIZE_VEC_PREFIX + NetworkAuthKey::ON_CHAIN_SIZE * auth_keys // auth_keys
+            + OC_SIZE_VEC_PREFIX + AuthKey::ON_CHAIN_SIZE * auth_keys // auth_keys
             + OC_SIZE_VEC_PREFIX + (OC_SIZE_PUBKEY * gatekeepers) // gatekeeper list
             + OC_SIZE_U16 // network_index
             + OC_SIZE_VEC_PREFIX + SupportedToken::ON_CHAIN_SIZE * supported_tokens
@@ -269,19 +272,6 @@ impl GatekeeperNetwork {
     pub fn is_closeable(&self) -> bool {
         self.gatekeepers.is_empty()
     }
-}
-
-/// The authority key for a [`GatekeeperNetwork`]
-#[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize)]
-pub struct NetworkAuthKey {
-    /// The permissions this key has
-    pub flags: u16,
-    /// The key
-    pub key: Pubkey,
-}
-
-impl OnChainSize for NetworkAuthKey {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_U16 + OC_SIZE_PUBKEY;
 }
 
 /// Fees that a [`GatekeeperNetwork`] can charge

@@ -1,9 +1,11 @@
-use crate::errors::GatekeeperErrors;
-use crate::instructions::network::UpdateGatekeeperData;
-use crate::util::*;
 use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
 use bitflags::bitflags;
+
+use crate::errors::GatekeeperErrors;
+use crate::instructions::network::UpdateGatekeeperData;
+use crate::state::AuthKey;
+use crate::util::*;
 
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
 #[derive(Debug)]
@@ -26,7 +28,7 @@ pub struct Gatekeeper {
     /// The number of keys needed to change the `auth_keys`
     pub auth_threshold: u8,
     /// The keys with permissions on this gatekeeper
-    pub auth_keys: Vec<GatekeeperAuthKey>,
+    pub auth_keys: Vec<AuthKey>,
 }
 
 impl Gatekeeper {
@@ -40,7 +42,7 @@ impl Gatekeeper {
             + GatekeeperState::ON_CHAIN_SIZE // gatekeeper state
             + OC_SIZE_VEC_PREFIX + GatekeeperFees::ON_CHAIN_SIZE * fees_count // fees
             + OC_SIZE_U8 // auth_threshold
-            + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::ON_CHAIN_SIZE * auth_keys
+            + OC_SIZE_VEC_PREFIX + AuthKey::ON_CHAIN_SIZE * auth_keys
         // auth keys
     }
 
@@ -225,19 +227,6 @@ impl OnChainSize for GatekeeperState {
     const ON_CHAIN_SIZE: usize = 1;
 }
 
-/// The authority key for a [`Gatekeeper`]
-#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Copy)]
-pub struct GatekeeperAuthKey {
-    /// The permissions this key has
-    pub flags: u16,
-    /// The key
-    pub key: Pubkey,
-}
-
-impl OnChainSize for GatekeeperAuthKey {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_U16 + OC_SIZE_PUBKEY;
-}
-
 #[derive(Clone, Debug)]
 pub struct CreateGatekeeperData {
     /// The number of keys needed to change the `auth_keys`
@@ -253,7 +242,7 @@ pub struct CreateGatekeeperData {
     /// The fees for this gatekeeper
     pub token_fees: Vec<GatekeeperFees>,
     /// The keys with permissions on this gatekeeper
-    pub auth_keys: Vec<GatekeeperAuthKey>,
+    pub auth_keys: Vec<AuthKey>,
 }
 
 /// The fees a gatekeeper/network can take
