@@ -1,6 +1,7 @@
 import {
   AdminService,
   airdrop,
+  GatekeeperKeyFlags,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
@@ -24,7 +25,7 @@ describe.only('Gateway v2 Client', () => {
   let networkAuthority: Keypair;
   let gatekeeperAuthority: Keypair;
 
-  before(async () => {
+  beforeEach(async () => {
     adminAuthority = Keypair.generate();
     networkAuthority = Keypair.generate();
     gatekeeperAuthority = Keypair.generate();
@@ -119,33 +120,30 @@ describe.only('Gateway v2 Client', () => {
           )
           .withPartialSigners(adminAuthority)
           .rpc()
-      ).to.eventually.be.rejectedWith(/NoAuthKeys/);
+      ).to.eventually.be.rejectedWith(/InsufficientAuthKeys/);
     }).timeout(10000);
   });
 
-  it.only(
-    'Cannot create a gatekeeper with insufficient auth keys',
-    async function () {
-      return expect(
-        networkService
-          .createGatekeeper(
-            networkAuthority.publicKey,
-            stakingDataAccount,
-            adminAuthority.publicKey,
-            {
-              tokenFees: [],
-              authThreshold: 2,
-              authKeys: [
-                {
-                  flags: 65535,
-                  key: gatekeeperAuthority.publicKey,
-                },
-              ],
-            }
-          )
-          .withPartialSigners(adminAuthority)
-          .rpc()
-      ).to.eventually.be.rejectedWith(/InsufficientAuthKeys/);
-    }
-  ).timeout(10000);
+  it('Cannot create a gatekeeper with insufficient auth keys', async function () {
+    return expect(
+      networkService
+        .createGatekeeper(
+          networkAuthority.publicKey,
+          stakingDataAccount,
+          adminAuthority.publicKey,
+          {
+            tokenFees: [],
+            authThreshold: 2,
+            authKeys: [
+              {
+                flags: GatekeeperKeyFlags.AUTH,
+                key: gatekeeperAuthority.publicKey,
+              },
+            ],
+          }
+        )
+        .withPartialSigners(adminAuthority)
+        .rpc()
+    ).to.eventually.be.rejectedWith(/InsufficientAuthKeys/);
+  }).timeout(10000);
 });
