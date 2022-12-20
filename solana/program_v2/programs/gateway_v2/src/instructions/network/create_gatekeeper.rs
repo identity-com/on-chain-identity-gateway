@@ -2,9 +2,10 @@ use anchor_lang::prelude::*;
 
 use crate::constants::GATEKEEPER_SEED;
 use crate::errors::GatekeeperErrors;
-use crate::state::gatekeeper::{Gatekeeper, GatekeeperFees, GatekeeperState};
-use crate::state::{GatekeeperAuthKey, GatekeeperNetwork};
-use crate::util::check_gatekeeper_auth_threshold;
+use crate::state::gatekeeper::{
+    Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, GatekeeperState,
+};
+use crate::state::GatekeeperNetwork;
 
 // TODO: Right now ANYONE can create a Gatekeeper in a Network. This should be restricted to an authority
 // in network.auth_keys.
@@ -15,14 +16,13 @@ pub fn create_gatekeeper(
     let authority = &mut ctx.accounts.authority;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let network = &mut ctx.accounts.network;
-    // TODO: Does not need to be mutable.
-    let staking_account = &mut ctx.accounts.staking_account;
+    let staking_account = &ctx.accounts.staking_account;
 
     // TODO: can this case not be covered in combination with the code below.
     if data.auth_keys.is_empty() {
         return Err(error!(GatekeeperErrors::NoAuthKeys));
     }
-    // Checks if there are enough auth keys to create the gatekeeper, should maybe check in NetworkKeyFlags
+    // Checks if there are enough auth keys to create the gatekeeper
     // TODO: Move into dedicated trait.
     if data
         .auth_keys
