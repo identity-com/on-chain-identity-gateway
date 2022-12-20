@@ -133,8 +133,7 @@ export const setUpAdminNetworkGatekeeper = async (
       adminAuthority.publicKey
     )
     .withPartialSigners(adminAuthority)
-    .rpc()
-    .catch((e) => console.log(e));
+    .rpc();
 
   await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
     {
