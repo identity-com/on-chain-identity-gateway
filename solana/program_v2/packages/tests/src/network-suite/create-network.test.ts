@@ -54,7 +54,7 @@ describe('Gateway v2 Client', () => {
         authThreshold: 1,
         passExpireTime: 16,
         fees: [],
-        authKeys: [{ flags: 4097, key: networkAuthority.publicKey }],
+        authKeys: [{ flags: 1, key: networkAuthority.publicKey }],
         networkFeatures: 0,
         supportedTokens: [],
         gatekeepers: [],

@@ -53,7 +53,6 @@ pub struct CreateNetworkAccount<'info> {
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]
     pub payer: Signer<'info>,
-    #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
