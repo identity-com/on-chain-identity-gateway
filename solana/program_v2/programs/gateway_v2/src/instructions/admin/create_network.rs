@@ -5,6 +5,11 @@ use crate::state::{
     AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
 };
 
+use crate::errors::NetworkErrors;
+use crate::state::{
+    AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
+};
+
 pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
     let authority = &ctx.accounts.authority;
@@ -74,7 +79,7 @@ impl CreateNetworkData {
 pub struct CreateNetworkAccount<'info> {
     #[account(
     init,
-    payer = payer,
+    payer = authority,
     space = GatekeeperNetwork::size(
     data.fees.len(),
     data.auth_keys.len(),

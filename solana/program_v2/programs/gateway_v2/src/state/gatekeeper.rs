@@ -6,7 +6,6 @@ use crate::errors::GatekeeperErrors;
 use crate::instructions::network::UpdateGatekeeperData;
 use crate::state::AuthKey;
 use crate::util::*;
-
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
 #[derive(Debug)]
 #[account]
@@ -28,7 +27,7 @@ pub struct Gatekeeper {
     /// The number of keys needed to change the `auth_keys`
     pub auth_threshold: u8,
     /// The keys with permissions on this gatekeeper
-    pub auth_keys: Vec<GatekeeperAuthKey>,
+    pub auth_keys: Vec<AuthKey>,
 }
 
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Copy)]
@@ -245,7 +244,7 @@ pub struct CreateGatekeeperData {
     /// The fees for this gatekeeper
     pub token_fees: Vec<GatekeeperFees>,
     /// The keys with permissions on this gatekeeper
-    pub auth_keys: Vec<GatekeeperAuthKey>,
+    pub auth_keys: Vec<AuthKey>,
 }
 
 /// The fees a gatekeeper/network can take

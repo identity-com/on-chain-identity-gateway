@@ -2,10 +2,10 @@ use anchor_lang::prelude::*;
 
 use crate::constants::GATEKEEPER_SEED;
 use crate::errors::GatekeeperErrors;
+use crate::state::{AuthKey, GatekeeperNetwork};
 use crate::state::gatekeeper::{
-    Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, GatekeeperState,
+    Gatekeeper, GatekeeperFees, GatekeeperKeyFlags, GatekeeperState,
 };
-use crate::state::GatekeeperNetwork;
 
 // TODO: Right now ANYONE can create a Gatekeeper in a Network. This should be restricted to an authority
 // in network.auth_keys.
@@ -56,7 +56,7 @@ pub struct CreateGatekeeperData {
     // Fees for the gatekeeper
     pub token_fees: Vec<GatekeeperFees>,
     pub auth_threshold: u8,
-    pub auth_keys: Vec<GatekeeperAuthKey>,
+    pub auth_keys: Vec<AuthKey>,
 }
 
 #[derive(Accounts, Debug)]
