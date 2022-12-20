@@ -118,8 +118,7 @@ describe('Gateway v2 Client', () => {
             remove: [],
           },
         })
-        .rpc()
-        .catch((e) => console.log(e));
+        .rpc();
 
       const networkAccount = await serviceAsGuardian.getNetworkAccount();
 
