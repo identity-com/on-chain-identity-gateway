@@ -1,7 +1,7 @@
 import {
-  NetworkService,
   AdminService,
   airdrop,
+  NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
@@ -9,7 +9,7 @@ import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 
-describe('Gateway v2 Client', () => {
+describe.only('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
@@ -103,5 +103,49 @@ describe('Gateway v2 Client', () => {
       const network = await adminService.getNetworkAccount();
       expect(network?.gatekeepers.length).to.equal(1);
     }).timeout(10000);
+
+    it('Cannot create a gatekeeper with no auth keys', async function () {
+      return expect(
+        networkService
+          .createGatekeeper(
+            networkAuthority.publicKey,
+            stakingDataAccount,
+            adminAuthority.publicKey,
+            {
+              tokenFees: [],
+              authThreshold: 1,
+              authKeys: [],
+            }
+          )
+          .withPartialSigners(adminAuthority)
+          .rpc()
+      ).to.eventually.be.rejectedWith(/NoAuthKeys/);
+    }).timeout(10000);
   });
+
+  it.only(
+    'Cannot create a gatekeeper with insufficient auth keys',
+    async function () {
+      return expect(
+        networkService
+          .createGatekeeper(
+            networkAuthority.publicKey,
+            stakingDataAccount,
+            adminAuthority.publicKey,
+            {
+              tokenFees: [],
+              authThreshold: 2,
+              authKeys: [
+                {
+                  flags: 65535,
+                  key: gatekeeperAuthority.publicKey,
+                },
+              ],
+            }
+          )
+          .withPartialSigners(adminAuthority)
+          .rpc()
+      ).to.eventually.be.rejectedWith(/InsufficientAuthKeys/);
+    }
+  ).timeout(10000);
 });

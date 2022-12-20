@@ -1,5 +1,6 @@
-use crate::state::{GatekeeperNetwork, NetworkAuthKey, NetworkFeesPercentage, SupportedToken};
 use anchor_lang::prelude::*;
+
+use crate::state::{AuthKey, GatekeeperNetwork, NetworkFeesPercentage, SupportedToken};
 
 pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
@@ -53,7 +54,7 @@ pub struct UpdateFees {
 
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct UpdateKeys {
-    pub add: Vec<NetworkAuthKey>,
+    pub add: Vec<AuthKey>,
     pub remove: Vec<Pubkey>,
 }
 

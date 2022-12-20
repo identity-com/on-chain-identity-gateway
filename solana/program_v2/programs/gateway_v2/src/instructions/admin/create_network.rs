@@ -1,8 +1,7 @@
-use crate::errors::NetworkErrors;
-use crate::state::{
-    GatekeeperNetwork, NetworkAuthKey, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
-};
 use anchor_lang::prelude::*;
+
+use crate::errors::NetworkErrors;
+use crate::state::{AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken};
 
 pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
@@ -49,7 +48,7 @@ pub struct CreateNetworkData {
     /// The [`GatekeeperNetwork::fees`].
     pub fees: Vec<NetworkFeesPercentage>,
     /// The [`GatekeeperNetwork::auth_keys`].
-    pub auth_keys: Vec<NetworkAuthKey>,
+    pub auth_keys: Vec<AuthKey>,
     pub supported_tokens: Vec<SupportedToken>,
 }
 
@@ -57,14 +56,14 @@ pub struct CreateNetworkData {
 #[instruction(data: CreateNetworkData)]
 pub struct CreateNetworkAccount<'info> {
     #[account(
-        init,
-        payer = authority,
-        space = GatekeeperNetwork::size(
-            data.fees.len(),
-            data.auth_keys.len(),
-            0,
-            data.supported_tokens.len()
-        )
+    init,
+    payer = authority,
+    space = GatekeeperNetwork::size(
+    data.fees.len(),
+    data.auth_keys.len(),
+    0,
+    data.supported_tokens.len()
+    )
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     // TODO: Authority and Payer should be split
