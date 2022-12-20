@@ -127,8 +127,9 @@ export class AdminService extends AbstractService {
   /**
    * Creates the network the AdminService was build for
    *
-   * @param data Initial data to create the etwork with
+   * @param data Initial data to create the network with
    * @param authority The initial authority for creating the account
+   * @param payer The payer of the network account creation
    */
   createNetwork(
     data: CreateNetworkData = {
@@ -138,7 +139,8 @@ export class AdminService extends AbstractService {
       authKeys: [{ flags: 4097, key: this._network }],
       supportedTokens: [],
     },
-    authority: PublicKey = this._wallet.publicKey
+    authority: PublicKey = this._wallet.publicKey,
+    payer: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .createNetwork({
@@ -158,6 +160,7 @@ export class AdminService extends AbstractService {
         network: this._network,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
+        payer,
       })
       .instruction();
 
