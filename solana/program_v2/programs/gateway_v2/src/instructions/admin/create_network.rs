@@ -5,11 +5,6 @@ use crate::state::{AuthKey, GatekeeperNetwork, NetworkFeesPercentage, SupportedT
 use crate::util::check_network_auth_threshold;
 
 pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkData) -> Result<()> {
-    require!(
-        check_network_auth_threshold(&data.auth_keys, data.auth_threshold),
-        NetworkErrors::InsufficientAuthKeys
-    );
-
     let network = &mut ctx.accounts.network;
     let authority = &ctx.accounts.authority;
 
@@ -48,7 +43,8 @@ pub struct CreateNetworkAccount<'info> {
     data.auth_keys.len(),
     0,
     data.supported_tokens.len()
-    )
+    ),
+    constraint = check_network_auth_threshold(&data.auth_keys, data.auth_threshold) @ NetworkErrors::InsufficientAuthKeys
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]
