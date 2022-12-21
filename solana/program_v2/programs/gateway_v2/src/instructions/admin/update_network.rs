@@ -5,19 +5,6 @@ use crate::state::{
 use anchor_lang::prelude::*;
 
 pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkData) -> Result<()> {
-    require!(
-        ctx.accounts
-            .network
-            .can_access(&ctx.accounts.authority, NetworkKeyFlags::SET_EXPIRE_TIME),
-        NetworkErrors::InsufficientAccessExpiry
-    );
-    require!(
-        ctx.accounts
-            .network
-            .can_access(&ctx.accounts.authority, NetworkKeyFlags::AUTH),
-        NetworkErrors::InsufficientAccessAuthKeys
-    );
-
     let network = &mut ctx.accounts.network;
 
     network.set_expire_time(data.pass_expire_time)?;
@@ -82,6 +69,8 @@ pub struct UpdateNetworkAccount<'info> {
     ),
     realloc::payer = payer,
     realloc::zero = false,
+    constraint = network.can_access(&authority, NetworkKeyFlags::SET_EXPIRE_TIME) @ NetworkErrors::InsufficientAccessExpiry,
+    constraint = network.can_access(&authority, NetworkKeyFlags::AUTH) @ NetworkErrors::InsufficientAccessAuthKeys,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]
