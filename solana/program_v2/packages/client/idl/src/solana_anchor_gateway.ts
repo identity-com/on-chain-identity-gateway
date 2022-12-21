@@ -730,7 +730,7 @@ export type SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "AuthKey"
+                "defined": "GatekeeperAuthKey"
               }
             }
           }
@@ -1148,7 +1148,7 @@ export type SolanaAnchorGateway = {
             "name": "authKeys",
             "type": {
               "vec": {
-                "defined": "AuthKey"
+                "defined": "GatekeeperAuthKey"
               }
             }
           }
@@ -1221,7 +1221,7 @@ export type SolanaAnchorGateway = {
             "name": "add",
             "type": {
               "vec": {
-                "defined": "AuthKey"
+                "defined": "GatekeeperAuthKey"
               }
             }
           },
@@ -1230,6 +1230,28 @@ export type SolanaAnchorGateway = {
             "type": {
               "vec": "publicKey"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GatekeeperAuthKey",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "flags",
+            "docs": [
+              "The permissions this key has"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "key",
+            "docs": [
+              "The key"
+            ],
+            "type": "publicKey"
           }
         ]
       }
@@ -2249,7 +2271,7 @@ export const IDL: SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "AuthKey"
+                "defined": "GatekeeperAuthKey"
               }
             }
           }
@@ -2667,7 +2689,7 @@ export const IDL: SolanaAnchorGateway = {
             "name": "authKeys",
             "type": {
               "vec": {
-                "defined": "AuthKey"
+                "defined": "GatekeeperAuthKey"
               }
             }
           }
@@ -2740,7 +2762,7 @@ export const IDL: SolanaAnchorGateway = {
             "name": "add",
             "type": {
               "vec": {
-                "defined": "AuthKey"
+                "defined": "GatekeeperAuthKey"
               }
             }
           },
@@ -2749,6 +2771,28 @@ export const IDL: SolanaAnchorGateway = {
             "type": {
               "vec": "publicKey"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GatekeeperAuthKey",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "flags",
+            "docs": [
+              "The permissions this key has"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "key",
+            "docs": [
+              "The key"
+            ],
+            "type": "publicKey"
           }
         ]
       }

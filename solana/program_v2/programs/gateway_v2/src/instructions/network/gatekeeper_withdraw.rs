@@ -1,5 +1,6 @@
 use crate::constants::GATEKEEPER_SEED;
-use crate::state::Gatekeeper;
+use crate::errors::GatekeeperErrors;
+use crate::state::{Gatekeeper, GatekeeperKeyFlags};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount, Transfer};
 
@@ -47,7 +48,8 @@ pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: 
 pub struct GatekeeperWithdrawAccount<'info> {
     #[account(
         seeds = [GATEKEEPER_SEED, authority.key().as_ref(), gatekeeper.gatekeeper_network.key().as_ref()],
-        bump = gatekeeper.gatekeeper_bump
+        bump = gatekeeper.gatekeeper_bump,
+        constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::WITHDRAW) @ GatekeeperErrors::InsufficientAccessAuthKeys,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     pub spl_token_program: Program<'info, Token>,

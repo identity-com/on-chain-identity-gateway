@@ -9,7 +9,7 @@ use solana_program::program::invoke;
 use spl_token::instruction::transfer;
 
 use crate::errors::{GatekeeperErrors, NetworkErrors};
-use crate::state::{AuthKey, GatekeeperFees, GatekeeperKeyFlags, NetworkFeesPercentage};
+use crate::state::{GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, NetworkFeesPercentage};
 
 // pub const OC_SIZE_BOOL: usize = 1;
 pub const OC_SIZE_U8: usize = 1;
@@ -94,7 +94,10 @@ pub fn create_and_invoke_transfer<'a>(
     )
 }
 
-pub fn check_gatekeeper_auth_threshold(auth_keys: &[AuthKey], auth_threshold: u8) -> bool {
+pub fn check_gatekeeper_auth_threshold(
+    auth_keys: &[GatekeeperAuthKey],
+    auth_threshold: u8,
+) -> bool {
     let auth_key_count = auth_keys
         .iter()
         .filter(|key| {
