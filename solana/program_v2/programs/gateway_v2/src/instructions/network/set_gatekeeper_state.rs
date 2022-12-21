@@ -9,15 +9,10 @@ pub fn set_gatekeeper_state(
     state: GatekeeperState,
 ) -> Result<()> {
     let gatekeeper = &mut ctx.accounts.gatekeeper;
-    let authority = &mut ctx.accounts.authority;
-    let network = &mut ctx.accounts.network;
+    let authority = &ctx.accounts.authority;
+    let network = &ctx.accounts.network;
 
-    require!(
-        network.can_access(authority, NetworkKeyFlags::AUTH),
-        NetworkErrors::InsufficientAccessAuthKeys
-    );
-
-    gatekeeper.set_gatekeeper_state(&state, authority)?;
+    gatekeeper.set_gatekeeper_state(&state)?;
 
     Ok(())
 }
@@ -31,8 +26,7 @@ pub struct SetGatekeeperStateAccount<'info> {
         bump = gatekeeper.gatekeeper_bump,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
-    #[account()]
     pub authority: Signer<'info>,
-    #[account()]
+    #[account(constraint = network.can_access(&authority, NetworkKeyFlags::AUTH) @ NetworkErrors::InsufficientAccessAuthKeys)]
     pub network: Account<'info, GatekeeperNetwork>,
 }
