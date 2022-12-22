@@ -9,7 +9,7 @@ pub fn set_gatekeeper_state(
     state: GatekeeperState,
 ) -> Result<()> {
     let gatekeeper = &mut ctx.accounts.gatekeeper;
-    
+
     gatekeeper.set_gatekeeper_state(&state)?;
 
     Ok(())
