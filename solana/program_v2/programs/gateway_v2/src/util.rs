@@ -95,7 +95,7 @@ pub fn create_and_invoke_transfer<'a>(
 }
 
 pub fn check_gatekeeper_auth_threshold(
-    auth_keys: &[GatekeeperAuthKey],
+    auth_keys: &Vec<GatekeeperAuthKey>,
     auth_threshold: u8,
 ) -> bool {
     let auth_key_count = auth_keys
@@ -110,7 +110,7 @@ pub fn check_gatekeeper_auth_threshold(
 
 #[cfg(test)]
 mod tests {
-    use crate::state::{AuthKey, GatekeeperFees, NetworkFeesPercentage};
+    use crate::state::{GatekeeperAuthKey, GatekeeperFees, NetworkFeesPercentage};
     use crate::util::check_gatekeeper_auth_threshold;
 
     #[test]
@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn valid_auth_threshold() {
-        let key1 = AuthKey {
+        let key1 = GatekeeperAuthKey {
             key: "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtvdqn4esJGX"
                 .parse()
                 .unwrap(),
@@ -203,7 +203,7 @@ mod tests {
             flags: 1,
         };
 
-        let key2 = AuthKey {
+        let key2 = GatekeeperAuthKey {
             key: "3XfJXLJm3YUgoroxNQeo5yxLPd4SYC4W9usQwDi2n4Dd"
                 .parse()
                 .unwrap(),
@@ -218,14 +218,14 @@ mod tests {
 
     #[test]
     fn invalid_auth_threshold() {
-        let key1 = AuthKey {
+        let key1 = GatekeeperAuthKey {
             key: "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtvdqn4esJGX"
                 .parse()
                 .unwrap(),
             flags: 1,
         };
 
-        let key2 = AuthKey {
+        let key2 = GatekeeperAuthKey {
             key: "3XfJXLJm3YUgoroxNQeo5yxLPd4SYC4W9usQwDi2n4Dd"
                 .parse()
                 .unwrap(),
@@ -240,7 +240,7 @@ mod tests {
 
     #[test]
     fn no_auth_threshold() {
-        let key = AuthKey {
+        let key = GatekeeperAuthKey {
             key: "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtvdqn4esJGX"
                 .parse()
                 .unwrap(),
