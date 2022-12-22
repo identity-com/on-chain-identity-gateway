@@ -29,6 +29,11 @@ export default class SetState extends Command {
         'Desired state of the gatekeeper (0 = Active, 1 = Frozen, 2 = Halted)',
       required: true,
     }),
+    network: Flags.string({
+      char: 'n',
+      description: 'String representing the address of the network',
+      required: true,
+    }),
     keypair: Flags.string({
       char: 'k',
       description: 'Path to a solana keypair',
@@ -47,6 +52,7 @@ export default class SetState extends Command {
     const { flags } = await this.parse(SetState);
     const gatekeeper = new PublicKey(flags.gatekeeper);
     const state = flags.state;
+    const network = new PublicKey(flags.network);
     const cluster =
       flags.cluster === 'localnet' ||
       flags.cluster === 'devnet' ||
@@ -79,7 +85,7 @@ export default class SetState extends Command {
     const initialState = gatekeeperAccount?.state as GatekeeperState;
 
     const stateChangeSignature = await networkService
-      .setGatekeeperState(targetState)
+      .setGatekeeperState(targetState, undefined, network)
       .rpc();
     gatekeeperAccount = await networkService.getGatekeeperAccount();
     const newState = gatekeeperAccount?.state as GatekeeperState;
