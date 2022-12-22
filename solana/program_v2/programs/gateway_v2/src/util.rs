@@ -95,7 +95,7 @@ pub fn create_and_invoke_transfer<'a>(
 }
 
 pub fn check_gatekeeper_auth_threshold(
-    auth_keys: &Vec<GatekeeperAuthKey>,
+    auth_keys: &[GatekeeperAuthKey],
     auth_threshold: u8,
 ) -> bool {
     let auth_key_count = auth_keys
