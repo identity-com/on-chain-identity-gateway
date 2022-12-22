@@ -17,6 +17,7 @@ pub fn pass_set_state(pass: &mut Account<Pass>, state: PassState) -> Result<()> 
 #[derive(Accounts, Debug)]
 #[instruction(state: PassState)]
 pub struct PassSetState<'info> {
+    // TODO: Since this in NOT init, bump SHOULD/MUST be assigned.
     #[account(
         seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), &pass.pass_number.to_le_bytes() ],
         bump,
@@ -29,7 +30,9 @@ pub struct PassSetState<'info> {
     )]
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,
+    // TODO: do we need this?
     pub system_program: Program<'info, System>,
+    // TODO: do we need this?
     pub network: Account<'info, GatekeeperNetwork>,
     pub gatekeeper: Account<'info, Gatekeeper>,
 }
