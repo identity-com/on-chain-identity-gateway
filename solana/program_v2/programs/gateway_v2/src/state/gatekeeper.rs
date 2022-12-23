@@ -28,7 +28,19 @@ pub struct Gatekeeper {
     /// The number of keys needed to change the `auth_keys`
     pub auth_threshold: u8,
     /// The keys with permissions on this gatekeeper
-    pub auth_keys: Vec<AuthKey>,
+    pub auth_keys: Vec<GatekeeperAuthKey>,
+}
+
+#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Copy)]
+pub struct GatekeeperAuthKey {
+    /// The permissions this key has
+    pub flags: u32,
+    /// The key
+    pub key: Pubkey,
+}
+
+impl OnChainSize for GatekeeperAuthKey {
+    const ON_CHAIN_SIZE: usize = OC_SIZE_U32 + OC_SIZE_PUBKEY;
 }
 
 impl Gatekeeper {
@@ -242,7 +254,7 @@ pub struct CreateGatekeeperData {
     /// The fees for this gatekeeper
     pub token_fees: Vec<GatekeeperFees>,
     /// The keys with permissions on this gatekeeper
-    pub auth_keys: Vec<AuthKey>,
+    pub auth_keys: Vec<GatekeeperAuthKey>,
 }
 
 /// The fees a gatekeeper/network can take
@@ -269,7 +281,7 @@ impl OnChainSize for GatekeeperFees {
 bitflags! {
      /// The flags for a key on a gatekeeper
      #[derive(AnchorSerialize, AnchorDeserialize)]
-     pub struct GatekeeperKeyFlags: u16{
+     pub struct GatekeeperKeyFlags: u32{
          /// Key can change keys
          const AUTH = 1 << 0;
          /// Key can issue passes
@@ -302,9 +314,11 @@ bitflags! {
          const CHANGE_PASS_GATEKEEPER = 1 << 14;
          /// Key can expire a for passes
          const EXPIRE_PASS = 1 << 15;
+         /// Key can withdraw fees from the gatekeeper
+         const WITHDRAW = 1 << 16;
      }
 }
 
 impl OnChainSize for GatekeeperKeyFlags {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
+    const ON_CHAIN_SIZE: usize = OC_SIZE_U32;
 }

@@ -82,7 +82,6 @@ describe('withdraw gatekeeper', () => {
       .gatekeeperWithdraw(
         gatekeeperService.getGatekeeper(),
         gatekeeperAuthority.publicKey,
-        mintAccount.publicKey,
         TOKEN_PROGRAM_ID,
         receiverTokenAta.address,
         gatekeeperAta.address,
@@ -122,7 +121,6 @@ describe('withdraw gatekeeper', () => {
       .gatekeeperWithdraw(
         gatekeeperService.getGatekeeper(),
         gatekeeperAuthority.publicKey,
-        mintAccount.publicKey,
         TOKEN_PROGRAM_ID,
         receiverTokenAta!.address,
         gatekeeperAta.address,
