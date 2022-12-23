@@ -27,7 +27,19 @@ pub struct Gatekeeper {
     /// The number of keys needed to change the `auth_keys`
     pub auth_threshold: u8,
     /// The keys with permissions on this gatekeeper
-    pub auth_keys: Vec<AuthKey>,
+    pub auth_keys: Vec<GatekeeperAuthKey>,
+}
+
+#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Copy)]
+pub struct GatekeeperAuthKey {
+    /// The permissions this key has
+    pub flags: u32,
+    /// The key
+    pub key: Pubkey,
+}
+
+impl OnChainSize for GatekeeperAuthKey {
+    const ON_CHAIN_SIZE: usize = OC_SIZE_U32 + OC_SIZE_PUBKEY;
 }
 
 #[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Copy)]
@@ -244,7 +256,7 @@ pub struct CreateGatekeeperData {
     /// The fees for this gatekeeper
     pub token_fees: Vec<GatekeeperFees>,
     /// The keys with permissions on this gatekeeper
-    pub auth_keys: Vec<AuthKey>,
+    pub auth_keys: Vec<GatekeeperAuthKey>,
 }
 
 /// The fees a gatekeeper/network can take

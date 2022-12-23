@@ -52,18 +52,13 @@ pub struct GatekeeperWithdrawAccount<'info> {
         constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::WITHDRAW) @ GatekeeperErrors::InsufficientAccessAuthKeys,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
-    #[account()]
-    pub authority: Signer<'info>,
-    // TODO: I think we don't need this
-    pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
-    // TODO: THIS COMMENT IS NOT RIGHT
-    // Verification is done in code
-    // TODO: DO Verification here. That requires to pass and deserialize the network.
-    pub mint_account: Account<'info, Mint>,
+    pub authority: Signer<'info>,
     #[account(mut)]
     pub receiver_token_account: Account<'info, TokenAccount>,
-    // TODO: CHECK: the owner of the gatekeeper_token_account should be the gatekeeper
-    #[account(mut)]
+    #[account(
+    mut,
+    constraint = gatekeeper_token_account.owner == *gatekeeper.to_account_info().key
+    )]
     pub gatekeeper_token_account: Account<'info, TokenAccount>,
 }

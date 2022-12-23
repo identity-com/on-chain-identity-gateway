@@ -3,9 +3,6 @@ use anchor_lang::prelude::*;
 use crate::constants::GATEKEEPER_SEED;
 use crate::state::{Gatekeeper, GatekeeperAuthKey, GatekeeperFees};
 
-use crate::constants::GATEKEEPER_SEED;
-use crate::state::{AuthKey, Gatekeeper, GatekeeperFees};
-
 // Runs all the update methods on the passed-in gatekeeper
 pub fn update_gatekeeper(
     ctx: Context<UpdateGatekeeperAccount>,
@@ -67,6 +64,6 @@ pub struct UpdateGatekeeperFees {
 
 #[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct UpdateGatekeeperKeys {
-    pub add: Vec<AuthKey>,
+    pub add: Vec<GatekeeperAuthKey>,
     pub remove: Vec<Pubkey>,
 }
