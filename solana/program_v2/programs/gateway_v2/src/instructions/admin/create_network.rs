@@ -1,8 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::errors::NetworkErrors;
-use crate::state::{AuthKey, GatekeeperNetwork, NetworkFeesPercentage, SupportedToken};
-use crate::util::check_network_auth_threshold;
+use crate::state::{AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken};
 
 pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
@@ -32,6 +31,19 @@ pub struct CreateNetworkData {
     pub supported_tokens: Vec<SupportedToken>,
 }
 
+impl CreateNetworkData {
+    fn check_auth_threshold(&self) -> bool {
+        let auth_key_count = self.auth_keys
+            .iter()
+            .filter(|key| {
+                NetworkKeyFlags::from_bits_truncate(key.flags).contains(NetworkKeyFlags::AUTH)
+            })
+            .count();
+
+        auth_key_count >= self.auth_threshold as usize
+    }
+}
+
 #[derive(Accounts, Debug)]
 #[instruction(data: CreateNetworkData)]
 pub struct CreateNetworkAccount<'info> {
@@ -44,7 +56,7 @@ pub struct CreateNetworkAccount<'info> {
     0,
     data.supported_tokens.len()
     ),
-    constraint = check_network_auth_threshold(&data.auth_keys, data.auth_threshold) @ NetworkErrors::InsufficientAuthKeys
+    constraint = data.check_auth_threshold() @ NetworkErrors::InsufficientAuthKeys
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]
