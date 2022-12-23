@@ -16,8 +16,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['1.60']
-        os: [ubuntu-latest]
+        rust: [ '1.60' ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Checkout repo
@@ -57,9 +57,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['1.60']
-        solana: ['v1.9.29']
-        os: [ubuntu-latest]
+        rust: [ 'stable' ]
+        solana: [ 'stable' ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Checkout repo
