@@ -1,13 +1,18 @@
+use anchor_lang::prelude::*;
+
 use crate::errors::NetworkErrors;
 use crate::state::{
     AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
 };
-use anchor_lang::prelude::*;
 
 pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
 
-    network.set_expire_time(data.pass_expire_time)?;
+    // Only set the expire time if a new one is provided
+    if let Some(pass_expire_time) = data.pass_expire_time {
+        network.set_expire_time(pass_expire_time)?;
+    }
+
     network.update_auth_keys(&data.auth_keys, &ctx.accounts.authority)?;
     network.update_fees(&data.fees)?;
     network.update_network_features(data.network_features)?;
@@ -69,8 +74,8 @@ pub struct UpdateNetworkAccount<'info> {
     ),
     realloc::payer = payer,
     realloc::zero = false,
-    constraint = network.can_access(&authority, NetworkKeyFlags::SET_EXPIRE_TIME) @ NetworkErrors::InsufficientAccessExpiry,
-    constraint = network.can_access(&authority, NetworkKeyFlags::AUTH) @ NetworkErrors::InsufficientAccessAuthKeys,
+    constraint = network.can_access(& authority, NetworkKeyFlags::SET_EXPIRE_TIME) @ NetworkErrors::InsufficientAccessExpiry,
+    constraint = network.can_access(& authority, NetworkKeyFlags::AUTH) @ NetworkErrors::InsufficientAccessAuthKeys,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]

@@ -105,12 +105,8 @@ impl GatekeeperNetwork {
             .any(|token| token.key == *mint_account)
     }
 
-    pub fn set_expire_time(&mut self, pass_expire_time: Option<i64>) -> Result<()> {
-        if let Some(pass_expire_time) = pass_expire_time {
-            if pass_expire_time != self.pass_expire_time {
-                self.pass_expire_time = pass_expire_time;
-            }
-        }
+    pub fn set_expire_time(&mut self, pass_expire_time: i64) -> Result<()> {
+        self.pass_expire_time = pass_expire_time;
 
         Ok(())
     }
@@ -193,9 +189,7 @@ impl GatekeeperNetwork {
     }
 
     pub fn update_network_features(&mut self, network_features: u32) -> Result<()> {
-        if network_features != self.network_features {
-            self.network_features = network_features
-        }
+        self.network_features = network_features;
 
         Ok(())
     }
