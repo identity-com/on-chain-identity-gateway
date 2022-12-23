@@ -1,8 +1,8 @@
-use anchor_lang::prelude::*;
 use anchor_lang::Key;
+use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
-use crate::constants::PASS_SEED;
+use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass, PassState};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
@@ -69,7 +69,16 @@ pub struct IssuePass<'info> {
     bump
     )]
     pub pass: Box<Account<'info, Pass>>,
+    #[account(
+    constraint = gatekeeper.gatekeeper_network == network.key(),
+    constraint = pass.network == network.key()
+    )]
     pub network: Box<Account<'info, GatekeeperNetwork>>,
+    #[account(
+    constraint = pass.gatekeeper == gatekeeper.key(),
+    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
+    bump = gatekeeper.gatekeeper_bump
+    )]
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -83,12 +92,12 @@ pub struct IssuePass<'info> {
     pub funder_token_account: Account<'info, TokenAccount>,
     #[account(
     mut,
-    constraint = network_token_account.owner == *network.to_account_info().key,
+    constraint = network_token_account.owner == * network.to_account_info().key,
     )]
     pub network_token_account: Account<'info, TokenAccount>,
     #[account(
     mut,
-    constraint = gatekeeper_token_account.owner ==  *gatekeeper.to_account_info().key,
+    constraint = gatekeeper_token_account.owner == * gatekeeper.to_account_info().key,
     )]
     pub gatekeeper_token_account: Account<'info, TokenAccount>,
 }
