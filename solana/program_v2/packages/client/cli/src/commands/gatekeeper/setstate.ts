@@ -85,7 +85,7 @@ export default class SetState extends Command {
     const initialState = gatekeeperAccount?.state as GatekeeperState;
 
     const stateChangeSignature = await networkService
-      .setGatekeeperState(targetState, undefined, network)
+      .setGatekeeperState(network, targetState)
       .rpc();
     gatekeeperAccount = await networkService.getGatekeeperAccount();
     const newState = gatekeeperAccount?.state as GatekeeperState;
