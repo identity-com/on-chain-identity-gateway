@@ -57,7 +57,6 @@ pub struct PassRefresh<'info> {
     )]
     pub pass: Box<Account<'info, Pass>>,
     pub authority: Signer<'info>,
-    #[account(mut)]
     pub funder: Signer<'info>,
     #[account(
     constraint = gatekeeper.gatekeeper_network == network.key(),
