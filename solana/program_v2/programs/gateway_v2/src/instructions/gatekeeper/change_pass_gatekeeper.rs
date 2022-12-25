@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::constants::PASS_SEED;
 use crate::errors::PassErrors;
-use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
+use crate::state::{Gatekeeper, GatekeeperKeyFlags, Pass};
 
 pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> {
     // TODO: Check if feature flag is set
@@ -25,9 +25,6 @@ pub struct PassChangeGatekeeper<'info> {
     )]
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,
-    pub system_program: Program<'info, System>,
-    pub network: Account<'info, GatekeeperNetwork>,
-
     pub old_gatekeeper: Account<'info, Gatekeeper>,
     #[account(
     constraint = old_gatekeeper.gatekeeper_network == new_gatekeeper.gatekeeper_network @ PassErrors::InvalidNetwork

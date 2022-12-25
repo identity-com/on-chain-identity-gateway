@@ -369,9 +369,7 @@ export class GatekeeperService extends AbstractService {
       .methods.changePassGatekeeper()
       .accounts({
         pass: passAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
-        network: this._network,
         newGatekeeper: gatekeeper,
         oldGatekeeper: this._gatekeeper,
       })
