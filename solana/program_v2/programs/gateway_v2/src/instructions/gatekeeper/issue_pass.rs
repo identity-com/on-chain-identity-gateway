@@ -1,5 +1,5 @@
-use anchor_lang::Key;
 use anchor_lang::prelude::*;
+use anchor_lang::Key;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
