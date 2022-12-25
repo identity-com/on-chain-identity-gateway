@@ -1,10 +1,14 @@
-use crate::state::{GatekeeperNetwork, NetworkAuthKey, NetworkFeesPercentage, SupportedToken};
 use anchor_lang::prelude::*;
+
+use crate::state::{AuthKey, GatekeeperNetwork, NetworkFeesPercentage, SupportedToken};
 
 pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
+    // TODO: authority should not need to be mutable.
     let authority = &mut ctx.accounts.authority;
 
+    // TODO: Why is the whole `UpdateNetworkData` going into these setters?
+    // TODO: Access checks and functional logic (updates) need to be separated.
     network.set_expire_time(data, authority)?;
     network.update_auth_keys(data, authority)?;
     network.update_fees(data, authority)?;
@@ -50,7 +54,7 @@ pub struct UpdateFees {
 
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct UpdateKeys {
-    pub add: Vec<NetworkAuthKey>,
+    pub add: Vec<AuthKey>,
     pub remove: Vec<Pubkey>,
 }
 
@@ -69,6 +73,7 @@ pub struct UpdateNetworkAccount<'info> {
     realloc::zero = false,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
+    // TODO: Separate payer and authority
     #[account(mut)]
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,

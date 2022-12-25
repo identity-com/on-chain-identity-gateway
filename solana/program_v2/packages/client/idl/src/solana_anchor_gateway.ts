@@ -89,7 +89,7 @@ export type SolanaAnchorGateway = {
         },
         {
           "name": "authority",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -233,24 +233,14 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "splTokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "authority",
           "isMut": false,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "receiverTokenAccount",
@@ -819,7 +809,7 @@ export type SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkAuthKey"
+                "defined": "AuthKey"
               }
             }
           }
@@ -955,7 +945,7 @@ export type SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkAuthKey"
+                "defined": "AuthKey"
               }
             }
           },
@@ -1101,7 +1091,7 @@ export type SolanaAnchorGateway = {
             "name": "add",
             "type": {
               "vec": {
-                "defined": "NetworkAuthKey"
+                "defined": "AuthKey"
               }
             }
           },
@@ -1226,9 +1216,6 @@ export type SolanaAnchorGateway = {
     },
     {
       "name": "GatekeeperAuthKey",
-      "docs": [
-        "The authority key for a [`Gatekeeper`]"
-      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -1237,7 +1224,7 @@ export type SolanaAnchorGateway = {
             "docs": [
               "The permissions this key has"
             ],
-            "type": "u16"
+            "type": "u32"
           },
           {
             "name": "key",
@@ -1328,31 +1315,6 @@ export type SolanaAnchorGateway = {
       }
     },
     {
-      "name": "NetworkAuthKey",
-      "docs": [
-        "The authority key for a [`GatekeeperNetwork`]"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "flags",
-            "docs": [
-              "The permissions this key has"
-            ],
-            "type": "u16"
-          },
-          {
-            "name": "key",
-            "docs": [
-              "The key"
-            ],
-            "type": "publicKey"
-          }
-        ]
-      }
-    },
-    {
       "name": "NetworkFeesPercentage",
       "docs": [
         "Fees that a [`GatekeeperNetwork`] can charge"
@@ -1394,6 +1356,28 @@ export type SolanaAnchorGateway = {
               "Percentage taken on verify. In Hundredths of a percent (0.01% or 0.0001)."
             ],
             "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuthKey",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "flags",
+            "docs": [
+              "The permissions this key has"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "key",
+            "docs": [
+              "The key"
+            ],
+            "type": "publicKey"
           }
         ]
       }
@@ -1626,7 +1610,7 @@ export const IDL: SolanaAnchorGateway = {
         },
         {
           "name": "authority",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -1770,24 +1754,14 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "splTokenProgram",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "authority",
           "isMut": false,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "receiverTokenAccount",
@@ -2356,7 +2330,7 @@ export const IDL: SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkAuthKey"
+                "defined": "AuthKey"
               }
             }
           }
@@ -2492,7 +2466,7 @@ export const IDL: SolanaAnchorGateway = {
             ],
             "type": {
               "vec": {
-                "defined": "NetworkAuthKey"
+                "defined": "AuthKey"
               }
             }
           },
@@ -2638,7 +2612,7 @@ export const IDL: SolanaAnchorGateway = {
             "name": "add",
             "type": {
               "vec": {
-                "defined": "NetworkAuthKey"
+                "defined": "AuthKey"
               }
             }
           },
@@ -2763,9 +2737,6 @@ export const IDL: SolanaAnchorGateway = {
     },
     {
       "name": "GatekeeperAuthKey",
-      "docs": [
-        "The authority key for a [`Gatekeeper`]"
-      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -2774,7 +2745,7 @@ export const IDL: SolanaAnchorGateway = {
             "docs": [
               "The permissions this key has"
             ],
-            "type": "u16"
+            "type": "u32"
           },
           {
             "name": "key",
@@ -2865,31 +2836,6 @@ export const IDL: SolanaAnchorGateway = {
       }
     },
     {
-      "name": "NetworkAuthKey",
-      "docs": [
-        "The authority key for a [`GatekeeperNetwork`]"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "flags",
-            "docs": [
-              "The permissions this key has"
-            ],
-            "type": "u16"
-          },
-          {
-            "name": "key",
-            "docs": [
-              "The key"
-            ],
-            "type": "publicKey"
-          }
-        ]
-      }
-    },
-    {
       "name": "NetworkFeesPercentage",
       "docs": [
         "Fees that a [`GatekeeperNetwork`] can charge"
@@ -2931,6 +2877,28 @@ export const IDL: SolanaAnchorGateway = {
               "Percentage taken on verify. In Hundredths of a percent (0.01% or 0.0001)."
             ],
             "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuthKey",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "flags",
+            "docs": [
+              "The permissions this key has"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "key",
+            "docs": [
+              "The key"
+            ],
+            "type": "publicKey"
           }
         ]
       }

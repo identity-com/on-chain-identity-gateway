@@ -22,6 +22,7 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
     let gatekeeper_ata = &mut ctx.accounts.gatekeeper_token_account;
     let funder_ata = &mut ctx.accounts.funder_token_account;
 
+    // TODO: Can we put the fee transfers into a trait and reuse dependent on the type of instruction?
     let absolute_fee = get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address)?.issue;
     let network_percentage = get_network_fees(&network.fees, *mint_address)?.issue;
     let (network_fee, gatekeeper_fee) =
@@ -69,7 +70,11 @@ pub struct IssuePass<'info> {
     bump
     )]
     pub pass: Box<Account<'info, Pass>>,
+    // TODO: Add verification here. The network MUST match the one of the pass and the gatekeeper.
+    // TODO: THIS can be done by using THIS network to validate both pass and Gatekeeper PDA
     pub network: Box<Account<'info, GatekeeperNetwork>>,
+    // TODO: Add PDA verification
+    // TODO: Since this in NOT init, bump SHOULD/MUST be assigned.
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -78,6 +83,8 @@ pub struct IssuePass<'info> {
     pub funder: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
+    // TODO: I actually would prefer to use a constraint for mint account verification, even if it
+    // requires a little overhead.
     pub mint_account: Account<'info, Mint>,
     #[account(mut)]
     pub funder_token_account: Account<'info, TokenAccount>,

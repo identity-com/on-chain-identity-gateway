@@ -1,7 +1,8 @@
 use crate::constants::GATEKEEPER_SEED;
-use crate::state::Gatekeeper;
+use crate::errors::GatekeeperErrors;
+use crate::state::{Gatekeeper, GatekeeperKeyFlags};
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount, Transfer};
+use anchor_spl::token::{Token, TokenAccount, Transfer};
 
 // Will withdraw funds from the gatekeeper
 pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: u64) -> Result<()> {
@@ -9,10 +10,10 @@ pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: 
     if amount == 0 {
         amount = ctx.accounts.gatekeeper_token_account.amount;
     }
-    let gatekeeper = &mut ctx.accounts.gatekeeper;
-    let spl_token_program = &mut ctx.accounts.spl_token_program;
-    let receiver_token_account = &mut ctx.accounts.receiver_token_account;
-    let gatekeeper_token_account = &mut ctx.accounts.gatekeeper_token_account;
+    let gatekeeper = &ctx.accounts.gatekeeper;
+    let spl_token_program = &ctx.accounts.spl_token_program;
+    let receiver_token_account = &ctx.accounts.receiver_token_account;
+    let gatekeeper_token_account = &ctx.accounts.gatekeeper_token_account;
 
     let gatekeeper_authority_key = gatekeeper.authority.key();
     let gatekeeper_bump = gatekeeper.gatekeeper_bump.to_le_bytes();
@@ -47,17 +48,17 @@ pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: 
 pub struct GatekeeperWithdrawAccount<'info> {
     #[account(
         seeds = [GATEKEEPER_SEED, authority.key().as_ref(), gatekeeper.gatekeeper_network.key().as_ref()],
-        bump = gatekeeper.gatekeeper_bump
+        bump = gatekeeper.gatekeeper_bump,
+        constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::WITHDRAW) @ GatekeeperErrors::InsufficientAccessAuthKeys,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
-    #[account()]
-    pub authority: Signer<'info>,
-    pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
-    // Verification is done in code
-    pub mint_account: Account<'info, Mint>,
+    pub authority: Signer<'info>,
     #[account(mut)]
     pub receiver_token_account: Account<'info, TokenAccount>,
-    #[account(mut)]
+    #[account(
+    mut,
+    constraint = gatekeeper_token_account.owner == *gatekeeper.to_account_info().key
+    )]
     pub gatekeeper_token_account: Account<'info, TokenAccount>,
 }
