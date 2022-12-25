@@ -285,7 +285,6 @@ export class GatekeeperService extends AbstractService {
       .methods.expirePass()
       .accounts({
         pass: passAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network: this._network,
         gatekeeper: this._gatekeeper,
