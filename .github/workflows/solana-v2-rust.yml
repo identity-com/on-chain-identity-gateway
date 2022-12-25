@@ -94,7 +94,7 @@ jobs:
       matrix:
         node: [ "16.x" ]
         rust: [ "stable" ]
-        solana: [ "v1.10.29" ]
+        solana: [ "stable" ]
         os: [ ubuntu-latest ]
 
     steps:
@@ -171,7 +171,7 @@ jobs:
       matrix:
         node: [ "16.x" ]
         os: [ ubuntu-latest ]
-        solana: [ "v1.10.29" ]
+        solana: [ "stable" ]
         rust: [ "stable" ]
 
     steps:
