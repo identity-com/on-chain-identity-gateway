@@ -287,6 +287,7 @@ export class GatekeeperService extends AbstractService {
         pass: passAccount,
         authority,
         gatekeeper: this._gatekeeper,
+        network: this._network,
         payer,
         splTokenProgram: splToken,
         mintAccount: mint,
