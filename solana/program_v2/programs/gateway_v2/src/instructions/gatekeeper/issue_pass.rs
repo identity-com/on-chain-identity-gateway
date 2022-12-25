@@ -1,5 +1,5 @@
-use anchor_lang::prelude::*;
 use anchor_lang::Key;
+use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
@@ -71,12 +71,10 @@ pub struct IssuePass<'info> {
     )]
     pub pass: Box<Account<'info, Pass>>,
     #[account(
-    constraint = gatekeeper.gatekeeper_network == network.key(),
-    constraint = pass.network == network.key()
+    constraint = gatekeeper.gatekeeper_network == network.key()
     )]
     pub network: Box<Account<'info, GatekeeperNetwork>>,
     #[account(
-    constraint = pass.gatekeeper == gatekeeper.key(),
     seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
     bump = gatekeeper.gatekeeper_bump
     )]
