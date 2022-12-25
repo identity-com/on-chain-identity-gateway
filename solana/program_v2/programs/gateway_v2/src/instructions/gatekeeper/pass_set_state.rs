@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::constants::PASS_SEED;
 use crate::errors::PassErrors;
-use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass, PassState};
+use crate::state::{Gatekeeper, GatekeeperKeyFlags, Pass, PassState};
 
 pub fn pass_set_state(pass: &mut Account<Pass>, state: PassState) -> Result<()> {
     pass.state = state;
