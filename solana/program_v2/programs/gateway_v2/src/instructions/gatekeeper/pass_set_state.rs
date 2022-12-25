@@ -26,6 +26,5 @@ pub struct PassSetState<'info> {
     )]
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,
-    pub network: Account<'info, GatekeeperNetwork>,
     pub gatekeeper: Account<'info, Gatekeeper>,
 }
