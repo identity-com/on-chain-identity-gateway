@@ -1,10 +1,15 @@
-import { Keypair, PublicKey } from "@solana/web3.js";
+import {Keypair, PublicKey} from "@solana/web3.js";
 import { Flags } from "@oclif/core";
-import { readKey } from "../account";
-import { ExtendedCluster } from "../connection";
+import * as fs from "fs";
+import { ExtendedCluster } from "./utils";
+// import { ExtendedCluster } from "@identity.com/solana-gatekeeper-lib";
 
 // eslint-disable-next-line unicorn/prefer-module
 const DIRNAME = __dirname;
+
+const readKey = async (file: string): Promise<Keypair> => Keypair.fromSecretKey(
+    new Uint8Array(JSON.parse(fs.readFileSync(file).toString("utf-8")))
+);
 
 export const gatekeeperKeyFlag = Flags.build<Keypair>({
   char: "g",
