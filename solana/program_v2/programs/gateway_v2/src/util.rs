@@ -110,17 +110,6 @@ pub fn check_gatekeeper_auth_threshold(
     auth_key_count >= auth_threshold as usize
 }
 
-pub fn check_network_auth_threshold(auth_keys: &[AuthKey], auth_threshold: u8) -> bool {
-    let auth_key_count = auth_keys
-        .iter()
-        .filter(|key| {
-            NetworkKeyFlags::from_bits_truncate(key.flags).contains(NetworkKeyFlags::AUTH)
-        })
-        .count();
-
-    auth_key_count >= auth_threshold as usize
-}
-
 #[cfg(test)]
 mod tests {
     use crate::state::{GatekeeperAuthKey, GatekeeperFees, NetworkFeesPercentage};

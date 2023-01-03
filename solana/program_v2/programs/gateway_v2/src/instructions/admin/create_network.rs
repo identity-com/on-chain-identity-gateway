@@ -67,3 +67,47 @@ pub struct CreateNetworkAccount<'info> {
     pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::instructions::admin::CreateNetworkData;
+    use crate::state::{AuthKey, NetworkKeyFlags};
+
+    #[test]
+    fn test_check_auth_threshold() {
+        let mut data = CreateNetworkData {
+            auth_threshold: 2,
+            pass_expire_time: 0,
+            fees: Vec::new(),
+            auth_keys: Vec::new(),
+            supported_tokens: Vec::new(),
+        };
+
+        // Test case where there are fewer auth keys than the threshold
+        data.auth_keys.push(AuthKey {
+            flags: NetworkKeyFlags::AUTH.bits(),
+            key: "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtvdqn4esJGX"
+                .parse()
+                .unwrap(),
+        });
+        assert!(!data.check_auth_threshold());
+
+        // Test case where there are exactly as many auth keys as the threshold
+        data.auth_keys.push(AuthKey {
+            flags: NetworkKeyFlags::AUTH.bits(),
+            key: "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtvdqn4esJGX"
+                .parse()
+                .unwrap(),
+        });
+        assert!(data.check_auth_threshold());
+
+        // Test case where there are more auth keys than the threshold
+        data.auth_keys.push(AuthKey {
+            flags: NetworkKeyFlags::AUTH.bits(),
+            key: "wLYV8imcPhPDZ3JJvUgSWv2p6PNz4RfFtvdqn4esJGX"
+                .parse()
+                .unwrap(),
+        });
+        assert!(data.check_auth_threshold());
+    }
+}
