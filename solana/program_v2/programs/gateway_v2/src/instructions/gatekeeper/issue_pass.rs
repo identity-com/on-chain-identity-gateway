@@ -70,11 +70,14 @@ pub struct IssuePass<'info> {
     bump
     )]
     pub pass: Box<Account<'info, Pass>>,
-    // TODO: Add verification here. The network MUST match the one of the pass and the gatekeeper.
-    // TODO: THIS can be done by using THIS network to validate both pass and Gatekeeper PDA
+    #[account(
+    constraint = gatekeeper.gatekeeper_network == network.key()
+    )]
     pub network: Box<Account<'info, GatekeeperNetwork>>,
-    // TODO: Add PDA verification
-    // TODO: Since this in NOT init, bump SHOULD/MUST be assigned.
+    #[account(
+    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
+    bump = gatekeeper.gatekeeper_bump
+    )]
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
     #[account(mut)]
     pub payer: Signer<'info>,
