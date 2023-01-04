@@ -1,11 +1,17 @@
-import { PublicKey, Transaction } from '@solana/web3.js';
+import {
+  ConfirmOptions,
+  Connection,
+  PublicKey,
+  Transaction,
+} from '@solana/web3.js';
 import { BN } from '@project-serum/anchor';
-import { ConfirmOptions, Connection } from '@solana/web3.js';
 import { CustomClusterUrlConfig, ExtendedCluster } from './connection';
 
 export interface Wallet {
   signTransaction(tx: Transaction): Promise<Transaction>;
+
   signAllTransactions(txs: Transaction[]): Promise<Transaction[]>;
+
   publicKey: PublicKey;
 }
 
@@ -79,7 +85,9 @@ export type SupportedToken = {
   settlementInfo: SettlementInfo;
 };
 
-export type SettlementInfo = unknown;
+export type SettlementInfo = {
+  placeholder: number;
+};
 
 export type CreateGatekeeperData = {
   tokenFees: FeeStructure[];
