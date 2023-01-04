@@ -406,7 +406,6 @@ export class GatekeeperService extends AbstractService {
       .methods.setPassData(gatekeeperData, networkData)
       .accounts({
         pass: passAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         gatekeeper: this._gatekeeper,
       })
