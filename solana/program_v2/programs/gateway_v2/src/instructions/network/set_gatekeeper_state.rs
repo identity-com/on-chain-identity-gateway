@@ -1,5 +1,5 @@
 use crate::constants::GATEKEEPER_SEED;
-use crate::errors::NetworkErrors;
+use crate::errors::GatekeeperErrors;
 use crate::state::{Gatekeeper, GatekeeperNetwork, GatekeeperState, NetworkKeyFlags};
 use anchor_lang::prelude::*;
 
@@ -25,6 +25,6 @@ pub struct SetGatekeeperStateAccount<'info> {
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     pub authority: Signer<'info>,
-    #[account(constraint = network.can_access(&authority, NetworkKeyFlags::AUTH) @ NetworkErrors::InsufficientAccessAuthKeys)]
+    #[account(constraint = network.can_access(&authority, NetworkKeyFlags::AUTH) @ GatekeeperErrors::InsufficientAccessAuthKeys)]
     pub network: Account<'info, GatekeeperNetwork>,
 }
