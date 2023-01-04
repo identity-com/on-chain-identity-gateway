@@ -49,7 +49,6 @@ pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct PassRefresh<'info> {
-    // TODO: Since this in NOT init, bump SHOULD/MUST be assigned.
     #[account(
     seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), & pass.pass_number.to_le_bytes() ],
     bump = pass.signer_bump,
@@ -59,13 +58,16 @@ pub struct PassRefresh<'info> {
     pub pass: Box<Account<'info, Pass>>,
     pub authority: Signer<'info>,
     pub funder: Signer<'info>,
-    // TODO: do we need this?
-    pub system_program: Program<'info, System>,
-    // TODO: Add verification here. The network MUST match the one of the pass and the gatekeeper.
-    // TODO: THIS can be done by using THIS network to validate both pass and Gatekeeper PDA
+    #[account(
+    constraint = gatekeeper.gatekeeper_network == network.key(),
+    constraint = pass.network == network.key()
+    )]
     pub network: Box<Account<'info, GatekeeperNetwork>>,
-    // TODO: Add PDA verification
-    // TODO: Since this in NOT init, bump SHOULD/MUST be assigned.
+    #[account(
+    constraint = pass.gatekeeper == gatekeeper.key(),
+    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
+    bump = gatekeeper.gatekeeper_bump
+    )]
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
     pub spl_token_program: Program<'info, Token>,
     // TODO: I actually would prefer to use a constraint for mint account verification, even if it

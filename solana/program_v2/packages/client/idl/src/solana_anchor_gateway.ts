@@ -382,11 +382,6 @@ export type SolanaAnchorGateway = {
           isSigner: false;
         },
         {
-          name: 'authority';
-          isMut: false;
-          isSigner: true;
-        },
-        {
           name: 'funder';
           isMut: false;
           isSigner: true;
