@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
-use crate::constants::PASS_SEED;
+use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
@@ -49,27 +49,28 @@ pub fn expire_pass(ctx: Context<PassExpire>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct PassExpire<'info> {
-    // TODO: Since this in NOT init, bump SHOULD/MUST be assigned.
     #[account(
     seeds = [PASS_SEED, pass.subject.as_ref(), pass.network.key().as_ref(), & pass.pass_number.to_le_bytes() ],
-    bump,
+    bump = pass.signer_bump,
     constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::EXPIRE_PASS),
     mut
     )]
     pub pass: Box<Account<'info, Pass>>,
-    // TODO: Add verification here. The network MUST match the one of the pass and the gatekeeper.
-    // TODO: THIS can be done by using THIS network to validate both pass and Gatekeeper PDA
+    #[account(
+    constraint = gatekeeper.gatekeeper_network == network.key(),
+    constraint = pass.network == network.key()
+    )]
     pub network: Box<Account<'info, GatekeeperNetwork>>,
-    // TODO: Add PDA verification
-    // TODO: Since this in NOT init, bump SHOULD/MUST be assigned.
+    #[account(
+    constraint = pass.gatekeeper == gatekeeper.key(),
+    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
+    bump = gatekeeper.gatekeeper_bump
+    )]
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
     #[account(mut)]
     pub payer: Signer<'info>,
-    // TODO: Non-mut funder does not make any sense.
     pub funder: Signer<'info>,
     pub authority: Signer<'info>,
-    // TODO: Do we need this?
-    pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
     // TODO: I actually would prefer to use a constraint for mint account verification, even if it
     // requires a little overhead.
@@ -78,12 +79,12 @@ pub struct PassExpire<'info> {
     pub funder_token_account: Account<'info, TokenAccount>,
     #[account(
     mut,
-    constraint = network_token_account.owner == *network.to_account_info().key,
+    constraint = network_token_account.owner == * network.to_account_info().key,
     )]
     pub network_token_account: Account<'info, TokenAccount>,
     #[account(
     mut,
-    constraint = gatekeeper_token_account.owner ==  *gatekeeper.to_account_info().key,
+    constraint = gatekeeper_token_account.owner == * gatekeeper.to_account_info().key,
     )]
     pub gatekeeper_token_account: Account<'info, TokenAccount>,
 }
