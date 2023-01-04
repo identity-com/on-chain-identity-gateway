@@ -354,6 +354,11 @@ export type SolanaAnchorGateway = {
           isSigner: true;
         },
         {
+          name: 'network';
+          isMut: false;
+          isSigner: false;
+        },
+        {
           name: 'gatekeeper';
           isMut: false;
           isSigner: false;
@@ -1750,17 +1755,9 @@ export const IDL: SolanaAnchorGateway = {
           isSigner: true,
         },
         {
-          name: 'gatekeeper',
+          name: 'network',
           isMut: false,
           isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: 'state',
-          type: {
-            defined: 'PassState',
-          },
         },
       ],
     },
