@@ -163,6 +163,7 @@ export class NetworkService extends AbstractService {
           key: this._gatekeeper,
         },
       ],
+      supportedTokens: [],
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {

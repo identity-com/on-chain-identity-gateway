@@ -77,6 +77,7 @@ export default class Create extends Command {
           key: authPair.publicKey,
         },
       ],
+      supportedTokens: [],
     };
     const gatekeeperSignature = await networkService
       .createGatekeeper(
