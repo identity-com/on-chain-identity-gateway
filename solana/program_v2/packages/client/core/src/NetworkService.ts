@@ -273,9 +273,9 @@ export class NetworkService extends AbstractService {
   /**
    * Changes the gatekeeper state
    *
+   * @param network The network to which the gatekeeper belongs
    * @param state The new state for the gatekeeper
    * @param authority An authority allowed to change gatekeeper state
-   * @param network The network to which the gatekeeper belongs
    */
   setGatekeeperState(
     network: PublicKey,
