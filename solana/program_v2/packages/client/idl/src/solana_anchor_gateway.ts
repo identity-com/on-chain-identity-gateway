@@ -295,7 +295,7 @@ export type SolanaAnchorGateway = {
         },
         {
           "name": "funder",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -1811,7 +1811,7 @@ export const IDL: SolanaAnchorGateway = {
         },
         {
           "name": "funder",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
