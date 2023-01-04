@@ -459,11 +459,6 @@ export type SolanaAnchorGateway = {
           isSigner: false;
         },
         {
-          name: 'authority';
-          isMut: false;
-          isSigner: true;
-        },
-        {
           name: 'gatekeeper';
           isMut: false;
           isSigner: false;
@@ -1754,6 +1749,19 @@ export const IDL: SolanaAnchorGateway = {
           isMut: false,
           isSigner: false,
         },
+        {
+          name: 'gatekeeper',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: 'state',
+          type: {
+            defined: 'PassState',
+          },
+        },
       ],
     },
     {
@@ -1763,11 +1771,6 @@ export const IDL: SolanaAnchorGateway = {
           name: 'pass',
           isMut: true,
           isSigner: false,
-        },
-        {
-          name: 'authority',
-          isMut: false,
-          isSigner: true,
         },
         {
           name: 'funder',
@@ -1845,11 +1848,6 @@ export const IDL: SolanaAnchorGateway = {
           name: 'pass',
           isMut: true,
           isSigner: false,
-        },
-        {
-          name: 'authority',
-          isMut: false,
-          isSigner: true,
         },
         {
           name: 'gatekeeper',

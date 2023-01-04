@@ -31,7 +31,5 @@ pub struct PassSetData<'info> {
     )]
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,
-    // TODO: Do we need this?
-    pub system_program: Program<'info, System>,
     pub gatekeeper: Account<'info, Gatekeeper>,
 }
