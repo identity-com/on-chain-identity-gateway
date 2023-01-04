@@ -9,25 +9,6 @@ pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkDat
     let network = &mut ctx.accounts.network;
     let authority = &ctx.accounts.authority;
 
-    // Check there are auth_keys provided (TODO: Is this necessary? The next check implies this)
-    if data.auth_keys.is_empty() {
-        return Err(error!(NetworkErrors::NoAuthKeys));
-    }
-
-    // Check if there are enough auth_keys with the AUTH flag set
-    // TODO: Move this check into a trait OR helper function and verify with q require OR in a constraint.
-    if data
-        .auth_keys
-        .iter()
-        .filter(|key| {
-            NetworkKeyFlags::from_bits_truncate(key.flags).contains(NetworkKeyFlags::AUTH)
-        })
-        .count()
-        < data.auth_threshold as usize
-    {
-        return Err(error!(NetworkErrors::InsufficientAuthKeys));
-    }
-
     network.auth_threshold = data.auth_threshold;
     // TODO: Do we even need this dedicated authority if we implement the auth_keys system?
     network.authority = *authority.key;
@@ -35,9 +16,6 @@ pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkDat
     network.auth_keys = data.auth_keys;
     network.fees = data.fees;
     network.supported_tokens = data.supported_tokens;
-
-    // TODO: Supported Tokens not set (No tests failing).
-    // network.supported_tokens = data.supported_tokens;
 
     Ok(())
 }
@@ -74,7 +52,7 @@ impl CreateNetworkData {
 pub struct CreateNetworkAccount<'info> {
     #[account(
     init,
-    payer = authority,
+    payer = payer,
     space = GatekeeperNetwork::size(
     data.fees.len(),
     data.auth_keys.len(),
@@ -84,7 +62,6 @@ pub struct CreateNetworkAccount<'info> {
     constraint = data.check_auth_threshold() @ NetworkErrors::InsufficientAuthKeys
     )]
     pub network: Account<'info, GatekeeperNetwork>,
-    // TODO: Authority and Payer should be split
     #[account(mut)]
     pub payer: Signer<'info>,
     pub authority: Signer<'info>,
