@@ -24,4 +24,3 @@ filename = "../../fixtures/accounts/mint-account.json"
 [[test.validator.account]]
 address = "9SkxBuj9kuaJQ3yAXEuRESjYt14BcPUTac25Mbi1n8ny"
 filename = "../../fixtures/accounts/mint-authority.json"
-

@@ -2,8 +2,6 @@ use crate::errors::*;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
-// TODO: Comment can be removed?
-/// Placeholder for additional close_network functionality
 pub fn close_network(ctx: Context<CloseNetworkAccount>) -> Result<()> {
     require!(
         ctx.accounts.network.is_closeable(),
