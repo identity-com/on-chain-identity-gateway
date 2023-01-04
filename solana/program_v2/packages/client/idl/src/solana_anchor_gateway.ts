@@ -573,11 +573,6 @@ export type SolanaAnchorGateway = {
           isSigner: true;
         },
         {
-          name: 'authority';
-          isMut: false;
-          isSigner: true;
-        },
-        {
           name: 'splTokenProgram';
           isMut: false;
           isSigner: false;
@@ -1960,11 +1955,6 @@ export const IDL: SolanaAnchorGateway = {
         },
         {
           name: 'funder',
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: 'authority',
           isMut: false,
           isSigner: true,
         },

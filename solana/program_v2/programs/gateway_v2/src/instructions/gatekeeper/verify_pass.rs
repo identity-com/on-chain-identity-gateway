@@ -2,7 +2,6 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
-use crate::errors::GatekeeperErrors;
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
@@ -50,7 +49,6 @@ pub fn verify_pass(ctx: Context<PassVerify>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct PassVerify<'info> {
-    // TODO: Since this in NOT init, bump SHOULD/MUST be assigned.
     #[account(
     seeds = [PASS_SEED, pass.subject.as_ref(), network.key().as_ref(), & pass.pass_number.to_le_bytes()],
     bump = pass.signer_bump,
@@ -58,19 +56,21 @@ pub struct PassVerify<'info> {
     mut
     )]
     pub pass: Box<Account<'info, Pass>>,
-    // TODO: Add verification here. The network MUST match the one of the pass and the gatekeeper.
-    // TODO: THIS can be done by using THIS network to validate both pass and Gatekeeper PDA
+    #[account(
+    constraint = gatekeeper.gatekeeper_network == network.key(),
+    constraint = pass.network == network.key()
+    )]
     pub network: Box<Account<'info, GatekeeperNetwork>>,
-    // TODO: Add PDA verification
-    // TODO: Since this in NOT init, bump SHOULD/MUST be assigned.
+    #[account(
+    constraint = pass.gatekeeper == gatekeeper.key(),
+    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
+    bump = gatekeeper.gatekeeper_bump
+    )]
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
     #[account(mut)]
     pub payer: Signer<'info>,
-    // TODO: non-mut funder? (ok maybe that's true, but I've seen other examples were the funder is mut)
     pub funder: Signer<'info>,
     pub authority: Signer<'info>,
-    // TODO: This is not needed?
-    pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
     // TODO: I actually would prefer to use a constraint for mint account verification, even if it
     // requires a little overhead.
