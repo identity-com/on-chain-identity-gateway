@@ -17,6 +17,11 @@ const _abi = [
         name: "owner",
         type: "address",
       },
+      {
+        internalType: "uint256",
+        name: "network",
+        type: "uint256",
+      },
     ],
     name: "verifyToken",
     outputs: [
@@ -31,11 +36,6 @@ const _abi = [
   },
   {
     inputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
       {
         internalType: "uint256",
         name: "tokenId",

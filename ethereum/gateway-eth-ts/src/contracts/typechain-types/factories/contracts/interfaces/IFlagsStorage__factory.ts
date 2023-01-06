@@ -15,25 +15,6 @@ const _abi = [
     inputs: [
       {
         indexed: true,
-        internalType: "address",
-        name: "prevDAOController",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "daoController",
-        type: "address",
-      },
-    ],
-    name: "DAOControllerUpdated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
         internalType: "bytes32",
         name: "flag",
         type: "bytes32",
@@ -59,6 +40,25 @@ const _abi = [
       },
     ],
     name: "FlagRemoved",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "prevSuperAdmin",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "superAdmin",
+        type: "address",
+      },
+    ],
+    name: "SuperAdminUpdated",
     type: "event",
   },
   {
@@ -95,19 +95,6 @@ const _abi = [
     name: "addFlags",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "daoController",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {
@@ -151,25 +138,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes32[]",
-        name: "_flags",
-        type: "bytes32[]",
-      },
-    ],
-    name: "isFlagsSupported",
-    outputs: [
-      {
-        internalType: "bool[]",
-        name: "",
-        type: "bool[]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "bytes32",
         name: "_flag",
         type: "bytes32",
@@ -195,12 +163,12 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "supportedFlagsMask",
+    name: "superAdmin",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "address",
         name: "",
-        type: "uint256",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -208,7 +176,7 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "unsupportedFlagsMask",
+    name: "supportedFlagsMask",
     outputs: [
       {
         internalType: "uint256",
@@ -223,11 +191,11 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_newDAOController",
+        name: "_newSuperAdmin",
         type: "address",
       },
     ],
-    name: "updateDAOManager",
+    name: "updateSuperAdmin",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

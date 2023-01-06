@@ -31,30 +31,26 @@ export interface FlagsStorageInterface extends utils.Interface {
   functions: {
     "addFlag(bytes32,uint8)": FunctionFragment;
     "addFlags(bytes32[],uint8[])": FunctionFragment;
-    "daoController()": FunctionFragment;
     "flagIndexes(bytes32)": FunctionFragment;
     "isFlagSupported(bytes32)": FunctionFragment;
-    "isFlagsSupported(bytes32[])": FunctionFragment;
     "removeFlag(bytes32)": FunctionFragment;
     "removeFlags(bytes32[])": FunctionFragment;
+    "superAdmin()": FunctionFragment;
     "supportedFlagsMask()": FunctionFragment;
-    "unsupportedFlagsMask()": FunctionFragment;
-    "updateDAOManager(address)": FunctionFragment;
+    "updateSuperAdmin(address)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "addFlag"
       | "addFlags"
-      | "daoController"
       | "flagIndexes"
       | "isFlagSupported"
-      | "isFlagsSupported"
       | "removeFlag"
       | "removeFlags"
+      | "superAdmin"
       | "supportedFlagsMask"
-      | "unsupportedFlagsMask"
-      | "updateDAOManager"
+      | "updateSuperAdmin"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -66,20 +62,12 @@ export interface FlagsStorageInterface extends utils.Interface {
     values: [PromiseOrValue<BytesLike>[], PromiseOrValue<BigNumberish>[]]
   ): string;
   encodeFunctionData(
-    functionFragment: "daoController",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "flagIndexes",
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "isFlagSupported",
     values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "isFlagsSupported",
-    values: [PromiseOrValue<BytesLike>[]]
   ): string;
   encodeFunctionData(
     functionFragment: "removeFlag",
@@ -90,24 +78,20 @@ export interface FlagsStorageInterface extends utils.Interface {
     values: [PromiseOrValue<BytesLike>[]]
   ): string;
   encodeFunctionData(
+    functionFragment: "superAdmin",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportedFlagsMask",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "unsupportedFlagsMask",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "updateDAOManager",
+    functionFragment: "updateSuperAdmin",
     values: [PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(functionFragment: "addFlag", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addFlags", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "daoController",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "flagIndexes",
     data: BytesLike
@@ -116,50 +100,31 @@ export interface FlagsStorageInterface extends utils.Interface {
     functionFragment: "isFlagSupported",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "isFlagsSupported",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "removeFlag", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "removeFlags",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "superAdmin", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportedFlagsMask",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "unsupportedFlagsMask",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "updateDAOManager",
+    functionFragment: "updateSuperAdmin",
     data: BytesLike
   ): Result;
 
   events: {
-    "DAOControllerUpdated(address,address)": EventFragment;
     "FlagAdded(bytes32,uint8)": EventFragment;
     "FlagRemoved(bytes32)": EventFragment;
+    "SuperAdminUpdated(address,address)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "DAOControllerUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FlagAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FlagRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SuperAdminUpdated"): EventFragment;
 }
-
-export interface DAOControllerUpdatedEventObject {
-  prevDAOController: string;
-  daoController: string;
-}
-export type DAOControllerUpdatedEvent = TypedEvent<
-  [string, string],
-  DAOControllerUpdatedEventObject
->;
-
-export type DAOControllerUpdatedEventFilter =
-  TypedEventFilter<DAOControllerUpdatedEvent>;
 
 export interface FlagAddedEventObject {
   flag: string;
@@ -175,6 +140,18 @@ export interface FlagRemovedEventObject {
 export type FlagRemovedEvent = TypedEvent<[string], FlagRemovedEventObject>;
 
 export type FlagRemovedEventFilter = TypedEventFilter<FlagRemovedEvent>;
+
+export interface SuperAdminUpdatedEventObject {
+  prevSuperAdmin: string;
+  superAdmin: string;
+}
+export type SuperAdminUpdatedEvent = TypedEvent<
+  [string, string],
+  SuperAdminUpdatedEventObject
+>;
+
+export type SuperAdminUpdatedEventFilter =
+  TypedEventFilter<SuperAdminUpdatedEvent>;
 
 export interface FlagsStorage extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -204,18 +181,16 @@ export interface FlagsStorage extends BaseContract {
 
   functions: {
     addFlag(
-      _flag: PromiseOrValue<BytesLike>,
-      _index: PromiseOrValue<BigNumberish>,
+      flag: PromiseOrValue<BytesLike>,
+      index: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     addFlags(
-      _flags: PromiseOrValue<BytesLike>[],
-      _indexes: PromiseOrValue<BigNumberish>[],
+      flags: PromiseOrValue<BytesLike>[],
+      indexes: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    daoController(overrides?: CallOverrides): Promise<[string]>;
 
     flagIndexes(
       arg0: PromiseOrValue<BytesLike>,
@@ -223,48 +198,41 @@ export interface FlagsStorage extends BaseContract {
     ): Promise<[number]>;
 
     isFlagSupported(
-      _flag: PromiseOrValue<BytesLike>,
+      flag: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    isFlagsSupported(
-      _flags: PromiseOrValue<BytesLike>[],
-      overrides?: CallOverrides
-    ): Promise<[boolean[]]>;
-
     removeFlag(
-      _flag: PromiseOrValue<BytesLike>,
+      flag: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     removeFlags(
-      _flags: PromiseOrValue<BytesLike>[],
+      flags: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    superAdmin(overrides?: CallOverrides): Promise<[string]>;
+
     supportedFlagsMask(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    unsupportedFlagsMask(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    updateDAOManager(
-      _newDAOController: PromiseOrValue<string>,
+    updateSuperAdmin(
+      newSuperAdmin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
 
   addFlag(
-    _flag: PromiseOrValue<BytesLike>,
-    _index: PromiseOrValue<BigNumberish>,
+    flag: PromiseOrValue<BytesLike>,
+    index: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   addFlags(
-    _flags: PromiseOrValue<BytesLike>[],
-    _indexes: PromiseOrValue<BigNumberish>[],
+    flags: PromiseOrValue<BytesLike>[],
+    indexes: PromiseOrValue<BigNumberish>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
-
-  daoController(overrides?: CallOverrides): Promise<string>;
 
   flagIndexes(
     arg0: PromiseOrValue<BytesLike>,
@@ -272,48 +240,41 @@ export interface FlagsStorage extends BaseContract {
   ): Promise<number>;
 
   isFlagSupported(
-    _flag: PromiseOrValue<BytesLike>,
+    flag: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  isFlagsSupported(
-    _flags: PromiseOrValue<BytesLike>[],
-    overrides?: CallOverrides
-  ): Promise<boolean[]>;
-
   removeFlag(
-    _flag: PromiseOrValue<BytesLike>,
+    flag: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   removeFlags(
-    _flags: PromiseOrValue<BytesLike>[],
+    flags: PromiseOrValue<BytesLike>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  superAdmin(overrides?: CallOverrides): Promise<string>;
+
   supportedFlagsMask(overrides?: CallOverrides): Promise<BigNumber>;
 
-  unsupportedFlagsMask(overrides?: CallOverrides): Promise<BigNumber>;
-
-  updateDAOManager(
-    _newDAOController: PromiseOrValue<string>,
+  updateSuperAdmin(
+    newSuperAdmin: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
     addFlag(
-      _flag: PromiseOrValue<BytesLike>,
-      _index: PromiseOrValue<BigNumberish>,
+      flag: PromiseOrValue<BytesLike>,
+      index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     addFlags(
-      _flags: PromiseOrValue<BytesLike>[],
-      _indexes: PromiseOrValue<BigNumberish>[],
+      flags: PromiseOrValue<BytesLike>[],
+      indexes: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
     ): Promise<void>;
-
-    daoController(overrides?: CallOverrides): Promise<string>;
 
     flagIndexes(
       arg0: PromiseOrValue<BytesLike>,
@@ -321,45 +282,31 @@ export interface FlagsStorage extends BaseContract {
     ): Promise<number>;
 
     isFlagSupported(
-      _flag: PromiseOrValue<BytesLike>,
+      flag: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    isFlagsSupported(
-      _flags: PromiseOrValue<BytesLike>[],
-      overrides?: CallOverrides
-    ): Promise<boolean[]>;
-
     removeFlag(
-      _flag: PromiseOrValue<BytesLike>,
+      flag: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     removeFlags(
-      _flags: PromiseOrValue<BytesLike>[],
+      flags: PromiseOrValue<BytesLike>[],
       overrides?: CallOverrides
     ): Promise<void>;
 
+    superAdmin(overrides?: CallOverrides): Promise<string>;
+
     supportedFlagsMask(overrides?: CallOverrides): Promise<BigNumber>;
 
-    unsupportedFlagsMask(overrides?: CallOverrides): Promise<BigNumber>;
-
-    updateDAOManager(
-      _newDAOController: PromiseOrValue<string>,
+    updateSuperAdmin(
+      newSuperAdmin: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
 
   filters: {
-    "DAOControllerUpdated(address,address)"(
-      prevDAOController?: PromiseOrValue<string> | null,
-      daoController?: PromiseOrValue<string> | null
-    ): DAOControllerUpdatedEventFilter;
-    DAOControllerUpdated(
-      prevDAOController?: PromiseOrValue<string> | null,
-      daoController?: PromiseOrValue<string> | null
-    ): DAOControllerUpdatedEventFilter;
-
     "FlagAdded(bytes32,uint8)"(
       flag?: PromiseOrValue<BytesLike> | null,
       index?: null
@@ -375,22 +322,29 @@ export interface FlagsStorage extends BaseContract {
     FlagRemoved(
       flag?: PromiseOrValue<BytesLike> | null
     ): FlagRemovedEventFilter;
+
+    "SuperAdminUpdated(address,address)"(
+      prevSuperAdmin?: PromiseOrValue<string> | null,
+      superAdmin?: PromiseOrValue<string> | null
+    ): SuperAdminUpdatedEventFilter;
+    SuperAdminUpdated(
+      prevSuperAdmin?: PromiseOrValue<string> | null,
+      superAdmin?: PromiseOrValue<string> | null
+    ): SuperAdminUpdatedEventFilter;
   };
 
   estimateGas: {
     addFlag(
-      _flag: PromiseOrValue<BytesLike>,
-      _index: PromiseOrValue<BigNumberish>,
+      flag: PromiseOrValue<BytesLike>,
+      index: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     addFlags(
-      _flags: PromiseOrValue<BytesLike>[],
-      _indexes: PromiseOrValue<BigNumberish>[],
+      flags: PromiseOrValue<BytesLike>[],
+      indexes: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
-
-    daoController(overrides?: CallOverrides): Promise<BigNumber>;
 
     flagIndexes(
       arg0: PromiseOrValue<BytesLike>,
@@ -398,49 +352,42 @@ export interface FlagsStorage extends BaseContract {
     ): Promise<BigNumber>;
 
     isFlagSupported(
-      _flag: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    isFlagsSupported(
-      _flags: PromiseOrValue<BytesLike>[],
+      flag: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     removeFlag(
-      _flag: PromiseOrValue<BytesLike>,
+      flag: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     removeFlags(
-      _flags: PromiseOrValue<BytesLike>[],
+      flags: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    superAdmin(overrides?: CallOverrides): Promise<BigNumber>;
+
     supportedFlagsMask(overrides?: CallOverrides): Promise<BigNumber>;
 
-    unsupportedFlagsMask(overrides?: CallOverrides): Promise<BigNumber>;
-
-    updateDAOManager(
-      _newDAOController: PromiseOrValue<string>,
+    updateSuperAdmin(
+      newSuperAdmin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     addFlag(
-      _flag: PromiseOrValue<BytesLike>,
-      _index: PromiseOrValue<BigNumberish>,
+      flag: PromiseOrValue<BytesLike>,
+      index: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     addFlags(
-      _flags: PromiseOrValue<BytesLike>[],
-      _indexes: PromiseOrValue<BigNumberish>[],
+      flags: PromiseOrValue<BytesLike>[],
+      indexes: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
-
-    daoController(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     flagIndexes(
       arg0: PromiseOrValue<BytesLike>,
@@ -448,35 +395,28 @@ export interface FlagsStorage extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     isFlagSupported(
-      _flag: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isFlagsSupported(
-      _flags: PromiseOrValue<BytesLike>[],
+      flag: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     removeFlag(
-      _flag: PromiseOrValue<BytesLike>,
+      flag: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     removeFlags(
-      _flags: PromiseOrValue<BytesLike>[],
+      flags: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
+
+    superAdmin(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     supportedFlagsMask(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    unsupportedFlagsMask(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    updateDAOManager(
-      _newDAOController: PromiseOrValue<string>,
+    updateSuperAdmin(
+      newSuperAdmin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

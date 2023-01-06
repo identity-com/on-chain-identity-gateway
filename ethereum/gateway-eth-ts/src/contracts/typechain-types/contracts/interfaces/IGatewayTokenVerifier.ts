@@ -23,31 +23,31 @@ import type {
 
 export interface IGatewayTokenVerifierInterface extends utils.Interface {
   functions: {
-    "verifyToken(address)": FunctionFragment;
     "verifyToken(address,uint256)": FunctionFragment;
+    "verifyToken(uint256)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "verifyToken(address)"
       | "verifyToken(address,uint256)"
+      | "verifyToken(uint256)"
   ): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: "verifyToken(address)",
-    values: [PromiseOrValue<string>]
-  ): string;
   encodeFunctionData(
     functionFragment: "verifyToken(address,uint256)",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "verifyToken(uint256)",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
 
   decodeFunctionResult(
-    functionFragment: "verifyToken(address)",
+    functionFragment: "verifyToken(address,uint256)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "verifyToken(address,uint256)",
+    functionFragment: "verifyToken(uint256)",
     data: BytesLike
   ): Result;
 
@@ -81,37 +81,37 @@ export interface IGatewayTokenVerifier extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    "verifyToken(address)"(
+    "verifyToken(address,uint256)"(
       owner: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    "verifyToken(address,uint256)"(
-      owner: PromiseOrValue<string>,
+    "verifyToken(uint256)"(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
   };
 
-  "verifyToken(address)"(
+  "verifyToken(address,uint256)"(
     owner: PromiseOrValue<string>,
+    network: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  "verifyToken(address,uint256)"(
-    owner: PromiseOrValue<string>,
+  "verifyToken(uint256)"(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   callStatic: {
-    "verifyToken(address)"(
+    "verifyToken(address,uint256)"(
       owner: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    "verifyToken(address,uint256)"(
-      owner: PromiseOrValue<string>,
+    "verifyToken(uint256)"(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -120,26 +120,26 @@ export interface IGatewayTokenVerifier extends BaseContract {
   filters: {};
 
   estimateGas: {
-    "verifyToken(address)"(
+    "verifyToken(address,uint256)"(
       owner: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "verifyToken(address,uint256)"(
-      owner: PromiseOrValue<string>,
+    "verifyToken(uint256)"(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    "verifyToken(address)"(
+    "verifyToken(address,uint256)"(
       owner: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "verifyToken(address,uint256)"(
-      owner: PromiseOrValue<string>,
+    "verifyToken(uint256)"(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

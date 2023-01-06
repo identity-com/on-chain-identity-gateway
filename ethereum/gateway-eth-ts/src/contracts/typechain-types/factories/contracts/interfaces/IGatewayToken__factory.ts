@@ -25,34 +25,14 @@ const _abi = [
         name: "newDAOManager",
         type: "address",
       },
-    ],
-    name: "DAOManagerTransfered",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
       {
         indexed: false,
-        internalType: "address",
-        name: "account",
-        type: "address",
+        internalType: "uint256",
+        name: "network",
+        type: "uint256",
       },
     ],
-    name: "TransfersAccepted",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-    ],
-    name: "TransfersRestricted",
+    name: "DAOManagerTransferred",
     type: "event",
   },
   {
@@ -62,6 +42,11 @@ const _abi = [
         name: "authority",
         type: "address",
       },
+      {
+        internalType: "uint256",
+        name: "network",
+        type: "uint256",
+      },
     ],
     name: "addNetworkAuthority",
     outputs: [],
@@ -69,28 +54,30 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "allowTransfers",
-    outputs: [
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "network",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
       {
         internalType: "bool",
-        name: "",
+        name: "daoGoverned",
         type: "bool",
       },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "daoManager",
-    outputs: [
       {
         internalType: "address",
-        name: "",
+        name: "daoManager",
         type: "address",
       },
     ],
+    name: "createNetwork",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -136,25 +123,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-    ],
-    name: "getTokenId",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "uint256",
         name: "tokenId",
         type: "uint256",
@@ -172,24 +140,16 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "isDAOGoverned",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",
         name: "gatekeeper",
         type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "network",
+        type: "uint256",
       },
     ],
     name: "isGatekeeper",
@@ -210,6 +170,11 @@ const _abi = [
         name: "authority",
         type: "address",
       },
+      {
+        internalType: "uint256",
+        name: "network",
+        type: "uint256",
+      },
     ],
     name: "isNetworkAuthority",
     outputs: [
@@ -226,8 +191,68 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "network",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "expiration",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "mask",
+        type: "uint256",
+      },
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "value",
+            type: "uint256",
+          },
+          {
+            internalType: "enum ChargeType",
+            name: "chargeType",
+            type: "uint8",
+          },
+          {
+            internalType: "address",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "recipient",
+            type: "address",
+          },
+        ],
+        internalType: "struct Charge",
+        name: "charge",
+        type: "tuple",
+      },
+    ],
+    name: "mint",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "authority",
         type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "network",
+        type: "uint256",
       },
     ],
     name: "removeNetworkAuthority",
@@ -238,31 +263,18 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-      {
         internalType: "uint256",
-        name: "tokenId",
+        name: "network",
         type: "uint256",
       },
-    ],
-    name: "setDefaultTokenId",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "stopTransfers",
-    outputs: [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
+        internalType: "string",
+        name: "name",
+        type: "string",
       },
     ],
+    name: "renameNetwork",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -270,8 +282,18 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "previousManager",
+        type: "address",
+      },
+      {
+        internalType: "address",
         name: "newManager",
         type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "network",
+        type: "uint256",
       },
     ],
     name: "transferDAOManager",

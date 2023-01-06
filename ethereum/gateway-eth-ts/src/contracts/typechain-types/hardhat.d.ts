@@ -45,6 +45,42 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
+      name: "ERC3525",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC3525__factory>;
+    getContractFactory(
+      name: "IERC3525Metadata",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC3525Metadata__factory>;
+    getContractFactory(
+      name: "IERC721Enumerable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721Enumerable__factory>;
+    getContractFactory(
+      name: "IERC721Metadata",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721Metadata__factory>;
+    getContractFactory(
+      name: "IERC3525",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC3525__factory>;
+    getContractFactory(
+      name: "IERC3525Receiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC3525Receiver__factory>;
+    getContractFactory(
+      name: "IERC721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721__factory>;
+    getContractFactory(
+      name: "IERC721Receiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721Receiver__factory>;
+    getContractFactory(
+      name: "IERC3525MetadataDescriptor",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC3525MetadataDescriptor__factory>;
+    getContractFactory(
       name: "FlagsStorage",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FlagsStorage__factory>;
@@ -56,10 +92,6 @@ declare module "hardhat/types/runtime" {
       name: "GatewayToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GatewayToken__factory>;
-    getContractFactory(
-      name: "GatewayTokenController",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.GatewayTokenController__factory>;
     getContractFactory(
       name: "IERC721Expirable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -81,17 +113,21 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IGatewayToken__factory>;
     getContractFactory(
-      name: "IGatewayTokenController",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IGatewayTokenController__factory>;
-    getContractFactory(
       name: "IGatewayTokenVerifier",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IGatewayTokenVerifier__factory>;
     getContractFactory(
+      name: "IParameterizedAccessControl",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IParameterizedAccessControl__factory>;
+    getContractFactory(
       name: "MultiERC2771Context",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MultiERC2771Context__factory>;
+    getContractFactory(
+      name: "ParameterizedAccessControl",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ParameterizedAccessControl__factory>;
     getContractFactory(
       name: "TokenBitMask",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -138,6 +174,51 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
+      name: "ERC3525",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC3525>;
+    getContractAt(
+      name: "IERC3525Metadata",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC3525Metadata>;
+    getContractAt(
+      name: "IERC721Enumerable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721Enumerable>;
+    getContractAt(
+      name: "IERC721Metadata",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721Metadata>;
+    getContractAt(
+      name: "IERC3525",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC3525>;
+    getContractAt(
+      name: "IERC3525Receiver",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC3525Receiver>;
+    getContractAt(
+      name: "IERC721",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721>;
+    getContractAt(
+      name: "IERC721Receiver",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721Receiver>;
+    getContractAt(
+      name: "IERC3525MetadataDescriptor",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC3525MetadataDescriptor>;
+    getContractAt(
       name: "FlagsStorage",
       address: string,
       signer?: ethers.Signer
@@ -152,11 +233,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.GatewayToken>;
-    getContractAt(
-      name: "GatewayTokenController",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.GatewayTokenController>;
     getContractAt(
       name: "IERC721Expirable",
       address: string,
@@ -183,20 +259,25 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IGatewayToken>;
     getContractAt(
-      name: "IGatewayTokenController",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IGatewayTokenController>;
-    getContractAt(
       name: "IGatewayTokenVerifier",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IGatewayTokenVerifier>;
     getContractAt(
+      name: "IParameterizedAccessControl",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IParameterizedAccessControl>;
+    getContractAt(
       name: "MultiERC2771Context",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.MultiERC2771Context>;
+    getContractAt(
+      name: "ParameterizedAccessControl",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ParameterizedAccessControl>;
     getContractAt(
       name: "TokenBitMask",
       address: string,

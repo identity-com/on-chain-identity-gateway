@@ -27,91 +27,102 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
+export type ChargeStruct = {
+  value: PromiseOrValue<BigNumberish>;
+  chargeType: PromiseOrValue<BigNumberish>;
+  token: PromiseOrValue<string>;
+  recipient: PromiseOrValue<string>;
+};
+
+export type ChargeStructOutput = [BigNumber, number, string, string] & {
+  value: BigNumber;
+  chargeType: number;
+  token: string;
+  recipient: string;
+};
+
 export interface IGatewayTokenInterface extends utils.Interface {
   functions: {
-    "addNetworkAuthority(address)": FunctionFragment;
-    "allowTransfers()": FunctionFragment;
-    "daoManager()": FunctionFragment;
+    "addNetworkAuthority(address,uint256)": FunctionFragment;
+    "createNetwork(uint256,string,bool,address)": FunctionFragment;
     "getToken(uint256)": FunctionFragment;
-    "getTokenId(address)": FunctionFragment;
     "getTokenState(uint256)": FunctionFragment;
-    "isDAOGoverned()": FunctionFragment;
-    "isGatekeeper(address)": FunctionFragment;
-    "isNetworkAuthority(address)": FunctionFragment;
-    "removeNetworkAuthority(address)": FunctionFragment;
-    "setDefaultTokenId(address,uint256)": FunctionFragment;
-    "stopTransfers()": FunctionFragment;
-    "transferDAOManager(address)": FunctionFragment;
+    "isGatekeeper(address,uint256)": FunctionFragment;
+    "isNetworkAuthority(address,uint256)": FunctionFragment;
+    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
+    "removeNetworkAuthority(address,uint256)": FunctionFragment;
+    "renameNetwork(uint256,string)": FunctionFragment;
+    "transferDAOManager(address,address,uint256)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "addNetworkAuthority"
-      | "allowTransfers"
-      | "daoManager"
+      | "createNetwork"
       | "getToken"
-      | "getTokenId"
       | "getTokenState"
-      | "isDAOGoverned"
       | "isGatekeeper"
       | "isNetworkAuthority"
+      | "mint"
       | "removeNetworkAuthority"
-      | "setDefaultTokenId"
-      | "stopTransfers"
+      | "renameNetwork"
       | "transferDAOManager"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "addNetworkAuthority",
-    values: [PromiseOrValue<string>]
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "allowTransfers",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "daoManager",
-    values?: undefined
+    functionFragment: "createNetwork",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<string>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "getToken",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getTokenId",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getTokenState",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "isDAOGoverned",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "isGatekeeper",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "isNetworkAuthority",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "removeNetworkAuthority",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setDefaultTokenId",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "stopTransfers",
-    values?: undefined
+    functionFragment: "isNetworkAuthority",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "mint",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      ChargeStruct
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeNetworkAuthority",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "renameNetwork",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "transferDAOManager",
-    values: [PromiseOrValue<string>]
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
 
   decodeFunctionResult(
@@ -119,18 +130,12 @@ export interface IGatewayTokenInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "allowTransfers",
+    functionFragment: "createNetwork",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "daoManager", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getToken", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "getTokenId", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getTokenState",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "isDAOGoverned",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -141,16 +146,13 @@ export interface IGatewayTokenInterface extends utils.Interface {
     functionFragment: "isNetworkAuthority",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "removeNetworkAuthority",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setDefaultTokenId",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "stopTransfers",
+    functionFragment: "renameNetwork",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -159,49 +161,24 @@ export interface IGatewayTokenInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "DAOManagerTransfered(address,address)": EventFragment;
-    "TransfersAccepted(address)": EventFragment;
-    "TransfersRestricted(address)": EventFragment;
+    "DAOManagerTransferred(address,address,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "DAOManagerTransfered"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TransfersAccepted"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TransfersRestricted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAOManagerTransferred"): EventFragment;
 }
 
-export interface DAOManagerTransferedEventObject {
+export interface DAOManagerTransferredEventObject {
   previousDAOManager: string;
   newDAOManager: string;
+  network: BigNumber;
 }
-export type DAOManagerTransferedEvent = TypedEvent<
-  [string, string],
-  DAOManagerTransferedEventObject
+export type DAOManagerTransferredEvent = TypedEvent<
+  [string, string, BigNumber],
+  DAOManagerTransferredEventObject
 >;
 
-export type DAOManagerTransferedEventFilter =
-  TypedEventFilter<DAOManagerTransferedEvent>;
-
-export interface TransfersAcceptedEventObject {
-  account: string;
-}
-export type TransfersAcceptedEvent = TypedEvent<
-  [string],
-  TransfersAcceptedEventObject
->;
-
-export type TransfersAcceptedEventFilter =
-  TypedEventFilter<TransfersAcceptedEvent>;
-
-export interface TransfersRestrictedEventObject {
-  account: string;
-}
-export type TransfersRestrictedEvent = TypedEvent<
-  [string],
-  TransfersRestrictedEventObject
->;
-
-export type TransfersRestrictedEventFilter =
-  TypedEventFilter<TransfersRestrictedEvent>;
+export type DAOManagerTransferredEventFilter =
+  TypedEventFilter<DAOManagerTransferredEvent>;
 
 export interface IGatewayToken extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -232,14 +209,15 @@ export interface IGatewayToken extends BaseContract {
   functions: {
     addNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    allowTransfers(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    daoManager(
+    createNetwork(
+      network: PromiseOrValue<BigNumberish>,
+      name: PromiseOrValue<string>,
+      daoGoverned: PromiseOrValue<boolean>,
+      daoManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -256,61 +234,63 @@ export interface IGatewayToken extends BaseContract {
       }
     >;
 
-    getTokenId(
-      owner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     getTokenState(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[number] & { state: number }>;
 
-    isDAOGoverned(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     isGatekeeper(
       gatekeeper: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     isNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    mint(
+      to: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      expiration: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     removeNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    setDefaultTokenId(
-      owner: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    stopTransfers(
+    renameNetwork(
+      network: PromiseOrValue<BigNumberish>,
+      name: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     transferDAOManager(
+      previousManager: PromiseOrValue<string>,
       newManager: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
 
   addNetworkAuthority(
     authority: PromiseOrValue<string>,
+    network: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  allowTransfers(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  daoManager(
+  createNetwork(
+    network: PromiseOrValue<BigNumberish>,
+    name: PromiseOrValue<string>,
+    daoGoverned: PromiseOrValue<boolean>,
+    daoManager: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -327,59 +307,65 @@ export interface IGatewayToken extends BaseContract {
     }
   >;
 
-  getTokenId(
-    owner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   getTokenState(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<number>;
 
-  isDAOGoverned(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   isGatekeeper(
     gatekeeper: PromiseOrValue<string>,
+    network: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   isNetworkAuthority(
     authority: PromiseOrValue<string>,
+    network: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  mint(
+    to: PromiseOrValue<string>,
+    network: PromiseOrValue<BigNumberish>,
+    expiration: PromiseOrValue<BigNumberish>,
+    mask: PromiseOrValue<BigNumberish>,
+    charge: ChargeStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   removeNetworkAuthority(
     authority: PromiseOrValue<string>,
+    network: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  setDefaultTokenId(
-    owner: PromiseOrValue<string>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  stopTransfers(
+  renameNetwork(
+    network: PromiseOrValue<BigNumberish>,
+    name: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   transferDAOManager(
+    previousManager: PromiseOrValue<string>,
     newManager: PromiseOrValue<string>,
+    network: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
     addNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    allowTransfers(overrides?: CallOverrides): Promise<boolean>;
-
-    daoManager(overrides?: CallOverrides): Promise<string>;
+    createNetwork(
+      network: PromiseOrValue<BigNumberish>,
+      name: PromiseOrValue<string>,
+      daoGoverned: PromiseOrValue<boolean>,
+      daoManager: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     getToken(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -394,77 +380,77 @@ export interface IGatewayToken extends BaseContract {
       }
     >;
 
-    getTokenId(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getTokenState(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<number>;
 
-    isDAOGoverned(overrides?: CallOverrides): Promise<boolean>;
-
     isGatekeeper(
       gatekeeper: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     isNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    mint(
+      to: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      expiration: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     removeNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setDefaultTokenId(
-      owner: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
+    renameNetwork(
+      network: PromiseOrValue<BigNumberish>,
+      name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    stopTransfers(overrides?: CallOverrides): Promise<boolean>;
 
     transferDAOManager(
+      previousManager: PromiseOrValue<string>,
       newManager: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
 
   filters: {
-    "DAOManagerTransfered(address,address)"(
+    "DAOManagerTransferred(address,address,uint256)"(
       previousDAOManager?: null,
-      newDAOManager?: null
-    ): DAOManagerTransferedEventFilter;
-    DAOManagerTransfered(
+      newDAOManager?: null,
+      network?: null
+    ): DAOManagerTransferredEventFilter;
+    DAOManagerTransferred(
       previousDAOManager?: null,
-      newDAOManager?: null
-    ): DAOManagerTransferedEventFilter;
-
-    "TransfersAccepted(address)"(account?: null): TransfersAcceptedEventFilter;
-    TransfersAccepted(account?: null): TransfersAcceptedEventFilter;
-
-    "TransfersRestricted(address)"(
-      account?: null
-    ): TransfersRestrictedEventFilter;
-    TransfersRestricted(account?: null): TransfersRestrictedEventFilter;
+      newDAOManager?: null,
+      network?: null
+    ): DAOManagerTransferredEventFilter;
   };
 
   estimateGas: {
     addNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    allowTransfers(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    daoManager(
+    createNetwork(
+      network: PromiseOrValue<BigNumberish>,
+      name: PromiseOrValue<string>,
+      daoGoverned: PromiseOrValue<boolean>,
+      daoManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -473,47 +459,48 @@ export interface IGatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getTokenId(
-      owner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     getTokenState(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    isDAOGoverned(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     isGatekeeper(
       gatekeeper: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     isNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    mint(
+      to: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      expiration: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     removeNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setDefaultTokenId(
-      owner: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    stopTransfers(
+    renameNetwork(
+      network: PromiseOrValue<BigNumberish>,
+      name: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     transferDAOManager(
+      previousManager: PromiseOrValue<string>,
       newManager: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -521,14 +508,15 @@ export interface IGatewayToken extends BaseContract {
   populateTransaction: {
     addNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    allowTransfers(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    daoManager(
+    createNetwork(
+      network: PromiseOrValue<BigNumberish>,
+      name: PromiseOrValue<string>,
+      daoGoverned: PromiseOrValue<boolean>,
+      daoManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -537,47 +525,48 @@ export interface IGatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getTokenId(
-      owner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     getTokenState(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    isDAOGoverned(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     isGatekeeper(
       gatekeeper: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     isNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    mint(
+      to: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      expiration: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
+      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     removeNetworkAuthority(
       authority: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setDefaultTokenId(
-      owner: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    stopTransfers(
+    renameNetwork(
+      network: PromiseOrValue<BigNumberish>,
+      name: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     transferDAOManager(
+      previousManager: PromiseOrValue<string>,
       newManager: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
