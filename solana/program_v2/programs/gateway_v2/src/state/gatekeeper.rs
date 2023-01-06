@@ -168,18 +168,9 @@ impl Gatekeeper {
     }
 
     // Allows a network to set the state of the gatekeeper (Active, Frozen, Halted)
-    pub fn set_gatekeeper_state(
-        &mut self,
-        state: &GatekeeperState,
-        authority: &mut Signer,
-    ) -> Result<()> {
+    pub fn set_gatekeeper_state(&mut self, state: &GatekeeperState) -> Result<()> {
         if *state != self.gatekeeper_state {
-            if !self.can_access(authority, GatekeeperKeyFlags::SET_GATEKEEPER_STATE) {
-                return Err(error!(GatekeeperErrors::InsufficientAccessAuthKeys));
-            }
-
             self.gatekeeper_state = *state;
-
             // TODO: If gatekeeper_state is set to halted, need to invalidate all passes...
         }
 
