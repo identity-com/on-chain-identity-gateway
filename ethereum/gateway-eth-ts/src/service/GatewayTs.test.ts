@@ -1,15 +1,16 @@
-import {BaseProvider, getDefaultProvider, Network} from "@ethersproject/providers";
+import {
+  BaseProvider,
+  getDefaultProvider,
+  Network,
+} from "@ethersproject/providers";
 import { BigNumber, Wallet } from "ethers";
-import {TokenData, TokenState} from "../utils/types";
-// Not supported before v18
-// eslint-disable-next-line unicorn/prefer-node-protocol
+import { TokenData, TokenState } from "../utils/types";
 import * as assert from "assert";
 import * as dotenv from "dotenv";
-import {
-  SAMPLE_PRIVATE_KEY,
-} from "../utils/constants_test";
-import {GatewayTs} from "./GatewayTs";
-import {DEFAULT_GATEWAY_TOKEN_ADDRESS, gatekeeperWallet} from "./testUtils";
+import { SAMPLE_PRIVATE_KEY } from "../utils/constants_test";
+import { GatewayTs } from "./GatewayTs";
+import { gatekeeperNetwork, gatekeeperWallet } from "./testUtils";
+import { DEFAULT_GATEWAY_TOKEN_ADDRESS } from "../utils/constants";
 dotenv.config();
 
 describe("GatewayTS", function () {
@@ -20,8 +21,6 @@ describe("GatewayTS", function () {
 
   const sampleWalletAddress = Wallet.createRandom().address;
 
-  const dummyWalletAddress = "0x2de1EFea6044b44432aedBC9f29861296695AF0C";
-
   before("Initialize GatewayTS class", async function () {
     this.timeout(20_000);
 
@@ -31,113 +30,107 @@ describe("GatewayTS", function () {
     gateway = new GatewayTs(gatekeeper, network, DEFAULT_GATEWAY_TOKEN_ADDRESS);
   });
 
-  it('should issue a token', async () => {
-    await (await gateway.issue(sampleWalletAddress)).wait();
-    
-    const token = await gateway.getToken(sampleWalletAddress);
-    
+  it("should issue a token", async () => {
+    await (await gateway.issue(sampleWalletAddress, gatekeeperNetwork)).wait();
+
+    const token = await gateway.getToken(
+      sampleWalletAddress,
+      gatekeeperNetwork
+    );
+
     assert.equal(token.owner, sampleWalletAddress);
     assert.equal(token.state, TokenState.ACTIVE);
   });
 
   it("Verify gateway tokens for multiple addresses", async () => {
-    let result = await gateway.verify(sampleWalletAddress);
+    let result = await gateway.verify(sampleWalletAddress, gatekeeperNetwork);
     assert.equal(result, true);
 
     // expect FALSE on validation if user doesn't have any token
     const dummyWallet = new Wallet(SAMPLE_PRIVATE_KEY);
-    result = await gateway.verify(dummyWallet.address);
+    result = await gateway.verify(dummyWallet.address, gatekeeperNetwork);
     assert.equal(result, false);
   }).timeout(10_000);
 
-  context("token id generation", () => {
-    const knownAddress = "0x2de1EFea6044b44432aedBC9f29861296695AF0C";
-
-    it("Test token id generation without constraints", () => {
-      const targetTokenId = "0x2de1efea6044b44432aedbc9f29861296695af0c";
-      
-      const tokenId = gateway.generateTokenId(
-        knownAddress
-      );
-      assert.equal(tokenId.toHexString(), targetTokenId);
-    });
-    
-    it("Test token id generation with constraints", () => {
-      let constraints = BigNumber.from("251");
-
-      let tokenId = gateway.generateTokenId(
-        knownAddress,
-        constraints
-      );
-      assert.equal(tokenId.toHexString(), "0xfb2de1efea6044b44432aedbc9f29861296695af0c");
-
-      constraints = BigNumber.from("251785634");
-      tokenId = gateway.generateTokenId(
-        knownAddress,
-        constraints
-      );
-      assert.equal(tokenId.toHexString(), "0x0f01f1a22de1efea6044b44432aedbc9f29861296695af0c");
-    });
+  it("getTokenIdsByOwnerAndNetwork", async () => {
+    const tokenIds = await gateway.getTokenIdsByOwnerAndNetwork(
+      sampleWalletAddress,
+      gatekeeperNetwork
+    );
+    assert.ok(tokenIds.toString());
   });
 
-  it("getTokenId", async () => {
-    const tokenId = await gateway.getTokenId(sampleWalletAddress);
-    assert.ok(tokenId.toString());
-  });
-  
-  it("getTokenId should return 0 on a wallet without a gateway token", async () => {
-    const tokenId = await gateway.getTokenId(dummyWalletAddress);
-    assert.equal(tokenId.toString(), "0");
+  it("getTokenIdsByOwnerAndNetwork should return an empty array on a wallet without a gateway token", async () => {
+    const emptyWallet = Wallet.createRandom().address;
+    const tokenIds = await gateway.getTokenIdsByOwnerAndNetwork(
+      emptyWallet,
+      gatekeeperNetwork
+    );
+    assert.equal(tokenIds.length, 0);
   }).timeout(10_000);
 
   it("Test token state get functions", async () => {
-    let state = await gateway.getTokenState(sampleWalletAddress);
-    assert.equal(state, TokenState.ACTIVE);
-
-    // expect state being active for any non-existing token TODO FIX
-    state = await gateway.getTokenState(dummyWalletAddress);
+    const state = await gateway.getTokenState(
+      sampleWalletAddress,
+      gatekeeperNetwork
+    );
     assert.equal(state, TokenState.ACTIVE);
   }).timeout(10_000);
 
+  it("Missing tokens throw an error", async () => {
+    const emptyWallet = Wallet.createRandom().address;
+    const shouldFail = gateway.getTokenState(emptyWallet, gatekeeperNetwork);
+    await assert.rejects(shouldFail, Error);
+  }).timeout(10_000);
+
   it("Test token data get functions", async () => {
-    const data: TokenData = await gateway.getToken(sampleWalletAddress);
-    
+    const data: TokenData = await gateway.getToken(
+      sampleWalletAddress,
+      gatekeeperNetwork
+    );
+
     assert.equal(data.state, TokenState.ACTIVE);
   }).timeout(10_000);
 
   it("Test token bitmask get functions", async () => {
     const token = await gateway.getToken(
-      sampleWalletAddress
+      sampleWalletAddress,
+      gatekeeperNetwork
     );
     const targetBitmask = BigNumber.from("0");
     assert.deepEqual(token.bitmask, targetBitmask);
   }).timeout(10_000);
-  
+
   it("Test freeze", async () => {
-    await gateway.freeze(sampleWalletAddress);
-    
-    const token = await gateway.getToken(sampleWalletAddress);
-    
+    await gateway.freeze(sampleWalletAddress, gatekeeperNetwork);
+
+    const token = await gateway.getToken(
+      sampleWalletAddress,
+      gatekeeperNetwork
+    );
+
     assert.equal(token.state, TokenState.FROZEN);
-  })
+  });
 
   it("Test unfreeze", async () => {
-    await gateway.unfreeze(sampleWalletAddress);
+    await gateway.unfreeze(sampleWalletAddress, gatekeeperNetwork);
 
-    const token = await gateway.getToken(sampleWalletAddress);
+    const token = await gateway.getToken(
+      sampleWalletAddress,
+      gatekeeperNetwork
+    );
 
     assert.equal(token.state, TokenState.ACTIVE);
-  })
+  });
 
   it("Test refresh", async () => {
-    let token = await gateway.getToken(sampleWalletAddress);
-    
-    const originalExpiry = token.expiration; 
-    
-    await gateway.refresh(sampleWalletAddress, undefined, 1000);
+    let token = await gateway.getToken(sampleWalletAddress, gatekeeperNetwork);
 
-    token = await gateway.getToken(sampleWalletAddress);
+    const originalExpiry = token.expiration;
+    await gateway.refresh(sampleWalletAddress, gatekeeperNetwork, 1000);
+
+    token = await gateway.getToken(sampleWalletAddress, gatekeeperNetwork);
 
     assert.equal(BigNumber.from(token.expiration).gt(originalExpiry), true);
-  })
+  });
 });

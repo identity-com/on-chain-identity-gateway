@@ -1,15 +1,11 @@
 import { ethers } from "hardhat";
-import {BigNumber, Contract, Signer} from "ethers";
+import {BigNumber, Contract} from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
-import { 
-    toBytes32,
-    getTimestampPlusDays
-} from './utils';
+import { toBytes32 } from './utils';
 
 import { expect } from 'chai';
 import {NULL_CHARGE, randomAddress} from "./utils/eth";
-import {token} from "../typechain-types/@openzeppelin/contracts";
 
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -24,7 +20,6 @@ describe('GatewayToken', async () => {
     let networkAuthority2: SignerWithAddress;
 
     let forwarder: Contract;
-    let tokenController: Contract;
     let flagsStorage: Contract;
     let gatewayToken: Contract;
 
@@ -117,13 +112,13 @@ describe('GatewayToken', async () => {
         it('Expect revert on adding new network authority by Alice', async () => {
             await expect(
                 gatewayToken.connect(alice).addNetworkAuthority(bob.address, gkn1)
-            ).to.be.revertedWith("missing role");
+            ).to.be.revertedWith(/missing role/);
         });
 
         it('Expect revert on removing existing network authority by Alice', async () => {
             await expect(
                 gatewayToken.connect(alice).removeNetworkAuthority(identityCom.address, gkn1)
-            ).to.be.revertedWith("missing role");
+            ).to.be.revertedWith(/missing role/);
         });
     });
 

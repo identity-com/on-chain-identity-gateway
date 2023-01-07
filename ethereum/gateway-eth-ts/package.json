@@ -4,52 +4,41 @@
   "description": "Adapter library for Identity.com gateway token system on Ethereum",
   "main": "dist/index.js",
   "scripts": {
-    "precompile": "rm -rf dist",
-    "compile": "tsc -p tsconfig.json",
+    "prebuild": "rm -rf dist && yarn copy-contracts",
+    "compile": "tsc",
     "lint": "eslint src/ --ext .ts",
-    "build": "yarn compile && tsc -b && oclif-dev manifest && oclif-dev readme",
-    "postbuild": "rm -f oclif.manifest.json",
+    "build": "yarn tsc",
     "pretest": "cd ../smart-contract && (yarn local &) && sleep 10",
     "test": "ts-mocha src/*.test.ts src/**/*.test.ts",
-    "version": "oclif-dev readme",
     "copy-contracts": "cp -r ../smart-contract/build/contracts/* src/contracts/abi/ && cp -r ../smart-contract/typechain-types src/contracts"
   },
   "repository": "git@github.com:identity-com/on-chain-identity-gateway.git",
-  "author": "Bach Adylbekov <bach@secured-finance.com>",
-  "bin": {
-    "gateway-eth-ts": "./bin/run"
-  },
+  "author": "Daniel Kelleher",
   "license": "MIT",
   "bugs": "https://github.com/identity-com/on-chain-identity-gateway/issues",
   "files": [
-    "/bin",
     "/dist",
-    "/npm-shrinkwrap.json",
-    "/oclif.manifest.json"
+    "/npm-shrinkwrap.json"
   ],
   "homepage": "https://github.com/identity-com/on-chain-identity-gateway",
   "dependencies": {
     "@ethersproject/abi": "^5.6.4",
     "@ethersproject/abstract-provider": "^5.6.1",
     "@ethersproject/abstract-signer": "^5.6.2",
-    "@ethersproject/bignumber": "^5.6.2",
+    "@ethersproject/bignumber": "^5.7.0",
+    "@ethersproject/contracts": "^5.7.0",
     "@ethersproject/providers": "^5.6.8",
+    "@ethersproject/strings": "^5.7.0",
     "@ethersproject/transactions": "^5.6.2",
-    "@oclif/core": "^1.6.3",
-    "@oclif/plugin-help": "^3.2.2",
-    "@oclif/plugin-not-found": "^1.2.4",
-    "@oclif/plugin-version": "^1.0.4",
+    "@ethersproject/wallet": "^5.7.0",
     "@types/ramda": "^0.28.14",
     "bignumber.js": "^9.0.1",
     "debug": "^4.3.4",
     "eth-sig-util": "2.1.1",
-    "ethers": "^5.6.9",
     "gas-price-oracle": "^0.3.3",
     "ramda": "^0.28.0"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1.26.0",
-    "@oclif/test": "^1.2.8",
     "@types/chai": "^4.3.0",
     "@types/debug": "^4.1.7",
     "@types/eth-sig-util": "^2.1.1",
@@ -61,13 +50,10 @@
     "chai": "^4.3.4",
     "dotenv": "^10.0.0",
     "eslint": "^7.31.0",
-    "eslint-config-oclif": "^3.1.0",
-    "eslint-config-oclif-typescript": "^0.2.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "mocha": "^9.0.3",
     "nyc": "^15.1.0",
-    "oclif": "^1.18.1",
     "prettier": "2.3.2",
     "ts-mocha": "^8.0.0",
     "ts-node": "^10.1.0",
@@ -75,23 +61,7 @@
     "typescript": "^4.3.5"
   },
   "engines": {
-    "node": ">=10.0.0"
-  },
-  "oclif": {
-    "commands": "./dist/commands",
-    "bin": "gateway-eth-ts",
-    "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-not-found",
-      "@oclif/plugin-version"
-    ],
-    "additionalHelpFlags": [
-      "-h"
-    ],
-    "additionalVersionFlags": [
-      "-v"
-    ],
-    "topicSeparator": " "
+    "node": ">=14.0.0"
   },
   "types": "dist/index.d.ts",
   "ts-node": {

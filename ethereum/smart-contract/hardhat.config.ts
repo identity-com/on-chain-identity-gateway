@@ -1,8 +1,8 @@
 import {task} from "hardhat/config";
-import '@nomiclabs/hardhat-waffle';
+import '@nomicfoundation/hardhat-toolbox';
+import '@nomiclabs/hardhat-ethers';
 import '@typechain/hardhat'
 import 'hardhat-deploy';
-import 'hardhat-contract-sizer'
 import * as dotenv from 'dotenv'
 
 import { checkGT } from "./tasks/checkGT";
@@ -24,14 +24,14 @@ const liveAccounts = (process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KE
 
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
     .addParam('address', 'The wallet to check')
-    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract')
+    .addParam('gatekeepernetwork', 'The gatekeeper network')
     .setAction(checkGT)
 task('add-gatekeeper', 'check if a wallet has a gateway token for a particular gatekeeper network')
     .addParam('gatekeeper', 'The gatekeeper to add')
-    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to add the gatekeeper to')
+    .addParam('gatekeepernetwork', 'The gatekeeper network to add the gatekeeper to')
     .setAction(addGatekeeper)
 task('issue-gt', 'issue a gateway token')
-    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to issue the token against')
+    .addParam('gatekeepernetwork', 'The gatekeeper network to issue the token against')
     .addParam('address', 'The wallet to issue the gateway token for')
     .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
     .setAction(issueGT)
@@ -186,5 +186,13 @@ module.exports = {
       localhost: 2,
       hardhat: 2
     },
+  },
+  typechain: {
+    // outDir: 'src/types',
+    // target: 'ethers-v5',
+    // alwaysGenerateOverloads: false, // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
+    // externalArtifacts: ['externalArtifacts/*.json'], // optional array of glob patterns with external artifacts to process (for example external libs from node_modules)
+    // dontOverrideCompile: false // defaults to false
+    tsNocheck: true,
   },
 }

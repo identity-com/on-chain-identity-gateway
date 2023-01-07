@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "__workspaces_comment": "Order is build order, parent must come first",
+  "workspaces": [
+    "smart-contract",
+    "gateway-eth-ts",
+    "gatekeeper-cli"
+  ],
+  "scripts": {
+    "test": "yarn workspaces run test",
+    "build": "yarn workspaces run build"
+  },
+  "devDependencies": {
+    "audit-ci": "^5.1.2"
+  }
+}

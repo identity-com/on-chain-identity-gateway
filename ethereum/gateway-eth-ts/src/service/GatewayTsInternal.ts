@@ -1,157 +1,164 @@
-import {BigNumber, Overrides} from "ethers";
+import { Overrides } from "@ethersproject/contracts";
+import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 
 import { getExpirationTime } from "../utils/time";
-import {ZERO_BN} from "../utils/constants";
-import {generateId} from "../utils/tokenId";
-import {MappedWriteOperation, ReadOnlyOperation, TokenData, TokenState} from "../utils/types";
-import {NULL_CHARGE} from "../utils/charge";
+import {
+  MappedWriteOperation,
+  ReadOnlyOperation,
+  TokenData,
+  TokenState,
+} from "../utils/types";
+import { NULL_CHARGE } from "../utils/charge";
 
 /**
  * The main API of the Ethereum Gateway client library.
- * This class expects a contract object, that contains the methods specified in the 
+ * This class expects a contract object, that contains the methods specified in the
  * GatewayToken smart contract, but is agnostic to the return values of those methods.
- * 
+ *
  * This allows it to be used with a contract object that returns a transaction receipt
  * (i.e. creates, signs and sends the transaction) or a PopulatedTransaction, or others.
- * 
+ *
  */
-export class GatewayTsInternal<I extends MappedWriteOperation<O> & ReadOnlyOperation, O> {
+export class GatewayTsInternal<
+  I extends MappedWriteOperation<O> & ReadOnlyOperation,
+  O
+> {
   protected gatewayTokenContract: I;
   protected options: Overrides;
 
-  constructor(
-    gatewayTokenContract: I,
-    options?: Overrides
-  ) {
+  constructor(gatewayTokenContract: I, options?: Overrides) {
     this.gatewayTokenContract = gatewayTokenContract;
     this.options = options;
   }
 
-  addGatekeeper(
-    gatekeeper: string,
-  ): Promise<O> {
-    return this.gatewayTokenContract.addGatekeeper(gatekeeper);
-  }
-
-  removeGatekeeper(
-    gatekeeper: string,
-  ): Promise<O> {
-    return this.gatewayTokenContract.removeGatekeeper(gatekeeper);
-  };
-
-  addNetworkAuthority(
-    authority: string,
-  ): Promise<O> {
-    return this.gatewayTokenContract.addNetworkAuthority(authority);
-  }
-
-  removeNetworkAuthority(
-    authority: string,
-  ): Promise<O> {
-    return this.gatewayTokenContract.removeNetworkAuthority(authority);
-  }
-
-  generateTokenId(
-    address: string,
-    constraints?: BigNumber,
-  ): BigNumber {
-    return generateId(address, constraints);
-  }
-
-  getTokenId(
+  private async checkedGetTokenId(
     owner: string,
+    network: bigint
   ): Promise<BigNumber> {
-    return this.gatewayTokenContract.getTokenId(owner);
+    const tokenIds: BigNumber[] =
+      await this.gatewayTokenContract.getTokenIdsByOwnerAndNetwork(
+        owner,
+        network,
+        this.options
+      );
+    // TODO we may want to tolerate this (perhaps with an option
+    if (tokenIds.length > 1)
+      throw new Error("Multiple tokens found for owner and network");
+    if (tokenIds.length === 0)
+      throw new Error("No tokens found for owner and network");
+    return tokenIds[0];
+  }
+
+  addGatekeeper(gatekeeper: string, network: bigint): Promise<O> {
+    return this.gatewayTokenContract.addGatekeeper(gatekeeper, network);
+  }
+
+  removeGatekeeper(gatekeeper: string, network: bigint): Promise<O> {
+    return this.gatewayTokenContract.removeGatekeeper(gatekeeper, network);
+  }
+
+  addNetworkAuthority(authority: string, network: bigint): Promise<O> {
+    return this.gatewayTokenContract.addNetworkAuthority(authority, network);
+  }
+
+  removeNetworkAuthority(authority: string, network: bigint): Promise<O> {
+    return this.gatewayTokenContract.removeNetworkAuthority(authority, network);
   }
 
   issue(
     owner: string,
-    tokenId: number | BigNumber = null,
-    expiration: number | BigNumber = 0,
-    bitmask: BigNumber = ZERO_BN,
+    network: bigint,
+    expiry: BigNumberish = 0,
+    bitmask: BigNumberish = 0
   ): Promise<O> {
-    const mintTokenId = tokenId || this.generateTokenId(owner);
-    const expirationTime = expiration > 0 ? getExpirationTime(expiration) : 0;
+    const expirationTime = expiry > 0 ? getExpirationTime(expiry) : 0;
 
-    return this.gatewayTokenContract.mint(owner, mintTokenId, expirationTime, bitmask, NULL_CHARGE, this.options);
+    return this.gatewayTokenContract.mint(
+      owner,
+      network,
+      expirationTime,
+      bitmask,
+      NULL_CHARGE,
+      this.options
+    );
   }
 
-  revoke(
-    owner: string,
-    tokenId?: number | BigNumber,
-  ): Promise<O> {
-    const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.revoke(mintTokenId, this.options);
+  async revoke(owner: string, network: bigint): Promise<O> {
+    const tokenId = await this.checkedGetTokenId(owner, network);
+    return this.gatewayTokenContract.revoke(tokenId, this.options);
   }
 
-  burn(
-    owner: string,
-    tokenId?: number | BigNumber,
-  ): Promise<O> {
-    const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.burn(mintTokenId, this.options);
+  async burn(owner: string, network: bigint): Promise<O> {
+    const tokenId = await this.checkedGetTokenId(owner, network);
+    return this.gatewayTokenContract.burn(tokenId, this.options);
   }
 
-  freeze(
-    owner: string,
-    tokenId?: number | BigNumber,
-  ): Promise<O> {
-    const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.freeze(mintTokenId, this.options);
+  async freeze(owner: string, network: bigint): Promise<O> {
+    const tokenId = await this.checkedGetTokenId(owner, network);
+    return this.gatewayTokenContract.freeze(tokenId, this.options);
   }
 
-  unfreeze(
-    owner: string,
-    tokenId?: number | BigNumber,
-  ): Promise<O> {
-    const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.unfreeze(mintTokenId, this.options);
+  async unfreeze(owner: string, network: bigint): Promise<O> {
+    const tokenId = await this.checkedGetTokenId(owner, network);
+    return this.gatewayTokenContract.unfreeze(tokenId, this.options);
   }
 
-  refresh(
+  async refresh(
     owner: string,
-    tokenId?: number | BigNumber,
-    expiry?: number | BigNumber,
+    network: bigint,
+    expiry?: number | BigNumber
   ): Promise<O> {
-    const mintTokenId = tokenId || this.generateTokenId(owner);
+    const tokenId = await this.checkedGetTokenId(owner, network);
     const expirationTime = getExpirationTime(expiry);
-    return this.gatewayTokenContract.setExpiration(mintTokenId, expirationTime, NULL_CHARGE, this.options);
+    return this.gatewayTokenContract.setExpiration(
+      tokenId,
+      expirationTime,
+      NULL_CHARGE,
+      this.options
+    );
   }
 
-  setBitmask(
+  async setBitmask(
     owner: string,
-    bitmask: number | BigNumber,
-    tokenId?: number | BigNumber,
+    network: bigint,
+    bitmask: number | BigNumber
   ): Promise<O> {
-    const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.setBitmask(mintTokenId, bitmask, this.options);
-  }
-  
-  verify(owner: string): Promise<boolean> {
-    return this.gatewayTokenContract["verifyToken(address)"](owner);
+    const tokenId = await this.checkedGetTokenId(owner, network);
+    return this.gatewayTokenContract.setBitmask(tokenId, bitmask, this.options);
   }
 
-  getTokenState(
-    owner: string,
-    tokenId?: number | BigNumber,
-  ): Promise<TokenState> {
-    const mintTokenId = tokenId || this.generateTokenId(owner);
-    return this.gatewayTokenContract.getTokenState(mintTokenId);
+  verify(owner: string, network: bigint): Promise<boolean> {
+    return this.gatewayTokenContract["verifyToken(address,uint256)"](
+      owner,
+      network
+    );
   }
-  
-  async getToken(
-    owner: string,
-    tokenId?: number | BigNumber,
-  ): Promise<TokenData> {
-    const mintTokenId = tokenId || this.generateTokenId(owner);
-    console.log("mintTokenId", mintTokenId);
-    const rawData = await this.gatewayTokenContract.getToken(mintTokenId);
+
+  async getTokenState(owner: string, network: bigint): Promise<TokenState> {
+    const tokenId = await this.checkedGetTokenId(owner, network);
+    return this.gatewayTokenContract.getTokenState(tokenId);
+  }
+
+  async getToken(owner: string, network: bigint): Promise<TokenData> {
+    const tokenId = await this.checkedGetTokenId(owner, network);
+    const rawData = await this.gatewayTokenContract.getToken(tokenId);
     return {
       owner: rawData.owner,
-      tokenId: mintTokenId,
+      tokenId,
       bitmask: rawData.bitmask,
       expiration: rawData.expiration,
       state: rawData.state,
-    }
+    };
+  }
+
+  getTokenIdsByOwnerAndNetwork(
+    owner: string,
+    network: bigint
+  ): Promise<BigNumber[]> {
+    return this.gatewayTokenContract.getTokenIdsByOwnerAndNetwork(
+      owner,
+      network,
+      this.options
+    );
   }
 }

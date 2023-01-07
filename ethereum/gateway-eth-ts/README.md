@@ -51,7 +51,7 @@ $ npm install -g @identity.com/gateway-eth-ts
 $ gateway-eth-ts COMMAND
 running command...
 $ gateway-eth-ts (-v|--version|version)
-@identity.com/gateway-eth-ts/0.2.0-alpha.8 darwin-arm64 node-v16.15.1
+@identity.com/gateway-eth-ts/0.2.0-alpha.6 darwin-arm64 node-v16.17.1
 $ gateway-eth-ts --help [COMMAND]
 USAGE
   $ gateway-eth-ts COMMAND
@@ -78,7 +78,7 @@ USAGE
 
 ## `gateway-eth-ts add-gatekeeper ADDRESS`
 
-Add a gatekeeper to a GatewayToken contract
+Add a gatekeeper to a gatekeeper network
 
 ```
 USAGE
@@ -88,8 +88,11 @@ ARGUMENTS
   ADDRESS  Gatekeeper address to add to the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
+  -b, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
                                                                 for mined transaction
+
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+                                                                work with
 
   -f, --gasPriceFee=gasPriceFee                                 [default: [object Promise]] Gas Price level to execute
                                                                 transaction with. For example: instant, fast, standard,
@@ -97,18 +100,19 @@ OPTIONS
 
   -h, --help                                                    Show CLI help.
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
-                                                                work with
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
 
   -p, --privateKey=privateKey                                   The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 EXAMPLE
   $ gateway add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway-eth-ts add-network-authority ADDRESS`
 
@@ -122,8 +126,11 @@ ARGUMENTS
   ADDRESS  Network authority address to add to the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
+  -b, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
                                                                 for mined transaction
+
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+                                                                work with
 
   -f, --gasPriceFee=gasPriceFee                                 [default: [object Promise]] Gas Price level to execute
                                                                 transaction with. For example: instant, fast, standard,
@@ -131,18 +138,19 @@ OPTIONS
 
   -h, --help                                                    Show CLI help.
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
-                                                                work with
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
 
   -p, --privateKey=privateKey                                   The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 EXAMPLE
   $ gateway add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/add-network-authority.ts)_
+_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/add-network-authority.ts)_
 
 ## `gateway-eth-ts burn ADDRESS`
 
@@ -156,8 +164,11 @@ ARGUMENTS
   ADDRESS  Owner ethereum address to burn the token for
 
 OPTIONS
-  -c, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
+  -b, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
                                                                 for mined transaction
+
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+                                                                work with
 
   -f, --gasPriceFee=gasPriceFee                                 [default: [object Promise]] Gas Price level to execute
                                                                 transaction with. For example: instant, fast, standard,
@@ -165,20 +176,19 @@ OPTIONS
 
   -h, --help                                                    Show CLI help.
 
-  -i, --tokenID=tokenID                                         Token ID number to issue
-
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
-                                                                work with
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
 
   -p, --privateKey=privateKey                                   The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 EXAMPLE
   $ gateway burn 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/burn.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/burn.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/burn.ts)_
 
 ## `gateway-eth-ts freeze ADDRESS`
 
@@ -192,8 +202,11 @@ ARGUMENTS
   ADDRESS  Owner ethereum address to freeze the token for
 
 OPTIONS
-  -c, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
+  -b, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
                                                                 for mined transaction
+
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+                                                                work with
 
   -f, --gasPriceFee=gasPriceFee                                 [default: [object Promise]] Gas Price level to execute
                                                                 transaction with. For example: instant, fast, standard,
@@ -201,20 +214,19 @@ OPTIONS
 
   -h, --help                                                    Show CLI help.
 
-  -i, --tokenID=tokenID                                         Token ID number to issue
-
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
-                                                                work with
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
 
   -p, --privateKey=privateKey                                   The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 EXAMPLE
   $ gateway freeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/freeze.ts)_
 
 ## `gateway-eth-ts get-token ADDRESS`
 
@@ -228,13 +240,16 @@ ARGUMENTS
   ADDRESS  Owner ethereum address to get the token for
 
 OPTIONS
-  -h, --help                                                    Show CLI help.
-  -i, --tokenID=tokenID                                         Token ID number to issue
-
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
                                                                 work with
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -h, --help                                                    Show CLI help.
+
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
+
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 ALIASES
   $ gateway-eth-ts verify
@@ -243,7 +258,7 @@ EXAMPLE
   $ gateway get 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/get-token.ts)_
+_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/get-token.ts)_
 
 ## `gateway-eth-ts help [COMMAND]`
 
@@ -278,8 +293,11 @@ OPTIONS
   -b, --bitmask=bitmask                                         [default: 0] Bitmask constraints to link with newly
                                                                 minting tokenID
 
-  -c, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
+  -b, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
                                                                 for mined transaction
+
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+                                                                work with
 
   -f, --gasPriceFee=gasPriceFee                                 [default: [object Promise]] Gas Price level to execute
                                                                 transaction with. For example: instant, fast, standard,
@@ -287,20 +305,19 @@ OPTIONS
 
   -h, --help                                                    Show CLI help.
 
-  -i, --tokenID=tokenID                                         Token ID number to issue
-
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
-                                                                work with
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
 
   -p, --privateKey=privateKey                                   The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 EXAMPLE
   $ gateway issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/issue.ts)_
 
 ## `gateway-eth-ts refresh ADDRESS [EXPIRY]`
 
@@ -315,8 +332,11 @@ ARGUMENTS
   EXPIRY   The new expiry time in seconds for the gateway token (default 14 days)
 
 OPTIONS
-  -c, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
+  -b, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
                                                                 for mined transaction
+
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+                                                                work with
 
   -f, --gasPriceFee=gasPriceFee                                 [default: [object Promise]] Gas Price level to execute
                                                                 transaction with. For example: instant, fast, standard,
@@ -324,20 +344,19 @@ OPTIONS
 
   -h, --help                                                    Show CLI help.
 
-  -i, --tokenID=tokenID                                         Token ID number to issue
-
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
-                                                                work with
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
 
   -p, --privateKey=privateKey                                   The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 EXAMPLE
   $ gateway refresh 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 60
 ```
 
-_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/refresh.ts)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/refresh.ts)_
 
 ## `gateway-eth-ts remove-gatekeeper ADDRESS`
 
@@ -351,8 +370,11 @@ ARGUMENTS
   ADDRESS  Gatekeeper address to remove to the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
+  -b, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
                                                                 for mined transaction
+
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+                                                                work with
 
   -f, --gasPriceFee=gasPriceFee                                 [default: [object Promise]] Gas Price level to execute
                                                                 transaction with. For example: instant, fast, standard,
@@ -360,18 +382,19 @@ OPTIONS
 
   -h, --help                                                    Show CLI help.
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
-                                                                work with
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
 
   -p, --privateKey=privateKey                                   The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 EXAMPLE
   $ gateway remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/remove-gatekeeper.ts)_
+_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/remove-gatekeeper.ts)_
 
 ## `gateway-eth-ts remove-network-authority ADDRESS`
 
@@ -385,8 +408,11 @@ ARGUMENTS
   ADDRESS  Network authority address to remove from the GatewayToken contract
 
 OPTIONS
-  -c, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
+  -b, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
                                                                 for mined transaction
+
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+                                                                work with
 
   -f, --gasPriceFee=gasPriceFee                                 [default: [object Promise]] Gas Price level to execute
                                                                 transaction with. For example: instant, fast, standard,
@@ -394,18 +420,19 @@ OPTIONS
 
   -h, --help                                                    Show CLI help.
 
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
-                                                                work with
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
 
   -p, --privateKey=privateKey                                   The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 EXAMPLE
   $ gateway remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/remove-network-authority.ts)_
+_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/remove-network-authority.ts)_
 
 ## `gateway-eth-ts revoke ADDRESS`
 
@@ -419,8 +446,11 @@ ARGUMENTS
   ADDRESS  Owner ethereum address to revoke the token for
 
 OPTIONS
-  -c, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
+  -b, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
                                                                 for mined transaction
+
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+                                                                work with
 
   -f, --gasPriceFee=gasPriceFee                                 [default: [object Promise]] Gas Price level to execute
                                                                 transaction with. For example: instant, fast, standard,
@@ -428,20 +458,19 @@ OPTIONS
 
   -h, --help                                                    Show CLI help.
 
-  -i, --tokenID=tokenID                                         Token ID number to issue
-
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
-                                                                work with
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
 
   -p, --privateKey=privateKey                                   The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 EXAMPLE
   $ gateway revoke 10
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/revoke.ts)_
 
 ## `gateway-eth-ts unfreeze ADDRESS`
 
@@ -455,8 +484,11 @@ ARGUMENTS
   ADDRESS  Owner ethereum address to unfreeze the token for
 
 OPTIONS
-  -c, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
+  -b, --confirmations=confirmations                             [default: [object Promise]] The amount of blocks to wait
                                                                 for mined transaction
+
+  -c, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
+                                                                work with
 
   -f, --gasPriceFee=gasPriceFee                                 [default: [object Promise]] Gas Price level to execute
                                                                 transaction with. For example: instant, fast, standard,
@@ -464,20 +496,19 @@ OPTIONS
 
   -h, --help                                                    Show CLI help.
 
-  -i, --tokenID=tokenID                                         Token ID number to issue
-
-  -n, --network=mainnet|rinkeby|ropsten|kovan|goerli|localhost  [default: [object Promise]] Specify target network to
-                                                                work with
+  -n, --gatekeeperNetwork=gatekeeperNetwork                     [default: [object Promise]] Gatekeeper network. Defaults
+                                                                to 1
 
   -p, --privateKey=privateKey                                   The ethereum address private key for signing messages
 
-  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) GatewayToken address to target
+  -t, --gatewayTokenAddress=gatewayTokenAddress                 (required) [default: [object Promise]] GatewayToken
+                                                                address to target
 
 EXAMPLE
   $ gateway unfreeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.8/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.0-alpha.6/dist/commands/unfreeze.ts)_
 
 ## `gateway-eth-ts version`
 

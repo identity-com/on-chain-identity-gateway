@@ -107,7 +107,7 @@ abstract contract ParameterizedAccessControl is Context, IParameterizedAccessCon
      *
      * The format of the revert reason is given by the following regular expression:
      *
-     *  /^AccessControl: account (0x[0-9a-f]{40}) is missing role (0x[0-9a-f]{64})$/
+     *  /^AccessControl: account (0x[0-9a-f]{40}) is missing role (0x[0-9a-f]{64}) on domain ([0-9]+)$/
      */
     function _checkRole(bytes32 role, uint256 domain, address account) internal view virtual {
         if (!hasRole(role, domain, account)) {
@@ -117,7 +117,8 @@ abstract contract ParameterizedAccessControl is Context, IParameterizedAccessCon
                         "AccessControl: account ",
                         Strings.toHexString(account),
                         " is missing role ",
-                        Strings.toHexString(uint256(role), 32)
+                        Strings.toHexString(uint256(role), 32),
+                        " on domain ", domain
                     )
                 )
             );

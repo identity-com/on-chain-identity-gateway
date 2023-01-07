@@ -1,11 +1,20 @@
-import {Contract, Overrides, Wallet} from "ethers";
-import {Forwarder, GatewayToken} from "../contracts/typechain-types";
-import {GatewayTsInternal} from "./GatewayTsInternal";
-import {mappedOpNames, WriteOps, ReadOnlyOperation, readOnlyOpNames} from "../utils/types";
-import {PopulatedTransaction} from "ethers/lib/ethers";
-import {mapObjIndexed, pick} from "ramda";
-import {signMetaTxRequest} from "../utils/metatx";
-import {Provider} from "@ethersproject/providers";
+import { Wallet } from "@ethersproject/wallet";
+import {
+  Contract,
+  Overrides,
+  PopulatedTransaction,
+} from "@ethersproject/contracts";
+import { Forwarder, GatewayToken } from "../contracts/typechain-types";
+import { GatewayTsInternal } from "./GatewayTsInternal";
+import {
+  mappedOpNames,
+  WriteOps,
+  ReadOnlyOperation,
+  readOnlyOpNames,
+} from "../utils/types";
+import { mapObjIndexed, pick } from "ramda";
+import { signMetaTxRequest } from "../utils/metatx";
+import { Provider } from "@ethersproject/providers";
 
 // This is essentially the GatewayToken contract type, but with the write operations converted to returning PopulatedTransactions.
 // ethers.js contract.populateTransaction is a bit interesting, because it returns a PopulatedTransaction not just for
@@ -13,7 +22,8 @@ import {Provider} from "@ethersproject/providers";
 // So this type changes that, by only converting the types for the write operations.
 // This requires the passed-in contract object to be reconstructed to match this type in the constructor of
 // GatewayTsForwarder.
-type MappedGatewayToken = ReadOnlyOperation & Pick<GatewayToken['populateTransaction'], WriteOps>
+type MappedGatewayToken = ReadOnlyOperation &
+  Pick<GatewayToken["populateTransaction"], WriteOps>;
 
 type InferArgs<T> = T extends (...t: [...infer Arg]) => any ? Arg : never;
 
@@ -22,35 +32,41 @@ type InferArgs<T> = T extends (...t: [...infer Arg]) => any ? Arg : never;
 // 1) signs the transaction as typedData according to ERC712
 // 2) wraps that populated transaction in an ERC2770 metatransaction
 // 3) creates a populatedTransaction pointing that metatx to the forwarder contracts
-const toMetaTx = (
-  forwarderContract: Forwarder,
-  toContract: Contract,
-  wallet: Wallet
-) => <TFunc extends (...args: any[]) => Promise<PopulatedTransaction>>(fn: TFunc)
-  :
-  (...args: InferArgs<TFunc>) => Promise<PopulatedTransaction> =>
+const toMetaTx =
+  (forwarderContract: Forwarder, toContract: Contract, wallet: Wallet) =>
+  <TFunc extends (...args: any[]) => Promise<PopulatedTransaction>>(
+    fn: TFunc
+  ): ((...args: InferArgs<TFunc>) => Promise<PopulatedTransaction>) =>
   async (...args) => {
     if (!wallet) {
       throw new Error("A wallet is required to sign the meta transaction");
     }
 
     const populatedTransaction = await fn(...args);
-    const {request, signature} = await signMetaTxRequest(wallet, forwarderContract, {
-      from: wallet.address,
-      to: toContract.address,
-      data: populatedTransaction.data
-    });
-    const populatedForwardedTransaction = await forwarderContract.populateTransaction.execute(request, signature);
+    const { request, signature } = await signMetaTxRequest(
+      wallet,
+      forwarderContract,
+      {
+        from: wallet.address,
+        to: toContract.address,
+        data: populatedTransaction.data,
+      }
+    );
+    const populatedForwardedTransaction =
+      await forwarderContract.populateTransaction.execute(request, signature);
     // ethers will set the from address on the populated transaction to the current wallet address (i.e the gatekeeper)
     // we don't want this, as the tx will be sent by some other relayer, so remove it.
     delete populatedForwardedTransaction.from;
     return populatedForwardedTransaction;
-  }
-  
+  };
+
 // A GatewayToken API that returns an unsigned metatransaction pointing to the Forwarder contract, rather than
 // a transaction directly on the GatewayToken contract. Use this for relaying. The resultant contract can be signed
 // and sent by any public key.
-export class GatewayTsForwarder extends GatewayTsInternal<MappedGatewayToken, PopulatedTransaction> {
+export class GatewayTsForwarder extends GatewayTsInternal<
+  MappedGatewayToken,
+  PopulatedTransaction
+> {
   constructor(
     // ethers.js requires a Wallet instead of Signer for the _signTypedData function, until v6
     providerOrWallet: Provider | Wallet,
@@ -58,18 +74,26 @@ export class GatewayTsForwarder extends GatewayTsInternal<MappedGatewayToken, Po
     forwarderContract: Forwarder,
     options?: Overrides
   ) {
-    const wallet = '_signTypedData' in providerOrWallet ? providerOrWallet : undefined;
-    const toMetaTxFn = toMetaTx(forwarderContract, gatewayTokenContract, wallet);
-    
+    const wallet =
+      "_signTypedData" in providerOrWallet ? providerOrWallet : undefined;
+    const toMetaTxFn = toMetaTx(
+      forwarderContract,
+      gatewayTokenContract,
+      wallet
+    );
+
     // construct a new mappedGatewayToken object comprising write operations that return PopulatedTransactions
     // and read operations that don't. See the description of MappedGatewayToken above for more details.
     const raw: ReadOnlyOperation = pick(readOnlyOpNames, gatewayTokenContract);
-    const mapped: Pick<GatewayToken['populateTransaction'], WriteOps> 
-      = mapObjIndexed(toMetaTxFn, pick(mappedOpNames, gatewayTokenContract.populateTransaction));
+    const mapped: Pick<GatewayToken["populateTransaction"], WriteOps> =
+      mapObjIndexed(
+        toMetaTxFn,
+        pick(mappedOpNames, gatewayTokenContract.populateTransaction)
+      );
     const mappedGatewayToken = {
       ...mapped,
       ...raw,
-    }
-    super(mappedGatewayToken, options)
+    };
+    super(mappedGatewayToken, options);
   }
 }

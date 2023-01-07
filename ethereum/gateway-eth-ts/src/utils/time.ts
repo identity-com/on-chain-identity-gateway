@@ -1,9 +1,7 @@
-import { BigNumber } from "@ethersproject/bignumber";
+import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { DEFAULT_EXPIRATION_BN, ZERO_BN } from "./constants";
 
-export const getExpirationTime = (
-  expiration?: number | BigNumber
-): BigNumber => {
+export const getExpirationTime = (expiration?: BigNumberish): BigNumber => {
   const now = Math.floor(Date.now() / 1000);
   const bnTime = BigNumber.from(now);
 
@@ -11,7 +9,7 @@ export const getExpirationTime = (
     expiration = BigNumber.from(expiration.toString());
   }
 
-  if (expiration && expiration.gt(ZERO_BN)) {
+  if (expiration && BigNumber.from(expiration).gt(ZERO_BN)) {
     return bnTime.add(expiration);
   }
 

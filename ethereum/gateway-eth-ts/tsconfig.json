@@ -6,7 +6,7 @@
       "outDir": "dist",
       "rootDir": "src",
       "strict": true,
-      "target": "es2017",
+      "target": "esnext",
       "skipLibCheck": true,
       "strictNullChecks": false,
       "allowJs": true,
@@ -19,7 +19,8 @@
       "src/**/*"
     ],
     "exclude": [
-      "node_modules/**/*"
+      "node_modules/**/*",
+      "src/contracts/typechain-types/@solvprotocol/erc-3525/periphery/interface/**/*"
     ],
     "ts-node": {
       "compilerOptions": {
