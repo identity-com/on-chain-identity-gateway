@@ -1,15 +1,19 @@
-import { Keypair, PublicKey } from "@solana/web3.js";
+import {Keypair, PublicKey} from "@solana/web3.js";
 import { Flags } from "@oclif/core";
-import { readKey } from "../account";
-import { ExtendedCluster } from "../connection";
+import * as fs from "node:fs";
+import { ExtendedCluster } from "./utils";
 
 // eslint-disable-next-line unicorn/prefer-module
 const DIRNAME = __dirname;
+// eslint-disable-next-line @typescript-eslint/require-await
+const readKey = async (file: string): Promise<Keypair> => Keypair.fromSecretKey(
+    new Uint8Array(JSON.parse(fs.readFileSync(file).toString("utf-8")) as number[])
+);
 
 export const gatekeeperKeyFlag = Flags.build<Keypair>({
   char: "g",
   parse: readKey,
-  default: async () => readKey(`${DIRNAME}/test-gatekeeper.json`),
+  default: () => readKey(`${DIRNAME}/test-gatekeeper.json`),
   description: "The private key file for the gatekeeper authority",
 });
 export const gatekeeperNetworkKeyFlag = Flags.build<Keypair>({

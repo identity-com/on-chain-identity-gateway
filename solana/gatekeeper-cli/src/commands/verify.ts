@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
 import { PublicKey } from "@solana/web3.js";
-import { clusterFlag, gatekeeperNetworkPubkeyFlag } from "../util/oclif/flags";
-import { prettyPrint } from "../util/token";
-import { getConnectionFromEnv } from "../util/oclif/utils";
+import { clusterFlag, gatekeeperNetworkPubkeyFlag } from "../util/flags";
+import { prettyPrint } from "../util/utils";
+import { getConnectionFromEnv } from "../util/utils";
 import { findGatewayToken } from "@identity.com/solana-gateway-ts";
 
 export default class Verify extends Command {
@@ -52,7 +52,7 @@ export default class Verify extends Command {
     );
     const token = await findGatewayToken(
       connection,
-      args.owner,
+      owner,
       gatekeeperNetwork
     );
 

@@ -5,8 +5,8 @@ import {
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkPubkeyFlag,
-} from "../util/oclif/flags";
-import { getTokenUpdateProperties } from "../util/oclif/utils";
+} from "../util/flags";
+import { getTokenUpdateProperties } from "../util/utils";
 
 export default class Revoke extends Command {
   static description = "Revoke a gateway token";
