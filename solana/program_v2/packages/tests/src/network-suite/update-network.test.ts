@@ -6,8 +6,8 @@ import {
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
-import { expect } from 'chai';
 import * as chai from 'chai';
+import { expect } from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
 

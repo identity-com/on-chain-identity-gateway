@@ -37,6 +37,36 @@ pub struct UpdateNetworkData {
     pub supported_tokens: UpdateSupportedTokens,
 }
 
+impl UpdateNetworkData {
+    fn can_update_auth_keys(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
+        (self.auth_keys.remove.len() == 0 && self.auth_keys.add.len() == 0)
+            || network.can_access(&authority, NetworkKeyFlags::AUTH)
+    }
+
+    fn can_update_fees(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
+        (self.fees.add.len() == 0 && self.fees.remove.len() == 0)
+            || network.can_access(&authority, NetworkKeyFlags::ADJUST_FEES)
+    }
+
+    fn can_update_expiry(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
+        match self.pass_expire_time {
+            None => false,
+            Some(expiry) => {
+                network.pass_expire_time == expiry || network.can_access(&authority, NetworkKeyFlags::SET_EXPIRE_TIME)
+            }
+        }
+    }
+
+    fn can_update_features(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
+        self.network_features == network.network_features || network.can_access(&authority, NetworkKeyFlags::SET_FEATURES)
+    }
+
+    fn can_update_tokens(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
+        (self.supported_tokens.add.len() == 0 && self.supported_tokens.remove.len() == 0)
+            || network.can_access(&authority, NetworkKeyFlags::UPDATE_TOKENS)
+    }
+}
+
 #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
 pub struct UpdateSupportedTokens {
     pub add: Vec<SupportedToken>,
@@ -74,8 +104,11 @@ pub struct UpdateNetworkAccount<'info> {
     ),
     realloc::payer = payer,
     realloc::zero = false,
-    constraint = network.can_access(& authority, NetworkKeyFlags::SET_EXPIRE_TIME) @ NetworkErrors::InsufficientAccessExpiry,
-    constraint = network.can_access(& authority, NetworkKeyFlags::AUTH) @ NetworkErrors::InsufficientAccessAuthKeys,
+    constraint = data.can_update_expiry(& network, & authority) @ NetworkErrors::InsufficientAccessExpiry,
+    constraint = data.can_update_auth_keys(& network, & authority) @ NetworkErrors::InsufficientAccessAuthKeys,
+    constraint = data.can_update_fees(& network, & authority) @ NetworkErrors::InsufficientAccessFees,
+    constraint = data.can_update_features(& network, & authority) @ NetworkErrors::InsufficientAccessFeatures,
+    constraint = data.can_update_tokens(& network, & authority) @ NetworkErrors::InsufficientAccessTokens,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]

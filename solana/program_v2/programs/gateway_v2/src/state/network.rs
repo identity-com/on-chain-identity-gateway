@@ -1,5 +1,5 @@
-use anchor_lang::prelude::*;
 use anchor_lang::{AnchorDeserialize, AnchorSerialize};
+use anchor_lang::prelude::*;
 use bitflags::bitflags;
 
 use crate::errors::NetworkErrors;
@@ -141,9 +141,9 @@ impl GatekeeperNetwork {
                 // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
                 if self.auth_keys[key_index].key == *authority.key
                     && !NetworkKeyFlags::contains(
-                        &NetworkKeyFlags::from_bits_truncate(key.flags),
-                        NetworkKeyFlags::AUTH,
-                    )
+                    &NetworkKeyFlags::from_bits_truncate(key.flags),
+                    NetworkKeyFlags::AUTH,
+                )
                 {
                     return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
                 }
@@ -274,14 +274,12 @@ bitflags! {
         const UNREVOKE_PASS = 1 << 7;
         /// Key can adjust fees in [`GatekeeperNetwork::fees`]
         const ADJUST_FEES = 1 << 8;
-        /// Key can add new fee types to [`GatekeeperNetwork::fees`]
-        const ADD_FEES = 1 << 9;
-        /// Key can remove fee types from [`GatekeeperNetwork::fees`]
-        const REMOVE_FEES = 1 << 10;
         /// Key can access the network's vault
-        const ACCESS_VAULT = 1 << 11;
+        const ACCESS_VAULT = 1 << 9;
         /// Key can set [`GatekeeperNetwork::pass_expire_time`]
-        const SET_EXPIRE_TIME = 1 << 12;
+        const SET_EXPIRE_TIME = 1 << 10;
+        /// Key can set [`GatekeeperNetwork::pass_expire_time`]
+        const UPDATE_TOKENS = 1 << 11;
     }
 }
 impl OnChainSize for NetworkKeyFlags {
