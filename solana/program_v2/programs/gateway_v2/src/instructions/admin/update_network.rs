@@ -40,12 +40,12 @@ pub struct UpdateNetworkData {
 impl UpdateNetworkData {
     fn can_update_auth_keys(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
         (self.auth_keys.remove.is_empty() && self.auth_keys.add.is_empty())
-            || network.can_access(&authority, NetworkKeyFlags::AUTH)
+            || network.can_access(authority, NetworkKeyFlags::AUTH)
     }
 
     fn can_update_fees(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
         (self.fees.add.is_empty() && self.fees.remove.is_empty())
-            || network.can_access(&authority, NetworkKeyFlags::ADJUST_FEES)
+            || network.can_access(authority, NetworkKeyFlags::ADJUST_FEES)
     }
 
     fn can_update_expiry(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
@@ -53,19 +53,19 @@ impl UpdateNetworkData {
             None => false,
             Some(expiry) => {
                 network.pass_expire_time == expiry
-                    || network.can_access(&authority, NetworkKeyFlags::SET_EXPIRE_TIME)
+                    || network.can_access(authority, NetworkKeyFlags::SET_EXPIRE_TIME)
             }
         }
     }
 
     fn can_update_features(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
         self.network_features == network.network_features
-            || network.can_access(&authority, NetworkKeyFlags::SET_FEATURES)
+            || network.can_access(authority, NetworkKeyFlags::SET_FEATURES)
     }
 
     fn can_update_tokens(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
         (self.supported_tokens.add.is_empty() && self.supported_tokens.remove.is_empty())
-            || network.can_access(&authority, NetworkKeyFlags::UPDATE_TOKENS)
+            || network.can_access(authority, NetworkKeyFlags::UPDATE_TOKENS)
     }
 }
 
