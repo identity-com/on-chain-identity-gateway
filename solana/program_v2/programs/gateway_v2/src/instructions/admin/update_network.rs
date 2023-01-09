@@ -39,12 +39,12 @@ pub struct UpdateNetworkData {
 
 impl UpdateNetworkData {
     fn can_update_auth_keys(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
-        (self.auth_keys.remove.len() == 0 && self.auth_keys.add.len() == 0)
+        (self.auth_keys.remove.is_empty() && self.auth_keys.add.is_empty())
             || network.can_access(&authority, NetworkKeyFlags::AUTH)
     }
 
     fn can_update_fees(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
-        (self.fees.add.len() == 0 && self.fees.remove.len() == 0)
+        (self.fees.add.is_empty() && self.fees.remove.is_empty())
             || network.can_access(&authority, NetworkKeyFlags::ADJUST_FEES)
     }
 
@@ -64,7 +64,7 @@ impl UpdateNetworkData {
     }
 
     fn can_update_tokens(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
-        (self.supported_tokens.add.len() == 0 && self.supported_tokens.remove.len() == 0)
+        (self.supported_tokens.add.is_empty() && self.supported_tokens.remove.is_empty())
             || network.can_access(&authority, NetworkKeyFlags::UPDATE_TOKENS)
     }
 }
