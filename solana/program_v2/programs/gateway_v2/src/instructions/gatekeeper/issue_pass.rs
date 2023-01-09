@@ -3,6 +3,7 @@ use anchor_lang::Key;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
+use crate::errors::NetworkErrors;
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass, PassState};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
