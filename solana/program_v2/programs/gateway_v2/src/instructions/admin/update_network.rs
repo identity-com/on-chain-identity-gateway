@@ -52,13 +52,15 @@ impl UpdateNetworkData {
         match self.pass_expire_time {
             None => false,
             Some(expiry) => {
-                network.pass_expire_time == expiry || network.can_access(&authority, NetworkKeyFlags::SET_EXPIRE_TIME)
+                network.pass_expire_time == expiry
+                    || network.can_access(&authority, NetworkKeyFlags::SET_EXPIRE_TIME)
             }
         }
     }
 
     fn can_update_features(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
-        self.network_features == network.network_features || network.can_access(&authority, NetworkKeyFlags::SET_FEATURES)
+        self.network_features == network.network_features
+            || network.can_access(&authority, NetworkKeyFlags::SET_FEATURES)
     }
 
     fn can_update_tokens(&self, network: &GatekeeperNetwork, authority: &Signer) -> bool {
