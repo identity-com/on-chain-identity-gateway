@@ -253,16 +253,12 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@identity.com/solana-gatekeeper-lib@4.1.1-alpha.3":
-  version "4.1.1-alpha.3"
-  resolved "https://registry.yarnpkg.com/@identity.com/solana-gatekeeper-lib/-/solana-gatekeeper-lib-4.1.1-alpha.3.tgz#0fb9240b059bef362caa002325584b77025f3adb"
-  integrity sha512-Ehcbu0K6naJz9qSN5r+MFQeHEuCn/YOC2oJn3DcKieV0YacsK8zaSE0nWo1QsYjQ9+aVwQH85Yaovn+bzlsWuQ==
+"@identity.com/solana-gatekeeper-lib@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@identity.com/solana-gatekeeper-lib/-/solana-gatekeeper-lib-6.0.0-alpha.1.tgz#320c65914fd3d88dfa8e87c2309ae1e154ca41f9"
+  integrity sha512-1I+YMsCF31nX/5daffYGJBIufTC27rtA4LTa9ovkCCT6LFq31HpfyxTTSkfGBeY80CymJ5Y86wQRFxz4q8miyQ==
   dependencies:
-    "@identity.com/solana-gateway-ts" "0.11.0-alpha.3"
-    "@oclif/core" "^1.5.2"
-    "@oclif/plugin-help" "^5.1.11"
-    "@oclif/plugin-plugins" "^2.0.1"
-    "@oclif/plugin-version" "^1"
+    "@identity.com/solana-gateway-ts" "0.11.0-alpha.5"
     "@solana/buffer-layout" "^4.0.0"
     "@solana/spl-token" "^0.3.5"
     "@solana/web3.js" "^1.61.0"
@@ -271,10 +267,10 @@
     ramda "^0.28.0"
     tslib "^1"
 
-"@identity.com/solana-gateway-ts@0.11.0-alpha.3":
-  version "0.11.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.11.0-alpha.3.tgz#adbdaa96aa2859fc3c8afab8b8c78619c94d01a9"
-  integrity sha512-chi8EdpZQx8xVgRPBBzMWLbLkSmiMnbc4axB1khUIYkzEpGzb0f6iIwIE8I7DN1q5nNNGEsCruti18mex6WVTw==
+"@identity.com/solana-gateway-ts@0.11.0-alpha.5", "@identity.com/solana-gateway-ts@^0.11.0-alpha.5":
+  version "0.11.0-alpha.5"
+  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.11.0-alpha.5.tgz#63bd8de3909eb5c190948657f6aef450adf7efdd"
+  integrity sha512-QF4haQ8rL9ipqlov7B9eCHNsdiyq9rSroJeM7e5JqrslW5684jlYjvKjcZhmYo37ameE8WEVaC7i8tVyx42dYw==
   dependencies:
     "@solana/web3.js" "^1.63.0"
     async-retry "^1.3.3"
@@ -572,7 +568,7 @@
     is-wsl "^2.1.1"
     tslib "^2.3.1"
 
-"@oclif/core@^1.14.1", "@oclif/core@^1.20.0", "@oclif/core@^1.20.3", "@oclif/core@^1.20.4", "@oclif/core@^1.5.2":
+"@oclif/core@^1.14.1", "@oclif/core@^1.20.0", "@oclif/core@^1.20.3", "@oclif/core@^1.20.4":
   version "1.20.4"
   resolved "https://registry.yarnpkg.com/@oclif/core/-/core-1.20.4.tgz#7378b52e1f1b502e383ffb07f95dffc9fd8588ff"
   integrity sha512-giug32M4YhSYNYKQwE1L57/+k5gp1+Bq3/0vKNQmzAY1tizFGhvBJc6GIRZasHjU+xtZLutQvrVrJo7chX3hxg==
@@ -694,7 +690,7 @@
     widest-line "^3.1.0"
     wrap-ansi "^6.2.0"
 
-"@oclif/plugin-help@^5.1.11", "@oclif/plugin-help@^5.1.19":
+"@oclif/plugin-help@^5.1.19":
   version "5.1.19"
   resolved "https://registry.yarnpkg.com/@oclif/plugin-help/-/plugin-help-5.1.19.tgz#43051772fefafe9bfe8823e2298103feb351b9c7"
   integrity sha512-eQVRCFJOwRj8Tbqz8Lzd9GN38egwLCg+ohJ0xfg12CoXml03WqkfcFiAWkVwSWmLVrZUlUVrxfXKKkmpUaXZHg==
@@ -711,7 +707,7 @@
     fast-levenshtein "^3.0.0"
     lodash "^4.17.21"
 
-"@oclif/plugin-plugins@^2.0.1", "@oclif/plugin-plugins@^2.1.7":
+"@oclif/plugin-plugins@^2.1.7":
   version "2.1.7"
   resolved "https://registry.yarnpkg.com/@oclif/plugin-plugins/-/plugin-plugins-2.1.7.tgz#5f51a93c7f8057ec9b68307e72980d28ee426085"
   integrity sha512-z3nJWFskBKSimw8HUmlYyoaGEJlbjoFRT0xuiip4x7bccWn/Jyp4OWUzXcEdas6mnzmtBpNcQ5VxLaHIfad70Q==
@@ -728,7 +724,7 @@
     tslib "^2.4.1"
     yarn "^1.22.18"
 
-"@oclif/plugin-version@^1", "@oclif/plugin-version@^1.1.3":
+"@oclif/plugin-version@^1.1.3":
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@oclif/plugin-version/-/plugin-version-1.1.3.tgz#775853199dd12120a8820b300f3370685e8b6dd0"
   integrity sha512-n+kOpKudXe84onVC+9/mrABKU+SZxrY7p772e1aHhn9pVKv2gfVHrxp9CzlXUcc8nvWnjuBUg1IZ9I6kl6RVVg==
