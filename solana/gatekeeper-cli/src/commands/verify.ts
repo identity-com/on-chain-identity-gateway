@@ -52,7 +52,7 @@ export default class Verify extends Command {
     );
     const token = await findGatewayToken(
       connection,
-      args.owner,
+      owner,
       gatekeeperNetwork
     );
 

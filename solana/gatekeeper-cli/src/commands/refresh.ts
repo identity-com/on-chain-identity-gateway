@@ -46,6 +46,8 @@ Refreshed
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Refresh);
 
+    const expiry = args.expiry as number;
+
     const { gatewayToken, gatekeeper, service } =
       await getTokenUpdateProperties(args, flags);
 
@@ -56,7 +58,7 @@ Refreshed
     await service
       .updateExpiry(
         gatewayToken,
-        Number.parseInt(args.expiry, 10) + Math.floor(Date.now() / 1000)
+        expiry + Math.floor(Date.now() / 1000)
       )
       .then((t) => t.send())
       .then((t) => t.confirm());

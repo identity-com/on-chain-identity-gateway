@@ -1,7 +1,6 @@
 import {Cluster, clusterApiUrl, Connection, Keypair, PublicKey} from "@solana/web3.js";
 import {airdropTo, GatekeeperService, getConnection} from "@identity.com/solana-gatekeeper-lib";
 import { GatewayToken } from "@identity.com/solana-gateway-ts";
-// import {CIVICNET_URL} from "@identity.com/solana-gatekeeper-lib";
 
 export type ExtendedCluster = Cluster | "localnet" | "civicnet";
 
