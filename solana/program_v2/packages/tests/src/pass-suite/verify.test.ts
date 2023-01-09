@@ -1,7 +1,9 @@
 import {
   AdminService,
   airdrop,
+  GatekeeperKeyFlags,
   GatekeeperService,
+  NetworkService,
   PassState,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
@@ -19,19 +21,22 @@ import {
   getOrCreateAssociatedTokenAccount,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
+import { setGatekeeperFlagsAndFees } from '../util/lib';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe('Verify a pass', () => {
+describe.only('Verify a pass', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
   const programProvider = program.provider as anchor.AnchorProvider;
 
   let gatekeeperService: GatekeeperService;
+  let networkService: NetworkService;
 
   let gatekeeperPDA: PublicKey;
+  let stakingPDA: PublicKey;
   let passAccount: PublicKey;
   let mint: PublicKey;
 
@@ -49,8 +54,10 @@ describe('Verify a pass', () => {
 
   beforeEach(async () => {
     ({
+      networkService,
       gatekeeperService,
       gatekeeperPDA,
+      stakingPDA,
       passAccount,
       mint,
       adminAuthority,
@@ -86,6 +93,12 @@ describe('Verify a pass', () => {
       )
       .withPartialSigners(funderKeypair)
       .rpc();
+
+    await setGatekeeperFlagsAndFees(
+      stakingPDA,
+      networkService,
+      GatekeeperKeyFlags.VERIFY
+    );
   });
 
   it('Verifies a valid pass', async () => {

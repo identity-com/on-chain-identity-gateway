@@ -307,6 +307,8 @@ bitflags! {
          const EXPIRE_PASS = 1 << 15;
          /// Key can withdraw fees from the gatekeeper
          const WITHDRAW = 1 << 16;
+         /// Key can verify passes
+         const VERIFY = 1 << 17;
      }
 }
 

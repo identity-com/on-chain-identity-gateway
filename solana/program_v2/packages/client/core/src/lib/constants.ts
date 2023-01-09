@@ -73,4 +73,8 @@ export const GatekeeperKeyFlags = {
   CHANGE_PASS_GATEKEEPER: 1 << 14,
   /// Key can expire a for passes
   EXPIRE_PASS: 1 << 15,
+  /// Key can withdraw fees from the gatekeeper
+  WITHDRAW: 1 << 16,
+  /// Key can verify passes
+  VERIFY: 1 << 17,
 };

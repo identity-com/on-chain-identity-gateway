@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
+use crate::errors::GatekeeperErrors;
 use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
@@ -52,8 +53,7 @@ pub struct PassVerify<'info> {
     #[account(
     seeds = [PASS_SEED, pass.subject.as_ref(), network.key().as_ref(), & pass.pass_number.to_le_bytes()],
     bump = pass.signer_bump,
-    // TODO!: Constraint is incorrect here (IDCOM-2232)
-    constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::EXPIRE_PASS),
+    constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::VERIFY) @ GatekeeperErrors::InvalidKey,
     mut
     )]
     pub pass: Box<Account<'info, Pass>>,
