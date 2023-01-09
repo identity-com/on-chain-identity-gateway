@@ -16,10 +16,10 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "dependencies": { 
+  "dependencies": {
     "@identity.com/gateway-solana-client": "^2.0.0-beta.6",
-    "@project-serum/anchor": "^0.25.0",
-    "@project-serum/anchor-cli": "^0.25.0",
+    "@project-serum/anchor": "^0.26.0",
+    "@project-serum/anchor-cli": "^0.26.0",
     "@oclif/core": "^1",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.0.1",
