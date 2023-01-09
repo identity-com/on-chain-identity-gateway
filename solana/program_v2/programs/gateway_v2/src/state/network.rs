@@ -99,6 +99,12 @@ impl GatekeeperNetwork {
             > 0
     }
 
+    pub fn is_token_supported(&self, mint_account: &Pubkey) -> bool {
+        self.supported_tokens
+            .iter()
+            .any(|token| token.key == *mint_account)
+    }
+
     pub fn set_expire_time(
         &mut self,
         data: &UpdateNetworkData,

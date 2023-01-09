@@ -70,8 +70,7 @@ pub struct PassRefresh<'info> {
     )]
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
     pub spl_token_program: Program<'info, Token>,
-    // TODO: I actually would prefer to use a constraint for mint account verification, even if it
-    // requires a little overhead.
+    #[account(constraint = network.is_token_supported(&mint_account.key()) @ NetworkErrors::TokenNotSupported)]
     pub mint_account: Account<'info, Mint>,
     #[account(mut)]
     pub funder_token_account: Account<'info, TokenAccount>,
