@@ -87,13 +87,13 @@ describe('issue', () => {
     const pass = await gatekeeperService.getPassAccount(subject.publicKey);
 
     // Assert
-    expect(pass).to.deep.include({
-      version: 0,
-      subject: subject.publicKey,
-      network: networkAuthority.publicKey,
-      gatekeeper: gatekeeperPDA,
-      state: PassState.Active,
-    });
+    expect(pass?.network.toBase58()).to.equal(
+      networkAuthority.publicKey.toBase58()
+    );
+    expect(pass?.subject.toBase58()).to.equal(subject.publicKey.toBase58());
+    expect(pass?.gatekeeper.toBase58()).to.equal(gatekeeperPDA.toBase58());
+    expect(pass?.version).to.equal(0);
+    expect(pass?.state).to.equal(PassState.Active);
 
     // CHECK: that the issueTime is recent (is this best?)
     expect(pass?.issueTime).to.be.greaterThan(new Date().getTime() - 5000);
@@ -281,21 +281,20 @@ describe('issue', () => {
       subject.publicKey
     );
 
-    // Assert
-    expect(pass).to.deep.include({
-      version: 0,
-      subject: subject.publicKey,
-      network: networkAuthority.publicKey,
-      gatekeeper: gatekeeperPDA,
-      state: PassState.Active,
-    });
+    expect(pass?.network.toBase58()).to.equal(
+      networkAuthority.publicKey.toBase58()
+    );
+    expect(pass?.subject.toBase58()).to.equal(subject.publicKey.toBase58());
+    expect(pass?.gatekeeper.toBase58()).to.equal(gatekeeperPDA.toBase58());
+    expect(pass?.version).to.equal(0);
+    expect(pass?.state).to.equal(PassState.Active);
 
     // CHECK: that the issueTime is recent (is this best?)
     expect(pass?.issueTime).to.be.greaterThan(new Date().getTime() - 5000);
     expect(pass?.issueTime).to.be.lessThan(new Date().getTime() + 5000);
   });
 
-  it('Finds a gateway token after issue with verification util', async () => {
+  it('Finds a gateway token after issue with verification utilv', async () => {
     const { gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
         programProvider.connection,
