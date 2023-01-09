@@ -19,7 +19,6 @@ export class GatewayTs extends GatewayTsInternal<
   constructor(
     // ethers.js requires a Wallet instead of Signer for the _signTypedData function, until v6
     providerOrWallet: Provider | Wallet,
-    network: Network,
     defaultGatewayToken: string,
     options: Overrides = {}
   ) {

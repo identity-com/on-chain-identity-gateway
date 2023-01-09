@@ -13,7 +13,7 @@ export default class AddGatekeeper extends Command {
   static description = 'Add a gatekeeper to a gatekeeper network';
 
   static examples = [
-    `$ gateway add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+    `$ gateway-eth add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 		`,
   ];
 

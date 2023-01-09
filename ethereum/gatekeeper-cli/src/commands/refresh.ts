@@ -15,7 +15,7 @@ export default class RefreshToken extends Command {
     'Refresh existing gateway token for Ethereum address';
 
   static examples = [
-    `$ gateway refresh 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 60 -n 123
+    `$ gateway-eth refresh 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 60 -n 123
 		`,
   ];
 

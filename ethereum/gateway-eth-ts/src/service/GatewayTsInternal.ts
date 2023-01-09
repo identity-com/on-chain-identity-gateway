@@ -134,13 +134,19 @@ export class GatewayTsInternal<
     );
   }
 
-  async getTokenState(owner: string, network: bigint): Promise<TokenState> {
-    const tokenId = await this.checkedGetTokenId(owner, network);
+  async getTokenState(
+    owner: string,
+    network: bigint
+  ): Promise<TokenState | null> {
+    const [tokenId] = await this.getTokenIdsByOwnerAndNetwork(owner, network);
+    if (!tokenId) return null;
     return this.gatewayTokenContract.getTokenState(tokenId);
   }
 
-  async getToken(owner: string, network: bigint): Promise<TokenData> {
-    const tokenId = await this.checkedGetTokenId(owner, network);
+  async getToken(owner: string, network: bigint): Promise<TokenData | null> {
+    const [tokenId] = await this.getTokenIdsByOwnerAndNetwork(owner, network);
+    if (!tokenId) return null;
+
     const rawData = await this.gatewayTokenContract.getToken(tokenId);
     return {
       owner: rawData.owner,

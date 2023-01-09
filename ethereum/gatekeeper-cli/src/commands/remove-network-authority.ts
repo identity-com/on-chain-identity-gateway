@@ -14,7 +14,7 @@ export default class RemoveNetworkAuthority extends Command {
   static description = 'Remove a network authority from a gatekeeper network';
 
   static examples = [
-    `$ gateway remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+    `$ gateway-eth remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 		`,
   ];
 

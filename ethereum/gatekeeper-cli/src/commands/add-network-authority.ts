@@ -14,7 +14,7 @@ export default class AddNetworkAuthority extends Command {
   static description = 'Add a network authority to a GatewayToken contract';
 
   static examples = [
-    `$ gateway add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+    `$ gateway-eth add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 		`,
   ];
 

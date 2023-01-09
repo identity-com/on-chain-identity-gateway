@@ -12,7 +12,7 @@ export default class UnfreezeToken extends Command {
   static description = 'Unfreezing existing gateway token';
 
   static examples = [
-    `$ gateway unfreeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+    `$ gateway-eth unfreeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 		`,
   ];
 

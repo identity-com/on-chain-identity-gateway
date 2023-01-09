@@ -13,3 +13,11 @@ export const gatekeeperWallet = (provider: Provider) =>
 
 // matches the bootstrapped network in gateway-token
 export const gatekeeperNetwork = 1n;
+
+// These addresses are the ones that hardhat deploys to in the local test environment
+// Note, they differ from the default create2 addresses used in production
+export const TEST_GATEWAY_TOKEN_ADDRESS = {
+  gatewayToken: "0x740846db34BD9be3ABeF576873b4063E8b4E50ce",
+  forwarder: "0xa2C410cc10B4aDA3a1311435715e514bDBeD7D7C",
+  flagsStorage: "0x17963bd7A313BCa22Fb1EDFCF353607d71aB593c",
+};

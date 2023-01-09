@@ -12,7 +12,7 @@ export default class FreezeToken extends Command {
   static description = 'Freeze existing gateway token';
 
   static examples = [
-    `$ gateway freeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+    `$ gateway-eth freeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 		`,
   ];
 

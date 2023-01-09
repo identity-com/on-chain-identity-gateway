@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/gateway-eth-ts",
-  "version": "0.2.0-alpha.6",
+  "version": "0.3.0-alpha.2",
   "description": "Adapter library for Identity.com gateway token system on Ethereum",
   "main": "dist/index.js",
   "scripts": {

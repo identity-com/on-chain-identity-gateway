@@ -3,11 +3,7 @@ import {
   getDefaultProvider,
   TransactionReceipt,
 } from "@ethersproject/providers";
-import {
-  TokenState,
-  DEFAULT_FORWARDER_ADDRESS,
-  DEFAULT_GATEWAY_TOKEN_ADDRESS,
-} from "../utils";
+import { TokenState } from "../utils";
 import * as assert from "assert";
 import * as dotenv from "dotenv";
 import { GatewayTs } from "./GatewayTs";
@@ -15,6 +11,7 @@ import {
   deployerWallet,
   gatekeeperNetwork,
   gatekeeperWallet,
+  TEST_GATEWAY_TOKEN_ADDRESS,
 } from "./testUtils";
 import { PopulatedTransaction } from "ethers/lib/ethers";
 import { GatewayTsForwarder } from "./GatewayTsForwarder";
@@ -74,9 +71,8 @@ describe("GatewayTS Forwarder", function () {
 
     gateway = new GatewayTs(
       gatekeeper,
-      network,
-      DEFAULT_GATEWAY_TOKEN_ADDRESS
-    ).forward(DEFAULT_FORWARDER_ADDRESS);
+      TEST_GATEWAY_TOKEN_ADDRESS.gatewayToken
+    ).forward(TEST_GATEWAY_TOKEN_ADDRESS.forwarder);
   });
 
   it("should issue a token", async () => {

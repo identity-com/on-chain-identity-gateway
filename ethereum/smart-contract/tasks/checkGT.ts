@@ -1,18 +1,17 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
+import {DEFAULT_GATEWAY_TOKEN_ADDRESS} from "@identity.com/gateway-eth-ts";
 
 export const checkGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const { ethers } = hre;
   
-  const [owner] = await hre.ethers.getSigners();
   const account = ethers.utils.getAddress(args.address);
 
-  const gatewayTokenAddress = args.gatekeepernetwork;
-  const token = await ethers.getContractAt(
+  const contract = await ethers.getContractAt(
     'GatewayToken',
-    gatewayTokenAddress,
+    DEFAULT_GATEWAY_TOKEN_ADDRESS,
   );
 
-  const result = await token.balanceOf(account)
+  const result = await contract['verifyToken(address,uint256)'](account, args.gatekeepernetwork);
   
   console.log({result});
 }

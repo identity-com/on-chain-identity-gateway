@@ -13,7 +13,7 @@ export default class BurnToken extends Command {
   static description = 'Burn existing gateway token';
 
   static examples = [
-    `$ gateway burn 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+    `$ gateway-eth revoke 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 		`,
   ];
 

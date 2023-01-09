@@ -13,7 +13,7 @@ export default class RemoveGatekeeper extends Command {
   static description = 'Remove a gatekeeper from a gatekeeper network';
 
   static examples = [
-    `$ gateway remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+    `$ gateway-eth remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 		`,
   ];
 

@@ -1,10 +1,12 @@
-import { Wallet } from "@ethersproject/wallet";
 import { Contract } from "@ethersproject/contracts";
 import { BigNumber } from "@ethersproject/bignumber";
 
 import { Forwarder } from "../contracts/typechain-types";
 import { EIP712Message, EIP712TypedData } from "eth-sig-util";
-import { TypedDataField } from "@ethersproject/abstract-signer";
+import {
+  TypedDataField,
+  TypedDataSigner,
+} from "@ethersproject/abstract-signer";
 
 type Input = {
   from: string;
@@ -51,7 +53,7 @@ const getMetaTxTypeData = (
   primaryType: "ForwardRequest",
 });
 
-function signTypedData(signer: Wallet, data: EIP712TypedData) {
+function signTypedData(signer: TypedDataSigner, data: EIP712TypedData) {
   const types = { ForwardRequest: forwardRequest } as Record<
     string,
     Array<TypedDataField>
@@ -80,7 +82,7 @@ const buildTypedData = async (
 };
 
 export const signMetaTxRequest = async (
-  signer: Wallet,
+  signer: TypedDataSigner,
   forwarder: Forwarder,
   input: Input
 ): Promise<{ request: ForwardRequest; signature: string }> => {

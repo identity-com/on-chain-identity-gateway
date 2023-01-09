@@ -16,11 +16,11 @@ oclif example Hello World CLI
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g gateway-eth-cli
+$ npm install -g @identity.com/ethereum-gatekeeper-cli
 $ gateway-eth COMMAND
 running command...
 $ gateway-eth (--version)
-gateway-eth-cli/0.0.0 darwin-arm64 node-v16.17.1
+@identity.com/ethereum-gatekeeper-cli/0.0.1-alpha.1 darwin-arm64 node-v16.17.1
 $ gateway-eth --help [COMMAND]
 USAGE
   $ gateway-eth COMMAND
@@ -29,58 +29,208 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`gateway-eth hello PERSON`](#gateway-eth-hello-person)
-* [`gateway-eth hello world`](#gateway-eth-hello-world)
+* [`gateway-eth add-gatekeeper ADDRESS`](#gateway-eth-add-gatekeeper-address)
+* [`gateway-eth add-network-authority ADDRESS`](#gateway-eth-add-network-authority-address)
+* [`gateway-eth freeze ADDRESS`](#gateway-eth-freeze-address)
+* [`gateway-eth get-token ADDRESS`](#gateway-eth-get-token-address)
 * [`gateway-eth help [COMMAND]`](#gateway-eth-help-command)
-* [`gateway-eth plugins`](#gateway-eth-plugins)
-* [`gateway-eth plugins:install PLUGIN...`](#gateway-eth-pluginsinstall-plugin)
-* [`gateway-eth plugins:inspect PLUGIN...`](#gateway-eth-pluginsinspect-plugin)
-* [`gateway-eth plugins:install PLUGIN...`](#gateway-eth-pluginsinstall-plugin-1)
-* [`gateway-eth plugins:link PLUGIN`](#gateway-eth-pluginslink-plugin)
-* [`gateway-eth plugins:uninstall PLUGIN...`](#gateway-eth-pluginsuninstall-plugin)
-* [`gateway-eth plugins:uninstall PLUGIN...`](#gateway-eth-pluginsuninstall-plugin-1)
-* [`gateway-eth plugins:uninstall PLUGIN...`](#gateway-eth-pluginsuninstall-plugin-2)
-* [`gateway-eth plugins update`](#gateway-eth-plugins-update)
+* [`gateway-eth issue ADDRESS [EXPIRY]`](#gateway-eth-issue-address-expiry)
+* [`gateway-eth refresh ADDRESS [EXPIRY]`](#gateway-eth-refresh-address-expiry)
+* [`gateway-eth remove-gatekeeper ADDRESS`](#gateway-eth-remove-gatekeeper-address)
+* [`gateway-eth remove-network-authority ADDRESS`](#gateway-eth-remove-network-authority-address)
+* [`gateway-eth revoke ADDRESS`](#gateway-eth-revoke-address)
+* [`gateway-eth unfreeze ADDRESS`](#gateway-eth-unfreeze-address)
+* [`gateway-eth verify ADDRESS`](#gateway-eth-verify-address)
 
-## `gateway-eth hello PERSON`
+## `gateway-eth add-gatekeeper ADDRESS`
 
-Say hello
+Add a gatekeeper to a gatekeeper network
 
 ```
 USAGE
-  $ gateway-eth hello [PERSON] -f <value>
+  $ gateway-eth add-gatekeeper [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
 
 ARGUMENTS
-  PERSON  Person to say hello to
+  ADDRESS  Gatekeeper address to add to the gatekeeper network
 
 FLAGS
-  -f, --from=<value>  (required) Who is saying hello
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -f, --fees=<value>
+      Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -p, --privateKey=<value>
+      The ethereum address private key for signing messages (or set PRIVATE_KEY environment variable)
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+  -w, --confirmations=<value>
+      [default: 1] The amount of blocks to wait for mined transaction
 
 DESCRIPTION
-  Say hello
+  Add a gatekeeper to a gatekeeper network
 
 EXAMPLES
-  $ oex hello friend --from oclif
-  hello friend from oclif! (./src/commands/hello/index.ts)
+  $ gateway-eth add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/hello/index.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.0/dist/commands/hello/index.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.1-alpha.1/dist/commands/add-gatekeeper.ts)_
 
-## `gateway-eth hello world`
+## `gateway-eth add-network-authority ADDRESS`
 
-Say hello world
+Add a network authority to a GatewayToken contract
 
 ```
 USAGE
-  $ gateway-eth hello world
+  $ gateway-eth add-network-authority [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
+
+ARGUMENTS
+  ADDRESS  Network authority address to add to the gatekeeper network
+
+FLAGS
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -f, --fees=<value>
+      Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -p, --privateKey=<value>
+      The ethereum address private key for signing messages (or set PRIVATE_KEY environment variable)
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+  -w, --confirmations=<value>
+      [default: 1] The amount of blocks to wait for mined transaction
 
 DESCRIPTION
-  Say hello world
+  Add a network authority to a GatewayToken contract
 
 EXAMPLES
-  $ gateway-eth hello world
-  hello world! (./src/commands/hello/world.ts)
+  $ gateway-eth add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
+
+_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.1-alpha.1/dist/commands/add-network-authority.ts)_
+
+## `gateway-eth freeze ADDRESS`
+
+Freeze existing gateway token
+
+```
+USAGE
+  $ gateway-eth freeze [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
+
+ARGUMENTS
+  ADDRESS  Token owner address
+
+FLAGS
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -f, --fees=<value>
+      Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -p, --privateKey=<value>
+      The ethereum address private key for signing messages (or set PRIVATE_KEY environment variable)
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+  -w, --confirmations=<value>
+      [default: 1] The amount of blocks to wait for mined transaction
+
+DESCRIPTION
+  Freeze existing gateway token
+
+EXAMPLES
+  $ gateway-eth freeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+```
+
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.1-alpha.1/dist/commands/freeze.ts)_
+
+## `gateway-eth get-token ADDRESS`
+
+Get existing gateway token
+
+```
+USAGE
+  $ gateway-eth get-token [ADDRESS] [-h] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli]
+
+ARGUMENTS
+  ADDRESS  Token owner address
+
+FLAGS
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+DESCRIPTION
+  Get existing gateway token
+
+ALIASES
+  $ gateway-eth verify
+
+EXAMPLES
+  $ gateway-eth get 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+```
+
+_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.1-alpha.1/dist/commands/get-token.ts)_
 
 ## `gateway-eth help [COMMAND]`
 
@@ -100,235 +250,345 @@ DESCRIPTION
   Display help for gateway-eth.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.20/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.22/src/commands/help.ts)_
 
-## `gateway-eth plugins`
+## `gateway-eth issue ADDRESS [EXPIRY]`
 
-List installed plugins.
+Issue a new gateway token for a given owner address and gatekeeper network
 
 ```
 USAGE
-  $ gateway-eth plugins [--core]
+  $ gateway-eth issue [ADDRESS] [EXPIRY] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>] [-b <value>]
+
+ARGUMENTS
+  ADDRESS  Token owner address
+  EXPIRY   [default: [object Object]] Expiry timestamp for newly issued token
 
 FLAGS
-  --core  Show core plugins.
+  -b, --bitmask=<value>
+      [default: [object Object]] Bitmask constraints to link with newly minting token
+
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -f, --fees=<value>
+      Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -p, --privateKey=<value>
+      The ethereum address private key for signing messages (or set PRIVATE_KEY environment variable)
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+  -w, --confirmations=<value>
+      [default: 1] The amount of blocks to wait for mined transaction
 
 DESCRIPTION
-  List installed plugins.
+  Issue a new gateway token for a given owner address and gatekeeper network
 
 EXAMPLES
-  $ gateway-eth plugins
+  $ gateway-eth issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.12/src/commands/plugins/index.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.1-alpha.1/dist/commands/issue.ts)_
 
-## `gateway-eth plugins:install PLUGIN...`
+## `gateway-eth refresh ADDRESS [EXPIRY]`
 
-Installs a plugin into the CLI.
+Refresh existing gateway token for Ethereum address
 
 ```
 USAGE
-  $ gateway-eth plugins:install PLUGIN...
+  $ gateway-eth refresh [ADDRESS] [EXPIRY] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
 
 ARGUMENTS
-  PLUGIN  Plugin to install.
+  ADDRESS  Token owner address
+  EXPIRY   [default: [object Object]] Expiry timestamp for newly issued token
 
 FLAGS
-  -f, --force    Run yarn install with force flag.
-  -h, --help     Show CLI help.
-  -v, --verbose
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -f, --fees=<value>
+      Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -p, --privateKey=<value>
+      The ethereum address private key for signing messages (or set PRIVATE_KEY environment variable)
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+  -w, --confirmations=<value>
+      [default: 1] The amount of blocks to wait for mined transaction
 
 DESCRIPTION
-  Installs a plugin into the CLI.
-  Can be installed from npm or a git url.
-
-  Installation of a user-installed plugin will override a core plugin.
-
-  e.g. If you have a core plugin that has a 'hello' command, installing a user-installed plugin with a 'hello' command
-  will override the core plugin implementation. This is useful if a user needs to update core plugin functionality in
-  the CLI without the need to patch and update the whole CLI.
-
-
-ALIASES
-  $ gateway-eth plugins add
+  Refresh existing gateway token for Ethereum address
 
 EXAMPLES
-  $ gateway-eth plugins:install myplugin 
-
-  $ gateway-eth plugins:install https://github.com/someuser/someplugin
-
-  $ gateway-eth plugins:install someuser/someplugin
+  $ gateway-eth refresh 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 60 -n 123
 ```
 
-## `gateway-eth plugins:inspect PLUGIN...`
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.1-alpha.1/dist/commands/refresh.ts)_
 
-Displays installation properties of a plugin.
+## `gateway-eth remove-gatekeeper ADDRESS`
+
+Remove a gatekeeper from a gatekeeper network
 
 ```
 USAGE
-  $ gateway-eth plugins:inspect PLUGIN...
+  $ gateway-eth remove-gatekeeper [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
 
 ARGUMENTS
-  PLUGIN  [default: .] Plugin to inspect.
+  ADDRESS  Gatekeeper address to remove from the gatekeeper network
 
 FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -f, --fees=<value>
+      Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -p, --privateKey=<value>
+      The ethereum address private key for signing messages (or set PRIVATE_KEY environment variable)
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+  -w, --confirmations=<value>
+      [default: 1] The amount of blocks to wait for mined transaction
 
 DESCRIPTION
-  Displays installation properties of a plugin.
+  Remove a gatekeeper from a gatekeeper network
 
 EXAMPLES
-  $ gateway-eth plugins:inspect myplugin
+  $ gateway-eth remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-## `gateway-eth plugins:install PLUGIN...`
+_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.1-alpha.1/dist/commands/remove-gatekeeper.ts)_
 
-Installs a plugin into the CLI.
+## `gateway-eth remove-network-authority ADDRESS`
+
+Remove a network authority from a gatekeeper network
 
 ```
 USAGE
-  $ gateway-eth plugins:install PLUGIN...
+  $ gateway-eth remove-network-authority [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
 
 ARGUMENTS
-  PLUGIN  Plugin to install.
+  ADDRESS  Network authority address to add to the gatekeeper network
 
 FLAGS
-  -f, --force    Run yarn install with force flag.
-  -h, --help     Show CLI help.
-  -v, --verbose
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -f, --fees=<value>
+      Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -p, --privateKey=<value>
+      The ethereum address private key for signing messages (or set PRIVATE_KEY environment variable)
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+  -w, --confirmations=<value>
+      [default: 1] The amount of blocks to wait for mined transaction
 
 DESCRIPTION
-  Installs a plugin into the CLI.
-  Can be installed from npm or a git url.
-
-  Installation of a user-installed plugin will override a core plugin.
-
-  e.g. If you have a core plugin that has a 'hello' command, installing a user-installed plugin with a 'hello' command
-  will override the core plugin implementation. This is useful if a user needs to update core plugin functionality in
-  the CLI without the need to patch and update the whole CLI.
-
-
-ALIASES
-  $ gateway-eth plugins add
+  Remove a network authority from a gatekeeper network
 
 EXAMPLES
-  $ gateway-eth plugins:install myplugin 
-
-  $ gateway-eth plugins:install https://github.com/someuser/someplugin
-
-  $ gateway-eth plugins:install someuser/someplugin
+  $ gateway-eth remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-## `gateway-eth plugins:link PLUGIN`
+_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.1-alpha.1/dist/commands/remove-network-authority.ts)_
 
-Links a plugin into the CLI for development.
+## `gateway-eth revoke ADDRESS`
+
+Burn existing gateway token
 
 ```
 USAGE
-  $ gateway-eth plugins:link PLUGIN
+  $ gateway-eth revoke [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
 
 ARGUMENTS
-  PATH  [default: .] path to plugin
+  ADDRESS  Token owner address
 
 FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -f, --fees=<value>
+      Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -p, --privateKey=<value>
+      The ethereum address private key for signing messages (or set PRIVATE_KEY environment variable)
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+  -w, --confirmations=<value>
+      [default: 1] The amount of blocks to wait for mined transaction
 
 DESCRIPTION
-  Links a plugin into the CLI for development.
-  Installation of a linked plugin will override a user-installed or core plugin.
-
-  e.g. If you have a user-installed or core plugin that has a 'hello' command, installing a linked plugin with a 'hello'
-  command will override the user-installed or core plugin implementation. This is useful for development work.
-
+  Burn existing gateway token
 
 EXAMPLES
-  $ gateway-eth plugins:link myplugin
+  $ gateway-eth revoke 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-## `gateway-eth plugins:uninstall PLUGIN...`
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.1-alpha.1/dist/commands/revoke.ts)_
 
-Removes a plugin from the CLI.
+## `gateway-eth unfreeze ADDRESS`
+
+Unfreezing existing gateway token
 
 ```
 USAGE
-  $ gateway-eth plugins:uninstall PLUGIN...
+  $ gateway-eth unfreeze [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
 
 ARGUMENTS
-  PLUGIN  plugin to uninstall
+  ADDRESS  Token owner address
 
 FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -f, --fees=<value>
+      Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -p, --privateKey=<value>
+      The ethereum address private key for signing messages (or set PRIVATE_KEY environment variable)
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+  -w, --confirmations=<value>
+      [default: 1] The amount of blocks to wait for mined transaction
 
 DESCRIPTION
-  Removes a plugin from the CLI.
+  Unfreezing existing gateway token
 
-ALIASES
-  $ gateway-eth plugins unlink
-  $ gateway-eth plugins remove
+EXAMPLES
+  $ gateway-eth unfreeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-## `gateway-eth plugins:uninstall PLUGIN...`
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.1-alpha.1/dist/commands/unfreeze.ts)_
 
-Removes a plugin from the CLI.
+## `gateway-eth verify ADDRESS`
+
+Get existing gateway token
 
 ```
 USAGE
-  $ gateway-eth plugins:uninstall PLUGIN...
+  $ gateway-eth verify [ADDRESS] [-h] [-t <value>] [-n <value>] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCCha
+    inFuji|starknetMainnet|starknetGoerli]
 
 ARGUMENTS
-  PLUGIN  plugin to uninstall
+  ADDRESS  Token owner address
 
 FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
+  -c, --network=<option>
+      [default: [object Object]] Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumRinkeby|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|ava
+      lancheCChainFuji|starknetMainnet|starknetGoerli>
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to 1
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0x4B731a08Eb7a42cAFb9835452a73e35359332f19] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
 
 DESCRIPTION
-  Removes a plugin from the CLI.
+  Get existing gateway token
 
 ALIASES
-  $ gateway-eth plugins unlink
-  $ gateway-eth plugins remove
-```
+  $ gateway-eth verify
 
-## `gateway-eth plugins:uninstall PLUGIN...`
-
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ gateway-eth plugins:uninstall PLUGIN...
-
-ARGUMENTS
-  PLUGIN  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ gateway-eth plugins unlink
-  $ gateway-eth plugins remove
-```
-
-## `gateway-eth plugins update`
-
-Update installed plugins.
-
-```
-USAGE
-  $ gateway-eth plugins update [-h] [-v]
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Update installed plugins.
+EXAMPLES
+  $ gateway-eth get 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 <!-- commandsstop -->

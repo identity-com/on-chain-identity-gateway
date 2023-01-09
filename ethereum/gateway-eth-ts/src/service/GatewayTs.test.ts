@@ -4,13 +4,16 @@ import {
   Network,
 } from "@ethersproject/providers";
 import { BigNumber, Wallet } from "ethers";
-import { TokenData, TokenState } from "../utils/types";
+import { TokenData, TokenState } from "../utils";
 import * as assert from "assert";
 import * as dotenv from "dotenv";
 import { SAMPLE_PRIVATE_KEY } from "../utils/constants_test";
 import { GatewayTs } from "./GatewayTs";
-import { gatekeeperNetwork, gatekeeperWallet } from "./testUtils";
-import { DEFAULT_GATEWAY_TOKEN_ADDRESS } from "../utils/constants";
+import {
+  gatekeeperNetwork,
+  gatekeeperWallet,
+  TEST_GATEWAY_TOKEN_ADDRESS,
+} from "./testUtils";
 dotenv.config();
 
 describe("GatewayTS", function () {
@@ -27,7 +30,10 @@ describe("GatewayTS", function () {
     provider = getDefaultProvider("http://localhost:8545");
     network = await provider.getNetwork();
     gatekeeper = gatekeeperWallet(provider);
-    gateway = new GatewayTs(gatekeeper, network, DEFAULT_GATEWAY_TOKEN_ADDRESS);
+    gateway = new GatewayTs(
+      gatekeeper,
+      TEST_GATEWAY_TOKEN_ADDRESS.gatewayToken
+    );
   });
 
   it("should issue a token", async () => {
@@ -77,10 +83,10 @@ describe("GatewayTS", function () {
     assert.equal(state, TokenState.ACTIVE);
   }).timeout(10_000);
 
-  it("Missing tokens throw an error", async () => {
+  it("Missing token returns null", async () => {
     const emptyWallet = Wallet.createRandom().address;
-    const shouldFail = gateway.getTokenState(emptyWallet, gatekeeperNetwork);
-    await assert.rejects(shouldFail, Error);
+    const token = await gateway.getTokenState(emptyWallet, gatekeeperNetwork);
+    assert.ok(token === null);
   }).timeout(10_000);
 
   it("Test token data get functions", async () => {

@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/ethereum-gatekeeper-cli",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha.2",
   "description": "Identity.com Gateway Protocol EVM CLI",
   "author": "dankelleher @dankelleher",
   "bin": {
@@ -20,11 +20,13 @@
     "@ethersproject/address": "^5.7.0",
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/hdnode": "^5.7.0",
+    "@ethersproject/networks": "^5.7.1",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/units": "^5.7.0",
     "@ethersproject/wallet": "^5.7.0",
-    "@identity.com/gateway-eth-ts": "0.2.0-alpha.6",
-    "@oclif/core": "^1.23.0",
+    "@ethersproject/web": "^5.7.1",
+    "@identity.com/gateway-eth-ts": "0.3.0-alpha.1",
+    "@oclif/core": "^1.23.2",
     "@oclif/plugin-help": "^5",
     "gas-price-oracle": "^0.5.2"
   },
