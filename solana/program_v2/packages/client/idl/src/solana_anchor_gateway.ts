@@ -44,8 +44,13 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "payer",
           "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "authority",
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -1483,21 +1488,36 @@ export type SolanaAnchorGateway = {
     },
     {
       "code": 6004,
+      "name": "InsufficientAccessFeatures",
+      "msg": "Insufficient access to set features"
+    },
+    {
+      "code": 6005,
+      "name": "InsufficientAccessTokens",
+      "msg": "Insufficient access to set supported tokens"
+    },
+    {
+      "code": 6006,
+      "name": "InsufficientAccessFees",
+      "msg": "Insufficient access to set fees"
+    },
+    {
+      "code": 6007,
       "name": "AuthKeyNotFound",
       "msg": "Auth key not found"
     },
     {
-      "code": 6005,
+      "code": 6008,
       "name": "InvalidKey",
       "msg": "Invalid key provided"
     },
     {
-      "code": 6006,
+      "code": 6009,
       "name": "AccountInUse",
       "msg": "The network account is in use"
     },
     {
-      "code": 6007,
+      "code": 6010,
       "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
     },
@@ -1555,8 +1575,13 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "payer",
           "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "authority",
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -2994,21 +3019,36 @@ export const IDL: SolanaAnchorGateway = {
     },
     {
       "code": 6004,
+      "name": "InsufficientAccessFeatures",
+      "msg": "Insufficient access to set features"
+    },
+    {
+      "code": 6005,
+      "name": "InsufficientAccessTokens",
+      "msg": "Insufficient access to set supported tokens"
+    },
+    {
+      "code": 6006,
+      "name": "InsufficientAccessFees",
+      "msg": "Insufficient access to set fees"
+    },
+    {
+      "code": 6007,
       "name": "AuthKeyNotFound",
       "msg": "Auth key not found"
     },
     {
-      "code": 6005,
+      "code": 6008,
       "name": "InvalidKey",
       "msg": "Invalid key provided"
     },
     {
-      "code": 6006,
+      "code": 6009,
       "name": "AccountInUse",
       "msg": "The network account is in use"
     },
     {
-      "code": 6007,
+      "code": 6010,
       "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
     },
