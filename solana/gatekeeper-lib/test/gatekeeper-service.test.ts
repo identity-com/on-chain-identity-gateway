@@ -495,7 +495,6 @@ describe("GatekeeperService", () => {
     });
   });
 
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   const expectValidGatewayTransaction = (transaction: Transaction) => {
     expect(transaction).to.be.an.instanceOf(Transaction);
     expect(transaction.instructions[0].programId.toBase58()).to.eq(

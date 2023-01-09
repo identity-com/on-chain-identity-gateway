@@ -1,16 +1,14 @@
 import { Command, Flags } from "@oclif/core";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
-import { airdropTo } from "../util";
-import { GatekeeperService } from "../service";
 import {
   airdropFlag,
   clusterFlag,
   gatekeeperKeyFlag,
   gatekeeperNetworkPubkeyFlag,
-} from "../util/oclif/flags";
-import { prettyPrint } from "../util/token";
-import { getConnectionFromEnv } from "../util/oclif/utils";
+} from "../util/flags";
+import {getConnectionFromEnv, prettyPrint} from "../util/utils";
+import {airdropTo, GatekeeperService} from "@identity.com/solana-gatekeeper-lib";
 
 export default class Issue extends Command {
   static description = "Issue a gateway token to a wallet";
