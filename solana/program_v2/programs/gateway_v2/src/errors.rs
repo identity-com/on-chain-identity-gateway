@@ -18,6 +18,8 @@ pub enum NetworkErrors {
     AccountInUse,
     #[msg("Network Fee was not provided")]
     FeesNotProvided,
+    #[msg("Token not supported")]
+    TokenNotSupported,
 }
 
 #[error_code]

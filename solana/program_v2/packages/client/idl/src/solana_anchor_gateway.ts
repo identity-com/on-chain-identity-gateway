@@ -354,11 +354,6 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "network",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "gatekeeper",
           "isMut": false,
           "isSigner": false
@@ -1505,6 +1500,11 @@ export type SolanaAnchorGateway = {
       "code": 6007,
       "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
+    },
+    {
+      "code": 6008,
+      "name": "TokenNotSupported",
+      "msg": "Token not supported"
     }
   ]
 };
@@ -1865,11 +1865,6 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
-          "name": "network",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "gatekeeper",
           "isMut": false,
           "isSigner": false
@@ -3016,6 +3011,11 @@ export const IDL: SolanaAnchorGateway = {
       "code": 6007,
       "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
+    },
+    {
+      "code": 6008,
+      "name": "TokenNotSupported",
+      "msg": "Token not supported"
     }
   ]
 };
