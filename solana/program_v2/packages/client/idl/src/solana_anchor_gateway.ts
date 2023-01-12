@@ -1522,7 +1522,7 @@ export type SolanaAnchorGateway = {
       "msg": "Network Fee was not provided"
     },
     {
-      "code": 6008,
+      "code": 6011,
       "name": "TokenNotSupported",
       "msg": "Token not supported"
     }
@@ -3053,7 +3053,7 @@ export const IDL: SolanaAnchorGateway = {
       "msg": "Network Fee was not provided"
     },
     {
-      "code": 6008,
+      "code": 6011,
       "name": "TokenNotSupported",
       "msg": "Token not supported"
     }
