@@ -168,6 +168,9 @@ export class NetworkService extends AbstractService {
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
+      // anchor IDL does not work with nested types
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       .createGatekeeper({
         tokenFees: data.tokenFees,
         authThreshold: data.authThreshold,
@@ -340,7 +343,7 @@ export class NetworkService extends AbstractService {
             authority: acct?.authority,
             gatekeeperNetwork: acct?.gatekeeperNetwork,
             stakingAccount: acct?.stakingAccount,
-            tokenFees: acct?.tokenFees as FeeStructure[],
+            tokenFees: acct?.tokenFees as unknown as FeeStructure[],
             authKeys: acct?.authKeys as AuthKeyStructure[],
             state: acct?.gatekeeperState as GatekeeperState,
           };
