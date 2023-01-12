@@ -1,13 +1,10 @@
 import {
-  AdminService,
   NetworkService,
-  airdrop,
   GatekeeperKeyFlags,
-  NetworkKeyFlags,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 import { setUpAdminNetworkGatekeeper } from '../test-set-up';
