@@ -1,7 +1,6 @@
 import {
   AdminService,
   airdrop,
-  GatekeeperKeyFlags,
   GatekeeperService,
   NetworkService,
   PassState,
@@ -26,7 +25,7 @@ import { setGatekeeperFlagsAndFees } from '../util/lib';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe.only('Verify a pass', () => {
+describe('Verify a pass', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
@@ -93,12 +92,8 @@ describe.only('Verify a pass', () => {
       )
       .withPartialSigners(funderKeypair)
       .rpc();
-
-    await setGatekeeperFlagsAndFees(
-      stakingPDA,
-      networkService,
-      GatekeeperKeyFlags.VERIFY
-    );
+    // Flags represent everything except WITHDRAW
+    await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535 + 131072);
   });
 
   it('Verifies a valid pass', async () => {

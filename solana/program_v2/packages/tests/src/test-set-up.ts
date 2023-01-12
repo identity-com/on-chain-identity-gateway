@@ -8,6 +8,7 @@ import {
 import {
   AdminService,
   airdrop,
+  GatekeeperKeyFlags,
   GatekeeperService,
   NetworkKeyFlags,
   NetworkService,
@@ -137,7 +138,7 @@ export const setUpAdminNetworkGatekeeper = async (
     )
     .withPartialSigners(adminAuthority)
     .rpc();
-
+  // Flag represents everything except WITHDRAW and VERIFY
   await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
     {
       token: mint,

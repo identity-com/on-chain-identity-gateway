@@ -62,6 +62,7 @@ pub struct PassVerify<'info> {
     constraint = pass.network == network.key()
     )]
     pub network: Box<Account<'info, GatekeeperNetwork>>,
+    // TODO: Remove? Is this necessary?
     #[account(
     constraint = pass.gatekeeper == gatekeeper.key(),
     seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
