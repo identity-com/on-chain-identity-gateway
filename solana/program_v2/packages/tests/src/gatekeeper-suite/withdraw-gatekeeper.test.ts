@@ -11,12 +11,14 @@ import {
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
+  GatekeeperKeyFlags,
   GatekeeperService,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
 import { Account } from '@solana/spl-token/src/state/account';
+import { setGatekeeperFlagsAndFees } from '../util/lib';
 
 describe('withdraw gatekeeper', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -28,6 +30,7 @@ describe('withdraw gatekeeper', () => {
   let networkService: NetworkService;
 
   let gatekeeperPDA: PublicKey;
+  let stakingPDA: PublicKey;
 
   let adminAuthority: Keypair;
   let networkAuthority: Keypair;
@@ -47,6 +50,7 @@ describe('withdraw gatekeeper', () => {
       gatekeeperAuthority,
       mintAuthority,
       mintAccount,
+      stakingPDA,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
     ({ gatekeeperAta } = await makeAssociatedTokenAccountsForIssue(
       programProvider.connection,
@@ -73,6 +77,12 @@ describe('withdraw gatekeeper', () => {
       gatekeeperAta.address,
       mintAuthority,
       1000
+    );
+
+    await setGatekeeperFlagsAndFees(
+      stakingPDA,
+      networkService,
+      GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.WITHDRAW
     );
   });
 
