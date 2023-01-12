@@ -1,7 +1,6 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
 import {
   FeeStructure,
-  GatekeeperKeyFlags,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import * as fsPromises from 'node:fs/promises';
