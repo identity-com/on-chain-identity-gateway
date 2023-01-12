@@ -10,7 +10,7 @@ import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 
-describe.only('Gateway v2 Client', () => {
+describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
