@@ -13,7 +13,7 @@ import {
 } from './lib/types';
 
 import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
-import { SOLANA_MAINNET } from './lib/constants';
+import { NetworkKeyFlags, SOLANA_MAINNET } from './lib/constants';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   AbstractService,
@@ -127,30 +127,26 @@ export class AdminService extends AbstractService {
   /**
    * Creates the network the AdminService was build for
    *
-   * @param data Initial data to create the etwork with
+   * @param data Initial data to create the network with
    * @param authority The initial authority for creating the account
+   * @param payer The payer of the network account creation
    */
   createNetwork(
     data: CreateNetworkData = {
       authThreshold: 1,
       passExpireTime: 16,
       fees: [],
-      authKeys: [{ flags: 4097, key: this._network }],
+      authKeys: [{ flags: NetworkKeyFlags.AUTH, key: this._network }],
       supportedTokens: [],
     },
-    authority: PublicKey = this._wallet.publicKey
+    authority: PublicKey = this._wallet.publicKey,
+    payer: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .createNetwork({
         authThreshold: data.authThreshold,
         passExpireTime: new anchor.BN(data.passExpireTime),
-        fees: data.fees.map((fee) => ({
-          token: fee.token,
-          issue: new anchor.BN(fee.issue),
-          expire: new anchor.BN(fee.expire),
-          verify: new anchor.BN(fee.verify),
-          refresh: new anchor.BN(fee.refresh),
-        })),
+        fees: data.fees,
         authKeys: data.authKeys,
         supportedTokens: data.supportedTokens,
       })
@@ -158,6 +154,7 @@ export class AdminService extends AbstractService {
         network: this._network,
         systemProgram: anchor.web3.SystemProgram.programId,
         authority,
+        payer,
       })
       .instruction();
 
@@ -172,10 +169,12 @@ export class AdminService extends AbstractService {
    *
    * @param data The data required for updating the network
    * @param authority A valid authority required for managing the network
+   * @param payer The payer for the transaction
    */
   updateNetwork(
     data: UpdateNetworkData,
-    authority: PublicKey = this._wallet.publicKey
+    authority: PublicKey = this._wallet.publicKey,
+    payer: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -191,6 +190,7 @@ export class AdminService extends AbstractService {
       .accounts({
         network: this._network,
         authority,
+        payer,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .instruction();

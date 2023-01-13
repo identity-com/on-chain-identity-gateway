@@ -81,8 +81,7 @@ describe('issue', () => {
         funderKeypair.publicKey
       )
       .withPartialSigners(funderKeypair)
-      .rpc()
-      .catch((e) => console.log(e));
+      .rpc();
 
     const pass = await gatekeeperService.getPassAccount(subject.publicKey);
 

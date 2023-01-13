@@ -96,7 +96,9 @@ describe('Gateway v2 Client', () => {
       let gatekeeperAccount = await networkService.getGatekeeperAccount();
       const initialState = gatekeeperAccount?.state;
       // sets the gatekeeper's state to Frozen
-      await networkService.setGatekeeperState(GatekeeperState.Frozen).rpc();
+      await networkService
+        .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+        .rpc();
       // retrieves gatekeeper account after state change and stores its state as a const
       gatekeeperAccount = await networkService.getGatekeeperAccount();
       const newState = gatekeeperAccount?.state;

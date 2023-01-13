@@ -199,9 +199,7 @@ export class GatekeeperService extends AbstractService {
       .methods.setPassState(EnumMapper.to(state, PassStateMapping))
       .accounts({
         pass: passAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
-        network: this._network,
         gatekeeper: this._gatekeeper,
       })
       .instruction();
@@ -238,7 +236,6 @@ export class GatekeeperService extends AbstractService {
       .methods.refreshPass()
       .accounts({
         pass: passAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network: this._network,
         gatekeeper: this._gatekeeper,
@@ -285,10 +282,9 @@ export class GatekeeperService extends AbstractService {
       .methods.expirePass()
       .accounts({
         pass: passAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
-        network: this._network,
         gatekeeper: this._gatekeeper,
+        network: this._network,
         payer,
         splTokenProgram: splToken,
         mintAccount: mint,
@@ -333,7 +329,6 @@ export class GatekeeperService extends AbstractService {
       .methods.verifyPass()
       .accounts({
         pass: passAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         network: this._network,
         gatekeeper: this._gatekeeper,
@@ -369,9 +364,7 @@ export class GatekeeperService extends AbstractService {
       .methods.changePassGatekeeper()
       .accounts({
         pass: passAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
-        network: this._network,
         newGatekeeper: gatekeeper,
         oldGatekeeper: this._gatekeeper,
       })
@@ -409,7 +402,6 @@ export class GatekeeperService extends AbstractService {
       .methods.setPassData(gatekeeperData, networkData)
       .accounts({
         pass: passAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
         gatekeeper: this._gatekeeper,
       })

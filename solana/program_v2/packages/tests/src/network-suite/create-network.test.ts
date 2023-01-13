@@ -1,4 +1,8 @@
-import { AdminService, airdrop } from '@identity.com/gateway-solana-client';
+import {
+  AdminService,
+  airdrop,
+  NetworkKeyFlags,
+} from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
 import { Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
@@ -37,25 +41,19 @@ describe('Gateway v2 Client', () => {
       },
       programProvider
     );
-    //   export declare type GatewayServiceOptions = {
-    //     connection?: Connection;
-    //     wallet?: Wallet;
-    //     confirmOptions?: ConfirmOptions;
-    //     clusterType: ExtendedCluster;
-    //     customConfig?: CustomClusterUrlConfig;
-    // };
   });
 
   describe('Create Network', () => {
-    it('Creates a network with default values', async function () {
+    it('Creates a network with default values', async () => {
+      // Act
       await service.createNetwork().withPartialSigners(networkAuthority).rpc();
-
       const createdNetwork = await service.getNetworkAccount();
 
+      // Assert
       expect(createdNetwork).to.not.be.null;
     }).timeout(10000);
 
-    it('Creates a network with non-default values', async function () {
+    it('Creates a network with non-default values', async () => {
       await service
         .createNetwork({
           authThreshold: 1,
@@ -71,7 +69,7 @@ describe('Gateway v2 Client', () => {
           ],
           authKeys: [
             {
-              flags: 1,
+              flags: NetworkKeyFlags.AUTH,
               key: networkAuthority.publicKey,
             },
           ],

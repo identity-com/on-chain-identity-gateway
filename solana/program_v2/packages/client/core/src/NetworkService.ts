@@ -163,10 +163,14 @@ export class NetworkService extends AbstractService {
           key: this._gatekeeper,
         },
       ],
+      supportedTokens: [],
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
+      // anchor IDL does not work with nested types
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       .createGatekeeper({
         tokenFees: data.tokenFees,
         authThreshold: data.authThreshold,
@@ -273,10 +277,12 @@ export class NetworkService extends AbstractService {
   /**
    * Changes the gatekeeper state
    *
+   * @param network The network to which the gatekeeper belongs
    * @param state The new state for the gatekeeper
    * @param authority An authority allowed to change gatekeeper state
    */
   setGatekeeperState(
+    network: PublicKey,
     state: GatekeeperState = GatekeeperState.Active,
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
@@ -284,8 +290,8 @@ export class NetworkService extends AbstractService {
       .setGatekeeperState(EnumMapper.to(state, GatekeeperStateMapping))
       .accounts({
         gatekeeper: this._gatekeeperAccount,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
+        network,
       })
       .instruction();
 
@@ -298,7 +304,6 @@ export class NetworkService extends AbstractService {
   gatekeeperWithdraw(
     gatekeeper: PublicKey,
     authority: PublicKey = this._wallet.publicKey,
-    mintAccount: PublicKey,
     splTokenProgram: PublicKey,
     receiverTokenAccount: PublicKey,
     gatekeeperTokenAccount: PublicKey,
@@ -308,9 +313,7 @@ export class NetworkService extends AbstractService {
       .gatekeeperWithdraw(new anchor.BN(amount))
       .accounts({
         gatekeeper,
-        systemProgram: anchor.web3.SystemProgram.programId,
         authority,
-        mintAccount,
         splTokenProgram,
         receiverTokenAccount,
         gatekeeperTokenAccount,
@@ -340,7 +343,7 @@ export class NetworkService extends AbstractService {
             authority: acct?.authority,
             gatekeeperNetwork: acct?.gatekeeperNetwork,
             stakingAccount: acct?.stakingAccount,
-            tokenFees: acct?.tokenFees as FeeStructure[],
+            tokenFees: acct?.tokenFees as unknown as FeeStructure[],
             authKeys: acct?.authKeys as AuthKeyStructure[],
             state: acct?.gatekeeperState as GatekeeperState,
           };

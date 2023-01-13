@@ -10,6 +10,12 @@ pub enum NetworkErrors {
     InsufficientAccessAuthKeys,
     #[msg("Insufficient access to set expiry time")]
     InsufficientAccessExpiry,
+    #[msg("Insufficient access to set features")]
+    InsufficientAccessFeatures,
+    #[msg("Insufficient access to set supported tokens")]
+    InsufficientAccessTokens,
+    #[msg("Insufficient access to set fees")]
+    InsufficientAccessFees,
     #[msg("Auth key not found")]
     AuthKeyNotFound,
     #[msg("Invalid key provided")]
@@ -18,6 +24,8 @@ pub enum NetworkErrors {
     AccountInUse,
     #[msg("Network Fee was not provided")]
     FeesNotProvided,
+    #[msg("Token not supported")]
+    TokenNotSupported,
 }
 
 #[error_code]

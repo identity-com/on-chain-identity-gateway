@@ -9,6 +9,7 @@ import {
   AdminService,
   airdrop,
   GatekeeperService,
+  NetworkKeyFlags,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import * as anchor from '@project-serum/anchor';
@@ -120,8 +121,10 @@ export const setUpAdminNetworkGatekeeper = async (
           verify: 10,
         },
       ],
-      authKeys: [{ flags: 4097, key: networkAuthority.publicKey }],
-      supportedTokens: [],
+      authKeys: [
+        { flags: NetworkKeyFlags.AUTH, key: networkAuthority.publicKey },
+      ],
+      supportedTokens: [{ key: mint, settlementInfo: { placeholder: 9 } }],
     })
     .withPartialSigners(networkAuthority)
     .rpc();
