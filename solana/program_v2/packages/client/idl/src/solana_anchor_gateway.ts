@@ -1282,24 +1282,6 @@ export type SolanaAnchorGateway = {
           {
             "name": "key",
             "type": "publicKey"
-          },
-          {
-            "name": "settlementInfo",
-            "type": {
-              "defined": "SettlementInfo"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "SettlementInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "placeholder",
-            "type": "u16"
           }
         ]
       }
@@ -2813,24 +2795,6 @@ export const IDL: SolanaAnchorGateway = {
           {
             "name": "key",
             "type": "publicKey"
-          },
-          {
-            "name": "settlementInfo",
-            "type": {
-              "defined": "SettlementInfo"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "SettlementInfo",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "placeholder",
-            "type": "u16"
           }
         ]
       }

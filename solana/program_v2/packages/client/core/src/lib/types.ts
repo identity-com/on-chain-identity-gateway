@@ -82,11 +82,6 @@ export type NetworkAccount = {
 
 export type SupportedToken = {
   key: PublicKey;
-  settlementInfo: SettlementInfo;
-};
-
-export type SettlementInfo = {
-  placeholder: number;
 };
 
 export type CreateGatekeeperData = {
