@@ -17,9 +17,6 @@ pub struct GatekeeperNetwork {
     pub authority: Pubkey,
     /// the index of the network
     pub network_index: u16,
-    // TODO: Remove this
-    /// The bump for the signer
-    pub network_bump: u8,
     /// The length of time a pass lasts in seconds. `0` means does not expire.
     pub pass_expire_time: i64,
     /// Features on the network, index relates to which feature it is. There are 32 bytes of data available for each feature.

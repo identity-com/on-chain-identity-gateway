@@ -737,13 +737,6 @@ export type SolanaAnchorGateway = {
             "type": "u16"
           },
           {
-            "name": "networkBump",
-            "docs": [
-              "The bump for the signer"
-            ],
-            "type": "u8"
-          },
-          {
             "name": "passExpireTime",
             "docs": [
               "The length of time a pass lasts in seconds. `0` means does not expire."
@@ -2248,13 +2241,6 @@ export const IDL: SolanaAnchorGateway = {
               "the index of the network"
             ],
             "type": "u16"
-          },
-          {
-            "name": "networkBump",
-            "docs": [
-              "The bump for the signer"
-            ],
-            "type": "u8"
           },
           {
             "name": "passExpireTime",
