@@ -124,7 +124,7 @@ export const setUpAdminNetworkGatekeeper = async (
       authKeys: [
         { flags: NetworkKeyFlags.AUTH, key: networkAuthority.publicKey },
       ],
-      supportedTokens: [{ key: mint, settlementInfo: { placeholder: 9 } }],
+      supportedTokens: [{ key: mint }],
     })
     .withPartialSigners(networkAuthority)
     .rpc();
