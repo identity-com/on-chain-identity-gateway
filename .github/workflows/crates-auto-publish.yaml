@@ -1,0 +1,22 @@
+name: "Cargo Crates Auto Publish"
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "solana/program_v2/programs/gateway_v2/Cargo.toml"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+
+  publish-gateway:
+    uses: "./.github/workflows/crates-auto-publish-workflow.yml"
+    with:
+      environment: "crates-auto-publish"
+      package-path: "solana/program_v2/programs/gateway_v2/Cargo.toml"
+    secrets:
+      publish-token: ${{ secrets.CARGO_TOKEN }}
