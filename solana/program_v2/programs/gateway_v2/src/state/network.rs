@@ -4,7 +4,7 @@ use bitflags::bitflags;
 
 use crate::errors::NetworkErrors;
 use crate::instructions::admin::*;
-use crate::state::AuthKey;
+use crate::state::{AuthKey, UpdateOperands, UpdateOperations};
 use crate::util::*;
 
 /// A gatekeeper network which manages many [`Gatekeeper`]s.
@@ -97,125 +97,96 @@ impl GatekeeperNetwork {
         Ok(())
     }
 
-    pub fn update_auth_keys(&mut self, update_keys: &UpdateKeys, authority: &Signer) -> Result<()> {
-        // This will skip the next auth check which isn't required if there are no keys
-        if update_keys.add.is_empty() && update_keys.remove.is_empty() {
-            // no auth keys to add/remove
-            return Ok(());
-        }
-
-        // remove the keys if they exist
-        for key in update_keys.remove.iter() {
-            let index: Option<usize> = self.auth_keys.iter().position(|x| x.key == *key);
-
-            if let Some(key_index) = index {
-                if self.auth_keys[key_index].key == *authority.key {
-                    // Cannot remove own key (TODO?)
-                    return Err(error!(NetworkErrors::InvalidKey));
-                }
-
-                self.auth_keys.remove(key_index);
-            } else {
-                return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-            }
-        }
-
-        for key in update_keys.add.iter() {
-            let index: Option<usize> = self.auth_keys.iter().position(|x| x.key == key.key);
-
-            if let Some(key_index) = index {
-                // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
-                if self.auth_keys[key_index].key == *authority.key
-                    && !NetworkKeyFlags::contains(
-                        &NetworkKeyFlags::from_bits_truncate(key.flags),
-                        NetworkKeyFlags::AUTH,
-                    )
-                {
-                    return Err(error!(NetworkErrors::InsufficientAccessAuthKeys));
-                }
-
-                // update the key with the new flag if it exists
-                self.auth_keys[key_index].flags = key.flags;
-            } else {
-                self.auth_keys.push(*key);
-            }
-        }
-
-        Ok(())
-    }
-
-    pub fn update_fees(&mut self, fees: &UpdateFees) -> Result<()> {
-        // This will skip the next auth check which isn't required if there are no fees
-        if fees.add.is_empty() && fees.remove.is_empty() {
-            // no fees to add/remove
-            return Ok(());
-        }
-
-        // Remove the fees if they exist
-        for fee in fees.remove.iter() {
-            let fee_index = self.fees.iter().position(|x| x.token == *fee);
-
-            match fee_index {
-                Some(index) => self.fees.remove(index),
-                None => return Err(error!(NetworkErrors::InsufficientAccessAuthKeys)),
-            };
-        }
-
-        // Add or update fees
-        for fee in fees.add.iter() {
-            let fee_index = self.fees.iter().position(|x| x.token == fee.token);
-
-            match fee_index {
-                Some(index) => self.fees[index] = *fee,
-                None => self.fees.push(*fee),
-            }
-        }
-
-        Ok(())
-    }
-
     pub fn update_network_features(&mut self, network_features: u32) -> Result<()> {
         self.network_features = network_features;
 
         Ok(())
     }
 
-    pub fn update_supported_tokens(
-        &mut self,
-        supported_tokens: &UpdateSupportedTokens,
-    ) -> Result<()> {
-        if supported_tokens.add.is_empty() && supported_tokens.remove.is_empty() {
-            // no fees to add/remove
-            return Ok(());
+    pub fn is_closeable(&self) -> bool {
+        self.gatekeepers.is_empty()
+    }
+}
+
+impl UpdateOperations<UpdateKeys, AuthKey> for GatekeeperNetwork {
+    fn operands(this: &mut Self, operation: UpdateKeys) -> UpdateOperands<AuthKey> {
+        UpdateOperands::new(&mut this.auth_keys, operation.remove, operation.add)
+    }
+
+    fn extract_key(container: &AuthKey) -> Pubkey {
+        container.key
+    }
+
+    fn missing_key_error() -> Error {
+        error!(NetworkErrors::InsufficientAccessAuthKeys)
+    }
+
+    fn pre_remove_validation(key: &Pubkey, authority: &Signer) -> Result<()> {
+        if key == authority.key {
+            Err(error!(NetworkErrors::InvalidKey))
+        } else {
+            Ok(())
         }
+    }
 
-        // Remove the supported tokens if they exist
-        for token in supported_tokens.remove.iter() {
-            let existing_token = self.supported_tokens.iter().position(|x| x.key == *token);
-
-            match existing_token {
-                Some(index) => self.supported_tokens.remove(index),
-                None => return Err(error!(NetworkErrors::InsufficientAccessAuthKeys)),
-            };
+    fn pre_add_validation(container: &AuthKey, authority: &Signer) -> Result<()> {
+        if container.key == *authority.key
+            && !NetworkKeyFlags::contains(
+                &NetworkKeyFlags::from_bits_truncate(container.flags),
+                NetworkKeyFlags::AUTH,
+            )
+        {
+            Err(error!(NetworkErrors::InsufficientAccessAuthKeys))
+        } else {
+            Ok(())
         }
+    }
+}
 
-        // Add or update the supported tokens
-        for token in supported_tokens.add.iter() {
-            let existing_token = self
-                .supported_tokens
-                .iter()
-                .position(|x| x.key == token.key);
+impl UpdateOperations<UpdateFees, NetworkFeesPercentage> for GatekeeperNetwork {
+    fn operands(this: &mut Self, operation: UpdateFees) -> UpdateOperands<NetworkFeesPercentage> {
+        UpdateOperands::new(&mut this.fees, operation.remove, operation.add)
+    }
 
-            match existing_token {
-                Some(index) => self.supported_tokens[index] = *token,
-                None => self.supported_tokens.push(*token),
-            }
-        }
+    fn extract_key(container: &NetworkFeesPercentage) -> Pubkey {
+        container.token
+    }
+
+    fn missing_key_error() -> Error {
+        error!(NetworkErrors::InsufficientAccessAuthKeys)
+    }
+
+    fn pre_remove_validation(_: &Pubkey, _: &Signer) -> Result<()> {
         Ok(())
     }
 
-    pub fn is_closeable(&self) -> bool {
-        self.gatekeepers.is_empty()
+    fn pre_add_validation(_: &NetworkFeesPercentage, _: &Signer) -> Result<()> {
+        Ok(())
+    }
+}
+
+impl UpdateOperations<UpdateSupportedTokens, SupportedToken> for GatekeeperNetwork {
+    fn operands(
+        this: &mut Self,
+        operation: UpdateSupportedTokens,
+    ) -> UpdateOperands<SupportedToken> {
+        UpdateOperands::new(&mut this.supported_tokens, operation.remove, operation.add)
+    }
+
+    fn extract_key(container: &SupportedToken) -> Pubkey {
+        container.key
+    }
+
+    fn missing_key_error() -> Error {
+        error!(NetworkErrors::InsufficientAccessAuthKeys)
+    }
+
+    fn pre_remove_validation(_: &Pubkey, _: &Signer) -> Result<()> {
+        Ok(())
+    }
+
+    fn pre_add_validation(_: &SupportedToken, _: &Signer) -> Result<()> {
+        Ok(())
     }
 }
 
@@ -278,6 +249,7 @@ mod tests {
     use crate::instructions::admin::{UpdateFees, UpdateKeys, UpdateSupportedTokens};
     use crate::state::{
         AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
+        UpdateOperations,
     };
     use anchor_lang::error;
     use anchor_lang::prelude::Signer;
@@ -413,14 +385,14 @@ mod tests {
                 key: *authority.key,
             };
 
-            network.update_auth_keys(&update_keys, &authority).unwrap();
+            network.apply_update(update_keys, &authority).unwrap();
             // Assert key was added
             assert_eq!(network.auth_keys, vec![original_auth_key, auth_key]);
             let update_keys = UpdateKeys {
                 add: vec![],
                 remove: vec![key_to_remove],
             };
-            network.update_auth_keys(&update_keys, &authority).unwrap();
+            network.apply_update(update_keys, &authority).unwrap();
             // Assert key was removed
             assert_eq!(network.auth_keys, vec![original_auth_key]);
         });
@@ -443,7 +415,7 @@ mod tests {
             };
 
             assert_eq!(
-                network.update_auth_keys(&update_keys, &authority),
+                network.apply_update(update_keys, &authority),
                 Err(error!(NetworkErrors::InvalidKey))
             );
         });
@@ -470,7 +442,7 @@ mod tests {
                 remove: vec![],
             };
 
-            network.update_auth_keys(&update_keys, &authority).unwrap();
+            network.apply_update(update_keys, &authority).unwrap();
             assert_eq!(network.auth_keys[1].flags, auth_key.flags);
             let auth_key_2 = AuthKey {
                 key: new_auth_key,
@@ -480,7 +452,7 @@ mod tests {
                 add: vec![auth_key_2],
                 remove: vec![],
             };
-            network.update_auth_keys(&update_keys, &authority).unwrap();
+            network.apply_update(update_keys, &authority).unwrap();
             assert_eq!(network.auth_keys[1].flags, auth_key_2.flags);
         });
     }
@@ -504,7 +476,7 @@ mod tests {
                 }],
                 remove: vec![],
             };
-            network.update_auth_keys(&update_keys, &authority).unwrap();
+            network.apply_update(update_keys, &authority).unwrap();
             let expected_fee = NetworkFeesPercentage {
                 token: Pubkey::new_unique(),
                 issue: 0,
@@ -516,7 +488,7 @@ mod tests {
                 add: vec![expected_fee],
                 remove: vec![],
             };
-            network.update_fees(&update_fees).unwrap();
+            network.apply_update(update_fees, &authority).unwrap();
             assert_eq!(network.fees, vec![expected_fee]);
 
             let update_fees = UpdateFees {
@@ -524,62 +496,66 @@ mod tests {
                 remove: vec![expected_fee.token],
             };
 
-            network.update_fees(&update_fees).unwrap();
+            network.apply_update(update_fees, &authority).unwrap();
             assert_eq!(network.fees, vec![]);
         });
     }
 
     #[test]
     fn test_update_supported_tokens_remove_token() {
-        // Assemble
-        let mut network = make_network(None, None, vec![], NetworkKeyFlags::empty());
+        with_signer(|authority| {
+            // Assemble
+            let mut network = make_network(None, None, vec![], NetworkKeyFlags::empty());
 
-        let new_token = SupportedToken {
-            key: Pubkey::new_unique(),
-        };
+            let new_token = SupportedToken {
+                key: Pubkey::new_unique(),
+            };
 
-        let update_tokens = UpdateSupportedTokens {
-            add: vec![new_token],
-            remove: vec![],
-        };
-        network.update_supported_tokens(&update_tokens).unwrap();
+            let update_tokens = UpdateSupportedTokens {
+                add: vec![new_token],
+                remove: vec![],
+            };
+            network.apply_update(update_tokens, &authority).unwrap();
 
-        assert_eq!(network.supported_tokens, vec![new_token]);
+            assert_eq!(network.supported_tokens, vec![new_token]);
 
-        let update_tokens = UpdateSupportedTokens {
-            add: vec![],
-            remove: vec![new_token.key],
-        };
-        network.update_supported_tokens(&update_tokens).unwrap();
+            let update_tokens = UpdateSupportedTokens {
+                add: vec![],
+                remove: vec![new_token.key],
+            };
+            network.apply_update(update_tokens, &authority).unwrap();
 
-        assert_eq!(network.supported_tokens, vec![]);
+            assert_eq!(network.supported_tokens, vec![]);
+        });
     }
 
     #[test]
     fn test_update_supported_tokens_bad_token() {
-        // Assemble
-        let mut network = make_network(
-            None,
-            None,
-            vec![SupportedToken {
+        with_signer(|authority| {
+            // Assemble
+            let mut network = make_network(
+                None,
+                None,
+                vec![SupportedToken {
+                    key: Pubkey::new_unique(),
+                }],
+                NetworkKeyFlags::empty(),
+            );
+
+            let bad_token = SupportedToken {
                 key: Pubkey::new_unique(),
-            }],
-            NetworkKeyFlags::empty(),
-        );
+            };
 
-        let bad_token = SupportedToken {
-            key: Pubkey::new_unique(),
-        };
+            let update_tokens = UpdateSupportedTokens {
+                add: vec![],
+                remove: vec![bad_token.key],
+            };
 
-        let update_tokens = UpdateSupportedTokens {
-            add: vec![],
-            remove: vec![bad_token.key],
-        };
-
-        assert_eq!(
-            network.update_supported_tokens(&update_tokens),
-            Err(error!(NetworkErrors::InsufficientAccessAuthKeys))
-        );
+            assert_eq!(
+                network.apply_update(update_tokens, &authority),
+                Err(error!(NetworkErrors::InsufficientAccessAuthKeys))
+            );
+        });
     }
 
     #[test]

@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::constants::GATEKEEPER_SEED;
 use crate::errors::GatekeeperErrors;
+use crate::state::UpdateOperations;
 use crate::state::{Gatekeeper, GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags};
 
 // Runs all the update methods on the passed-in gatekeeper
@@ -13,8 +14,8 @@ pub fn update_gatekeeper(
     let authority = &mut ctx.accounts.authority;
     let staking_account = &mut ctx.accounts.staking_account;
 
-    gatekeeper.add_and_remove_auth_keys(&data.auth_keys, authority)?;
-    gatekeeper.add_and_remove_fees(&data.token_fees)?;
+    gatekeeper.apply_update(data.auth_keys, authority)?;
+    gatekeeper.apply_update(data.token_fees, authority)?;
     gatekeeper.set_staking_account(staking_account)?;
 
     Ok(())

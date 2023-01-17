@@ -31,7 +31,7 @@ pub mod solana_anchor_gateway {
         ctx: Context<UpdateNetworkAccount>,
         data: UpdateNetworkData,
     ) -> Result<()> {
-        instructions::admin::update_network(ctx, &data)
+        instructions::admin::update_network(ctx, data)
     }
 
     pub fn close_network(ctx: Context<CloseNetworkAccount>) -> Result<()> {

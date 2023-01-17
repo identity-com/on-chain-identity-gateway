@@ -3,9 +3,10 @@ use anchor_lang::prelude::*;
 use crate::errors::NetworkErrors;
 use crate::state::{
     AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
+    UpdateOperations,
 };
 
-pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkData) -> Result<()> {
+pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: UpdateNetworkData) -> Result<()> {
     let network = &mut ctx.accounts.network;
 
     // Only set the expire time if a new one is provided
@@ -13,10 +14,10 @@ pub fn update_network(ctx: Context<UpdateNetworkAccount>, data: &UpdateNetworkDa
         network.set_expire_time(pass_expire_time)?;
     }
 
-    network.update_auth_keys(&data.auth_keys, &ctx.accounts.authority)?;
-    network.update_fees(&data.fees)?;
+    network.apply_update(data.auth_keys, &ctx.accounts.authority)?;
+    network.apply_update(data.fees, &ctx.accounts.authority)?;
+    network.apply_update(data.supported_tokens, &ctx.accounts.authority)?;
     network.update_network_features(data.network_features)?;
-    network.update_supported_tokens(&data.supported_tokens)?;
 
     Ok(())
 }

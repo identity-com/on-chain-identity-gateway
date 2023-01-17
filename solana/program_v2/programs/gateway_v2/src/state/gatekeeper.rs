@@ -6,7 +6,8 @@ use crate::errors::GatekeeperErrors;
 use crate::instructions::network::{
     UpdateGatekeeperData, UpdateGatekeeperFees, UpdateGatekeeperKeys,
 };
-use crate::state::AuthKey;
+use crate::state::operations::UpdateOperations;
+use crate::state::{AuthKey, UpdateOperands};
 use crate::util::*;
 
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
@@ -72,94 +73,6 @@ impl Gatekeeper {
             > 0
     }
 
-    // Adds auth keys to the gatekeeper
-    pub fn add_and_remove_auth_keys(
-        &mut self,
-        data: &UpdateGatekeeperKeys,
-        authority: &Signer,
-    ) -> Result<()> {
-        // This will skip the next auth check which isn't required if there are no keys
-        if data.add.is_empty() && data.remove.is_empty() {
-            // no auth keys to add/remove
-            return Ok(());
-        }
-
-        // remove the keys if they exist
-        for key in data.remove.iter() {
-            let index: Option<usize> = self.auth_keys.iter().position(|x| x.key == *key);
-
-            if let Some(key_index) = index {
-                if self.auth_keys[key_index].key == *authority.key {
-                    // Cannot remove own key (TODO?)
-                    return Err(error!(GatekeeperErrors::InvalidKey));
-                }
-
-                self.auth_keys.remove(key_index);
-            } else {
-                return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-            }
-        }
-
-        for key in data.add.iter() {
-            let index: Option<usize> = self.auth_keys.iter().position(|x| x.key == key.key);
-
-            if let Some(key_index) = index {
-                // Don't allow updating the flag and removing AUTH key (TODO: check if other auth keys exist)
-                if self.auth_keys[key_index].key == *authority.key
-                    && !GatekeeperKeyFlags::contains(
-                        &GatekeeperKeyFlags::from_bits_truncate(key.flags),
-                        GatekeeperKeyFlags::AUTH,
-                    )
-                {
-                    return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-                }
-
-                // update the key with the new flag if it exists
-                self.auth_keys[key_index].flags = key.flags;
-            } else {
-                self.auth_keys.push(*key);
-            }
-        }
-
-        Ok(())
-    }
-
-    // Adds fees to gatekeeper
-    pub fn add_and_remove_fees(&mut self, data: &UpdateGatekeeperFees) -> Result<()> {
-        // This will skip the next auth check which isn't required if there are no fees
-        if data.add.is_empty() && data.remove.is_empty() {
-            // no fees to add/remove
-            return Ok(());
-        }
-
-        // remove the fees if they exist
-        for fee in data.remove.iter() {
-            let index: Option<usize> = self.token_fees.iter().position(|x| x.token == *fee);
-
-            if index.is_none() {
-                return Err(error!(GatekeeperErrors::InsufficientAuthKeys));
-            }
-
-            let fee_index = index.unwrap();
-
-            self.token_fees.remove(fee_index);
-        }
-
-        // Add or update fees
-        for fee in data.add.iter() {
-            let index: Option<usize> = self.token_fees.iter().position(|x| x.token == fee.token);
-
-            if let Some(fee_index) = index {
-                // update the existing key with new fees
-                self.token_fees[fee_index] = *fee;
-            } else {
-                self.token_fees.push(*fee);
-            }
-        }
-
-        Ok(())
-    }
-
     // Allows a network to set the state of the gatekeeper (Active, Frozen, Halted)
     pub fn set_gatekeeper_state(&mut self, state: &GatekeeperState) -> Result<()> {
         if *state != self.gatekeeper_state {
@@ -197,6 +110,69 @@ impl Gatekeeper {
         if staking_account.key() != self.staking_account {
             self.staking_account = staking_account.key();
         }
+        Ok(())
+    }
+}
+
+impl UpdateOperations<UpdateGatekeeperKeys, GatekeeperAuthKey> for Gatekeeper {
+    fn operands(
+        this: &mut Self,
+        operation: UpdateGatekeeperKeys,
+    ) -> UpdateOperands<GatekeeperAuthKey> {
+        UpdateOperands::new(&mut this.auth_keys, operation.remove, operation.add)
+    }
+
+    fn extract_key(container: &GatekeeperAuthKey) -> Pubkey {
+        container.key
+    }
+
+    fn missing_key_error() -> Error {
+        error!(GatekeeperErrors::InsufficientAuthKeys)
+    }
+
+    fn pre_remove_validation(key: &Pubkey, authority: &Signer) -> Result<()> {
+        if key == authority.key {
+            Err(error!(GatekeeperErrors::InvalidKey))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn pre_add_validation(container: &GatekeeperAuthKey, authority: &Signer) -> Result<()> {
+        if container.key == *authority.key
+            && !GatekeeperKeyFlags::contains(
+                &GatekeeperKeyFlags::from_bits_truncate(container.flags),
+                GatekeeperKeyFlags::AUTH,
+            )
+        {
+            Err(error!(GatekeeperErrors::InsufficientAuthKeys))
+        } else {
+            Ok(())
+        }
+    }
+}
+
+impl UpdateOperations<UpdateGatekeeperFees, GatekeeperFees> for Gatekeeper {
+    fn operands(
+        this: &mut Self,
+        operation: UpdateGatekeeperFees,
+    ) -> UpdateOperands<GatekeeperFees> {
+        UpdateOperands::new(&mut this.token_fees, operation.remove, operation.add)
+    }
+
+    fn extract_key(container: &GatekeeperFees) -> Pubkey {
+        container.token
+    }
+
+    fn missing_key_error() -> Error {
+        error!(GatekeeperErrors::InsufficientAuthKeys)
+    }
+
+    fn pre_remove_validation(_: &Pubkey, _: &Signer) -> Result<()> {
+        Ok(())
+    }
+
+    fn pre_add_validation(_: &GatekeeperFees, _: &Signer) -> Result<()> {
         Ok(())
     }
 }
@@ -369,19 +345,21 @@ mod tests {
                 GatekeeperKeyFlags::AUTH,
             );
             let new_key_pubkey = Pubkey::new_unique();
+            let expected_auth_key = GatekeeperAuthKey {
+                flags: GatekeeperKeyFlags::AUTH.bits(),
+                key: new_key_pubkey,
+            };
+
             let update_gatekeeper_fees = UpdateGatekeeperKeys {
-                add: vec![GatekeeperAuthKey {
-                    flags: GatekeeperKeyFlags::AUTH.bits(),
-                    key: new_key_pubkey,
-                }],
+                add: vec![expected_auth_key],
                 remove: vec![],
             };
             // Add key to be removed
             gatekeeper
-                .add_and_remove_auth_keys(&update_gatekeeper_fees, &authority)
+                .apply_update(update_gatekeeper_fees, &authority)
                 .unwrap();
             // Assert key was added
-            assert_eq!(gatekeeper.auth_keys[1], update_gatekeeper_fees.add[0]);
+            assert_eq!(gatekeeper.auth_keys[1], expected_auth_key);
 
             let update_gatekeeper_fees = UpdateGatekeeperKeys {
                 add: vec![],
@@ -390,7 +368,7 @@ mod tests {
 
             // Act
             gatekeeper
-                .add_and_remove_auth_keys(&update_gatekeeper_fees, &authority)
+                .apply_update(update_gatekeeper_fees, &authority)
                 .unwrap();
 
             // Assert
@@ -415,7 +393,7 @@ mod tests {
             };
 
             // Act
-            let result = gatekeeper.add_and_remove_auth_keys(&update_gatekeeper_fees, &authority);
+            let result = gatekeeper.apply_update(update_gatekeeper_fees, &authority);
 
             // Assert
             assert_eq!(result, Err(error!(GatekeeperErrors::InvalidKey)));
@@ -445,7 +423,7 @@ mod tests {
             };
 
             // Act
-            assert_eq!(gatekeeper.add_and_remove_fees(&update_fees), Ok(()));
+            assert_eq!(gatekeeper.apply_update(update_fees, &authority), Ok(()));
             assert_eq!(gatekeeper.token_fees[0], expected_fees);
 
             let update_fees = UpdateGatekeeperFees {
@@ -454,7 +432,7 @@ mod tests {
             };
 
             // Assert
-            assert_eq!(gatekeeper.add_and_remove_fees(&update_fees), Ok(()));
+            assert_eq!(gatekeeper.apply_update(update_fees, &authority), Ok(()));
             assert_eq!(gatekeeper.token_fees.len(), 0);
         });
     }
