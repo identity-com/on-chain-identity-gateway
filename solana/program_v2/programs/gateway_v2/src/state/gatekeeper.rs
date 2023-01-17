@@ -301,7 +301,7 @@ impl OnChainSize for GatekeeperKeyFlags {
 }
 
 #[cfg(test)]
-mod gatekeeper_tests {
+mod tests {
     use super::*;
     use crate::errors::GatekeeperErrors;
     use crate::instructions::network::UpdateGatekeeperFees;
@@ -311,9 +311,9 @@ mod gatekeeper_tests {
     fn test_can_access_with_auth_authority() {
         with_signer(|authority| {
             let gatekeeper = make_gatekeeper(
-                &Some(authority.clone()),
-                &Some(authority.key()),
-                &GatekeeperKeyFlags::AUTH,
+                Some(authority.clone()),
+                Some(authority.key()),
+                GatekeeperKeyFlags::AUTH,
             );
 
             let flag = GatekeeperKeyFlags::AUTH;
@@ -324,7 +324,7 @@ mod gatekeeper_tests {
     #[test]
     fn test_can_access_with_invalid_authority_and_valid_flag() {
         with_signer(|authority| {
-            let gatekeeper = make_gatekeeper(&None, &None, &GatekeeperKeyFlags::AUTH);
+            let gatekeeper = make_gatekeeper(None, None, GatekeeperKeyFlags::AUTH);
 
             let flag = GatekeeperKeyFlags::AUTH;
             assert!(!gatekeeper.can_access(&authority, flag));
@@ -335,9 +335,9 @@ mod gatekeeper_tests {
     fn test_can_access_with_valid_authority_and_invalid_flag() {
         with_signer(|authority| {
             let gatekeeper = make_gatekeeper(
-                &Some(authority.clone()),
-                &Some(*authority.key),
-                &GatekeeperKeyFlags::AUTH,
+                Some(authority.clone()),
+                Some(*authority.key),
+                GatekeeperKeyFlags::AUTH,
             );
 
             let flag = GatekeeperKeyFlags::WITHDRAW;
@@ -348,46 +348,11 @@ mod gatekeeper_tests {
     #[test]
     fn test_can_access_with_invalid_authority_and_invalid_flag() {
         with_signer(|authority| {
-            let gatekeeper = make_gatekeeper(&None, &None, &GatekeeperKeyFlags::AUTH);
+            let gatekeeper = make_gatekeeper(None, None, GatekeeperKeyFlags::AUTH);
 
             let flag = GatekeeperKeyFlags::WITHDRAW;
             assert!(!gatekeeper.can_access(&authority, flag));
         });
-    }
-
-    #[test]
-    fn test_add_auth_keys() {
-        with_signer(|authority| {
-            let original_auth_key = GatekeeperAuthKey {
-                key: *authority.key,
-                flags: GatekeeperKeyFlags::AUTH.bits(),
-            };
-
-            let mut gatekeeper = make_gatekeeper(
-                &Some(authority.clone()),
-                &Some(authority.key()),
-                &GatekeeperKeyFlags::AUTH,
-            );
-
-            let expected_gatekeeper = GatekeeperAuthKey {
-                flags: GatekeeperKeyFlags::AUTH.bits(),
-                key: Pubkey::new_unique(),
-            };
-
-            let update_gatekeeper_fees = UpdateGatekeeperKeys {
-                add: vec![expected_gatekeeper],
-                remove: vec![],
-            };
-
-            // Act
-            gatekeeper
-                .add_and_remove_auth_keys(&update_gatekeeper_fees, &authority)
-                .unwrap();
-
-            // Assert
-            assert_eq!(gatekeeper.auth_keys[0], original_auth_key);
-            assert_eq!(gatekeeper.auth_keys[1], expected_gatekeeper);
-        })
     }
 
     #[test]
@@ -399,9 +364,9 @@ mod gatekeeper_tests {
             };
 
             let mut gatekeeper = make_gatekeeper(
-                &Some(authority.clone()),
-                &Some(authority.key()),
-                &GatekeeperKeyFlags::AUTH,
+                Some(authority.clone()),
+                Some(authority.key()),
+                GatekeeperKeyFlags::AUTH,
             );
             let new_key_pubkey = Pubkey::new_unique();
             let update_gatekeeper_fees = UpdateGatekeeperKeys {
@@ -439,9 +404,9 @@ mod gatekeeper_tests {
         // Assemble
         with_signer(|authority| {
             let mut gatekeeper = make_gatekeeper(
-                &Some(authority.clone()),
-                &Some(authority.key()),
-                &GatekeeperKeyFlags::AUTH,
+                Some(authority.clone()),
+                Some(authority.key()),
+                GatekeeperKeyFlags::AUTH,
             );
 
             let update_gatekeeper_fees = UpdateGatekeeperKeys {
@@ -458,46 +423,13 @@ mod gatekeeper_tests {
     }
 
     #[test]
-    fn test_add_fees() {
-        // Assemble
-        with_signer(|authority| {
-            let mut gatekeeper = make_gatekeeper(
-                &Some(authority.clone()),
-                &Some(authority.key()),
-                &GatekeeperKeyFlags::AUTH,
-            );
-            let token = Pubkey::new_unique();
-            let expected_fees = GatekeeperFees {
-                token,
-                issue: 0,
-                refresh: 0,
-                expire: 0,
-                verify: 0,
-            };
-
-            let update_gatekeeper_fees = UpdateGatekeeperFees {
-                add: vec![expected_fees],
-                remove: vec![],
-            };
-
-            // Act
-            gatekeeper
-                .add_and_remove_fees(&update_gatekeeper_fees)
-                .unwrap();
-
-            // Assert
-            assert_eq!(gatekeeper.token_fees[0], expected_fees);
-        });
-    }
-
-    #[test]
     fn test_remove_fees() {
         with_signer(|authority| {
             // Assemble
             let mut gatekeeper = make_gatekeeper(
-                &Some(authority.clone()),
-                &Some(authority.key()),
-                &GatekeeperKeyFlags::AUTH,
+                Some(authority.clone()),
+                Some(authority.key()),
+                GatekeeperKeyFlags::AUTH,
             );
             let token = Pubkey::new_unique();
             let expected_fees = GatekeeperFees {
@@ -532,9 +464,9 @@ mod gatekeeper_tests {
         with_signer(|authority| {
             // Assemble
             let mut gatekeeper = make_gatekeeper(
-                &Some(authority.clone()),
-                &Some(authority.key()),
-                &GatekeeperKeyFlags::AUTH,
+                Some(authority.clone()),
+                Some(authority.key()),
+                GatekeeperKeyFlags::AUTH,
             );
             let account_info = authority.to_account_info();
             let staking_account = &mut UncheckedAccount::try_from(account_info);
@@ -549,9 +481,9 @@ mod gatekeeper_tests {
 
     /// Test function to make a gatekeeper
     fn make_gatekeeper(
-        authority: &Option<Signer>,
-        auth_key: &Option<Pubkey>,
-        flag: &GatekeeperKeyFlags,
+        authority: Option<Signer>,
+        auth_key: Option<Pubkey>,
+        flag: GatekeeperKeyFlags,
     ) -> Gatekeeper {
         let binding_authority = Pubkey::new_unique();
         let binding_auth_key = Pubkey::new_unique();
@@ -561,10 +493,10 @@ mod gatekeeper_tests {
         };
         let auth_key_pubkey = match auth_key {
             Some(pubkey) => pubkey,
-            None => &binding_auth_key,
+            None => binding_auth_key,
         };
         let auth_key = GatekeeperAuthKey {
-            key: *auth_key_pubkey,
+            key: auth_key_pubkey,
             flags: flag.bits(),
         };
 

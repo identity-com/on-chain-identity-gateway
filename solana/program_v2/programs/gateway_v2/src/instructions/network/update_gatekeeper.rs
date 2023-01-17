@@ -28,7 +28,10 @@ impl UpdateGatekeeperData {
 
     fn can_update_fees(&self, gatekeeper: &Gatekeeper, authority: &Signer) -> bool {
         (self.token_fees.add.is_empty() && self.token_fees.remove.is_empty())
-            || gatekeeper.can_access(authority, GatekeeperKeyFlags::ADJUST_FEES)
+            || gatekeeper.can_access(
+                authority,
+                GatekeeperKeyFlags::ADJUST_FEES | GatekeeperKeyFlags::REMOVE_FEES,
+            )
     }
 
     fn can_update_staking(&self, gatekeeper: &Gatekeeper, authority: &Signer) -> bool {
