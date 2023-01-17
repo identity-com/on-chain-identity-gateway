@@ -389,36 +389,6 @@ mod tests {
     }
 
     #[test]
-    fn test_update_auth_keys_add_key() {
-        with_signer(|authority| {
-            let mut network = make_network(
-                Some(authority.clone()),
-                Some(*authority.key),
-                vec![SupportedToken {
-                    key: Pubkey::new_unique(),
-                }],
-                NetworkKeyFlags::AUTH,
-            );
-            let auth_key = AuthKey {
-                key: Pubkey::new_unique(),
-                flags: NetworkKeyFlags::ADJUST_FEES.bits(),
-            };
-            let update_keys = UpdateKeys {
-                add: vec![auth_key],
-                remove: vec![],
-            };
-
-            network.update_auth_keys(&update_keys, &authority).unwrap();
-            assert_eq!(network.auth_keys.len(), 2);
-            assert_eq!(network.auth_keys[0].key, *authority.key);
-            assert_eq!(
-                network.auth_keys[1].flags,
-                NetworkKeyFlags::ADJUST_FEES.bits()
-            );
-        });
-    }
-
-    #[test]
     fn test_update_auth_keys_remove_key() {
         with_signer(|authority| {
             let mut network = make_network(
@@ -438,22 +408,21 @@ mod tests {
                 add: vec![auth_key],
                 remove: vec![],
             };
+            let original_auth_key = AuthKey {
+                flags: NetworkKeyFlags::AUTH.bits(),
+                key: *authority.key,
+            };
 
             network.update_auth_keys(&update_keys, &authority).unwrap();
             // Assert key was added
-            assert_eq!(network.auth_keys.len(), 2);
-            assert_eq!(
-                network.auth_keys[1].flags,
-                NetworkKeyFlags::ADJUST_FEES.bits()
-            );
+            assert_eq!(network.auth_keys, vec![original_auth_key, auth_key]);
             let update_keys = UpdateKeys {
                 add: vec![],
                 remove: vec![key_to_remove],
             };
             network.update_auth_keys(&update_keys, &authority).unwrap();
             // Assert key was removed
-            assert_eq!(network.auth_keys.len(), 1);
-            assert_eq!(network.auth_keys[0].key, *authority.key);
+            assert_eq!(network.auth_keys, vec![original_auth_key]);
         });
     }
 
@@ -477,7 +446,7 @@ mod tests {
                 network.update_auth_keys(&update_keys, &authority),
                 Err(error!(NetworkErrors::InvalidKey))
             );
-        })
+        });
     }
 
     #[test]
@@ -500,8 +469,8 @@ mod tests {
                 add: vec![auth_key],
                 remove: vec![],
             };
-            network.update_auth_keys(&update_keys, &authority).unwrap();
 
+            network.update_auth_keys(&update_keys, &authority).unwrap();
             assert_eq!(
                 network.auth_keys[1].flags,
                 NetworkKeyFlags::SET_FEATURES.bits()
@@ -519,34 +488,6 @@ mod tests {
                 network.auth_keys[1].flags,
                 NetworkKeyFlags::ADJUST_FEES.bits()
             );
-        })
-    }
-
-    #[test]
-    fn test_update_fees_add_fee() {
-        with_signer(|authority| {
-            let mut network = make_network(
-                Some(authority.clone()),
-                Some(*authority.key),
-                vec![SupportedToken {
-                    key: Pubkey::new_unique(),
-                }],
-                NetworkKeyFlags::AUTH,
-            );
-            let expected_fee = NetworkFeesPercentage {
-                token: Pubkey::new_unique(),
-                issue: 0,
-                refresh: 0,
-                expire: 0,
-                verify: 0,
-            };
-            let update_fees = UpdateFees {
-                add: vec![expected_fee],
-                remove: vec![],
-            };
-            network.update_fees(&update_fees).unwrap();
-            assert_eq!(network.fees.len(), 1);
-            assert_eq!(network.fees[0], expected_fee);
         });
     }
 
@@ -582,8 +523,7 @@ mod tests {
                 remove: vec![],
             };
             network.update_fees(&update_fees).unwrap();
-            assert_eq!(network.fees.len(), 1);
-            assert_eq!(network.fees[0], expected_fee);
+            assert_eq!(network.fees, vec![expected_fee]);
 
             let update_fees = UpdateFees {
                 add: vec![],
@@ -591,50 +531,14 @@ mod tests {
             };
 
             network.update_fees(&update_fees).unwrap();
-            assert_eq!(network.fees.len(), 0);
+            assert_eq!(network.fees, vec![]);
         });
-    }
-
-    #[test]
-    fn test_update_supported_tokens_add_token() {
-        // Assemble
-        let mut network = make_network(
-            None,
-            None,
-            vec![SupportedToken {
-                key: Pubkey::new_unique(),
-            }],
-            NetworkKeyFlags::empty(),
-        );
-
-        let new_token = SupportedToken {
-            key: Pubkey::new_unique(),
-        };
-
-        let update_tokens = UpdateSupportedTokens {
-            add: vec![new_token],
-            remove: vec![],
-        };
-
-        // Act
-        network.update_supported_tokens(&update_tokens).unwrap();
-
-        // Assert
-        assert_eq!(network.supported_tokens.len(), 2);
-        assert_eq!(network.supported_tokens[1], new_token);
     }
 
     #[test]
     fn test_update_supported_tokens_remove_token() {
         // Assemble
-        let mut network = make_network(
-            None,
-            None,
-            vec![SupportedToken {
-                key: Pubkey::new_unique(),
-            }],
-            NetworkKeyFlags::empty(),
-        );
+        let mut network = make_network(None, None, vec![], NetworkKeyFlags::empty());
 
         let new_token = SupportedToken {
             key: Pubkey::new_unique(),
@@ -646,8 +550,7 @@ mod tests {
         };
         network.update_supported_tokens(&update_tokens).unwrap();
 
-        assert_eq!(network.supported_tokens.len(), 2);
-        assert_eq!(network.supported_tokens[1], new_token);
+        assert_eq!(network.supported_tokens, vec![new_token]);
 
         let update_tokens = UpdateSupportedTokens {
             add: vec![],
@@ -655,7 +558,7 @@ mod tests {
         };
         network.update_supported_tokens(&update_tokens).unwrap();
 
-        assert_eq!(network.supported_tokens.len(), 1);
+        assert_eq!(network.supported_tokens, vec![]);
     }
 
     #[test]
@@ -703,7 +606,7 @@ mod tests {
     }
 
     #[test]
-    fn test_is_closeable_with_gatekeeper() {
+    fn test_is_closeable_not_with_gatekeeper_present() {
         // Assemble
         let mut network = make_network(
             None,
