@@ -35,7 +35,7 @@ pub struct GatekeeperNetwork {
     // pub network_features_data: Vec<u8>
 }
 
-#[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize)]
+#[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize, PartialEq)]
 pub struct SupportedToken {
     key: Pubkey,
 }
@@ -270,4 +270,407 @@ bitflags! {
 }
 impl OnChainSize for NetworkKeyFlags {
     const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::errors::NetworkErrors;
+    use crate::instructions::admin::{UpdateFees, UpdateKeys, UpdateSupportedTokens};
+    use crate::state::{
+        AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
+    };
+    use anchor_lang::error;
+    use anchor_lang::prelude::Signer;
+    use solana_program::account_info::AccountInfo;
+    use solana_program::clock::Epoch;
+    use solana_program::pubkey::Pubkey;
+
+    #[test]
+    fn test_can_access_auth_key_with_same_authority() {
+        with_signer(|authority| {
+            let network = make_network(
+                Some(authority.clone()),
+                Some(*authority.key),
+                vec![SupportedToken {
+                    key: Pubkey::new_unique(),
+                }],
+                NetworkKeyFlags::AUTH,
+            );
+
+            assert!(network.can_access(&authority, NetworkKeyFlags::AUTH));
+        });
+    }
+
+    #[test]
+    fn test_can_access_valid_auth_key_with_valid_flag() {
+        with_signer(|authority| {
+            let network = make_network(
+                Some(authority.clone()),
+                Some(*authority.key),
+                vec![SupportedToken {
+                    key: Pubkey::new_unique(),
+                }],
+                NetworkKeyFlags::AUTH,
+            );
+
+            assert!(network.can_access(&authority, NetworkKeyFlags::AUTH));
+        });
+    }
+
+    #[test]
+    fn test_can_access_valid_auth_key_with_invalid_flag() {
+        with_signer(|authority| {
+            let network = make_network(
+                None,
+                Some(*authority.key),
+                vec![SupportedToken {
+                    key: Pubkey::new_unique(),
+                }],
+                NetworkKeyFlags::AUTH,
+            );
+
+            assert!(!network.can_access(&authority, NetworkKeyFlags::SET_FEATURES));
+        });
+    }
+
+    #[test]
+    fn test_can_access_invalid_auth_key_with_valid_flag() {
+        with_signer(|authority| {
+            let network = make_network(
+                None,
+                None,
+                vec![SupportedToken {
+                    key: Pubkey::new_unique(),
+                }],
+                NetworkKeyFlags::AUTH,
+            );
+
+            assert!(!network.can_access(&authority, NetworkKeyFlags::AUTH));
+        });
+    }
+
+    #[test]
+    fn test_is_token_supported_valid_token() {
+        let token = Pubkey::new_unique();
+        let network = make_network(
+            None,
+            None,
+            vec![SupportedToken { key: token }],
+            NetworkKeyFlags::AUTH,
+        );
+        assert!(network.is_token_supported(&token));
+    }
+
+    #[test]
+    fn test_is_token_supported_invalid_token() {
+        let token = Pubkey::new_unique();
+        let network = make_network(
+            None,
+            None,
+            vec![SupportedToken { key: token }],
+            NetworkKeyFlags::AUTH,
+        );
+        assert!(!network.is_token_supported(&Pubkey::new_unique()));
+    }
+
+    #[test]
+    fn test_set_expire_time() {
+        let mut network = make_network(
+            None,
+            None,
+            vec![SupportedToken {
+                key: Pubkey::new_unique(),
+            }],
+            NetworkKeyFlags::AUTH,
+        );
+        assert_eq!(network.pass_expire_time, 0);
+        network.set_expire_time(100).unwrap();
+        assert_eq!(network.pass_expire_time, 100);
+    }
+
+    #[test]
+    fn test_update_auth_keys_remove_key() {
+        with_signer(|authority| {
+            let mut network = make_network(
+                Some(authority.clone()),
+                Some(*authority.key),
+                vec![SupportedToken {
+                    key: Pubkey::new_unique(),
+                }],
+                NetworkKeyFlags::AUTH,
+            );
+            let key_to_remove = Pubkey::new_unique();
+            let auth_key = AuthKey {
+                key: key_to_remove,
+                flags: NetworkKeyFlags::ADJUST_FEES.bits(),
+            };
+            let update_keys = UpdateKeys {
+                add: vec![auth_key],
+                remove: vec![],
+            };
+            let original_auth_key = AuthKey {
+                flags: NetworkKeyFlags::AUTH.bits(),
+                key: *authority.key,
+            };
+
+            network.update_auth_keys(&update_keys, &authority).unwrap();
+            // Assert key was added
+            assert_eq!(network.auth_keys, vec![original_auth_key, auth_key]);
+            let update_keys = UpdateKeys {
+                add: vec![],
+                remove: vec![key_to_remove],
+            };
+            network.update_auth_keys(&update_keys, &authority).unwrap();
+            // Assert key was removed
+            assert_eq!(network.auth_keys, vec![original_auth_key]);
+        });
+    }
+
+    #[test]
+    fn test_update_auth_keys_remove_last_key() {
+        with_signer(|authority| {
+            let mut network = make_network(
+                Some(authority.clone()),
+                Some(*authority.key),
+                vec![SupportedToken {
+                    key: Pubkey::new_unique(),
+                }],
+                NetworkKeyFlags::AUTH,
+            );
+            let update_keys = UpdateKeys {
+                add: vec![],
+                remove: vec![*authority.key],
+            };
+
+            assert_eq!(
+                network.update_auth_keys(&update_keys, &authority),
+                Err(error!(NetworkErrors::InvalidKey))
+            );
+        });
+    }
+
+    #[test]
+    fn test_update_auth_keys_change_flag() {
+        with_signer(|authority| {
+            let mut network = make_network(
+                Some(authority.clone()),
+                Some(*authority.key),
+                vec![SupportedToken {
+                    key: Pubkey::new_unique(),
+                }],
+                NetworkKeyFlags::AUTH,
+            );
+            let new_auth_key = Pubkey::new_unique();
+            let auth_key = AuthKey {
+                key: new_auth_key,
+                flags: NetworkKeyFlags::SET_FEATURES.bits(),
+            };
+            let update_keys = UpdateKeys {
+                add: vec![auth_key],
+                remove: vec![],
+            };
+
+            network.update_auth_keys(&update_keys, &authority).unwrap();
+            assert_eq!(network.auth_keys[1].flags, auth_key.flags);
+            let auth_key_2 = AuthKey {
+                key: new_auth_key,
+                flags: NetworkKeyFlags::ADJUST_FEES.bits(),
+            };
+            let update_keys = UpdateKeys {
+                add: vec![auth_key_2],
+                remove: vec![],
+            };
+            network.update_auth_keys(&update_keys, &authority).unwrap();
+            assert_eq!(network.auth_keys[1].flags, auth_key_2.flags);
+        });
+    }
+
+    #[test]
+    fn test_update_fees_remove_fee() {
+        with_signer(|authority| {
+            let mut network = make_network(
+                Some(authority.clone()),
+                Some(*authority.key),
+                vec![SupportedToken {
+                    key: Pubkey::new_unique(),
+                }],
+                NetworkKeyFlags::AUTH,
+            );
+            let new_auth_key = Pubkey::new_unique();
+            let update_keys = UpdateKeys {
+                add: vec![AuthKey {
+                    key: new_auth_key,
+                    flags: NetworkKeyFlags::ADJUST_FEES.bits(),
+                }],
+                remove: vec![],
+            };
+            network.update_auth_keys(&update_keys, &authority).unwrap();
+            let expected_fee = NetworkFeesPercentage {
+                token: Pubkey::new_unique(),
+                issue: 0,
+                refresh: 0,
+                expire: 0,
+                verify: 0,
+            };
+            let update_fees = UpdateFees {
+                add: vec![expected_fee],
+                remove: vec![],
+            };
+            network.update_fees(&update_fees).unwrap();
+            assert_eq!(network.fees, vec![expected_fee]);
+
+            let update_fees = UpdateFees {
+                add: vec![],
+                remove: vec![expected_fee.token],
+            };
+
+            network.update_fees(&update_fees).unwrap();
+            assert_eq!(network.fees, vec![]);
+        });
+    }
+
+    #[test]
+    fn test_update_supported_tokens_remove_token() {
+        // Assemble
+        let mut network = make_network(None, None, vec![], NetworkKeyFlags::empty());
+
+        let new_token = SupportedToken {
+            key: Pubkey::new_unique(),
+        };
+
+        let update_tokens = UpdateSupportedTokens {
+            add: vec![new_token],
+            remove: vec![],
+        };
+        network.update_supported_tokens(&update_tokens).unwrap();
+
+        assert_eq!(network.supported_tokens, vec![new_token]);
+
+        let update_tokens = UpdateSupportedTokens {
+            add: vec![],
+            remove: vec![new_token.key],
+        };
+        network.update_supported_tokens(&update_tokens).unwrap();
+
+        assert_eq!(network.supported_tokens, vec![]);
+    }
+
+    #[test]
+    fn test_update_supported_tokens_bad_token() {
+        // Assemble
+        let mut network = make_network(
+            None,
+            None,
+            vec![SupportedToken {
+                key: Pubkey::new_unique(),
+            }],
+            NetworkKeyFlags::empty(),
+        );
+
+        let bad_token = SupportedToken {
+            key: Pubkey::new_unique(),
+        };
+
+        let update_tokens = UpdateSupportedTokens {
+            add: vec![],
+            remove: vec![bad_token.key],
+        };
+
+        assert_eq!(
+            network.update_supported_tokens(&update_tokens),
+            Err(error!(NetworkErrors::InsufficientAccessAuthKeys))
+        );
+    }
+
+    #[test]
+    fn test_is_closeable() {
+        // Assemble
+        let network = make_network(
+            None,
+            None,
+            vec![SupportedToken {
+                key: Pubkey::new_unique(),
+            }],
+            NetworkKeyFlags::empty(),
+        );
+
+        // Act
+        // Assert
+        assert!(network.is_closeable());
+    }
+
+    #[test]
+    fn test_is_closeable_not_with_gatekeeper_present() {
+        // Assemble
+        let mut network = make_network(
+            None,
+            None,
+            vec![SupportedToken {
+                key: Pubkey::new_unique(),
+            }],
+            NetworkKeyFlags::empty(),
+        );
+
+        network.gatekeepers = vec![Pubkey::new_unique()];
+
+        // Act
+        // Assert
+        assert!(!network.is_closeable());
+    }
+
+    fn make_network(
+        authority: Option<Signer>,
+        auth_key: Option<Pubkey>,
+        supported_tokens: Vec<SupportedToken>,
+        flag: NetworkKeyFlags,
+    ) -> GatekeeperNetwork {
+        let binding_authority = Pubkey::new_unique();
+        let binding_auth_key = Pubkey::new_unique();
+        let authority_pubkey = match authority {
+            Some(signer) => signer.key,
+            None => &binding_authority,
+        };
+        let auth_key_pubkey = match auth_key {
+            Some(pubkey) => pubkey,
+            None => binding_auth_key,
+        };
+        let auth_key = AuthKey {
+            key: auth_key_pubkey,
+            flags: flag.bits(),
+        };
+
+        GatekeeperNetwork {
+            version: 0,
+            authority: *authority_pubkey,
+            network_index: 0,
+            pass_expire_time: 0,
+            network_features: 0,
+            fees: vec![],
+            supported_tokens,
+            gatekeepers: vec![],
+            auth_threshold: 0,
+            auth_keys: vec![auth_key],
+        }
+    }
+
+    /// Test function to return a signer
+    fn with_signer(fnc: fn(Signer) -> ()) {
+        let key = Pubkey::new_unique();
+        let owner = Pubkey::new_unique();
+        let mut data = vec![1, 2, 3];
+        let mut lamports = 0;
+        let account_info = AccountInfo::new(
+            &key,
+            true,
+            true,
+            &mut lamports,
+            &mut data,
+            &owner,
+            false,
+            Epoch::default(),
+        );
+
+        let authority: Signer = Signer::try_from(&account_info).unwrap();
+        fnc(authority);
+    }
 }
