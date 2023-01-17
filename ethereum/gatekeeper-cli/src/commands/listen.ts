@@ -10,14 +10,12 @@ import {TokenState} from '@identity.com/gateway-eth-ts'
 import {BigNumber} from '@ethersproject/bignumber'
 
 export default class GetToken extends Command {
-  static description = 'Get existing gateway token';
+  static description = 'Listen to changes on a gateway token';
 
   static examples = [
-    `$ gateway-eth get 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+    `$ gateway-eth listen 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 		`,
   ];
-
-  static aliases = ['verify'];
 
   static flags = {
     help: Flags.help({char: 'h'}),
@@ -38,25 +36,25 @@ export default class GetToken extends Command {
 
     const gateway = await makeGatewayTs(parsedFlags)
 
-    const token = await gateway.getToken(
-      ownerAddress, parsedFlags.gatekeeperNetwork,
+    gateway.onGatewayTokenChange(
+      ownerAddress, parsedFlags.gatekeeperNetwork, token => {
+        if (token) {
+          this.log('Token:', {
+            owner: token.owner,
+            state: TokenState[token.state],
+            tokenId: token.tokenId.toString(),
+            expiration: new Date(
+              BigNumber
+              .from(token.expiration)
+              .mul(BigNumber.from(1000))
+              .toNumber(),
+            ).toISOString(),
+            bitmask: token.bitmask.toString(),
+          })
+        } else {
+          this.log('Token not found')
+        }
+      },
     )
-
-    if (token) {
-      this.log('Token:', {
-        owner: token.owner,
-        state: TokenState[token.state],
-        tokenId: token.tokenId.toString(),
-        expiration: new Date(
-          BigNumber
-          .from(token.expiration)
-          .mul(BigNumber.from(1000))
-          .toNumber(),
-        ).toISOString(),
-        bitmask: token.bitmask.toString(),
-      })
-    } else {
-      this.log('Token not found')
-    }
   }
 }

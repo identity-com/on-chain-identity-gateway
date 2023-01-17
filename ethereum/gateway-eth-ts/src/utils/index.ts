@@ -1,3 +1,6 @@
+import { Wallet } from "@ethersproject/wallet";
+import { Provider } from "@ethersproject/providers";
+
 export {
   onGatewayTokenChange,
   removeGatewayTokenChangeListener,

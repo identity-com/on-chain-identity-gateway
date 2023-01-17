@@ -9,6 +9,7 @@ import {
   TokenState,
 } from "../utils/types";
 import { NULL_CHARGE } from "../utils/charge";
+import { NULL_ADDRESS } from "../utils/constants";
 
 /**
  * The main API of the Ethereum Gateway client library.
@@ -49,20 +50,55 @@ export class GatewayTsInternal<
     return tokenIds[0];
   }
 
+  createNetwork(
+    name: string,
+    network: bigint,
+    daoGoverned: boolean,
+    daoManager?: string
+  ): Promise<O> {
+    return this.gatewayTokenContract.createNetwork(
+      network,
+      name,
+      daoGoverned,
+      daoManager || NULL_ADDRESS,
+      this.options
+    );
+  }
+
+  renameNetwork(name: string, network: bigint): Promise<O> {
+    return this.gatewayTokenContract.renameNetwork(network, name, this.options);
+  }
+
   addGatekeeper(gatekeeper: string, network: bigint): Promise<O> {
-    return this.gatewayTokenContract.addGatekeeper(gatekeeper, network);
+    return this.gatewayTokenContract.addGatekeeper(
+      gatekeeper,
+      network,
+      this.options
+    );
   }
 
   removeGatekeeper(gatekeeper: string, network: bigint): Promise<O> {
-    return this.gatewayTokenContract.removeGatekeeper(gatekeeper, network);
+    return this.gatewayTokenContract.removeGatekeeper(
+      gatekeeper,
+      network,
+      this.options
+    );
   }
 
   addNetworkAuthority(authority: string, network: bigint): Promise<O> {
-    return this.gatewayTokenContract.addNetworkAuthority(authority, network);
+    return this.gatewayTokenContract.addNetworkAuthority(
+      authority,
+      network,
+      this.options
+    );
   }
 
   removeNetworkAuthority(authority: string, network: bigint): Promise<O> {
-    return this.gatewayTokenContract.removeNetworkAuthority(authority, network);
+    return this.gatewayTokenContract.removeNetworkAuthority(
+      authority,
+      network,
+      this.options
+    );
   }
 
   issue(

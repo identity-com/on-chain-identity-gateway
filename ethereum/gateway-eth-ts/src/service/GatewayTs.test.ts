@@ -139,4 +139,30 @@ describe("GatewayTS", function () {
 
     assert.equal(BigNumber.from(token.expiration).gt(originalExpiry), true);
   });
+
+  it("Test subscribe", async () => {
+    const token = await gateway.getToken(
+      sampleWalletAddress,
+      gatekeeperNetwork
+    );
+
+    let resolvePromiseCallback: (gatewayToken: TokenData) => void;
+    const resolvedPromise = new Promise<TokenData>((resolve) => {
+      resolvePromiseCallback = (gatewayToken) => resolve(gatewayToken);
+    });
+
+    const subscription = gateway.onGatewayTokenChange(
+      sampleWalletAddress,
+      gatekeeperNetwork,
+      resolvePromiseCallback
+    );
+
+    await gateway.refresh(sampleWalletAddress, gatekeeperNetwork, 1000);
+
+    const updatedToken = await resolvedPromise.finally(
+      subscription.unsubscribe
+    );
+
+    assert.equal(updatedToken.tokenId.toString(), token.tokenId.toString());
+  });
 });

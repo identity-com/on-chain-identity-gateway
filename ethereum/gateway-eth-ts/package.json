@@ -1,13 +1,14 @@
 {
   "name": "@identity.com/gateway-eth-ts",
-  "version": "0.3.0-alpha.2",
+  "version": "0.3.0-alpha.4",
   "description": "Adapter library for Identity.com gateway token system on Ethereum",
   "main": "dist/index.js",
   "scripts": {
     "prebuild": "rm -rf dist && yarn copy-contracts",
     "compile": "tsc",
+    "doc": "yarn typedoc src/index.ts --readme none --excludeNotDocumented",
     "lint": "eslint src/ --ext .ts",
-    "build": "yarn tsc",
+    "build": "yarn compile && yarn doc",
     "pretest": "cd ../smart-contract && (yarn local &) && sleep 10",
     "test": "ts-mocha src/*.test.ts src/**/*.test.ts",
     "copy-contracts": "cp -r ../smart-contract/build/contracts/* src/contracts/abi/ && cp -r ../smart-contract/typechain-types src/contracts"
@@ -35,6 +36,7 @@
     "bignumber.js": "^9.0.1",
     "debug": "^4.3.4",
     "eth-sig-util": "2.1.1",
+    "ethers": "^5.7.2",
     "gas-price-oracle": "^0.3.3",
     "ramda": "^0.28.0"
   },
@@ -58,6 +60,7 @@
     "ts-mocha": "^8.0.0",
     "ts-node": "^10.1.0",
     "tslib": "^2.3.0",
+    "typedoc": "^0.23.24",
     "typescript": "^4.3.5"
   },
   "engines": {

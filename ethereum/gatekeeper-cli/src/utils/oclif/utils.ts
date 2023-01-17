@@ -9,9 +9,7 @@ export const makeGatewayTs = async ({
   fees,
 }: { provider: Provider, privateKey?: string, gatewayTokenAddress: string, fees?: GetTxGasParamsRes }):Promise<GatewayTs> => {
   const signer = privateKey ? getSigner(privateKey, provider) : undefined
-  const network = await provider.getNetwork()
-  console.log('network', network)
-  return new GatewayTs(signer || provider, network, gatewayTokenAddress, {...fees})
+  return new GatewayTs(signer || provider, gatewayTokenAddress, {...fees})
 }
 
 export const checkedGetToken = async (

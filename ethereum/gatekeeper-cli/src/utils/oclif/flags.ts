@@ -8,10 +8,17 @@ import {DEFAULT_GATEWAY_TOKEN_ADDRESS} from '@identity.com/gateway-eth-ts'
 import {GetTxGasParamsRes} from 'gas-price-oracle'
 import {BigNumber} from '@ethersproject/bignumber'
 
+// 0x34bb5808d46a21AaeBf7C1300Ef17213Fe215B91
+const DEFAULT_NETWORK_AUTHORITY_PRIVATE_KEY = '0xf1ddf80d2b5d038bc2ab7ae9a26e017d2252218dc687ab72d45f84bfbee2957d'
+// The test GKN: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf
+export const DEFAULT_GATEKEEPER_NETWORK = 1
+
 export const privateKeyFlag = Flags.custom<string>({
   char: 'p',
   name: 'privateKey',
   env: 'PRIVATE_KEY',
+  // Use this key as the default gatekeeper in the test GKN (gkn ID 1)
+  default: DEFAULT_NETWORK_AUTHORITY_PRIVATE_KEY,
   parse: async (input: string) => input,
   description: 'The ethereum address private key for signing messages (or set PRIVATE_KEY environment variable)',
 })
@@ -28,22 +35,22 @@ export const gatewayTokenAddressFlag = Flags.custom<string>({
   description: 'GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS environment variable)',
 })
 
-export const networkFlag = Flags.custom<BaseProvider>({
-  char: 'c',  // matches "cluster" in solana-gatekeeper-cli
-  env: 'GTS_DEFAULT_NETWORK',
+export const chainFlag = Flags.custom<BaseProvider>({
+  char: 'c',
+  env: 'DEFAULT_CHAIN',
   parse: async (input: string) => getProvider(input),
   default: async () => getProvider('mainnet'),
   options: Object.keys(networks),
-  description: 'Specify target network to work with (or set GTS_DEFAULT_NETWORK environment variable)',
+  description: 'Specify target chain to work with (or set DEFAULT_CHAIN environment variable)',
 })
 
 export const gatekeeperNetworkFlag = Flags.custom<number>({
   char: 'n',
   name: 'gatekeeper-network',
   parse: async (input: string) => Number(input),
-  default: 1,
+  default: DEFAULT_GATEKEEPER_NETWORK,
   description:
-      'Gatekeeper network. Defaults to 1',
+      'Gatekeeper network. Defaults to the test Gatekeeper Network',
 })
 
 export const feesFlag = Flags.custom<GetTxGasParamsRes>({
@@ -72,14 +79,14 @@ export const bitmaskFlag = Flags.custom<BigNumber>({
 })
 
 type Flags = {
-  network: Provider | undefined
+  chain: Provider | undefined
   gatewayTokenAddress: string | undefined
   gatekeeperNetwork: number | undefined
   fees?: GetTxGasParamsRes | undefined
 };
 export const parseFlags = (flags: Flags) => {
   // These all have defaults and can therefore be safely cast
-  const provider = flags.network as Provider
+  const provider = flags.chain as Provider
   const gatewayTokenAddress = flags.gatewayTokenAddress as string
   const gatekeeperNetwork = BigInt(flags.gatekeeperNetwork as number)
 

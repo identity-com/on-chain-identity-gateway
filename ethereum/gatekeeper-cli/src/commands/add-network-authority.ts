@@ -5,7 +5,7 @@ import {
   confirmationsFlag,
   feesFlag, gatekeeperNetworkFlag,
   gatewayTokenAddressFlag,
-  networkFlag, parseFlagsWithPrivateKey,
+  chainFlag, parseFlagsWithPrivateKey,
   privateKeyFlag,
 } from '../utils/oclif/flags'
 import {addressArg} from '../utils/oclif/args'
@@ -23,7 +23,7 @@ export default class AddNetworkAuthority extends Command {
     privateKey: privateKeyFlag(),
     gatewayTokenAddress: gatewayTokenAddressFlag(),
     gatekeeperNetwork: gatekeeperNetworkFlag(),
-    network: networkFlag(),
+    chain: chainFlag(),
     fees: feesFlag(),
     confirmations: confirmationsFlag(),
   };

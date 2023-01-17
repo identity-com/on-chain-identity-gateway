@@ -9,12 +9,18 @@ import { GatewayTsInternal } from "./GatewayTsInternal";
 import { GatewayTsForwarder } from "./GatewayTsForwarder";
 import { Wallet } from "@ethersproject/wallet";
 import { ContractTransaction, Overrides } from "@ethersproject/contracts";
+import {
+  onGatewayTokenChange,
+  removeGatewayTokenChangeListener,
+  TokenData,
+} from "../utils";
+import { asProvider } from "../utils/provider";
 
 export class GatewayTs extends GatewayTsInternal<
   GatewayToken,
   ContractTransaction
 > {
-  private providerOrWallet: Provider | Wallet;
+  readonly providerOrWallet: Provider | Wallet;
 
   constructor(
     // ethers.js requires a Wallet instead of Signer for the _signTypedData function, until v6
@@ -43,5 +49,18 @@ export class GatewayTs extends GatewayTsInternal<
       forwarderContract,
       this.options
     );
+  }
+
+  public onGatewayTokenChange(
+    owner: string,
+    network: bigint,
+    callback: (gatewayToken: TokenData) => void
+  ): { unsubscribe: () => void } {
+    const subscription = onGatewayTokenChange(owner, network, this, callback);
+    return {
+      unsubscribe: () => {
+        removeGatewayTokenChangeListener(subscription);
+      },
+    };
   }
 }

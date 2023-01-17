@@ -2,7 +2,7 @@ import {
   confirmationsFlag,
   feesFlag, gatekeeperNetworkFlag,
   gatewayTokenAddressFlag,
-  networkFlag, parseFlagsWithPrivateKey,
+  chainFlag, parseFlagsWithPrivateKey,
   privateKeyFlag,
 } from '../utils/oclif/flags'
 import {Command, Flags} from '@oclif/core'
@@ -22,7 +22,7 @@ export default class BurnToken extends Command {
     privateKey: privateKeyFlag(),
     gatewayTokenAddress: gatewayTokenAddressFlag(),
     gatekeeperNetwork: gatekeeperNetworkFlag(),
-    network: networkFlag(),
+    chain: chainFlag(),
     fees: feesFlag(),
     confirmations: confirmationsFlag(),
   };
