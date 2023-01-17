@@ -471,10 +471,7 @@ mod tests {
             };
 
             network.update_auth_keys(&update_keys, &authority).unwrap();
-            assert_eq!(
-                network.auth_keys[1].flags,
-                NetworkKeyFlags::SET_FEATURES.bits()
-            );
+            assert_eq!(network.auth_keys[1].flags, auth_key.flags);
             let auth_key_2 = AuthKey {
                 key: new_auth_key,
                 flags: NetworkKeyFlags::ADJUST_FEES.bits(),
@@ -484,10 +481,7 @@ mod tests {
                 remove: vec![],
             };
             network.update_auth_keys(&update_keys, &authority).unwrap();
-            assert_eq!(
-                network.auth_keys[1].flags,
-                NetworkKeyFlags::ADJUST_FEES.bits()
-            );
+            assert_eq!(network.auth_keys[1].flags, auth_key_2.flags);
         });
     }
 
