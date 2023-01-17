@@ -309,378 +309,242 @@ mod gatekeeper_tests {
 
     #[test]
     fn test_can_access_with_auth_authority() {
-        let key = &Pubkey::new_unique();
-        let owner = &Pubkey::new_unique();
-        let data = &mut vec![1, 2, 3];
-        let lamports = &mut 0;
-        let account_info = AccountInfo::new(
-            key,
-            true,
-            true,
-            lamports,
-            data,
-            owner,
-            false,
-            Epoch::default(),
-        );
+        with_signer(|authority| {
+            let gatekeeper = make_gatekeeper(
+                &Some(authority.clone()),
+                &Some(authority.key()),
+                &GatekeeperKeyFlags::AUTH,
+            );
 
-        let authority = Signer::try_from(&account_info).unwrap();
-
-        let gatekeeper = make_gatekeeper(
-            &Some(authority.clone()),
-            &Some(authority.key()),
-            &GatekeeperKeyFlags::AUTH,
-        );
-
-        let flag = GatekeeperKeyFlags::AUTH;
-        assert!(gatekeeper.can_access(&authority, flag));
+            let flag = GatekeeperKeyFlags::AUTH;
+            assert!(gatekeeper.can_access(&authority, flag));
+        });
     }
 
     #[test]
     fn test_can_access_with_invalid_authority_and_valid_flag() {
-        let key = &Pubkey::new_unique();
-        let owner = &Pubkey::new_unique();
-        let data = &mut vec![1, 2, 3];
-        let lamports = &mut 0;
-        let account_info = AccountInfo::new(
-            key,
-            true,
-            true,
-            lamports,
-            data,
-            owner,
-            false,
-            Epoch::default(),
-        );
-        let authority = Signer::try_from(&account_info).unwrap();
+        with_signer(|authority| {
+            let gatekeeper = make_gatekeeper(&None, &None, &GatekeeperKeyFlags::AUTH);
 
-        let gatekeeper = make_gatekeeper(&None, &None, &GatekeeperKeyFlags::AUTH);
-
-        let flag = GatekeeperKeyFlags::AUTH;
-        assert!(!gatekeeper.can_access(&authority, flag));
+            let flag = GatekeeperKeyFlags::AUTH;
+            assert!(!gatekeeper.can_access(&authority, flag));
+        });
     }
 
     #[test]
     fn test_can_access_with_valid_authority_and_invalid_flag() {
-        let key = &Pubkey::new_unique();
-        let owner = &Pubkey::new_unique();
-        let data = &mut vec![1, 2, 3];
-        let lamports = &mut 0;
-        let account_info = AccountInfo::new(
-            key,
-            true,
-            true,
-            lamports,
-            data,
-            owner,
-            false,
-            Epoch::default(),
-        );
-        let authority = Signer::try_from(&account_info).unwrap();
+        with_signer(|authority| {
+            let gatekeeper = make_gatekeeper(
+                &Some(authority.clone()),
+                &Some(*authority.key),
+                &GatekeeperKeyFlags::AUTH,
+            );
 
-        let gatekeeper = make_gatekeeper(
-            &Some(authority.clone()),
-            &Some(*authority.key),
-            &GatekeeperKeyFlags::AUTH,
-        );
-
-        let flag = GatekeeperKeyFlags::WITHDRAW;
-        assert!(!gatekeeper.can_access(&authority, flag));
+            let flag = GatekeeperKeyFlags::WITHDRAW;
+            assert!(!gatekeeper.can_access(&authority, flag));
+        });
     }
 
     #[test]
     fn test_can_access_with_invalid_authority_and_invalid_flag() {
-        let key = &Pubkey::new_unique();
-        let owner = &Pubkey::new_unique();
-        let data = &mut vec![1, 2, 3];
-        let lamports = &mut 0;
-        let account_info = AccountInfo::new(
-            key,
-            true,
-            true,
-            lamports,
-            data,
-            owner,
-            false,
-            Epoch::default(),
-        );
-        let authority = Signer::try_from(&account_info).unwrap();
+        with_signer(|authority| {
+            let gatekeeper = make_gatekeeper(&None, &None, &GatekeeperKeyFlags::AUTH);
 
-        let gatekeeper = make_gatekeeper(&None, &None, &GatekeeperKeyFlags::AUTH);
-
-        let flag = GatekeeperKeyFlags::WITHDRAW;
-        assert!(!gatekeeper.can_access(&authority, flag));
+            let flag = GatekeeperKeyFlags::WITHDRAW;
+            assert!(!gatekeeper.can_access(&authority, flag));
+        });
     }
 
     #[test]
     fn test_add_auth_keys() {
-        // Assemble
-        let key = &Pubkey::new_unique();
-        let owner = &Pubkey::new_unique();
-        let data = &mut vec![1, 2, 3];
-        let lamports = &mut 0;
-        let account_info = AccountInfo::new(
-            key,
-            true,
-            true,
-            lamports,
-            data,
-            owner,
-            false,
-            Epoch::default(),
-        );
-        let authority = Signer::try_from(&account_info).unwrap();
-        let original_auth_key = GatekeeperAuthKey {
-            key: *authority.key,
-            flags: GatekeeperKeyFlags::AUTH.bits(),
-        };
+        with_signer(|authority| {
+            let original_auth_key = GatekeeperAuthKey {
+                key: *authority.key,
+                flags: GatekeeperKeyFlags::AUTH.bits(),
+            };
 
-        let mut gatekeeper = make_gatekeeper(
-            &Some(authority.clone()),
-            &Some(authority.key()),
-            &GatekeeperKeyFlags::AUTH,
-        );
+            let mut gatekeeper = make_gatekeeper(
+                &Some(authority.clone()),
+                &Some(authority.key()),
+                &GatekeeperKeyFlags::AUTH,
+            );
 
-        let expected_gatekeeper = GatekeeperAuthKey {
-            flags: GatekeeperKeyFlags::AUTH.bits(),
-            key: Pubkey::new_unique(),
-        };
+            let expected_gatekeeper = GatekeeperAuthKey {
+                flags: GatekeeperKeyFlags::AUTH.bits(),
+                key: Pubkey::new_unique(),
+            };
 
-        let update_gatekeeper_fees = UpdateGatekeeperKeys {
-            add: vec![expected_gatekeeper],
-            remove: vec![],
-        };
+            let update_gatekeeper_fees = UpdateGatekeeperKeys {
+                add: vec![expected_gatekeeper],
+                remove: vec![],
+            };
 
-        // Act
-        gatekeeper
-            .add_and_remove_auth_keys(&update_gatekeeper_fees, &authority)
-            .unwrap();
+            // Act
+            gatekeeper
+                .add_and_remove_auth_keys(&update_gatekeeper_fees, &authority)
+                .unwrap();
 
-        // Assert
-        assert_eq!(gatekeeper.auth_keys[0], original_auth_key);
-        assert_eq!(gatekeeper.auth_keys[1], expected_gatekeeper);
+            // Assert
+            assert_eq!(gatekeeper.auth_keys[0], original_auth_key);
+            assert_eq!(gatekeeper.auth_keys[1], expected_gatekeeper);
+        })
     }
 
     #[test]
     fn test_remove_auth_keys() {
-        let key = &Pubkey::new_unique();
-        let owner = &Pubkey::new_unique();
-        let data = &mut vec![1, 2, 3];
-        let lamports = &mut 0;
-        let account_info = AccountInfo::new(
-            key,
-            true,
-            true,
-            lamports,
-            data,
-            owner,
-            false,
-            Epoch::default(),
-        );
-        let authority = Signer::try_from(&account_info).unwrap();
-        let original_auth_key = GatekeeperAuthKey {
-            key: *authority.key,
-            flags: GatekeeperKeyFlags::AUTH.bits(),
-        };
-
-        let mut gatekeeper = make_gatekeeper(
-            &Some(authority.clone()),
-            &Some(authority.key()),
-            &GatekeeperKeyFlags::AUTH,
-        );
-        let new_key_pubkey = Pubkey::new_unique();
-        let update_gatekeeper_fees = UpdateGatekeeperKeys {
-            add: vec![GatekeeperAuthKey {
+        with_signer(|authority| {
+            let original_auth_key = GatekeeperAuthKey {
+                key: *authority.key,
                 flags: GatekeeperKeyFlags::AUTH.bits(),
-                key: new_key_pubkey,
-            }],
-            remove: vec![],
-        };
-        // Add key to be removed
-        gatekeeper
-            .add_and_remove_auth_keys(&update_gatekeeper_fees, &authority)
-            .unwrap();
-        // Assert key was added
-        assert_eq!(gatekeeper.auth_keys[1], update_gatekeeper_fees.add[0]);
+            };
 
-        let update_gatekeeper_fees = UpdateGatekeeperKeys {
-            add: vec![],
-            remove: vec![new_key_pubkey],
-        };
+            let mut gatekeeper = make_gatekeeper(
+                &Some(authority.clone()),
+                &Some(authority.key()),
+                &GatekeeperKeyFlags::AUTH,
+            );
+            let new_key_pubkey = Pubkey::new_unique();
+            let update_gatekeeper_fees = UpdateGatekeeperKeys {
+                add: vec![GatekeeperAuthKey {
+                    flags: GatekeeperKeyFlags::AUTH.bits(),
+                    key: new_key_pubkey,
+                }],
+                remove: vec![],
+            };
+            // Add key to be removed
+            gatekeeper
+                .add_and_remove_auth_keys(&update_gatekeeper_fees, &authority)
+                .unwrap();
+            // Assert key was added
+            assert_eq!(gatekeeper.auth_keys[1], update_gatekeeper_fees.add[0]);
 
-        // Act
-        gatekeeper
-            .add_and_remove_auth_keys(&update_gatekeeper_fees, &authority)
-            .unwrap();
+            let update_gatekeeper_fees = UpdateGatekeeperKeys {
+                add: vec![],
+                remove: vec![new_key_pubkey],
+            };
 
-        // Assert
-        assert_eq!(gatekeeper.auth_keys.len(), 1);
-        assert_eq!(gatekeeper.auth_keys[0], original_auth_key);
+            // Act
+            gatekeeper
+                .add_and_remove_auth_keys(&update_gatekeeper_fees, &authority)
+                .unwrap();
+
+            // Assert
+            assert_eq!(gatekeeper.auth_keys.len(), 1);
+            assert_eq!(gatekeeper.auth_keys[0], original_auth_key);
+        });
     }
 
     #[test]
     fn test_remove_last_auth_key() {
         // Assemble
-        let key = &Pubkey::new_unique();
-        let owner = &Pubkey::new_unique();
-        let data = &mut vec![1, 2, 3];
-        let lamports = &mut 0;
-        let account_info = AccountInfo::new(
-            key,
-            true,
-            true,
-            lamports,
-            data,
-            owner,
-            false,
-            Epoch::default(),
-        );
-        let authority = Signer::try_from(&account_info).unwrap();
+        with_signer(|authority| {
+            let mut gatekeeper = make_gatekeeper(
+                &Some(authority.clone()),
+                &Some(authority.key()),
+                &GatekeeperKeyFlags::AUTH,
+            );
 
-        let mut gatekeeper = make_gatekeeper(
-            &Some(authority.clone()),
-            &Some(authority.key()),
-            &GatekeeperKeyFlags::AUTH,
-        );
+            let update_gatekeeper_fees = UpdateGatekeeperKeys {
+                add: vec![],
+                remove: vec![authority.key()],
+            };
 
-        let update_gatekeeper_fees = UpdateGatekeeperKeys {
-            add: vec![],
-            remove: vec![authority.key()],
-        };
+            // Act
+            let result = gatekeeper.add_and_remove_auth_keys(&update_gatekeeper_fees, &authority);
 
-        // Act
-        // Assert
-        assert_eq!(
-            gatekeeper.add_and_remove_auth_keys(&update_gatekeeper_fees, &authority),
-            Err(error!(GatekeeperErrors::InvalidKey))
-        );
+            // Assert
+            assert_eq!(result, Err(error!(GatekeeperErrors::InvalidKey)));
+        });
     }
 
     #[test]
     fn test_add_fees() {
         // Assemble
-        let key = &Pubkey::new_unique();
-        let owner = &Pubkey::new_unique();
-        let data = &mut vec![1, 2, 3];
-        let lamports = &mut 0;
-        let account_info = AccountInfo::new(
-            key,
-            true,
-            true,
-            lamports,
-            data,
-            owner,
-            false,
-            Epoch::default(),
-        );
-        let authority = Signer::try_from(&account_info).unwrap();
+        with_signer(|authority| {
+            let mut gatekeeper = make_gatekeeper(
+                &Some(authority.clone()),
+                &Some(authority.key()),
+                &GatekeeperKeyFlags::AUTH,
+            );
+            let token = Pubkey::new_unique();
+            let expected_fees = GatekeeperFees {
+                token,
+                issue: 0,
+                refresh: 0,
+                expire: 0,
+                verify: 0,
+            };
 
-        let mut gatekeeper = make_gatekeeper(
-            &Some(authority.clone()),
-            &Some(authority.key()),
-            &GatekeeperKeyFlags::AUTH,
-        );
-        let token = Pubkey::new_unique();
-        // Act
-        let expected_fees = GatekeeperFees {
-            token,
-            issue: 0,
-            refresh: 0,
-            expire: 0,
-            verify: 0,
-        };
-        let update_fees = UpdateGatekeeperFees {
-            add: vec![expected_fees],
-            remove: vec![],
-        };
+            let update_gatekeeper_fees = UpdateGatekeeperFees {
+                add: vec![expected_fees],
+                remove: vec![],
+            };
 
-        // Assert
-        assert_eq!(gatekeeper.add_and_remove_fees(&update_fees), Ok(()));
-        assert_eq!(gatekeeper.token_fees[0], expected_fees);
+            // Act
+            gatekeeper
+                .add_and_remove_fees(&update_gatekeeper_fees)
+                .unwrap();
+
+            // Assert
+            assert_eq!(gatekeeper.token_fees[0], expected_fees);
+        });
     }
 
     #[test]
     fn test_remove_fees() {
-        // Assemble
-        let key = &Pubkey::new_unique();
-        let owner = &Pubkey::new_unique();
-        let data = &mut vec![1, 2, 3];
-        let lamports = &mut 0;
-        let account_info = AccountInfo::new(
-            key,
-            true,
-            true,
-            lamports,
-            data,
-            owner,
-            false,
-            Epoch::default(),
-        );
-        let authority = Signer::try_from(&account_info).unwrap();
+        with_signer(|authority| {
+            // Assemble
+            let mut gatekeeper = make_gatekeeper(
+                &Some(authority.clone()),
+                &Some(authority.key()),
+                &GatekeeperKeyFlags::AUTH,
+            );
+            let token = Pubkey::new_unique();
+            let expected_fees = GatekeeperFees {
+                token,
+                issue: 0,
+                refresh: 0,
+                expire: 0,
+                verify: 0,
+            };
+            let update_fees = UpdateGatekeeperFees {
+                add: vec![expected_fees],
+                remove: vec![],
+            };
 
-        let mut gatekeeper = make_gatekeeper(
-            &Some(authority.clone()),
-            &Some(authority.key()),
-            &GatekeeperKeyFlags::AUTH,
-        );
-        let token = Pubkey::new_unique();
-        // Act
-        let expected_fees = GatekeeperFees {
-            token,
-            issue: 0,
-            refresh: 0,
-            expire: 0,
-            verify: 0,
-        };
-        let update_fees = UpdateGatekeeperFees {
-            add: vec![expected_fees],
-            remove: vec![],
-        };
+            // Act
+            assert_eq!(gatekeeper.add_and_remove_fees(&update_fees), Ok(()));
+            assert_eq!(gatekeeper.token_fees[0], expected_fees);
 
-        // Assert
-        assert_eq!(gatekeeper.add_and_remove_fees(&update_fees), Ok(()));
-        assert_eq!(gatekeeper.token_fees[0], expected_fees);
+            let update_fees = UpdateGatekeeperFees {
+                add: vec![],
+                remove: vec![token],
+            };
 
-        let update_fees = UpdateGatekeeperFees {
-            add: vec![],
-            remove: vec![token],
-        };
-
-        assert_eq!(gatekeeper.add_and_remove_fees(&update_fees), Ok(()));
-        assert_eq!(gatekeeper.token_fees.len(), 0);
+            // Assert
+            assert_eq!(gatekeeper.add_and_remove_fees(&update_fees), Ok(()));
+            assert_eq!(gatekeeper.token_fees.len(), 0);
+        });
     }
 
     #[test]
     fn test_set_staking_account() {
-        let key = &Pubkey::new_unique();
-        let owner = &Pubkey::new_unique();
-        let data = &mut vec![1, 2, 3];
-        let lamports = &mut 0;
-        let account_info = AccountInfo::new(
-            key,
-            true,
-            true,
-            lamports,
-            data,
-            owner,
-            false,
-            Epoch::default(),
-        );
+        with_signer(|authority| {
+            // Assemble
+            let mut gatekeeper = make_gatekeeper(
+                &Some(authority.clone()),
+                &Some(authority.key()),
+                &GatekeeperKeyFlags::AUTH,
+            );
+            let account_info = authority.to_account_info();
+            let staking_account = &mut UncheckedAccount::try_from(account_info);
 
-        let authority = Signer::try_from(&account_info).unwrap();
-        let staking_account = &mut UncheckedAccount::try_from(account_info);
+            // Act
+            gatekeeper.set_staking_account(staking_account).unwrap();
 
-        let mut gatekeeper = make_gatekeeper(
-            &Some(authority.clone()),
-            &Some(authority.key()),
-            &GatekeeperKeyFlags::AUTH,
-        );
-
-        // Act
-        gatekeeper.set_staking_account(staking_account).unwrap();
-
-        // Assert
-        assert_eq!(gatekeeper.staking_account, *key);
+            // Assert
+            assert_eq!(gatekeeper.staking_account, *staking_account.key);
+        });
     }
 
     /// Test function to make a gatekeeper
@@ -715,5 +579,26 @@ mod gatekeeper_tests {
             auth_threshold: 0,
             auth_keys: vec![auth_key],
         }
+    }
+
+    /// Test function to return a signer
+    fn with_signer(fnc: fn(Signer) -> ()) {
+        let key = Pubkey::new_unique();
+        let owner = Pubkey::new_unique();
+        let mut data = vec![1, 2, 3];
+        let mut lamports = 0;
+        let account_info = AccountInfo::new(
+            &key,
+            true,
+            true,
+            &mut lamports,
+            &mut data,
+            &owner,
+            false,
+            Epoch::default(),
+        );
+
+        let authority: Signer = Signer::try_from(&account_info).unwrap();
+        fnc(authority);
     }
 }
