@@ -86,7 +86,7 @@ pub struct IssuePass<'info> {
     pub funder: Signer<'info>,
     pub system_program: Program<'info, System>,
     pub spl_token_program: Program<'info, Token>,
-    #[account(constraint = network.is_token_supported(&mint_account.key()) @ NetworkErrors::TokenNotSupported)]
+    #[account(constraint = network.is_token_supported(& mint_account.key()) @ NetworkErrors::TokenNotSupported)]
     pub mint_account: Account<'info, Mint>,
     #[account(mut)]
     pub funder_token_account: Account<'info, TokenAccount>,

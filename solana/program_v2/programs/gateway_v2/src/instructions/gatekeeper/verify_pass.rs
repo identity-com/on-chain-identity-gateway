@@ -3,7 +3,7 @@ use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
 use crate::errors::NetworkErrors;
-use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
+use crate::state::{Gatekeeper, GatekeeperNetwork, Pass};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
     get_network_fees,
@@ -53,8 +53,6 @@ pub struct PassVerify<'info> {
     #[account(
     seeds = [PASS_SEED, pass.subject.as_ref(), network.key().as_ref(), & pass.pass_number.to_le_bytes()],
     bump = pass.signer_bump,
-    // TODO!: Constraint is incorrect here (IDCOM-2232)
-    constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::EXPIRE_PASS),
     mut
     )]
     pub pass: Box<Account<'info, Pass>>,
@@ -74,7 +72,7 @@ pub struct PassVerify<'info> {
     pub funder: Signer<'info>,
     pub authority: Signer<'info>,
     pub spl_token_program: Program<'info, Token>,
-    #[account(constraint = network.is_token_supported(&mint_account.key()) @ NetworkErrors::TokenNotSupported)]
+    #[account(constraint = network.is_token_supported(& mint_account.key()) @ NetworkErrors::TokenNotSupported)]
     pub mint_account: Account<'info, Mint>,
     #[account(mut)]
     pub funder_token_account: Account<'info, TokenAccount>,
