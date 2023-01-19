@@ -77,7 +77,6 @@ pub struct IssuePass<'info> {
     pub network: Box<Account<'info, GatekeeperNetwork>>,
     #[account(
     seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
-    constraint = pass.gatekeeper == gatekeeper.key(),
     bump = gatekeeper.gatekeeper_bump
     )]
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
