@@ -2,17 +2,19 @@
 
 extern crate core;
 
+use anchor_lang::prelude::*;
+
+use crate::instructions::admin::*;
+use crate::instructions::gatekeeper::*;
+use crate::instructions::network::*;
+use crate::instructions::public::*;
+use crate::state::{GatekeeperState, PassState};
+
 pub mod constants;
 pub mod errors;
 mod instructions;
 pub mod state;
 pub mod util;
-
-use crate::instructions::admin::*;
-use crate::instructions::gatekeeper::*;
-use crate::instructions::network::*;
-use crate::state::{GatekeeperState, PassState};
-use anchor_lang::prelude::*;
 
 declare_id!("gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft");
 
@@ -96,6 +98,6 @@ pub mod solana_anchor_gateway {
     }
 
     pub fn verify_pass(ctx: Context<PassVerify>) -> Result<()> {
-        instructions::gatekeeper::verify_pass(ctx)
+        instructions::public::verify_pass(ctx)
     }
 }
