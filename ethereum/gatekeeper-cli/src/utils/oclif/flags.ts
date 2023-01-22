@@ -8,6 +8,8 @@ import {DEFAULT_GATEWAY_TOKEN_ADDRESS} from '@identity.com/gateway-eth-ts'
 import {GetTxGasParamsRes} from 'gas-price-oracle'
 import {BigNumber} from '@ethersproject/bignumber'
 
+// PRIVATE KEY FOR TEST, DEMO ONLY
+// DO NOT USE THIS IN PRODUCTION
 // 0x34bb5808d46a21AaeBf7C1300Ef17213Fe215B91
 const DEFAULT_NETWORK_AUTHORITY_PRIVATE_KEY = '0xf1ddf80d2b5d038bc2ab7ae9a26e017d2252218dc687ab72d45f84bfbee2957d'
 // The test GKN: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf

@@ -9,8 +9,8 @@ import {Forwarder} from "../typechain-types";
 export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const { ethers } = hre;
 
-  const [owner, payer, gatekeeper] = await ethers.getSigners();
-  // const gatekeeper: Wallet | SignerWithAddress = process.env.PRIVATE_KEY ? new ethers.Wallet(process.env.PRIVATE_KEY, owner.provider) : owner;
+  const [owner] = await ethers.getSigners();
+  const gatekeeper: Wallet | SignerWithAddress = process.env.PRIVATE_KEY ? new ethers.Wallet(process.env.PRIVATE_KEY, owner.provider) : owner;
   const gatekeeperNetwork = BigInt(args.gatekeepernetwork);
 
   const account = ethers.utils.getAddress(args.address);
@@ -37,9 +37,8 @@ export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
         DEFAULT_FORWARDER_ADDRESS,
     )).connect(gatekeeper);
 
-    console.log("Forwarding with " + DEFAULT_FORWARDER_ADDRESS);
     const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as Forwarder, {
-      from: owner.address,
+      from: gatekeeper.address,
       to: DEFAULT_GATEWAY_TOKEN_ADDRESS,
       data: mintTx.data
     });

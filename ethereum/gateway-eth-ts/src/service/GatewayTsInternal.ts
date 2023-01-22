@@ -42,7 +42,7 @@ export class GatewayTsInternal<
         network,
         this.options
       );
-    // TODO we may want to tolerate this (perhaps with an option
+    // TODO we may want to tolerate this (perhaps with an option)
     if (tokenIds.length > 1)
       throw new Error("Multiple tokens found for owner and network");
     if (tokenIds.length === 0)

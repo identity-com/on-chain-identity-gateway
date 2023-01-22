@@ -59,5 +59,9 @@ export const estimateGasPrice = async (
     ...oracleOptions,
   })
 
-  return oracle.getTxGasParams()
+  const txGasParams = await oracle.getTxGasParams()
+
+  console.log('txGasParams', txGasParams)
+
+  return txGasParams
 }

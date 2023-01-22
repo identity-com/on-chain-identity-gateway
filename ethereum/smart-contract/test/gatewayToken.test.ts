@@ -6,6 +6,8 @@ import { toBytes32 } from './utils';
 
 import { expect } from 'chai';
 import {NULL_CHARGE, randomAddress} from "./utils/eth";
+import {signMetaTxRequest} from "@identity.com/gateway-eth-ts/src/utils/metatx";
+import {Forwarder} from "../typechain-types";
 
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -327,6 +329,31 @@ describe('GatewayToken', async () => {
             await gatewayToken.connect(identityCom).removeForwarder(newForwarder);
 
             expect(await gatewayToken.isTrustedForwarder(newForwarder)).to.equal(false);
+        });
+
+        it('Successfully forwards a call', async () => {
+
+            const mintTx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(carol.address, gkn1, 0, 0, NULL_CHARGE);
+
+            // Carol does not have the GT yet
+            let validity = await gatewayToken.functions['verifyToken(address,uint256)'](carol.address, gkn1);
+            expect(validity[0]).to.equal(false);
+
+            const input = {
+                from: gatekeeper.address,
+                to: gatewayToken.address,
+                data: mintTx.data as string
+            };
+            const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as Forwarder, input);
+
+            const forwarderTx = await forwarder.connect(alice).execute(request, signature, { gasLimit: 1000000 });
+            const receipt = await forwarderTx.wait();
+
+            expect(receipt.status).to.equal(1);
+
+            // carol now has the GT
+            validity = await gatewayToken.functions['verifyToken(address,uint256)'](carol.address, gkn1);
+            expect(validity[0]).to.equal(true);
         });
     });
 });
