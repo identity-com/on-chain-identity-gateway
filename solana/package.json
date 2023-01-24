@@ -4,8 +4,7 @@
   "workspaces": [
     "gateway-ts",
     "gatekeeper-lib",
-    "gateway-http-client",
-    "program_v2/client"
+    "gateway-http-client"
   ],
   "scripts": {
     "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs target/deploy/solana_gateway_program.so --reset",
