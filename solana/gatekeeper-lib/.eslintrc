@@ -5,15 +5,10 @@
   "plugins": ["@typescript-eslint"],
   "extends": [
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "oclif",
-    "oclif-typescript",
     "prettier"
   ],
   "rules": {
-    "@typescript-eslint/no-implicit-any-catch": "error",
-    "node/no-missing-import": ["error", {
-      "tryExtensions": [".js", ".ts", ".node"]
-    }]
+    "@typescript-eslint/no-implicit-any-catch": "error"
   }
 }
 

@@ -54,13 +54,13 @@ describe("GatekeeperService", () => {
 
   afterEach(() => sandbox.restore());
 
-  beforeEach(async () => {
+  beforeEach(() => {
     tokenOwner = Keypair.generate();
     gatekeeperNetwork = Keypair.generate();
     gatekeeperAuthority = Keypair.generate();
 
     gatewayTokenAddress =
-      await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
+      getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
         tokenOwner.publicKey,
         gatekeeperNetwork.publicKey
       );
@@ -495,7 +495,6 @@ describe("GatekeeperService", () => {
     });
   });
 
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   const expectValidGatewayTransaction = (transaction: Transaction) => {
     expect(transaction).to.be.an.instanceOf(Transaction);
     expect(transaction.instructions[0].programId.toBase58()).to.eq(
