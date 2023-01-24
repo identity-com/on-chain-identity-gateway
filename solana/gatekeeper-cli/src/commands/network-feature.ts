@@ -1,14 +1,13 @@
 import { Command, Flags } from "@oclif/core";
 import { Keypair } from "@solana/web3.js";
 
-import { airdropTo } from "../util";
-import { GatekeeperNetworkService } from "../service";
-import {airdropFlag, clusterFlag, gatekeeperNetworkKeyFlag} from "../util/oclif/flags";
+import { airdropTo, GatekeeperNetworkService } from "@identity.com/solana-gatekeeper-lib";
+import {airdropFlag, clusterFlag, gatekeeperNetworkKeyFlag} from "../util/flags";
 import {
   NetworkFeature,
   UserTokenExpiry,
 } from "@identity.com/solana-gateway-ts";
-import { getConnectionFromEnv } from "../util/oclif/utils";
+import { getConnectionFromEnv } from "../util/utils";
 
 type featureOperation = "add" | "remove" | "get";
 

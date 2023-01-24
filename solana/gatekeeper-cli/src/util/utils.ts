@@ -1,7 +1,11 @@
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { ExtendedCluster, getClusterUrl, getConnection } from "../connection";
-import { airdropTo } from "../account";
-import { GatekeeperService } from "../../service";
+import {Cluster, clusterApiUrl, Connection, Keypair, PublicKey} from "@solana/web3.js";
+import {airdropTo, GatekeeperService, getConnection} from "@identity.com/solana-gatekeeper-lib";
+import { GatewayToken } from "@identity.com/solana-gateway-ts";
+
+export type ExtendedCluster = Cluster | "localnet" | "civicnet";
+
+export const CIVICNET_URL =
+    "http://ec2-34-238-243-215.compute-1.amazonaws.com:8899";
 
 export const getTokenUpdateProperties = async (
   args: { [p: string]: any },
@@ -34,6 +38,17 @@ export const getTokenUpdateProperties = async (
   return { gatewayToken, gatekeeper, service };
 };
 
+export const getClusterUrl = (cluster: ExtendedCluster): string => {
+    switch (cluster) {
+        case "localnet":
+            return "http://localhost:8899";
+        case "civicnet":
+            return CIVICNET_URL;
+        default:
+            return clusterApiUrl(cluster);
+    }
+};
+
 /**
  * If SOLANA_CLUSTER_URL is set, create a connection to it
  * Otherwise, create a connection to the passed-in cluster
@@ -50,3 +65,18 @@ export const getConnectionFromEnv = (cluster?: ExtendedCluster): Connection => {
 
   return getConnection(getClusterUrl(cluster));
 };
+
+export const prettyPrint = (token: GatewayToken): string =>
+    JSON.stringify(
+        {
+            issuingGatekeeper: token.issuingGatekeeper.toBase58(),
+            gatekeeperNetwork: token.gatekeeperNetwork.toBase58(),
+            owner: token.owner.toBase58(),
+            state: token.state,
+            publicKey: token.publicKey.toBase58(),
+            programId: token.programId.toBase58(),
+            expiryTime: token.expiryTime,
+        },
+        null,
+        1
+    );
