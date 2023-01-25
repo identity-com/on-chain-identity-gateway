@@ -85,6 +85,7 @@ mod tests {
             fees: Vec::new(),
             auth_keys: Vec::new(),
             supported_tokens: Vec::new(),
+            network_features: 0,
         };
 
         // Test case where there are fewer auth keys than the threshold
