@@ -1,0 +1,34 @@
+{
+  "extends": [
+    "oclif",
+    "oclif-typescript"
+  ],
+  "rules": {
+    "object-curly-spacing": "off",
+    "array-bracket-spacing": "off",
+    "quotes": "off",
+    "semi": "off",
+    "indent": "off",
+    "comma-dangle":"off",
+    "arrow-parens": "off",
+    "no-useless-constructor": "off",
+    "no-else-return": "off",
+    "lines-between-class-members": "off",
+    "padding-line-between-statements":"off",
+    "camelcase": "off",
+    "new-cap": "off",
+    "no-mixed-operators": "off",
+    "brace-style": "off",
+    "unicorn/number-literal-case": "off",
+    "unicorn/prefer-math-trunc": "off",
+    "unicorn/numeric-separators-style": "off",
+    "unicorn/prevent-abbreviations": "off",
+    "unicorn/prefer-ternary": "off",
+    "unicorn/no-object-as-default-parameter": "off",
+    "unicorn/prefer-module": "off",
+    "operator-assignment": "off",
+    "max-params": "off",
+    "no-warning-comments": "off",
+    "operator-linebreak": "off"
+  }
+}

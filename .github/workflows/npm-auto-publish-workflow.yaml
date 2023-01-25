@@ -1,0 +1,63 @@
+# This Github Action is designed to automatically publish NPM packages.
+#
+# While this Github Action will often be triggered, it will only publish a new package
+# if the version specified in the package.json file(s) is behind that already published.
+#
+# Further documentation on how this webhook works can be found at the following URL:
+# https://github.com/marketplace/actions/npm-publish
+
+name: "NPM Auto Publish Workflow"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: |
+          Choose from which environment to run this workflow
+        required: true
+        type: string
+      production-branch:
+        description: |
+          Changes pushed to this branch will always be tagged with a "latest" tag
+          Any other branch will default to receiving an "alpha" tag.
+        required: true
+        type: string
+      package-path:
+        description: |
+          Provide the path to your package.json file
+        required: true
+        type: string
+    secrets:
+      publish-token:
+        required: true
+
+jobs:
+  publish-npm:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+
+      - name: Extract Tag Value
+        id: extract-tag-value
+        shell: bash
+        run: |
+          if [ "${GITHUB_REF##*/}" == "${{ inputs.production-branch }}" ]; then
+            echo "Using 'Latest' Tag"
+            echo "tag-value=latest" >> $GITHUB_OUTPUT
+          else
+            echo "Using 'Alpha' Tag"
+            echo "tag-value=alpha" >> $GITHUB_OUTPUT
+          fi
+
+      - name: NPM Publish Package
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.publish-token }}
+          package: ${{ inputs.package-path }}
+          check-version: true
+          tag: ${{ steps.extract-tag-value.outputs.tag-value }}

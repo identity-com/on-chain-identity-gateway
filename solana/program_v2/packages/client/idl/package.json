@@ -1,0 +1,31 @@
+{
+    "name": "@identity.com/gateway-solana-idl",
+    "version": "2.0.0-beta.6",
+    "description": "Gateway IDL on Solana",
+    "license": "MIT",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "author": "Identity.com",
+    "repository": "https://github.com/identity-com/on-chain-identity-gateway",
+    "files": [
+        "/dist",
+        "/npm-shrinkwrap.json"
+    ],
+    "keywords": [
+        "solana",
+        "identity",
+        "gateway_v2-client"
+    ],
+    "engines": {
+        "node": ">=14"
+    },
+    "scripts": {
+        "lint": "eslint src/**/*.ts",
+        "build": "tsc -p tsconfig.json"
+      },
+    "dependencies": {},
+    "devDependencies": {
+        "shx": "^0.3.4",
+        "typescript": "^4.3.5"
+    }
+}

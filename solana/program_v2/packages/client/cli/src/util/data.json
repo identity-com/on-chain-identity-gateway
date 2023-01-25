@@ -1,0 +1,18 @@
+{
+    "authThreshold": 1,
+    "tokenFees": {
+        "add": [
+            {
+              "token": "5Nh93TRPb52ZQk7Wzgjmn6cBi7SwmUm9QaN9D2cvJchJ",
+              "Active": 0.0001,
+              "Frozen": 0.0001,
+              "Halted": 0.0001
+            }
+          ],
+          "remove": []
+    },
+    "authKeys": {
+        "add":[],
+        "remove":[]
+    }
+}
