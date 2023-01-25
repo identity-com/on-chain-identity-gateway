@@ -76,3 +76,8 @@ export const GatekeeperKeyFlags = {
   /// Key can withdraw fees from the gatekeeper
   WITHDRAW: 1 << 16,
 };
+
+export const NetworkFeatures = {
+  // Allows a pass to change gatekeepers
+  CHANGE_PASS_GATEKEEPER: 1 << 0,
+};

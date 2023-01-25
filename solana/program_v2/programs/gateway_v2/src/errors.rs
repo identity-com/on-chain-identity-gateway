@@ -26,6 +26,8 @@ pub enum NetworkErrors {
     FeesNotProvided,
     #[msg("Token not supported")]
     TokenNotSupported,
+    #[msg("A network feature is not enabled for this instruction")]
+    UnsupportedNetworkFeature,
 }
 
 #[error_code]

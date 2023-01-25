@@ -16,6 +16,7 @@ pub fn create_network(ctx: Context<CreateNetworkAccount>, data: CreateNetworkDat
     network.auth_keys = data.auth_keys;
     network.fees = data.fees;
     network.supported_tokens = data.supported_tokens;
+    network.network_features = data.network_features;
 
     Ok(())
 }
@@ -30,7 +31,10 @@ pub struct CreateNetworkData {
     pub fees: Vec<NetworkFeesPercentage>,
     /// The [`GatekeeperNetwork::auth_keys`].
     pub auth_keys: Vec<AuthKey>,
+    /// The [`GatekeeperNetwork::supported_tokens`].
     pub supported_tokens: Vec<SupportedToken>,
+    /// The [`GatekeeperNetwork::network_features`].
+    pub network_features: u32,
 }
 
 impl CreateNetworkData {

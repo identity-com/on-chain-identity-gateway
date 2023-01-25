@@ -1,5 +1,5 @@
-import { AnchorProvider, Program } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
+import { AnchorProvider, Program } from '@project-serum/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
 import {
@@ -138,6 +138,7 @@ export class AdminService extends AbstractService {
       fees: [],
       authKeys: [{ flags: NetworkKeyFlags.AUTH, key: this._network }],
       supportedTokens: [],
+      networkFeatures: 0,
     },
     authority: PublicKey = this._wallet.publicKey,
     payer: PublicKey = this._wallet.publicKey
@@ -149,6 +150,7 @@ export class AdminService extends AbstractService {
         fees: data.fees,
         authKeys: data.authKeys,
         supportedTokens: data.supportedTokens,
+        networkFeatures: data.networkFeatures,
       })
       .accounts({
         network: this._network,

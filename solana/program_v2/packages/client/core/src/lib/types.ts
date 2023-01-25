@@ -44,6 +44,7 @@ export type CreateNetworkData = {
   fees: FeeStructure[];
   authKeys: AuthKeyStructure[];
   supportedTokens: SupportedToken[];
+  networkFeatures: number;
 };
 
 export type UpdateNetworkData = {

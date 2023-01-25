@@ -85,6 +85,11 @@ impl GatekeeperNetwork {
             > 0
     }
 
+    /// Checks if this network supports a specific feature
+    pub fn supports_feature(&self, feature: NetworkFeatures) -> bool {
+        NetworkFeatures::from_bits_truncate(self.network_features).contains(feature)
+    }
+
     pub fn is_token_supported(&self, mint_account: &Pubkey) -> bool {
         self.supported_tokens
             .iter()
@@ -238,6 +243,13 @@ bitflags! {
         /// Key can set [`GatekeeperNetwork::pass_expire_time`]
         const UPDATE_TOKENS = 1 << 11;
     }
+
+     /// The flags for network features
+    #[derive(AnchorSerialize, AnchorDeserialize, Default)]
+    pub struct NetworkFeatures: u32{
+        /// Allows a pass to change gatekeepers
+        const CHANGE_PASS_GATEKEEPER = 1 << 0;
+    }
 }
 impl OnChainSize for NetworkKeyFlags {
     const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
@@ -245,17 +257,18 @@ impl OnChainSize for NetworkKeyFlags {
 
 #[cfg(test)]
 mod tests {
+    use anchor_lang::error;
+    use anchor_lang::prelude::Signer;
+    use solana_program::account_info::AccountInfo;
+    use solana_program::clock::Epoch;
+    use solana_program::pubkey::Pubkey;
+
     use crate::errors::NetworkErrors;
     use crate::instructions::admin::{UpdateFees, UpdateKeys, UpdateSupportedTokens};
     use crate::state::{
         AuthKey, GatekeeperNetwork, NetworkFeesPercentage, NetworkKeyFlags, SupportedToken,
         UpdateOperations,
     };
-    use anchor_lang::error;
-    use anchor_lang::prelude::Signer;
-    use solana_program::account_info::AccountInfo;
-    use solana_program::clock::Epoch;
-    use solana_program::pubkey::Pubkey;
 
     #[test]
     fn test_can_access_auth_key_with_same_authority() {

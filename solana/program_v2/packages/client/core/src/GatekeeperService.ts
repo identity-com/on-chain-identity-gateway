@@ -367,6 +367,7 @@ export class GatekeeperService extends AbstractService {
         authority,
         newGatekeeper: gatekeeper,
         oldGatekeeper: this._gatekeeper,
+        network: this._network,
       })
       .instruction();
 
