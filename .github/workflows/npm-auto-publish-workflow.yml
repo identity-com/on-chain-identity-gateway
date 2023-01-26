@@ -50,8 +50,8 @@ jobs:
             echo "Using 'Latest' Tag"
             echo "tag-value=latest" >> $GITHUB_OUTPUT
           else
-            echo "Using 'Alpha' Tag"
-            echo "tag-value=alpha" >> $GITHUB_OUTPUT
+            echo "Using 'Beta' Tag"
+            echo "tag-value=beta" >> $GITHUB_OUTPUT
           fi
 
       - name: NPM Publish Package
