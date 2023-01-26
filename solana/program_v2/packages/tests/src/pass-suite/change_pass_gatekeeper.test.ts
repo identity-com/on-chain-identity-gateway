@@ -1,7 +1,8 @@
 import {
+  AdminService,
+  GatekeeperKeyFlags,
   GatekeeperService,
   NetworkService,
-  GatekeeperKeyFlags,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -14,6 +15,7 @@ import {
 import * as anchor from '@project-serum/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import { Account, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -25,6 +27,7 @@ describe('Change pass gatekeeper', () => {
 
   let networkService: NetworkService;
   let gatekeeperService: GatekeeperService;
+  let adminService: AdminService;
 
   let gatekeeperPDA: PublicKey;
   let stakingPDA: PublicKey;
@@ -56,6 +59,7 @@ describe('Change pass gatekeeper', () => {
       mintAuthority,
       subject,
       mintAccount,
+      adminService,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
     ({ gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
@@ -99,6 +103,33 @@ describe('Change pass gatekeeper', () => {
 
     // Assert
     expect(pass?.gatekeeper.toBase58()).to.equal(newDataAcct);
+  });
+
+  it('Cannot change gatekeepers if the network feature is not enabled', async () => {
+    const network = await adminService.getNetworkAccount();
+    if (!network) throw new Error('Network not found');
+
+    await adminService
+      .updateNetwork({
+        authThreshold: network.authThreshold,
+        authKeys: { add: [], remove: [] },
+        fees: { add: [], remove: [] },
+        passExpireTime: network.passExpireTime,
+        supportedTokens: { add: [], remove: [] },
+        networkFeatures: 0, // remove all features
+      })
+      .rpc();
+
+    const dataAcct = networkService.getGatekeeperAddress();
+    await setGatekeeperFlagsAndFees(
+      stakingPDA,
+      networkService,
+      GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.CHANGE_PASS_GATEKEEPER
+    );
+
+    return expect(
+      gatekeeperService.changePassGatekeeper(dataAcct, passAccount).rpc()
+    ).to.eventually.be.rejectedWith(/UnsupportedNetworkFeature/);
   });
 
   it('Cannot change to gatekeeper within a different network', async () => {

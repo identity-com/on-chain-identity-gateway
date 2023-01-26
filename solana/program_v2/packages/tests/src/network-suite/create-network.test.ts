@@ -74,6 +74,7 @@ describe('Gateway v2 Client', () => {
             },
           ],
           supportedTokens: [],
+          networkFeatures: 0,
         })
         .withPartialSigners(networkAuthority)
         .rpc();

@@ -3,10 +3,12 @@ import { Wallet } from '@project-serum/anchor';
 import { Keypair } from '@solana/web3.js';
 import {
   AdminService,
-  NetworkKeyFlags,
   ExtendedCluster,
+  NetworkKeyFlags,
 } from '@identity.com/gateway-solana-client';
 import fsPromises from 'node:fs/promises';
+import { NetworkFeatures } from '@identity.com/gateway-solana-client/dist/lib/constants';
+
 export default class Create extends Command {
   static description = 'Creates a gatekeeper network';
 
@@ -68,6 +70,7 @@ export default class Create extends Command {
       ],
       gatekeepers: [],
       supportedTokens: [],
+      networkFeatures: NetworkFeatures.CHANGE_PASS_GATEKEEPER,
     };
     const networkSignature = await adminService
       .createNetwork(networkData)

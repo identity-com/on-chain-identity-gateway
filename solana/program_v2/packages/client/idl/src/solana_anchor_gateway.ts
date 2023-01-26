@@ -443,6 +443,11 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
+          "name": "network",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "oldGatekeeper",
           "isMut": false,
           "isSigner": false
@@ -934,11 +939,21 @@ export type SolanaAnchorGateway = {
           },
           {
             "name": "supportedTokens",
+            "docs": [
+              "The [`GatekeeperNetwork::supported_tokens`]."
+            ],
             "type": {
               "vec": {
                 "defined": "SupportedToken"
               }
             }
+          },
+          {
+            "name": "networkFeatures",
+            "docs": [
+              "The [`GatekeeperNetwork::network_features`]."
+            ],
+            "type": "u32"
           }
         ]
       }
@@ -1500,6 +1515,11 @@ export type SolanaAnchorGateway = {
       "code": 6011,
       "name": "TokenNotSupported",
       "msg": "Token not supported"
+    },
+    {
+      "code": 6012,
+      "name": "UnsupportedNetworkFeature",
+      "msg": "A network feature is not enabled for this instruction"
     }
   ]
 };
@@ -1949,6 +1969,11 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
+          "name": "network",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "oldGatekeeper",
           "isMut": false,
           "isSigner": false
@@ -2440,11 +2465,21 @@ export const IDL: SolanaAnchorGateway = {
           },
           {
             "name": "supportedTokens",
+            "docs": [
+              "The [`GatekeeperNetwork::supported_tokens`]."
+            ],
             "type": {
               "vec": {
                 "defined": "SupportedToken"
               }
             }
+          },
+          {
+            "name": "networkFeatures",
+            "docs": [
+              "The [`GatekeeperNetwork::network_features`]."
+            ],
+            "type": "u32"
           }
         ]
       }
@@ -3006,6 +3041,11 @@ export const IDL: SolanaAnchorGateway = {
       "code": 6011,
       "name": "TokenNotSupported",
       "msg": "Token not supported"
+    },
+    {
+      "code": 6012,
+      "name": "UnsupportedNetworkFeature",
+      "msg": "A network feature is not enabled for this instruction"
     }
   ]
 };

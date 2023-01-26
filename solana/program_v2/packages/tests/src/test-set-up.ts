@@ -21,6 +21,7 @@ import {
 } from '@solana/spl-token';
 import { Account } from '@solana/spl-token/src/state/account';
 import { setGatekeeperFlagsAndFees } from './util/lib';
+import { NetworkFeatures } from '@identity.com/gateway-solana-client/dist/lib/constants';
 
 export const setUpAdminNetworkGatekeeper = async (
   program: anchor.Program<SolanaAnchorGateway>,
@@ -125,6 +126,7 @@ export const setUpAdminNetworkGatekeeper = async (
         { flags: NetworkKeyFlags.AUTH, key: networkAuthority.publicKey },
       ],
       supportedTokens: [{ key: mint }],
+      networkFeatures: NetworkFeatures.CHANGE_PASS_GATEKEEPER,
     })
     .withPartialSigners(networkAuthority)
     .rpc();
