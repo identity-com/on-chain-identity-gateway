@@ -1,5 +1,7 @@
 import {
   GatekeeperService,
+  GatekeeperState,
+  NetworkService,
   PassState,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
@@ -23,6 +25,7 @@ describe('Expire a pass', () => {
   const programProvider = program.provider as anchor.AnchorProvider;
 
   let gatekeeperService: GatekeeperService;
+  let networkService: NetworkService;
 
   let gatekeeperPDA: PublicKey;
   let passAccount: PublicKey;
@@ -51,6 +54,7 @@ describe('Expire a pass', () => {
       mintAuthority,
       subject,
       mintAccount,
+      networkService,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
 
     ({ gatekeeperAta, networkAta, funderAta, funderKeypair } =
@@ -122,6 +126,52 @@ describe('Expire a pass', () => {
     expect(gatekeeperAccount.amount).to.equal(1998n);
 
     expect(updatedPass?.issueTime).to.be.lt(0);
+  });
+
+  it('Can expire a pass if the gatekeeper is frozen', async () => {
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .rpc();
+
+    await gatekeeperService
+      .expirePass(
+        passAccount,
+        TOKEN_PROGRAM_ID,
+        mint,
+        networkAta.address,
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
+      )
+      .withPartialSigners(funderKeypair)
+      .rpc();
+
+    const updatedPass = await gatekeeperService.getPassAccount(
+      subject.publicKey
+    );
+
+    expect(updatedPass?.issueTime).to.be.lt(0);
+  });
+
+  it('Cannot expire a pass if the gatekeeper is halted', async () => {
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .rpc();
+
+    return expect(
+      gatekeeperService
+        .expirePass(
+          passAccount,
+          TOKEN_PROGRAM_ID,
+          mint,
+          networkAta.address,
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
+        )
+        .withPartialSigners(funderKeypair)
+        .rpc()
+    ).to.eventually.be.rejectedWith(/InvalidState/);
   });
 
   it('Cannot expire an inactive pass', async () => {

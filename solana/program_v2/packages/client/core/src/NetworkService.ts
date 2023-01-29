@@ -4,13 +4,13 @@ import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 import {
   AuthKeyStructure,
   CreateGatekeeperData,
-  UpdateGatekeeperData,
-  GatewayServiceOptions,
   FeeStructure,
-  Wallet,
   GatekeeperAccount,
   GatekeeperState,
   GatekeeperStateMapping,
+  GatewayServiceOptions,
+  UpdateGatekeeperData,
+  Wallet,
 } from './lib/types';
 import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { EnumMapper } from './lib/utils';

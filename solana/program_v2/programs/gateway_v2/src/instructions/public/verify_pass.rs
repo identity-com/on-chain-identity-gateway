@@ -2,8 +2,8 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
-use crate::errors::NetworkErrors;
-use crate::state::{Gatekeeper, GatekeeperNetwork, Pass};
+use crate::errors::{GatekeeperErrors, NetworkErrors};
+use crate::state::{Gatekeeper, GatekeeperNetwork, GatekeeperState, Pass};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
     get_network_fees,
@@ -63,6 +63,7 @@ pub struct PassVerify<'info> {
     pub network: Box<Account<'info, GatekeeperNetwork>>,
     #[account(
     constraint = pass.gatekeeper == gatekeeper.key(),
+    constraint = gatekeeper.gatekeeper_state != GatekeeperState::Halted @ GatekeeperErrors::InvalidState,
     seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
     bump = gatekeeper.gatekeeper_bump
     )]

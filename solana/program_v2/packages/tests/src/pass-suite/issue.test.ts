@@ -1,6 +1,7 @@
 import {
   findGatewayPass,
   GatekeeperService,
+  GatekeeperState,
   NetworkService,
   onGatewayPass,
   PassAccount,
@@ -320,5 +321,71 @@ describe('issue', () => {
       .rpc();
     const pass = await gatekeeperService.getPassAccount(subject.publicKey);
     expect(pass?.state).to.equal(0);
+  });
+
+  it('Cannot issue a pass if gatekeeper is frozen', async () => {
+    const { gatekeeperAta, networkAta, funderAta, funderKeypair } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
+
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .rpc();
+
+    return expect(
+      gatekeeperService
+        .issue(
+          passAccount,
+          subject.publicKey,
+          TOKEN_PROGRAM_ID,
+          mint,
+          networkAta.address,
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
+        )
+        .withPartialSigners(funderKeypair)
+        .rpc()
+    ).to.eventually.be.rejectedWith(/InvalidState/);
+  });
+
+  it('Cannot issue a pass if gatekeeper is halted', async () => {
+    const { gatekeeperAta, networkAta, funderAta, funderKeypair } =
+      await makeAssociatedTokenAccountsForIssue(
+        programProvider.connection,
+        adminAuthority,
+        mintAuthority,
+        networkAuthority.publicKey,
+        gatekeeperAuthority.publicKey,
+        mintAccount.publicKey,
+        gatekeeperPDA
+      );
+
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .rpc();
+
+    return expect(
+      gatekeeperService
+        .issue(
+          passAccount,
+          subject.publicKey,
+          TOKEN_PROGRAM_ID,
+          mint,
+          networkAta.address,
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
+        )
+        .withPartialSigners(funderKeypair)
+        .rpc()
+    ).to.eventually.be.rejectedWith(/InvalidState/);
   });
 });

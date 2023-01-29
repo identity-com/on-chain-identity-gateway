@@ -2,6 +2,7 @@ import {
   AdminService,
   GatekeeperKeyFlags,
   GatekeeperService,
+  GatekeeperState,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
@@ -103,6 +104,42 @@ describe('Change pass gatekeeper', () => {
 
     // Assert
     expect(pass?.gatekeeper.toBase58()).to.equal(newDataAcct);
+  });
+
+  it('Cannot change a pass in a halted gatekeeper', async () => {
+    // Assemble
+    const dataAcct = networkService.getGatekeeperAddress();
+    await setGatekeeperFlagsAndFees(
+      stakingPDA,
+      networkService,
+      GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.CHANGE_PASS_GATEKEEPER
+    );
+
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .rpc();
+
+    // Act
+    return expect(
+      gatekeeperService.changePassGatekeeper(dataAcct, passAccount).rpc()
+    ).to.eventually.be.rejectedWith(/InvalidState/);
+  });
+
+  it('Can change a pass in a frozen gatekeeper', async () => {
+    // Assemble
+    const dataAcct = networkService.getGatekeeperAddress();
+    await setGatekeeperFlagsAndFees(
+      stakingPDA,
+      networkService,
+      GatekeeperKeyFlags.AUTH | GatekeeperKeyFlags.CHANGE_PASS_GATEKEEPER
+    );
+
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .rpc();
+
+    // Act
+    await gatekeeperService.changePassGatekeeper(dataAcct, passAccount).rpc();
   });
 
   it('Cannot change gatekeepers if the network feature is not enabled', async () => {

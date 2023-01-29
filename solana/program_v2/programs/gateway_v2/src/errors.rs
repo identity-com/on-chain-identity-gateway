@@ -46,6 +46,8 @@ pub enum GatekeeperErrors {
     InvalidGatekeeper,
     #[msg("Gatekeeper Fee was not provided")]
     FeesNotProvided,
+    #[msg("Invalid gatekeeper state for the operation")]
+    InvalidState,
 }
 
 #[error_code]

@@ -1,9 +1,11 @@
 import {
+  GatekeeperService,
+  GatekeeperState,
+  NetworkService,
   PassAccount,
   PassState,
-  GatekeeperService,
 } from '@identity.com/gateway-solana-client';
-import chai from 'chai';
+import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { Account } from '@solana/spl-token/src/state/account';
@@ -14,7 +16,7 @@ import {
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
 import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { expect } from 'chai';
+
 chai.use(chaiAsPromised);
 
 describe('Refresh a pass', () => {
@@ -24,6 +26,7 @@ describe('Refresh a pass', () => {
   const programProvider = program.provider as anchor.AnchorProvider;
 
   let gatekeeperService: GatekeeperService;
+  let networkService: NetworkService;
 
   let gatekeeperPDA: PublicKey;
   let passAccount: PublicKey;
@@ -53,6 +56,7 @@ describe('Refresh a pass', () => {
       mintAuthority,
       subject,
       mintAccount,
+      networkService,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
     ({ gatekeeperAta, networkAta, funderAta, funderKeypair } =
       await makeAssociatedTokenAccountsForIssue(
@@ -110,6 +114,51 @@ describe('Refresh a pass', () => {
     expect(initialPass?.issueTime).to.be.lt(
       (updatedPass as PassAccount).issueTime
     );
+  });
+
+  it('should not refresh a pass if gatekeeper is halted', async () => {
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .rpc();
+
+    // Act
+    return expect(
+      gatekeeperService
+        .refreshPass(
+          passAccount,
+          gatekeeperAuthority.publicKey,
+          TOKEN_PROGRAM_ID,
+          mint,
+          networkAta.address,
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
+        )
+        .withPartialSigners(funderKeypair)
+        .rpc()
+    ).to.eventually.be.rejectedWith(/InvalidState/);
+  });
+  it('should not refresh a pass if gatekeeper is frozen', async () => {
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .rpc();
+
+    // Act
+    return expect(
+      gatekeeperService
+        .refreshPass(
+          passAccount,
+          gatekeeperAuthority.publicKey,
+          TOKEN_PROGRAM_ID,
+          mint,
+          networkAta.address,
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
+        )
+        .withPartialSigners(funderKeypair)
+        .rpc()
+    ).to.eventually.be.rejectedWith(/InvalidState/);
   });
 
   it('Should not refresh a frozen pass', async () => {
@@ -175,10 +224,11 @@ describe('Refresh a pass', () => {
     expect(gatekeeperAccount.amount).to.equal(1000n);
   });
 
-  it('should not refresh a revoked pass', async () => {
+  it('Cannot issue a pass if gatekeeper is frozen', async () => {
     // Assemble
-    await gatekeeperService.setState(PassState.Revoked, passAccount).rpc();
-
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .rpc();
     // Act + Assert
     return expect(
       gatekeeperService
@@ -194,6 +244,29 @@ describe('Refresh a pass', () => {
         )
         .withPartialSigners(funderKeypair)
         .rpc()
-    ).to.eventually.be.rejectedWith(/PassNotActive/);
+    ).to.eventually.be.rejectedWith(/InvalidState/);
+  });
+
+  it('Cannot refresh a pass if gatekeeper is halted', async () => {
+    // Assemble
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .rpc();
+    // Act + Assert
+    return expect(
+      gatekeeperService
+        .refreshPass(
+          passAccount,
+          gatekeeperAuthority.publicKey,
+          TOKEN_PROGRAM_ID,
+          mint,
+          networkAta.address,
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
+        )
+        .withPartialSigners(funderKeypair)
+        .rpc()
+    ).to.eventually.be.rejectedWith(/InvalidState/);
   });
 });
