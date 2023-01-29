@@ -14,7 +14,7 @@ import { addGatekeeper } from "./tasks/addGatekeeper";
 import { issueGT} from "./tasks/issueGT";
 import { fund } from "./tasks/fund";
 import { printPrivateKey } from "./tasks/printPrivateKey";
-
+import { createWallet } from "./tasks/createWallet";
 
 const derivedAccounts = {
   mnemonic: process.env.MNEMONIC || "test test test test test test test test test test test junk",
@@ -46,6 +46,8 @@ task('fund', 'fund a wallet')
 task('print-private-key', 'Print the private key of a wallet used by hardhat (WARNING - DO NOT USE THIS FOR PRODUCTION KEYS)')
     .addParam('index', 'the index of the wallet to get the private key for')
     .setAction(printPrivateKey)
+task('create-wallet', 'Create a test wallet')
+    .setAction(createWallet)
 
 module.exports = {
   defaultNetwork: "hardhat",
