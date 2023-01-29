@@ -44,13 +44,14 @@ jobs:
       - name: Lint
         run: yarn lint
 
-      - name: Build
-        run: yarn build
+      - name: Build dependencies
+        run: (cd ../smart-contract && yarn && yarn build)
 
       - name: Run tests
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           INFURA_KEY: ${{ secrets.INFURA_KEY }}
-        run: |
-          (cd ../smart-contract && yarn && yarn build)
-          yarn test
+        run: yarn test
+
+      - name: Build
+        run: yarn build

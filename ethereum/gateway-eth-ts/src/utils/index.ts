@@ -1,6 +1,3 @@
-import { Wallet } from "ethers";
-import { Provider } from "ethers";
-
 export {
   onGatewayTokenChange,
   removeGatewayTokenChangeListener,
