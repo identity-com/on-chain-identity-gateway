@@ -1,2 +1,3 @@
-import { formatBytes32String } from "@ethersproject/strings";
-export const toBytes32 = (text: string): string => formatBytes32String(text);
+import { utils } from "ethers";
+export const toBytes32 = (text: string): string =>
+  utils.formatBytes32String(text);

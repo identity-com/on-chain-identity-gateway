@@ -1,9 +1,4 @@
-import { Wallet } from "@ethersproject/wallet";
-import {
-  Contract,
-  Overrides,
-  PopulatedTransaction,
-} from "@ethersproject/contracts";
+import { Wallet, Contract, Overrides, PopulatedTransaction } from "ethers";
 import { Forwarder, GatewayToken } from "../contracts/typechain-types";
 import { GatewayTsInternal } from "./GatewayTsInternal";
 import {

@@ -1,6 +1,6 @@
 import { addFlagsToBitmask } from "./bitmask_flags";
 import { ZERO_BN } from "./constants";
-import { BigNumber } from "@ethersproject/bignumber";
+import { BigNumber } from "ethers";
 import assert = require("assert");
 
 describe("Bitmask flags test", function () {

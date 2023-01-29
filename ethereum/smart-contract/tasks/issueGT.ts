@@ -1,9 +1,9 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {BigNumber, BytesLike, utils, Wallet} from "ethers";
+import {Wallet} from "ethers";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import {DEFAULT_FORWARDER_ADDRESS, DEFAULT_GATEWAY_TOKEN_ADDRESS} from "@identity.com/gateway-eth-ts";
+import {DEFAULT_FORWARDER_ADDRESS, DEFAULT_GATEWAY_TOKEN_ADDRESS} from "../../gateway-eth-ts/src";
 import {NULL_CHARGE} from "../test/utils/eth";
-import {signMetaTxRequest} from "@identity.com/gateway-eth-ts/src/utils/metatx";
+import {signMetaTxRequest} from "../../gateway-eth-ts/src/utils/metatx";
 import {Forwarder} from "../typechain-types";
 
 export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {

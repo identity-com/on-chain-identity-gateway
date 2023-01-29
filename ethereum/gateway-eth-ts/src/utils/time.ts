@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
+import { BigNumber, BigNumberish } from "ethers";
 import { DEFAULT_EXPIRATION_BN, ZERO_BN } from "./constants";
 
 export const getExpirationTime = (expiration?: BigNumberish): BigNumber => {

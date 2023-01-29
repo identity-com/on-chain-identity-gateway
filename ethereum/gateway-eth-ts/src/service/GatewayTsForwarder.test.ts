@@ -15,8 +15,8 @@ import {
 } from "./testUtils";
 import { PopulatedTransaction } from "ethers/lib/ethers";
 import { GatewayTsForwarder } from "./GatewayTsForwarder";
-import { Wallet } from "@ethersproject/wallet";
-import { BigNumber } from "@ethersproject/bignumber";
+import { Wallet } from "ethers";
+import { BigNumber } from "ethers";
 
 dotenv.config();
 

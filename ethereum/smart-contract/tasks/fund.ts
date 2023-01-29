@@ -1,6 +1,4 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {BigNumber, BytesLike, utils, Wallet} from "ethers";
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 
 export const fund = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const {ethers} = hre;

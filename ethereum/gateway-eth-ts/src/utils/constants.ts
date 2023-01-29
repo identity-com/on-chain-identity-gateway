@@ -1,4 +1,4 @@
-import { BigNumber } from "@ethersproject/bignumber";
+import { BigNumber } from "ethers";
 export const DEFAULT_FLAGS_STORAGE =
   "0xd1895ce312dD4bACbb6bF7226222C237ad5a3767";
 export const DEFAULT_GATEWAY_TOKEN_ADDRESS =

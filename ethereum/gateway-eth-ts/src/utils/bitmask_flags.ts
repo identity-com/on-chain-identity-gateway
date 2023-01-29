@@ -1,4 +1,4 @@
-import { BigNumber } from "@ethersproject/bignumber";
+import { BigNumber } from "ethers";
 import { ONE_BN } from "./constants";
 
 export const addFlagsToBitmask = (

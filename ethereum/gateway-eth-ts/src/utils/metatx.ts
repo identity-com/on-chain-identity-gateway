@@ -1,5 +1,4 @@
-import { Contract } from "@ethersproject/contracts";
-import { BigNumber } from "@ethersproject/bignumber";
+import { Contract, BigNumber } from "ethers";
 
 import { Forwarder } from "../contracts/typechain-types";
 import { EIP712Message, EIP712TypedData } from "eth-sig-util";

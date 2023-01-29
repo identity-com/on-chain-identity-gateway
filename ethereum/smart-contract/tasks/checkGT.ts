@@ -1,5 +1,5 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {DEFAULT_GATEWAY_TOKEN_ADDRESS} from "@identity.com/gateway-eth-ts";
+import {DEFAULT_GATEWAY_TOKEN_ADDRESS} from "../../gateway-eth-ts/src";
 
 export const checkGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const { ethers } = hre;

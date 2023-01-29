@@ -1,4 +1,4 @@
-import { Wallet } from "@ethersproject/wallet";
+import { Wallet } from "ethers";
 import { Provider } from "@ethersproject/providers";
 
 export const DEFAULT_MNEMONIC =

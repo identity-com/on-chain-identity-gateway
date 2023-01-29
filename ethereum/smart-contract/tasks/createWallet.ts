@@ -1,5 +1,4 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {HardhatNetworkHDAccountsConfig} from "hardhat/src/types/config";
 
 export const createWallet = async (args: any, { ethers }: HardhatRuntimeEnvironment) => {
   const wallet = ethers.Wallet.createRandom();

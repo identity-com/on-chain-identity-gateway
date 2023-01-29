@@ -1,5 +1,4 @@
-import { Overrides } from "@ethersproject/contracts";
-import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
+import { Overrides, BigNumber, BigNumberish } from "ethers";
 
 import { getExpirationTime } from "../utils/time";
 import {

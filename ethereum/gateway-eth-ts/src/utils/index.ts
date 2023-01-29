@@ -1,5 +1,5 @@
-import { Wallet } from "@ethersproject/wallet";
-import { Provider } from "@ethersproject/providers";
+import { Wallet } from "ethers";
+import { Provider } from "ethers";
 
 export {
   onGatewayTokenChange,

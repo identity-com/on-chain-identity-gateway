@@ -1,4 +1,4 @@
-import { BigNumber } from "@ethersproject/bignumber";
+import { BigNumber } from "ethers";
 import { GatewayToken } from "../contracts/typechain-types";
 
 export enum TokenState {

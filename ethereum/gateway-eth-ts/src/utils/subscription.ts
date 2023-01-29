@@ -1,4 +1,3 @@
-import { BaseProvider, Provider } from "@ethersproject/providers";
 import { GatewayTs } from "../service/GatewayTs";
 import { TokenData } from "./types";
 import { asProvider } from "./provider";

@@ -6,7 +6,7 @@ import { toBytes32 } from './utils';
 
 import { expect } from 'chai';
 import {NULL_CHARGE, randomAddress} from "./utils/eth";
-import {signMetaTxRequest} from "@identity.com/gateway-eth-ts/src/utils/metatx";
+import {signMetaTxRequest} from "../../gateway-eth-ts/src/utils/metatx";
 import {Forwarder} from "../typechain-types";
 
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
