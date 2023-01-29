@@ -6,6 +6,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;  
   const { deployer } = await getNamedAccounts();
 
+  console.log('deployer', deployer);
+
   const hexRetailFlag = ethers.utils.formatBytes32String("Retail");
   const hexInstitutionFlag = ethers.utils.formatBytes32String("Institution");
   const hexAccreditedInvestorFlag = ethers.utils.formatBytes32String("AccreditedInvestor");
@@ -16,6 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     args: [deployer],
     log: true,
+    deterministicDeployment: true
   });
 
   const flagsStorageContract = await ethers.getContractAt(

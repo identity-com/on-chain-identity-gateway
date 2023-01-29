@@ -1,5 +1,3 @@
-import { utils } from "ethers/lib/ethers"
-
-export const toBytes32 = (text: string): string => {
-    return utils.formatBytes32String(text);
-}
+import { utils } from "ethers";
+export const toBytes32 = (text: string): string =>
+  utils.formatBytes32String(text);

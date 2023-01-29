@@ -2,19 +2,13 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "parserOptions": {"project": ["./tsconfig.json"]},
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "prettier"],
   "extends": [
-    "oclif",
-    "oclif-typescript",
-    "prettier",
+    "plugin:prettier/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
   "rules": {
     "@typescript-eslint/no-implicit-any-catch": "error",
-    "node/no-missing-import": ["error", {
-      "tryExtensions": [".js", ".ts", ".node"]
-    }],
-    "unicorn/filename-case": "off",
     "no-warning-comments": "off"
   }
 }

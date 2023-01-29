@@ -4,18 +4,18 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@solvprotocol/erc-3525/ERC3525.sol";
+import "@solvprotocol/erc-3525/IERC3525.sol";
 import "./TokenBitMask.sol";
 import "./interfaces/IERC721Freezeble.sol";
 import "./interfaces/IGatewayToken.sol";
-import "./interfaces/IGatewayTokenController.sol";
 import "./interfaces/IERC721Expirable.sol";
 import "./interfaces/IERC721Revokable.sol";
 import "./MultiERC2771Context.sol";
 import "./library/Charge.sol";
+import "hardhat/console.sol";
+import "./ParameterizedAccessControl.sol";
 
 
 /**
@@ -27,7 +27,17 @@ import "./library/Charge.sol";
  * Gatekeepers (Identity.com network parties who can mint/burn/freeze gateway tokens) and overall system Admin who can add
  * new Gatekeepers and Network Authorities
  */
-contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IERC721Metadata, IERC721Freezeble, IERC721Expirable, IERC721Revokable, IGatewayToken, TokenBitMask {
+contract GatewayToken is
+MultiERC2771Context,
+ERC165,
+ERC3525,
+ParameterizedAccessControl,
+IERC721Freezeble,
+IERC721Expirable,
+IERC721Revokable,
+IGatewayToken,
+TokenBitMask
+{
     using Address for address;
     using Strings for uint256;
 
@@ -35,63 +45,30 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
         ACTIVE, FROZEN, REVOKED
     }
 
-    // Gateway Token name
-    string public override name;
-
-    // Gateway Token symbol
-    string public override symbol;
-
     // Gateway Token controller contract address
     address public controller;
-    address public deployer;
 
     // Gateway token transfer restrictions
     bool public isTransfersRestricted;
 
     // Off-chain DAO governance access control
-    bool public override isDAOGoverned;
-    address public override daoManager;
+    mapping(uint256 => bool) public isNetworkDAOGoverned;
 
     // Access control roles
     bytes32 public constant DAO_MANAGER_ROLE = keccak256("DAO_MANAGER_ROLE");
     bytes32 public constant GATEKEEPER_ROLE = keccak256("GATEKEEPER_ROLE");
     bytes32 public constant NETWORK_AUTHORITY_ROLE = keccak256("NETWORK_AUTHORITY_ROLE");
 
-    // Mapping from token ID to owner address
-    mapping(uint256 => address) private _owners;
-
-    // Mapping owner address to token count
-    mapping(address => uint256) private _balances;
-
-    // Mapping from token ID to approved address
-    mapping(uint256 => address) private _tokenApprovals;
-
-    // Mapping from owner to operator approvals
-    mapping (address => mapping (address => bool)) private _operatorApprovals;
-
     // Optional mapping for gateway token Identities (via TokenURI)
-    mapping(uint256 => string) private _tokenURIs;
+    mapping(uint256 => string) private tokenURIs;
 
     // Optional mapping for gateway token bitmaps
-    mapping(uint256 => TokenState) private _tokenStates;
+    mapping(uint256 => TokenState) private tokenStates;
 
     // Optional Mapping from token ID to expiration date
-    mapping(uint256 => uint256) private _expirations;
+    mapping(uint256 => uint256) private expirations;
 
-    // Optional Mapping from address to tokenID
-    mapping(address => uint256) private _defaultTokens;
-
-    // @dev Modifier to prevent calls from anyone except Identity.com Admin
-    modifier onlyIdentityAdmin() {
-        require(msg.sender == IGatewayTokenController(controller).identityAdmin() || msg.sender == controller, "NOT IDENTITY.COM ADMIN NOR TOKEN CONTROLLER");
-        _;
-    }
-
-    // @dev Modifier to prevent calls for blacklisted users
-    modifier onlyNonBlacklistedUser(address user) {
-        require(!_isBlacklisted(user), "BLACKLISTED USER");
-        _;
-    }
+    mapping(uint256 => string) private networks;
 
     // @dev Modifier to make a function callable only when token transfers not restricted.
     modifier whenTransfersNotRestricted() {
@@ -111,37 +88,19 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
      *
      * Initiates gateway token roles with main system admin `GATEWAY_TOKEN_CONTROLLER`,
      * `NETWORK_AUTHORITY_ROLE` responsible for adding/removing Gatekeepers and 
-     * `GATEKEEPER_ROLE` responsible for minting/burning/transfering tokens
+     * `GATEKEEPER_ROLE` responsible for minting/burning/transferring tokens
      */
-    constructor(string memory _name, string memory _symbol, address _deployer, bool _isDAOGoverned, address _daoManager, address _flagsStorage, address[] memory trustedForwarders) MultiERC2771Context(trustedForwarders) public {
-        name = _name;
-        symbol = _symbol;
-        controller = _msgSender();
+    constructor(
+        string memory name,
+        string memory symbol,
+        address flagsStorage,
+        address[] memory trustedForwarders
+    )
+    MultiERC2771Context(trustedForwarders)
+    ERC3525(name, symbol, 0) {
         isTransfersRestricted = true;
-        deployer = _deployer;
-        _setFlagsStorage(_flagsStorage);
-
-        _setupRole(NETWORK_AUTHORITY_ROLE, _msgSender());
-        _setupRole(NETWORK_AUTHORITY_ROLE, deployer);
-        _setupRole(GATEKEEPER_ROLE, deployer);
-
-        if (_isDAOGoverned) {
-            isDAOGoverned = _isDAOGoverned;
-
-            require(_daoManager != address(0), "INCORRECT ADDRESS");
-            // require(_daoManager.isContract(), "NON CONTRACT EXECUTOR"); uncomment while testing with Gnosis Multisig
-            daoManager = _daoManager;
-
-            _setupRole(DAO_MANAGER_ROLE, _daoManager);
-            _setupRole(DAO_MANAGER_ROLE, _msgSender());
-            _setupRole(NETWORK_AUTHORITY_ROLE, _daoManager);
-            _setupRole(GATEKEEPER_ROLE, _daoManager);
-            _setRoleAdmin(NETWORK_AUTHORITY_ROLE, DAO_MANAGER_ROLE);
-            _setRoleAdmin(GATEKEEPER_ROLE, DAO_MANAGER_ROLE);
-        } else {
-            _setRoleAdmin(NETWORK_AUTHORITY_ROLE, NETWORK_AUTHORITY_ROLE);
-            _setRoleAdmin(GATEKEEPER_ROLE, NETWORK_AUTHORITY_ROLE);
-        }
+        _setFlagsStorage(flagsStorage);
+        _superAdmins[_msgSender()] = true;
     }
 
     function _msgSender() internal view virtual override(MultiERC2771Context, Context) returns (address sender) {
@@ -152,16 +111,16 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
         return MultiERC2771Context._msgData();
     }
 
-    function addForwarder(address forwarder) public override(MultiERC2771Context) onlyIdentityAdmin {
+    function addForwarder(address forwarder) public override(MultiERC2771Context) onlySuperAdmin {
         super.addForwarder(forwarder);
     }
 
-    function removeForwarder(address forwarder) public override(MultiERC2771Context) onlyIdentityAdmin {
+    function removeForwarder(address forwarder) public override(MultiERC2771Context) onlySuperAdmin {
         super.removeForwarder(forwarder);
     }
 
     /**
-     * @dev Returns true if gateway token owner transfers reestricted, and false otherwise.
+     * @dev Returns true if gateway token owner transfers restricted, and false otherwise.
      */
     function transfersRestricted() public view virtual returns (bool) {
         return isTransfersRestricted;
@@ -170,30 +129,42 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, ERC3525, ParameterizedAccessControl) returns (bool) {
         return
-            interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IERC721Metadata).interfaceId ||
-            super.supportsInterface(interfaceId);
+        interfaceId == type(IERC3525).interfaceId ||
+        interfaceId == type(IERC721).interfaceId ||
+        interfaceId == type(IERC721Metadata).interfaceId ||
+        super.supportsInterface(interfaceId);
     }
 
-    /**
-    * @dev Triggers to check total amount of gateway tokens hold by specific address. 
-    * @param owner Token owner address
-    */
-    function balanceOf(address owner) public view virtual override returns (uint256) {
-        require(owner != address(0), "ZERO ADDRESS");
-        return _balances[owner];
+    function createNetwork(uint256 network, string memory name, bool daoGoverned, address daoManager) external virtual {
+        require(bytes(networks[network]).length == 0, "NETWORK ALREADY EXISTS");
+
+        networks[network] = name;
+
+        _setupRole(NETWORK_AUTHORITY_ROLE, network, _msgSender());
+
+        if (daoGoverned) {
+            isNetworkDAOGoverned[network] = daoGoverned;
+
+            require(daoManager != address(0), "INCORRECT ADDRESS");
+            // require(daoManager.isContract(), "NON CONTRACT EXECUTOR"); uncomment while testing with Gnosis Multisig
+
+            _setupRole(DAO_MANAGER_ROLE, network, daoManager);
+            _setupRole(NETWORK_AUTHORITY_ROLE, network, daoManager);
+            _setRoleAdmin(NETWORK_AUTHORITY_ROLE, network, DAO_MANAGER_ROLE);
+            _setRoleAdmin(GATEKEEPER_ROLE, network, DAO_MANAGER_ROLE);
+        } else {
+            _setRoleAdmin(NETWORK_AUTHORITY_ROLE, network, NETWORK_AUTHORITY_ROLE);
+            _setRoleAdmin(GATEKEEPER_ROLE, network, NETWORK_AUTHORITY_ROLE);
+        }
     }
 
-    /**
-    * @dev Triggers to get owner for specific gateway token
-    * @param tokenId Gateway token id
-    */
-    function ownerOf(uint256 tokenId) public view virtual override returns (address) {
-        address owner = _owners[tokenId];
-        require(owner != address(0), "ZERO ADDRESS");
-        return owner;
+    function renameNetwork(uint256 network, string memory name) external virtual {
+        require(bytes(networks[network]).length != 0, "NETWORK DOES NOT EXIST");
+        require(hasRole(NETWORK_AUTHORITY_ROLE, network, _msgSender()), "NOT AUTHORIZED");
+
+        networks[network] = name;
     }
 
     /**
@@ -204,64 +175,52 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
         return tokenURI(tokenId);
     }
 
-    /**
-    * @dev Triggers to get tokenURI attached to specificied `tokenId`
-    * @param tokenId Gateway token id
-    */
-    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FROZEN");
-        string memory _tokenURI = _tokenURIs[tokenId];
-
-        return _tokenURI;
+    function _getTokenIdsByOwnerAndNetwork(address owner, uint256 network) internal view returns (uint256[] memory, uint256) {
+        uint256 balance = balanceOf(owner);
+        uint256[] memory tokenIds = new uint256[](balance);
+        uint256 count = 0;
+        for (uint256 i = 0; i < balance; i++) {
+            uint256 tokenId = tokenOfOwnerByIndex(owner, i);
+            if (slotOf(tokenId) == network) {
+                tokenIds[count++] = tokenId;
+            }
+        }
+        return (tokenIds, count);
     }
 
-    /**
-    * @dev Triggers to attach identity string to specific gateway token
-    * @param tokenId Gateway token id
-    * @param tokenURI Gateway token identity in a form of TokenURI
-    *
-    * @notice Only executable by gatekeepers
-    */
-    function setTokenURI(uint256 tokenId, string memory tokenURI) public virtual {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        require(_existsAndActive(tokenId), "TOKEN DOESN'T EXIST OR FROZEN");
-        address tokenOwner = ownerOf(tokenId);
-        require(!_isBlacklisted(tokenOwner), "BLACKLISTED USER");
-
-        _tokenURIs[tokenId] = tokenURI;
-    }
-
-    /**
-    * @dev Triggered by external contract to verify if `tokenId` and token `owner` are correct.
-    *
-    * Checks if token exists in gateway token contract, `tokenId` still active, and not expired.
-    * Performs additional checks to verify that `owner` is not blacklisted globally.
-    */
-    function verifyToken(address owner, uint256 tokenId) external view virtual returns (bool) {
-        if(!_existsAndActive(tokenId)) return false;
-        address tokenOwner = ownerOf(tokenId);
-        if (tokenOwner != owner) return false;
-        bool _blacklisted = _isBlacklisted(owner);
-        if(_blacklisted) return false;
-
-        return true;
+    function getTokenIdsByOwnerAndNetwork(address owner, uint256 network) external view returns (uint256[] memory) {
+        (uint256[] memory tokenIds, uint256 count) = _getTokenIdsByOwnerAndNetwork(owner, network);
+        uint256[] memory tokenIdsResized = new uint256[](count);
+        for (uint256 i = 0; i < count; i++) {
+            tokenIdsResized[i] = tokenIds[i];
+        }
+        return tokenIdsResized;
     }
 
     /**
     * @dev Triggered by external contract to verify the validity of the default token for `owner`.
     *
     * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
-    * Performs additional checks to verify that `owner` is not blacklisted globally.
     */
-    function verifyToken(address owner) external view virtual returns (bool) {
-        uint256 tokenId = getTokenId(owner);
-        if(!_existsAndActive(tokenId)) return false;
-        address tokenOwner = ownerOf(tokenId);
-        if (tokenOwner != owner) return false;
-        bool _blacklisted = _isBlacklisted(owner);
-        if(_blacklisted) return false;
+    function verifyToken(address owner, uint256 network) external view virtual returns (bool) {
+        (uint256[] memory tokenIds, uint256 count) = _getTokenIdsByOwnerAndNetwork(owner, network);
 
-        return true;
+        for (uint256 i = 0; i < count; i++) {
+            if (tokenIds[i] != 0) {
+                if (_existsAndActive(tokenIds[i], false)) return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+    * @dev Triggered by external contract to verify the validity of the default token for `owner`.
+    *
+    * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
+    */
+    function verifyToken(uint256 tokenId) external view virtual returns (bool) {
+        return _existsAndActive(tokenId, false);
     }
 
     /**
@@ -269,18 +228,18 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     * @param tokenId Gateway token id
     */
     function getToken(uint256 tokenId) public view virtual override
-        returns (
-            address owner,
-            uint8 state,
-            string memory identity,
-            uint256 expiration,
-            uint256 bitmask
-        ) 
+    returns (
+        address owner,
+        uint8 state,
+        string memory identity,
+        uint256 expiration,
+        uint256 bitmask
+    )
     {
         owner = ownerOf(tokenId);
-        state = uint8(_tokenStates[tokenId]);
-        identity = _tokenURIs[tokenId];
-        expiration = _expirations[tokenId];
+        state = uint8(tokenStates[tokenId]);
+        identity = tokenURIs[tokenId];
+        expiration = expirations[tokenId];
         bitmask = _getBitMask(tokenId);
 
         return (owner, state, identity, expiration, bitmask);
@@ -291,30 +250,24 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     * @param tokenId Gateway token id
     */
     function getTokenState(uint256 tokenId) public view virtual override returns (uint8 state) {
-        state = uint8(_tokenStates[tokenId]);
+        state = uint8(tokenStates[tokenId]);
 
         return state;
     }
 
     /**
-    * @dev Returns whether `tokenId` exists.
-    *
-    * Tokens start existing when they are minted (`_mint`),
-    * pause when they are freezed (`_freeze`), and 
-    * stop existing when they are burned (`_burn`).
+    * @dev Returns whether `tokenId` exists and not frozen.
     */
-    function _exists(uint256 tokenId) internal view virtual returns (bool) {
-        return _owners[tokenId] != address(0);
-    }
+    function _existsAndActive(uint256 tokenId, bool allowExpired) internal view virtual returns (bool) {
+        // check state before anything else. This reduces the overhead, and avoids a revert, if the token does not exist.
+        TokenState state = tokenStates[tokenId];
+        if (state != TokenState.ACTIVE) return false;
 
-    /**
-    * @dev Returns whether `tokenId` exists and not freezed.
-    */
-    function _existsAndActive(uint256 tokenId) internal view virtual returns (bool) {
-        if (_expirations[tokenId] != 0) {
-            return _owners[tokenId] != address(0) && _tokenStates[tokenId] == TokenState.ACTIVE && block.timestamp <= _expirations[tokenId];
+        address owner = ownerOf(tokenId);
+        if (expirations[tokenId] != 0 && !allowExpired) {
+            return owner != address(0) && block.timestamp <= expirations[tokenId];
         } else {
-            return _owners[tokenId] != address(0) && _tokenStates[tokenId] == TokenState.ACTIVE;
+            return owner != address(0);
         }
     }
 
@@ -325,122 +278,16 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
      *
      * - `tokenId` must exist.
      */
-    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
+    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual override returns (bool) {
+        require(!transfersRestricted(), "TRANSFERS RESTRICTED");
         require(_exists(tokenId), "ERC721: operator query for nonexistent token");
         address owner = ownerOf(tokenId);
+        uint256 network = slotOf(tokenId);
         if (spender == owner) {
-            return !transfersRestricted();
+            return true;
         } else {
-            return (getApproved(tokenId) == spender || isApprovedForAll(owner, spender) || hasRole(GATEKEEPER_ROLE, spender));
+            return (getApproved(tokenId) == spender || isApprovedForAll(owner, spender) || hasRole(GATEKEEPER_ROLE, network, spender));
         }
-    }
-
-    /**
-    * @dev Triggers to request token ownership transfer
-    * @param to Address to transfer token ownership
-    * @param tokenId Gateway token id
-    *
-    * @notice Only executable by token owner
-    */
-    function approve(address to, uint256 tokenId) public virtual override {
-        address owner = GatewayToken.ownerOf(tokenId);
-        require(to != owner, "INCORRECT APPROVE DESTINATION");
-        require(_msgSender() == owner, "INCORRECT OWNER");
-        require(!_isBlacklisted(owner), "BLACKLISTED USER");
-
-        _approve(to, tokenId);
-    }
-
-    /**
-     * @dev See {IERC721-getApproved}.
-     */
-    function getApproved(uint256 tokenId) public view virtual override returns (address) {
-        require(_existsAndActive(tokenId), "TOKEN DOESN'T EXIST");
-
-        return _tokenApprovals[tokenId];
-    }
-
-    /**
-     * @dev See {IERC721-setApprovalForAll}.
-     */
-    function setApprovalForAll(address operator, bool approved) public virtual override {
-        require(operator != _msgSender(), "INCORRECT APPROVE");
-
-        _operatorApprovals[_msgSender()][operator] = approved;
-        emit ApprovalForAll(_msgSender(), operator, approved);
-    }
-
-    /**
-     * @dev See {IERC721-isApprovedForAll}.
-     */
-    function isApprovedForAll(address owner, address operator) public view virtual override returns (bool) {
-        return _operatorApprovals[owner][operator];
-    }
-
-    /**
-     * @dev See {IERC721-transferFrom}.
-     */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public virtual override {
-        //solhint-disable-next-line max-line-length
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "MSG.SENDER NOT OWNER NOR GATEKEEPER");
-
-        _transfer(from, to, tokenId);
-    }
-
-    /**
-     * @dev See {IERC721-safeTransferFrom}.
-     */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public virtual override {
-        safeTransferFrom(from, to, tokenId, "");
-    }
-
-    /**
-     * @dev See {IERC721-safeTransferFrom}.
-     */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory _data
-    ) public virtual override {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "MSG.SENDER NOT OWNER NOR GATEKEEPER");
-        _safeTransfer(from, to, tokenId, _data);
-    }
-
-    /**
-     * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
-     * are aware of the ERC721 protocol to prevent tokens from being forever locked.
-     *
-     * `_data` is additional data, it has no specified format and it is sent in call to `to`.
-     *
-     * This internal function is equivalent to {safeTransferFrom}, and can be used to e.g.
-     * implement alternative mechanisms to perform token transfer, such as signature-based.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must exist and be owned by `from`.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
-     *
-     * Emits a {Transfer} event.
-     */
-    function _safeTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory _data
-    ) internal virtual {
-        _transfer(from, to, tokenId);
-        require(_checkOnERC721Received(from, to, tokenId, _data), "TRANSFER TO NON ERC721Receiver IMPLEMENTER");
     }
 
     /**
@@ -448,26 +295,35 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     * @param tokenId Gateway token id
     */
     function burn(uint256 tokenId) public virtual {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
         _burn(tokenId);
     }
 
     /**
     * @dev Triggers to mint gateway token
     * @param to Gateway token owner
-    * @param tokenId Gateway token id
+    * @param network Gateway token type
+    * @param mask The bitmask for the token
     * @param charge The charge details for token issuance (ignored here - handled if at all by the forwarding contract)
     */
-    function mint(address to, uint256 tokenId, uint256 expiration, uint256 mask, Charge calldata charge) public virtual onlyNonBlacklistedUser(to) {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
+    function mint(address to, uint256 network, uint256 expiration, uint256 mask, Charge calldata charge) public virtual {
+        require(hasRole(GATEKEEPER_ROLE, network, _msgSender()), "MUST BE GATEKEEPER");
 
-        _mint(to, tokenId, expiration, mask);
+        uint256 tokenId = ERC3525._mint(to, network, 1);
+
+        if (expiration > 0) {
+            expirations[tokenId] = expiration;
+        }
+
+        if (mask > 0) {
+            _setBitMask(tokenId, mask);
+        }
     }
 
     function revoke(uint256 tokenId) public virtual override {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
 
-        _tokenStates[tokenId] = TokenState.REVOKED;
+        tokenStates[tokenId] = TokenState.REVOKED;
 
         emit Revoke(tokenId);
     }
@@ -477,9 +333,8 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     * @param tokenId Gateway token id
     */
     function freeze(uint256 tokenId) public virtual override {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
         address tokenOwner = ownerOf(tokenId);
-        require(!_isBlacklisted(tokenOwner), "BLACKLISTED USER");
 
         _freeze(tokenId);
     }
@@ -489,9 +344,7 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     * @param tokenId Gateway token id
     */
     function unfreeze(uint256 tokenId) public virtual override {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        address tokenOwner = ownerOf(tokenId);
-        require(!_isBlacklisted(tokenOwner), "BLACKLISTED USER");
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
 
         _unfreeze(tokenId);
     }
@@ -503,9 +356,7 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     */
     function expiration(uint256 tokenId) public view virtual override returns (uint256) {
         require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FROZEN");
-        uint256 _expiration = _expirations[tokenId];
-
-        return _expiration;
+        return expirations[tokenId];
     }
 
     /**
@@ -514,100 +365,9 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     * @param charge The charge details for token refresh (ignored here - handled if at all by the forwarding contract)
     */
     function setExpiration(uint256 tokenId, uint256 timestamp, Charge calldata charge) public virtual override {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        address tokenOwner = ownerOf(tokenId);
-        require(!_isBlacklisted(tokenOwner), "BLACKLISTED USER");
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
 
         _setExpiration(tokenId, timestamp);
-    }
-
-    /**
-    * @dev Triggers to get default gateway token ID for `owner`
-    * @param owner Token owner address
-    */
-    function getTokenId(address owner) public view virtual override returns (uint256) {
-        require(owner != address(0), "ZERO ADDRESS");
-        return _defaultTokens[owner];
-    }
-
-    /**
-    * @dev Triggers to set token with specified `tokenId` as default for `owner`
-    * @param owner  Token owner address
-    * @param tokenId Gateway token id
-    */
-    function setDefaultTokenId(address owner, uint256 tokenId) public virtual override {
-        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FROZEN");
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-
-        address actualOwner = ownerOf(tokenId);
-        require(actualOwner == owner, "INCORRECT OWNER");
-
-        _defaultTokens[owner] = tokenId;
-    }
-
-    /**
-     * @dev Mints `tokenId` and transfers it to `to`.
-     *
-     * WARNING: Usage of this method is discouraged, use {_safeMint} whenever possible
-     *
-     * Requirements:
-     *
-     * - `tokenId` must not exist.
-     * - `to` cannot be the zero address.
-     *
-     * Emits a {Transfer} event.
-     */
-    function _mint(address to, uint256 tokenId, uint256 expiration, uint256 mask) internal virtual {
-        require(to != address(0), "ZERO ADDRESS");
-        require(!_exists(tokenId), "TOKEN ALREADY EXISTS");
-
-        _balances[to] += 1;
-        _owners[tokenId] = to;
-        if (_defaultTokens[to] == 0) {
-            _defaultTokens[to] = tokenId;
-        }
-
-        if (expiration > 0) {
-            _expirations[tokenId] = expiration;
-        }
-
-        if (mask > 0) {
-            _setBitMask(tokenId, mask);
-        }
-
-        emit Transfer(address(0), to, tokenId);
-    }
-
-    /**
-     * @dev Destroys `tokenId`.
-     * The approval is cleared when the token is burned.
-     *
-     * Requirements:
-     *
-     * - `tokenId` must exist.
-     *
-     * Emits a {Transfer} event.
-     */
-    function _burn(uint256 tokenId) internal virtual {
-        address owner = GatewayToken.ownerOf(tokenId);
-
-        // Clear all state associated with `tokenId`
-        _approve(address(0), tokenId);
-        delete _tokenStates[tokenId];
-        delete _expirations[tokenId];
-        if (bytes(_tokenURIs[tokenId]).length != 0) {
-            delete _tokenURIs[tokenId];
-        }
-        _clearBitMask(tokenId);
-
-        if (_defaultTokens[owner] == tokenId) {
-            delete _defaultTokens[owner];
-        }
-
-        _balances[owner] -= 1;
-        delete _owners[tokenId];
-
-        emit Transfer(owner, address(0), tokenId);
     }
 
     /**
@@ -616,9 +376,9 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     * Emits a {Freeze} event.
     */
     function _freeze(uint256 tokenId) internal virtual {
-        require(_existsAndActive(tokenId), "TOKEN DOESN'T EXISTS OR NOT ACTIVE");
+        require(_existsAndActive(tokenId, true), "TOKEN DOESN'T EXISTS OR NOT ACTIVE");
 
-        _tokenStates[tokenId] = TokenState.FROZEN;
+        tokenStates[tokenId] = TokenState.FROZEN;
 
         emit Freeze(tokenId);
     }
@@ -629,10 +389,10 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     * Emits a {Unfreeze} event.
     */
     function _unfreeze(uint256 tokenId) internal virtual {
-        require(_exists(tokenId), "TOKEN DOESN'T EXISTS");
-        require(_tokenStates[tokenId] == TokenState.FROZEN, "TOKEN NOT FROZEN");
+        require(_exists(tokenId), "TOKEN DOES NOT EXIST");
+        require(tokenStates[tokenId] == TokenState.FROZEN, "TOKEN NOT FROZEN");
 
-        _tokenStates[tokenId] = TokenState.ACTIVE;
+        tokenStates[tokenId] = TokenState.ACTIVE;
 
         emit Unfreeze(tokenId);
     }
@@ -641,93 +401,10 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     * @dev Sets expiration time for `tokenId`.
     */
     function _setExpiration(uint256 tokenId, uint256 timestamp) internal virtual {
-        require(_existsAndActive(tokenId), "TOKEN DOESN'T EXISTS OR ACTIVE");
+        require(_existsAndActive(tokenId, true), "TOKEN DOES NOT EXIST OR IS INACTIVE");
 
-        _expirations[tokenId] = timestamp;
+        expirations[tokenId] = timestamp;
         emit Expiration(tokenId, timestamp);
-    }
-
-    /**
-     * @dev Transfers `tokenId` from `from` to `to`.
-     *  As opposed to {transferFrom}, this imposes no restrictions on msg.sender.
-     *
-     * Requirements:
-     *
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must be owned by `from`.
-     *
-     * Emits a {Transfer} event.
-     */
-    function _transfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal virtual {
-        require(ownerOf(tokenId) == from, "INCORRECT TOKEN OWNER");
-        require(to != address(0), "TRANSFER TO ZERO ADDRESS");
-
-        _beforeTokenTransfer(from, to, tokenId);
-
-        // Clear approvals from the previous owner
-        _approve(address(0), tokenId);
-
-        if (_defaultTokens[from] == tokenId) {
-            delete _defaultTokens[from];
-            _defaultTokens[to] = tokenId;
-        }
-
-        _balances[from] -= 1;
-        _balances[to] += 1;
-        _owners[tokenId] = to;
-
-        emit Transfer(from, to, tokenId);
-    }
-
-    /**
-     * @dev Approve `to` to operate on `tokenId`
-     *
-     * Emits a {Approval} event.
-     */
-    function _approve(address to, uint256 tokenId) internal virtual {
-        _tokenApprovals[tokenId] = to;
-        emit Approval(GatewayToken.ownerOf(tokenId), to, tokenId);
-    }
-
-    /**
-     * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target address.
-     * The call is not executed if the target address is not a contract.
-     *
-     * @param from address representing the previous owner of the given token ID
-     * @param to target address that will receive the tokens
-     * @param tokenId uint256 ID of the token to be transferred
-     * @param _data bytes optional data to send along with the call
-     * @return bool whether the call correctly returned the expected magic value
-     */
-    function _checkOnERC721Received(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory _data
-    ) private returns (bool) {
-        if (to.isContract()) {
-            try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
-                return retval == IERC721Receiver(to).onERC721Received.selector;
-            } catch (bytes memory reason) {
-                if (reason.length == 0) {
-                    revert("ERC721: transfer to non ERC721Receiver implementer");
-                } else {
-                    assembly {
-                        revert(add(32, reason), mload(reason))
-                    }
-                }
-            }
-        } else {
-            return true;
-        }
-    }
-
-    function _isBlacklisted(address user) private view returns (bool) {
-        return IGatewayTokenController(controller).isBlacklisted(user);
     }
 
     /**
@@ -750,30 +427,30 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
         uint256 tokenId
     ) internal virtual {}
 
-    // ===========  ACCESS CONTROLL SECTION ============
+    // ===========  ACCESS CONTROL SECTION ============
 
     /**
     * @dev Triggers to add new gatekeeper into the system. 
     * @param gatekeeper Gatekeeper address
     */
-    function addGatekeeper(address gatekeeper) public virtual {
-        grantRole(GATEKEEPER_ROLE, gatekeeper);
+    function addGatekeeper(address gatekeeper, uint256 network) public virtual {
+        grantRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
     /**
     * @dev Triggers to remove existing gatekeeper from gateway token. 
     * @param gatekeeper Gatekeeper address
     */
-    function removeGatekeeper(address gatekeeper) public virtual {
-        revokeRole(GATEKEEPER_ROLE, gatekeeper);
+    function removeGatekeeper(address gatekeeper, uint256 network) public virtual {
+        revokeRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
     /**
     * @dev Triggers to verify if address has a GATEKEEPER role. 
     * @param gatekeeper Gatekeeper address
     */
-    function isGatekeeper(address gatekeeper) external virtual override returns (bool) {
-        return hasRole(GATEKEEPER_ROLE, gatekeeper);
+    function isGatekeeper(address gatekeeper, uint256 network) external view virtual override returns (bool) {
+        return hasRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
     /**
@@ -782,8 +459,8 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     *
     * @notice Can be triggered by Gateway Token Controller or any Network Authority
     */
-    function addNetworkAuthority(address authority) external virtual override {
-        grantRole(NETWORK_AUTHORITY_ROLE, authority);
+    function addNetworkAuthority(address authority, uint256 network) external virtual override {
+        grantRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
     /**
@@ -792,149 +469,106 @@ contract GatewayToken is MultiERC2771Context, ERC165, AccessControl, IERC721, IE
     *
     * @notice Can be triggered by Gateway Token Controller or any Network Authority
     */
-    function removeNetworkAuthority(address authority) external virtual override {
-        revokeRole(NETWORK_AUTHORITY_ROLE, authority);
+    function removeNetworkAuthority(address authority, uint256 network) external virtual override {
+        revokeRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
     /**
     * @dev Triggers to verify if authority has a NETWORK_AUTHORITY_ROLE role. 
     * @param authority Network Authority address
     */
-    function isNetworkAuthority(address authority) external virtual override returns (bool) {
-        return hasRole(NETWORK_AUTHORITY_ROLE, authority);
+    function isNetworkAuthority(address authority, uint256 network) external view virtual override returns (bool) {
+        return hasRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
-    // ===========  ACCESS CONTROLL SECTION ============
-
-    /**
-    * @dev Triggers to allow token transfers by token owners. 
-    *
-    * @notice Only triggered by Identity.com Admin
-    */
-    function allowTransfers() external virtual override whenTransfersRestricted onlyIdentityAdmin returns (bool) {
-        isTransfersRestricted = false;
-        emit TransfersAccepted(_msgSender());
-
-        return true;
-    }
-
-    /**
-    * @dev Triggers to stop token transfers by token owners. 
-    *
-    * @notice Only triggered by Identity.com Admin
-    */
-    function stopTransfers() external virtual override whenTransfersNotRestricted onlyIdentityAdmin returns (bool) {
-        isTransfersRestricted = true;
-        emit TransfersRestricted(_msgSender());
-
-        return true;
-    }
+    // ===========  ACCESS CONTROL SECTION ============
 
     /**
     * @dev Transfers Gateway Token DAO Manager access from daoManager to `newManager`
     * @param newManager Address to transfer DAO Manager role for.
     * @notice GatewayToken contract has to be DAO Governed
     */
-    function transferDAOManager(address newManager) public override {
-        require(isDAOGoverned, "NOT DAO GOVERNED");
-        require(msg.sender == daoManager, "NOT DAO MANAGER");
+    function transferDAOManager(address previousManager, address newManager, uint256 network) public override {
+        require(isNetworkDAOGoverned[network], "NOT DAO GOVERNED");
+        require(hasRole(DAO_MANAGER_ROLE, network, previousManager), "INCORRECT OLD MANAGER");
+        require(hasRole(DAO_MANAGER_ROLE, network, _msgSender()), "MUST BE DAO MANAGER");
         require(newManager != address(0), "ZERO ADDRESS");
 
-        grantRole(DAO_MANAGER_ROLE, newManager);
-        grantRole(NETWORK_AUTHORITY_ROLE, newManager);
-        grantRole(GATEKEEPER_ROLE, newManager);
+        grantRole(DAO_MANAGER_ROLE, network, newManager);
+        grantRole(NETWORK_AUTHORITY_ROLE, network, newManager);
+        grantRole(GATEKEEPER_ROLE, network, newManager);
 
-        revokeRole(GATEKEEPER_ROLE, daoManager);
-        revokeRole(NETWORK_AUTHORITY_ROLE, daoManager);
-        revokeRole(DAO_MANAGER_ROLE, daoManager);
+        revokeRole(GATEKEEPER_ROLE, network, previousManager);
+        revokeRole(NETWORK_AUTHORITY_ROLE, network, previousManager);
+        revokeRole(DAO_MANAGER_ROLE, network, previousManager);
 
-        daoManager = newManager;
-
-        emit DAOManagerTransfered(msg.sender, newManager);
+        emit DAOManagerTransferred(previousManager, newManager, network);
     }
 
     // ===========  TOKEN BITMASK SECTION ============
 
     /**
     * @dev Triggers to update FlagsStorage contract address
-    * @param _flagsStorage FlagsStorage contract address
+    * @param flagsStorage FlagsStorage contract address
     */
-    function updateFlagsStorage(address _flagsStorage) public {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        _setFlagsStorage(_flagsStorage);
+    function updateFlagsStorage(address flagsStorage) public onlySuperAdmin {
+        _setFlagsStorage(flagsStorage);
     }
 
     /**
     * @dev Triggers to get gateway token bitmask
     */
-    function getTokenBitmask(uint256 _tokenId) public view returns (uint256) {
-        uint256 mask = _getBitMask(_tokenId);
+    function getTokenBitmask(uint256 tokenId) public view returns (uint256) {
+        uint256 mask = _getBitMask(tokenId);
 
         return mask;
     }
 
     /**
-    * @dev Triggers to set full bitmask for gateway token with `_tokenId`
+    * @dev Triggers to set full bitmask for gateway token with `tokenId`
     */
-    function setBitmask(uint256 _tokenId, uint256 _mask) public {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        _setBitMask(_tokenId, _mask);
+    function setBitmask(uint256 tokenId, uint256 mask) public {
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
+        _setBitMask(tokenId, mask);
     }
 
     /**
-    * @dev Triggers to add bitmask for gateway token with `_tokenId`
+    * @dev Triggers to add bitmask for gateway token with `tokenId`
     */
-    function addBitmask(uint256 _tokenId, uint256 _mask) public {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        _addBitMask(_tokenId, _mask);
+    function addBitmask(uint256 tokenId, uint256 mask) public {
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
+        _addBitMask(tokenId, mask);
     }
 
     /**
-    * @dev Triggers to add one bit at particular `_index` for gateway token with `_tokenId`
+    * @dev Triggers to add one bit at particular `index` for gateway token with `tokenId`
     */
-    function addBit(uint256 _tokenId, uint8 _index) public {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        _addBit(_tokenId, _index);
+    function addBit(uint256 tokenId, uint8 index) public {
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
+        _addBit(tokenId, index);
     }
 
     /**
-    * @dev Triggers to remove bits in `_removingMask` for gateway token with `_tokenId`
+    * @dev Triggers to remove bits in `removingMask` for gateway token with `tokenId`
     */
-    function removeBitmask(uint256 _tokenId, uint8 _removingMask) public {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        _removeBits(_tokenId, _removingMask);
+    function removeBitmask(uint256 tokenId, uint8 removingMask) public {
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
+        _removeBits(tokenId, removingMask);
     }
 
     /**
-    * @dev Triggers to clear one bit at particular `_index` for gateway token with `_tokenId`
+    * @dev Triggers to clear one bit at particular `index` for gateway token with `tokenId`
     */
-    function removeBit(uint256 _tokenId, uint8 _index) public {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        _clearBit(_tokenId, _index);
+    function removeBit(uint256 tokenId,  uint8 index) public {
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
+        _clearBit(tokenId, index);
     }
 
     /**
-    * @dev Triggers to remove all bits that was previously removed in FlagsStorage contract for gateway token with `_tokenId`
+    * @dev Triggers to clear bitmask for gateway token with `tokenId`
     */
-    function removeUnsupportedBits(uint256 _tokenId) public {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        _checkUnsupportedBits(_tokenId);
+    function clearBitmask(uint256 tokenId) public {
+        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
+        _clearBitMask(tokenId);
     }
-
-    /**
-    * @dev Triggers to clear bitmask for gateway token with `_tokenId`
-    */
-    function clearBitmask(uint256 _tokenId) public {
-        require(hasRole(GATEKEEPER_ROLE, _msgSender()), "MUST BE GATEKEEPER");
-        _clearBitMask(_tokenId);
-    }
-
-    /**
-    * @dev Triggers to check if gateway token bitmask contains any custom high risk bits from `_highRiskBitMask`
-    * @notice May be triggered to perform custom high risk checks during the validation of gateway token
-    */
-    function anyHighRiskBits(uint256 _tokenId, uint256 _highRiskBitMask) public view returns (bool) {
-        return _checkHighRiskBitMask(_tokenId, _highRiskBitMask);
-    }
-
 }
