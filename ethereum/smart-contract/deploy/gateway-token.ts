@@ -11,9 +11,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const result = await deploy("GatewayToken", {
         from: deployer,
-        args: ["Gateway Protocol", "PASS", flagsStorage.address, [forwarder.address]],
+        args: ["Gateway Protocol", "PASS", deployer, flagsStorage.address, [forwarder.address]],
         log: true,
-        deterministicDeployment: true
+        deterministicDeployment: true,
+        // gasLimit: 8000000
     });
     const gatewayTokenAddress = result.address;
     console.log("deployed GatewayToken at " + gatewayTokenAddress);

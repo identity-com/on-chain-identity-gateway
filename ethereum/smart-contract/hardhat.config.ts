@@ -8,13 +8,13 @@ import '@nomiclabs/hardhat-ethers';
 import '@typechain/hardhat'
 import 'hardhat-deploy';
 
-
 import { checkGT } from "./tasks/checkGT";
 import { addGatekeeper } from "./tasks/addGatekeeper";
 import { issueGT} from "./tasks/issueGT";
 import { fund } from "./tasks/fund";
 import { printPrivateKey } from "./tasks/printPrivateKey";
 import { createWallet } from "./tasks/createWallet";
+import { addForwarder } from "./tasks/addForwarder";
 
 const derivedAccounts = {
   mnemonic: process.env.MNEMONIC || "test test test test test test test test test test test junk",
@@ -48,6 +48,9 @@ task('print-private-key', 'Print the private key of a wallet used by hardhat (WA
     .setAction(printPrivateKey)
 task('create-wallet', 'Create a test wallet')
     .setAction(createWallet)
+task('add-forwarder', 'add a forwarder to the gateway token smart contract (e.g. to support a relayer)')
+    .addParam('forwarder', 'The forwarder to add')
+    .setAction(addForwarder)
 
 module.exports = {
   defaultNetwork: "hardhat",
