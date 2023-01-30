@@ -45,7 +45,7 @@ describe('GatewayToken', async () => {
         flagsStorage = await flagsStorageFactory.deploy(identityCom.address);
         await flagsStorage.deployed();
 
-        gatewayToken = await gatewayTokenFactory.deploy("Gateway Protocol", "GWY", NULL_ADDRESS, [forwarder.address]);
+        gatewayToken = await gatewayTokenFactory.deploy("Gateway Protocol", "GWY", identityCom.address, NULL_ADDRESS, [forwarder.address]);
 
         // create gatekeeper networks
         await gatewayToken.connect(identityCom).createNetwork(gkn1, 'Test GKN 1', false, NULL_ADDRESS);

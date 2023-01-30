@@ -86,13 +86,14 @@ TokenBitMask
      * @dev Gateway Token constructor initializes the contract by 
      * setting a `name` and a `symbol` to the gateway token.
      *
-     * Initiates gateway token roles with main system admin `GATEWAY_TOKEN_CONTROLLER`,
+     * Initiates gateway token roles with main system admin,
      * `NETWORK_AUTHORITY_ROLE` responsible for adding/removing Gatekeepers and 
      * `GATEKEEPER_ROLE` responsible for minting/burning/transferring tokens
      */
     constructor(
         string memory name,
         string memory symbol,
+        address superAdmin,
         address flagsStorage,
         address[] memory trustedForwarders
     )
@@ -100,7 +101,7 @@ TokenBitMask
     ERC3525(name, symbol, 0) {
         isTransfersRestricted = true;
         _setFlagsStorage(flagsStorage);
-        _superAdmins[_msgSender()] = true;
+        _superAdmins[superAdmin] = true;
     }
 
     function _msgSender() internal view virtual override(MultiERC2771Context, Context) returns (address sender) {
@@ -334,7 +335,6 @@ TokenBitMask
     */
     function freeze(uint256 tokenId) public virtual override {
         require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
-        address tokenOwner = ownerOf(tokenId);
 
         _freeze(tokenId);
     }

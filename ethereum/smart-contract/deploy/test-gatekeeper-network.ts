@@ -17,6 +17,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const token = await ethers.getContractAt("GatewayToken", gatewayToken.address);
 
+    // check if superadmin
+    const isSuperAdmin = await token.isSuperAdmin(deployer);
+    console.log("deployer ", deployer, "isSuperAdmin", isSuperAdmin);
+
     const createNetworkTx = await (await token.createNetwork(gatekeeperNetwork, 'Test Gatekeeper Network', false, NULL_ADDRESS, {from: deployer})).wait();
     console.log("created network " + gatekeeperNetwork + " on Gateway Token at " + gatewayToken.address + " using " + createNetworkTx.gasUsed.toNumber() + " gas");
 
