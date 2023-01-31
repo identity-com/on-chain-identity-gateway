@@ -7,7 +7,7 @@ use crate::instructions::network::{
     UpdateGatekeeperData, UpdateGatekeeperFees, UpdateGatekeeperKeys,
 };
 use crate::state::operations::UpdateOperations;
-use crate::state::{AuthKey, UpdateOperands};
+use crate::state::{AuthKey, PassState, UpdateOperands};
 use crate::util::*;
 
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
@@ -111,6 +111,26 @@ impl Gatekeeper {
             self.staking_account = staking_account.key();
         }
         Ok(())
+    }
+
+    pub fn can_set_pass_state(&self, state: PassState) -> bool {
+        match self.gatekeeper_state {
+            GatekeeperState::Active => match state {
+                PassState::Active => true,
+                PassState::Frozen => true,
+                PassState::Revoked => true,
+            },
+            GatekeeperState::Frozen => match state {
+                PassState::Active => false,
+                PassState::Frozen => true,
+                PassState::Revoked => true,
+            },
+            GatekeeperState::Halted => match state {
+                PassState::Active => false,
+                PassState::Frozen => false,
+                PassState::Revoked => false,
+            },
+        }
     }
 }
 
@@ -278,10 +298,12 @@ impl OnChainSize for GatekeeperKeyFlags {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use solana_program::clock::Epoch;
+
     use crate::errors::GatekeeperErrors;
     use crate::instructions::network::UpdateGatekeeperFees;
-    use solana_program::clock::Epoch;
+
+    use super::*;
 
     #[test]
     fn test_can_access_with_auth_authority() {

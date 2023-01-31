@@ -438,14 +438,14 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
           "name": "network",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
         },
         {
           "name": "oldGatekeeper",
@@ -1387,6 +1387,9 @@ export type SolanaAnchorGateway = {
           },
           {
             "name": "FeesNotProvided"
+          },
+          {
+            "name": "InvalidState"
           }
         ]
       }
@@ -1964,14 +1967,14 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
           "name": "network",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
         },
         {
           "name": "oldGatekeeper",
@@ -2913,6 +2916,9 @@ export const IDL: SolanaAnchorGateway = {
           },
           {
             "name": "FeesNotProvided"
+          },
+          {
+            "name": "InvalidState"
           }
         ]
       }

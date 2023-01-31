@@ -2,8 +2,8 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
-use crate::errors::NetworkErrors;
-use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, Pass};
+use crate::errors::{GatekeeperErrors, NetworkErrors};
+use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, GatekeeperState, Pass};
 use crate::util::{
     calculate_network_and_gatekeeper_fee, create_and_invoke_transfer, get_gatekeeper_fees,
     get_network_fees,
@@ -65,6 +65,7 @@ pub struct PassExpire<'info> {
     #[account(
     constraint = pass.gatekeeper == gatekeeper.key(),
     seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
+    constraint = gatekeeper.gatekeeper_state != GatekeeperState::Halted @ GatekeeperErrors::InvalidState,
     bump = gatekeeper.gatekeeper_bump
     )]
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,
@@ -73,7 +74,7 @@ pub struct PassExpire<'info> {
     pub funder: Signer<'info>,
     pub authority: Signer<'info>,
     pub spl_token_program: Program<'info, Token>,
-    #[account(constraint = network.is_token_supported(&mint_account.key()) @ NetworkErrors::TokenNotSupported)]
+    #[account(constraint = network.is_token_supported(& mint_account.key()) @ NetworkErrors::TokenNotSupported)]
     pub mint_account: Account<'info, Mint>,
     #[account(mut)]
     pub funder_token_account: Account<'info, TokenAccount>,

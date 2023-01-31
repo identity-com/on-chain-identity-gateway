@@ -2,6 +2,8 @@ import {
   AdminService,
   airdrop,
   GatekeeperService,
+  GatekeeperState,
+  NetworkService,
   PassState,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
@@ -30,6 +32,7 @@ describe('Verify a pass', () => {
   const programProvider = program.provider as anchor.AnchorProvider;
 
   let gatekeeperService: GatekeeperService;
+  let networkService: NetworkService;
 
   let gatekeeperPDA: PublicKey;
   let passAccount: PublicKey;
@@ -59,6 +62,7 @@ describe('Verify a pass', () => {
       mintAuthority,
       subject,
       mintAccount,
+      networkService,
     } = await setUpAdminNetworkGatekeeper(program, programProvider));
 
     ({ gatekeeperAta, networkAta, funderAta, funderKeypair } =
@@ -124,6 +128,84 @@ describe('Verify a pass', () => {
     expect(funderAccount.amount).to.equal(8000n);
     expect(networkAccount.amount).to.equal(2n);
     expect(gatekeeperAccount.amount).to.equal(1998n);
+  });
+
+  it('Verifies a valid pass', async () => {
+    await gatekeeperService
+      .verifyPass(
+        passAccount,
+        TOKEN_PROGRAM_ID,
+        mint,
+        networkAta.address,
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
+      )
+      .withPartialSigners(funderKeypair)
+      .rpc();
+
+    const funderAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(funderAta.address);
+
+    const networkAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(networkAta.address);
+
+    const gatekeeperAtaAccountInfo = await gatekeeperService
+      .getConnection()
+      .getAccountInfo(gatekeeperAta.address);
+
+    const funderAccount = AccountLayout.decode(funderAtaAccountInfo!.data);
+    const networkAccount = AccountLayout.decode(networkAtaAccountInfo!.data);
+    const gatekeeperAccount = AccountLayout.decode(
+      gatekeeperAtaAccountInfo!.data
+    );
+
+    // Assert
+    expect(funderAccount.amount).to.equal(8000n);
+    expect(networkAccount.amount).to.equal(2n);
+    expect(gatekeeperAccount.amount).to.equal(1998n);
+  });
+
+  it('Fails to verify a pass in a halted gatekeeper', async () => {
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .rpc();
+
+    return expect(
+      gatekeeperService
+        .verifyPass(
+          passAccount,
+          TOKEN_PROGRAM_ID,
+          mint,
+          networkAta.address,
+          gatekeeperAta.address,
+          funderAta.address,
+          funderKeypair.publicKey
+        )
+        .withPartialSigners(funderKeypair)
+        .rpc()
+    ).to.eventually.be.rejectedWith(/InvalidState/);
+  });
+
+  it('Succeeds to verify a pass in a frozen gatekeeper', async () => {
+    await networkService
+      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .rpc();
+
+    await gatekeeperService
+      .verifyPass(
+        passAccount,
+        TOKEN_PROGRAM_ID,
+        mint,
+        networkAta.address,
+        gatekeeperAta.address,
+        funderAta.address,
+        funderKeypair.publicKey
+      )
+      .withPartialSigners(funderKeypair)
+      .rpc();
   });
 
   it('Fails to verify an expired pass', async () => {

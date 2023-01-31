@@ -1,8 +1,10 @@
 use anchor_lang::prelude::*;
 
-use crate::constants::PASS_SEED;
-use crate::errors::{NetworkErrors, PassErrors};
-use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, NetworkFeatures, Pass};
+use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
+use crate::errors::{GatekeeperErrors, NetworkErrors, PassErrors};
+use crate::state::{
+    Gatekeeper, GatekeeperKeyFlags, GatekeeperNetwork, GatekeeperState, NetworkFeatures, Pass,
+};
 
 pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> {
     // TODO: Check if feature flag is set
@@ -24,16 +26,24 @@ pub struct PassChangeGatekeeper<'info> {
     mut
     )]
     pub pass: Account<'info, Pass>,
-    pub authority: Signer<'info>,
     #[account(
     constraint = old_gatekeeper.gatekeeper_network == network.key(),
     constraint = pass.network == network.key(),
     constraint = network.supports_feature(NetworkFeatures::CHANGE_PASS_GATEKEEPER) @ NetworkErrors::UnsupportedNetworkFeature
     )]
     pub network: Box<Account<'info, GatekeeperNetwork>>,
+    pub authority: Signer<'info>,
+    #[account(
+    constraint = pass.gatekeeper == old_gatekeeper.key(),
+    constraint = old_gatekeeper.gatekeeper_state != GatekeeperState::Halted @ GatekeeperErrors::InvalidState,
+    seeds = [GATEKEEPER_SEED, old_gatekeeper.authority.as_ref(), old_gatekeeper.gatekeeper_network.as_ref()],
+    bump = old_gatekeeper.gatekeeper_bump
+    )]
     pub old_gatekeeper: Account<'info, Gatekeeper>,
     #[account(
-    constraint = old_gatekeeper.gatekeeper_network == new_gatekeeper.gatekeeper_network @ PassErrors::InvalidNetwork
+    constraint = old_gatekeeper.gatekeeper_network == new_gatekeeper.gatekeeper_network @ PassErrors::InvalidNetwork,
+    seeds = [GATEKEEPER_SEED, new_gatekeeper.authority.as_ref(), new_gatekeeper.gatekeeper_network.as_ref()],
+    bump = new_gatekeeper.gatekeeper_bump
     )]
     pub new_gatekeeper: Account<'info, Gatekeeper>,
 }

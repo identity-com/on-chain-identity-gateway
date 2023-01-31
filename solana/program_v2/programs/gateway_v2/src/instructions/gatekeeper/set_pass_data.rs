@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
-use crate::constants::PASS_SEED;
-use crate::state::{Gatekeeper, GatekeeperKeyFlags, Pass};
+use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
+use crate::state::{Gatekeeper, GatekeeperKeyFlags, GatekeeperState, Pass};
 
 pub fn set_pass_data(
     ctx: Context<PassSetData>,
@@ -31,5 +31,11 @@ pub struct PassSetData<'info> {
     )]
     pub pass: Account<'info, Pass>,
     pub authority: Signer<'info>,
+    #[account(
+    constraint = pass.gatekeeper == gatekeeper.key(),
+    constraint = gatekeeper.gatekeeper_state != GatekeeperState::Halted,
+    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), gatekeeper.gatekeeper_network.as_ref()],
+    bump = gatekeeper.gatekeeper_bump
+    )]
     pub gatekeeper: Account<'info, Gatekeeper>,
 }
