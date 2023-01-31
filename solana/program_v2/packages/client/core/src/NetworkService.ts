@@ -345,7 +345,7 @@ export class NetworkService extends AbstractService {
             stakingAccount: acct?.stakingAccount,
             tokenFees: acct?.tokenFees as unknown as FeeStructure[],
             authKeys: acct?.authKeys as AuthKeyStructure[],
-            state: acct?.gatekeeperState as GatekeeperState,
+            state: acct?.gatekeeperState as unknown as GatekeeperState,
           };
         } else {
           return null;

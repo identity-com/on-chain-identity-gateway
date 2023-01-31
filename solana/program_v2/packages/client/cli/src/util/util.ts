@@ -11,8 +11,8 @@ export const parseNetworkUpdateData = (
   updateData: UpdateNetworkData
 ): UpdateNetworkData => {
   const keysArr = Object.keys(updateData);
-  // eslint-disable-next-line unicorn/no-array-for-each
-  keysArr.forEach((key) => {
+
+  for (const key of keysArr) {
     if (key === 'fees') {
       updateData[key].add.map((fee: FeeStructure) => {
         fee.token = new PublicKey(fee.token);
@@ -36,7 +36,7 @@ export const parseNetworkUpdateData = (
       });
       updateData[key].remove.map((token: PublicKey) => new PublicKey(token));
     }
-  });
+  }
   return updateData;
 };
 
@@ -44,8 +44,8 @@ export const parseGatekeeperUpdateData = (
   updateData: UpdateGatekeeperData
 ): UpdateGatekeeperData => {
   const keysArr = Object.keys(updateData);
-  // eslint-disable-next-line unicorn/no-array-for-each
-  keysArr.forEach((key) => {
+
+  for (const key of keysArr) {
     if (key === 'tokenFees') {
       updateData[key].add.map((fee: FeeStructure) => {
         fee.token = new PublicKey(fee.token);
@@ -62,6 +62,6 @@ export const parseGatekeeperUpdateData = (
         (authKey: PublicKey) => new PublicKey(authKey)
       );
     }
-  });
+  }
   return updateData;
 };
