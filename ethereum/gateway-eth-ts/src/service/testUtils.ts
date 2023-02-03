@@ -1,14 +1,23 @@
-import {Wallet} from "ethers";
-import {Provider} from "@ethersproject/providers";
-
-// Deployed by Hardhat on localnet
-export const DEFAULT_GATEWAY_TOKEN_ADDRESS = "0xd8058efe0198ae9dD7D563e1b4938Dcbc86A1F81";
-export const DEFAULT_FORWARDER_ADDRESS = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
+import { Wallet } from "ethers";
+import { Provider } from "@ethersproject/providers";
 
 export const DEFAULT_MNEMONIC =
   "test test test test test test test test test test test junk";
 
 // During testing, the 0th index is the deployer key, the 2nd index is used as the gatekeeper key
 // See hardhat.config.ts
-export const deployerWallet = (provider: Provider) => Wallet.fromMnemonic(DEFAULT_MNEMONIC, "m/44'/60'/0'/0/0").connect(provider);
-export const gatekeeperWallet = (provider: Provider) => Wallet.fromMnemonic(DEFAULT_MNEMONIC, "m/44'/60'/0'/0/2").connect(provider);
+export const deployerWallet = (provider: Provider) =>
+  Wallet.fromMnemonic(DEFAULT_MNEMONIC, "m/44'/60'/0'/0/0").connect(provider);
+export const gatekeeperWallet = (provider: Provider) =>
+  Wallet.fromMnemonic(DEFAULT_MNEMONIC, "m/44'/60'/0'/0/2").connect(provider);
+
+// matches the bootstrapped network in gateway-token
+export const gatekeeperNetwork = 1n;
+
+// These addresses are the ones that hardhat deploys to in the local test environment
+// Note, they differ from the default create2 addresses used in production
+export const TEST_GATEWAY_TOKEN_ADDRESS = {
+  gatewayToken: "0xAFE86Ca96D5fBcB8Cb0AE8A12edF48005c66b844",
+  forwarder: "0xa2C410cc10B4aDA3a1311435715e514bDBeD7D7C",
+  flagsStorage: "0x17963bd7A313BCa22Fb1EDFCF353607d71aB593c",
+};

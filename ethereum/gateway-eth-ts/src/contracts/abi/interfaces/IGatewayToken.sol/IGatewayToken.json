@@ -17,35 +17,15 @@
           "internalType": "address",
           "name": "newDAOManager",
           "type": "address"
-        }
-      ],
-      "name": "DAOManagerTransfered",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
+        },
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
         }
       ],
-      "name": "TransfersAccepted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "TransfersRestricted",
+      "name": "DAOManagerTransferred",
       "type": "event"
     },
     {
@@ -54,6 +34,11 @@
           "internalType": "address",
           "name": "authority",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
         }
       ],
       "name": "addNetworkAuthority",
@@ -62,28 +47,30 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "allowTransfers",
-      "outputs": [
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
         {
           "internalType": "bool",
-          "name": "",
+          "name": "daoGoverned",
           "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "daoManager",
-      "outputs": [
+        },
         {
           "internalType": "address",
-          "name": "",
+          "name": "daoManager",
           "type": "address"
         }
       ],
+      "name": "createNetwork",
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -129,25 +116,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        }
-      ],
-      "name": "getTokenId",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
@@ -165,24 +133,16 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "isDAOGoverned",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
           "name": "gatekeeper",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
         }
       ],
       "name": "isGatekeeper",
@@ -202,6 +162,11 @@
           "internalType": "address",
           "name": "authority",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
         }
       ],
       "name": "isNetworkAuthority",
@@ -219,8 +184,68 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expiration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "mask",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            },
+            {
+              "internalType": "enum ChargeType",
+              "name": "chargeType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct Charge",
+          "name": "charge",
+          "type": "tuple"
+        }
+      ],
+      "name": "mint",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "authority",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
         }
       ],
       "name": "removeNetworkAuthority",
@@ -231,31 +256,18 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
         },
         {
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
         }
       ],
-      "name": "setDefaultTokenId",
+      "name": "renameNetwork",
       "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "stopTransfers",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -263,8 +275,18 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "previousManager",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
           "name": "newManager",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
         }
       ],
       "name": "transferDAOManager",

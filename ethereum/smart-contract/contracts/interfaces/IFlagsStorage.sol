@@ -7,9 +7,9 @@ interface IFlagsStorage {
     /**
     * @dev Emitted when DAO Controller is updated from `prevDAOController` to `daoController`.
     */
-    event DAOControllerUpdated(
-        address indexed prevDAOController,
-        address indexed daoController
+    event SuperAdminUpdated(
+        address indexed prevSuperAdmin,
+        address indexed superAdmin
     );
 
     /**
@@ -41,7 +41,7 @@ interface IFlagsStorage {
     /**
     * @dev Triggers to get DAO Controller address
     */
-    function daoController() external view returns (address);
+    function superAdmin() external view returns (address);
 
     /**
     * @dev Triggers to get flag index from flags mapping
@@ -54,16 +54,6 @@ interface IFlagsStorage {
     * @return Boolean for flag support
     */
     function isFlagSupported(bytes32 _flag) external view returns (bool);
-
-    /**
-    * @dev Triggers to check if several flags are supported
-    * @param _flags Array of flags
-    * @return Array of booleans with support per flag
-    */
-    function isFlagsSupported(bytes32[] memory _flags)
-        external
-        view
-        returns (bool[] memory);
 
     /**
     * @dev Triggers to remove existing flag from gateway token system
@@ -85,14 +75,9 @@ interface IFlagsStorage {
     function supportedFlagsMask() external view returns (uint256);
 
     /**
-    * @dev Triggers to get bitmask of all unsupported flags
-    */
-    function unsupportedFlagsMask() external view returns (uint256);
-
-    /**
     * @dev Triggers to transfer ownership of this contract to new DAO Controller, reverts on zero address and wallet addresses
-    * @param _newDAOController New DAO Controller contract address
+    * @param _newSuperAdmin New DAO Controller contract address
     * @notice Only executed by existing DAO Manager
     */
-    function updateDAOManager(address _newDAOController) external;
+    function updateSuperAdmin(address _newSuperAdmin) external;
 }

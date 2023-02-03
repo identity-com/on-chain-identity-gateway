@@ -1,0 +1,25 @@
+[workspace]
+types = "packages/client/idl/src/"
+
+[features]
+seeds = false
+
+[programs.localnet]
+solana_anchor_gateway = "gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft"
+[programs.devnet]
+solana_anchor_gateway = "gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft"
+[programs.mainnet]
+solana_anchor_gateway = "gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "localnet"
+wallet = "./packages/tests/fixtures/keypairs/7aHML6LXPtEuUDu4Azv52KbgEqdSDk9syqFvCAE63ZT5.json"
+
+[scripts]
+createTestFixtureAccount = "./node_modules/.bin/ts-node ./packages/tests/scripts/createTestFixtureAccount.ts"
+
+[test]
+startup_wait = 20000

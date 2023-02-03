@@ -1,7 +1,7 @@
-export { run } from "@oclif/core";
 export * from "./service";
 export {
   getConnection,
+  getClusterUrl,
   airdropTo,
   constants,
   SentTransaction,
@@ -11,5 +11,6 @@ export {
   ChargeOptions,
   TransactionOptions,
   Action,
-  GatekeeperConfig
+  GatekeeperConfig,
+  ExtendedCluster,
 } from "./util";

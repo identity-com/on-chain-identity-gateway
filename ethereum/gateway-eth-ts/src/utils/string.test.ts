@@ -1,6 +1,6 @@
 import { toBytes32 } from "./string";
-import { utils } from "ethers/lib/ethers";
 import assert = require("assert");
+import { utils } from "ethers";
 
 describe("Check string conversions", function () {
   const sampleString = "SampleString";

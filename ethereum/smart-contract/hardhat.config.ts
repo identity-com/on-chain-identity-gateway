@@ -1,16 +1,20 @@
+import 'dotenv/config';
+import * as dotenv from 'dotenv'
+dotenv.config();
+
 import {task} from "hardhat/config";
-import '@nomiclabs/hardhat-waffle';
+import '@nomicfoundation/hardhat-toolbox';
+import '@nomiclabs/hardhat-ethers';
 import '@typechain/hardhat'
 import 'hardhat-deploy';
-import 'hardhat-contract-sizer'
-import * as dotenv from 'dotenv'
 
 import { checkGT } from "./tasks/checkGT";
 import { addGatekeeper } from "./tasks/addGatekeeper";
-import {issueGT} from "./tasks/issueGT";
-import {fund} from "./tasks/fund";
-
-dotenv.config();
+import { issueGT} from "./tasks/issueGT";
+import { fund } from "./tasks/fund";
+import { printPrivateKey } from "./tasks/printPrivateKey";
+import { createWallet } from "./tasks/createWallet";
+import { addForwarder } from "./tasks/addForwarder";
 
 const derivedAccounts = {
   mnemonic: process.env.MNEMONIC || "test test test test test test test test test test test junk",
@@ -19,19 +23,19 @@ const derivedAccounts = {
   count: 20,
 }
 const liveAccounts = (process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY) ?
-    [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`]
+    [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.GATEKEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY}`]
     : derivedAccounts;
 
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
     .addParam('address', 'The wallet to check')
-    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract')
+    .addParam('gatekeepernetwork', 'The gatekeeper network')
     .setAction(checkGT)
-task('add-gatekeeper', 'check if a wallet has a gateway token for a particular gatekeeper network')
+task('add-gatekeeper', 'add a gatekeeper to a network')
     .addParam('gatekeeper', 'The gatekeeper to add')
-    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to add the gatekeeper to')
+    .addParam('gatekeepernetwork', 'The gatekeeper network to add the gatekeeper to')
     .setAction(addGatekeeper)
 task('issue-gt', 'issue a gateway token')
-    .addParam('gatekeepernetwork', 'The gatekeeper network smart contract to issue the token against')
+    .addParam('gatekeepernetwork', 'The gatekeeper network to issue the token against')
     .addParam('address', 'The wallet to issue the gateway token for')
     .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
     .setAction(issueGT)
@@ -39,6 +43,14 @@ task('fund', 'fund a wallet')
     .addParam('address', 'The wallet to fund')
     .addParam('amount', 'The amount in eth to send')
     .setAction(fund)
+task('print-private-key', 'Print the private key of a wallet used by hardhat (WARNING - DO NOT USE THIS FOR PRODUCTION KEYS)')
+    .addParam('index', 'the index of the wallet to get the private key for')
+    .setAction(printPrivateKey)
+task('create-wallet', 'Create a test wallet')
+    .setAction(createWallet)
+task('add-forwarder', 'add a forwarder to the gateway token smart contract (e.g. to support a relayer)')
+    .addParam('forwarder', 'The forwarder to add')
+    .setAction(addForwarder)
 
 module.exports = {
   defaultNetwork: "hardhat",
@@ -57,17 +69,11 @@ module.exports = {
       accounts: liveAccounts,
       chainId: 1,
     },
-    ropsten: {
-      url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
+    sepolia: {
+      url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
       accounts: liveAccounts,
-      chainId: 3,
-    },
-    rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
-      accounts: liveAccounts,
-      chainId: 4,
+      chainId: 11155111,
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -103,7 +109,7 @@ module.exports = {
       url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
       accounts: liveAccounts,
-      chainId: 300,
+      chainId: 420,
     },
     optimismMainnet: {
       url: `https://optimism-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -123,17 +129,53 @@ module.exports = {
       accounts: liveAccounts,
       chainId: 11297108109,
     },
-    arbitrumRinkeby: {
-      url: `https://arbitrum-rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
+    arbitrumGoerli: {
+      url: `https://arbitrum-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
       accounts: liveAccounts,
-      chainId: 421611,
+      chainId: 421613,
     },
     arbitrumMainnet: {
       url: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
       accounts: liveAccounts,
       chainId: 42161,
+    },
+    celoMainnet: {
+      url: `https://celo-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 42220,
+    },
+    celoAlfajores: {
+      url: `https://celo-alfajores.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 44787,
+    },
+    avalancheCChain: {
+      url: `https://avalanche-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 43114,
+    },
+    avalancheCChainFuji: {
+      url: `https://avalanche-fuji.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 43113,
+    },
+    starknetMainnet: {
+      url: `https://starknet-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 0, // not documented anywhere
+    },
+    starknetGoerli: {
+      url: `https://starknet-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 0, // not documented anywhere
     },
   },
   solidity: {
@@ -182,9 +224,15 @@ module.exports = {
       default: 1,
     },
     gatekeeper: {
-      default: '0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688',
-      localhost: 2,
-      hardhat: 2
+      default: 2,
     },
+  },
+  typechain: {
+    // outDir: 'src/types',
+    // target: 'ethers-v5',
+    // alwaysGenerateOverloads: false, // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
+    // externalArtifacts: ['externalArtifacts/*.json'], // optional array of glob patterns with external artifacts to process (for example external libs from node_modules)
+    // dontOverrideCompile: false // defaults to false
+    tsNocheck: true,
   },
 }
