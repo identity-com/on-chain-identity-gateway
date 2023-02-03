@@ -35,7 +35,7 @@ export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
     const forwarder = (await ethers.getContractAt(
         'Forwarder',
         DEFAULT_FORWARDER_ADDRESS,
-    )).connect(gatekeeper);
+    )).connect(owner);
 
     const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as Forwarder, {
       from: gatekeeper.address,
