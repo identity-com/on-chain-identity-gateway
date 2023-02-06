@@ -16,13 +16,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['1.60']
-        os: [ubuntu-latest]
+        rust: [ '1.60' ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-        
+
       - name: Use Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
@@ -57,9 +57,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ['1.60']
-        solana: ['stable']
-        os: [ubuntu-latest]
+        rust: [ '1.60' ]
+        solana: [ 'v1.9.29' ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Checkout repo
@@ -86,7 +86,7 @@ jobs:
           path: |
             ~/.cache
           key: solana-${{ matrix.solana }}
-          
+
       - name: Install Solana
         run: |
           sh -c "$(curl -sSfL https://release.solana.com/${{ matrix.solana }}/install)"
