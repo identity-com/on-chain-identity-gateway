@@ -1,0 +1,105 @@
+name: "Program Auto Publish Workflow"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: |
+          Choose from which environment to run this workflow
+        required: true
+        type: string
+      package-path:
+        description: |
+          Provide the path to your Cargo.toml file
+        required: true
+        type: string
+      program-address:
+        description: |
+          Provide the program address
+        required: true
+        type: string
+      solana-version:
+        description: |
+          The Solana version to build against
+        required: true
+        type: string
+      rust-version:
+        description: |
+          The Rust version to build against
+        required: true
+        type: string
+      working-directory:
+        description: |
+          The working directory for the project to build
+        required: false
+        default: './'
+        type: string
+      solana-environment:
+        description: |
+          The solana environment to deploy to
+        required: true
+        type: string
+      program-binary:
+        description: |
+          The program binary to deploy
+        required: true
+        type: string
+    secrets:
+      program-authority:
+        required: true
+        description: |
+          The Solana authority for updating the program
+
+jobs:
+  build-deploy:
+    name: Deploy the program, built on Solana ${{ inputs.solana-version }}, Rust ${{ inputs.rust-version }}, and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    environment: ${{ inputs.environment }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Rust ${{ inputs.rust-version }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ inputs.rust-version }}
+
+      - name: Cache build dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./program/target
+          key: cargo-build-${{ hashFiles('solana/program_v2/Cargo.lock') }}
+
+      - name: Cache Solana version
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.local/share/solana/
+          key: solana-${{ inputs.solana-version }}
+
+      - name: Install Solana
+        if: steps.cache-solana.outputs.cache-hit != 'true'
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/${{ inputs.solana-version }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Build programs
+        uses: actions-rs/cargo@v1
+        with:
+          command: build-bpf
+          args: '--manifest-path ${{ inputs.working-directory }}/Cargo.toml'
+
+      - name: Deploy dev program
+        working-directory: "./solana/program_v2"
+        run: |
+          echo "${{ secrets.program-authority }}" > ~/.config/solana/id.json
+          solana config set --url ${{ inputs.solana-environment}}
+          solana program deploy ${{ inputs.program-bin }} --program-id ${{ inputs.program-address }}
+          solana program show  ${{ inputs.program-address }}
