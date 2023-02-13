@@ -1,8 +1,6 @@
 name: Gateway_V2 Program
 on:
   push:
-    paths:
-      - "solana/program_v2/**"
   pull_request:
 jobs:
   program-lint:
