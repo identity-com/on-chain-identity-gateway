@@ -3,11 +3,8 @@ name: "Program Auto Publish"
 on:
   workflow_run:
     workflows: [ "Gateway_V2 Program" ]
-    branches: [ develop ]
     types:
       - completed
-    paths:
-      - "solana/program_v2/programs/gateway_v2/Cargo.toml"
 
 env:
   CARGO_TERM_COLOR: always
