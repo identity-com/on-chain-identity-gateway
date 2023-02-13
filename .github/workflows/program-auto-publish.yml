@@ -2,7 +2,7 @@ name: "Program Auto Publish"
 
 on:
   workflow_run:
-    workflows: [ "Gateway_V2 Program" ]
+    workflows: [ "*" ]
     types:
       - completed
 
