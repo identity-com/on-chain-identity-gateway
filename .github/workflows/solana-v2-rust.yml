@@ -1,4 +1,4 @@
-name: Gateway_V2 Program
+name: Gateway_V2_Program
 on:
   push:
   pull_request:
