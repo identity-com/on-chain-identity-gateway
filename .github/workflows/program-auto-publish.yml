@@ -3,8 +3,8 @@ name: "Program Auto Publish"
 on:
   workflow_run:
     workflows: [ Gateway_V2_Program ]
-#    types:
-#      - completed
+  #    types:
+  #      - completed
 
 env:
   CARGO_TERM_COLOR: always
