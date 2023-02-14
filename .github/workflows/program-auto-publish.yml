@@ -1,10 +1,11 @@
 name: "Program Auto Publish"
 
 on:
-  workflow_run:
-    workflows: [ Gateway_V2_Program ]
-    types:
-      - completed
+  push:
+#  workflow_run:
+#    workflows: [ Gateway_V2_Program ]
+#    types:
+#      - completed
 
 env:
   CARGO_TERM_COLOR: always
