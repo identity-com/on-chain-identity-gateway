@@ -86,6 +86,25 @@ const _abi = [
     inputs: [
       {
         internalType: "uint256",
+        name: "network",
+        type: "uint256",
+      },
+    ],
+    name: "getNetwork",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
         name: "tokenId",
         type: "uint256",
       },
@@ -209,6 +228,11 @@ const _abi = [
         internalType: "uint256",
         name: "mask",
         type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "tokenURI",
+        type: "string",
       },
       {
         components: [

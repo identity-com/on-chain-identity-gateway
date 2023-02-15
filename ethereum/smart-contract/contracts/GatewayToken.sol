@@ -14,7 +14,6 @@ import "./interfaces/IERC721Expirable.sol";
 import "./interfaces/IERC721Revokable.sol";
 import "./MultiERC2771Context.sol";
 import "./library/Charge.sol";
-import "hardhat/console.sol";
 import "./ParameterizedAccessControl.sol";
 
 

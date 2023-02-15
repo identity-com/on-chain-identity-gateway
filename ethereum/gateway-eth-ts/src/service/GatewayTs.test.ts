@@ -36,6 +36,17 @@ describe("GatewayTS", function () {
     );
   });
 
+  it("should get the gatekeeper network name", async () => {
+    const gkn = await gateway.getGatekeeperNetwork(BigInt(1));
+    assert.equal(gkn, "tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf");
+  });
+
+  it("should list all gatekeeper networks", async () => {
+    const networks = await gateway.listNetworks();
+    assert.equal(Object.keys(networks).length, 1);
+    assert.equal(networks["tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf"], 1);
+  });
+
   it("should issue a token", async () => {
     await (await gateway.issue(sampleWalletAddress, gatekeeperNetwork)).wait();
 

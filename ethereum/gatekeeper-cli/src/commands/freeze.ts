@@ -2,7 +2,7 @@ import {
   confirmationsFlag,
   feesFlag, gatekeeperNetworkFlag,
   gatewayTokenAddressFlag,
-  chainFlag, parseFlagsWithPrivateKey, privateKeyFlag,
+  chainFlag, parseFlagsWithPrivateKey, privateKeyFlag, gasLimitFlag,
 } from '../utils/oclif/flags'
 import {Command, Flags} from '@oclif/core'
 import {makeGatewayTs} from '../utils/oclif/utils'
@@ -23,6 +23,7 @@ export default class FreezeToken extends Command {
     gatekeeperNetwork: gatekeeperNetworkFlag(),
     chain: chainFlag(),
     fees: feesFlag(),
+    gasLimit: gasLimitFlag(),
     confirmations: confirmationsFlag(),
   };
 

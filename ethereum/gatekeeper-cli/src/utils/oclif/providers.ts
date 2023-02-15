@@ -1,8 +1,4 @@
-import {
-  BaseProvider,
-  JsonRpcProvider,
-  getDefaultProvider, InfuraProvider, Networkish,
-} from '@ethersproject/providers'
+import {BaseProvider, getDefaultProvider, InfuraProvider, JsonRpcProvider, Networkish} from '@ethersproject/providers'
 import {Network} from '@ethersproject/networks'
 import {ConnectionInfo} from '@ethersproject/web'
 
@@ -93,6 +89,14 @@ export const networks = {
     url: 'https://starknet-goerli.infura.io/v3/',
     chainId: 0,
   },
+  xdc: {
+    url: 'https://erpc.xinfin.network',
+    chainId: 50,
+  },
+  xdcApothem: {
+    url: 'https://erpc.apothem.network',
+    chainId: 51,
+  },
 }
 
 class ExtendedInfuraProvider extends InfuraProvider {
@@ -116,11 +120,14 @@ class ExtendedInfuraProvider extends InfuraProvider {
 }
 
 export const getProvider = function (
-  network: string,
+  network:  keyof typeof networks,
 ): BaseProvider {
-  if (network === 'localhost' || network === 'hardhat') return getLocalhostProvider()
+  if (network === 'localhost') return getLocalhostProvider()
 
-  if (process.env.INFURA_API_KEY) return new ExtendedInfuraProvider(network, process.env.INFURA_API_KEY)
+  const url = networks[network].url
+  if (url.includes('infura')) {
+    return new ExtendedInfuraProvider(network, process.env.INFURA_API_KEY)
+  }
 
-  return getDefaultProvider(network)
+  return getDefaultProvider(url)
 }

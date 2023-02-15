@@ -64,11 +64,12 @@ export interface GatewayTokenInterface extends utils.Interface {
     "contractURI()": FunctionFragment;
     "controller()": FunctionFragment;
     "createNetwork(uint256,string,bool,address)": FunctionFragment;
-    "expiration(uint256)": FunctionFragment;
     "flagsStorage()": FunctionFragment;
     "freeze(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
+    "getExpiration(uint256)": FunctionFragment;
     "getIdentity(uint256)": FunctionFragment;
+    "getNetwork(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32,uint256)": FunctionFragment;
     "getToken(uint256)": FunctionFragment;
     "getTokenBitmask(uint256)": FunctionFragment;
@@ -84,7 +85,7 @@ export interface GatewayTokenInterface extends utils.Interface {
     "isTransfersRestricted()": FunctionFragment;
     "isTrustedForwarder(address)": FunctionFragment;
     "metadataDescriptor()": FunctionFragment;
-    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
+    "mint(address,uint256,uint256,uint256,string,(uint256,uint8,address,address))": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "removeBit(uint256,uint8)": FunctionFragment;
@@ -121,6 +122,7 @@ export interface GatewayTokenInterface extends utils.Interface {
     "valueDecimals()": FunctionFragment;
     "verifyToken(address,uint256)": FunctionFragment;
     "verifyToken(uint256)": FunctionFragment;
+    "withdraw(uint256)": FunctionFragment;
   };
 
   getFunction(
@@ -144,11 +146,12 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "contractURI"
       | "controller"
       | "createNetwork"
-      | "expiration"
       | "flagsStorage"
       | "freeze"
       | "getApproved"
+      | "getExpiration"
       | "getIdentity"
+      | "getNetwork"
       | "getRoleAdmin"
       | "getToken"
       | "getTokenBitmask"
@@ -201,6 +204,7 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "valueDecimals"
       | "verifyToken(address,uint256)"
       | "verifyToken(uint256)"
+      | "withdraw"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -289,10 +293,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "expiration",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "flagsStorage",
     values?: undefined
   ): string;
@@ -305,7 +305,15 @@ export interface GatewayTokenInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getExpiration",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getIdentity",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getNetwork",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -383,6 +391,7 @@ export interface GatewayTokenInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
       ChargeStruct
     ]
   ): string;
@@ -561,6 +570,10 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "verifyToken(uint256)",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "withdraw",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "DAO_MANAGER_ROLE",
@@ -623,7 +636,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "createNetwork",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "expiration", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "flagsStorage",
     data: BytesLike
@@ -634,9 +646,14 @@ export interface GatewayTokenInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getExpiration",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getIdentity",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getNetwork", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
     data: BytesLike
@@ -800,6 +817,7 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "verifyToken(uint256)",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
@@ -1170,11 +1188,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    expiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     flagsStorage(overrides?: CallOverrides): Promise<[string]>;
 
     freeze(
@@ -1187,8 +1200,18 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getExpiration(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     getIdentity(
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    getNetwork(
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
@@ -1283,7 +1306,8 @@ export interface GatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
+      tokenURI: PromiseOrValue<string>,
+      arg5: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1383,7 +1407,7 @@ export interface GatewayToken extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
+      arg2: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1479,6 +1503,11 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    withdraw(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
   };
 
   DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -1569,11 +1598,6 @@ export interface GatewayToken extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  expiration(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   flagsStorage(overrides?: CallOverrides): Promise<string>;
 
   freeze(
@@ -1586,8 +1610,18 @@ export interface GatewayToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getExpiration(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   getIdentity(
     tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  getNetwork(
+    network: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
 
@@ -1682,7 +1716,8 @@ export interface GatewayToken extends BaseContract {
     network: PromiseOrValue<BigNumberish>,
     expiration: PromiseOrValue<BigNumberish>,
     mask: PromiseOrValue<BigNumberish>,
-    charge: ChargeStruct,
+    tokenURI: PromiseOrValue<string>,
+    arg5: ChargeStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1782,7 +1817,7 @@ export interface GatewayToken extends BaseContract {
   setExpiration(
     tokenId: PromiseOrValue<BigNumberish>,
     timestamp: PromiseOrValue<BigNumberish>,
-    charge: ChargeStruct,
+    arg2: ChargeStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1879,6 +1914,11 @@ export interface GatewayToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  withdraw(
+    amount: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<string>;
 
@@ -1968,11 +2008,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    expiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     flagsStorage(overrides?: CallOverrides): Promise<string>;
 
     freeze(
@@ -1985,8 +2020,18 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    getExpiration(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getIdentity(
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getNetwork(
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
 
@@ -2081,7 +2126,8 @@ export interface GatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
+      tokenURI: PromiseOrValue<string>,
+      arg5: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2181,7 +2227,7 @@ export interface GatewayToken extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
+      arg2: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2275,6 +2321,11 @@ export interface GatewayToken extends BaseContract {
 
     "verifyToken(uint256)"(
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    withdraw(
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
   };
@@ -2544,11 +2595,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    expiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     flagsStorage(overrides?: CallOverrides): Promise<BigNumber>;
 
     freeze(
@@ -2561,8 +2607,18 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getExpiration(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getIdentity(
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getNetwork(
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -2649,7 +2705,8 @@ export interface GatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
+      tokenURI: PromiseOrValue<string>,
+      arg5: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2749,7 +2806,7 @@ export interface GatewayToken extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
+      arg2: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2844,6 +2901,11 @@ export interface GatewayToken extends BaseContract {
     "verifyToken(uint256)"(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    withdraw(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
@@ -2940,11 +3002,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    expiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     flagsStorage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     freeze(
@@ -2957,8 +3014,18 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getExpiration(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getIdentity(
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getNetwork(
+      network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -3049,7 +3116,8 @@ export interface GatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
+      tokenURI: PromiseOrValue<string>,
+      arg5: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -3149,7 +3217,7 @@ export interface GatewayToken extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
+      arg2: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -3246,6 +3314,11 @@ export interface GatewayToken extends BaseContract {
     "verifyToken(uint256)"(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    withdraw(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

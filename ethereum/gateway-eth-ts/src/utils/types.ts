@@ -60,11 +60,13 @@ export type MappedWriteOperation<O> = {
 export type ReadOnlyOps =
   | "getTokenState"
   | "getToken"
+  | "getNetwork"
   | "verifyToken(address,uint256)"
   | "getTokenIdsByOwnerAndNetwork";
 export const readOnlyOpNames = [
   "getTokenState",
   "getToken",
+  "getNetwork",
   "verifyToken(address,uint256)",
   "getTokenIdsByOwnerAndNetwork",
 ];

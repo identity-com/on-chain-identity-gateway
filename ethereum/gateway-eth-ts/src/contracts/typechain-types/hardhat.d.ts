@@ -86,9 +86,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC721Expirable__factory>;
     getContractFactory(
-      name: "IERC721Freezeble",
+      name: "IERC721Freezable",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC721Freezeble__factory>;
+    ): Promise<Contracts.IERC721Freezable__factory>;
     getContractFactory(
       name: "IERC721Revokable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -213,10 +213,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC721Expirable>;
     getContractAt(
-      name: "IERC721Freezeble",
+      name: "IERC721Freezable",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.IERC721Freezeble>;
+    ): Promise<Contracts.IERC721Freezable>;
     getContractAt(
       name: "IERC721Revokable",
       address: string,

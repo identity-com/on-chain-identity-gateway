@@ -28,76 +28,55 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
-export type ChargeStruct = {
-  value: PromiseOrValue<BigNumberish>;
-  chargeType: PromiseOrValue<BigNumberish>;
-  token: PromiseOrValue<string>;
-  recipient: PromiseOrValue<string>;
-};
-
-export type ChargeStructOutput = [BigNumber, number, string, string] & {
-  value: BigNumber;
-  chargeType: number;
-  token: string;
-  recipient: string;
-};
-
-export interface IERC721ExpirableInterface extends utils.Interface {
+export interface IERC721FreezableInterface extends utils.Interface {
   functions: {
-    "getExpiration(uint256)": FunctionFragment;
-    "setExpiration(uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
+    "freeze(uint256)": FunctionFragment;
+    "unfreeze(uint256)": FunctionFragment;
   };
 
-  getFunction(
-    nameOrSignatureOrTopic: "getExpiration" | "setExpiration"
-  ): FunctionFragment;
+  getFunction(nameOrSignatureOrTopic: "freeze" | "unfreeze"): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "getExpiration",
+    functionFragment: "freeze",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "setExpiration",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      ChargeStruct
-    ]
+    functionFragment: "unfreeze",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "getExpiration",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setExpiration",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "freeze", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "unfreeze", data: BytesLike): Result;
 
   events: {
-    "Expiration(uint256,uint256)": EventFragment;
+    "Freeze(uint256)": EventFragment;
+    "Unfreeze(uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "Expiration"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Freeze"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Unfreeze"): EventFragment;
 }
 
-export interface ExpirationEventObject {
+export interface FreezeEventObject {
   tokenId: BigNumber;
-  timestamp: BigNumber;
 }
-export type ExpirationEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  ExpirationEventObject
->;
+export type FreezeEvent = TypedEvent<[BigNumber], FreezeEventObject>;
 
-export type ExpirationEventFilter = TypedEventFilter<ExpirationEvent>;
+export type FreezeEventFilter = TypedEventFilter<FreezeEvent>;
 
-export interface IERC721Expirable extends BaseContract {
+export interface UnfreezeEventObject {
+  tokenId: BigNumber;
+}
+export type UnfreezeEvent = TypedEvent<[BigNumber], UnfreezeEventObject>;
+
+export type UnfreezeEventFilter = TypedEventFilter<UnfreezeEvent>;
+
+export interface IERC721Freezable extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: IERC721ExpirableInterface;
+  interface: IERC721FreezableInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -119,80 +98,73 @@ export interface IERC721Expirable extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    getExpiration(
+    freeze(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
-    setExpiration(
+    unfreeze(
       tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
 
-  getExpiration(
+  freeze(
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
-  setExpiration(
+  unfreeze(
     tokenId: PromiseOrValue<BigNumberish>,
-    timestamp: PromiseOrValue<BigNumberish>,
-    charge: ChargeStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    getExpiration(
+    freeze(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<void>;
 
-    setExpiration(
+    unfreeze(
       tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
   };
 
   filters: {
-    "Expiration(uint256,uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      timestamp?: null
-    ): ExpirationEventFilter;
-    Expiration(
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      timestamp?: null
-    ): ExpirationEventFilter;
+    "Freeze(uint256)"(
+      tokenId?: PromiseOrValue<BigNumberish> | null
+    ): FreezeEventFilter;
+    Freeze(tokenId?: PromiseOrValue<BigNumberish> | null): FreezeEventFilter;
+
+    "Unfreeze(uint256)"(
+      tokenId?: PromiseOrValue<BigNumberish> | null
+    ): UnfreezeEventFilter;
+    Unfreeze(
+      tokenId?: PromiseOrValue<BigNumberish> | null
+    ): UnfreezeEventFilter;
   };
 
   estimateGas: {
-    getExpiration(
+    freeze(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setExpiration(
+    unfreeze(
       tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    getExpiration(
+    freeze(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setExpiration(
+    unfreeze(
       tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

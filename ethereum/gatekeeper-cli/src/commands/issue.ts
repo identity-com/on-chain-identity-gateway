@@ -3,7 +3,7 @@ import {
   bitmaskFlag, confirmationsFlag,
   feesFlag, gatekeeperNetworkFlag, gatewayTokenAddressFlag,
   chainFlag, parseFlagsWithPrivateKey,
-  privateKeyFlag,
+  privateKeyFlag, gasLimitFlag,
 } from '../utils/oclif/flags'
 import {makeGatewayTs} from '../utils/oclif/utils'
 import {addressArg} from '../utils/oclif/args'
@@ -26,6 +26,7 @@ export default class IssueToken extends Command {
     chain: chainFlag(),
     fees: feesFlag(),
     confirmations: confirmationsFlag(),
+    gasLimit: gasLimitFlag(),
     bitmask: bitmaskFlag(),
   };
 
