@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IERC721Freezeble {
+interface IERC721Freezable {
     /**
-    * @dev Emitted when token freezed by gatekeeper
+    * @dev Emitted when a token is frozen by gatekeeper
     */
     event Freeze(uint256 indexed tokenId);
 
     /**
-    * @dev Emitted when token unfreezed by gatekeeper
+    * @dev Emitted when a token is unfrozen by gatekeeper
     */
     event Unfreeze(uint256 indexed tokenId);
 

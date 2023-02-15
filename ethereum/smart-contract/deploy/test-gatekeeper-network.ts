@@ -21,7 +21,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const isSuperAdmin = await token.isSuperAdmin(deployer);
     console.log("deployer ", deployer, "isSuperAdmin", isSuperAdmin);
 
-    const createNetworkTx = await (await token.createNetwork(gatekeeperNetwork, 'Test Gatekeeper Network', false, NULL_ADDRESS, {from: deployer})).wait();
+    const createNetworkTx = await (await token.createNetwork(gatekeeperNetwork, 'tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf', false, NULL_ADDRESS, {from: deployer})).wait();
     console.log("created network " + gatekeeperNetwork + " on Gateway Token at " + gatewayToken.address + " using " + createNetworkTx.gasUsed.toNumber() + " gas");
 
     const addNetworkAuthorityTx = await (await token.addNetworkAuthority(authority, gatekeeperNetwork, {from: deployer})).wait();
@@ -34,4 +34,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 func.id = 'create_test_gatekeeper_network';
 func.tags = ['TestGatekeeperNetwork'];
-func.dependencies = ['deploy_gateway_token'];
+// func.dependencies = ['deploy_gateway_token'];

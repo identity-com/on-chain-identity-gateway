@@ -25,9 +25,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     'FlagsStorage',
     address,
   );
-  
-  // let tx = await (await flagsStorageContract.addFlags(flagCodes, indexArray, {from: deployer})).wait();
-  // console.log("Added " + tx.events.length +  " flags into FlagsStorage with " + tx.gasUsed.toNumber() + " gas");
+
+  let tx = await (await flagsStorageContract.addFlags(flagCodes, indexArray, {from: deployer})).wait();
+  console.log("Added " + tx.events.length +  " flags into FlagsStorage with " + tx.gasUsed.toNumber() + " gas");
 };
 
 export default func;

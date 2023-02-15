@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@solvprotocol/erc-3525/ERC3525.sol";
 import "@solvprotocol/erc-3525/IERC3525.sol";
 import "./TokenBitMask.sol";
-import "./interfaces/IERC721Freezeble.sol";
+import "./interfaces/IERC721Freezable.sol";
 import "./interfaces/IGatewayToken.sol";
 import "./interfaces/IERC721Expirable.sol";
 import "./interfaces/IERC721Revokable.sol";
@@ -29,10 +29,9 @@ import "./ParameterizedAccessControl.sol";
  */
 contract GatewayToken is
 MultiERC2771Context,
-ERC165,
 ERC3525,
 ParameterizedAccessControl,
-IERC721Freezeble,
+IERC721Freezable,
 IERC721Expirable,
 IERC721Revokable,
 IGatewayToken,
@@ -91,17 +90,17 @@ TokenBitMask
      * `GATEKEEPER_ROLE` responsible for minting/burning/transferring tokens
      */
     constructor(
-        string memory name,
-        string memory symbol,
-        address superAdmin,
-        address flagsStorage,
-        address[] memory trustedForwarders
+        string memory _name,
+        string memory _symbol,
+        address _superAdmin,
+        address _flagsStorage,
+        address[] memory _trustedForwarders
     )
-    MultiERC2771Context(trustedForwarders)
-    ERC3525(name, symbol, 0) {
+    MultiERC2771Context(_trustedForwarders)
+    ERC3525(_name, _symbol, 0) {
         isTransfersRestricted = true;
-        _setFlagsStorage(flagsStorage);
-        _superAdmins[superAdmin] = true;
+        _setFlagsStorage(_flagsStorage);
+        _superAdmins[_superAdmin] = true;
     }
 
     function _msgSender() internal view virtual override(MultiERC2771Context, Context) returns (address sender) {
@@ -120,6 +119,14 @@ TokenBitMask
         super.removeForwarder(forwarder);
     }
 
+    // if any funds are sent to this contract, use this function to withdraw them
+    function withdraw(uint amount) onlySuperAdmin external returns(bool) {
+        require(amount <= address(this).balance, "INSUFFICIENT FUNDS");
+        payable(_msgSender()).transfer(amount);
+        return true;
+
+    }
+
     /**
      * @dev Returns true if gateway token owner transfers restricted, and false otherwise.
      */
@@ -130,7 +137,7 @@ TokenBitMask
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, ERC3525, ParameterizedAccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC3525, ParameterizedAccessControl) returns (bool) {
         return
         interfaceId == type(IERC3525).interfaceId ||
         interfaceId == type(IERC721).interfaceId ||
@@ -174,6 +181,10 @@ TokenBitMask
     */
     function getIdentity(uint256 tokenId) public view virtual returns (string memory) {
         return tokenURI(tokenId);
+    }
+
+    function getNetwork(uint256 network) public view virtual returns (string memory) {
+        return networks[network];
     }
 
     function _getTokenIdsByOwnerAndNetwork(address owner, uint256 network) internal view returns (uint256[] memory, uint256) {
@@ -305,9 +316,8 @@ TokenBitMask
     * @param to Gateway token owner
     * @param network Gateway token type
     * @param mask The bitmask for the token
-    * @param charge The charge details for token issuance (ignored here - handled if at all by the forwarding contract)
     */
-    function mint(address to, uint256 network, uint256 expiration, uint256 mask, Charge calldata charge) public virtual {
+    function mint(address to, uint256 network, uint256 expiration, uint256 mask, string memory tokenURI, Charge calldata) public virtual {
         require(hasRole(GATEKEEPER_ROLE, network, _msgSender()), "MUST BE GATEKEEPER");
 
         uint256 tokenId = ERC3525._mint(to, network, 1);
@@ -318,6 +328,10 @@ TokenBitMask
 
         if (mask > 0) {
             _setBitMask(tokenId, mask);
+        }
+
+        if (bytes(tokenURI).length > 0) {
+            _setTokenURI(tokenId, tokenURI);
         }
     }
 
@@ -351,10 +365,10 @@ TokenBitMask
 
 
     /**
-    * @dev Triggers to get specificied `tokenId` expiration timestamp
+    * @dev Triggers to get specified `tokenId` expiration timestamp
     * @param tokenId Gateway token id
     */
-    function expiration(uint256 tokenId) public view virtual override returns (uint256) {
+    function getExpiration(uint256 tokenId) public view virtual override returns (uint256) {
         require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FROZEN");
         return expirations[tokenId];
     }
@@ -362,9 +376,8 @@ TokenBitMask
     /**
     * @dev Triggers to set expiration for tokenId
     * @param tokenId Gateway token id
-    * @param charge The charge details for token refresh (ignored here - handled if at all by the forwarding contract)
     */
-    function setExpiration(uint256 tokenId, uint256 timestamp, Charge calldata charge) public virtual override {
+    function setExpiration(uint256 tokenId, uint256 timestamp, Charge calldata) public virtual override {
         require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
 
         _setExpiration(tokenId, timestamp);
@@ -405,6 +418,11 @@ TokenBitMask
 
         expirations[tokenId] = timestamp;
         emit Expiration(tokenId, timestamp);
+    }
+
+    function _setTokenURI(uint256 tokenId, string memory tokenURI) internal virtual {
+        require(_exists(tokenId), "ERC721Metadata: URI set of nonexistent token");
+        tokenURIs[tokenId] = tokenURI;
     }
 
     /**

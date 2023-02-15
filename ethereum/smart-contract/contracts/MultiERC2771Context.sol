@@ -50,4 +50,13 @@ abstract contract MultiERC2771Context is Context {
             return super._msgData();
         }
     }
+
+    /**
+     * @dev Enforces that this transaction is not a meta transaction,
+     * i.e. that the sender is the actual sender.
+     */
+    modifier onlyDirect() {
+        require(_msgSender() == msg.sender, "META TRANSACTION NOT ALLOWED");
+        _;
+    }
 }

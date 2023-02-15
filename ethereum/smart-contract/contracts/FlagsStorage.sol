@@ -30,6 +30,7 @@ contract FlagsStorage is IFlagsStorage {
     }
 
     constructor(address _superAdmin) {
+        require(_superAdmin != address(0), "SUPER ADMIN IS ZERO ADDRESS");
         superAdmin = _superAdmin;
     }
 

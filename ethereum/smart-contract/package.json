@@ -14,6 +14,7 @@
   "author": "Daniel Kelleher",
   "license": "MIT",
   "dependencies": {
+    "@nomiclabs/hardhat-solhint": "^3.0.0",
     "@openzeppelin/contracts": "^4.8.0",
     "@solvprotocol/erc-3525": "^1.1.0",
     "abi-to-sol": "^0.2.1",

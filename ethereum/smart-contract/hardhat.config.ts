@@ -7,6 +7,7 @@ import '@nomicfoundation/hardhat-toolbox';
 import '@nomiclabs/hardhat-ethers';
 import '@typechain/hardhat'
 import 'hardhat-deploy';
+import "@nomiclabs/hardhat-solhint";
 
 import { checkGT } from "./tasks/checkGT";
 import { addGatekeeper } from "./tasks/addGatekeeper";
@@ -176,6 +177,18 @@ module.exports = {
       saveDeployments: true,
       accounts: liveAccounts,
       chainId: 0, // not documented anywhere
+    },
+    xdc: {
+      url: 'https://erpc.xinfin.network',
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 50,
+    },
+    xdcApothem: {
+      url: 'https://erpc.apothem.network',
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 51,
     },
   },
   solidity: {

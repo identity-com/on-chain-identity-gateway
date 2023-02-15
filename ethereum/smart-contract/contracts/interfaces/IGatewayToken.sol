@@ -41,6 +41,8 @@ interface IGatewayToken {
 
     function renameNetwork(uint256 network, string memory name) external;
 
+    function getNetwork(uint256 network) external view returns (string memory);
+
     /**
     * @dev Triggers to add new network authority into the system. 
     * @param authority Network Authority address
@@ -72,5 +74,5 @@ interface IGatewayToken {
     */
     function transferDAOManager(address previousManager, address newManager, uint256 network) external;
 
-    function mint(address to, uint256 network, uint256 expiration, uint256 mask, Charge calldata charge) external;
+    function mint(address to, uint256 network, uint256 expiration, uint256 mask, string memory tokenURI, Charge calldata charge) external;
 }

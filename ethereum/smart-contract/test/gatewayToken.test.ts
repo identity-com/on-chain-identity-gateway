@@ -52,6 +52,13 @@ describe('GatewayToken', async () => {
         await gatewayToken.connect(identityCom).createNetwork(gkn2, 'Test GKN 2', false, NULL_ADDRESS);
     });
 
+    describe('Test get gatekeeper network', async () => {
+        it('Get gatekeeper network by id', async () => {
+            let network = await gatewayToken.getNetwork(gkn1);
+            expect(network).to.equal('Test GKN 1');
+        });
+    });
+
     describe('Test executing functions only for Identity.com admin by third-party address', async () => {
         it('Try to change admin by Bob, expect revert due to invalid access', async () => {
             await expect(
@@ -99,7 +106,7 @@ describe('GatewayToken', async () => {
 
         it('Expect revert when attempting to issue as a non-gatekeeper network authority', async () => {
             await expect(
-                gatewayToken.connect(networkAuthority2).mint(alice.address, gkn1, 0, 0, NULL_CHARGE)
+                gatewayToken.connect(networkAuthority2).mint(alice.address, gkn1, 0, 0, '', NULL_CHARGE)
             ).to.be.revertedWith("MUST BE GATEKEEPER");
         });
 
@@ -146,7 +153,7 @@ describe('GatewayToken', async () => {
         });
 
         it('Successfully mint Gateway Token for Alice by gatekeeper with gatekeeperNetwork = 1', async () => {
-            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE)
+            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, '', NULL_CHARGE)
 
             let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn1);
             expect(verified).to.be.true;
@@ -163,14 +170,14 @@ describe('GatewayToken', async () => {
             // add the gatekeeper to network 2
             await gatewayToken.connect(identityCom).addGatekeeper(gatekeeper.address, gkn2)
 
-            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn2, 0, 0, NULL_CHARGE);
+            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn2, 0, 0, '', NULL_CHARGE);
 
             let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn2);
             expect(verified).to.be.true;
         });
 
         it('mint a second token for Alice with gatekeeperNetwork = 1', async () => {
-            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE)
+            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, '', NULL_CHARGE)
 
             let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn1);
             expect(verified).to.be.true;
@@ -333,7 +340,7 @@ describe('GatewayToken', async () => {
 
         it('Successfully forwards a call', async () => {
 
-            const mintTx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(carol.address, gkn1, 0, 0, NULL_CHARGE);
+            const mintTx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(carol.address, gkn1, 0, 0, '', NULL_CHARGE);
 
             // Carol does not have the GT yet
             let validity = await gatewayToken.functions['verifyToken(address,uint256)'](carol.address, gkn1);
