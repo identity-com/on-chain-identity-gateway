@@ -143,25 +143,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "getTokenState",
-    outputs: [
-      {
-        internalType: "uint8",
-        name: "state",
-        type: "uint8",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "gatekeeper",
         type: "address",
@@ -228,11 +209,6 @@ const _abi = [
         internalType: "uint256",
         name: "mask",
         type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "tokenURI",
-        type: "string",
       },
       {
         components: [

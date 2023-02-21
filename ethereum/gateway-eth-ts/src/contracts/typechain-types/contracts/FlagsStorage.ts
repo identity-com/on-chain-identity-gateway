@@ -10,6 +10,7 @@ import type {
   CallOverrides,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -33,12 +34,16 @@ export interface FlagsStorageInterface extends utils.Interface {
     "addFlag(bytes32,uint8)": FunctionFragment;
     "addFlags(bytes32[],uint8[])": FunctionFragment;
     "flagIndexes(bytes32)": FunctionFragment;
+    "initialize(address)": FunctionFragment;
     "isFlagSupported(bytes32)": FunctionFragment;
+    "proxiableUUID()": FunctionFragment;
     "removeFlag(bytes32)": FunctionFragment;
     "removeFlags(bytes32[])": FunctionFragment;
     "superAdmin()": FunctionFragment;
     "supportedFlagsMask()": FunctionFragment;
     "updateSuperAdmin(address)": FunctionFragment;
+    "upgradeTo(address)": FunctionFragment;
+    "upgradeToAndCall(address,bytes)": FunctionFragment;
   };
 
   getFunction(
@@ -46,12 +51,16 @@ export interface FlagsStorageInterface extends utils.Interface {
       | "addFlag"
       | "addFlags"
       | "flagIndexes"
+      | "initialize"
       | "isFlagSupported"
+      | "proxiableUUID"
       | "removeFlag"
       | "removeFlags"
       | "superAdmin"
       | "supportedFlagsMask"
       | "updateSuperAdmin"
+      | "upgradeTo"
+      | "upgradeToAndCall"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -67,8 +76,16 @@ export interface FlagsStorageInterface extends utils.Interface {
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
+    functionFragment: "initialize",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "isFlagSupported",
     values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "proxiableUUID",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "removeFlag",
@@ -90,6 +107,14 @@ export interface FlagsStorageInterface extends utils.Interface {
     functionFragment: "updateSuperAdmin",
     values: [PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeTo",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeToAndCall",
+    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
+  ): string;
 
   decodeFunctionResult(functionFragment: "addFlag", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addFlags", data: BytesLike): Result;
@@ -97,8 +122,13 @@ export interface FlagsStorageInterface extends utils.Interface {
     functionFragment: "flagIndexes",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isFlagSupported",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "proxiableUUID",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "removeFlag", data: BytesLike): Result;
@@ -115,17 +145,51 @@ export interface FlagsStorageInterface extends utils.Interface {
     functionFragment: "updateSuperAdmin",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "upgradeTo", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeToAndCall",
+    data: BytesLike
+  ): Result;
 
   events: {
+    "AdminChanged(address,address)": EventFragment;
+    "BeaconUpgraded(address)": EventFragment;
     "FlagAdded(bytes32,uint8)": EventFragment;
     "FlagRemoved(bytes32)": EventFragment;
+    "Initialized(uint8)": EventFragment;
     "SuperAdminUpdated(address,address)": EventFragment;
+    "Upgraded(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FlagAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FlagRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SuperAdminUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
+
+export interface AdminChangedEventObject {
+  previousAdmin: string;
+  newAdmin: string;
+}
+export type AdminChangedEvent = TypedEvent<
+  [string, string],
+  AdminChangedEventObject
+>;
+
+export type AdminChangedEventFilter = TypedEventFilter<AdminChangedEvent>;
+
+export interface BeaconUpgradedEventObject {
+  beacon: string;
+}
+export type BeaconUpgradedEvent = TypedEvent<
+  [string],
+  BeaconUpgradedEventObject
+>;
+
+export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
 
 export interface FlagAddedEventObject {
   flag: string;
@@ -142,6 +206,13 @@ export type FlagRemovedEvent = TypedEvent<[string], FlagRemovedEventObject>;
 
 export type FlagRemovedEventFilter = TypedEventFilter<FlagRemovedEvent>;
 
+export interface InitializedEventObject {
+  version: number;
+}
+export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
+
+export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
+
 export interface SuperAdminUpdatedEventObject {
   prevSuperAdmin: string;
   superAdmin: string;
@@ -153,6 +224,13 @@ export type SuperAdminUpdatedEvent = TypedEvent<
 
 export type SuperAdminUpdatedEventFilter =
   TypedEventFilter<SuperAdminUpdatedEvent>;
+
+export interface UpgradedEventObject {
+  implementation: string;
+}
+export type UpgradedEvent = TypedEvent<[string], UpgradedEventObject>;
+
+export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
 export interface FlagsStorage extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -198,10 +276,17 @@ export interface FlagsStorage extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[number]>;
 
+    initialize(
+      _superAdmin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     isFlagSupported(
       flag: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    proxiableUUID(overrides?: CallOverrides): Promise<[string]>;
 
     removeFlag(
       flag: PromiseOrValue<BytesLike>,
@@ -220,6 +305,17 @@ export interface FlagsStorage extends BaseContract {
     updateSuperAdmin(
       newSuperAdmin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    upgradeTo(
+      newImplementation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
 
@@ -240,10 +336,17 @@ export interface FlagsStorage extends BaseContract {
     overrides?: CallOverrides
   ): Promise<number>;
 
+  initialize(
+    _superAdmin: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   isFlagSupported(
     flag: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<boolean>;
+
+  proxiableUUID(overrides?: CallOverrides): Promise<string>;
 
   removeFlag(
     flag: PromiseOrValue<BytesLike>,
@@ -264,6 +367,17 @@ export interface FlagsStorage extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  upgradeTo(
+    newImplementation: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  upgradeToAndCall(
+    newImplementation: PromiseOrValue<string>,
+    data: PromiseOrValue<BytesLike>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     addFlag(
       flag: PromiseOrValue<BytesLike>,
@@ -282,10 +396,17 @@ export interface FlagsStorage extends BaseContract {
       overrides?: CallOverrides
     ): Promise<number>;
 
+    initialize(
+      _superAdmin: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     isFlagSupported(
       flag: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    proxiableUUID(overrides?: CallOverrides): Promise<string>;
 
     removeFlag(
       flag: PromiseOrValue<BytesLike>,
@@ -305,9 +426,36 @@ export interface FlagsStorage extends BaseContract {
       newSuperAdmin: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    upgradeTo(
+      newImplementation: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
+    "AdminChanged(address,address)"(
+      previousAdmin?: null,
+      newAdmin?: null
+    ): AdminChangedEventFilter;
+    AdminChanged(
+      previousAdmin?: null,
+      newAdmin?: null
+    ): AdminChangedEventFilter;
+
+    "BeaconUpgraded(address)"(
+      beacon?: PromiseOrValue<string> | null
+    ): BeaconUpgradedEventFilter;
+    BeaconUpgraded(
+      beacon?: PromiseOrValue<string> | null
+    ): BeaconUpgradedEventFilter;
+
     "FlagAdded(bytes32,uint8)"(
       flag?: PromiseOrValue<BytesLike> | null,
       index?: null
@@ -324,6 +472,9 @@ export interface FlagsStorage extends BaseContract {
       flag?: PromiseOrValue<BytesLike> | null
     ): FlagRemovedEventFilter;
 
+    "Initialized(uint8)"(version?: null): InitializedEventFilter;
+    Initialized(version?: null): InitializedEventFilter;
+
     "SuperAdminUpdated(address,address)"(
       prevSuperAdmin?: PromiseOrValue<string> | null,
       superAdmin?: PromiseOrValue<string> | null
@@ -332,6 +483,13 @@ export interface FlagsStorage extends BaseContract {
       prevSuperAdmin?: PromiseOrValue<string> | null,
       superAdmin?: PromiseOrValue<string> | null
     ): SuperAdminUpdatedEventFilter;
+
+    "Upgraded(address)"(
+      implementation?: PromiseOrValue<string> | null
+    ): UpgradedEventFilter;
+    Upgraded(
+      implementation?: PromiseOrValue<string> | null
+    ): UpgradedEventFilter;
   };
 
   estimateGas: {
@@ -352,10 +510,17 @@ export interface FlagsStorage extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    initialize(
+      _superAdmin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     isFlagSupported(
       flag: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    proxiableUUID(overrides?: CallOverrides): Promise<BigNumber>;
 
     removeFlag(
       flag: PromiseOrValue<BytesLike>,
@@ -374,6 +539,17 @@ export interface FlagsStorage extends BaseContract {
     updateSuperAdmin(
       newSuperAdmin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    upgradeTo(
+      newImplementation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
@@ -395,10 +571,17 @@ export interface FlagsStorage extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    initialize(
+      _superAdmin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     isFlagSupported(
       flag: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    proxiableUUID(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     removeFlag(
       flag: PromiseOrValue<BytesLike>,
@@ -419,6 +602,17 @@ export interface FlagsStorage extends BaseContract {
     updateSuperAdmin(
       newSuperAdmin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    upgradeTo(
+      newImplementation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

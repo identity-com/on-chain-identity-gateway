@@ -25,12 +25,6 @@ interface IGatewayToken {
         );
 
     /**
-    * @dev Triggers to get gateway token state with specified `tokenId`
-    * @param tokenId Gateway token id
-    */
-    function getTokenState(uint256 tokenId) external view returns (uint8 state);
-
-    /**
     * @dev Triggers to verify if address has a GATEKEEPER role. 
     * @param gatekeeper Gatekeeper address
     * @param network GatekeeperNetwork id
@@ -74,5 +68,5 @@ interface IGatewayToken {
     */
     function transferDAOManager(address previousManager, address newManager, uint256 network) external;
 
-    function mint(address to, uint256 network, uint256 expiration, uint256 mask, string memory tokenURI, Charge calldata charge) external;
+    function mint(address to, uint256 network, uint256 expiration, uint256 mask, Charge calldata charge) external;
 }

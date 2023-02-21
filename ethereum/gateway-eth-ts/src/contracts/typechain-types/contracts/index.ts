@@ -7,6 +7,7 @@ export type { interfaces };
 export type { FlagsStorage } from "./FlagsStorage";
 export type { Forwarder } from "./Forwarder";
 export type { GatewayToken } from "./GatewayToken";
+export type { GatewayTokenUpgradeTest } from "./GatewayTokenUpgradeTest";
 export type { MultiERC2771Context } from "./MultiERC2771Context";
 export type { ParameterizedAccessControl } from "./ParameterizedAccessControl";
 export type { TokenBitMask } from "./TokenBitMask";

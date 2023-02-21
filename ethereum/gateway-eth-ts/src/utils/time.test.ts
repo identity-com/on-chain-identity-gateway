@@ -1,7 +1,6 @@
 import { getExpirationTime } from "./time";
 import { BigNumber } from "ethers/lib/ethers";
 import assert = require("assert");
-import { DEFAULT_EXPIRATION_BN } from "./constants";
 
 describe("Check expiration calculations", () => {
   let now: number;
@@ -30,12 +29,10 @@ describe("Check expiration calculations", () => {
     assert.equal(expiration.toString(), timeSum.toString());
   });
 
-  it("Try to add -15 days to current time, expect adding default expiration (14 days)", () => {
+  it("Try to add -15 days to current time, expect an error", () => {
     now = Math.floor(Date.now() / 1000);
     nowBN = BigNumber.from(now);
-    const timeSum = nowBN.add(DEFAULT_EXPIRATION_BN);
 
-    expiration = getExpirationTime(_minus15days);
-    assert.equal(expiration.toString(), timeSum.toString());
+    assert.throws(() => getExpirationTime(_minus15days));
   });
 });

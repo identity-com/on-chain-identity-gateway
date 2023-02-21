@@ -49,8 +49,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "GATEKEEPER_ROLE()": FunctionFragment;
     "NETWORK_AUTHORITY_ROLE()": FunctionFragment;
-    "addBit(uint256,uint8)": FunctionFragment;
-    "addBitmask(uint256,uint256)": FunctionFragment;
     "addForwarder(address)": FunctionFragment;
     "addGatekeeper(address,uint256)": FunctionFragment;
     "addNetworkAuthority(address,uint256)": FunctionFragment;
@@ -60,7 +58,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "balanceOf(uint256)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
-    "clearBitmask(uint256)": FunctionFragment;
     "contractURI()": FunctionFragment;
     "controller()": FunctionFragment;
     "createNetwork(uint256,string,bool,address)": FunctionFragment;
@@ -68,28 +65,25 @@ export interface GatewayTokenInterface extends utils.Interface {
     "freeze(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getExpiration(uint256)": FunctionFragment;
-    "getIdentity(uint256)": FunctionFragment;
     "getNetwork(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32,uint256)": FunctionFragment;
     "getToken(uint256)": FunctionFragment;
     "getTokenBitmask(uint256)": FunctionFragment;
     "getTokenIdsByOwnerAndNetwork(address,uint256)": FunctionFragment;
-    "getTokenState(uint256)": FunctionFragment;
     "grantRole(bytes32,uint256,address)": FunctionFragment;
     "hasRole(bytes32,uint256,address)": FunctionFragment;
+    "initialize(string,string,address,address,address[])": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isGatekeeper(address,uint256)": FunctionFragment;
     "isNetworkAuthority(address,uint256)": FunctionFragment;
     "isNetworkDAOGoverned(uint256)": FunctionFragment;
     "isSuperAdmin(address)": FunctionFragment;
-    "isTransfersRestricted()": FunctionFragment;
     "isTrustedForwarder(address)": FunctionFragment;
     "metadataDescriptor()": FunctionFragment;
-    "mint(address,uint256,uint256,uint256,string,(uint256,uint8,address,address))": FunctionFragment;
+    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
-    "removeBit(uint256,uint8)": FunctionFragment;
-    "removeBitmask(uint256,uint8)": FunctionFragment;
+    "proxiableUUID()": FunctionFragment;
     "removeForwarder(address)": FunctionFragment;
     "removeGatekeeper(address,uint256)": FunctionFragment;
     "removeNetworkAuthority(address,uint256)": FunctionFragment;
@@ -103,6 +97,7 @@ export interface GatewayTokenInterface extends utils.Interface {
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBitmask(uint256,uint256)": FunctionFragment;
     "setExpiration(uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
+    "setMetadataDescriptor(address)": FunctionFragment;
     "setSuperAdmin(address)": FunctionFragment;
     "slotOf(uint256)": FunctionFragment;
     "slotURI(uint256)": FunctionFragment;
@@ -119,6 +114,8 @@ export interface GatewayTokenInterface extends utils.Interface {
     "transfersRestricted()": FunctionFragment;
     "unfreeze(uint256)": FunctionFragment;
     "updateFlagsStorage(address)": FunctionFragment;
+    "upgradeTo(address)": FunctionFragment;
+    "upgradeToAndCall(address,bytes)": FunctionFragment;
     "valueDecimals()": FunctionFragment;
     "verifyToken(address,uint256)": FunctionFragment;
     "verifyToken(uint256)": FunctionFragment;
@@ -131,8 +128,6 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "DEFAULT_ADMIN_ROLE"
       | "GATEKEEPER_ROLE"
       | "NETWORK_AUTHORITY_ROLE"
-      | "addBit"
-      | "addBitmask"
       | "addForwarder"
       | "addGatekeeper"
       | "addNetworkAuthority"
@@ -142,7 +137,6 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "balanceOf(address)"
       | "balanceOf(uint256)"
       | "burn"
-      | "clearBitmask"
       | "contractURI"
       | "controller"
       | "createNetwork"
@@ -150,28 +144,25 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "freeze"
       | "getApproved"
       | "getExpiration"
-      | "getIdentity"
       | "getNetwork"
       | "getRoleAdmin"
       | "getToken"
       | "getTokenBitmask"
       | "getTokenIdsByOwnerAndNetwork"
-      | "getTokenState"
       | "grantRole"
       | "hasRole"
+      | "initialize"
       | "isApprovedForAll"
       | "isGatekeeper"
       | "isNetworkAuthority"
       | "isNetworkDAOGoverned"
       | "isSuperAdmin"
-      | "isTransfersRestricted"
       | "isTrustedForwarder"
       | "metadataDescriptor"
       | "mint"
       | "name"
       | "ownerOf"
-      | "removeBit"
-      | "removeBitmask"
+      | "proxiableUUID"
       | "removeForwarder"
       | "removeGatekeeper"
       | "removeNetworkAuthority"
@@ -185,6 +176,7 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "setApprovalForAll"
       | "setBitmask"
       | "setExpiration"
+      | "setMetadataDescriptor"
       | "setSuperAdmin"
       | "slotOf"
       | "slotURI"
@@ -201,6 +193,8 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "transfersRestricted"
       | "unfreeze"
       | "updateFlagsStorage"
+      | "upgradeTo"
+      | "upgradeToAndCall"
       | "valueDecimals"
       | "verifyToken(address,uint256)"
       | "verifyToken(uint256)"
@@ -222,14 +216,6 @@ export interface GatewayTokenInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "NETWORK_AUTHORITY_ROLE",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "addBit",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "addBitmask",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "addForwarder",
@@ -272,10 +258,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "clearBitmask",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "contractURI",
     values?: undefined
   ): string;
@@ -309,10 +291,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getIdentity",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getNetwork",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -333,10 +311,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getTokenState",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "grantRole",
     values: [
       PromiseOrValue<BytesLike>,
@@ -350,6 +324,16 @@ export interface GatewayTokenInterface extends utils.Interface {
       PromiseOrValue<BytesLike>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "initialize",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>[]
     ]
   ): string;
   encodeFunctionData(
@@ -373,10 +357,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "isTransfersRestricted",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "isTrustedForwarder",
     values: [PromiseOrValue<string>]
   ): string;
@@ -391,7 +371,6 @@ export interface GatewayTokenInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
       ChargeStruct
     ]
   ): string;
@@ -401,12 +380,8 @@ export interface GatewayTokenInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "removeBit",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "removeBitmask",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    functionFragment: "proxiableUUID",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "removeForwarder",
@@ -480,6 +455,10 @@ export interface GatewayTokenInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       ChargeStruct
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMetadataDescriptor",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "setSuperAdmin",
@@ -559,6 +538,14 @@ export interface GatewayTokenInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "upgradeTo",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeToAndCall",
+    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "valueDecimals",
     values?: undefined
   ): string;
@@ -591,8 +578,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "NETWORK_AUTHORITY_ROLE",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "addBit", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "addBitmask", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "addForwarder",
     data: BytesLike
@@ -624,10 +609,6 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "clearBitmask",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "contractURI",
     data: BytesLike
   ): Result;
@@ -649,10 +630,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "getExpiration",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getIdentity",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "getNetwork", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
@@ -667,12 +644,9 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "getTokenIdsByOwnerAndNetwork",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getTokenState",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
@@ -694,10 +668,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isTransfersRestricted",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "isTrustedForwarder",
     data: BytesLike
   ): Result;
@@ -708,9 +678,8 @@ export interface GatewayTokenInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "removeBit", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "removeBitmask",
+    functionFragment: "proxiableUUID",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -754,6 +723,10 @@ export interface GatewayTokenInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "setBitmask", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setExpiration",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setMetadataDescriptor",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -805,6 +778,11 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "updateFlagsStorage",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "upgradeTo", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeToAndCall",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "valueDecimals",
     data: BytesLike
@@ -820,14 +798,17 @@ export interface GatewayTokenInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
+    "AdminChanged(address,address)": EventFragment;
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
     "ApprovalValue(uint256,address,uint256)": EventFragment;
+    "BeaconUpgraded(address)": EventFragment;
     "BitMaskUpdated(uint256,uint256)": EventFragment;
     "DAOManagerTransferred(address,address,uint256)": EventFragment;
     "Expiration(uint256,uint256)": EventFragment;
     "FlagsStorageUpdated(address)": EventFragment;
     "Freeze(uint256)": EventFragment;
+    "Initialized(uint8)": EventFragment;
     "Revoke(uint256)": EventFragment;
     "RoleAdminChanged(bytes32,uint256,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,uint256,address,address)": EventFragment;
@@ -839,16 +820,20 @@ export interface GatewayTokenInterface extends utils.Interface {
     "Transfer(address,address,uint256)": EventFragment;
     "TransferValue(uint256,uint256,uint256)": EventFragment;
     "Unfreeze(uint256)": EventFragment;
+    "Upgraded(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalValue"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BitMaskUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOManagerTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Expiration"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FlagsStorageUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Freeze"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Revoke"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
@@ -860,7 +845,19 @@ export interface GatewayTokenInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TransferValue"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unfreeze"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
+
+export interface AdminChangedEventObject {
+  previousAdmin: string;
+  newAdmin: string;
+}
+export type AdminChangedEvent = TypedEvent<
+  [string, string],
+  AdminChangedEventObject
+>;
+
+export type AdminChangedEventFilter = TypedEventFilter<AdminChangedEvent>;
 
 export interface ApprovalEventObject {
   _owner: string;
@@ -897,6 +894,16 @@ export type ApprovalValueEvent = TypedEvent<
 >;
 
 export type ApprovalValueEventFilter = TypedEventFilter<ApprovalValueEvent>;
+
+export interface BeaconUpgradedEventObject {
+  beacon: string;
+}
+export type BeaconUpgradedEvent = TypedEvent<
+  [string],
+  BeaconUpgradedEventObject
+>;
+
+export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
 
 export interface BitMaskUpdatedEventObject {
   tokenId: BigNumber;
@@ -950,6 +957,13 @@ export interface FreezeEventObject {
 export type FreezeEvent = TypedEvent<[BigNumber], FreezeEventObject>;
 
 export type FreezeEventFilter = TypedEventFilter<FreezeEvent>;
+
+export interface InitializedEventObject {
+  version: number;
+}
+export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
+
+export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
 export interface RevokeEventObject {
   tokenId: BigNumber;
@@ -1073,6 +1087,13 @@ export type UnfreezeEvent = TypedEvent<[BigNumber], UnfreezeEventObject>;
 
 export type UnfreezeEventFilter = TypedEventFilter<UnfreezeEvent>;
 
+export interface UpgradedEventObject {
+  implementation: string;
+}
+export type UpgradedEvent = TypedEvent<[string], UpgradedEventObject>;
+
+export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
+
 export interface GatewayToken extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
@@ -1107,18 +1128,6 @@ export interface GatewayToken extends BaseContract {
     GATEKEEPER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
     NETWORK_AUTHORITY_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    addBit(
-      tokenId: PromiseOrValue<BigNumberish>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    addBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     addForwarder(
       forwarder: PromiseOrValue<string>,
@@ -1171,11 +1180,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    clearBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     contractURI(overrides?: CallOverrides): Promise<[string]>;
 
     controller(overrides?: CallOverrides): Promise<[string]>;
@@ -1204,11 +1208,6 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    getIdentity(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
 
     getNetwork(
       network: PromiseOrValue<BigNumberish>,
@@ -1245,11 +1244,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
-    getTokenState(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[number] & { state: number }>;
-
     grantRole(
       role: PromiseOrValue<BytesLike>,
       domain: PromiseOrValue<BigNumberish>,
@@ -1263,6 +1257,15 @@ export interface GatewayToken extends BaseContract {
       account: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    initialize(
+      _name: PromiseOrValue<string>,
+      _symbol: PromiseOrValue<string>,
+      _superAdmin: PromiseOrValue<string>,
+      _flagsStorage: PromiseOrValue<string>,
+      _trustedForwarders: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     isApprovedForAll(
       owner_: PromiseOrValue<string>,
@@ -1292,8 +1295,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    isTransfersRestricted(overrides?: CallOverrides): Promise<[boolean]>;
-
     isTrustedForwarder(
       forwarder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1306,8 +1307,7 @@ export interface GatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      tokenURI: PromiseOrValue<string>,
-      arg5: ChargeStruct,
+      arg4: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1318,17 +1318,7 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string] & { owner_: string }>;
 
-    removeBit(
-      tokenId: PromiseOrValue<BigNumberish>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    removeBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      removingMask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+    proxiableUUID(overrides?: CallOverrides): Promise<[string]>;
 
     removeForwarder(
       forwarder: PromiseOrValue<string>,
@@ -1408,6 +1398,11 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
       arg2: ChargeStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setMetadataDescriptor(
+      _metadataDescriptor: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1491,6 +1486,17 @@ export interface GatewayToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    upgradeTo(
+      newImplementation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     valueDecimals(overrides?: CallOverrides): Promise<[number]>;
 
     "verifyToken(address,uint256)"(
@@ -1517,18 +1523,6 @@ export interface GatewayToken extends BaseContract {
   GATEKEEPER_ROLE(overrides?: CallOverrides): Promise<string>;
 
   NETWORK_AUTHORITY_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  addBit(
-    tokenId: PromiseOrValue<BigNumberish>,
-    index: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  addBitmask(
-    tokenId: PromiseOrValue<BigNumberish>,
-    mask: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   addForwarder(
     forwarder: PromiseOrValue<string>,
@@ -1581,11 +1575,6 @@ export interface GatewayToken extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  clearBitmask(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   contractURI(overrides?: CallOverrides): Promise<string>;
 
   controller(overrides?: CallOverrides): Promise<string>;
@@ -1614,11 +1603,6 @@ export interface GatewayToken extends BaseContract {
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  getIdentity(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
 
   getNetwork(
     network: PromiseOrValue<BigNumberish>,
@@ -1655,11 +1639,6 @@ export interface GatewayToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
-  getTokenState(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<number>;
-
   grantRole(
     role: PromiseOrValue<BytesLike>,
     domain: PromiseOrValue<BigNumberish>,
@@ -1673,6 +1652,15 @@ export interface GatewayToken extends BaseContract {
     account: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<boolean>;
+
+  initialize(
+    _name: PromiseOrValue<string>,
+    _symbol: PromiseOrValue<string>,
+    _superAdmin: PromiseOrValue<string>,
+    _flagsStorage: PromiseOrValue<string>,
+    _trustedForwarders: PromiseOrValue<string>[],
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   isApprovedForAll(
     owner_: PromiseOrValue<string>,
@@ -1702,8 +1690,6 @@ export interface GatewayToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  isTransfersRestricted(overrides?: CallOverrides): Promise<boolean>;
-
   isTrustedForwarder(
     forwarder: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -1716,8 +1702,7 @@ export interface GatewayToken extends BaseContract {
     network: PromiseOrValue<BigNumberish>,
     expiration: PromiseOrValue<BigNumberish>,
     mask: PromiseOrValue<BigNumberish>,
-    tokenURI: PromiseOrValue<string>,
-    arg5: ChargeStruct,
+    arg4: ChargeStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1728,17 +1713,7 @@ export interface GatewayToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  removeBit(
-    tokenId: PromiseOrValue<BigNumberish>,
-    index: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  removeBitmask(
-    tokenId: PromiseOrValue<BigNumberish>,
-    removingMask: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  proxiableUUID(overrides?: CallOverrides): Promise<string>;
 
   removeForwarder(
     forwarder: PromiseOrValue<string>,
@@ -1818,6 +1793,11 @@ export interface GatewayToken extends BaseContract {
     tokenId: PromiseOrValue<BigNumberish>,
     timestamp: PromiseOrValue<BigNumberish>,
     arg2: ChargeStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setMetadataDescriptor(
+    _metadataDescriptor: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1901,6 +1881,17 @@ export interface GatewayToken extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  upgradeTo(
+    newImplementation: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  upgradeToAndCall(
+    newImplementation: PromiseOrValue<string>,
+    data: PromiseOrValue<BytesLike>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   valueDecimals(overrides?: CallOverrides): Promise<number>;
 
   "verifyToken(address,uint256)"(
@@ -1927,18 +1918,6 @@ export interface GatewayToken extends BaseContract {
     GATEKEEPER_ROLE(overrides?: CallOverrides): Promise<string>;
 
     NETWORK_AUTHORITY_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    addBit(
-      tokenId: PromiseOrValue<BigNumberish>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    addBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     addForwarder(
       forwarder: PromiseOrValue<string>,
@@ -1991,11 +1970,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    clearBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     contractURI(overrides?: CallOverrides): Promise<string>;
 
     controller(overrides?: CallOverrides): Promise<string>;
@@ -2024,11 +1998,6 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    getIdentity(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
 
     getNetwork(
       network: PromiseOrValue<BigNumberish>,
@@ -2065,11 +2034,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
-    getTokenState(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<number>;
-
     grantRole(
       role: PromiseOrValue<BytesLike>,
       domain: PromiseOrValue<BigNumberish>,
@@ -2083,6 +2047,15 @@ export interface GatewayToken extends BaseContract {
       account: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    initialize(
+      _name: PromiseOrValue<string>,
+      _symbol: PromiseOrValue<string>,
+      _superAdmin: PromiseOrValue<string>,
+      _flagsStorage: PromiseOrValue<string>,
+      _trustedForwarders: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     isApprovedForAll(
       owner_: PromiseOrValue<string>,
@@ -2112,8 +2085,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    isTransfersRestricted(overrides?: CallOverrides): Promise<boolean>;
-
     isTrustedForwarder(
       forwarder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -2126,8 +2097,7 @@ export interface GatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      tokenURI: PromiseOrValue<string>,
-      arg5: ChargeStruct,
+      arg4: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2138,17 +2108,7 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    removeBit(
-      tokenId: PromiseOrValue<BigNumberish>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    removeBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      removingMask: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    proxiableUUID(overrides?: CallOverrides): Promise<string>;
 
     removeForwarder(
       forwarder: PromiseOrValue<string>,
@@ -2228,6 +2188,11 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
       arg2: ChargeStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMetadataDescriptor(
+      _metadataDescriptor: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2311,6 +2276,17 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    upgradeTo(
+      newImplementation: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     valueDecimals(overrides?: CallOverrides): Promise<number>;
 
     "verifyToken(address,uint256)"(
@@ -2331,6 +2307,15 @@ export interface GatewayToken extends BaseContract {
   };
 
   filters: {
+    "AdminChanged(address,address)"(
+      previousAdmin?: null,
+      newAdmin?: null
+    ): AdminChangedEventFilter;
+    AdminChanged(
+      previousAdmin?: null,
+      newAdmin?: null
+    ): AdminChangedEventFilter;
+
     "Approval(address,address,uint256)"(
       _owner?: PromiseOrValue<string> | null,
       _approved?: PromiseOrValue<string> | null,
@@ -2363,6 +2348,13 @@ export interface GatewayToken extends BaseContract {
       _operator?: PromiseOrValue<string> | null,
       _value?: null
     ): ApprovalValueEventFilter;
+
+    "BeaconUpgraded(address)"(
+      beacon?: PromiseOrValue<string> | null
+    ): BeaconUpgradedEventFilter;
+    BeaconUpgraded(
+      beacon?: PromiseOrValue<string> | null
+    ): BeaconUpgradedEventFilter;
 
     "BitMaskUpdated(uint256,uint256)"(
       tokenId?: null,
@@ -2402,8 +2394,13 @@ export interface GatewayToken extends BaseContract {
     ): FreezeEventFilter;
     Freeze(tokenId?: PromiseOrValue<BigNumberish> | null): FreezeEventFilter;
 
-    "Revoke(uint256)"(tokenId?: null): RevokeEventFilter;
-    Revoke(tokenId?: null): RevokeEventFilter;
+    "Initialized(uint8)"(version?: null): InitializedEventFilter;
+    Initialized(version?: null): InitializedEventFilter;
+
+    "Revoke(uint256)"(
+      tokenId?: PromiseOrValue<BigNumberish> | null
+    ): RevokeEventFilter;
+    Revoke(tokenId?: PromiseOrValue<BigNumberish> | null): RevokeEventFilter;
 
     "RoleAdminChanged(bytes32,uint256,bytes32,bytes32)"(
       role?: PromiseOrValue<BytesLike> | null,
@@ -2504,6 +2501,13 @@ export interface GatewayToken extends BaseContract {
     Unfreeze(
       tokenId?: PromiseOrValue<BigNumberish> | null
     ): UnfreezeEventFilter;
+
+    "Upgraded(address)"(
+      implementation?: PromiseOrValue<string> | null
+    ): UpgradedEventFilter;
+    Upgraded(
+      implementation?: PromiseOrValue<string> | null
+    ): UpgradedEventFilter;
   };
 
   estimateGas: {
@@ -2514,18 +2518,6 @@ export interface GatewayToken extends BaseContract {
     GATEKEEPER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
     NETWORK_AUTHORITY_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    addBit(
-      tokenId: PromiseOrValue<BigNumberish>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    addBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
 
     addForwarder(
       forwarder: PromiseOrValue<string>,
@@ -2578,11 +2570,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    clearBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     contractURI(overrides?: CallOverrides): Promise<BigNumber>;
 
     controller(overrides?: CallOverrides): Promise<BigNumber>;
@@ -2608,11 +2595,6 @@ export interface GatewayToken extends BaseContract {
     ): Promise<BigNumber>;
 
     getExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getIdentity(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -2644,11 +2626,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getTokenState(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     grantRole(
       role: PromiseOrValue<BytesLike>,
       domain: PromiseOrValue<BigNumberish>,
@@ -2661,6 +2638,15 @@ export interface GatewayToken extends BaseContract {
       domain: PromiseOrValue<BigNumberish>,
       account: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    initialize(
+      _name: PromiseOrValue<string>,
+      _symbol: PromiseOrValue<string>,
+      _superAdmin: PromiseOrValue<string>,
+      _flagsStorage: PromiseOrValue<string>,
+      _trustedForwarders: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     isApprovedForAll(
@@ -2691,8 +2677,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    isTransfersRestricted(overrides?: CallOverrides): Promise<BigNumber>;
-
     isTrustedForwarder(
       forwarder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -2705,8 +2689,7 @@ export interface GatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      tokenURI: PromiseOrValue<string>,
-      arg5: ChargeStruct,
+      arg4: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2717,17 +2700,7 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    removeBit(
-      tokenId: PromiseOrValue<BigNumberish>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    removeBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      removingMask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+    proxiableUUID(overrides?: CallOverrides): Promise<BigNumber>;
 
     removeForwarder(
       forwarder: PromiseOrValue<string>,
@@ -2807,6 +2780,11 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
       arg2: ChargeStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setMetadataDescriptor(
+      _metadataDescriptor: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2890,6 +2868,17 @@ export interface GatewayToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    upgradeTo(
+      newImplementation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     valueDecimals(overrides?: CallOverrides): Promise<BigNumber>;
 
     "verifyToken(address,uint256)"(
@@ -2920,18 +2909,6 @@ export interface GatewayToken extends BaseContract {
 
     NETWORK_AUTHORITY_ROLE(
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    addBit(
-      tokenId: PromiseOrValue<BigNumberish>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    addBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     addForwarder(
@@ -2985,11 +2962,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    clearBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     controller(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -3015,11 +2987,6 @@ export interface GatewayToken extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getIdentity(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -3051,11 +3018,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getTokenState(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     grantRole(
       role: PromiseOrValue<BytesLike>,
       domain: PromiseOrValue<BigNumberish>,
@@ -3068,6 +3030,15 @@ export interface GatewayToken extends BaseContract {
       domain: PromiseOrValue<BigNumberish>,
       account: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    initialize(
+      _name: PromiseOrValue<string>,
+      _symbol: PromiseOrValue<string>,
+      _superAdmin: PromiseOrValue<string>,
+      _flagsStorage: PromiseOrValue<string>,
+      _trustedForwarders: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
@@ -3098,10 +3069,6 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    isTransfersRestricted(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     isTrustedForwarder(
       forwarder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -3116,8 +3083,7 @@ export interface GatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      tokenURI: PromiseOrValue<string>,
-      arg5: ChargeStruct,
+      arg4: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -3128,17 +3094,7 @@ export interface GatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    removeBit(
-      tokenId: PromiseOrValue<BigNumberish>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    removeBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      removingMask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    proxiableUUID(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     removeForwarder(
       forwarder: PromiseOrValue<string>,
@@ -3218,6 +3174,11 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
       arg2: ChargeStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setMetadataDescriptor(
+      _metadataDescriptor: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -3301,6 +3262,17 @@ export interface GatewayToken extends BaseContract {
     updateFlagsStorage(
       flagsStorage: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    upgradeTo(
+      newImplementation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     valueDecimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;

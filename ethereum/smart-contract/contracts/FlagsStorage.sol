@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./interfaces/IFlagsStorage.sol";
@@ -11,7 +14,7 @@ import "./library/BitMask.sol";
  * KYC flags are identifiable by short identifiers in bytes32 strings. After adding flags 
  * those bit indexes could be used by GatewayToken implementations to associate flags per token.
  */
-contract FlagsStorage is IFlagsStorage {
+contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using Address for address;
     using BitMask for uint256;
@@ -23,13 +26,20 @@ contract FlagsStorage is IFlagsStorage {
 
     mapping(bytes32 => uint8) public override flagIndexes;
 
+    // separate into a private function to reduce code size
+    function _onlySuperAdmin() private view {
+        require(msg.sender == superAdmin, "NOT SUPER ADMIN");
+    }
+
     // @dev Modifier to prevent calls from anyone except Identity.com Admin
     modifier onlySuperAdmin() {
-        require(msg.sender == superAdmin, "NOT SUPER ADMIN");
+        _onlySuperAdmin();
         _;
     }
 
-    constructor(address _superAdmin) {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+    function initialize(address _superAdmin) public initializer {
         require(_superAdmin != address(0), "SUPER ADMIN IS ZERO ADDRESS");
         superAdmin = _superAdmin;
     }
@@ -130,4 +140,6 @@ contract FlagsStorage is IFlagsStorage {
 
         emit FlagRemoved(flag);
     }
+
+    function _authorizeUpgrade(address) internal override onlySuperAdmin {}
 }

@@ -3,7 +3,6 @@ import {HardhatRuntimeEnvironment} from "hardhat/types";
 export const addGatekeeper = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const { ethers } = hre;
   
-  const [owner] = await hre.ethers.getSigners();
   const gatekeeper = ethers.utils.getAddress(args.gatekeeper);
   const gatekeeperNetwork = ethers.utils.getAddress(args.gatekeepernetwork);
 

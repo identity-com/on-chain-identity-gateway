@@ -1,18 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
 /**
  * @dev Context variant with ERC2771 support for multiple trusted forwarders.
  */
-abstract contract MultiERC2771Context is Context {
+abstract contract MultiERC2771Context is ContextUpgradeable {
 
     /// @custom:oz-upgrades-unsafe-allow state-variable-immutable
     mapping (address => bool) private  _trustedForwarders;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address[] memory trustedForwarders) {
+    constructor() initializer {}
+    function __MultiERC2771Context_init(address[] memory trustedForwarders) internal initializer {
+        __Context_init_unchained();
+        __MultiERC2771Context_init_unchained(trustedForwarders);
+    }
+
+    function __MultiERC2771Context_init_unchained(address[] memory trustedForwarders) internal initializer {
         for (uint i = 0; i < trustedForwarders.length; i++) {
             _trustedForwarders[trustedForwarders[i]] = true;
         }
@@ -49,14 +55,5 @@ abstract contract MultiERC2771Context is Context {
         } else {
             return super._msgData();
         }
-    }
-
-    /**
-     * @dev Enforces that this transaction is not a meta transaction,
-     * i.e. that the sender is the actual sender.
-     */
-    modifier onlyDirect() {
-        require(_msgSender() == msg.sender, "META TRANSACTION NOT ALLOWED");
-        _;
     }
 }

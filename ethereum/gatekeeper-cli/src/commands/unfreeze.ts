@@ -36,11 +36,11 @@ export default class UnfreezeToken extends Command {
 
     const parsedFlags = parseFlagsWithPrivateKey(flags)
 
-    this.log(`Freezing token for ${ownerAddress}`)
+    this.log(`Unfreezing token for ${ownerAddress}`)
 
     const gateway = await makeGatewayTs(parsedFlags)
 
-    const sendableTransaction = await gateway.freeze(
+    const sendableTransaction = await gateway.unfreeze(
       ownerAddress, parsedFlags.gatekeeperNetwork,
     )
 

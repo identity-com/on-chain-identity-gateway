@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import {ethers, upgrades} from "hardhat";
 import {BigNumber, Contract} from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
@@ -42,10 +42,13 @@ describe('GatewayToken', async () => {
         forwarder = await forwarderFactory.deploy();
         await forwarder.deployed();
 
-        flagsStorage = await flagsStorageFactory.deploy(identityCom.address);
+        // flagsStorage = await flagsStorageFactory.deploy(identityCom.address);
+        flagsStorage = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
         await flagsStorage.deployed();
 
-        gatewayToken = await gatewayTokenFactory.deploy("Gateway Protocol", "GWY", identityCom.address, NULL_ADDRESS, [forwarder.address]);
+        const args = ["Gateway Protocol", "GWY", identityCom.address, NULL_ADDRESS, [forwarder.address]];
+        gatewayToken = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
+        await gatewayToken.deployed();
 
         // create gatekeeper networks
         await gatewayToken.connect(identityCom).createNetwork(gkn1, 'Test GKN 1', false, NULL_ADDRESS);
@@ -121,13 +124,13 @@ describe('GatewayToken', async () => {
         it('Expect revert on adding new network authority by Alice', async () => {
             await expect(
                 gatewayToken.connect(alice).addNetworkAuthority(bob.address, gkn1)
-            ).to.be.revertedWith(/missing role/);
+            ).to.be.revertedWith(/Invalid role/);
         });
 
         it('Expect revert on removing existing network authority by Alice', async () => {
             await expect(
                 gatewayToken.connect(alice).removeNetworkAuthority(identityCom.address, gkn1)
-            ).to.be.revertedWith(/missing role/);
+            ).to.be.revertedWith(/Invalid role/);
         });
     });
 
@@ -193,14 +196,14 @@ describe('GatewayToken', async () => {
         it("Try to transfer a token, expect revert", async () => {
             await expect(
                 gatewayToken.connect(alice)['transferFrom(address,address,uint256)'](alice.address, bob.address, 1)
-            ).to.be.revertedWith("TRANSFERS RESTRICTED");
+            ).to.be.revertedWith("ERC3525: transfer caller is not owner nor approved");
         });
 
         it("Try to transfer 1st tokenId by Carol while transfers still restricted", async () => {
             await gatewayToken.connect(alice)['approve(address,uint256)'](carol.address, 1)
             await expect(
                 gatewayToken.connect(carol)['safeTransferFrom(address,address,uint256)'](alice.address, alice.address, 1)
-            ).to.be.revertedWith("TRANSFERS RESTRICTED");
+            ).to.be.revertedWith("ERC3525: transfer caller is not owner nor approved");
         });
     });
 
@@ -289,30 +292,7 @@ describe('GatewayToken', async () => {
             bitmask = await gatewayToken.getTokenBitmask(tokenId);
             expect(bitmask.toBigInt().toString(2)).to.equal('11');
 
-            await asGatekeeper.addBitmask(tokenId, 4);
-
-            bitmask = await gatewayToken.getTokenBitmask(tokenId);
-            expect(bitmask.toBigInt().toString(2)).to.equal('111');
-
-            const tokenState = await gatewayToken.getToken(tokenId);
-            expect(tokenState.bitmask.toBigInt().toString(2)).to.equal('111');
-
-            await asGatekeeper.removeBit(tokenId, 1);
-
-            bitmask = await gatewayToken.getTokenBitmask(tokenId);
-            expect(bitmask.toBigInt().toString(2)).to.equal('101');
-
-            await asGatekeeper.removeBitmask(tokenId, 5);
-
-            bitmask = await gatewayToken.getTokenBitmask(tokenId);
-            expect(bitmask.toBigInt().toString(2)).to.equal('0');
-
-            await asGatekeeper.addBit(tokenId, 2);
-
-            bitmask = await gatewayToken.getTokenBitmask(tokenId);
-            expect(bitmask.toBigInt().toString(2)).to.equal('100');
-
-            await asGatekeeper.clearBitmask(tokenId);
+            await asGatekeeper.setBitmask(tokenId, 0);
 
             bitmask = await gatewayToken.getTokenBitmask(tokenId);
             expect(bitmask.toBigInt().toString(2)).to.equal('0');
@@ -339,7 +319,6 @@ describe('GatewayToken', async () => {
         });
 
         it('Successfully forwards a call', async () => {
-
             const mintTx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(carol.address, gkn1, 0, 0, '', NULL_CHARGE);
 
             // Carol does not have the GT yet
@@ -361,6 +340,37 @@ describe('GatewayToken', async () => {
             // carol now has the GT
             validity = await gatewayToken.functions['verifyToken(address,uint256)'](carol.address, gkn1);
             expect(validity[0]).to.equal(true);
+        });
+    });
+
+    describe('Test gateway token upgradeability', async () => {
+        it('upgrades the contract to v2', async () => {
+            const gatewayTokenV2Factory = await ethers.getContractFactory("GatewayTokenUpgradeTest");
+            await upgrades.upgradeProxy(gatewayToken.address, gatewayTokenV2Factory);
+        });
+
+        it('existing tokens are still valid after the upgrade', async () => {
+            let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn1);
+            expect(verified).to.be.true;
+        });
+
+        it('can issue a token with a positive expiry', async () => {
+            const currentDate = Math.ceil(Date.now() / 1000);
+            const tomorrow = currentDate + 86_400;
+
+            const wallet = ethers.Wallet.createRandom();
+            await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, tomorrow, 0, '', NULL_CHARGE)
+
+            let verified = await gatewayToken['verifyToken(address,uint256)'](wallet.address, gkn1);
+            expect(verified).to.be.true;
+        });
+
+        it('can no longer issue a token with no expiry (testing the upgraded behaviour)', async () => {
+            const wallet = ethers.Wallet.createRandom();
+
+            await expect(
+                gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, 0, 0, '', NULL_CHARGE)
+            ).to.be.revertedWith("TEST MODE: Expiry must be greater than zero");
         });
     });
 });

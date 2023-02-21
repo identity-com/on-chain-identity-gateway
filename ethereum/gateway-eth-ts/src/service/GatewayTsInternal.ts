@@ -69,10 +69,7 @@ export class GatewayTsInternal<
   }
 
   getGatekeeperNetwork(network: bigint): Promise<string> {
-    return this.gatewayTokenContract.getNetwork(
-      network,
-      this.options
-    ) as Promise<string>;
+    return this.gatewayTokenContract.getNetwork(network, this.options);
   }
 
   listNetworks(
@@ -85,9 +82,9 @@ export class GatewayTsInternal<
       { length: Number(max) },
       (_, i) => i + Number(startAt)
     ).map(async (i) => {
-      const network = (await this.getGatekeeperNetwork(BigInt(i)).catch(() => null)) as
-        | string
-        | null;
+      const network = (await this.getGatekeeperNetwork(BigInt(i)).catch(
+        () => null
+      )) as string | null;
       if (network) networks[network] = BigInt(i);
     });
 
@@ -139,7 +136,6 @@ export class GatewayTsInternal<
       network,
       expirationTime,
       bitmask,
-      "", // TokenURI not yet supported
       NULL_CHARGE,
       this.options
     );
@@ -194,15 +190,6 @@ export class GatewayTsInternal<
       owner,
       network
     );
-  }
-
-  async getTokenState(
-    owner: string,
-    network: bigint
-  ): Promise<TokenState | null> {
-    const [tokenId] = await this.getTokenIdsByOwnerAndNetwork(owner, network);
-    if (!tokenId) return null;
-    return this.gatewayTokenContract.getTokenState(tokenId);
   }
 
   async getToken(owner: string, network: bigint): Promise<TokenData | null> {

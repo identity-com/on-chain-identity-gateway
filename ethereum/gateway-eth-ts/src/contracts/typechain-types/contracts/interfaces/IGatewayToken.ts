@@ -48,10 +48,9 @@ export interface IGatewayTokenInterface extends utils.Interface {
     "createNetwork(uint256,string,bool,address)": FunctionFragment;
     "getNetwork(uint256)": FunctionFragment;
     "getToken(uint256)": FunctionFragment;
-    "getTokenState(uint256)": FunctionFragment;
     "isGatekeeper(address,uint256)": FunctionFragment;
     "isNetworkAuthority(address,uint256)": FunctionFragment;
-    "mint(address,uint256,uint256,uint256,string,(uint256,uint8,address,address))": FunctionFragment;
+    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
     "removeNetworkAuthority(address,uint256)": FunctionFragment;
     "renameNetwork(uint256,string)": FunctionFragment;
     "transferDAOManager(address,address,uint256)": FunctionFragment;
@@ -63,7 +62,6 @@ export interface IGatewayTokenInterface extends utils.Interface {
       | "createNetwork"
       | "getNetwork"
       | "getToken"
-      | "getTokenState"
       | "isGatekeeper"
       | "isNetworkAuthority"
       | "mint"
@@ -94,10 +92,6 @@ export interface IGatewayTokenInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getTokenState",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "isGatekeeper",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
@@ -112,7 +106,6 @@ export interface IGatewayTokenInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
       ChargeStruct
     ]
   ): string;
@@ -143,10 +136,6 @@ export interface IGatewayTokenInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "getNetwork", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getToken", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getTokenState",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "isGatekeeper",
     data: BytesLike
@@ -248,11 +237,6 @@ export interface IGatewayToken extends BaseContract {
       }
     >;
 
-    getTokenState(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[number] & { state: number }>;
-
     isGatekeeper(
       gatekeeper: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
@@ -270,7 +254,6 @@ export interface IGatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      tokenURI: PromiseOrValue<string>,
       charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -327,11 +310,6 @@ export interface IGatewayToken extends BaseContract {
     }
   >;
 
-  getTokenState(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<number>;
-
   isGatekeeper(
     gatekeeper: PromiseOrValue<string>,
     network: PromiseOrValue<BigNumberish>,
@@ -349,7 +327,6 @@ export interface IGatewayToken extends BaseContract {
     network: PromiseOrValue<BigNumberish>,
     expiration: PromiseOrValue<BigNumberish>,
     mask: PromiseOrValue<BigNumberish>,
-    tokenURI: PromiseOrValue<string>,
     charge: ChargeStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -406,11 +383,6 @@ export interface IGatewayToken extends BaseContract {
       }
     >;
 
-    getTokenState(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<number>;
-
     isGatekeeper(
       gatekeeper: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
@@ -428,7 +400,6 @@ export interface IGatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      tokenURI: PromiseOrValue<string>,
       charge: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -491,11 +462,6 @@ export interface IGatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getTokenState(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     isGatekeeper(
       gatekeeper: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
@@ -513,7 +479,6 @@ export interface IGatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      tokenURI: PromiseOrValue<string>,
       charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -563,11 +528,6 @@ export interface IGatewayToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getTokenState(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     isGatekeeper(
       gatekeeper: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
@@ -585,7 +545,6 @@ export interface IGatewayToken extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      tokenURI: PromiseOrValue<string>,
       charge: ChargeStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;

@@ -4,23 +4,22 @@ export const fund = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const {ethers} = hre;
 
   const amount = ethers.utils.parseEther(args.amount);
-  const account = ethers.utils.getAddress(args.address);
 
-  console.log(`funding ${args.address} with ${amount}`)
-  const [owner] = await hre.ethers.getSigners();
+  const accounts = await hre.getNamedAccounts();
+  const from = await hre.ethers.getSigner(accounts[args.from]);
+  const network = await from.provider?.getNetwork()
+  const balance = await from.getBalance();
 
-  const network = await owner.provider?.getNetwork()
-  console.log(network)
+  console.log(`Funding ${args.to} (${accounts[args.to]}) with ${amount} from ${args.from} (${from.address}). Network ${network?.chainId}, balance ${balance}`);
 
-  const balance = await owner.getBalance();
-  console.log(balance);
+  if (args.dryrun) return;
 
-  const transactionReceipt = await owner.sendTransaction({
-    to: account,
+  const transactionResponse = await from.sendTransaction({
+    to: accounts[args.to],
     value: amount
   });
 
-  console.log(transactionReceipt);
-  
-  await transactionReceipt.wait();
+  const transactionReceipt = await transactionResponse.wait();
+
+  console.log(`Transaction receipt: ${JSON.stringify(transactionReceipt, null, 2)}`);
 }

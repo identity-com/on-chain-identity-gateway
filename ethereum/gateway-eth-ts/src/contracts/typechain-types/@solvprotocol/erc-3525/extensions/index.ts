@@ -2,6 +2,6 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
-export type { IERC3525Metadata } from "./IERC3525Metadata";
-export type { IERC721Enumerable } from "./IERC721Enumerable";
-export type { IERC721Metadata } from "./IERC721Metadata";
+export type { IERC3525MetadataUpgradeable } from "./IERC3525MetadataUpgradeable";
+export type { IERC721EnumerableUpgradeable } from "./IERC721EnumerableUpgradeable";
+export type { IERC721MetadataUpgradeable } from "./IERC721MetadataUpgradeable";

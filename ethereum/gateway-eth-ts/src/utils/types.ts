@@ -9,10 +9,12 @@ export enum TokenState {
 
 export declare type TokenData = {
   owner: string;
-  tokenId: BigNumber | number;
+  tokenId: BigNumber;
   state: TokenState;
-  expiration: BigNumber | number;
-  bitmask: BigNumber | number;
+  expiration: BigNumber;
+  bitmask: BigNumber;
+
+  tokenURI?: string;
 };
 
 // List of the write operations on the GatewayToken contract that are exposed via this library
@@ -58,13 +60,11 @@ export type MappedWriteOperation<O> = {
 
 // List of the read operations on the GatewayToken contract that are exposed via this library
 export type ReadOnlyOps =
-  | "getTokenState"
   | "getToken"
   | "getNetwork"
   | "verifyToken(address,uint256)"
   | "getTokenIdsByOwnerAndNetwork";
 export const readOnlyOpNames = [
-  "getTokenState",
   "getToken",
   "getNetwork",
   "verifyToken(address,uint256)",
