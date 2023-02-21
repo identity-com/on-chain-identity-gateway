@@ -26,7 +26,9 @@ const derivedAccounts = {
   initialIndex: 0,
   count: 20,
 }
-const liveAccounts = [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.GATEKEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY}`];
+const liveAccounts = (process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY) ?
+    [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.GATEKEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY}`]
+: [];
 
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
     .addParam('address', 'The wallet to check')

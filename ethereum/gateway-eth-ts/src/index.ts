@@ -15,7 +15,7 @@ import Forwarder from "./contracts/abi/Forwarder.sol/Forwarder.json";
 import FlagsStorage from "./contracts/abi/FlagsStorage.sol/FlagsStorage.json";
 
 export const abi = {
-    GatewayToken,
-    Forwarder,
-    FlagsStorage,
+  GatewayToken,
+  Forwarder,
+  FlagsStorage,
 };

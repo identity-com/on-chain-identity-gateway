@@ -109,7 +109,7 @@ describe('GatewayToken', async () => {
 
         it('Expect revert when attempting to issue as a non-gatekeeper network authority', async () => {
             await expect(
-                gatewayToken.connect(networkAuthority2).mint(alice.address, gkn1, 0, 0, '', NULL_CHARGE)
+                gatewayToken.connect(networkAuthority2).mint(alice.address, gkn1, 0, 0, NULL_CHARGE)
             ).to.be.revertedWith("MUST BE GATEKEEPER");
         });
 
@@ -156,7 +156,7 @@ describe('GatewayToken', async () => {
         });
 
         it('Successfully mint Gateway Token for Alice by gatekeeper with gatekeeperNetwork = 1', async () => {
-            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, '', NULL_CHARGE)
+            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE)
 
             let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn1);
             expect(verified).to.be.true;
@@ -173,14 +173,14 @@ describe('GatewayToken', async () => {
             // add the gatekeeper to network 2
             await gatewayToken.connect(identityCom).addGatekeeper(gatekeeper.address, gkn2)
 
-            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn2, 0, 0, '', NULL_CHARGE);
+            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn2, 0, 0, NULL_CHARGE);
 
             let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn2);
             expect(verified).to.be.true;
         });
 
         it('mint a second token for Alice with gatekeeperNetwork = 1', async () => {
-            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, '', NULL_CHARGE)
+            await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE)
 
             let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn1);
             expect(verified).to.be.true;
@@ -319,7 +319,7 @@ describe('GatewayToken', async () => {
         });
 
         it('Successfully forwards a call', async () => {
-            const mintTx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(carol.address, gkn1, 0, 0, '', NULL_CHARGE);
+            const mintTx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(carol.address, gkn1, 0, 0, NULL_CHARGE);
 
             // Carol does not have the GT yet
             let validity = await gatewayToken.functions['verifyToken(address,uint256)'](carol.address, gkn1);
@@ -359,7 +359,7 @@ describe('GatewayToken', async () => {
             const tomorrow = currentDate + 86_400;
 
             const wallet = ethers.Wallet.createRandom();
-            await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, tomorrow, 0, '', NULL_CHARGE)
+            await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, tomorrow, 0, NULL_CHARGE)
 
             let verified = await gatewayToken['verifyToken(address,uint256)'](wallet.address, gkn1);
             expect(verified).to.be.true;
@@ -369,7 +369,7 @@ describe('GatewayToken', async () => {
             const wallet = ethers.Wallet.createRandom();
 
             await expect(
-                gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, 0, 0, '', NULL_CHARGE)
+                gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, 0, 0, NULL_CHARGE)
             ).to.be.revertedWith("TEST MODE: Expiry must be greater than zero");
         });
     });
