@@ -1,11 +1,10 @@
 import {Flags} from '@oclif/core'
 import {BaseProvider, Provider} from '@ethersproject/providers'
 
-import {estimateGasPrice, GasPriceKey} from './gas'
+import {GasPriceKey} from './gas'
 import {getProvider, networks} from './providers'
 import {isAddress} from '@ethersproject/address'
 import {DEFAULT_GATEWAY_TOKEN_ADDRESS} from '@identity.com/gateway-eth-ts'
-import {GetTxGasParamsRes} from 'gas-price-oracle'
 import {BigNumber} from '@ethersproject/bignumber'
 
 // PRIVATE KEY FOR TEST, DEMO ONLY
@@ -56,10 +55,10 @@ export const gatekeeperNetworkFlag = Flags.custom<number>({
       'Gatekeeper network. Defaults to the test Gatekeeper Network',
 })
 
-export const feesFlag = Flags.custom<GetTxGasParamsRes>({
+export const feesFlag = Flags.custom<GasPriceKey>({
   char: 'f',
   name: 'fees',
-  parse: async (input: string) => estimateGasPrice(input as GasPriceKey),
+  parse: async (input: string) => input as GasPriceKey,
   description:
     'Gas Price level to execute transaction with. For example: instant, fast, standard, slow',
 })
@@ -93,7 +92,7 @@ type Flags = {
   chain: Provider | undefined
   gatewayTokenAddress: string | undefined
   gatekeeperNetwork: number | undefined
-  fees?: GetTxGasParamsRes | undefined
+  fees?: GasPriceKey | undefined
   gasLimit?: BigNumber | undefined
 };
 export const parseFlags = (flags: Flags) => {

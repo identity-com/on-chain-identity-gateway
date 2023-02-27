@@ -1,17 +1,21 @@
 import {Provider} from '@ethersproject/providers'
 import {getSigner} from './signer'
 import {GatewayTs, TokenData} from '@identity.com/gateway-eth-ts'
-import {GetTxGasParamsRes} from 'gas-price-oracle'
 import {BigNumber} from '@ethersproject/bignumber'
+import {estimateGasPrice, GasPriceKey} from './gas'
 export const makeGatewayTs = async ({
   provider,
   privateKey,
   gatewayTokenAddress,
   fees,
   gasLimit,
-}: { provider: Provider, privateKey?: string, gatewayTokenAddress: string, fees?: GetTxGasParamsRes, gasLimit?: BigNumber }):Promise<GatewayTs> => {
+}: { provider: Provider, privateKey?: string, gatewayTokenAddress: string, fees?: GasPriceKey, gasLimit?: BigNumber }):Promise<GatewayTs> => {
   const signer = privateKey ? getSigner(privateKey, provider) : undefined
-  return new GatewayTs(signer || provider, gatewayTokenAddress, {...fees, gasLimit})
+  const chainId = await provider.getNetwork().then(network => network.chainId)
+  const feeAmount = await estimateGasPrice(fees, {
+    chainId,
+  })
+  return new GatewayTs(signer || provider, gatewayTokenAddress, {...feeAmount, gasLimit})
 }
 
 export const checkedGetToken = async (
