@@ -11,10 +11,7 @@ export const makeGatewayTs = async ({
   gasLimit,
 }: { provider: Provider, privateKey?: string, gatewayTokenAddress: string, fees?: GasPriceKey, gasLimit?: BigNumber }):Promise<GatewayTs> => {
   const signer = privateKey ? getSigner(privateKey, provider) : undefined
-  const chainId = await provider.getNetwork().then(network => network.chainId)
-  const feeAmount = await estimateGasPrice(fees, {
-    chainId,
-  })
+  const feeAmount = await estimateGasPrice(provider, fees)
   return new GatewayTs(signer || provider, gatewayTokenAddress, {...feeAmount, gasLimit})
 }
 
