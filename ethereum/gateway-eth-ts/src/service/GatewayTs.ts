@@ -15,6 +15,7 @@ import {
   TokenData,
 } from "../utils";
 import { asProvider } from "../utils/provider";
+import { GatewayTsTransaction } from "./GatewayTsTransaction";
 
 export class GatewayTs extends GatewayTsInternal<
   GatewayToken,
@@ -49,6 +50,10 @@ export class GatewayTs extends GatewayTsInternal<
       forwarderContract,
       this.options
     );
+  }
+
+  public transaction(): GatewayTsTransaction {
+    return new GatewayTsTransaction(this.gatewayTokenContract, this.options);
   }
 
   public onGatewayTokenChange(
