@@ -78,7 +78,7 @@ $ npm install -g @identity.com/gateway-eth-cli
 $ gateway-eth COMMAND
 running command...
 $ gateway-eth (--version)
-@identity.com/gateway-eth-cli/0.0.7 darwin-arm64 node-v16.17.1
+@identity.com/gateway-eth-cli/0.0.10 darwin-arm64 node-v16.17.1
 $ gateway-eth --help [COMMAND]
 USAGE
   $ gateway-eth COMMAND
@@ -141,7 +141,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -154,7 +154,7 @@ EXAMPLES
   $ gateway-eth add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway-eth add-network-authority ADDRESS`
 
@@ -194,7 +194,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -207,7 +207,7 @@ EXAMPLES
   $ gateway-eth add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/add-network-authority.ts)_
+_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/add-network-authority.ts)_
 
 ## `gateway-eth create-gatekeeper-network ID NAME`
 
@@ -245,7 +245,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -258,7 +258,7 @@ EXAMPLES
   $ gateway-eth create-gatekeeper-network <name> <number>
 ```
 
-_See code: [dist/commands/create-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/create-gatekeeper-network.ts)_
+_See code: [dist/commands/create-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/create-gatekeeper-network.ts)_
 
 ## `gateway-eth freeze ADDRESS`
 
@@ -298,7 +298,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -311,7 +311,7 @@ EXAMPLES
   $ gateway-eth freeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/freeze.ts)_
 
 ## `gateway-eth get-gatekeeper-network ID`
 
@@ -338,7 +338,7 @@ FLAGS
       Show CLI help.
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
 DESCRIPTION
@@ -348,7 +348,7 @@ EXAMPLES
   $ gateway-eth get-gatekeeper-network <number>
 ```
 
-_See code: [dist/commands/get-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/get-gatekeeper-network.ts)_
+_See code: [dist/commands/get-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/get-gatekeeper-network.ts)_
 
 ## `gateway-eth get-token ADDRESS`
 
@@ -378,7 +378,7 @@ FLAGS
       [default: 1] Gatekeeper network. Defaults to the test Gatekeeper Network
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
 DESCRIPTION
@@ -391,7 +391,7 @@ EXAMPLES
   $ gateway-eth get 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/get-token.ts)_
+_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/get-token.ts)_
 
 ## `gateway-eth help [COMMAND]`
 
@@ -456,7 +456,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -u, --uri=<value>
@@ -472,7 +472,7 @@ EXAMPLES
   $ gateway-eth issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/issue.ts)_
 
 ## `gateway-eth listen ADDRESS`
 
@@ -502,7 +502,7 @@ FLAGS
       [default: 1] Gatekeeper network. Defaults to the test Gatekeeper Network
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
 DESCRIPTION
@@ -512,7 +512,7 @@ EXAMPLES
   $ gateway-eth listen 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/listen.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/listen.ts)_
+_See code: [dist/commands/listen.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/listen.ts)_
 
 ## `gateway-eth refresh ADDRESS [EXPIRY]`
 
@@ -553,7 +553,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -566,7 +566,7 @@ EXAMPLES
   $ gateway-eth refresh 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 60 -n 123
 ```
 
-_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/refresh.ts)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/refresh.ts)_
 
 ## `gateway-eth remove-gatekeeper ADDRESS`
 
@@ -606,7 +606,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -619,7 +619,7 @@ EXAMPLES
   $ gateway-eth remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/remove-gatekeeper.ts)_
+_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/remove-gatekeeper.ts)_
 
 ## `gateway-eth remove-network-authority ADDRESS`
 
@@ -659,7 +659,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -672,7 +672,7 @@ EXAMPLES
   $ gateway-eth remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/remove-network-authority.ts)_
+_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/remove-network-authority.ts)_
 
 ## `gateway-eth revoke ADDRESS`
 
@@ -712,7 +712,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -725,7 +725,7 @@ EXAMPLES
   $ gateway-eth revoke 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/revoke.ts)_
 
 ## `gateway-eth unfreeze ADDRESS`
 
@@ -765,7 +765,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -778,7 +778,7 @@ EXAMPLES
   $ gateway-eth unfreeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.10/dist/commands/unfreeze.ts)_
 
 ## `gateway-eth verify ADDRESS`
 
@@ -808,7 +808,7 @@ FLAGS
       [default: 1] Gatekeeper network. Defaults to the test Gatekeeper Network
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0x48EB506441da92b4951D56716422b348dB201048] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
 DESCRIPTION

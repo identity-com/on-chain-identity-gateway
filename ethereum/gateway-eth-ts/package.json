@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/gateway-eth-ts",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "description": "Adapter library for Identity.com gateway token system on Ethereum",
   "main": "dist/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "lint": "eslint src/ --ext .ts",
     "build": "yarn compile && yarn doc",
     "pretest": "cd ../smart-contract && (NODE_ENV=test yarn local &) && sleep 10",
-    "test": "ts-mocha src/*.test.ts src/**/*.test.ts",
+    "test": "ts-mocha src/**/*.test.ts",
     "stop-network": "lsof -t -i:8545 | xargs kill",
     "copy-contracts": "cp -r ../smart-contract/build/contracts/* src/contracts/abi/ && cp -r ../smart-contract/typechain-types src/contracts"
   },

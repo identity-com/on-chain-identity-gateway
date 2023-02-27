@@ -9,6 +9,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, ethers } = hre;
     const { deployer, authority, gatekeeper } = await getAccounts(hre);
 
+    // WARNING! If any of the above keys are the same as each other
+    // hardhat does not resolve them properly.
+    // Use this hack in that case:
+    // const gatekeeper = gatekeeper === authority
+
     const deployerSigner = await ethers.getSigner(deployer);
     const authoritySigner = await ethers.getSigner(authority);
 
