@@ -38,7 +38,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "expiration",
+    name: "getExpiration",
     outputs: [
       {
         internalType: "uint256",

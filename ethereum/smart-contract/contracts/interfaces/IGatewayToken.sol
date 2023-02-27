@@ -25,12 +25,6 @@ interface IGatewayToken {
         );
 
     /**
-    * @dev Triggers to get gateway token state with specified `tokenId`
-    * @param tokenId Gateway token id
-    */
-    function getTokenState(uint256 tokenId) external view returns (uint8 state);
-
-    /**
     * @dev Triggers to verify if address has a GATEKEEPER role. 
     * @param gatekeeper Gatekeeper address
     * @param network GatekeeperNetwork id
@@ -40,6 +34,8 @@ interface IGatewayToken {
     function createNetwork(uint256 network, string memory name, bool daoGoverned, address daoManager) external;
 
     function renameNetwork(uint256 network, string memory name) external;
+
+    function getNetwork(uint256 network) external view returns (string memory);
 
     /**
     * @dev Triggers to add new network authority into the system. 

@@ -2,4 +2,4 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
-export type { IERC3525MetadataDescriptor } from "./IERC3525MetadataDescriptor";
+export type { IERC3525MetadataDescriptorUpgradeable } from "./IERC3525MetadataDescriptorUpgradeable";

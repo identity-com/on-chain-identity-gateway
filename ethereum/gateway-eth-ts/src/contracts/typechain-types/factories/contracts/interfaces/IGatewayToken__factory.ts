@@ -86,6 +86,25 @@ const _abi = [
     inputs: [
       {
         internalType: "uint256",
+        name: "network",
+        type: "uint256",
+      },
+    ],
+    name: "getNetwork",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
         name: "tokenId",
         type: "uint256",
       },
@@ -116,25 +135,6 @@ const _abi = [
         internalType: "uint256",
         name: "bitmask",
         type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "getTokenState",
-    outputs: [
-      {
-        internalType: "uint8",
-        name: "state",
-        type: "uint8",
       },
     ],
     stateMutability: "view",

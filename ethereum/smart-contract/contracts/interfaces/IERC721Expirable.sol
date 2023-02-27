@@ -10,13 +10,13 @@ interface IERC721Expirable {
     event Expiration(uint256 indexed tokenId, uint256 timestamp);
 
     /**
-    * @dev Triggers to freeze gateway token
+    * @dev Get the gateway token expiry
     * @param tokenId Gateway token id
     */
-    function expiration(uint256 tokenId) external view returns (uint256);
+    function getExpiration(uint256 tokenId) external view returns (uint256);
 
     /**
-    * @dev Triggers to unfreeze gateway token
+    * @dev Set the gateway token expiry
     * @param tokenId Gateway token id
     * @param tokenId Expiration timestamp
     * @param charge The charge details for token issuance (ignored here - handled if at all by the forwarding contract)

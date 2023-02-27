@@ -7,6 +7,10 @@ import '@nomicfoundation/hardhat-toolbox';
 import '@nomiclabs/hardhat-ethers';
 import '@typechain/hardhat'
 import 'hardhat-deploy';
+import "@nomiclabs/hardhat-solhint";
+import "@nomiclabs/hardhat-etherscan";
+import '@openzeppelin/hardhat-upgrades';
+import 'hardhat-contract-sizer';
 
 import { checkGT } from "./tasks/checkGT";
 import { addGatekeeper } from "./tasks/addGatekeeper";
@@ -24,7 +28,7 @@ const derivedAccounts = {
 }
 const liveAccounts = (process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY) ?
     [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.GATEKEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY}`]
-    : derivedAccounts;
+: [];
 
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
     .addParam('address', 'The wallet to check')
@@ -40,8 +44,10 @@ task('issue-gt', 'issue a gateway token')
     .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
     .setAction(issueGT)
 task('fund', 'fund a wallet')
-    .addParam('address', 'The wallet to fund')
+    .addParam('from', 'The funder wallet')
+    .addParam('to', 'The wallet to fund')
     .addParam('amount', 'The amount in eth to send')
+    .addFlag('dryrun', 'Do not actually send the transaction')
     .setAction(fund)
 task('print-private-key', 'Print the private key of a wallet used by hardhat (WARNING - DO NOT USE THIS FOR PRODUCTION KEYS)')
     .addParam('index', 'the index of the wallet to get the private key for')
@@ -57,11 +63,14 @@ module.exports = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
-      accounts: derivedAccounts,
+      accounts: process.env.NODE_ENV === 'test' ?
+          derivedAccounts :
+          liveAccounts.map(a => ({ privateKey: a, balance: '10000000000000000000000'})),
     },
     localhost: {
       saveDeployments: true,
-      accounts: derivedAccounts,
+      allowUnlimitedContractSize: false,
+      accounts: liveAccounts,
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -177,15 +186,31 @@ module.exports = {
       accounts: liveAccounts,
       chainId: 0, // not documented anywhere
     },
+    xdc: {
+      url: 'https://erpc.xinfin.network',
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 50,
+    },
+    xdcApothem: {
+      url: 'https://erpc.apothem.network',
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 51,
+    },
   },
   solidity: {
     version: "0.8.9",
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
+        runs: 100
       }
     }
+  },
+  contractSizer: {
+    runOnCompile: true,
+    strict: true,
   },
   paths: {
     sources: "./contracts",
@@ -202,11 +227,6 @@ module.exports = {
   mocha: {
     timeout: 100000,
     // reporter: 'eth-gas-reporter',
-  },
-  contractSizer: {
-    alphaSort: false,
-    runOnCompile: false,
-    disambiguatePaths: false,
   },
   abiExporter: {
     path: './abi',

@@ -1,15 +1,12 @@
 import { BigNumber } from "ethers";
-export const DEFAULT_FLAGS_STORAGE =
-  "0xd1895ce312dD4bACbb6bF7226222C237ad5a3767";
+export const DEFAULT_FLAGS_STORAGE_ADDRESS =
+  "0xE98d59118db152d28074673B5876BaE9f59740ab"; // Proxy address
 export const DEFAULT_GATEWAY_TOKEN_ADDRESS =
-  "0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20";
+  "0xfAb6Be530F0E255F1776D059d58de907223E8421"; // Proxy address
 export const DEFAULT_FORWARDER_ADDRESS =
-  "0xa2C410cc10B4aDA3a1311435715e514bDBeD7D7C";
+  "0xdf8FfFF5837380FDfC55252A75994A7166B97e6D";
 
 export const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
-export const DEFAULT_EXPIRATION_BN = BigNumber.from(86_400).mul(
-  BigNumber.from(14)
-);
 
 export const ZERO_BN = BigNumber.from("0");
 export const ONE_BN = BigNumber.from("1");

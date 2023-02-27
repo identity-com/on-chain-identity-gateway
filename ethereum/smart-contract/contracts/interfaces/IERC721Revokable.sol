@@ -5,7 +5,7 @@ interface IERC721Revokable {
     /**
     * @dev Emitted when GatewayToken is revoked.
     */
-    event Revoke(uint256 tokenId);
+    event Revoke(uint256 indexed tokenId);
 
     /**
     * @dev Triggers to revoke gateway token

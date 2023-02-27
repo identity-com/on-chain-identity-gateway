@@ -2,4 +2,4 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
-export { IERC3525MetadataDescriptor__factory } from "./IERC3525MetadataDescriptor__factory";
+export { IERC3525MetadataDescriptorUpgradeable__factory } from "./IERC3525MetadataDescriptorUpgradeable__factory";

@@ -4,7 +4,7 @@ import {
   feesFlag, gatekeeperNetworkFlag,
   gatewayTokenAddressFlag,
   chainFlag, parseFlagsWithPrivateKey,
-  privateKeyFlag,
+  privateKeyFlag, gasLimitFlag,
 } from '../utils/oclif/flags'
 import {makeGatewayTs} from '../utils/oclif/utils'
 import {addressArg} from '../utils/oclif/args'
@@ -26,6 +26,7 @@ export default class RefreshToken extends Command {
     gatekeeperNetwork: gatekeeperNetworkFlag(),
     chain: chainFlag(),
     fees: feesFlag(),
+    gasLimit: gasLimitFlag(),
     confirmations: confirmationsFlag(),
   };
 

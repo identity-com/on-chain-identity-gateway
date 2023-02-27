@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./interfaces/IParameterizedAccessControl.sol";
@@ -46,7 +46,7 @@ import "./interfaces/IParameterizedAccessControl.sol";
  * grant and revoke this role. Extra precautions should be taken to secure
  * accounts that have been granted it.
  */
-abstract contract ParameterizedAccessControl is Context, IParameterizedAccessControl, ERC165 {
+abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameterizedAccessControl, ERC165 {
     struct RoleData {
         mapping(address => bool) members;
         bytes32 adminRole;
@@ -105,20 +105,13 @@ abstract contract ParameterizedAccessControl is Context, IParameterizedAccessCon
     /**
      * @dev Revert with a standard message if `account` is missing `role`.
      *
-     * The format of the revert reason is given by the following regular expression:
-     *
-     *  /^AccessControl: account (0x[0-9a-f]{40}) is missing role (0x[0-9a-f]{64}) on domain ([0-9]+)$/
      */
     function _checkRole(bytes32 role, uint256 domain, address account) internal view virtual {
         if (!hasRole(role, domain, account)) {
             revert(
                 string(
                     abi.encodePacked(
-                        "AccessControl: account ",
-                        Strings.toHexString(account),
-                        " is missing role ",
-                        Strings.toHexString(uint256(role), 32),
-                        " on domain ", domain
+                        "Invalid role"
                     )
                 )
             );
@@ -286,6 +279,11 @@ abstract contract ParameterizedAccessControl is Context, IParameterizedAccessCon
         }
     }
 
+    // separate into a private function to reduce code size
+    function _onlySuperAdmin() private view {
+        require(isSuperAdmin(_msgSender()), "NOT SUPER ADMIN");
+    }
+
     /**
      * @dev Modifier that checks that an account is a super admin. Reverts
      * with a standardized message.
@@ -297,7 +295,7 @@ abstract contract ParameterizedAccessControl is Context, IParameterizedAccessCon
      * _Available since v4.1._
      */
     modifier onlySuperAdmin() {
-        require(isSuperAdmin(_msgSender()), "NOT SUPER ADMIN");
+        _onlySuperAdmin();
         _;
     }
 }

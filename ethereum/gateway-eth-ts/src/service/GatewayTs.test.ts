@@ -36,6 +36,17 @@ describe("GatewayTS", function () {
     );
   });
 
+  it("should get the gatekeeper network name", async () => {
+    const gkn = await gateway.getGatekeeperNetwork(BigInt(1));
+    assert.equal(gkn, "tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf");
+  });
+
+  it("should list all gatekeeper networks", async () => {
+    const networks = await gateway.listNetworks();
+    assert.equal(Object.keys(networks).length, 1);
+    assert.equal(networks["tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf"], 1);
+  });
+
   it("should issue a token", async () => {
     await (await gateway.issue(sampleWalletAddress, gatekeeperNetwork)).wait();
 
@@ -46,6 +57,21 @@ describe("GatewayTS", function () {
 
     assert.equal(token.owner, sampleWalletAddress);
     assert.equal(token.state, TokenState.ACTIVE);
+  });
+
+  it("should issue a token with additional parameters", async () => {
+    const address = Wallet.createRandom().address;
+    const expiry = BigNumber.from(100);
+    const expectedExpiry = BigNumber.from(Math.floor(Date.now() / 1000 + 100));
+    const mask = BigNumber.from(1);
+    await (
+      await gateway.issue(address, gatekeeperNetwork, expiry, mask)
+    ).wait();
+
+    const token = await gateway.getToken(address, gatekeeperNetwork);
+
+    assert.equal(token.expiration.toNumber(), expectedExpiry.toNumber());
+    assert.equal(token.bitmask.toNumber(), mask.toNumber());
   });
 
   it("Verify gateway tokens for multiple addresses", async () => {
@@ -75,17 +101,9 @@ describe("GatewayTS", function () {
     assert.equal(tokenIds.length, 0);
   }).timeout(10_000);
 
-  it("Test token state get functions", async () => {
-    const state = await gateway.getTokenState(
-      sampleWalletAddress,
-      gatekeeperNetwork
-    );
-    assert.equal(state, TokenState.ACTIVE);
-  }).timeout(10_000);
-
   it("Missing token returns null", async () => {
     const emptyWallet = Wallet.createRandom().address;
-    const token = await gateway.getTokenState(emptyWallet, gatekeeperNetwork);
+    const token = await gateway.getToken(emptyWallet, gatekeeperNetwork);
     assert.ok(token === null);
   }).timeout(10_000);
 

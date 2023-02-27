@@ -6,7 +6,7 @@ import {
   feesFlag, gatekeeperNetworkFlag,
   gatewayTokenAddressFlag,
   chainFlag, parseFlagsWithPrivateKey,
-  privateKeyFlag,
+  privateKeyFlag, gasLimitFlag,
 } from '../utils/oclif/flags'
 import {addressArg} from '../utils/oclif/args'
 
@@ -25,6 +25,7 @@ export default class RemoveNetworkAuthority extends Command {
     gatekeeperNetwork: gatekeeperNetworkFlag(),
     chain: chainFlag(),
     fees: feesFlag(),
+    gasLimit: gasLimitFlag(),
     confirmations: confirmationsFlag(),
   };
 

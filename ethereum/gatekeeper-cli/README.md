@@ -78,7 +78,7 @@ $ npm install -g @identity.com/gateway-eth-cli
 $ gateway-eth COMMAND
 running command...
 $ gateway-eth (--version)
-@identity.com/gateway-eth-cli/0.0.4 darwin-arm64 node-v16.17.1
+@identity.com/gateway-eth-cli/0.0.7 darwin-arm64 node-v16.17.1
 $ gateway-eth --help [COMMAND]
 USAGE
   $ gateway-eth COMMAND
@@ -91,6 +91,7 @@ USAGE
 * [`gateway-eth add-network-authority ADDRESS`](#gateway-eth-add-network-authority-address)
 * [`gateway-eth create-gatekeeper-network ID NAME`](#gateway-eth-create-gatekeeper-network-id-name)
 * [`gateway-eth freeze ADDRESS`](#gateway-eth-freeze-address)
+* [`gateway-eth get-gatekeeper-network ID`](#gateway-eth-get-gatekeeper-network-id)
 * [`gateway-eth get-token ADDRESS`](#gateway-eth-get-token-address)
 * [`gateway-eth help [COMMAND]`](#gateway-eth-help-command)
 * [`gateway-eth issue ADDRESS [EXPIRY]`](#gateway-eth-issue-address-expiry)
@@ -111,7 +112,7 @@ USAGE
   $ gateway-eth add-gatekeeper [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-f <value>] [-g <value>] [-w <value>]
 
 ARGUMENTS
   ADDRESS  Gatekeeper address to add to the gatekeeper network
@@ -121,10 +122,13 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -f, --fees=<value>
       Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -g, --gasLimit=<value>
+      Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas
 
   -h, --help
       Show CLI help.
@@ -137,7 +141,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -150,7 +154,7 @@ EXAMPLES
   $ gateway-eth add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway-eth add-network-authority ADDRESS`
 
@@ -161,7 +165,7 @@ USAGE
   $ gateway-eth add-network-authority [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-f <value>] [-g <value>] [-w <value>]
 
 ARGUMENTS
   ADDRESS  Network authority address to add to the gatekeeper network
@@ -171,10 +175,13 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -f, --fees=<value>
       Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -g, --gasLimit=<value>
+      Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas
 
   -h, --help
       Show CLI help.
@@ -187,7 +194,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -200,7 +207,7 @@ EXAMPLES
   $ gateway-eth add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/add-network-authority.ts)_
+_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/add-network-authority.ts)_
 
 ## `gateway-eth create-gatekeeper-network ID NAME`
 
@@ -211,7 +218,7 @@ USAGE
   $ gateway-eth create-gatekeeper-network [ID] [NAME] [-h] [-p <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli] [-t <value>] [-f <value>] [-w <value>]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-t <value>] [-f <value>] [-g <value>] [-w <value>]
 
 ARGUMENTS
   ID    ID of the new network
@@ -222,10 +229,13 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -f, --fees=<value>
       Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -g, --gasLimit=<value>
+      Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas
 
   -h, --help
       Show CLI help.
@@ -235,7 +245,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -248,7 +258,7 @@ EXAMPLES
   $ gateway-eth create-gatekeeper-network <name> <number>
 ```
 
-_See code: [dist/commands/create-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/create-gatekeeper-network.ts)_
+_See code: [dist/commands/create-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/create-gatekeeper-network.ts)_
 
 ## `gateway-eth freeze ADDRESS`
 
@@ -259,7 +269,7 @@ USAGE
   $ gateway-eth freeze [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-f <value>] [-g <value>] [-w <value>]
 
 ARGUMENTS
   ADDRESS  Token owner address
@@ -269,10 +279,13 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -f, --fees=<value>
       Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -g, --gasLimit=<value>
+      Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas
 
   -h, --help
       Show CLI help.
@@ -285,7 +298,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -298,7 +311,44 @@ EXAMPLES
   $ gateway-eth freeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/freeze.ts)_
+
+## `gateway-eth get-gatekeeper-network ID`
+
+Check if a gatekeeper network exists
+
+```
+USAGE
+  $ gateway-eth get-gatekeeper-network [ID] [-h] [-c
+    localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
+    nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-t <value>]
+
+ARGUMENTS
+  ID  ID of the network
+
+FLAGS
+  -c, --chain=<option>
+      [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
+      <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
+      ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
+
+  -h, --help
+      Show CLI help.
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+DESCRIPTION
+  Check if a gatekeeper network exists
+
+EXAMPLES
+  $ gateway-eth get-gatekeeper-network <number>
+```
+
+_See code: [dist/commands/get-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/get-gatekeeper-network.ts)_
 
 ## `gateway-eth get-token ADDRESS`
 
@@ -309,7 +359,7 @@ USAGE
   $ gateway-eth get-token [ADDRESS] [-h] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem]
 
 ARGUMENTS
   ADDRESS  Token owner address
@@ -319,7 +369,7 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -h, --help
       Show CLI help.
@@ -328,7 +378,7 @@ FLAGS
       [default: 1] Gatekeeper network. Defaults to the test Gatekeeper Network
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
 DESCRIPTION
@@ -341,7 +391,7 @@ EXAMPLES
   $ gateway-eth get 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/get-token.ts)_
+_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/get-token.ts)_
 
 ## `gateway-eth help [COMMAND]`
 
@@ -372,11 +422,12 @@ USAGE
   $ gateway-eth issue [ADDRESS] [EXPIRY] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>] [-b <value>]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-f <value>] [-w <value>] [-g <value>] [-b <value>] [-u
+    <value>]
 
 ARGUMENTS
   ADDRESS  Token owner address
-  EXPIRY   [default: [object Object]] Expiry timestamp for newly issued token
+  EXPIRY   [default: [object Object]] Expiry timestamp for the issued token
 
 FLAGS
   -b, --bitmask=<value>
@@ -386,10 +437,13 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -f, --fees=<value>
       Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -g, --gasLimit=<value>
+      Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas
 
   -h, --help
       Show CLI help.
@@ -402,8 +456,11 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
+
+  -u, --uri=<value>
+      TokenURI to link with the issued token
 
   -w, --confirmations=<value>
       [default: 1] The amount of blocks to wait for mined transaction
@@ -415,7 +472,7 @@ EXAMPLES
   $ gateway-eth issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/issue.ts)_
 
 ## `gateway-eth listen ADDRESS`
 
@@ -426,7 +483,7 @@ USAGE
   $ gateway-eth listen [ADDRESS] [-h] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem]
 
 ARGUMENTS
   ADDRESS  Token owner address
@@ -436,7 +493,7 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -h, --help
       Show CLI help.
@@ -445,7 +502,7 @@ FLAGS
       [default: 1] Gatekeeper network. Defaults to the test Gatekeeper Network
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
 DESCRIPTION
@@ -455,7 +512,7 @@ EXAMPLES
   $ gateway-eth listen 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/listen.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/listen.ts)_
+_See code: [dist/commands/listen.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/listen.ts)_
 
 ## `gateway-eth refresh ADDRESS [EXPIRY]`
 
@@ -466,7 +523,7 @@ USAGE
   $ gateway-eth refresh [ADDRESS] [EXPIRY] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-f <value>] [-g <value>] [-w <value>]
 
 ARGUMENTS
   ADDRESS  Token owner address
@@ -477,10 +534,13 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -f, --fees=<value>
       Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -g, --gasLimit=<value>
+      Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas
 
   -h, --help
       Show CLI help.
@@ -493,7 +553,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -506,7 +566,7 @@ EXAMPLES
   $ gateway-eth refresh 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 60 -n 123
 ```
 
-_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/refresh.ts)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/refresh.ts)_
 
 ## `gateway-eth remove-gatekeeper ADDRESS`
 
@@ -517,7 +577,7 @@ USAGE
   $ gateway-eth remove-gatekeeper [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-f <value>] [-g <value>] [-w <value>]
 
 ARGUMENTS
   ADDRESS  Gatekeeper address to remove from the gatekeeper network
@@ -527,10 +587,13 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -f, --fees=<value>
       Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -g, --gasLimit=<value>
+      Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas
 
   -h, --help
       Show CLI help.
@@ -543,7 +606,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -556,7 +619,7 @@ EXAMPLES
   $ gateway-eth remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/remove-gatekeeper.ts)_
+_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/remove-gatekeeper.ts)_
 
 ## `gateway-eth remove-network-authority ADDRESS`
 
@@ -567,7 +630,7 @@ USAGE
   $ gateway-eth remove-network-authority [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-f <value>] [-g <value>] [-w <value>]
 
 ARGUMENTS
   ADDRESS  Network authority address to add to the gatekeeper network
@@ -577,10 +640,13 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -f, --fees=<value>
       Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -g, --gasLimit=<value>
+      Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas
 
   -h, --help
       Show CLI help.
@@ -593,7 +659,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -606,7 +672,7 @@ EXAMPLES
   $ gateway-eth remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/remove-network-authority.ts)_
+_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/remove-network-authority.ts)_
 
 ## `gateway-eth revoke ADDRESS`
 
@@ -617,7 +683,7 @@ USAGE
   $ gateway-eth revoke [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-f <value>] [-g <value>] [-w <value>]
 
 ARGUMENTS
   ADDRESS  Token owner address
@@ -627,10 +693,13 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -f, --fees=<value>
       Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -g, --gasLimit=<value>
+      Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas
 
   -h, --help
       Show CLI help.
@@ -643,7 +712,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -656,7 +725,7 @@ EXAMPLES
   $ gateway-eth revoke 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/revoke.ts)_
 
 ## `gateway-eth unfreeze ADDRESS`
 
@@ -667,7 +736,7 @@ USAGE
   $ gateway-eth unfreeze [ADDRESS] [-h] [-p <value>] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli] [-f <value>] [-w <value>]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem] [-f <value>] [-g <value>] [-w <value>]
 
 ARGUMENTS
   ADDRESS  Token owner address
@@ -677,10 +746,13 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -f, --fees=<value>
       Gas Price level to execute transaction with. For example: instant, fast, standard, slow
+
+  -g, --gasLimit=<value>
+      Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas
 
   -h, --help
       Show CLI help.
@@ -693,7 +765,7 @@ FLAGS
       signing messages (or set PRIVATE_KEY environment variable)
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
   -w, --confirmations=<value>
@@ -706,7 +778,7 @@ EXAMPLES
   $ gateway-eth unfreeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.4/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.0.7/dist/commands/unfreeze.ts)_
 
 ## `gateway-eth verify ADDRESS`
 
@@ -717,7 +789,7 @@ USAGE
   $ gateway-eth verify [ADDRESS] [-h] [-t <value>] [-n <value>] [-c
     localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|optimismMai
     nnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|avalancheCChai
-    nFuji|starknetMainnet|starknetGoerli]
+    nFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem]
 
 ARGUMENTS
   ADDRESS  Token owner address
@@ -727,7 +799,7 @@ FLAGS
       [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
       <options: localhost|mainnet|sepolia|goerli|polygonMumbai|polygonMainnet|auroraTestnet|auroraMainnet|optimismGoerli|o
       ptimismMainnet|palmTestnet|palmMainnet|arbitrumGoerli|arbitrumMainnet|celoMainnet|celoAlfajores|avalancheCChain|aval
-      ancheCChainFuji|starknetMainnet|starknetGoerli>
+      ancheCChainFuji|starknetMainnet|starknetGoerli|xdc|xdcApothem>
 
   -h, --help
       Show CLI help.
@@ -736,7 +808,7 @@ FLAGS
       [default: 1] Gatekeeper network. Defaults to the test Gatekeeper Network
 
   -t, --gatewayTokenAddress=<value>
-      [default: 0x7aa0c390b25327776BF3B281dBB0a9642f6D7f20] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      [default: 0xfAb6Be530F0E255F1776D059d58de907223E8421] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
       environment variable)
 
 DESCRIPTION

@@ -2,6 +2,6 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
-export { IERC3525Metadata__factory } from "./IERC3525Metadata__factory";
-export { IERC721Enumerable__factory } from "./IERC721Enumerable__factory";
-export { IERC721Metadata__factory } from "./IERC721Metadata__factory";
+export { IERC3525MetadataUpgradeable__factory } from "./IERC3525MetadataUpgradeable__factory";
+export { IERC721EnumerableUpgradeable__factory } from "./IERC721EnumerableUpgradeable__factory";
+export { IERC721MetadataUpgradeable__factory } from "./IERC721MetadataUpgradeable__factory";

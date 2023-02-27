@@ -2,7 +2,7 @@ import {
   confirmationsFlag,
   feesFlag, gatekeeperNetworkFlag,
   gatewayTokenAddressFlag,
-  chainFlag, parseFlagsWithPrivateKey, privateKeyFlag,
+  chainFlag, parseFlagsWithPrivateKey, privateKeyFlag, gasLimitFlag,
 } from '../utils/oclif/flags'
 import {Command, Flags} from '@oclif/core'
 import {makeGatewayTs} from '../utils/oclif/utils'
@@ -23,6 +23,7 @@ export default class UnfreezeToken extends Command {
     gatekeeperNetwork: gatekeeperNetworkFlag(),
     chain: chainFlag(),
     fees: feesFlag(),
+    gasLimit: gasLimitFlag(),
     confirmations: confirmationsFlag(),
   };
 
@@ -35,11 +36,11 @@ export default class UnfreezeToken extends Command {
 
     const parsedFlags = parseFlagsWithPrivateKey(flags)
 
-    this.log(`Freezing token for ${ownerAddress}`)
+    this.log(`Unfreezing token for ${ownerAddress}`)
 
     const gateway = await makeGatewayTs(parsedFlags)
 
-    const sendableTransaction = await gateway.freeze(
+    const sendableTransaction = await gateway.unfreeze(
       ownerAddress, parsedFlags.gatekeeperNetwork,
     )
 

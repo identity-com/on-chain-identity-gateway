@@ -68,6 +68,29 @@ export class GatewayTsInternal<
     return this.gatewayTokenContract.renameNetwork(network, name, this.options);
   }
 
+  getGatekeeperNetwork(network: bigint): Promise<string> {
+    return this.gatewayTokenContract.getNetwork(network, this.options);
+  }
+
+  listNetworks(
+    max: bigint = BigInt(256),
+    startAt: bigint = BigInt(0)
+  ): Promise<Record<string, bigint>> {
+    // Warning - can be inefficient and spam RPCs - use sparings
+    const networks: Record<string, bigint> = {};
+    const promises = Array.from(
+      { length: Number(max) },
+      (_, i) => i + Number(startAt)
+    ).map(async (i) => {
+      const network = (await this.getGatekeeperNetwork(BigInt(i)).catch(
+        () => null
+      )) as string | null;
+      if (network) networks[network] = BigInt(i);
+    });
+
+    return Promise.all(promises).then(() => networks);
+  }
+
   addGatekeeper(gatekeeper: string, network: bigint): Promise<O> {
     return this.gatewayTokenContract.addGatekeeper(
       gatekeeper,
@@ -167,15 +190,6 @@ export class GatewayTsInternal<
       owner,
       network
     );
-  }
-
-  async getTokenState(
-    owner: string,
-    network: bigint
-  ): Promise<TokenState | null> {
-    const [tokenId] = await this.getTokenIdsByOwnerAndNetwork(owner, network);
-    if (!tokenId) return null;
-    return this.gatewayTokenContract.getTokenState(tokenId);
   }
 
   async getToken(owner: string, network: bigint): Promise<TokenData | null> {

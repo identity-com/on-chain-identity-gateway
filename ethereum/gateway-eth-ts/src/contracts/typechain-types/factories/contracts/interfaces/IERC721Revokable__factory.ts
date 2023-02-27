@@ -15,7 +15,7 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
+        indexed: true,
         internalType: "uint256",
         name: "tokenId",
         type: "uint256",
