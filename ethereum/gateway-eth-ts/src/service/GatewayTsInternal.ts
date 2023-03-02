@@ -1,14 +1,15 @@
-import { Overrides, BigNumber, BigNumberish } from "ethers";
+import { BigNumber, BigNumberish, Overrides } from "ethers";
 
 import { getExpirationTime } from "../utils/time";
 import {
   MappedWriteOperation,
+  Options,
   ReadOnlyOperation,
   TokenData,
-  TokenState,
 } from "../utils/types";
 import { NULL_CHARGE } from "../utils/charge";
 import { NULL_ADDRESS } from "../utils/constants";
+import { omit } from "ramda";
 
 /**
  * The main API of the Ethereum Gateway client library.
@@ -24,14 +25,18 @@ export class GatewayTsInternal<
   O
 > {
   protected gatewayTokenContract: I;
-  protected options: Overrides;
+  protected options: Options;
 
-  constructor(gatewayTokenContract: I, options?: Overrides) {
+  constructor(gatewayTokenContract: I, options?: Options) {
     this.gatewayTokenContract = gatewayTokenContract;
-    this.options = options;
+    this.options = options ?? {};
   }
 
-  private async checkedGetTokenId(
+  private get overrides(): Overrides {
+    return omit(["tolerateMultipleTokens"], this.options);
+  }
+
+  public async checkedGetTokenId(
     owner: string,
     network: bigint
   ): Promise<BigNumber> {
@@ -39,10 +44,9 @@ export class GatewayTsInternal<
       await this.gatewayTokenContract.getTokenIdsByOwnerAndNetwork(
         owner,
         network,
-        this.options
+        this.overrides
       );
-    // TODO we may want to tolerate this (perhaps with an option)
-    if (tokenIds.length > 1)
+    if (tokenIds.length > 1 && !this.options?.tolerateMultipleTokens)
       throw new Error("Multiple tokens found for owner and network");
     if (tokenIds.length === 0)
       throw new Error("No tokens found for owner and network");
@@ -60,16 +64,20 @@ export class GatewayTsInternal<
       name,
       daoGoverned,
       daoManager || NULL_ADDRESS,
-      this.options
+      this.overrides
     );
   }
 
   renameNetwork(name: string, network: bigint): Promise<O> {
-    return this.gatewayTokenContract.renameNetwork(network, name, this.options);
+    return this.gatewayTokenContract.renameNetwork(
+      network,
+      name,
+      this.overrides
+    );
   }
 
   getGatekeeperNetwork(network: bigint): Promise<string> {
-    return this.gatewayTokenContract.getNetwork(network, this.options);
+    return this.gatewayTokenContract.getNetwork(network, this.overrides);
   }
 
   listNetworks(
@@ -95,7 +103,7 @@ export class GatewayTsInternal<
     return this.gatewayTokenContract.addGatekeeper(
       gatekeeper,
       network,
-      this.options
+      this.overrides
     );
   }
 
@@ -103,7 +111,7 @@ export class GatewayTsInternal<
     return this.gatewayTokenContract.removeGatekeeper(
       gatekeeper,
       network,
-      this.options
+      this.overrides
     );
   }
 
@@ -111,7 +119,7 @@ export class GatewayTsInternal<
     return this.gatewayTokenContract.addNetworkAuthority(
       authority,
       network,
-      this.options
+      this.overrides
     );
   }
 
@@ -119,7 +127,7 @@ export class GatewayTsInternal<
     return this.gatewayTokenContract.removeNetworkAuthority(
       authority,
       network,
-      this.options
+      this.overrides
     );
   }
 
@@ -137,28 +145,28 @@ export class GatewayTsInternal<
       expirationTime,
       bitmask,
       NULL_CHARGE,
-      this.options
+      this.overrides
     );
   }
 
   async revoke(owner: string, network: bigint): Promise<O> {
     const tokenId = await this.checkedGetTokenId(owner, network);
-    return this.gatewayTokenContract.revoke(tokenId, this.options);
+    return this.gatewayTokenContract.revoke(tokenId, this.overrides);
   }
 
   async burn(owner: string, network: bigint): Promise<O> {
     const tokenId = await this.checkedGetTokenId(owner, network);
-    return this.gatewayTokenContract.burn(tokenId, this.options);
+    return this.gatewayTokenContract.burn(tokenId, this.overrides);
   }
 
   async freeze(owner: string, network: bigint): Promise<O> {
     const tokenId = await this.checkedGetTokenId(owner, network);
-    return this.gatewayTokenContract.freeze(tokenId, this.options);
+    return this.gatewayTokenContract.freeze(tokenId, this.overrides);
   }
 
   async unfreeze(owner: string, network: bigint): Promise<O> {
     const tokenId = await this.checkedGetTokenId(owner, network);
-    return this.gatewayTokenContract.unfreeze(tokenId, this.options);
+    return this.gatewayTokenContract.unfreeze(tokenId, this.overrides);
   }
 
   async refresh(
@@ -172,7 +180,7 @@ export class GatewayTsInternal<
       tokenId,
       expirationTime,
       NULL_CHARGE,
-      this.options
+      this.overrides
     );
   }
 
@@ -182,7 +190,11 @@ export class GatewayTsInternal<
     bitmask: number | BigNumber
   ): Promise<O> {
     const tokenId = await this.checkedGetTokenId(owner, network);
-    return this.gatewayTokenContract.setBitmask(tokenId, bitmask, this.options);
+    return this.gatewayTokenContract.setBitmask(
+      tokenId,
+      bitmask,
+      this.overrides
+    );
   }
 
   verify(owner: string, network: bigint): Promise<boolean> {
@@ -213,7 +225,7 @@ export class GatewayTsInternal<
     return this.gatewayTokenContract.getTokenIdsByOwnerAndNetwork(
       owner,
       network,
-      this.options
+      this.overrides
     );
   }
 }

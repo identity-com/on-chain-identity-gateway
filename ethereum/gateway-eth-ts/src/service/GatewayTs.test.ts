@@ -59,6 +59,38 @@ describe("GatewayTS", function () {
     assert.equal(token.state, TokenState.ACTIVE);
   });
 
+  it("should tolerate multiple tokens", async () => {
+    const walletWithMultipleTokens = Wallet.createRandom().address;
+
+    await (
+      await gateway.issue(walletWithMultipleTokens, gatekeeperNetwork)
+    ).wait();
+    await (
+      await gateway.issue(walletWithMultipleTokens, gatekeeperNetwork)
+    ).wait();
+
+    // should fail
+    const shouldFail = gateway.checkedGetTokenId(
+      walletWithMultipleTokens,
+      gatekeeperNetwork
+    );
+    await assert.rejects(shouldFail, Error);
+
+    const tolerantGateway = new GatewayTs(
+      gatekeeper,
+      TEST_GATEWAY_TOKEN_ADDRESS.gatewayToken,
+      { tolerateMultipleTokens: true }
+    );
+
+    // should not fail
+    const tokenId = await tolerantGateway.checkedGetTokenId(
+      walletWithMultipleTokens,
+      gatekeeperNetwork
+    );
+
+    assert.ok(tokenId);
+  });
+
   it("should issue a token with additional parameters", async () => {
     const address = Wallet.createRandom().address;
     const expiry = BigNumber.from(100);

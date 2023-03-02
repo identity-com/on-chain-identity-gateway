@@ -1,5 +1,9 @@
-import { BigNumber } from "ethers";
+import { BigNumber, Overrides } from "ethers";
 import { GatewayToken } from "../contracts/typechain-types";
+
+export type Options = Overrides & {
+  tolerateMultipleTokens?: boolean;
+};
 
 export enum TokenState {
   "ACTIVE",
