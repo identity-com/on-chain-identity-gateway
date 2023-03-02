@@ -1,6 +1,6 @@
 import { Contract, BigNumber } from "ethers";
 
-import { Forwarder } from "../contracts/typechain-types";
+import { IForwarder } from "../contracts/typechain-types";
 import { EIP712Message, EIP712TypedData } from "eth-sig-util";
 import {
   TypedDataField,
@@ -44,7 +44,7 @@ const getMetaTxTypeData = (
     ForwardRequest: forwardRequest,
   },
   domain: {
-    name: "MinimalForwarder",
+    name: "FlexibleNonceForwarder",
     version: "0.0.1",
     chainId,
     verifyingContract,
@@ -62,7 +62,7 @@ function signTypedData(signer: TypedDataSigner, data: EIP712TypedData) {
 }
 
 const buildRequest = async (
-  forwarder: Forwarder,
+  forwarder: IForwarder,
   input: Input
 ): Promise<ForwardRequest> => {
   const nonce = await forwarder
@@ -77,18 +77,17 @@ const buildTypedData = async (
   request: EIP712Message
 ): Promise<EIP712TypedData> => {
   const chainId = await forwarder.provider.getNetwork().then((n) => n.chainId);
-  console.log("chainId", chainId);
   const typeData = getMetaTxTypeData(chainId, forwarder.address);
   return { ...typeData, message: request };
 };
 
 export const signMetaTxRequest = async (
   signer: TypedDataSigner,
-  forwarder: Forwarder,
+  forwarder: IForwarder,
   input: Input
 ): Promise<{ request: ForwardRequest; signature: string }> => {
   const request = await buildRequest(forwarder, input);
-  const toSign = await buildTypedData(forwarder, request);
+  const toSign = await buildTypedData(forwarder as Contract, request);
   const signature = await signTypedData(signer, toSign);
   return { signature, request };
 };

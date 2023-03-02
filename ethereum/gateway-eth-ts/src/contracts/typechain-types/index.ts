@@ -27,10 +27,6 @@ export type { ERC165Upgradeable } from "./@openzeppelin/contracts-upgradeable/ut
 export { ERC165Upgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable__factory";
 export type { IERC165Upgradeable } from "./@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable";
 export { IERC165Upgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable__factory";
-export type { AccessControl } from "./@openzeppelin/contracts/access/AccessControl";
-export { AccessControl__factory } from "./factories/@openzeppelin/contracts/access/AccessControl__factory";
-export type { IAccessControl } from "./@openzeppelin/contracts/access/IAccessControl";
-export { IAccessControl__factory } from "./factories/@openzeppelin/contracts/access/IAccessControl__factory";
 export type { MinimalForwarder } from "./@openzeppelin/contracts/metatx/MinimalForwarder";
 export { MinimalForwarder__factory } from "./factories/@openzeppelin/contracts/metatx/MinimalForwarder__factory";
 export type { ERC165 } from "./@openzeppelin/contracts/utils/introspection/ERC165";
@@ -61,6 +57,8 @@ export type { IERC3525MetadataDescriptorUpgradeable } from "./@solvprotocol/erc-
 export { IERC3525MetadataDescriptorUpgradeable__factory } from "./factories/@solvprotocol/erc-3525/periphery/interface/IERC3525MetadataDescriptorUpgradeable__factory";
 export type { FlagsStorage } from "./contracts/FlagsStorage";
 export { FlagsStorage__factory } from "./factories/contracts/FlagsStorage__factory";
+export type { FlexibleNonceForwarder } from "./contracts/FlexibleNonceForwarder";
+export { FlexibleNonceForwarder__factory } from "./factories/contracts/FlexibleNonceForwarder__factory";
 export type { Forwarder } from "./contracts/Forwarder";
 export { Forwarder__factory } from "./factories/contracts/Forwarder__factory";
 export type { GatewayToken } from "./contracts/GatewayToken";
@@ -75,6 +73,8 @@ export type { IERC721Revokable } from "./contracts/interfaces/IERC721Revokable";
 export { IERC721Revokable__factory } from "./factories/contracts/interfaces/IERC721Revokable__factory";
 export type { IFlagsStorage } from "./contracts/interfaces/IFlagsStorage";
 export { IFlagsStorage__factory } from "./factories/contracts/interfaces/IFlagsStorage__factory";
+export type { IForwarder } from "./contracts/interfaces/IForwarder";
+export { IForwarder__factory } from "./factories/contracts/interfaces/IForwarder__factory";
 export type { IGatewayToken } from "./contracts/interfaces/IGatewayToken";
 export { IGatewayToken__factory } from "./factories/contracts/interfaces/IGatewayToken__factory";
 export type { IGatewayTokenVerifier } from "./contracts/interfaces/IGatewayTokenVerifier";

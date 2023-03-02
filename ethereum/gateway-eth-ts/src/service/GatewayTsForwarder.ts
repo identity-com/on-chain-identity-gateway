@@ -1,5 +1,9 @@
 import { Wallet, Contract, Overrides, PopulatedTransaction } from "ethers";
-import { Forwarder, GatewayToken } from "../contracts/typechain-types";
+import {
+  IForwarder,
+  GatewayToken,
+  FlexibleNonceForwarder,
+} from "../contracts/typechain-types";
 import { GatewayTsInternal } from "./GatewayTsInternal";
 import {
   mappedOpNames,
@@ -28,7 +32,7 @@ type InferArgs<T> = T extends (...t: [...infer Arg]) => any ? Arg : never;
 // 2) wraps that populated transaction in an ERC2770 metatransaction
 // 3) creates a populatedTransaction pointing that metatx to the forwarder contracts
 const toMetaTx =
-  (forwarderContract: Forwarder, toContract: Contract, wallet: Wallet) =>
+  (forwarderContract: IForwarder, toContract: Contract, wallet: Wallet) =>
   <TFunc extends (...args: any[]) => Promise<PopulatedTransaction>>(
     fn: TFunc
   ): ((...args: InferArgs<TFunc>) => Promise<PopulatedTransaction>) =>
@@ -47,7 +51,7 @@ const toMetaTx =
         data: populatedTransaction.data,
       }
     );
-    const populatedForwardedTransaction =
+    const populatedForwardedTransaction: PopulatedTransaction =
       await forwarderContract.populateTransaction.execute(request, signature);
     // ethers will set the from address on the populated transaction to the current wallet address (i.e the gatekeeper)
     // we don't want this, as the tx will be sent by some other relayer, so remove it.
@@ -66,7 +70,7 @@ export class GatewayTsForwarder extends GatewayTsInternal<
     // ethers.js requires a Wallet instead of Signer for the _signTypedData function, until v6
     providerOrWallet: Provider | Wallet,
     gatewayTokenContract: GatewayToken,
-    forwarderContract: Forwarder,
+    forwarderContract: IForwarder,
     options?: Overrides
   ) {
     const wallet =

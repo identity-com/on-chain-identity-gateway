@@ -6,6 +6,7 @@ export { IERC721Expirable__factory } from "./IERC721Expirable__factory";
 export { IERC721Freezable__factory } from "./IERC721Freezable__factory";
 export { IERC721Revokable__factory } from "./IERC721Revokable__factory";
 export { IFlagsStorage__factory } from "./IFlagsStorage__factory";
+export { IForwarder__factory } from "./IForwarder__factory";
 export { IGatewayToken__factory } from "./IGatewayToken__factory";
 export { IGatewayTokenVerifier__factory } from "./IGatewayTokenVerifier__factory";
 export { IParameterizedAccessControl__factory } from "./IParameterizedAccessControl__factory";

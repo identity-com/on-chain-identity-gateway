@@ -50,14 +50,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165Upgradeable__factory>;
     getContractFactory(
-      name: "AccessControl",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.AccessControl__factory>;
-    getContractFactory(
-      name: "IAccessControl",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IAccessControl__factory>;
-    getContractFactory(
       name: "MinimalForwarder",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MinimalForwarder__factory>;
@@ -118,6 +110,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FlagsStorage__factory>;
     getContractFactory(
+      name: "FlexibleNonceForwarder",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.FlexibleNonceForwarder__factory>;
+    getContractFactory(
       name: "Forwarder",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Forwarder__factory>;
@@ -145,6 +141,10 @@ declare module "hardhat/types/runtime" {
       name: "IFlagsStorage",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IFlagsStorage__factory>;
+    getContractFactory(
+      name: "IForwarder",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IForwarder__factory>;
     getContractFactory(
       name: "IGatewayToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -215,16 +215,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165Upgradeable>;
-    getContractAt(
-      name: "AccessControl",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.AccessControl>;
-    getContractAt(
-      name: "IAccessControl",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IAccessControl>;
     getContractAt(
       name: "MinimalForwarder",
       address: string,
@@ -301,6 +291,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.FlagsStorage>;
     getContractAt(
+      name: "FlexibleNonceForwarder",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.FlexibleNonceForwarder>;
+    getContractAt(
       name: "Forwarder",
       address: string,
       signer?: ethers.Signer
@@ -335,6 +330,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IFlagsStorage>;
+    getContractAt(
+      name: "IForwarder",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IForwarder>;
     getContractAt(
       name: "IGatewayToken",
       address: string,

@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import { Provider } from "@ethersproject/providers";
 import {
-  Forwarder__factory,
   GatewayToken,
   GatewayToken__factory,
+  IForwarder__factory,
 } from "../contracts/typechain-types";
 import { GatewayTsInternal } from "./GatewayTsInternal";
 import { GatewayTsForwarder } from "./GatewayTsForwarder";
@@ -40,7 +40,7 @@ export class GatewayTs extends GatewayTsInternal<
   }
 
   public forward(forwarderAddress: string): GatewayTsForwarder {
-    const forwarderContract = Forwarder__factory.connect(
+    const forwarderContract = IForwarder__factory.connect(
       forwarderAddress,
       this.providerOrWallet
     );
