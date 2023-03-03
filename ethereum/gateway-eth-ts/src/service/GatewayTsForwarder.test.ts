@@ -56,11 +56,10 @@ describe("GatewayTS Forwarder", function () {
     return r.wait();
   };
 
-  before("Initialize GatewayTS class", async function () {
+  before("Initialize GatewayTS class", function () {
     this.timeout(20_000);
 
     provider = getDefaultProvider("http://localhost:8545");
-    const network = await provider.getNetwork();
 
     // use the deployer account here as the relayer, as they are guaranteed to be funded by hardhat on localnet startup
     relayer = deployerWallet(provider);

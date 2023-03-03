@@ -234,6 +234,8 @@ module.exports = {
     flat: true,
   },
   etherscan: {
+    // Use this when you want to verify on PolygonScan
+    // apiKey: process.env.POLYGONSCAN_API_KEY,
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
   namedAccounts: {

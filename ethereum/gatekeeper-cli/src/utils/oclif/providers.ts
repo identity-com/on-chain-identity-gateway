@@ -97,6 +97,30 @@ export const networks = {
     url: 'https://erpc.apothem.network',
     chainId: 51,
   },
+  bsc: {
+    url: 'https://bsc.rpc.blxrbdn.com',
+    chainId: 56,
+  },
+  cronos: {
+    url: 'https://cronos.blockpi.network/v1/rpc/public',
+    chainId: 25,
+  },
+  fantom: {
+    url: 'https://rpc.fantom.network',
+    chainId: 250,
+  },
+  gnosis: {
+    url: 'https://rpc.gnosischain.com',
+    chainId: 100,
+  },
+  moonbeam: {
+    url: 'https://1rpc.io/glmr',
+    chainId: 1284,
+  },
+  moonriver: {
+    url: 'https://moonriver.public.blastapi.io',
+    chainId: 1285,
+  },
 }
 
 class ExtendedInfuraProvider extends InfuraProvider {

@@ -16,11 +16,10 @@ import {
 import { PopulatedTransaction } from "ethers/lib/ethers";
 import { GatewayTsForwarder } from "./GatewayTsForwarder";
 import { Wallet } from "ethers";
-import { BigNumber } from "ethers";
 
 dotenv.config();
 
-describe.only("GatewayTS Transaction", function () {
+describe("GatewayTS Transaction", function () {
   let gateway: GatewayTsForwarder;
   let provider: BaseProvider;
 

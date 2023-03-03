@@ -4,6 +4,7 @@
 /* eslint-disable */
 export * as interfaces from "./interfaces";
 export { FlagsStorage__factory } from "./FlagsStorage__factory";
+export { FlexibleNonceForwarder__factory } from "./FlexibleNonceForwarder__factory";
 export { Forwarder__factory } from "./Forwarder__factory";
 export { GatewayToken__factory } from "./GatewayToken__factory";
 export { GatewayTokenUpgradeTest__factory } from "./GatewayTokenUpgradeTest__factory";

@@ -1,13 +1,14 @@
 import {ethers, upgrades} from "hardhat";
-import {BigNumber, Contract} from "ethers";
+import {BigNumber, Contract, PopulatedTransaction, Wallet} from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 import { toBytes32 } from './utils';
 
 import { expect } from 'chai';
 import {NULL_CHARGE, randomAddress} from "./utils/eth";
 import {signMetaTxRequest} from "../../gateway-eth-ts/src/utils/metatx";
-import {Forwarder} from "../typechain-types";
+import {IForwarder} from "../typechain-types";
 
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -32,14 +33,25 @@ describe('GatewayToken', async () => {
     let gkn1 = 10;
     let gkn2 = 20;
 
+    const expectVerified = (address: string, gkn: number): Chai.PromisedAssertion => {
+        const verified = gatewayToken['verifyToken(address,uint256)'](address, gkn);
+        return expect(verified).eventually;
+    }
+
+    const makeMetaTx = (tx: PopulatedTransaction) => signMetaTxRequest(gatekeeper, forwarder as IForwarder, {
+        from: gatekeeper.address,
+        to: gatewayToken.address,
+        data: tx.data as string
+    });
+
     before('deploy contracts', async () => {
         [identityCom, alice, bob, carol, gatekeeper, gatekeeper2, networkAuthority2] = await ethers.getSigners();
 
-        const forwarderFactory = await ethers.getContractFactory("Forwarder");
+        const forwarderFactory = await ethers.getContractFactory("FlexibleNonceForwarder");
         const flagsStorageFactory = await ethers.getContractFactory("FlagsStorage");
         const gatewayTokenFactory = await ethers.getContractFactory("GatewayToken");
 
-        forwarder = await forwarderFactory.deploy();
+        forwarder = await forwarderFactory.deploy(100);
         await forwarder.deployed();
 
         // flagsStorage = await flagsStorageFactory.deploy(identityCom.address);
@@ -151,15 +163,13 @@ describe('GatewayToken', async () => {
 
     describe('Test gateway token issuance', async () => {
         it('verified returns false if a token is not yet minted', async () => {
-            let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn1);
-            expect(verified).to.be.false;
+            return expectVerified(alice.address, gkn1).to.be.false;
         });
 
         it('Successfully mint Gateway Token for Alice by gatekeeper with gatekeeperNetwork = 1', async () => {
             await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE)
 
-            let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn1);
-            expect(verified).to.be.true;
+            return expectVerified(alice.address, gkn1).to.be.true;
         });
 
         it('retrieves tokenId', async () => {
@@ -175,15 +185,13 @@ describe('GatewayToken', async () => {
 
             await gatewayToken.connect(gatekeeper).mint(alice.address, gkn2, 0, 0, NULL_CHARGE);
 
-            let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn2);
-            expect(verified).to.be.true;
+            return expectVerified(alice.address, gkn2).to.be.true;
         });
 
         it('mint a second token for Alice with gatekeeperNetwork = 1', async () => {
             await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE)
 
-            let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn1);
-            expect(verified).to.be.true;
+            return expectVerified(alice.address, gkn2).to.be.true;
         });
 
         it('get all tokens for a user and network', async () => {
@@ -219,46 +227,39 @@ describe('GatewayToken', async () => {
         it('freeze token', async () => {
             await gatewayToken.connect(gatekeeper).freeze(aliceTokenIdsGKN2[0]);
 
-            let validity = await gatewayToken.functions['verifyToken(address,uint256)'](alice.address, gkn2);
-            expect(validity[0]).to.equal(false);
+            return expectVerified(alice.address, gkn2).to.be.false;
         });
 
         it('unfreeze token', async () => {
             await gatewayToken.connect(gatekeeper).unfreeze(aliceTokenIdsGKN2[0]);
 
-            let validity = await gatewayToken.functions['verifyToken(address,uint256)'](alice.address, gkn1);
-            expect(validity[0]).to.equal(true);
+            return expectVerified(alice.address, gkn2).to.be.true;
         });
 
         it('all tokens must be frozen for to verify to return false', async () => {
             await gatewayToken.connect(gatekeeper).freeze(aliceTokenIdsGKN1[0]);
 
-            let validity = await gatewayToken.functions['verifyToken(address,uint256)'](alice.address, gkn1);
-            expect(validity[0]).to.equal(true);
+            await expectVerified(alice.address, gkn1).to.be.true;
 
             await gatewayToken.connect(gatekeeper).freeze(aliceTokenIdsGKN1[1]);
 
-            validity = await gatewayToken.functions['verifyToken(address,uint256)'](alice.address, gkn1);
-            expect(validity[0]).to.equal(false);
+            await expectVerified(alice.address, gkn1).to.be.false;
 
             await gatewayToken.connect(gatekeeper).unfreeze(aliceTokenIdsGKN1[0]);
 
-            validity = await gatewayToken.functions['verifyToken(address,uint256)'](alice.address, gkn1);
-            expect(validity[0]).to.equal(true);
+            return expectVerified(alice.address, gkn1).to.be.true;
         });
 
         it('expire token', async () => {
             await gatewayToken.connect(gatekeeper).setExpiration(aliceTokenIdsGKN1[0], Date.parse("2020-01-01") / 1000, NULL_CHARGE);
 
-            let validity = await gatewayToken.functions['verifyToken(address,uint256)'](alice.address, gkn1);
-            expect(validity[0]).to.equal(false);
+            return expectVerified(alice.address, gkn1).to.be.false;
         });
 
         it('extend expiry', async () => {
             await gatewayToken.connect(gatekeeper).setExpiration(aliceTokenIdsGKN1[0], Date.parse("2222-01-01") / 1000, NULL_CHARGE);
 
-            let validity = await gatewayToken.functions['verifyToken(address,uint256)'](alice.address, gkn1);
-            expect(validity[0]).to.equal(true);
+            return expectVerified(alice.address, gkn1).to.be.true;
         });
 
         it('burn', async () => {
@@ -269,8 +270,7 @@ describe('GatewayToken', async () => {
             expect(validity[0]).to.equal(false);
 
             // alice still has the other token
-            let aliceValid = await gatewayToken.functions['verifyToken(address,uint256)'](alice.address, gkn1);
-            expect(aliceValid[0]).to.equal(true);
+            return expectVerified(alice.address, gkn1).to.be.true;
         });
     });
 
@@ -321,25 +321,99 @@ describe('GatewayToken', async () => {
         it('Successfully forwards a call', async () => {
             const mintTx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(carol.address, gkn1, 0, 0, NULL_CHARGE);
 
-            // Carol does not have the GT yet
-            let validity = await gatewayToken.functions['verifyToken(address,uint256)'](carol.address, gkn1);
-            expect(validity[0]).to.equal(false);
+            // Carol does not have the GT yet, because the tx has not been sent
+            await expectVerified(carol.address, gkn1).to.be.false;
 
             const input = {
                 from: gatekeeper.address,
                 to: gatewayToken.address,
                 data: mintTx.data as string
             };
-            const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as Forwarder, input);
+            const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, input);
 
+            // send the forwarded transaction
             const forwarderTx = await forwarder.connect(alice).execute(request, signature, { gasLimit: 1000000 });
             const receipt = await forwarderTx.wait();
-
             expect(receipt.status).to.equal(1);
 
             // carol now has the GT
-            validity = await gatewayToken.functions['verifyToken(address,uint256)'](carol.address, gkn1);
-            expect(validity[0]).to.equal(true);
+            await expectVerified(carol.address, gkn1).to.be.true;
+        });
+
+        // The forwarder allows two transactions to be sent with the same nonce, as long as they are different
+        // this is important for relayer support
+        it('Forwards transactions out of sync', async () => {
+            // create two transactions, that share the same forwarder nonce
+            const tx1 = await gatewayToken.connect(gatekeeper).populateTransaction.mint(Wallet.createRandom().address, gkn1, 0, 0, NULL_CHARGE);
+            const tx2 = await gatewayToken.connect(gatekeeper).populateTransaction.mint(Wallet.createRandom().address, gkn1, 0, 0, NULL_CHARGE);
+
+            const req1 = await makeMetaTx(tx1);
+            const req2 = await makeMetaTx(tx2);
+
+            const forwarderTx2 = await forwarder.connect(alice).execute(req2.request, req2.signature, { gasLimit: 1000000 });
+            const receipt2 = await forwarderTx2.wait();
+            expect(receipt2.status).to.equal(1);
+
+            const forwarderTx1 = await forwarder.connect(alice).execute(req1.request, req1.signature, { gasLimit: 1000000 });
+            const receipt1 = await forwarderTx1.wait();
+            expect(receipt1.status).to.equal(1);
+        });
+
+        // Transactions cannot be replayed. This is important if "out-of-sync" sending is enabled.
+        it('Protects against replay attacks', async () => {
+            const userToBeFrozen = Wallet.createRandom();
+            // mint and freeze a user's token
+            await gatewayToken.connect(gatekeeper).mint(userToBeFrozen.address, gkn1, 0, 0, NULL_CHARGE);
+            const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(userToBeFrozen.address, gkn1);
+            await gatewayToken.connect(gatekeeper).freeze(tokenId);
+            await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
+
+            // create a forwarded metatx to unfreeze the user
+            const unfreezeTx = await gatewayToken.connect(gatekeeper).populateTransaction.unfreeze(tokenId);
+            const forwardedUnfreezeTx = await makeMetaTx(unfreezeTx);
+
+            // unfreeze the user, then freeze them again
+            await (await forwarder.connect(alice).execute(forwardedUnfreezeTx.request, forwardedUnfreezeTx.signature, { gasLimit: 1000000 })).wait;
+            await gatewayToken.connect(gatekeeper).freeze(tokenId);
+            await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
+
+            // cannot replay the unfreeze transaction
+            const shouldFail = forwarder.connect(alice).execute(forwardedUnfreezeTx.request, forwardedUnfreezeTx.signature, { gasLimit: 1000000 });
+            // const shouldFail = attemptedReplayTransactionResponse.wait();
+            // expect(attemptedReplayTransactionReceipt.status).to.equal(0);
+            await expect(shouldFail).to.be.revertedWith('FlexibleNonceForwarder: tx to be forwarded has already been seen');
+            await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
+        });
+
+        // The forwarder allows two transactions to be sent with the same nonce, as long as they are different
+        // this is important for relayer support
+        it('Rejects old transactions', async () => {
+            const forwarderFactory = await ethers.getContractFactory("FlexibleNonceForwarder");
+            // this forwarder only accepts transactions whose nonces have been seen in this block
+            const intolerantForwarder = await forwarderFactory.deploy(0);
+            await intolerantForwarder.deployed();
+
+
+            // create two transactions,
+            const tx1 = await gatewayToken.connect(gatekeeper).populateTransaction.mint(Wallet.createRandom().address, gkn1, 0, 0, NULL_CHARGE);
+            const tx2 = await gatewayToken.connect(gatekeeper).populateTransaction.mint(Wallet.createRandom().address, gkn1, 0, 0, NULL_CHARGE);
+            const req1 = await signMetaTxRequest(gatekeeper, intolerantForwarder as IForwarder, {
+                from: gatekeeper.address,
+                to: gatewayToken.address,
+                data: tx1.data as string
+            })
+            const req2 = await signMetaTxRequest(gatekeeper, intolerantForwarder as IForwarder, {
+                from: gatekeeper.address,
+                to: gatewayToken.address,
+                data: tx2.data as string
+            })
+
+            // send one now (claiming the nonce) and try to send the next one
+            // after a block has passed (executing a tx mines a block on hardhat)
+            await intolerantForwarder.connect(alice).execute(req1.request, req1.signature, { gasLimit: 1000000 });
+
+            const shouldFail = intolerantForwarder.connect(alice).execute(req2.request, req2.signature, { gasLimit: 1000000 });
+            await expect(shouldFail).to.be.revertedWith('FlexibleNonceForwarder: tx to be forwarded is too old');
         });
     });
 

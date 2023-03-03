@@ -6,6 +6,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, getNamedAccounts} = hre;
     const { deployer } = await getNamedAccounts();
 
+    // Base forwarder, passed in as a parameter,
+    // FlexibleNonceForwarder added later (to avoid affecting the Create2 address of the proxy
     const forwarder = await deployments.get('Forwarder');
     const flagsStorage = await deployments.get('FlagsStorage');
 
@@ -19,4 +21,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 func.id = 'deploy_gateway_token';
 func.tags = ['GatewayToken'];
-func.dependencies = ['flags-storage', 'forwarder', 'deployer-check'];
+func.dependencies = ['flags-storage', 'forwarder'];

@@ -1,21 +1,21 @@
 /* eslint-disable camelcase */
 import { Provider } from "@ethersproject/providers";
 import {
-  Forwarder__factory,
   GatewayToken,
   GatewayToken__factory,
+  IForwarder__factory,
 } from "../contracts/typechain-types";
 import { GatewayTsInternal } from "./GatewayTsInternal";
 import { GatewayTsForwarder } from "./GatewayTsForwarder";
 import { Wallet } from "ethers";
-import { ContractTransaction, Overrides } from "ethers";
+import { ContractTransaction } from "ethers";
 import {
   onGatewayTokenChange,
   removeGatewayTokenChangeListener,
   TokenData,
 } from "../utils";
-import { asProvider } from "../utils/provider";
 import { GatewayTsTransaction } from "./GatewayTsTransaction";
+import { Options } from "../utils/types";
 
 export class GatewayTs extends GatewayTsInternal<
   GatewayToken,
@@ -27,7 +27,7 @@ export class GatewayTs extends GatewayTsInternal<
     // ethers.js requires a Wallet instead of Signer for the _signTypedData function, until v6
     providerOrWallet: Provider | Wallet,
     defaultGatewayToken: string,
-    options: Overrides = {}
+    options: Options = {}
   ) {
     const gatewayTokenContract = GatewayToken__factory.connect(
       defaultGatewayToken,
@@ -40,7 +40,7 @@ export class GatewayTs extends GatewayTsInternal<
   }
 
   public forward(forwarderAddress: string): GatewayTsForwarder {
-    const forwarderContract = Forwarder__factory.connect(
+    const forwarderContract = IForwarder__factory.connect(
       forwarderAddress,
       this.providerOrWallet
     );
