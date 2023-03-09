@@ -1,6 +1,6 @@
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@project-serum/anchor';
-import { Keypair } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import {
   AdminService,
   ExtendedCluster,
@@ -13,20 +13,35 @@ export default class Create extends Command {
   static description = 'Creates a gatekeeper network';
 
   static examples = [
-    `$ gateway network create --keypair [path to keypair] --index [network index] --cluster [cluster type]
+    `$ gateway network create --keypair [path to keypair] --cluster [cluster type]
 `,
   ];
 
   static flags = {
     help: Flags.help({ char: 'h' }),
-    keypair: Flags.string({
-      char: 'k',
-      description: 'Path to a Solana keypair',
+    networkKeypair: Flags.string({
+      char: 'n',
+      description: 'Path to the network keypair',
+      required: true,
+    }),
+    gaurdianKeypair: Flags.string({
+      char: 'g',
+      description: 'Path to the gaurdian keypair',
       required: true,
     }),
     cluster: Flags.string({
       char: 'c',
       description: 'The cluster you wish to use',
+      required: true,
+    }),
+    token: Flags.string({
+      char: 't',
+      description: 'A supported SPL token to accept fees in',
+      required: true,
+    }),
+    fees: Flags.string({
+      char: 'f',
+      description: 'The amount of fees to charge for the token provided',
       required: true,
     }),
   };
@@ -43,21 +58,46 @@ export default class Create extends Command {
       flags.cluster === 'testnet'
         ? flags.cluster
         : 'localnet';
-    const localSecretKey = await fsPromises.readFile(`${flags.auth}`);
-    const privateKey = Uint8Array.from(JSON.parse(localSecretKey.toString()));
-    const authorityKeypair = Keypair.fromSecretKey(privateKey);
-    const authority = new Wallet(authorityKeypair);
-    this.log(`Admin Authority: ${authority.publicKey.toBase58()}`);
 
-    const adminService = await AdminService.build(authorityKeypair.publicKey, {
-      wallet: authority,
+    const token = flags.token;
+    const fee = parseInt(flags.fees);
+
+    const gaurdianLcalSecretKey = await fsPromises.readFile(
+      `${flags.gaurdianKeypair}`
+    );
+    const guardianPrivateKey = Uint8Array.from(
+      JSON.parse(gaurdianLcalSecretKey.toString())
+    );
+    const gaurdianKeypair = Keypair.fromSecretKey(guardianPrivateKey);
+    const gaurdian = new Wallet(gaurdianKeypair);
+    this.log(`Gaurdian Authority: ${gaurdian.publicKey.toBase58()}`);
+
+    const networkLcalSecretKey = await fsPromises.readFile(
+      `${flags.networkKeypair}`
+    );
+    const networkPrivateKey = Uint8Array.from(
+      JSON.parse(networkLcalSecretKey.toString())
+    );
+    const networkKeypair = Keypair.fromSecretKey(networkPrivateKey);
+
+    const adminService = await AdminService.build(networkKeypair.publicKey, {
+      wallet: gaurdian,
       clusterType: cluster as ExtendedCluster,
     });
 
+    // TODO: Allow specifying granular fees (IDCOM-2380)
     const networkData = {
       authThreshold: 1,
-      passExpireTime: 16,
-      fees: [],
+      passExpireTime: 0,
+      fees: [
+        {
+          token: new PublicKey(token),
+          issue: fee,
+          refresh: fee,
+          expire: fee,
+          verify: fee,
+        },
+      ],
       authKeys: [
         {
           flags:
@@ -65,7 +105,7 @@ export default class Create extends Command {
             NetworkKeyFlags.ADD_FEES |
             NetworkKeyFlags.ADJUST_FEES |
             NetworkKeyFlags.SET_EXPIRE_TIME,
-          key: authority.publicKey,
+          key: networkKeypair.publicKey,
         },
       ],
       gatekeepers: [],
@@ -74,6 +114,7 @@ export default class Create extends Command {
     };
     const networkSignature = await adminService
       .createNetwork(networkData)
+      .withPartialSigners(networkKeypair)
       .rpc();
 
     this.log(`Network Signature: ${networkSignature}`);

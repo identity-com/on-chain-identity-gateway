@@ -1,9 +1,9 @@
 import {
-  NetworkService,
   ExtendedCluster,
+  NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
-import { Wallet } from '@project-serum/anchor';
+import { BN, Wallet } from '@project-serum/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 
@@ -32,6 +32,16 @@ export default class Create extends Command {
       description: 'The cluster you wish to use',
       required: true,
     }),
+    token: Flags.string({
+      char: 't',
+      description: 'A supported SPL token to accept fees in',
+      required: true,
+    }),
+    fees: Flags.string({
+      char: 'f',
+      description: 'The percentage split between the network and gatekeeper',
+      required: true,
+    }),
   };
 
   static args = [];
@@ -49,7 +59,10 @@ export default class Create extends Command {
         ? flags.cluster
         : 'localnet';
 
-    const authKey = await fsPromises.readFile(`${flags.auth}`);
+    const token = flags.token;
+    const fee = parseInt(flags.fees);
+
+    const authKey = await fsPromises.readFile(`${flags.keypair}`);
     const authKeyArr = Uint8Array.from(JSON.parse(authKey.toString()));
     const authPair = Keypair.fromSecretKey(authKeyArr);
     const authorityWallet = new Wallet(authPair);
@@ -69,7 +82,15 @@ export default class Create extends Command {
     );
 
     const gatekeeperData = {
-      tokenFees: [],
+      tokenFees: [
+        {
+          token: new PublicKey(token),
+          issue: new BN(fee),
+          refresh: new BN(fee),
+          expire: new BN(fee),
+          verify: new BN(fee),
+        },
+      ],
       authThreshold: 1,
       authKeys: [
         {
@@ -77,7 +98,7 @@ export default class Create extends Command {
           key: authPair.publicKey,
         },
       ],
-      supportedTokens: [],
+      supportedTokens: [{ key: new PublicKey(token) }],
     };
     const gatekeeperSignature = await networkService
       .createGatekeeper(
