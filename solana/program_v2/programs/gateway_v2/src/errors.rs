@@ -24,6 +24,8 @@ pub enum NetworkErrors {
     AccountInUse,
     #[msg("Network Fee was not provided")]
     FeesNotProvided,
+    #[msg("Network Fee more than 100%")]
+    NetworkFeeMoreThan10000,
     #[msg("Token not supported")]
     TokenNotSupported,
     #[msg("A network feature is not enabled for this instruction")]

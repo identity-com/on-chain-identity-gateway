@@ -6,7 +6,7 @@ import {
   ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
 import { parseNetworkUpdateData } from '../../util/util';
-import { Wallet } from '@project-serum/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 import fsPromises from 'node:fs/promises';
 
 export default class Close extends Command {

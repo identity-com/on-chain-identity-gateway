@@ -6,7 +6,7 @@ import {
 import { Command, Flags } from '@oclif/core';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
-import { Wallet } from '@project-serum/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 
 export default class ChangeGatekeeper extends Command {
   static description = "Changes a pass's assigned gatekeeper";

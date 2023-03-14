@@ -6,7 +6,7 @@ import {
 import { Command, Flags } from '@oclif/core';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
-import { Wallet } from '@project-serum/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 
 export default class Refresh extends Command {
   static description = 'Refreshes a gateway pass';

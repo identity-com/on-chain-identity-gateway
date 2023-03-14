@@ -8,7 +8,7 @@ import {
   PassState,
 } from '@identity.com/gateway-solana-client';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { expect } from 'chai';

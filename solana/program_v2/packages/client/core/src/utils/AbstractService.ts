@@ -4,8 +4,8 @@ import {
   Idl,
   parseIdlErrors,
   translateError,
-} from '@project-serum/anchor';
-import * as anchor from '@project-serum/anchor';
+} from '@coral-xyz/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import {
   ConfirmOptions,
   Connection,
@@ -13,12 +13,13 @@ import {
   Signer,
   Transaction,
   TransactionInstruction,
+  VersionedTransaction,
 } from '@solana/web3.js';
 import { SolanaAnchorGateway, IDL } from '@identity.com/gateway-solana-idl';
-import { Wallet } from '../lib/types';
 
 import { ExtendedCluster } from '../lib/connection';
 import { GATEWAY_PROGRAM, SOLANA_MAINNET } from '../lib/constants';
+import { Wallet } from '@coral-xyz/anchor/dist/cjs/provider';
 
 /**
  * The AbstractService provides base functionality for other services
@@ -92,15 +93,19 @@ export class NonSigningWallet implements Wallet {
     this.publicKey = new PublicKey('11111111111111111111111111111111');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  signAllTransactions(_txs: Transaction[]): Promise<Transaction[]> {
+  signAllTransactions<T extends Transaction | VersionedTransaction>(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _txs: T[]
+  ): Promise<T[]> {
     return Promise.reject(
       'NonSigningWallet does not support signing transactions'
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  signTransaction(_tx: Transaction): Promise<Transaction> {
+  signTransaction<T extends Transaction | VersionedTransaction>(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _tx: T
+  ): Promise<T> {
     return Promise.reject(
       'NonSigningWallet does not support signing transactions'
     );

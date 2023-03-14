@@ -63,7 +63,9 @@ pub struct CreateNetworkAccount<'info> {
     0,
     data.supported_tokens.len()
     ),
-    constraint = data.check_auth_threshold() @ NetworkErrors::InsufficientAuthKeys
+    constraint = data.check_auth_threshold() @ NetworkErrors::InsufficientAuthKeys,
+    constraint = data.fees.is_empty() @ NetworkErrors::FeesNotProvided,
+    constraint = crate::util::check_fees_percentage(&data.fees) @ NetworkErrors::NetworkFeeMoreThan10000
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]

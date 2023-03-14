@@ -40,7 +40,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^7.0.4",
     "prettier": "^2.7.1",
-    "@project-serum/anchor-cli": "^0.26.0",
+    "@coral-xyz/anchor-cli": "^0.27.0",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0"
   },

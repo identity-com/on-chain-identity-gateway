@@ -35,6 +35,19 @@ pub trait OnChainSizeWithArg<Arg> {
     fn on_chain_size_with_arg(arg: Arg) -> usize;
 }
 
+pub fn check_fees_percentage(fees: &[NetworkFeesPercentage]) -> bool {
+    let max_fee = 10000;
+    if fees.iter().any(|fee| {
+        fee.issue >= max_fee
+            || fee.refresh >= max_fee
+            || fee.expire >= max_fee
+            || fee.verify >= max_fee
+    }) {
+        return false;
+    }
+    true
+}
+
 pub fn get_gatekeeper_fees(
     fees: &[GatekeeperFees],
     mint: Pubkey,
@@ -111,7 +124,32 @@ pub fn check_gatekeeper_auth_threshold(
 #[cfg(test)]
 mod tests {
     use crate::state::{GatekeeperAuthKey, GatekeeperFees, NetworkFeesPercentage};
-    use crate::util::check_gatekeeper_auth_threshold;
+    use crate::util::{check_fees_percentage, check_gatekeeper_auth_threshold};
+
+    #[test]
+    fn test_check_fees_percentage() {
+        // Test case where there are fees but one of them is over 100%
+        let mut fees: Vec<NetworkFeesPercentage> = vec![NetworkFeesPercentage {
+            token: Default::default(),
+            issue: 6,
+            refresh: 8,
+            expire: 8,
+            verify: 8,
+        }];
+
+        fees.push(NetworkFeesPercentage {
+            token: Default::default(),
+            issue: 5,
+            refresh: 5,
+            expire: 3,
+            verify: 10001,
+        });
+        assert!(!check_fees_percentage(&fees));
+
+        // Test case where there are fees and none of them are over 100%
+        fees.pop();
+        assert!(check_fees_percentage(&fees));
+    }
 
     #[test]
     fn get_fees_test_split_100() {

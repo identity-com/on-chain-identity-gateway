@@ -1,9 +1,9 @@
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
-import * as anchor from '@project-serum/anchor';
-import { AnchorProvider, Program } from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
+import { AnchorProvider, Program } from '@coral-xyz/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
-import { GatewayServiceOptions, Wallet } from './lib/types';
+import { GatewayServiceOptions } from './lib/types';
 
 import { EnumMapper } from './lib/utils';
 import {
@@ -28,7 +28,7 @@ export class GatekeeperService extends AbstractService {
     private _network: PublicKey,
     private _gatekeeper: PublicKey,
     _cluster: ExtendedCluster = SOLANA_MAINNET,
-    _wallet: Wallet = new NonSigningWallet(),
+    _wallet = new NonSigningWallet(),
     _opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {
     super(_program, _cluster, _wallet, _opts);

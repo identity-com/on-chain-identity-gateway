@@ -12,7 +12,7 @@ import {
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
 import { Account, AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 
 chai.use(chaiAsPromised);

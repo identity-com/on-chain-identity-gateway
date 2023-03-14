@@ -67,7 +67,7 @@ pub struct IssuePass<'info> {
     #[account(
     init,
     payer = payer,
-    space = Pass::ON_CHAIN_SIZE,
+    space = crate::util::OC_SIZE_DISCRIMINATOR + Pass::INIT_SPACE,
     seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), & pass_number.to_le_bytes()],
     constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::ISSUE),
     bump
