@@ -1,7 +1,6 @@
 import { Keypair } from '@solana/web3.js';
 import {
   AdminService,
-  airdrop,
   NetworkKeyFlags,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
@@ -10,6 +9,7 @@ import * as chai from 'chai';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
+import { generateFundedKey } from '../util/lib';
 
 chai.use(chaiAsPromised);
 
@@ -27,11 +27,8 @@ describe('Gateway v2 Client', () => {
   const feeKeypair = Keypair.generate();
 
   before(async () => {
-    networkAuthority = Keypair.generate();
-    guardianAuthority = Keypair.generate();
-
-    await airdrop(programProvider.connection, networkAuthority.publicKey);
-    await airdrop(programProvider.connection, guardianAuthority.publicKey);
+    networkAuthority = await generateFundedKey();
+    guardianAuthority = await generateFundedKey();
 
     serviceAsGuardian = await AdminService.buildFromAnchor(
       program,

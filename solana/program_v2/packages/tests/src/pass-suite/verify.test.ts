@@ -264,13 +264,13 @@ describe('Verify a pass', () => {
     await airdrop(
       programProvider.connection,
       adminAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
+      LAMPORTS_PER_SOL
     );
 
     await airdrop(
       programProvider.connection,
       altNetwork.publicKey,
-      LAMPORTS_PER_SOL * 2
+      LAMPORTS_PER_SOL
     );
 
     const altNetworkAta = await getOrCreateAssociatedTokenAccount(

@@ -1,11 +1,12 @@
-import { Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { AdminService, airdrop } from '@identity.com/gateway-solana-client';
+import { Keypair } from '@solana/web3.js';
+import { AdminService } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
+import { generateFundedKey } from '../util/lib';
 
 chai.use(chaiAsPromised);
 
@@ -22,15 +23,9 @@ describe('Gateway v2 Client', () => {
   let authority;
 
   before(async () => {
-    authorityKeypair = Keypair.generate();
+    authorityKeypair = await generateFundedKey();
     networkAuthority = Keypair.generate();
     authority = new anchor.Wallet(authorityKeypair);
-
-    await airdrop(
-      programProvider.connection,
-      authority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
 
     service = await AdminService.buildFromAnchor(
       program,

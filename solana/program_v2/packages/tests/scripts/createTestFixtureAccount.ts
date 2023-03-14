@@ -149,7 +149,7 @@ const createGatekeeperAccount = async (
     LAMPORTS_PER_SOL * 2
   );
 
-  await airdrop(programProvider.connection, network, LAMPORTS_PER_SOL * 2);
+  await airdrop(programProvider.connection, network, LAMPORTS_PER_SOL);
 
   const [dataAccount] = await NetworkService.createGatekeeperAddress(
     authority.publicKey,

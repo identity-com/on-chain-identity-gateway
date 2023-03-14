@@ -1,9 +1,27 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import {
+  airdrop,
   FeeStructure,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import * as fsPromises from 'node:fs/promises';
+import * as anchor from '@project-serum/anchor';
+import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
+
+anchor.setProvider(anchor.AnchorProvider.env());
+const program = anchor.workspace
+  .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
+const programProvider = program.provider as anchor.AnchorProvider;
+
+export const generateFundedKey = async (): Promise<Keypair> => {
+  const keypair = Keypair.generate();
+  await airdrop(
+    programProvider.connection,
+    keypair.publicKey,
+    LAMPORTS_PER_SOL
+  );
+  return keypair;
+};
 
 export const loadPrivateKey = async (
   publicKeyBs58: string

@@ -1,14 +1,14 @@
 import {
   AdminService,
-  airdrop,
   GatekeeperKeyFlags,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
 import { describe } from 'mocha';
+import { generateFundedKey } from '../util/lib';
 
 describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -26,26 +26,9 @@ describe('Gateway v2 Client', () => {
   let gatekeeperAuthority: Keypair;
 
   beforeEach(async () => {
-    adminAuthority = Keypair.generate();
-    networkAuthority = Keypair.generate();
-    gatekeeperAuthority = Keypair.generate();
-
-    //network airdrop
-    await airdrop(
-      programProvider.connection,
-      adminAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
-    await airdrop(
-      programProvider.connection,
-      networkAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
-    await airdrop(
-      programProvider.connection,
-      gatekeeperAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
+    adminAuthority = await generateFundedKey();
+    networkAuthority = await generateFundedKey();
+    gatekeeperAuthority = await generateFundedKey();
 
     [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
       gatekeeperAuthority.publicKey,

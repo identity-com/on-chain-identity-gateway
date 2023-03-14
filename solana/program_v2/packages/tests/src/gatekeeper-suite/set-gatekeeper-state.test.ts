@@ -1,18 +1,18 @@
 import {
   AdminService,
   NetworkService,
-  airdrop,
   EnumMapper,
   GatekeeperState,
   GatekeeperStateMapping,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@project-serum/anchor';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
 import * as chai from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
+import { generateFundedKey } from '../util/lib';
 
 chai.use(chaiAsPromised);
 
@@ -31,20 +31,8 @@ describe('Gateway v2 Client', () => {
   let networkAuthority: Keypair;
 
   before(async () => {
-    adminAuthority = Keypair.generate();
-    networkAuthority = Keypair.generate();
-
-    //network airdrop
-    await airdrop(
-      programProvider.connection,
-      adminAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
-    await airdrop(
-      programProvider.connection,
-      networkAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
+    adminAuthority = await generateFundedKey();
+    networkAuthority = await generateFundedKey();
 
     [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
       adminAuthority.publicKey,

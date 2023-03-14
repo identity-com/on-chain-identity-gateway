@@ -65,7 +65,7 @@ export const createGatekeeperService = async (
   await airdrop(
     programProvider.connection,
     authority.publicKey,
-    LAMPORTS_PER_SOL * 2
+    LAMPORTS_PER_SOL
   );
 
   const service = await GatekeeperService.buildFromAnchor(
