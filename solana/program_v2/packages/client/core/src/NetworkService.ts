@@ -163,7 +163,6 @@ export class NetworkService extends AbstractService {
           key: this._gatekeeper,
         },
       ],
-      supportedTokens: [],
     },
     authority: PublicKey = this._wallet.publicKey
   ): ServiceBuilder {
@@ -172,7 +171,13 @@ export class NetworkService extends AbstractService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .createGatekeeper({
-        tokenFees: data.tokenFees,
+        tokenFees: data.tokenFees.map((fee) => ({
+          token: fee.token,
+          issue: new anchor.BN(fee.issue),
+          expire: new anchor.BN(fee.expire),
+          verify: new anchor.BN(fee.verify),
+          refresh: new anchor.BN(fee.refresh),
+        })),
         authThreshold: data.authThreshold,
         authKeys: data.authKeys,
       })
@@ -214,7 +219,7 @@ export class NetworkService extends AbstractService {
         authThreshold: data.authThreshold,
         tokenFees: {
           add: data.tokenFees.add.map((fee) => ({
-            token: fee?.token,
+            token: fee.token,
             issue: new anchor.BN(fee.issue),
             expire: new anchor.BN(fee.expire),
             verify: new anchor.BN(fee.verify),

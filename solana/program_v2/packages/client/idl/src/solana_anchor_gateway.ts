@@ -1,5 +1,5 @@
 export type SolanaAnchorGateway = {
-  "version": "2.0.2",
+  "version": "2.0.5",
   "name": "solana_anchor_gateway",
   "instructions": [
     {
@@ -1528,7 +1528,7 @@ export type SolanaAnchorGateway = {
 };
 
 export const IDL: SolanaAnchorGateway = {
-  "version": "2.0.2",
+  "version": "2.0.5",
   "name": "solana_anchor_gateway",
   "instructions": [
     {

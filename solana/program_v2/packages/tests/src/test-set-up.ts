@@ -8,6 +8,7 @@ import {
 import {
   AdminService,
   airdrop,
+  CreateGatekeeperData,
   GatekeeperService,
   NetworkKeyFlags,
   NetworkService,
@@ -20,7 +21,6 @@ import {
   mintTo,
 } from '@solana/spl-token';
 import { Account } from '@solana/spl-token/src/state/account';
-import { setGatekeeperFlagsAndFees } from './util/lib';
 import { NetworkFeatures } from '@identity.com/gateway-solana-client/dist/lib/constants';
 
 export const setUpAdminNetworkGatekeeper = async (
@@ -131,24 +131,28 @@ export const setUpAdminNetworkGatekeeper = async (
     .withPartialSigners(networkAuthority)
     .rpc();
 
+  const gatekeeperDate: CreateGatekeeperData = {
+    tokenFees: [
+      { token: mint, issue: 1000, refresh: 1000, expire: 1000, verify: 1000 },
+    ],
+    authKeys: [
+      {
+        flags: 65535,
+        key: gatekeeperAuthority.publicKey,
+      },
+    ],
+    authThreshold: 1,
+  };
+
   await networkService
     .createGatekeeper(
       networkAuthority.publicKey,
       stakingPDA,
-      adminAuthority.publicKey
+      adminAuthority.publicKey,
+      gatekeeperDate
     )
     .withPartialSigners(adminAuthority)
     .rpc();
-
-  await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
-    {
-      token: mint,
-      issue: 1000,
-      refresh: 1000,
-      expire: 1000,
-      verify: 1000,
-    },
-  ]);
 
   const passAccount = await GatekeeperService.createPassAddress(
     subject.publicKey,

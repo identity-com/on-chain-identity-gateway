@@ -116,7 +116,6 @@ describe('Gateway v2 Client', () => {
               tokenFees: [],
               authThreshold: 1,
               authKeys: [],
-              supportedTokens: [],
             }
           )
           .withPartialSigners(adminAuthority)
@@ -141,7 +140,6 @@ describe('Gateway v2 Client', () => {
                 key: gatekeeperAuthority.publicKey,
               },
             ],
-            supportedTokens: [],
           }
         )
         .withPartialSigners(adminAuthority)

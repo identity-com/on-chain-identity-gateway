@@ -209,7 +209,7 @@ pub enum GatekeeperState {
 }
 
 impl OnChainSize for GatekeeperState {
-    const ON_CHAIN_SIZE: usize = 1;
+    const ON_CHAIN_SIZE: usize = 1 + 2;
 }
 
 #[derive(Clone, Debug)]
@@ -248,7 +248,7 @@ pub struct GatekeeperFees {
 }
 
 impl OnChainSize for GatekeeperFees {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + OC_SIZE_U16 * 4;
+    const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + OC_SIZE_U64 * 4;
 }
 
 bitflags! {
