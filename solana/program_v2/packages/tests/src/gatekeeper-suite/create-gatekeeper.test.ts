@@ -9,6 +9,7 @@ import { Keypair, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 import { generateFundedKey } from '../util/lib';
+import { BN } from '@project-serum/anchor';
 
 describe('Gateway v2 Client', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -105,6 +106,48 @@ describe('Gateway v2 Client', () => {
           .withPartialSigners(adminAuthority)
           .rpc()
       ).to.eventually.be.rejectedWith(/InsufficientAuthKeys/);
+    }).timeout(10000);
+
+    it('Create a gatekeeper with applied token fees', async function () {
+      const tokenKey = Keypair.generate();
+
+      // Step 1: Create a gatekeeper
+      await networkService
+        .createGatekeeper(
+          networkAuthority.publicKey,
+          stakingDataAccount,
+          adminAuthority.publicKey,
+          {
+            tokenFees: [
+              {
+                token: tokenKey.publicKey,
+                // TODO: Fix the representation in: https://github.com/identity-com/on-chain-identity-gateway/blob/develop/solana/program_v2/packages/client/core/src/lib/types.ts#L18-L18
+                // TODO: These parameters are u64 in Rust and cannot be represented as numbers: https://github.com/identity-com/on-chain-identity-gateway/blob/develop/solana/program_v2/programs/gateway_v2/src/state/gatekeeper.rs#L235-L235
+                issue: new BN(0) as unknown as number,
+                refresh: new BN(0) as unknown as number,
+                expire: new BN(0) as unknown as number,
+                verify: new BN(0) as unknown as number,
+              },
+            ],
+            authThreshold: 1,
+            authKeys: [
+              {
+                flags: GatekeeperKeyFlags.AUTH,
+                key: gatekeeperAuthority.publicKey,
+              },
+            ],
+            supportedTokens: [],
+          }
+        )
+        .withPartialSigners(adminAuthority)
+        .rpc();
+
+      const gatekeeperAccount = await networkService.getGatekeeperAccount();
+
+      // Validate that the applied token key matches that specified during the creation of the gatekeeper
+      expect(
+        gatekeeperAccount?.tokenFees.map((x) => x.token.toBase58())
+      ).deep.equal([tokenKey.publicKey.toBase58()]);
     }).timeout(10000);
   });
 

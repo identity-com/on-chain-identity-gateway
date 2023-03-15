@@ -53,8 +53,8 @@ pub struct CreateGatekeeperAccount<'info> {
     init,
     payer = payer,
     space = Gatekeeper::size(
-    data.auth_keys.len(),
     data.token_fees.len(),
+    data.auth_keys.len(),
     ),
     seeds = [GATEKEEPER_SEED, authority.key().as_ref(), network.key().as_ref()],
     bump
