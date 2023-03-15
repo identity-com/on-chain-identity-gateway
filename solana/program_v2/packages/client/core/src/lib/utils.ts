@@ -1,6 +1,6 @@
 import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
-import { AnchorProvider, web3 } from '@project-serum/anchor';
-import * as anchor from '@project-serum/anchor';
+import { AnchorProvider, web3 } from '@coral-xyz/anchor';
+import * as anchor from '@coral-xyz/anchor';
 
 import { GATEWAY_PROGRAM } from './constants';
 import { PassAccount, PassState } from './wrappers';

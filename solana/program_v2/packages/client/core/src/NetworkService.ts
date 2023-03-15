@@ -1,5 +1,5 @@
-import * as anchor from '@project-serum/anchor';
-import { AnchorProvider, Program } from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
+import { AnchorProvider, Program } from '@coral-xyz/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 import {
   AuthKeyStructure,
@@ -10,7 +10,6 @@ import {
   GatekeeperStateMapping,
   GatewayServiceOptions,
   UpdateGatekeeperData,
-  Wallet,
 } from './lib/types';
 import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { EnumMapper } from './lib/utils';
@@ -35,7 +34,7 @@ export class NetworkService extends AbstractService {
     private _gatekeeper: PublicKey,
     private _gatekeeperAccount: PublicKey,
     cluster: ExtendedCluster = SOLANA_MAINNET,
-    wallet: Wallet = new NonSigningWallet(),
+    wallet = new NonSigningWallet(),
     opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {
     super(program, cluster, wallet, opts);

@@ -1,5 +1,5 @@
-import * as anchor from '@project-serum/anchor';
-import { AnchorProvider, Program } from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
+import { AnchorProvider, Program } from '@coral-xyz/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
 import {
@@ -9,7 +9,6 @@ import {
   GatewayServiceOptions,
   NetworkAccount,
   UpdateNetworkData,
-  Wallet,
 } from './lib/types';
 
 import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
@@ -29,7 +28,7 @@ export class AdminService extends AbstractService {
     program: Program<SolanaAnchorGateway>,
     protected _network: PublicKey,
     cluster: ExtendedCluster = SOLANA_MAINNET,
-    wallet: Wallet = new NonSigningWallet(),
+    wallet = new NonSigningWallet(),
     opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {
     super(program, cluster, wallet, opts);

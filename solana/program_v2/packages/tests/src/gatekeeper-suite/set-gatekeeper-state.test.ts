@@ -6,7 +6,7 @@ import {
   GatekeeperStateMapping,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
 import * as chai from 'chai';

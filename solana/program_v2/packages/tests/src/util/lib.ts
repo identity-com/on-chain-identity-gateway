@@ -5,7 +5,7 @@ import {
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import * as fsPromises from 'node:fs/promises';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 
 anchor.setProvider(anchor.AnchorProvider.env());

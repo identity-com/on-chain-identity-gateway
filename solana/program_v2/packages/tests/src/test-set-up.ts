@@ -12,7 +12,7 @@ import {
   NetworkKeyFlags,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   createMint,

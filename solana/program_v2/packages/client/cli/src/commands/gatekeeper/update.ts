@@ -6,7 +6,7 @@ import {
   NetworkService,
   ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
-import { Wallet } from '@project-serum/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 import fsPromises from 'node:fs/promises';
 
 export default class Update extends Command {
