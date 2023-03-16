@@ -1,6 +1,7 @@
 //! Utility functions and types.
 use std::ops::{Div, Mul};
 
+use crate::constants::MAX_NETWORK_FEE;
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
 use anchor_lang::{Key, ToAccountInfo};
 use anchor_spl::token::{Token, TokenAccount};
@@ -23,13 +24,14 @@ pub const OC_SIZE_VEC_PREFIX: usize = 4;
 pub const OC_SIZE_DISCRIMINATOR: usize = 8;
 // pub const OC_SIZE_TIMESTAMP: usize = 8;
 
+// validate_fees_within_bounds returns true when
+// the fees in NetworkFeesPercentage are not more than MAX_NETWORK_FEE
 pub fn validate_fees_within_bounds(fees: &[NetworkFeesPercentage]) -> bool {
-    let max_fee = 10000;
-    fees.iter().any(|fee| {
-        fee.issue >= max_fee
-            || fee.refresh >= max_fee
-            || fee.expire >= max_fee
-            || fee.verify >= max_fee
+    fees.iter().all(|fee| {
+        fee.issue <= MAX_NETWORK_FEE
+            && fee.refresh <= MAX_NETWORK_FEE
+            && fee.expire <= MAX_NETWORK_FEE
+            && fee.verify <= MAX_NETWORK_FEE
     })
 }
 
@@ -114,26 +116,24 @@ mod tests {
     #[test]
     fn test_check_fees_percentage() {
         // Test case where there are fees but one of them is over 100%
-        let mut fees: Vec<NetworkFeesPercentage> = vec![NetworkFeesPercentage {
+        let fee1 = NetworkFeesPercentage {
             token: Default::default(),
             issue: 6,
             refresh: 8,
             expire: 8,
             verify: 8,
-        }];
+        };
 
-        fees.push(NetworkFeesPercentage {
+        let fee2 = NetworkFeesPercentage {
             token: Default::default(),
             issue: 5,
             refresh: 5,
             expire: 3,
             verify: 10001,
-        });
-        assert!(!validate_fees_within_bounds(&fees));
+        };
 
-        // Test case where there are fees and none of them are over 100%
-        fees.pop();
-        assert!(validate_fees_within_bounds(&fees));
+        assert!(validate_fees_within_bounds(&[fee1]));
+        assert!(!validate_fees_within_bounds(&[fee1, fee2]));
     }
 
     #[test]

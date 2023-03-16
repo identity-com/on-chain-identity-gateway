@@ -1,6 +1,7 @@
 import {
   NetworkService,
   AdminService,
+  NetworkKeyFlags,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@coral-xyz/anchor';
@@ -10,6 +11,7 @@ import * as chai from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
 import { generateFundedKey } from '../util/lib';
+import { NetworkFeatures } from '@identity.com/gateway-solana-client/dist/lib/constants';
 
 chai.use(chaiAsPromised);
 
@@ -61,7 +63,24 @@ describe('Gateway v2 Client', () => {
     );
 
     await adminService
-      .createNetwork()
+      .createNetwork({
+        authThreshold: 1,
+        passExpireTime: 10000,
+        fees: [
+          {
+            token: PublicKey.unique(),
+            issue: 10,
+            refresh: 10,
+            expire: 10,
+            verify: 10,
+          },
+        ],
+        authKeys: [
+          { flags: NetworkKeyFlags.AUTH, key: networkAuthority.publicKey },
+        ],
+        supportedTokens: [{ key: PublicKey.unique() }],
+        networkFeatures: NetworkFeatures.CHANGE_PASS_GATEKEEPER,
+      })
       .withPartialSigners(networkAuthority)
       .rpc();
 

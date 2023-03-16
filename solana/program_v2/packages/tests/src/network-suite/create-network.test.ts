@@ -4,7 +4,7 @@ import {
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@coral-xyz/anchor';
-import { Keypair } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import { expect } from 'chai';
 import { describe } from 'mocha';
 import { generateFundedKey } from '../util/lib';
@@ -54,7 +54,7 @@ describe('Gateway v2 Client', () => {
           passExpireTime: 400,
           fees: [
             {
-              token: programProvider.wallet.publicKey,
+              token: PublicKey.unique(),
               issue: 100,
               refresh: 100,
               expire: 100,
