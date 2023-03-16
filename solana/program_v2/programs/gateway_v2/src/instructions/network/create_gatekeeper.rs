@@ -1,13 +1,11 @@
 use anchor_lang::prelude::*;
 
 use crate::constants::GATEKEEPER_SEED;
-use crate::errors::GatekeeperErrors;
+use crate::errors::{GatekeeperErrors, NetworkErrors};
 use crate::state::gatekeeper::{Gatekeeper, GatekeeperFees, GatekeeperState};
-use crate::state::{GatekeeperAuthKey, GatekeeperNetwork};
+use crate::state::{GatekeeperAuthKey, GatekeeperNetwork, NetworkKeyFlags};
 use crate::util::check_gatekeeper_auth_threshold;
 
-// TODO: Right now ANYONE can create a Gatekeeper in a Network. This should be restricted to an authority
-// in network.auth_keys.
 pub fn create_gatekeeper(
     ctx: Context<CreateGatekeeperAccount>,
     data: CreateGatekeeperData,
@@ -73,6 +71,7 @@ pub struct CreateGatekeeperAccount<'info> {
     ),
     realloc::payer = payer,
     realloc::zero = false,
+    constraint = network.can_access(&authority, NetworkKeyFlags::CREATE_GATEKEEPER) @ NetworkErrors::InsufficientAccessCreateGatekeeper,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]

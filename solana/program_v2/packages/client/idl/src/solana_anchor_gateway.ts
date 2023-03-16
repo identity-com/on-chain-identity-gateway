@@ -1496,36 +1496,41 @@ export type SolanaAnchorGateway = {
     },
     {
       "code": 6007,
+      "name": "InsufficientAccessCreateGatekeeper",
+      "msg": "Insufficient access to create gatekeeper"
+    },
+    {
+      "code": 6008,
       "name": "AuthKeyNotFound",
       "msg": "Auth key not found"
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "InvalidKey",
       "msg": "Invalid key provided"
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "AccountInUse",
       "msg": "The network account is in use"
     },
     {
-      "code": 6010,
+      "code": 6011,
       "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
     },
     {
-      "code": 6011,
+      "code": 6012,
       "name": "NetworkFeeOutOfBounds",
       "msg": "Network Fee more than 100%"
     },
     {
-      "code": 6012,
+      "code": 6013,
       "name": "TokenNotSupported",
       "msg": "Token not supported"
     },
     {
-      "code": 6013,
+      "code": 6014,
       "name": "UnsupportedNetworkFeature",
       "msg": "A network feature is not enabled for this instruction"
     }
@@ -3030,36 +3035,41 @@ export const IDL: SolanaAnchorGateway = {
     },
     {
       "code": 6007,
+      "name": "InsufficientAccessCreateGatekeeper",
+      "msg": "Insufficient access to create gatekeeper"
+    },
+    {
+      "code": 6008,
       "name": "AuthKeyNotFound",
       "msg": "Auth key not found"
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "InvalidKey",
       "msg": "Invalid key provided"
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "AccountInUse",
       "msg": "The network account is in use"
     },
     {
-      "code": 6010,
+      "code": 6011,
       "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
     },
     {
-      "code": 6011,
+      "code": 6012,
       "name": "NetworkFeeOutOfBounds",
       "msg": "Network Fee more than 100%"
     },
     {
-      "code": 6012,
+      "code": 6013,
       "name": "TokenNotSupported",
       "msg": "Token not supported"
     },
     {
-      "code": 6013,
+      "code": 6014,
       "name": "UnsupportedNetworkFeature",
       "msg": "A network feature is not enabled for this instruction"
     }
