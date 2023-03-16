@@ -23,29 +23,14 @@ pub const OC_SIZE_VEC_PREFIX: usize = 4;
 pub const OC_SIZE_DISCRIMINATOR: usize = 8;
 // pub const OC_SIZE_TIMESTAMP: usize = 8;
 
-/// This value has as static size on-chain
-pub trait OnChainSize {
-    /// The size on-chain
-    const ON_CHAIN_SIZE: usize;
-}
-
-/// Theis value can be sized with a given argument
-pub trait OnChainSizeWithArg<Arg> {
-    /// Gets the size with an argument
-    fn on_chain_size_with_arg(arg: Arg) -> usize;
-}
-
-pub fn check_fees_percentage(fees: &[NetworkFeesPercentage]) -> bool {
+pub fn validate_fees_within_bounds(fees: &[NetworkFeesPercentage]) -> bool {
     let max_fee = 10000;
-    if fees.iter().any(|fee| {
+    fees.iter().any(|fee| {
         fee.issue >= max_fee
             || fee.refresh >= max_fee
             || fee.expire >= max_fee
             || fee.verify >= max_fee
-    }) {
-        return false;
-    }
-    true
+    })
 }
 
 pub fn get_gatekeeper_fees(
@@ -124,7 +109,7 @@ pub fn check_gatekeeper_auth_threshold(
 #[cfg(test)]
 mod tests {
     use crate::state::{GatekeeperAuthKey, GatekeeperFees, NetworkFeesPercentage};
-    use crate::util::{check_fees_percentage, check_gatekeeper_auth_threshold};
+    use crate::util::{check_gatekeeper_auth_threshold, validate_fees_within_bounds};
 
     #[test]
     fn test_check_fees_percentage() {
@@ -144,11 +129,11 @@ mod tests {
             expire: 3,
             verify: 10001,
         });
-        assert!(!check_fees_percentage(&fees));
+        assert!(!validate_fees_within_bounds(&fees));
 
         // Test case where there are fees and none of them are over 100%
         fees.pop();
-        assert!(check_fees_percentage(&fees));
+        assert!(validate_fees_within_bounds(&fees));
     }
 
     #[test]
