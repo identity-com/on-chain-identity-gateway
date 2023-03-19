@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./interfaces/IFlagsStorage.sol";
 import "./library/BitMask.sol";
+import "./library/CommonErrors.sol";
 
 /**
  * @dev FlagsStorage is the main contract to store KYC-related flags for Gateway Token System.
@@ -26,9 +27,26 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
 
     mapping(bytes32 => uint8) public override flagIndexes;
 
+    /// The flag being added already exists
+    /// @param flag The flag being added
+    error FlagsStorage__FlagAlreadyExists(bytes32 flag);
+
+    /// The flag being removed does not exist
+    /// @param flag The flag being removed
+    error FlagsStorage__FlagNotSupported(bytes32 flag);
+
+    /// Multiple flags updated but the number of flags passed in does not match the number of indexes
+    /// @param expected The number of flags passed in
+    /// @param actual The number of indexes passed in
+    error FlagsStorage__IncorrectVariableLength(uint256 expected, uint256 actual);
+
+    /// The flag index is already used
+    /// @param index The flag index
+    error FlagsStorage__IndexAlreadyUsed(uint8 index);
+
     // separate into a private function to reduce code size
     function _onlySuperAdmin() private view {
-        require(msg.sender == superAdmin, "NOT SUPER ADMIN");
+        if (msg.sender != superAdmin) revert Common__NotSuperAdmin(msg.sender);
     }
 
     // @dev Modifier to prevent calls from anyone except Identity.com Admin
@@ -40,18 +58,17 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
     function initialize(address _superAdmin) public initializer {
-        require(_superAdmin != address(0), "SUPER ADMIN IS ZERO ADDRESS");
+        if (_superAdmin == address(0)) revert Common__MissingAccount();
         superAdmin = _superAdmin;
     }
 
     /**
-    * @dev Triggers to transfer ownership of this contract to new DAO Controller, reverts on zero address and wallet addresses
-    * @param newSuperAdmin New DAO Controller contract address
-    * @notice Only executed by existing DAO Manager
+    * @dev Triggers to transfer ownership of this contract to new super admin, reverts on zero address and wallet addresses
+    * @param newSuperAdmin New super admin contract address
+    * @notice Only executed by existing super admin
     */
     function updateSuperAdmin(address newSuperAdmin) onlySuperAdmin public override {
-        require(newSuperAdmin != address(0), "NEW DAO CONTROLLER IS ZERO ADDRESS");
-        require(newSuperAdmin.isContract(), "NEW DAO CONTROLLER IS NOT A CONTRACT");
+        if (newSuperAdmin == address(0)) revert Common__MissingAccount();
 
         emit SuperAdminUpdated(superAdmin, newSuperAdmin);
         superAdmin = newSuperAdmin;
@@ -74,7 +91,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     * @notice Only executed by existing DAO Manager
     */
     function addFlags(bytes32[] memory flags, uint8[] memory indexes) onlySuperAdmin public override {
-        require(flags.length == indexes.length, "Incorrect variables length");
+        if (flags.length != indexes.length) revert FlagsStorage__IncorrectVariableLength(flags.length, indexes.length);
 
         for (uint8 i = 0; i < flags.length; i++) {
             _addFlag(flags[i], indexes[i]);
@@ -87,7 +104,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     * @notice Only executed by existing DAO Manager
     */
     function removeFlag(bytes32 flag) onlySuperAdmin public override {
-        require(supportedFlags.contains(flag), "Flag not supported"); // additional check to reduce incorrect FlagRemoved event
+        if (!supportedFlags.contains(flag)) revert FlagsStorage__FlagNotSupported(flag);
 
         _removeFlag(flag);
     }
@@ -99,7 +116,8 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     */
     function removeFlags(bytes32[] memory flags) onlySuperAdmin public override {
         for (uint8 i = 0; i < flags.length; i++) {
-            require(supportedFlags.contains(flags[i]), "Flag not supported"); // additional check to reduce incorrect FlagRemoved events
+            // additional check to reduce incorrect FlagRemoved events
+            if (!supportedFlags.contains(flags[i])) revert FlagsStorage__FlagNotSupported(flags[i]);
 
             _removeFlag(flags[i]);
         }
@@ -118,8 +136,8 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     * @dev Internal function to add new flag
     */
     function _addFlag(bytes32 flag, uint8 index) internal {
-        require(!supportedFlagsMask.checkBit(index), "Index already used");
-        require(!supportedFlags.contains(flag), "Flag already exist");
+        if (supportedFlagsMask.checkBit(index)) revert FlagsStorage__IndexAlreadyUsed(index);
+        if (supportedFlags.contains(flag)) revert FlagsStorage__FlagAlreadyExists(flag);
 
         flagIndexes[flag] = index;
         supportedFlags.add(flag);

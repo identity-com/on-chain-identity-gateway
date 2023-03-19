@@ -15,7 +15,7 @@ import "./interfaces/IERC721Revokable.sol";
 import "./MultiERC2771Context.sol";
 import "./library/Charge.sol";
 import "./ParameterizedAccessControl.sol";
-
+import "./library/CommonErrors.sol";
 
 /**
  * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens 
@@ -39,10 +39,6 @@ TokenBitMask
 {
     using Address for address;
     using Strings for uint;
-
-    enum TokenState {
-        ACTIVE, FROZEN, REVOKED
-    }
 
     // Gateway Token controller contract address
     address public controller;
@@ -102,7 +98,10 @@ TokenBitMask
 
     // if any funds are sent to this contract, use this function to withdraw them
     function withdraw(uint amount) onlySuperAdmin external returns(bool) {
-        require(amount <= address(this).balance, "INSUFFICIENT FUNDS");
+        if (amount > address(this).balance) {
+            revert GatewayToken__InsufficientFunds(address(this).balance, amount);
+        }
+
         payable(_msgSender()).transfer(amount);
         return true;
 
@@ -127,7 +126,9 @@ TokenBitMask
     }
 
     function createNetwork(uint network, string memory name, bool daoGoverned, address daoManager) external virtual {
-        require(bytes(networks[network]).length == 0, "NETWORK ALREADY EXISTS");
+        if (bytes(networks[network]).length != 0) {
+            revert GatewayToken__NetworkAlreadyExists(network);
+        }
 
         networks[network] = name;
 
@@ -136,8 +137,12 @@ TokenBitMask
         if (daoGoverned) {
             isNetworkDAOGoverned[network] = daoGoverned;
 
-            require(daoManager != address(0), "INCORRECT ADDRESS");
-            // require(daoManager.isContract(), "NON CONTRACT EXECUTOR"); uncomment while testing with Gnosis Multisig
+            if (daoManager == address(0)) {
+                revert Common__MissingAccount();
+            }
+            if (!daoManager.isContract()) {
+                revert Common__NotContract(daoManager);
+            }
 
             _setupRole(DAO_MANAGER_ROLE, network, daoManager);
             _setupRole(NETWORK_AUTHORITY_ROLE, network, daoManager);
@@ -150,8 +155,12 @@ TokenBitMask
     }
 
     function renameNetwork(uint network, string memory name) external virtual {
-        require(bytes(networks[network]).length != 0, "NETWORK DOES NOT EXIST");
-        require(hasRole(NETWORK_AUTHORITY_ROLE, network, _msgSender()), "NOT AUTHORIZED");
+        if (bytes(networks[network]).length == 0) {
+            revert GatewayToken__NetworkDoesNotExist(network);
+        }
+        if (!hasRole(NETWORK_AUTHORITY_ROLE, network, _msgSender())) {
+            revert Common__Unauthorized(_msgSender(), network, NETWORK_AUTHORITY_ROLE);
+        }
 
         networks[network] = name;
     }
@@ -248,8 +257,30 @@ TokenBitMask
         return false;   // transfers are restricted, so this can never pass
     }
 
+
+    /// @dev Checks if the sender has the specified role on the specified network and revert otherwise
+    function _checkSenderRole(bytes32 role, uint network) internal view {
+        _checkRole(role, network, _msgSender());
+    }
+
     function _checkGatekeeper(uint network) internal view {
-        require(hasRole(GATEKEEPER_ROLE, network, _msgSender()), "MUST BE GATEKEEPER");
+        _checkSenderRole(GATEKEEPER_ROLE, network);
+    }
+
+    /// @dev Checks if the token exists and is active. Optionally ignore expiry.
+    /// Use this when you need to check if a token exists, and is not frozen or revoked
+    /// But you don't care about its expiry, e.g. you are extending the expiry.
+    function _checkActiveToken(uint tokenId, bool allowExpired) internal view {
+        if (!_existsAndActive(tokenId, allowExpired)) {
+            revert GatewayToken__TokenDoesNotExistOrIsInactive(tokenId, allowExpired);
+        }
+    }
+
+    /// @dev Checks if the token exists - ignore if it is active or not.
+    function _checkTokenExists(uint tokenId) internal view {
+        if (!_exists(tokenId)) {
+            revert GatewayToken__TokenDoesNotExist(tokenId);
+        }
     }
 
     /**
@@ -315,7 +346,8 @@ TokenBitMask
     * @param tokenId Gateway token id
     */
     function getExpiration(uint tokenId) public view virtual override returns (uint) {
-        require(_exists(tokenId), "TOKEN DOESN'T EXIST OR FROZEN");
+        _checkTokenExists(tokenId);
+
         return expirations[tokenId];
     }
 
@@ -335,7 +367,7 @@ TokenBitMask
     * Emits a {Freeze} event.
     */
     function _freeze(uint tokenId) internal virtual {
-        require(_existsAndActive(tokenId, true), "TOKEN DOESN'T EXIST OR NOT ACTIVE");
+        _checkActiveToken(tokenId, true);
 
         tokenStates[tokenId] = TokenState.FROZEN;
 
@@ -348,8 +380,10 @@ TokenBitMask
     * Emits a {Unfreeze} event.
     */
     function _unfreeze(uint tokenId) internal virtual {
-        require(_exists(tokenId), "TOKEN DOES NOT EXIST");
-        require(tokenStates[tokenId] == TokenState.FROZEN, "TOKEN NOT FROZEN");
+        _checkTokenExists(tokenId);
+        if (tokenStates[tokenId] != TokenState.FROZEN) {
+            revert GatewayToken__TokenInvalidStateForOperation(tokenId, tokenStates[tokenId], TokenState.FROZEN);
+        }
 
         tokenStates[tokenId] = TokenState.ACTIVE;
 
@@ -360,7 +394,7 @@ TokenBitMask
     * @dev Sets expiration time for `tokenId`.
     */
     function _setExpiration(uint tokenId, uint timestamp) internal virtual {
-        require(_existsAndActive(tokenId, true), "TOKEN DOES NOT EXIST OR IS INACTIVE");
+        _checkActiveToken(tokenId, true);
 
         expirations[tokenId] = timestamp;
         emit Expiration(tokenId, timestamp);
@@ -389,7 +423,7 @@ TokenBitMask
     // ===========  ACCESS CONTROL SECTION ============
 
     /**
-    * @dev Triggers to add new gatekeeper into the system. 
+    * @dev Triggers to add new gatekeeper into the system.
     * @param gatekeeper Gatekeeper address
     */
     function addGatekeeper(address gatekeeper, uint network) public virtual {
@@ -397,7 +431,7 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggers to remove existing gatekeeper from gateway token. 
+    * @dev Triggers to remove existing gatekeeper from gateway token.
     * @param gatekeeper Gatekeeper address
     */
     function removeGatekeeper(address gatekeeper, uint network) public virtual {
@@ -405,7 +439,7 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggers to verify if address has a GATEKEEPER role. 
+    * @dev Triggers to verify if address has a GATEKEEPER role.
     * @param gatekeeper Gatekeeper address
     */
     function isGatekeeper(address gatekeeper, uint network) external view virtual override returns (bool) {
@@ -413,7 +447,7 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggers to add new network authority into the system. 
+    * @dev Triggers to add new network authority into the system.
     * @param authority Network Authority address
     *
     * @notice Can be triggered by Gateway Token Controller or any Network Authority
@@ -423,7 +457,7 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggers to remove existing network authority from gateway token. 
+    * @dev Triggers to remove existing network authority from gateway token.
     * @param authority Network Authority address
     *
     * @notice Can be triggered by Gateway Token Controller or any Network Authority
@@ -433,7 +467,7 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggers to verify if authority has a NETWORK_AUTHORITY_ROLE role. 
+    * @dev Triggers to verify if authority has a NETWORK_AUTHORITY_ROLE role.
     * @param authority Network Authority address
     */
     function isNetworkAuthority(address authority, uint network) external view virtual override returns (bool) {
@@ -443,15 +477,23 @@ TokenBitMask
     // ===========  ACCESS CONTROL SECTION ============
 
     /**
-    * @dev Transfers Gateway Token DAO Manager access from daoManager to `newManager`
+    * @dev Transfers Gateway Token DAO Manager access from `previousManager` to `newManager`
+    * Only a current DAO Manager can do this. They can do this for any other DAO Manager.
+    * This is useful for two reasons:
+    * 1. Key rotation of the current (msg signer) DAO manager
+    * 2. Replacing a lost or compromised key of an existing DAO manager
     * @param newManager Address to transfer DAO Manager role for.
     * @notice GatewayToken contract has to be DAO Governed
     */
     function transferDAOManager(address previousManager, address newManager, uint network) public override {
-        require(isNetworkDAOGoverned[network], "NOT DAO GOVERNED");
-        require(hasRole(DAO_MANAGER_ROLE, network, previousManager), "INCORRECT OLD MANAGER");
-        require(hasRole(DAO_MANAGER_ROLE, network, _msgSender()), "MUST BE DAO MANAGER");
-        require(newManager != address(0), "ZERO ADDRESS");
+        if (!isNetworkDAOGoverned[network]) revert GatewayToken__NotDAOGoverned(network);
+
+        // check the previous manager is a current dao manager
+        _checkRole(DAO_MANAGER_ROLE, network, previousManager);
+        // check the new manager is a dao manager
+        _checkRole(DAO_MANAGER_ROLE, network, _msgSender());
+
+        if (newManager == address(0)) revert Common__MissingAccount();
 
         grantRole(DAO_MANAGER_ROLE, network, newManager);
         grantRole(NETWORK_AUTHORITY_ROLE, network, newManager);
@@ -485,7 +527,7 @@ TokenBitMask
     * @dev Triggers to set full bitmask for gateway token with `tokenId`
     */
     function setBitmask(uint tokenId, uint mask) public {
-        require(hasRole(GATEKEEPER_ROLE, slotOf(tokenId), _msgSender()), "MUST BE GATEKEEPER");
+        _checkSenderRole(GATEKEEPER_ROLE, slotOf(tokenId));
         _setBitMask(tokenId, mask);
     }
 

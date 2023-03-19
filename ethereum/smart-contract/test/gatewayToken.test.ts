@@ -1,7 +1,6 @@
 import {ethers, upgrades} from "hardhat";
 import {BigNumber, Contract, PopulatedTransaction, Wallet} from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 import { toBytes32 } from './utils';
 
@@ -78,7 +77,7 @@ describe('GatewayToken', async () => {
         it('Try to change admin by Bob, expect revert due to invalid access', async () => {
             await expect(
                 gatewayToken.connect(bob).setSuperAdmin(bob.address)
-            ).to.be.revertedWith("NOT SUPER ADMIN");
+            ).to.be.revertedWithCustomError(gatewayToken, 'Common__NotSuperAdmin');
         });
     });
 
@@ -86,7 +85,7 @@ describe('GatewayToken', async () => {
         it('Try to add new flag by Bob, expect revert due to invalid access', async () => {
             await expect(
                 flagsStorage.connect(bob).addFlag(hexRetailFlag, 0)
-            ).to.be.revertedWith("NOT SUPER ADMIN");
+            ).to.be.revertedWithCustomError(gatewayToken, 'Common__NotSuperAdmin');
         });
 
         it('Successfully add flag by superadmin, expect success', async () => {
@@ -103,7 +102,7 @@ describe('GatewayToken', async () => {
         it('Try to add new flag at already used index, expect revert', async () => {
             await expect(
                 flagsStorage.addFlag(hexRetailFlag, 0)
-            ).to.be.revertedWith("Index already used");
+            ).to.be.revertedWithCustomError(flagsStorage, 'FlagsStorage__IndexAlreadyUsed');
         });
     });
 
@@ -122,7 +121,7 @@ describe('GatewayToken', async () => {
         it('Expect revert when attempting to issue as a non-gatekeeper network authority', async () => {
             await expect(
                 gatewayToken.connect(networkAuthority2).mint(alice.address, gkn1, 0, 0, NULL_CHARGE)
-            ).to.be.revertedWith("MUST BE GATEKEEPER");
+            ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
         });
 
         it("Try to remove non-existing network authorities, don't expect revert", async () => {
@@ -136,13 +135,13 @@ describe('GatewayToken', async () => {
         it('Expect revert on adding new network authority by Alice', async () => {
             await expect(
                 gatewayToken.connect(alice).addNetworkAuthority(bob.address, gkn1)
-            ).to.be.revertedWith(/Invalid role/);
+            ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
         });
 
         it('Expect revert on removing existing network authority by Alice', async () => {
             await expect(
                 gatewayToken.connect(alice).removeNetworkAuthority(identityCom.address, gkn1)
-            ).to.be.revertedWith(/Invalid role/);
+            ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
         });
     });
 
@@ -381,7 +380,8 @@ describe('GatewayToken', async () => {
             const shouldFail = forwarder.connect(alice).execute(forwardedUnfreezeTx.request, forwardedUnfreezeTx.signature, { gasLimit: 1000000 });
             // const shouldFail = attemptedReplayTransactionResponse.wait();
             // expect(attemptedReplayTransactionReceipt.status).to.equal(0);
-            await expect(shouldFail).to.be.revertedWith('FlexibleNonceForwarder: tx to be forwarded has already been seen');
+            await expect(shouldFail).to.be
+                .revertedWithCustomError(forwarder, 'FlexibleNonceForwarder__TxAlreadySeen');
             await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
         });
 
@@ -413,7 +413,8 @@ describe('GatewayToken', async () => {
             await intolerantForwarder.connect(alice).execute(req1.request, req1.signature, { gasLimit: 1000000 });
 
             const shouldFail = intolerantForwarder.connect(alice).execute(req2.request, req2.signature, { gasLimit: 1000000 });
-            await expect(shouldFail).to.be.revertedWith('FlexibleNonceForwarder: tx to be forwarded is too old');
+            await expect(shouldFail).to.be
+                .revertedWithCustomError(forwarder, 'FlexibleNonceForwarder__TxTooOld');
         });
     });
 

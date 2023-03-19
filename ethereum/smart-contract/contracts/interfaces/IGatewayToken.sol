@@ -4,6 +4,43 @@ pragma solidity ^0.8.0;
 import "../library/Charge.sol";
 
 interface IGatewayToken {
+    enum TokenState {
+        ACTIVE, FROZEN, REVOKED
+    }
+
+    /// Insufficient funds for withdrawal. Needed `required` but only
+    /// `available` available.
+    /// @param available balance available.
+    /// @param required requested amount to transfer.
+    error GatewayToken__InsufficientFunds(uint256 available, uint256 required);
+
+    /// The gatekeeper network being created already exists.
+    /// @param network gatekeeper network id.
+    error GatewayToken__NetworkAlreadyExists(uint network);
+
+    /// The gatekeeper network does not exist.
+    /// @param network gatekeeper network id.
+    error GatewayToken__NetworkDoesNotExist(uint network);
+
+    /// The gatekeeper network is not dao-governed.
+    /// @param network gatekeeper network id.
+    error GatewayToken__NotDAOGoverned(uint network);
+
+    /// The requested token does not exist.
+    /// @param tokenId token id.
+    error GatewayToken__TokenDoesNotExist(uint256 tokenId);
+
+    /// The requested token is not active or does not exist
+    /// @param tokenId token id.
+    /// @param allowExpired whether to allow expired tokens.
+    error GatewayToken__TokenDoesNotExistOrIsInactive(uint256 tokenId, bool allowExpired);
+
+    /// The requested token state is invalid for the request
+    /// @param tokenId token id.
+    /// @param state current token state.
+    /// @param expectedState expected token state.
+    error GatewayToken__TokenInvalidStateForOperation(uint256 tokenId, TokenState state, TokenState expectedState);
+
     /**
     * @dev Emitted when GatewayToken DAO Manager transferred to `newDAOManager` address.
     */

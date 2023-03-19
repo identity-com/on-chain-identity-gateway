@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./interfaces/IParameterizedAccessControl.sol";
+import "./library/CommonErrors.sol";
 
 /**
  * @dev Contract module that allows children to implement role-based access
@@ -108,13 +109,7 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
      */
     function _checkRole(bytes32 role, uint256 domain, address account) internal view virtual {
         if (!hasRole(role, domain, account)) {
-            revert(
-                string(
-                    abi.encodePacked(
-                        "Invalid role"
-                    )
-                )
-            );
+            revert Common__Unauthorized(account, domain, role);
         }
     }
 
@@ -176,7 +171,7 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
      * May emit a {RoleRevoked} event.
      */
     function renounceRole(bytes32 role, uint256 domain, address account) public virtual override {
-        require(account == _msgSender(), "AccessControl: can only renounce roles for self");
+        if (account != _msgSender()) revert ParameterizedAccessControl__RenounceRoleNotForSelf(role, account);
 
         _revokeRole(role, domain, account);
     }
@@ -266,22 +261,12 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
      *  /^AccessControl: account (0x[0-9a-f]{40}) is not a super admin$/
      */
     function _checkAdmin(address account) internal view virtual {
-        if (!isSuperAdmin(account)) {
-            revert(
-            string(
-                abi.encodePacked(
-                    "AccessControl: account ",
-                    Strings.toHexString(account),
-                    " is not a super admin"
-                )
-            )
-            );
-        }
+        if (!isSuperAdmin(account)) revert Common__NotSuperAdmin(account);
     }
 
     // separate into a private function to reduce code size
     function _onlySuperAdmin() private view {
-        require(isSuperAdmin(_msgSender()), "NOT SUPER ADMIN");
+        _checkAdmin(_msgSender());
     }
 
     /**

@@ -6,6 +6,15 @@ import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "./interfaces/IForwarder.sol";
 
 contract FlexibleNonceForwarder is IForwarder, EIP712 {
+    /// The tx to be forwarded is not signed by the request sender.
+    error FlexibleNonceForwarder__InvalidSigner(address signer, address expectedSigner);
+
+    /// The tx to be forwarded has already been seen.
+    error FlexibleNonceForwarder__TxAlreadySeen();
+
+    /// The tx to be forwarded is too old.
+    error FlexibleNonceForwarder__TxTooOld(uint256 blockNumber, uint256 blockAgeTolerance);
+
     using ECDSA for bytes32;
 
     bytes32 private constant _TYPEHASH =
@@ -37,8 +46,9 @@ contract FlexibleNonceForwarder is IForwarder, EIP712 {
             keccak256(abi.encode(_TYPEHASH, req.from, req.to, req.value, req.gas, req.nonce, keccak256(req.data)))
         ).recover(signature);
 
-        require(signer == req.from, "FlexibleNonceForwarder: tx to be forwarded is not signed by the request sender");
-
+        if (signer != req.from) {
+            revert FlexibleNonceForwarder__InvalidSigner(signer, req.from);
+        }
 
         if (_nonces[req.from].currentNonce == req.nonce) {
             // request nonce is expected next nonce - increment the nonce, and we are done
@@ -46,10 +56,14 @@ contract FlexibleNonceForwarder is IForwarder, EIP712 {
             _nonces[req.from].block = block.number;
         } else {
             // request nonce is not expected next nonce - check if we have seen this signature before
-            require(!_nonces[req.from].sigsForNonce[req.nonce].sigs[signature], "FlexibleNonceForwarder: tx to be forwarded has already been seen");
+            if (_nonces[req.from].sigsForNonce[req.nonce].sigs[signature]) {
+                revert FlexibleNonceForwarder__TxAlreadySeen();
+            }
 
             // check if the nonce is too old
-            require(block.number <= _nonces[req.from].block + blockAgeTolerance, "FlexibleNonceForwarder: tx to be forwarded is too old");
+            if (_nonces[req.from].block + blockAgeTolerance < block.number) {
+                revert FlexibleNonceForwarder__TxTooOld(_nonces[req.from].block, blockAgeTolerance);
+            }
         }
 
         // store the signature for this nonce to ensure no replay attacks
