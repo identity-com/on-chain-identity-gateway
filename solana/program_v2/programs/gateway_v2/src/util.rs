@@ -2,12 +2,11 @@
 use std::ops::{Div, Mul};
 
 use crate::constants::MAX_NETWORK_FEE;
+use anchor_lang::context::CpiContext;
 use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
-use anchor_lang::{Key, ToAccountInfo};
-use anchor_spl::token::{Token, TokenAccount};
+use anchor_lang::ToAccountInfo;
+use anchor_spl::token::{transfer, Token, TokenAccount, Transfer};
 use solana_program::entrypoint::ProgramResult;
-use solana_program::program::invoke;
-use spl_token::instruction::transfer;
 
 use crate::errors::{GatekeeperErrors, NetworkErrors};
 use crate::state::{GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, NetworkFeesPercentage};
@@ -71,27 +70,20 @@ pub fn create_and_invoke_transfer<'a>(
     source_account: Account<'a, TokenAccount>,
     destination_account: Account<'a, TokenAccount>,
     authority_account: Signer<'a>,
-    signer_pubkeys: &[&Pubkey],
     amount: u64,
 ) -> ProgramResult {
-    let transfer_instruction_network_result = transfer(
-        &spl_token_address.key(),
-        &source_account.key(),
-        &destination_account.key(),
-        &authority_account.key(),
-        signer_pubkeys,
+    let accounts = Transfer {
+        from: source_account.to_account_info(),
+        to: destination_account.to_account_info(),
+        authority: authority_account.to_account_info(),
+    };
+
+    transfer(
+        CpiContext::new(spl_token_address.to_account_info(), accounts),
         amount,
     )?;
 
-    invoke(
-        &transfer_instruction_network_result,
-        &[
-            source_account.to_account_info(),
-            destination_account.to_account_info(),
-            authority_account.to_account_info(),
-            spl_token_address.to_account_info(),
-        ],
-    )
+    Ok(())
 }
 
 pub fn check_gatekeeper_auth_threshold(

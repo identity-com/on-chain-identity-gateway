@@ -36,7 +36,6 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
         funder_ata.to_owned(),
         gatekeeper_ata.to_owned(),
         funder.to_owned(),
-        &[&funder.key()],
         gatekeeper_fee,
     )?;
 
@@ -45,7 +44,6 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
         funder_ata.to_owned(),
         network_ata.to_owned(),
         funder.to_owned(),
-        &[&funder.key()],
         network_fee,
     )?;
 
