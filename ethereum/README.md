@@ -1,5 +1,20 @@
 ## EVM Gateway Protocol
 
+- [Summary](#summary)
+- [Details](#details)
+    * [Gateway Tokens](#gateway-tokens)
+    * [The Gatekeeper Network](#the-gatekeeper-network)
+- [Integration](#integration)
+- [Obtaining Gateway Tokens](#obtaining-gateway-tokens)
+- [Gateway Tokens and Soulbound Tokens](#gateway-tokens-and-soulbound-tokens)
+- [Standards](#standards)
+    * [EIP-3525: Semi-fungible token](#eip-3525--semi-fungible-token)
+    * [EIP-721: Non-fungible token](#eip-721--non-fungible-token)
+    * [EIP-2771: Meta transactions](#eip-2771--meta-transactions)
+    * [EIP-712: Typed data signing](#eip-712--typed-data-signing)
+    * [EIP-1822: Universal Upgradeable Proxy Standard](#eip-1822--universal-upgradeable-proxy-standard)
+- [Glossary](#glossary)
+
 ## Summary
 
 This document describes the Ethereum Virtual Machine (EVM) implementation of the Identity.com Gateway Protocol.
