@@ -3,9 +3,11 @@ use std::ops::{Div, Mul};
 
 use crate::constants::MAX_NETWORK_FEE;
 use anchor_lang::context::CpiContext;
-use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
+use anchor_lang::prelude::{Interface, InterfaceAccount, Pubkey, Signer};
 use anchor_lang::ToAccountInfo;
-use anchor_spl::token::{transfer, Token, TokenAccount, Transfer};
+use anchor_spl::token_interface::{
+    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
+};
 use solana_program::entrypoint::ProgramResult;
 
 use crate::errors::{GatekeeperErrors, NetworkErrors};
@@ -66,21 +68,24 @@ pub fn calculate_network_and_gatekeeper_fee(fee: u64, percent: u16) -> (u64, u64
 }
 
 pub fn create_and_invoke_transfer<'a>(
-    spl_token_address: Program<'a, Token>,
-    source_account: Account<'a, TokenAccount>,
-    destination_account: Account<'a, TokenAccount>,
+    spl_token_address: Interface<'a, TokenInterface>,
+    source_account: InterfaceAccount<'a, TokenAccount>,
+    destination_account: InterfaceAccount<'a, TokenAccount>,
+    mint: InterfaceAccount<'a, Mint>,
     authority_account: Signer<'a>,
     amount: u64,
 ) -> ProgramResult {
-    let accounts = Transfer {
+    let accounts_checked = TransferChecked {
         from: source_account.to_account_info(),
+        mint: mint.to_account_info(),
         to: destination_account.to_account_info(),
         authority: authority_account.to_account_info(),
     };
 
-    transfer(
-        CpiContext::new(spl_token_address.to_account_info(), accounts),
+    transfer_checked(
+        CpiContext::new(spl_token_address.to_account_info(), accounts_checked),
         amount,
+        mint.decimals,
     )?;
 
     Ok(())

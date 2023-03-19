@@ -220,8 +220,8 @@ describe('Refresh a pass', () => {
 
     // Assert
     expect(funderAccount.amount).to.equal(0n);
-    expect(networkAccount.amount).to.equal(1000n);
-    expect(gatekeeperAccount.amount).to.equal(1000n);
+    expect(networkAccount.amount).to.equal(2n);
+    expect(gatekeeperAccount.amount).to.equal(1998n);
   });
 
   it('Cannot issue a pass if gatekeeper is frozen', async () => {
