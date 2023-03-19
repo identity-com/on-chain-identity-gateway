@@ -66,6 +66,8 @@ The Gateway Protocol is built on top of the following EVM standards:
 - EIP3525: [Semi-fungible token](https://eips.ethereum.org/EIPS/eip-3525)
 - EIP721: [Non-fungible token](https://eips.ethereum.org/EIPS/eip-721)
 - EIP2771: [Meta transactions](https://eips.ethereum.org/EIPS/eip-2771)
+- EIP712: [Typed data signing](https://eips.ethereum.org/EIPS/eip-712)
+- EIP1822: [Universal Upgradeable Proxy Standard](https://eips.ethereum.org/EIPS/eip-1822)
 
 ### EIP-3525: Semi-fungible token
 
@@ -106,6 +108,53 @@ to send the transaction to the user, who can then sign and pay for it, without t
 Furthermore, the repository includes a Flexible Nonce Forwarder, which, in the case where the transactions are sent
 from the gatekeeper, allows gatekeepers to send transaction in parallel, without the need for them to wait for the previous
 transaction to be confirmed.
+
+### EIP-712: Typed data signing
+
+In conjunction with the above standard for trusted forwarders and meta-transactions, the EIP-712 standard is used to
+sign the payload transaction. 
+
+The typed data standard specifies a method in which data to be signed (a transaction, in this case) is structured according
+to a schema, which is agreed between the signer and verifier. While the primary motivation behind this standard is to
+increase the security of user-facing wallets, by allowing them to display the data to be signed in a human-readable format,
+it also has benefits for the gateway protocol.
+
+One benefit is the Domain field, which in the gateway protocol
+is set to the name and version of the trusted forwarder (FlexibleNonceForwarder).
+
+This ensures that the signer of a meta-transaction is aware of the type and version of the forwarder that they are signing for.
+
+Another example is that the signature of the function being called is shared between the signer and verifier, and encoded
+into the message. This prevents attacks due to collisions between function signatures.
+
+### EIP-1822: Universal Upgradeable Proxy Standard
+
+The Gateway Protocol is upgradeable, using the EIP-1822 standard for Universal Upgradeable Proxies (UUPS). 
+
+The decision to make the protocol upgradeable was made in order to allow the protocol to be improved over time, without
+breaking existing gatekeeper networks and client smart contracts.
+
+As the regulatory space around blockchain evolves, it is likely that the Gateway Protocol will need to be updated to
+include new features, or to support new regulatory requirements. Furthermore, since the protocol is designed to be
+a gateway to client smart contracts, any bug or security vulnerability in the protocol could potentially affect the
+security of client smart contracts, and their ability to onboard users or comply with regulations.
+
+Since these client smart contracts may not themselves be upgradeable, or be incapable of changing the address of the
+gateway contract that they use, it is important that the gateway contract be upgradeable to ensure smooth operations
+in any such scenario.
+
+Therefore, the decision was made to allow upgradeability of the existing contract, rather than require all clients to
+migrate to a new contract and require all gatekeepers to migrate to a new network.
+
+Of the upgradeability standards available, the EIP-1822 (UUPS) standard was chosen for the following reasons:
+- It includes the ability to disable upgradeability in the future, which may be taken for security reasons, or if the
+  protocol is deemed to be sufficiently stable.
+- Although it is not yet clear if it is used by significant contracts on Ethereum Mainnet, it is widely supported by the community
+  and has been added to the OpenZeppelin SDK, which is used by the protocol.
+- It is gas-efficient in comparison to some other standards
+
+The upgrade key (the key used to upgrade the protocol) is set to an Identity.com key on deployment. It can be rotated by a
+superadmin. The superadmin can also disable upgradeability.
 
 ## Glossary
 
