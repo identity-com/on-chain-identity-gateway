@@ -1516,11 +1516,16 @@ export type SolanaAnchorGateway = {
     },
     {
       "code": 6011,
+      "name": "NetworkFeeOutOfBounds",
+      "msg": "Network Fee more than 100%"
+    },
+    {
+      "code": 6012,
       "name": "TokenNotSupported",
       "msg": "Token not supported"
     },
     {
-      "code": 6012,
+      "code": 6013,
       "name": "UnsupportedNetworkFeature",
       "msg": "A network feature is not enabled for this instruction"
     }
@@ -3045,11 +3050,16 @@ export const IDL: SolanaAnchorGateway = {
     },
     {
       "code": 6011,
+      "name": "NetworkFeeOutOfBounds",
+      "msg": "Network Fee more than 100%"
+    },
+    {
+      "code": 6012,
       "name": "TokenNotSupported",
       "msg": "Token not supported"
     },
     {
-      "code": 6012,
+      "code": 6013,
       "name": "UnsupportedNetworkFeature",
       "msg": "A network feature is not enabled for this instruction"
     }

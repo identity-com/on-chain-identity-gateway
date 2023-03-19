@@ -171,7 +171,13 @@ export class NetworkService extends AbstractService {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .createGatekeeper({
-        tokenFees: data.tokenFees,
+        tokenFees: data.tokenFees.map((fee) => ({
+          token: fee?.token,
+          issue: new anchor.BN(fee.issue),
+          expire: new anchor.BN(fee.expire),
+          verify: new anchor.BN(fee.verify),
+          refresh: new anchor.BN(fee.refresh),
+        })),
         authThreshold: data.authThreshold,
         authKeys: data.authKeys,
       })
