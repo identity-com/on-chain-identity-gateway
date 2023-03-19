@@ -310,6 +310,7 @@ export class NetworkService extends AbstractService {
     gatekeeper: PublicKey,
     authority: PublicKey = this._wallet.publicKey,
     splTokenProgram: PublicKey,
+    mint: PublicKey,
     receiverTokenAccount: PublicKey,
     gatekeeperTokenAccount: PublicKey,
     amount: number
@@ -320,6 +321,7 @@ export class NetworkService extends AbstractService {
         gatekeeper,
         authority,
         splTokenProgram,
+        mint,
         receiverTokenAccount,
         gatekeeperTokenAccount,
       })
