@@ -12,6 +12,14 @@ with regulations and guidances from FATF, US OFAC, US OCC BSA and others.
 3. Run `yarn build` to compile smart contracts
 4. Execute `yarn test` to run the tests.
 
+### Static analysis
+Additionally, you can perform static analysis for well-known code issues and vulnerabilities using [Slither](https://github.com/crytic/slither#slither-the-solidity-source-analyzer).
+
+```
+pip3 install slither-analyzer
+yarn analyze
+```
+
 ## Environment variables
 
 Please refer to `.env.example` and create `.env` to provide secret info such as private keys, Infura ID.
@@ -34,7 +42,7 @@ After the successful deployment you'll be able to find the deployment result in 
 
 ## Integration
 
-To integrate Gateway Tokens and validate user's identities DeFi contract has to import [IGatewayTokenVerifier](./contracts/IGatewayTokenVerifier.sol) interface.
+To integrate Gateway Tokens and validate user's identities DeFi contract has to import [IGatewayTokenVerifier](./contracts/interfaces/IGatewayTokenVerifier.sol) interface.
 
 After importing IGatewayTokenVerifier interface, you can trigger the function below:
 
