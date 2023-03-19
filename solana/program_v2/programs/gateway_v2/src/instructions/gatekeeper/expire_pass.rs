@@ -32,7 +32,6 @@ pub fn expire_pass(ctx: Context<PassExpire>) -> Result<()> {
         funder_ata.to_owned(),
         gatekeeper_ata.to_owned(),
         funder.to_owned(),
-        &[&funder.key()],
         gatekeeper_fee,
     )?;
 
@@ -41,7 +40,6 @@ pub fn expire_pass(ctx: Context<PassExpire>) -> Result<()> {
         funder_ata.to_owned(),
         network_ata.to_owned(),
         funder.to_owned(),
-        &[&funder.key()],
         network_fee,
     )?;
 

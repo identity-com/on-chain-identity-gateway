@@ -32,7 +32,6 @@ pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
         funder_ata.to_owned(),
         gatekeeper_ata.to_owned(),
         funder.to_owned(),
-        &[&funder.key()],
         network_fee,
     )?;
 
@@ -41,7 +40,6 @@ pub fn refresh_pass(ctx: Context<PassRefresh>) -> Result<()> {
         funder_ata.to_owned(),
         network_ata.to_owned(),
         funder.to_owned(),
-        &[&funder.key()],
         gatekeeper_fee,
     )?;
 
