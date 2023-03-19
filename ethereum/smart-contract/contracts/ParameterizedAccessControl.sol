@@ -63,14 +63,7 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
 
     /**
-     * @dev Modifier that checks that an account has a specific role. Reverts
-     * with a standardized message including the required role.
-     *
-     * The format of the revert reason is given by the following regular expression:
-     *
-     *  /^AccessControl: account (0x[0-9a-f]{40}) is missing role (0x[0-9a-f]{64})$/
-     *
-     * _Available since v4.1._
+     * @dev Modifier that checks that an account has a specific role.
      */
     modifier onlyRole(bytes32 role, uint256 domain) {
         _checkRole(role, domain);
@@ -92,10 +85,8 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     }
 
     /**
-     * @dev Revert with a standard message if `_msgSender()` is missing `role`.
+     * @dev Revert if `_msgSender()` is missing `role`.
      * Overriding this function changes the behavior of the {onlyRole} modifier.
-     *
-     * Format of the revert message is described in {_checkRole}.
      *
      * _Available since v4.6._
      */
@@ -104,7 +95,7 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     }
 
     /**
-     * @dev Revert with a standard message if `account` is missing `role`.
+     * @dev Revert if `account` is missing `role`.
      *
      */
     function _checkRole(bytes32 role, uint256 domain, address account) internal view virtual {
@@ -177,31 +168,18 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     }
 
     /**
-     * @dev Grants `role` to `account`.
+     * @dev Sets `adminRole` as ``role``'s admin role.
      *
-     * If `account` had not been already granted `role`, emits a {RoleGranted}
-     * event. Note that unlike {grantRole}, this function doesn't perform any
-     * checks on the calling account.
-     *
-     * May emit a {RoleGranted} event.
+     * Internal function without access restriction.
      *
      * [WARNING]
      * ====
-     * This function should only be called from the constructor when setting
-     * up the initial roles for the system.
+     * This function should only be called from when setting
+     * up the initial roles for the system or domain.
      *
      * Using this function in any other way is effectively circumventing the admin
-     * system imposed by {AccessControl}.
+     * system imposed by {ParameterizedAccessControl}.
      * ====
-     *
-     * NOTE: This function is deprecated in favor of {_grantRole}.
-     */
-    function _setupRole(bytes32 role, uint256 domain, address account) internal virtual {
-        _grantRole(role, domain, account);
-    }
-
-    /**
-     * @dev Sets `adminRole` as ``role``'s admin role.
      *
      * Emits a {RoleAdminChanged} event.
      */
@@ -215,6 +193,15 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
      * @dev Grants `role` to `account`.
      *
      * Internal function without access restriction.
+     *
+     * [WARNING]
+     * ====
+     * This function should only be called from when setting
+     * up the initial roles for the system or domain.
+     *
+     * Using this function in any other way is effectively circumventing the admin
+     * system imposed by {ParameterizedAccessControl}.
+     * ====
      *
      * May emit a {RoleGranted} event.
      */
@@ -254,11 +241,7 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     }
 
     /**
-     * @dev Revert with a standard message if `account` is not a super admin
-     *
-     * The format of the revert reason is given by the following regular expression:
-     *
-     *  /^AccessControl: account (0x[0-9a-f]{40}) is not a super admin$/
+     * @dev Revert if `account` is not a super admin
      */
     function _checkAdmin(address account) internal view virtual {
         if (!isSuperAdmin(account)) revert Common__NotSuperAdmin(account);
@@ -270,14 +253,7 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     }
 
     /**
-     * @dev Modifier that checks that an account is a super admin. Reverts
-     * with a standardized message.
-     *
-     * The format of the revert reason is given by the following regular expression:
-     *
-     *  /^AccessControl: account (0x[0-9a-f]{40}) is not a super admin$/
-     *
-     * _Available since v4.1._
+     * @dev Modifier that checks that an account is a super admin. Reverts if not.
      */
     modifier onlySuperAdmin() {
         _onlySuperAdmin();

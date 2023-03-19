@@ -150,8 +150,6 @@ TokenBitMask
 
         networks[network] = name;
 
-        _setupRole(NETWORK_AUTHORITY_ROLE, network, _msgSender());
-
         if (daoGoverned) {
             isNetworkDAOGoverned[network] = daoGoverned;
 
@@ -162,11 +160,17 @@ TokenBitMask
                 revert Common__NotContract(daoManager);
             }
 
-            _setupRole(DAO_MANAGER_ROLE, network, daoManager);
-            _setupRole(NETWORK_AUTHORITY_ROLE, network, daoManager);
+            // use the internal function to avoid the check for the network authority role
+            // since this network does not exist yet, it has no existing network authority
+            _grantRole(DAO_MANAGER_ROLE, network, daoManager);
+            _grantRole(NETWORK_AUTHORITY_ROLE, network, daoManager);
             _setRoleAdmin(NETWORK_AUTHORITY_ROLE, network, DAO_MANAGER_ROLE);
             _setRoleAdmin(GATEKEEPER_ROLE, network, DAO_MANAGER_ROLE);
         } else {
+            // use the internal function to avoid the check for the network authority role
+            // since this network does not exist yet, it has no existing network authority
+            _grantRole(NETWORK_AUTHORITY_ROLE, network, _msgSender());
+
             _setRoleAdmin(NETWORK_AUTHORITY_ROLE, network, NETWORK_AUTHORITY_ROLE);
             _setRoleAdmin(GATEKEEPER_ROLE, network, NETWORK_AUTHORITY_ROLE);
         }
