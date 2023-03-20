@@ -7,6 +7,10 @@ import { Command, Flags } from '@oclif/core';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 import { Wallet } from '@coral-xyz/anchor';
+import {
+  getOrCreateAssociatedTokenAccount,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 
 export default class Refresh extends Command {
   static description = 'Refreshes a gateway pass';
@@ -43,6 +47,18 @@ export default class Refresh extends Command {
       description: 'The cluster you wish to use',
       required: true,
     }),
+    mint: Flags.string({
+      char: 'm',
+      description:
+        'This is the mint address for the token you wish to use for the pass',
+      required: true,
+    }),
+    funder: Flags.string({
+      char: 'f',
+      description:
+        'This is the address of the account that will fund the pass issuance',
+      required: true,
+    }),
   };
 
   static args = [];
@@ -53,6 +69,8 @@ export default class Refresh extends Command {
     const subject = new PublicKey(flags.subject);
     const network = new PublicKey(flags.network);
     const gatekeeper = new PublicKey(flags.gatekeeper);
+    const mint = new PublicKey(flags.mint);
+    const funder = new PublicKey(flags.funder);
     const cluster =
       flags.cluster === 'localnet' ||
       flags.cluster === 'devnet' ||
@@ -74,8 +92,38 @@ export default class Refresh extends Command {
     );
 
     const account = await GatekeeperService.createPassAddress(subject, network);
+    const networkAta = await getOrCreateAssociatedTokenAccount(
+      gatekeeperService.getConnection(),
+      authorityKeypair,
+      mint,
+      network
+    );
+
+    const gatekeeperAta = await getOrCreateAssociatedTokenAccount(
+      gatekeeperService.getConnection(),
+      authorityKeypair,
+      mint,
+      gatekeeper
+    );
+
+    const funderAta = await getOrCreateAssociatedTokenAccount(
+      gatekeeperService.getConnection(),
+      authorityKeypair,
+      mint,
+      funder
+    );
+
     const refreshedPassSignature = await gatekeeperService
-      .refreshPass(account)
+      .refreshPass(
+        account,
+        undefined,
+        TOKEN_PROGRAM_ID,
+        mint,
+        networkAta.address,
+        gatekeeperAta.address,
+        funderAta.address,
+        funder
+      )
       .rpc();
     this.log(`Pass Refresh TX Signature: ${refreshedPassSignature}`);
   }
