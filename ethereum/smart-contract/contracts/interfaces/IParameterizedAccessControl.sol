@@ -18,7 +18,12 @@ interface IParameterizedAccessControl {
      *
      * _Available since v3.1._
      */
-    event RoleAdminChanged(bytes32 indexed role, uint256 domain, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole);
+    event RoleAdminChanged(
+        bytes32 indexed role,
+        uint256 domain,
+        bytes32 indexed previousAdminRole,
+        bytes32 indexed newAdminRole
+    );
 
     event SuperAdminAdded(address indexed account);
 
@@ -39,7 +44,7 @@ interface IParameterizedAccessControl {
      *   - if using `revokeRole`, it is the admin role bearer
      *   - if using `renounceRole`, it is the role bearer (i.e. `account`)
      */
-    event RoleRevoked(bytes32 indexed role,  uint256 domain, address indexed account, address indexed sender);
+    event RoleRevoked(bytes32 indexed role, uint256 domain, address indexed account, address indexed sender);
 
     /**
      * @dev Returns `true` if `account` has been granted `role`.
@@ -94,6 +99,8 @@ interface IParameterizedAccessControl {
     function renounceRole(bytes32 role, uint256 domain, address account) external;
 
     function isSuperAdmin(address account) external view returns (bool);
+
     function setSuperAdmin(address account) external;
+
     function revokeSuperAdmin(address account) external;
 }

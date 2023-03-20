@@ -13,10 +13,10 @@ interface IForwarder {
         bytes data;
     }
 
-    function execute(ForwardRequest calldata req, bytes calldata signature)
-    external
-    payable
-    returns (bool, bytes memory);
+    function execute(
+        ForwardRequest calldata req,
+        bytes calldata signature
+    ) external payable returns (bool, bytes memory);
 
     function getNonce(address from) external view returns (uint256);
 }

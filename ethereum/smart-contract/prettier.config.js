@@ -10,9 +10,9 @@ module.exports = {
   overrides: [
     {
       // see: https://github.com/prettier-solidity/prettier-plugin-solidity#configuration-file
-      files: "*.sol",
+      files: '*.sol',
       options: {
-        compiler: "0.8.9",
+        compiler: '0.8.9',
         printWidth: 120,
         tabWidth: 4,
         useTabs: false,

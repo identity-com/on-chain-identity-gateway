@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 enum ChargeType {
     NONE, // No charge
-    ETH,  // Charge amount is in Eth (Wei)
+    ETH, // Charge amount is in Eth (Wei)
     ERC20 // Charge amount is in an ERC20 token (token field) in minor denomination
 }
 

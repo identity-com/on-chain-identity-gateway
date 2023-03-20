@@ -18,24 +18,24 @@ import "./ParameterizedAccessControl.sol";
 import "./library/CommonErrors.sol";
 
 /**
- * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens 
- * those tokens represent completed KYC with attached identity. 
+ * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens
+ * those tokens represent completed KYC with attached identity.
  * Gateway tokens using ERC721 standard with custom extensions.
  *
- * Contract handles multiple levels of access such as Network Authority (may represent a specific regulator body) 
+ * Contract handles multiple levels of access such as Network Authority (may represent a specific regulator body)
  * Gatekeepers (Identity.com network parties who can mint/burn/freeze gateway tokens) and overall system Admin who can add
  * new Gatekeepers and Network Authorities
  */
 contract GatewayToken is
-UUPSUpgradeable,
-MultiERC2771Context,
-ERC3525Upgradeable,
-ParameterizedAccessControl,
-IERC721Freezable,
-IERC721Expirable,
-IERC721Revokable,
-IGatewayToken,
-TokenBitMask
+    UUPSUpgradeable,
+    MultiERC2771Context,
+    ERC3525Upgradeable,
+    ParameterizedAccessControl,
+    IERC721Freezable,
+    IERC721Expirable,
+    IERC721Revokable,
+    IGatewayToken,
+    TokenBitMask
 {
     using Address for address;
     using Strings for uint;
@@ -68,7 +68,7 @@ TokenBitMask
         address _superAdmin,
         address _flagsStorage,
         address[] memory _trustedForwarders
-    ) initializer public {
+    ) public initializer {
         __ERC3525_init(_name, _symbol, 0);
         __MultiERC2771Context_init(_trustedForwarders);
 
@@ -80,11 +80,23 @@ TokenBitMask
         _setMetadataDescriptor(_metadataDescriptor);
     }
 
-    function _msgSender() internal view virtual override(MultiERC2771Context, ContextUpgradeable) returns (address sender) {
+    function _msgSender()
+        internal
+        view
+        virtual
+        override(MultiERC2771Context, ContextUpgradeable)
+        returns (address sender)
+    {
         return MultiERC2771Context._msgSender();
     }
 
-    function _msgData() internal view virtual override(MultiERC2771Context, ContextUpgradeable) returns (bytes calldata) {
+    function _msgData()
+        internal
+        view
+        virtual
+        override(MultiERC2771Context, ContextUpgradeable)
+        returns (bytes calldata)
+    {
         return MultiERC2771Context._msgData();
     }
 
@@ -97,14 +109,13 @@ TokenBitMask
     }
 
     // if any funds are sent to this contract, use this function to withdraw them
-    function withdraw(uint amount) onlySuperAdmin external returns(bool) {
+    function withdraw(uint amount) external onlySuperAdmin returns (bool) {
         if (amount > address(this).balance) {
             revert GatewayToken__InsufficientFunds(address(this).balance, amount);
         }
 
         payable(_msgSender()).transfer(amount);
         return true;
-
     }
 
     /**
@@ -117,12 +128,14 @@ TokenBitMask
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC3525Upgradeable, ParameterizedAccessControl) returns (bool) {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC3525Upgradeable, ParameterizedAccessControl) returns (bool) {
         return
-        interfaceId == type(IERC3525).interfaceId ||
-        interfaceId == type(IERC721).interfaceId ||
-        interfaceId == type(IERC3525MetadataUpgradeable).interfaceId ||
-        super.supportsInterface(interfaceId);
+            interfaceId == type(IERC3525).interfaceId ||
+            interfaceId == type(IERC721).interfaceId ||
+            interfaceId == type(IERC3525MetadataUpgradeable).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     function createNetwork(uint network, string memory name, bool daoGoverned, address daoManager) external virtual {
@@ -195,10 +208,10 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggered by external contract to verify the validity of the default token for `owner`.
-    *
-    * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
-    */
+     * @dev Triggered by external contract to verify the validity of the default token for `owner`.
+     *
+     * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
+     */
     function verifyToken(address owner, uint network) external view virtual returns (bool) {
         (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
 
@@ -212,26 +225,26 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggered by external contract to verify the validity of the default token for `owner`.
-    *
-    * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
-    */
+     * @dev Triggered by external contract to verify the validity of the default token for `owner`.
+     *
+     * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
+     */
     function verifyToken(uint tokenId) external view virtual returns (bool) {
         return _existsAndActive(tokenId, false);
     }
 
     /**
-    * @dev Triggers to get all information gateway token related to specified `tokenId`
-    * @param tokenId Gateway token id
-    */
-    function getToken(uint tokenId) public view virtual override
-    returns (
-        address owner,
-        uint8 state,
-        string memory identity,
-        uint expiration,
-        uint bitmask
+     * @dev Triggers to get all information gateway token related to specified `tokenId`
+     * @param tokenId Gateway token id
+     */
+    function getToken(
+        uint tokenId
     )
+        public
+        view
+        virtual
+        override
+        returns (address owner, uint8 state, string memory identity, uint expiration, uint bitmask)
     {
         owner = ownerOf(tokenId);
         state = uint8(tokenStates[tokenId]);
@@ -242,8 +255,8 @@ TokenBitMask
     }
 
     /**
-    * @dev Returns whether `tokenId` exists and not frozen.
-    */
+     * @dev Returns whether `tokenId` exists and not frozen.
+     */
     function _existsAndActive(uint tokenId, bool allowExpired) internal view virtual returns (bool) {
         // check state before anything else. This reduces the overhead, and avoids a revert, if the token does not exist.
         TokenState state = tokenStates[tokenId];
@@ -258,9 +271,8 @@ TokenBitMask
     }
 
     function _isApprovedOrOwner(address, uint) internal view virtual override returns (bool) {
-        return false;   // transfers are restricted, so this can never pass
+        return false; // transfers are restricted, so this can never pass
     }
-
 
     /// @dev Checks if the sender has the specified role on the specified network and revert otherwise
     function _checkSenderRole(bytes32 role, uint network) internal view {
@@ -288,20 +300,20 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggers to burn gateway token
-    * @param tokenId Gateway token id
-    */
+     * @dev Triggers to burn gateway token
+     * @param tokenId Gateway token id
+     */
     function burn(uint tokenId) public virtual {
         _checkGatekeeper(slotOf(tokenId));
         _burn(tokenId);
     }
 
     /**
-    * @dev Triggers to mint gateway token
-    * @param to Gateway token owner
-    * @param network Gateway token type
-    * @param mask The bitmask for the token
-    */
+     * @dev Triggers to mint gateway token
+     * @param to Gateway token owner
+     * @param network Gateway token type
+     * @param mask The bitmask for the token
+     */
     function mint(address to, uint network, uint expiration, uint mask, Charge calldata) public virtual {
         _checkGatekeeper(network);
 
@@ -325,9 +337,9 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggers to freeze gateway token
-    * @param tokenId Gateway token id
-    */
+     * @dev Triggers to freeze gateway token
+     * @param tokenId Gateway token id
+     */
     function freeze(uint tokenId) public virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
@@ -335,20 +347,19 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggers to unfreeze gateway token
-    * @param tokenId Gateway token id
-    */
+     * @dev Triggers to unfreeze gateway token
+     * @param tokenId Gateway token id
+     */
     function unfreeze(uint tokenId) public virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
         _unfreeze(tokenId);
     }
 
-
     /**
-    * @dev Triggers to get specified `tokenId` expiration timestamp
-    * @param tokenId Gateway token id
-    */
+     * @dev Triggers to get specified `tokenId` expiration timestamp
+     * @param tokenId Gateway token id
+     */
     function getExpiration(uint tokenId) public view virtual override returns (uint) {
         _checkTokenExists(tokenId);
 
@@ -356,9 +367,9 @@ TokenBitMask
     }
 
     /**
-    * @dev Triggers to set expiration for tokenId
-    * @param tokenId Gateway token id
-    */
+     * @dev Triggers to set expiration for tokenId
+     * @param tokenId Gateway token id
+     */
     function setExpiration(uint tokenId, uint timestamp, Charge calldata) public virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
@@ -366,10 +377,10 @@ TokenBitMask
     }
 
     /**
-    * @dev Freezes `tokenId` and it's usage by gateway token owner.
-    *
-    * Emits a {Freeze} event.
-    */
+     * @dev Freezes `tokenId` and it's usage by gateway token owner.
+     *
+     * Emits a {Freeze} event.
+     */
     function _freeze(uint tokenId) internal virtual {
         _checkActiveToken(tokenId, true);
 
@@ -379,10 +390,10 @@ TokenBitMask
     }
 
     /**
-    * @dev Unfreezes `tokenId` and it's usage by gateway token owner.
-    *
-    * Emits a {Unfreeze} event.
-    */
+     * @dev Unfreezes `tokenId` and it's usage by gateway token owner.
+     *
+     * Emits a {Unfreeze} event.
+     */
     function _unfreeze(uint tokenId) internal virtual {
         _checkTokenExists(tokenId);
         if (tokenStates[tokenId] != TokenState.FROZEN) {
@@ -395,8 +406,8 @@ TokenBitMask
     }
 
     /**
-    * @dev Sets expiration time for `tokenId`.
-    */
+     * @dev Sets expiration time for `tokenId`.
+     */
     function _setExpiration(uint tokenId, uint timestamp) internal virtual {
         _checkActiveToken(tokenId, true);
 
@@ -418,62 +429,58 @@ TokenBitMask
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint tokenId
-    ) internal virtual {}
+    function _beforeTokenTransfer(address from, address to, uint tokenId) internal virtual {}
 
     // ===========  ACCESS CONTROL SECTION ============
 
     /**
-    * @dev Triggers to add new gatekeeper into the system.
-    * @param gatekeeper Gatekeeper address
-    */
+     * @dev Triggers to add new gatekeeper into the system.
+     * @param gatekeeper Gatekeeper address
+     */
     function addGatekeeper(address gatekeeper, uint network) public virtual {
         grantRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
     /**
-    * @dev Triggers to remove existing gatekeeper from gateway token.
-    * @param gatekeeper Gatekeeper address
-    */
+     * @dev Triggers to remove existing gatekeeper from gateway token.
+     * @param gatekeeper Gatekeeper address
+     */
     function removeGatekeeper(address gatekeeper, uint network) public virtual {
         revokeRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
     /**
-    * @dev Triggers to verify if address has a GATEKEEPER role.
-    * @param gatekeeper Gatekeeper address
-    */
+     * @dev Triggers to verify if address has a GATEKEEPER role.
+     * @param gatekeeper Gatekeeper address
+     */
     function isGatekeeper(address gatekeeper, uint network) external view virtual override returns (bool) {
         return hasRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
     /**
-    * @dev Triggers to add new network authority into the system.
-    * @param authority Network Authority address
-    *
-    * @notice Can be triggered by Gateway Token Controller or any Network Authority
-    */
+     * @dev Triggers to add new network authority into the system.
+     * @param authority Network Authority address
+     *
+     * @notice Can be triggered by Gateway Token Controller or any Network Authority
+     */
     function addNetworkAuthority(address authority, uint network) external virtual override {
         grantRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
     /**
-    * @dev Triggers to remove existing network authority from gateway token.
-    * @param authority Network Authority address
-    *
-    * @notice Can be triggered by Gateway Token Controller or any Network Authority
-    */
+     * @dev Triggers to remove existing network authority from gateway token.
+     * @param authority Network Authority address
+     *
+     * @notice Can be triggered by Gateway Token Controller or any Network Authority
+     */
     function removeNetworkAuthority(address authority, uint network) external virtual override {
         revokeRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
     /**
-    * @dev Triggers to verify if authority has a NETWORK_AUTHORITY_ROLE role.
-    * @param authority Network Authority address
-    */
+     * @dev Triggers to verify if authority has a NETWORK_AUTHORITY_ROLE role.
+     * @param authority Network Authority address
+     */
     function isNetworkAuthority(address authority, uint network) external view virtual override returns (bool) {
         return hasRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
@@ -481,14 +488,14 @@ TokenBitMask
     // ===========  ACCESS CONTROL SECTION ============
 
     /**
-    * @dev Transfers Gateway Token DAO Manager access from `previousManager` to `newManager`
-    * Only a current DAO Manager can do this. They can do this for any other DAO Manager.
-    * This is useful for two reasons:
-    * 1. Key rotation of the current (msg signer) DAO manager
-    * 2. Replacing a lost or compromised key of an existing DAO manager
-    * @param newManager Address to transfer DAO Manager role for.
-    * @notice GatewayToken contract has to be DAO Governed
-    */
+     * @dev Transfers Gateway Token DAO Manager access from `previousManager` to `newManager`
+     * Only a current DAO Manager can do this. They can do this for any other DAO Manager.
+     * This is useful for two reasons:
+     * 1. Key rotation of the current (msg signer) DAO manager
+     * 2. Replacing a lost or compromised key of an existing DAO manager
+     * @param newManager Address to transfer DAO Manager role for.
+     * @notice GatewayToken contract has to be DAO Governed
+     */
     function transferDAOManager(address previousManager, address newManager, uint network) public override {
         if (!isNetworkDAOGoverned[network]) revert GatewayToken__NotDAOGoverned(network);
 
@@ -513,23 +520,23 @@ TokenBitMask
     // ===========  TOKEN BITMASK SECTION ============
 
     /**
-    * @dev Triggers to update FlagsStorage contract address
-    * @param flagsStorage FlagsStorage contract address
-    */
+     * @dev Triggers to update FlagsStorage contract address
+     * @param flagsStorage FlagsStorage contract address
+     */
     function updateFlagsStorage(address flagsStorage) public onlySuperAdmin {
         _setFlagsStorage(flagsStorage);
     }
 
     /**
-    * @dev Triggers to get gateway token bitmask
-    */
+     * @dev Triggers to get gateway token bitmask
+     */
     function getTokenBitmask(uint tokenId) public view returns (uint) {
         return _getBitMask(tokenId);
     }
 
     /**
-    * @dev Triggers to set full bitmask for gateway token with `tokenId`
-    */
+     * @dev Triggers to set full bitmask for gateway token with `tokenId`
+     */
     function setBitmask(uint tokenId, uint mask) public {
         _checkSenderRole(GATEKEEPER_ROLE, slotOf(tokenId));
         _setBitMask(tokenId, mask);

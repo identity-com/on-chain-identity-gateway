@@ -126,7 +126,11 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
      *
      * May emit a {RoleGranted} event.
      */
-    function grantRole(bytes32 role, uint256 domain, address account) public virtual override onlyRole(getRoleAdmin(role, domain), domain) {
+    function grantRole(
+        bytes32 role,
+        uint256 domain,
+        address account
+    ) public virtual override onlyRole(getRoleAdmin(role, domain), domain) {
         _grantRole(role, domain, account);
     }
 
@@ -141,7 +145,11 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
      *
      * May emit a {RoleRevoked} event.
      */
-    function revokeRole(bytes32 role, uint256 domain, address account) public virtual override onlyRole(getRoleAdmin(role, domain), domain) {
+    function revokeRole(
+        bytes32 role,
+        uint256 domain,
+        address account
+    ) public virtual override onlyRole(getRoleAdmin(role, domain), domain) {
         _revokeRole(role, domain, account);
     }
 

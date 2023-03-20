@@ -12,7 +12,7 @@ import "./library/CommonErrors.sol";
 
 /**
  * @dev FlagsStorage is the main contract to store KYC-related flags for Gateway Token System.
- * KYC flags are identifiable by short identifiers in bytes32 strings. After adding flags 
+ * KYC flags are identifiable by short identifiers in bytes32 strings. After adding flags
  * those bit indexes could be used by GatewayToken implementations to associate flags per token.
  */
 contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
@@ -57,17 +57,18 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
+
     function initialize(address _superAdmin) public initializer {
         if (_superAdmin == address(0)) revert Common__MissingAccount();
         superAdmin = _superAdmin;
     }
 
     /**
-    * @dev Triggers to transfer ownership of this contract to new super admin, reverts on zero address and wallet addresses
-    * @param newSuperAdmin New super admin contract address
-    * @notice Only executed by existing super admin
-    */
-    function updateSuperAdmin(address newSuperAdmin) onlySuperAdmin public override {
+     * @dev Triggers to transfer ownership of this contract to new super admin, reverts on zero address and wallet addresses
+     * @param newSuperAdmin New super admin contract address
+     * @notice Only executed by existing super admin
+     */
+    function updateSuperAdmin(address newSuperAdmin) public override onlySuperAdmin {
         if (newSuperAdmin == address(0)) revert Common__MissingAccount();
 
         emit SuperAdminUpdated(superAdmin, newSuperAdmin);
@@ -75,22 +76,22 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     }
 
     /**
-    * @dev Triggers to add new flag into gateway token system
-    * @param flag Flag short identifier
-    * @param index Flag index (limited to 255)
-    * @notice Only executed by existing DAO Manager
-    */
-    function addFlag(bytes32 flag, uint8 index) onlySuperAdmin public override {
+     * @dev Triggers to add new flag into gateway token system
+     * @param flag Flag short identifier
+     * @param index Flag index (limited to 255)
+     * @notice Only executed by existing DAO Manager
+     */
+    function addFlag(bytes32 flag, uint8 index) public override onlySuperAdmin {
         _addFlag(flag, index);
     }
 
     /**
-    * @dev Triggers to add multiple flags into gateway token system
-    * @param flags Array of flag short identifiers
-    * @param indexes Array of flag indexes (limited to 255)
-    * @notice Only executed by existing DAO Manager
-    */
-    function addFlags(bytes32[] memory flags, uint8[] memory indexes) onlySuperAdmin public override {
+     * @dev Triggers to add multiple flags into gateway token system
+     * @param flags Array of flag short identifiers
+     * @param indexes Array of flag indexes (limited to 255)
+     * @notice Only executed by existing DAO Manager
+     */
+    function addFlags(bytes32[] memory flags, uint8[] memory indexes) public override onlySuperAdmin {
         if (flags.length != indexes.length) revert FlagsStorage__IncorrectVariableLength(flags.length, indexes.length);
 
         for (uint8 i = 0; i < flags.length; i++) {
@@ -99,22 +100,22 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     }
 
     /**
-    * @dev Triggers to remove existing flag from gateway token system
-    * @param flag Flag short identifier
-    * @notice Only executed by existing DAO Manager
-    */
-    function removeFlag(bytes32 flag) onlySuperAdmin public override {
+     * @dev Triggers to remove existing flag from gateway token system
+     * @param flag Flag short identifier
+     * @notice Only executed by existing DAO Manager
+     */
+    function removeFlag(bytes32 flag) public override onlySuperAdmin {
         if (!supportedFlags.contains(flag)) revert FlagsStorage__FlagNotSupported(flag);
 
         _removeFlag(flag);
     }
 
     /**
-    * @dev Triggers to remove multiple existing flags from gateway token system
-    * @param flags Array of flag short identifiers
-    * @notice Only executed by existing DAO Manager
-    */
-    function removeFlags(bytes32[] memory flags) onlySuperAdmin public override {
+     * @dev Triggers to remove multiple existing flags from gateway token system
+     * @param flags Array of flag short identifiers
+     * @notice Only executed by existing DAO Manager
+     */
+    function removeFlags(bytes32[] memory flags) public override onlySuperAdmin {
         for (uint8 i = 0; i < flags.length; i++) {
             // additional check to reduce incorrect FlagRemoved events
             if (!supportedFlags.contains(flags[i])) revert FlagsStorage__FlagNotSupported(flags[i]);
@@ -124,17 +125,17 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     }
 
     /**
-    * @dev Triggers to check if a particular flag is supported
-    * @param flag Flag short identifier
-    * @return Boolean for flag support
-    */
+     * @dev Triggers to check if a particular flag is supported
+     * @param flag Flag short identifier
+     * @return Boolean for flag support
+     */
     function isFlagSupported(bytes32 flag) public view override returns (bool) {
         return supportedFlags.contains(flag);
     }
 
     /**
-    * @dev Internal function to add new flag
-    */
+     * @dev Internal function to add new flag
+     */
     function _addFlag(bytes32 flag, uint8 index) internal {
         if (supportedFlagsMask.checkBit(index)) revert FlagsStorage__IndexAlreadyUsed(index);
         if (supportedFlags.contains(flag)) revert FlagsStorage__FlagAlreadyExists(flag);
@@ -147,8 +148,8 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     }
 
     /**
-    * @dev Internal function to remove existing flag
-    */
+     * @dev Internal function to remove existing flag
+     */
     function _removeFlag(bytes32 flag) internal {
         supportedFlags.remove(flag);
         uint8 _index = flagIndexes[flag];

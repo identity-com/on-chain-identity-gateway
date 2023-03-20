@@ -2,8 +2,8 @@
 
 This repository contains set of Ethereum smart contracts for Identity.com On-chain Identity Gateway token system.
 
-Gateway tokens allows Ethereum DeFi projects to validate that their users successfully completed KYC,
-with regulations and guidances from FATF, US OFAC, US OCC BSA and others.
+Gateway tokens allows Ethereum DeFi projects to validate that their users successfully completed KYC, with regulations
+and guidances from FATF, US OFAC, US OCC BSA and others.
 
 ## Quick Start
 
@@ -13,7 +13,9 @@ with regulations and guidances from FATF, US OFAC, US OCC BSA and others.
 4. Execute `yarn test` to run the tests.
 
 ### Static analysis
-Additionally, you can perform static analysis for well-known code issues and vulnerabilities using [Slither](https://github.com/crytic/slither#slither-the-solidity-source-analyzer).
+
+Additionally, you can perform static analysis for well-known code issues and vulnerabilities using
+[Slither](https://github.com/crytic/slither#slither-the-solidity-source-analyzer).
 
 ```
 pip3 install slither-analyzer
@@ -22,19 +24,20 @@ yarn analyze
 
 ## Environment variables
 
-Please refer to `.env.example` and create `.env` to provide secret info such as private keys, Infura ID.
-Private keys are used in order to deploy smart contracts on one of the Ethereum networks.
+Please refer to `.env.example` and create `.env` to provide secret info such as private keys, Infura ID. Private keys
+are used in order to deploy smart contracts on one of the Ethereum networks.
 
 ## Compile
 
 To compile smart contracts, type `hardhat compile`. Use `--force` option to recompile everything if needed.
 
-The compiled output is a json file called Artifacts and saved in `./build/contracts` directory per contract basis.
-ABI and bytecode associated with the smart contract will be saved in the json file.
+The compiled output is a json file called Artifacts and saved in `./build/contracts` directory per contract basis. ABI
+and bytecode associated with the smart contract will be saved in the json file.
 
 ## Deployment
 
-In order to deploy the protocol please execute `yarn deploy <NETWORK>` command and replace with the network you want to deploy the protocol.
+In order to deploy the protocol please execute `yarn deploy <NETWORK>` command and replace with the network you want to
+deploy the protocol.
 
 For example `yarn deploy hardhat` will deploy the protocol on the local hardhat version of the ethereum blockchain.
 
@@ -42,7 +45,8 @@ After the successful deployment you'll be able to find the deployment result in 
 
 ## Integration
 
-To integrate Gateway Tokens and validate user's identities DeFi contract has to import [IGatewayTokenVerifier](./contracts/interfaces/IGatewayTokenVerifier.sol) interface.
+To integrate Gateway Tokens and validate user's identities DeFi contract has to import
+[IGatewayTokenVerifier](./contracts/interfaces/IGatewayTokenVerifier.sol) interface.
 
 After importing IGatewayTokenVerifier interface, you can trigger the function below:
 
@@ -69,8 +73,8 @@ interface IGatewayTokenVerifier {
 }
 ```
 
-By sending a user's address and optionally, token ID, as parameters,
-the system will validate if their gateway token is active.
+By sending a user's address and optionally, token ID, as parameters, the system will validate if their gateway token is
+active.
 
 ## Integration example
 
@@ -78,7 +82,9 @@ In order to validate your user's gateway tokens validation smart contract first 
 
 `import "./interfaces/IGatewayTokenVerifier.sol";`
 
-After importing an interface a validation smart contract has to either specify a GatewayToken contract address for which type of tokens contract needs to validate for, or pass a token address during into the validation function. Typically there is two ways to validate user's tokens such as:
+After importing an interface a validation smart contract has to either specify a GatewayToken contract address for which
+type of tokens contract needs to validate for, or pass a token address during into the validation function. Typically
+there is two ways to validate user's tokens such as:
 
 1. Validate specific token by tokenID
 

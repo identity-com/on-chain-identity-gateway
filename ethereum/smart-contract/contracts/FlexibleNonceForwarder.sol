@@ -21,7 +21,7 @@ contract FlexibleNonceForwarder is IForwarder, EIP712, ReentrancyGuard {
     using ECDSA for bytes32;
 
     bytes32 private constant _TYPEHASH =
-    keccak256("ForwardRequest(address from,address to,uint256 value,uint256 gas,uint256 nonce,bytes data)");
+        keccak256("ForwardRequest(address from,address to,uint256 value,uint256 gas,uint256 nonce,bytes data)");
 
     struct SigsForNonce {
         mapping(bytes => bool) sigs;
@@ -73,12 +73,10 @@ contract FlexibleNonceForwarder is IForwarder, EIP712, ReentrancyGuard {
         _nonces[req.from].sigsForNonce[req.nonce].sigs[signature] = true;
     }
 
-    function execute(ForwardRequest calldata req, bytes calldata signature)
-    public
-    payable
-    nonReentrant
-    returns (bool, bytes memory)
-    {
+    function execute(
+        ForwardRequest calldata req,
+        bytes calldata signature
+    ) public payable nonReentrant returns (bool, bytes memory) {
         verifyFlexibleNonce(req, signature);
 
         (bool success, bytes memory returndata) = req.to.call{gas: req.gas, value: req.value}(

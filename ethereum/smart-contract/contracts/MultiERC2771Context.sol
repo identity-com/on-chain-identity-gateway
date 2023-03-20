@@ -7,12 +7,12 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
  * @dev Context variant with ERC2771 support for multiple trusted forwarders.
  */
 abstract contract MultiERC2771Context is ContextUpgradeable {
-
     /// @custom:oz-upgrades-unsafe-allow state-variable-immutable
-    mapping (address => bool) private  _trustedForwarders;
+    mapping(address => bool) private _trustedForwarders;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
+
     function __MultiERC2771Context_init(address[] memory trustedForwarders) internal initializer {
         __Context_init_unchained();
         __MultiERC2771Context_init_unchained(trustedForwarders);
