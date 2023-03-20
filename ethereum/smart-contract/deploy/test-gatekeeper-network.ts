@@ -7,12 +7,14 @@ const gatekeeperNetwork = 1;
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, ethers } = hre;
-    const { deployer, authority, gatekeeper } = await getAccounts(hre);
 
-    // WARNING! If any of the above keys are the same as each other
-    // hardhat does not resolve them properly.
-    // Use this hack in that case:
-    // const gatekeeper = gatekeeper === authority
+    // WARNING! If any of the below keys are the same as each other
+    // hardhat does not resolve them properly. Check by deploying to localhost that they are correct first
+    // yarn local --no-deploy &
+    // yarn deploy localhost
+    let { deployer, authority, gatekeeper } = await getAccounts(hre);
+    // hack for the deduping keys bug- set the network auth to the deployer
+    if (process.env.STAGE === 'prod') authority = deployer;
 
     const deployerSigner = await ethers.getSigner(deployer);
     const authoritySigner = await ethers.getSigner(authority);

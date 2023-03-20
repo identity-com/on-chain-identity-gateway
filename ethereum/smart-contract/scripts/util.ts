@@ -11,7 +11,7 @@ export const getAccounts = async (hre: HardhatRuntimeEnvironment) => {
     return {
         deployer,
         authority: authority || deployer,
-        gatekeeper: gatekeeper || deployer,
+        gatekeeper: gatekeeper || authority || deployer,
     }
 }
 export const deployProxy = async (hre: HardhatRuntimeEnvironment, contractName: string, args: any[], reuseDeployments = true, opts: any = {}) => {
