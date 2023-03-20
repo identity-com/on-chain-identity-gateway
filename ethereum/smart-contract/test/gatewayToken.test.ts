@@ -1,7 +1,6 @@
 import {ethers, upgrades} from "hardhat";
 import {BigNumber, Contract, PopulatedTransaction, Wallet} from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 import { toBytes32 } from './utils';
 
@@ -78,7 +77,7 @@ describe('GatewayToken', async () => {
         it('Try to change admin by Bob, expect revert due to invalid access', async () => {
             await expect(
                 gatewayToken.connect(bob).setSuperAdmin(bob.address)
-            ).to.be.revertedWith("NOT SUPER ADMIN");
+            ).to.be.revertedWithCustomError(gatewayToken, 'Common__NotSuperAdmin');
         });
     });
 
@@ -86,7 +85,7 @@ describe('GatewayToken', async () => {
         it('Try to add new flag by Bob, expect revert due to invalid access', async () => {
             await expect(
                 flagsStorage.connect(bob).addFlag(hexRetailFlag, 0)
-            ).to.be.revertedWith("NOT SUPER ADMIN");
+            ).to.be.revertedWithCustomError(gatewayToken, 'Common__NotSuperAdmin');
         });
 
         it('Successfully add flag by superadmin, expect success', async () => {
@@ -103,7 +102,7 @@ describe('GatewayToken', async () => {
         it('Try to add new flag at already used index, expect revert', async () => {
             await expect(
                 flagsStorage.addFlag(hexRetailFlag, 0)
-            ).to.be.revertedWith("Index already used");
+            ).to.be.revertedWithCustomError(flagsStorage, 'FlagsStorage__IndexAlreadyUsed');
         });
     });
 
@@ -122,7 +121,7 @@ describe('GatewayToken', async () => {
         it('Expect revert when attempting to issue as a non-gatekeeper network authority', async () => {
             await expect(
                 gatewayToken.connect(networkAuthority2).mint(alice.address, gkn1, 0, 0, NULL_CHARGE)
-            ).to.be.revertedWith("MUST BE GATEKEEPER");
+            ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
         });
 
         it("Try to remove non-existing network authorities, don't expect revert", async () => {
@@ -136,13 +135,13 @@ describe('GatewayToken', async () => {
         it('Expect revert on adding new network authority by Alice', async () => {
             await expect(
                 gatewayToken.connect(alice).addNetworkAuthority(bob.address, gkn1)
-            ).to.be.revertedWith(/Invalid role/);
+            ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
         });
 
         it('Expect revert on removing existing network authority by Alice', async () => {
             await expect(
                 gatewayToken.connect(alice).removeNetworkAuthority(identityCom.address, gkn1)
-            ).to.be.revertedWith(/Invalid role/);
+            ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
         });
     });
 
@@ -340,6 +339,41 @@ describe('GatewayToken', async () => {
             await expectVerified(carol.address, gkn1).to.be.true;
         });
 
+        it('protects against reentrancy', async () => {
+            // we are going to create a Gateway transaction,
+            // then wrap it twice in a forwarder meta-transaction
+            // this should fail.
+            // although this particular case is harmless, re-entrancy is
+            // dangerous in general and this ensures we protect against it.
+            const wallet = ethers.Wallet.createRandom();
+            const mintTx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(wallet.address, gkn1, 0, 0, NULL_CHARGE);
+
+            const input1 = {
+                from: gatekeeper.address,
+                to: gatewayToken.address,
+                data: mintTx.data as string
+            };
+            const { request: request1, signature: signature1 } = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, input1);
+
+            const forwarderTx1 = await forwarder.connect(alice).populateTransaction.execute(request1, signature1, { gasLimit: 1000000 });
+            const input2 = {
+                from: alice.address,
+                to: forwarder.address,
+                data: forwarderTx1.data as string
+            };
+            const { request: request2, signature: signature2 } = await signMetaTxRequest(alice, forwarder as IForwarder, input2);
+
+            // attempt to send the forwarded transaction
+            const forwarderTx2 = await forwarder.connect(alice).execute(request2, signature2, { gasLimit: 1000000 });
+            const receipt = await forwarderTx2.wait();
+            expect(receipt.status).to.equal(1);
+
+            // the return value event indicating that the forwarded call failed
+            expect(receipt.events.pop().args[0]).to.be.false;
+
+            await expectVerified(wallet.address, gkn1).to.be.false;
+        });
+
         // The forwarder allows two transactions to be sent with the same nonce, as long as they are different
         // this is important for relayer support
         it('Forwards transactions out of sync', async () => {
@@ -381,7 +415,8 @@ describe('GatewayToken', async () => {
             const shouldFail = forwarder.connect(alice).execute(forwardedUnfreezeTx.request, forwardedUnfreezeTx.signature, { gasLimit: 1000000 });
             // const shouldFail = attemptedReplayTransactionResponse.wait();
             // expect(attemptedReplayTransactionReceipt.status).to.equal(0);
-            await expect(shouldFail).to.be.revertedWith('FlexibleNonceForwarder: tx to be forwarded has already been seen');
+            await expect(shouldFail).to.be
+                .revertedWithCustomError(forwarder, 'FlexibleNonceForwarder__TxAlreadySeen');
             await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
         });
 
@@ -413,7 +448,8 @@ describe('GatewayToken', async () => {
             await intolerantForwarder.connect(alice).execute(req1.request, req1.signature, { gasLimit: 1000000 });
 
             const shouldFail = intolerantForwarder.connect(alice).execute(req2.request, req2.signature, { gasLimit: 1000000 });
-            await expect(shouldFail).to.be.revertedWith('FlexibleNonceForwarder: tx to be forwarded is too old');
+            await expect(shouldFail).to.be
+                .revertedWithCustomError(forwarder, 'FlexibleNonceForwarder__TxTooOld');
         });
     });
 
