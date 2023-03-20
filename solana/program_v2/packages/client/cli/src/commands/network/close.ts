@@ -1,11 +1,11 @@
 import { Command, Flags } from '@oclif/core';
 import { Keypair, PublicKey } from '@solana/web3.js';
-// import * as anchor from '@project-serum/anchor';
+
 import {
   AdminService,
   ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
-import { Wallet } from '@project-serum/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 import fsPromises from 'node:fs/promises';
 
 export default class Close extends Command {

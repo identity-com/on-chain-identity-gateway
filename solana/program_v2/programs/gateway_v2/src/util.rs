@@ -23,18 +23,6 @@ pub const OC_SIZE_VEC_PREFIX: usize = 4;
 pub const OC_SIZE_DISCRIMINATOR: usize = 8;
 // pub const OC_SIZE_TIMESTAMP: usize = 8;
 
-/// This value has as static size on-chain
-pub trait OnChainSize {
-    /// The size on-chain
-    const ON_CHAIN_SIZE: usize;
-}
-
-/// Theis value can be sized with a given argument
-pub trait OnChainSizeWithArg<Arg> {
-    /// Gets the size with an argument
-    fn on_chain_size_with_arg(arg: Arg) -> usize;
-}
-
 pub fn get_gatekeeper_fees(
     fees: &[GatekeeperFees],
     mint: Pubkey,

@@ -2,7 +2,7 @@ import { GatekeeperService } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   makeAssociatedTokenAccountsForIssue,

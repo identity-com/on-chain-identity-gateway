@@ -1,4 +1,4 @@
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import {
   GatekeeperService,
   NetworkService,
@@ -11,7 +11,7 @@ import {
 } from '../util/constants';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
-import { Wallet } from '@project-serum/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 import { loadPrivateKey } from '../util/lib';
 import { before } from 'mocha';
 
@@ -65,7 +65,7 @@ export const createGatekeeperService = async (
   await airdrop(
     programProvider.connection,
     authority.publicKey,
-    LAMPORTS_PER_SOL * 2
+    LAMPORTS_PER_SOL
   );
 
   const service = await GatekeeperService.buildFromAnchor(

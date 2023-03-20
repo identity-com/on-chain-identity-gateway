@@ -3,7 +3,7 @@ import {
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
-import { BN, Wallet } from '@project-serum/anchor';
+import { BN, Wallet } from '@coral-xyz/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 

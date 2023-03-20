@@ -9,7 +9,7 @@ import {
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   makeAssociatedTokenAccountsForIssue,
@@ -264,13 +264,13 @@ describe('Verify a pass', () => {
     await airdrop(
       programProvider.connection,
       adminAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
+      LAMPORTS_PER_SOL
     );
 
     await airdrop(
       programProvider.connection,
       altNetwork.publicKey,
-      LAMPORTS_PER_SOL * 2
+      LAMPORTS_PER_SOL
     );
 
     const altNetworkAta = await getOrCreateAssociatedTokenAccount(
