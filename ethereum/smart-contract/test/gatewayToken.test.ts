@@ -339,6 +339,41 @@ describe('GatewayToken', async () => {
             await expectVerified(carol.address, gkn1).to.be.true;
         });
 
+        it('protects against reentrancy', async () => {
+            // we are going to create a Gateway transaction,
+            // then wrap it twice in a forwarder meta-transaction
+            // this should fail.
+            // although this particular case is harmless, re-entrancy is
+            // dangerous in general and this ensures we protect against it.
+            const wallet = ethers.Wallet.createRandom();
+            const mintTx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(wallet.address, gkn1, 0, 0, NULL_CHARGE);
+
+            const input1 = {
+                from: gatekeeper.address,
+                to: gatewayToken.address,
+                data: mintTx.data as string
+            };
+            const { request: request1, signature: signature1 } = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, input1);
+
+            const forwarderTx1 = await forwarder.connect(alice).populateTransaction.execute(request1, signature1, { gasLimit: 1000000 });
+            const input2 = {
+                from: alice.address,
+                to: forwarder.address,
+                data: forwarderTx1.data as string
+            };
+            const { request: request2, signature: signature2 } = await signMetaTxRequest(alice, forwarder as IForwarder, input2);
+
+            // attempt to send the forwarded transaction
+            const forwarderTx2 = await forwarder.connect(alice).execute(request2, signature2, { gasLimit: 1000000 });
+            const receipt = await forwarderTx2.wait();
+            expect(receipt.status).to.equal(1);
+
+            // the return value event indicating that the forwarded call failed
+            expect(receipt.events.pop().args[0]).to.be.false;
+
+            await expectVerified(wallet.address, gkn1).to.be.false;
+        });
+
         // The forwarder allows two transactions to be sent with the same nonce, as long as they are different
         // this is important for relayer support
         it('Forwards transactions out of sync', async () => {

@@ -3,9 +3,10 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/IForwarder.sol";
 
-contract FlexibleNonceForwarder is IForwarder, EIP712 {
+contract FlexibleNonceForwarder is IForwarder, EIP712, ReentrancyGuard {
     /// The tx to be forwarded is not signed by the request sender.
     error FlexibleNonceForwarder__InvalidSigner(address signer, address expectedSigner);
 
@@ -14,6 +15,8 @@ contract FlexibleNonceForwarder is IForwarder, EIP712 {
 
     /// The tx to be forwarded is too old.
     error FlexibleNonceForwarder__TxTooOld(uint256 blockNumber, uint256 blockAgeTolerance);
+
+    event ForwardResult(bool);
 
     using ECDSA for bytes32;
 
@@ -73,6 +76,7 @@ contract FlexibleNonceForwarder is IForwarder, EIP712 {
     function execute(ForwardRequest calldata req, bytes calldata signature)
     public
     payable
+    nonReentrant
     returns (bool, bytes memory)
     {
         verifyFlexibleNonce(req, signature);
@@ -92,6 +96,8 @@ contract FlexibleNonceForwarder is IForwarder, EIP712 {
                 invalid()
             }
         }
+
+        emit ForwardResult(success);
 
         return (success, returndata);
     }
