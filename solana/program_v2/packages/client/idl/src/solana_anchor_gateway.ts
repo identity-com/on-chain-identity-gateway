@@ -319,7 +319,7 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -412,7 +412,7 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -548,7 +548,7 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -609,7 +609,7 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -1858,7 +1858,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -1951,7 +1951,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -2087,7 +2087,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -2148,7 +2148,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
