@@ -1,29 +1,34 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@solvprotocol/erc-3525/ERC3525Upgradeable.sol";
-import "@solvprotocol/erc-3525/IERC3525.sol";
-import "./TokenBitMask.sol";
-import "./interfaces/IERC721Freezable.sol";
-import "./interfaces/IGatewayToken.sol";
-import "./interfaces/IERC721Expirable.sol";
-import "./interfaces/IERC721Revokable.sol";
-import "./MultiERC2771Context.sol";
-import "./library/Charge.sol";
-import "./ParameterizedAccessControl.sol";
-import "./library/CommonErrors.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IERC3525MetadataUpgradeable} from "@solvprotocol/erc-3525/extensions/IERC3525MetadataUpgradeable.sol";
+import {ERC3525Upgradeable} from "@solvprotocol/erc-3525/ERC3525Upgradeable.sol";
+import {IERC721} from "@solvprotocol/erc-3525/IERC721.sol";
+import {IERC3525} from "@solvprotocol/erc-3525/IERC3525.sol";
+import {TokenBitMask} from "./TokenBitMask.sol";
+import {IGatewayToken} from "./interfaces/IGatewayToken.sol";
+import {IERC721Freezable} from "./interfaces/IERC721Freezable.sol";
+import {IERC721Expirable} from "./interfaces/IERC721Expirable.sol";
+import {IERC721Revokable} from "./interfaces/IERC721Revokable.sol";
+import {MultiERC2771Context} from "./MultiERC2771Context.sol";
+import {Charge} from "./library/Charge.sol";
+import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
+import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
 
 /**
  * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens
  * those tokens represent completed KYC with attached identity.
  * Gateway tokens using ERC721 standard with custom extensions.
  *
- * Contract handles multiple levels of access such as Network Authority (may represent a specific regulator body)
- * Gatekeepers (Identity.com network parties who can mint/burn/freeze gateway tokens) and overall system Admin who can add
+ * Contract handles multiple levels of access such as Network Authority
+ * (may represent a specific regulator body)
+ * Gatekeepers (Identity.com network parties who can mint/burn/freeze gateway tokens)
+ * and overall system Admin who can add
  * new Gatekeepers and Network Authorities
  */
 contract GatewayToken is
@@ -52,14 +57,18 @@ contract GatewayToken is
     bytes32 public constant NETWORK_AUTHORITY_ROLE = keccak256("NETWORK_AUTHORITY_ROLE");
 
     // Optional mapping for gateway token bitmaps
-    mapping(uint => TokenState) private tokenStates;
+    mapping(uint => TokenState) private _tokenStates;
 
     // Optional Mapping from token ID to expiration date
-    mapping(uint => uint) private expirations;
+    mapping(uint => uint) private _expirations;
 
-    mapping(uint => string) private networks;
+    mapping(uint => string) private _networks;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
+    // constructor is empty as we are using the proxy pattern,
+    // where setup code is in the initialize function
+    // called by the proxy contract
+    // solhint-disable-next-line no-empty-blocks
     constructor() initializer {}
 
     function initialize(
@@ -76,8 +85,28 @@ contract GatewayToken is
         _superAdmins[_superAdmin] = true;
     }
 
+    // if any funds are sent to this contract, use this function to withdraw them
+    // keep init functions at the top by the constructor
+    // solhint-disable-next-line ordering
+    function withdraw(uint amount) external onlySuperAdmin returns (bool) {
+        if (amount > address(this).balance) {
+            revert GatewayToken__InsufficientFunds(address(this).balance, amount);
+        }
+
+        payable(_msgSender()).transfer(amount);
+        return true;
+    }
+
     function setMetadataDescriptor(address _metadataDescriptor) public onlySuperAdmin {
         _setMetadataDescriptor(_metadataDescriptor);
+    }
+
+    function addForwarder(address forwarder) public override(MultiERC2771Context) onlySuperAdmin {
+        super.addForwarder(forwarder);
+    }
+
+    function removeForwarder(address forwarder) public override(MultiERC2771Context) onlySuperAdmin {
+        super.removeForwarder(forwarder);
     }
 
     function _msgSender()
@@ -98,24 +127,6 @@ contract GatewayToken is
         returns (bytes calldata)
     {
         return MultiERC2771Context._msgData();
-    }
-
-    function addForwarder(address forwarder) public override(MultiERC2771Context) onlySuperAdmin {
-        super.addForwarder(forwarder);
-    }
-
-    function removeForwarder(address forwarder) public override(MultiERC2771Context) onlySuperAdmin {
-        super.removeForwarder(forwarder);
-    }
-
-    // if any funds are sent to this contract, use this function to withdraw them
-    function withdraw(uint amount) external onlySuperAdmin returns (bool) {
-        if (amount > address(this).balance) {
-            revert GatewayToken__InsufficientFunds(address(this).balance, amount);
-        }
-
-        payable(_msgSender()).transfer(amount);
-        return true;
     }
 
     /**
@@ -139,11 +150,11 @@ contract GatewayToken is
     }
 
     function createNetwork(uint network, string memory name, bool daoGoverned, address daoManager) external virtual {
-        if (bytes(networks[network]).length != 0) {
+        if (bytes(_networks[network]).length != 0) {
             revert GatewayToken__NetworkAlreadyExists(network);
         }
 
-        networks[network] = name;
+        _networks[network] = name;
 
         if (daoGoverned) {
             isNetworkDAOGoverned[network] = daoGoverned;
@@ -172,18 +183,18 @@ contract GatewayToken is
     }
 
     function renameNetwork(uint network, string memory name) external virtual {
-        if (bytes(networks[network]).length == 0) {
+        if (bytes(_networks[network]).length == 0) {
             revert GatewayToken__NetworkDoesNotExist(network);
         }
         if (!hasRole(NETWORK_AUTHORITY_ROLE, network, _msgSender())) {
             revert Common__Unauthorized(_msgSender(), network, NETWORK_AUTHORITY_ROLE);
         }
 
-        networks[network] = name;
+        _networks[network] = name;
     }
 
     function getNetwork(uint network) public view virtual returns (string memory) {
-        return networks[network];
+        return _networks[network];
     }
 
     function _getTokenIdsByOwnerAndNetwork(address owner, uint network) internal view returns (uint[] memory, uint) {
@@ -247,8 +258,8 @@ contract GatewayToken is
         returns (address owner, uint8 state, string memory identity, uint expiration, uint bitmask)
     {
         owner = ownerOf(tokenId);
-        state = uint8(tokenStates[tokenId]);
-        expiration = expirations[tokenId];
+        state = uint8(_tokenStates[tokenId]);
+        expiration = _expirations[tokenId];
         bitmask = _getBitMask(tokenId);
 
         return (owner, state, identity, expiration, bitmask);
@@ -258,13 +269,14 @@ contract GatewayToken is
      * @dev Returns whether `tokenId` exists and not frozen.
      */
     function _existsAndActive(uint tokenId, bool allowExpired) internal view virtual returns (bool) {
-        // check state before anything else. This reduces the overhead, and avoids a revert, if the token does not exist.
-        TokenState state = tokenStates[tokenId];
+        // check state before anything else. This reduces the overhead,
+        // and avoids a revert, if the token does not exist.
+        TokenState state = _tokenStates[tokenId];
         if (state != TokenState.ACTIVE) return false;
 
         address owner = ownerOf(tokenId);
-        if (expirations[tokenId] != 0 && !allowExpired) {
-            return owner != address(0) && block.timestamp <= expirations[tokenId];
+        if (_expirations[tokenId] != 0 && !allowExpired) {
+            return owner != address(0) && block.timestamp <= _expirations[tokenId];
         } else {
             return owner != address(0);
         }
@@ -320,7 +332,7 @@ contract GatewayToken is
         uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
 
         if (expiration > 0) {
-            expirations[tokenId] = expiration;
+            _expirations[tokenId] = expiration;
         }
 
         if (mask > 0) {
@@ -331,7 +343,7 @@ contract GatewayToken is
     function revoke(uint tokenId) public virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
-        tokenStates[tokenId] = TokenState.REVOKED;
+        _tokenStates[tokenId] = TokenState.REVOKED;
 
         emit Revoke(tokenId);
     }
@@ -363,7 +375,7 @@ contract GatewayToken is
     function getExpiration(uint tokenId) public view virtual override returns (uint) {
         _checkTokenExists(tokenId);
 
-        return expirations[tokenId];
+        return _expirations[tokenId];
     }
 
     /**
@@ -384,7 +396,7 @@ contract GatewayToken is
     function _freeze(uint tokenId) internal virtual {
         _checkActiveToken(tokenId, true);
 
-        tokenStates[tokenId] = TokenState.FROZEN;
+        _tokenStates[tokenId] = TokenState.FROZEN;
 
         emit Freeze(tokenId);
     }
@@ -396,11 +408,11 @@ contract GatewayToken is
      */
     function _unfreeze(uint tokenId) internal virtual {
         _checkTokenExists(tokenId);
-        if (tokenStates[tokenId] != TokenState.FROZEN) {
-            revert GatewayToken__TokenInvalidStateForOperation(tokenId, tokenStates[tokenId], TokenState.FROZEN);
+        if (_tokenStates[tokenId] != TokenState.FROZEN) {
+            revert GatewayToken__TokenInvalidStateForOperation(tokenId, _tokenStates[tokenId], TokenState.FROZEN);
         }
 
-        tokenStates[tokenId] = TokenState.ACTIVE;
+        _tokenStates[tokenId] = TokenState.ACTIVE;
 
         emit Unfreeze(tokenId);
     }
@@ -411,7 +423,7 @@ contract GatewayToken is
     function _setExpiration(uint tokenId, uint timestamp) internal virtual {
         _checkActiveToken(tokenId, true);
 
-        expirations[tokenId] = timestamp;
+        _expirations[tokenId] = timestamp;
         emit Expiration(tokenId, timestamp);
     }
 
@@ -429,7 +441,7 @@ contract GatewayToken is
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(address from, address to, uint tokenId) internal virtual {}
+    //    function _beforeTokenTransfer(address from, address to, uint tokenId) internal virtual {}
 
     // ===========  ACCESS CONTROL SECTION ============
 
@@ -542,5 +554,8 @@ contract GatewayToken is
         _setBitMask(tokenId, mask);
     }
 
+    // includes the onlySuperAdmin modifier to ensure that only the super admin can call this function
+    // otherwise, no other logic.
+    // solhint-disable-next-line no-empty-blocks
     function _authorizeUpgrade(address) internal override onlySuperAdmin {}
 }

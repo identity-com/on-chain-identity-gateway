@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.8.0) (access/AccessControl.sol)
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "./interfaces/IParameterizedAccessControl.sol";
-import "./library/CommonErrors.sol";
+import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IParameterizedAccessControl} from "./interfaces/IParameterizedAccessControl.sol";
+import {Common__Unauthorized, Common__NotSuperAdmin} from "./library/CommonErrors.sol";
 
 /**
  * @dev Contract module that allows children to implement role-based access
@@ -58,7 +58,7 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     }
 
     mapping(uint256 => RoleDomain) private _roleDomain;
-    mapping(address => bool) _superAdmins;
+    mapping(address => bool) internal _superAdmins;
 
     bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
 
@@ -71,47 +71,16 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     }
 
     /**
-     * @dev See {IERC165-supportsInterface}.
+     * @dev Modifier that checks that an account is a super admin. Reverts if not.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IParameterizedAccessControl).interfaceId || super.supportsInterface(interfaceId);
+    modifier onlySuperAdmin() {
+        _onlySuperAdmin();
+        _;
     }
 
-    /**
-     * @dev Returns `true` if `account` has been granted `role`.
-     */
-    function hasRole(bytes32 role, uint256 domain, address account) public view virtual override returns (bool) {
-        return _roleDomain[domain].roles[role].members[account];
-    }
-
-    /**
-     * @dev Revert if `_msgSender()` is missing `role`.
-     * Overriding this function changes the behavior of the {onlyRole} modifier.
-     *
-     * _Available since v4.6._
-     */
-    function _checkRole(bytes32 role, uint256 domain) internal view virtual {
-        _checkRole(role, domain, _msgSender());
-    }
-
-    /**
-     * @dev Revert if `account` is missing `role`.
-     *
-     */
-    function _checkRole(bytes32 role, uint256 domain, address account) internal view virtual {
-        if (!hasRole(role, domain, account)) {
-            revert Common__Unauthorized(account, domain, role);
-        }
-    }
-
-    /**
-     * @dev Returns the admin role that controls `role`. See {grantRole} and
-     * {revokeRole}.
-     *
-     * To change a role's admin, use {_setRoleAdmin}.
-     */
-    function getRoleAdmin(bytes32 role, uint256 domain) public view virtual override returns (bytes32) {
-        return _roleDomain[domain].roles[role].adminRole;
+    function revokeSuperAdmin(address account) external onlySuperAdmin {
+        emit SuperAdminRemoved(account);
+        _superAdmins[account] = false;
     }
 
     /**
@@ -175,6 +144,39 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
         _revokeRole(role, domain, account);
     }
 
+    function setSuperAdmin(address account) public onlySuperAdmin {
+        emit SuperAdminAdded(account);
+        _superAdmins[account] = true;
+    }
+
+    function isSuperAdmin(address account) public view returns (bool) {
+        return _superAdmins[account];
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IParameterizedAccessControl).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev Returns `true` if `account` has been granted `role`.
+     */
+    function hasRole(bytes32 role, uint256 domain, address account) public view virtual override returns (bool) {
+        return _roleDomain[domain].roles[role].members[account];
+    }
+
+    /**
+     * @dev Returns the admin role that controls `role`. See {grantRole} and
+     * {revokeRole}.
+     *
+     * To change a role's admin, use {_setRoleAdmin}.
+     */
+    function getRoleAdmin(bytes32 role, uint256 domain) public view virtual override returns (bytes32) {
+        return _roleDomain[domain].roles[role].adminRole;
+    }
+
     /**
      * @dev Sets `adminRole` as ``role``'s admin role.
      *
@@ -234,18 +236,24 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
         }
     }
 
-    function isSuperAdmin(address account) public view returns (bool) {
-        return _superAdmins[account];
+    /**
+     * @dev Revert if `_msgSender()` is missing `role`.
+     * Overriding this function changes the behavior of the {onlyRole} modifier.
+     *
+     * _Available since v4.6._
+     */
+    function _checkRole(bytes32 role, uint256 domain) internal view virtual {
+        _checkRole(role, domain, _msgSender());
     }
 
-    function setSuperAdmin(address account) public onlySuperAdmin {
-        emit SuperAdminAdded(account);
-        _superAdmins[account] = true;
-    }
-
-    function revokeSuperAdmin(address account) external onlySuperAdmin {
-        emit SuperAdminRemoved(account);
-        _superAdmins[account] = false;
+    /**
+     * @dev Revert if `account` is missing `role`.
+     *
+     */
+    function _checkRole(bytes32 role, uint256 domain, address account) internal view virtual {
+        if (!hasRole(role, domain, account)) {
+            revert Common__Unauthorized(account, domain, role);
+        }
     }
 
     /**
@@ -258,13 +266,5 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     // separate into a private function to reduce code size
     function _onlySuperAdmin() private view {
         _checkAdmin(_msgSender());
-    }
-
-    /**
-     * @dev Modifier that checks that an account is a super admin. Reverts if not.
-     */
-    modifier onlySuperAdmin() {
-        _onlySuperAdmin();
-        _;
     }
 }

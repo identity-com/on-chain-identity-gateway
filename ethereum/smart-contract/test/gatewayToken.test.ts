@@ -515,7 +515,7 @@ describe('GatewayToken', async () => {
       const wallet = ethers.Wallet.createRandom();
 
       await expect(gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, 0, 0, NULL_CHARGE)).to.be.revertedWith(
-        'TEST MODE: Expiry must be greater than zero',
+        'TEST MODE: Expiry must be > zero',
       );
     });
   });

@@ -17,7 +17,7 @@ export const gatekeeperNetwork = 1n;
 // These addresses are the ones that hardhat deploys to in the local test environment
 // Note, they differ from the default create2 addresses used in production
 export const TEST_GATEWAY_TOKEN_ADDRESS = {
-  gatewayToken: "0x1955a7b892C16bc10206Ae14bfa3901D24beB0Db",
-  forwarder: "0x3EB6bE85fb313eC5593d1330FbDe87429fd397fb",
-  flagsStorage: "0x9372F931633319B28b31e2dE57491097822e4Cf2",
+  gatewayToken: "0xF0d877F688B75B6Be7E06d27c8816d10c6592255",
+  forwarder: "0xC56A6dB70933fe6B3630b3aEFfB1D32E33391595",
+  flagsStorage: "0x31da2423fDEb7b5533a127Df74Cb2e514Dc4fE1f",
 };

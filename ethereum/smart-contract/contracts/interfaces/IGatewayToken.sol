@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
-import "../library/Charge.sol";
+import {Charge} from "../library/Charge.sol";
 
 interface IGatewayToken {
     enum TokenState {
@@ -9,6 +9,11 @@ interface IGatewayToken {
         FROZEN,
         REVOKED
     }
+
+    /**
+     * @dev Emitted when GatewayToken DAO Manager transferred to `newDAOManager` address.
+     */
+    event DAOManagerTransferred(address previousDAOManager, address newDAOManager, uint256 network);
 
     /// Insufficient funds for withdrawal. Needed `required` but only
     /// `available` available.
@@ -44,19 +49,6 @@ interface IGatewayToken {
     error GatewayToken__TokenInvalidStateForOperation(uint256 tokenId, TokenState state, TokenState expectedState);
 
     /**
-     * @dev Emitted when GatewayToken DAO Manager transferred to `newDAOManager` address.
-     */
-    event DAOManagerTransferred(address previousDAOManager, address newDAOManager, uint256 network);
-
-    /**
-     * @dev Triggers to get all information relating to gateway `tokenId`
-     * @param tokenId Gateway token id
-     */
-    function getToken(
-        uint256 tokenId
-    ) external view returns (address owner, uint8 state, string memory identity, uint256 expiration, uint256 bitmask);
-
-    /**
      * @dev Triggers to verify if address has a GATEKEEPER role.
      * @param gatekeeper Gatekeeper address
      * @param network GatekeeperNetwork id
@@ -66,8 +58,6 @@ interface IGatewayToken {
     function createNetwork(uint256 network, string memory name, bool daoGoverned, address daoManager) external;
 
     function renameNetwork(uint256 network, string memory name) external;
-
-    function getNetwork(uint256 network) external view returns (string memory);
 
     /**
      * @dev Triggers to add new network authority into the system.
@@ -101,4 +91,14 @@ interface IGatewayToken {
     function transferDAOManager(address previousManager, address newManager, uint256 network) external;
 
     function mint(address to, uint256 network, uint256 expiration, uint256 mask, Charge calldata charge) external;
+
+    /**
+     * @dev Triggers to get all information relating to gateway `tokenId`
+     * @param tokenId Gateway token id
+     */
+    function getToken(
+        uint256 tokenId
+    ) external view returns (address owner, uint8 state, string memory identity, uint256 expiration, uint256 bitmask);
+
+    function getNetwork(uint256 network) external view returns (string memory);
 }

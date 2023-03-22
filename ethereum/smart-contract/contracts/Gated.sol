@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
-import "./interfaces/IGatewayTokenVerifier.sol";
+import {IGatewayTokenVerifier} from "./interfaces/IGatewayTokenVerifier.sol";
 
-contract isGated {
+contract Gated {
     /// The gateway token is not valid.
     error IsGated__InvalidGatewayToken(address gatewayToken);
 

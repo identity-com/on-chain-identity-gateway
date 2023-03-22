@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
 library BitMask {
-    uint internal constant ONE = uint256(1);
-    uint internal constant ONES = ~uint256(0);
+    uint internal constant _ONE = uint256(1);
 
     /**
      * @dev Internal function to set 1 bit in specific `index`
      * @return Updated bitmask with modified bit at `index`
      */
     function setBit(uint256 self, uint8 index) internal pure returns (uint256) {
-        return self | (ONE << index);
+        return self | (_ONE << index);
     }
 
     /**
@@ -18,7 +17,7 @@ library BitMask {
      * @return Updated bitmask with modified bit at `index`
      */
     function clearBit(uint256 self, uint8 index) internal pure returns (uint256) {
-        return self & ~(ONE << index);
+        return self & ~(_ONE << index);
     }
 
     /**

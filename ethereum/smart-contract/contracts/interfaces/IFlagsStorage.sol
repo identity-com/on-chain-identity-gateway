@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 pragma experimental ABIEncoderV2;
 
 interface IFlagsStorage {
@@ -35,6 +35,28 @@ interface IFlagsStorage {
     function addFlags(bytes32[] memory _flags, uint8[] memory _indexes) external;
 
     /**
+     * @dev Triggers to remove existing flag from gateway token system
+     * @param _flag Flag short identifier
+     * @notice Only executed by existing DAO Manager
+     */
+    function removeFlag(bytes32 _flag) external;
+
+    /**
+     * @dev Triggers to remove multiple existing flags from gateway token system
+     * @param _flags Array of flag short identifiers
+     * @notice Only executed by existing DAO Manager
+     */
+    function removeFlags(bytes32[] memory _flags) external;
+
+    /**
+     * @dev Triggers to transfer ownership of this contract to new DAO Controller,
+     * reverts on zero address and wallet addresses
+     * @param _newSuperAdmin New DAO Controller contract address
+     * @notice Only executed by existing DAO Manager
+     */
+    function updateSuperAdmin(address _newSuperAdmin) external;
+
+    /**
      * @dev Triggers to get DAO Controller address
      */
     function superAdmin() external view returns (address);
@@ -52,28 +74,7 @@ interface IFlagsStorage {
     function isFlagSupported(bytes32 _flag) external view returns (bool);
 
     /**
-     * @dev Triggers to remove existing flag from gateway token system
-     * @param _flag Flag short identifier
-     * @notice Only executed by existing DAO Manager
-     */
-    function removeFlag(bytes32 _flag) external;
-
-    /**
-     * @dev Triggers to remove multiple existing flags from gateway token system
-     * @param _flags Array of flag short identifiers
-     * @notice Only executed by existing DAO Manager
-     */
-    function removeFlags(bytes32[] memory _flags) external;
-
-    /**
      * @dev Triggers to get bitmask of all supported flags
      */
     function supportedFlagsMask() external view returns (uint256);
-
-    /**
-     * @dev Triggers to transfer ownership of this contract to new DAO Controller, reverts on zero address and wallet addresses
-     * @param _newSuperAdmin New DAO Controller contract address
-     * @notice Only executed by existing DAO Manager
-     */
-    function updateSuperAdmin(address _newSuperAdmin) external;
 }

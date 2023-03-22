@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "./interfaces/IFlagsStorage.sol";
-import "./library/BitMask.sol";
-import "./library/CommonErrors.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {IFlagsStorage} from "./interfaces/IFlagsStorage.sol";
+import {BitMask} from "./library/BitMask.sol";
+import {Common__NotSuperAdmin, Common__MissingAccount} from "./library/CommonErrors.sol";
 
 /**
  * @dev FlagsStorage is the main contract to store KYC-related flags for Gateway Token System.
@@ -20,7 +20,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     using Address for address;
     using BitMask for uint256;
 
-    EnumerableSet.Bytes32Set private supportedFlags;
+    EnumerableSet.Bytes32Set private _supportedFlags;
     address public override superAdmin;
 
     uint256 public override supportedFlagsMask;
@@ -44,11 +44,6 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     /// @param index The flag index
     error FlagsStorage__IndexAlreadyUsed(uint8 index);
 
-    // separate into a private function to reduce code size
-    function _onlySuperAdmin() private view {
-        if (msg.sender != superAdmin) revert Common__NotSuperAdmin(msg.sender);
-    }
-
     // @dev Modifier to prevent calls from anyone except Identity.com Admin
     modifier onlySuperAdmin() {
         _onlySuperAdmin();
@@ -56,6 +51,8 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
+    // empty constructor in line with the UUPS upgradeable proxy pattern
+    // solhint-disable-next-line no-empty-blocks
     constructor() initializer {}
 
     function initialize(address _superAdmin) public initializer {
@@ -64,7 +61,8 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     }
 
     /**
-     * @dev Triggers to transfer ownership of this contract to new super admin, reverts on zero address and wallet addresses
+     * @dev Triggers to transfer ownership of this contract to
+     * new super admin, reverts on zero address and wallet addresses
      * @param newSuperAdmin New super admin contract address
      * @notice Only executed by existing super admin
      */
@@ -105,7 +103,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @notice Only executed by existing DAO Manager
      */
     function removeFlag(bytes32 flag) public override onlySuperAdmin {
-        if (!supportedFlags.contains(flag)) revert FlagsStorage__FlagNotSupported(flag);
+        if (!_supportedFlags.contains(flag)) revert FlagsStorage__FlagNotSupported(flag);
 
         _removeFlag(flag);
     }
@@ -118,7 +116,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     function removeFlags(bytes32[] memory flags) public override onlySuperAdmin {
         for (uint8 i = 0; i < flags.length; i++) {
             // additional check to reduce incorrect FlagRemoved events
-            if (!supportedFlags.contains(flags[i])) revert FlagsStorage__FlagNotSupported(flags[i]);
+            if (!_supportedFlags.contains(flags[i])) revert FlagsStorage__FlagNotSupported(flags[i]);
 
             _removeFlag(flags[i]);
         }
@@ -130,7 +128,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @return Boolean for flag support
      */
     function isFlagSupported(bytes32 flag) public view override returns (bool) {
-        return supportedFlags.contains(flag);
+        return _supportedFlags.contains(flag);
     }
 
     /**
@@ -138,10 +136,10 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      */
     function _addFlag(bytes32 flag, uint8 index) internal {
         if (supportedFlagsMask.checkBit(index)) revert FlagsStorage__IndexAlreadyUsed(index);
-        if (supportedFlags.contains(flag)) revert FlagsStorage__FlagAlreadyExists(flag);
+        if (_supportedFlags.contains(flag)) revert FlagsStorage__FlagAlreadyExists(flag);
 
         flagIndexes[flag] = index;
-        supportedFlags.add(flag);
+        _supportedFlags.add(flag);
         supportedFlagsMask = supportedFlagsMask.setBit(index);
 
         emit FlagAdded(flag, index);
@@ -151,7 +149,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @dev Internal function to remove existing flag
      */
     function _removeFlag(bytes32 flag) internal {
-        supportedFlags.remove(flag);
+        _supportedFlags.remove(flag);
         uint8 _index = flagIndexes[flag];
 
         supportedFlagsMask = supportedFlagsMask.clearBit(_index);
@@ -160,5 +158,13 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
         emit FlagRemoved(flag);
     }
 
+    // includes the onlySuperAdmin modifier to ensure that only the super admin can call this function
+    // otherwise, no other logic.
+    // solhint-disable-next-line no-empty-blocks
     function _authorizeUpgrade(address) internal override onlySuperAdmin {}
+
+    // separate into a private function to reduce code size
+    function _onlySuperAdmin() private view {
+        if (msg.sender != superAdmin) revert Common__NotSuperAdmin(msg.sender);
+    }
 }

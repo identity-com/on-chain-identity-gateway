@@ -2,6 +2,7 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+export * as isGatedSol from "./IsGated.sol";
 export * as interfaces from "./interfaces";
 export { FlagsStorage__factory } from "./FlagsStorage__factory";
 export { FlexibleNonceForwarder__factory } from "./FlexibleNonceForwarder__factory";

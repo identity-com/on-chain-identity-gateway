@@ -2,6 +2,8 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+import type * as isGatedSol from "./IsGated.sol";
+export type { isGatedSol };
 import type * as interfaces from "./interfaces";
 export type { interfaces };
 export type { FlagsStorage } from "./FlagsStorage";
