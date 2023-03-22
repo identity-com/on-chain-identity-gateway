@@ -169,7 +169,7 @@ export class GatekeeperService extends AbstractService {
         splTokenProgram: splTokenProgram,
         network: this._network,
         gatekeeper: this._gatekeeper,
-        mintAccount: mint,
+        mint,
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
@@ -216,7 +216,7 @@ export class GatekeeperService extends AbstractService {
    * @param passAccount The ODA for the pass
    * @param authority The gatekeeper authority for setting the pass state
    * @param splTokenProgram The spl token program
-   * @param mintAccount The mintAccount for the spl token
+   * @param mint The mintAccount for the spl token
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
    * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
@@ -226,7 +226,7 @@ export class GatekeeperService extends AbstractService {
     passAccount: PublicKey,
     authority: PublicKey = this.getWallet().publicKey,
     splTokenProgram: PublicKey,
-    mintAccount: PublicKey,
+    mint: PublicKey,
     networkTokenAccount: PublicKey,
     gatekeeperTokenAccount: PublicKey,
     funderTokenAccount: PublicKey,
@@ -240,7 +240,7 @@ export class GatekeeperService extends AbstractService {
         network: this._network,
         gatekeeper: this._gatekeeper,
         splTokenProgram: splTokenProgram,
-        mintAccount,
+        mint,
         networkTokenAccount: networkTokenAccount,
         gatekeeperTokenAccount: gatekeeperTokenAccount,
         funderTokenAccount: funderTokenAccount,
@@ -287,7 +287,7 @@ export class GatekeeperService extends AbstractService {
         network: this._network,
         payer,
         splTokenProgram: splTokenProgram,
-        mintAccount: mint,
+        mint,
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
@@ -334,7 +334,7 @@ export class GatekeeperService extends AbstractService {
         gatekeeper: this._gatekeeper,
         payer,
         splTokenProgram: splTokenProgram,
-        mintAccount: mint,
+        mint,
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
