@@ -1,4 +1,4 @@
-import { utils } from "ethers";
+import { utils } from 'ethers';
 
 /**
  * Converts a string into a hex representation of bytes32

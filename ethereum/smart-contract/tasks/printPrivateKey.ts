@@ -1,5 +1,5 @@
-import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {HardhatNetworkHDAccountsConfig} from "hardhat/src/types/config";
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatNetworkHDAccountsConfig } from 'hardhat/src/types/config';
 
 export const printPrivateKey = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const { ethers, config } = hre;
@@ -11,8 +11,7 @@ export const printPrivateKey = async (args: any, hre: HardhatRuntimeEnvironment)
 
   const wallet1 = ethers.Wallet.fromMnemonic(accounts.mnemonic, accounts.path + index);
 
-  const privateKey1 = wallet1.privateKey
+  const privateKey1 = wallet1.privateKey;
 
   console.log(privateKey1);
-  
-}
+};

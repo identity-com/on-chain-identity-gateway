@@ -158,6 +158,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IParameterizedAccessControl__factory>;
     getContractFactory(
+      name: "IsGated",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IsGated__factory>;
+    getContractFactory(
       name: "MultiERC2771Context",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MultiERC2771Context__factory>;
@@ -350,6 +354,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IParameterizedAccessControl>;
+    getContractAt(
+      name: "IsGated",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IsGated>;
     getContractAt(
       name: "MultiERC2771Context",
       address: string,
