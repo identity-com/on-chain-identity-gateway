@@ -81,6 +81,8 @@ export type { IGatewayTokenVerifier } from "./contracts/interfaces/IGatewayToken
 export { IGatewayTokenVerifier__factory } from "./factories/contracts/interfaces/IGatewayTokenVerifier__factory";
 export type { IParameterizedAccessControl } from "./contracts/interfaces/IParameterizedAccessControl";
 export { IParameterizedAccessControl__factory } from "./factories/contracts/interfaces/IParameterizedAccessControl__factory";
+export type { IsGated } from "./contracts/IsGated.sol/IsGated";
+export { IsGated__factory } from "./factories/contracts/IsGated.sol/IsGated__factory";
 export type { MultiERC2771Context } from "./contracts/MultiERC2771Context";
 export { MultiERC2771Context__factory } from "./factories/contracts/MultiERC2771Context__factory";
 export type { ParameterizedAccessControl } from "./contracts/ParameterizedAccessControl";

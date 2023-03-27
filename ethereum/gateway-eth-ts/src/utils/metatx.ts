@@ -68,7 +68,6 @@ const buildRequest = async (
   const nonce = await forwarder
     .getNonce(input.from)
     .then((nonce: BigNumber) => nonce.toString());
-  console.log("nonce", nonce);
   return { value: 0, gas: 2e6, nonce, ...input };
 };
 

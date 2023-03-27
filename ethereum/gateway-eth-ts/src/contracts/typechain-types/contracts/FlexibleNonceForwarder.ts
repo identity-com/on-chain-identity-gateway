@@ -14,7 +14,11 @@ import type {
   Signer,
   utils,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
+import type {
+  FunctionFragment,
+  Result,
+  EventFragment,
+} from "@ethersproject/abi";
 import type { Listener, Provider } from "@ethersproject/providers";
 import type {
   TypedEventFilter,
@@ -71,8 +75,22 @@ export interface FlexibleNonceForwarderInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "execute", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getNonce", data: BytesLike): Result;
 
-  events: {};
+  events: {
+    "ForwardResult(bool)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "ForwardResult"): EventFragment;
 }
+
+export interface ForwardResultEventObject {
+  arg0: boolean;
+}
+export type ForwardResultEvent = TypedEvent<
+  [boolean],
+  ForwardResultEventObject
+>;
+
+export type ForwardResultEventFilter = TypedEventFilter<ForwardResultEvent>;
 
 export interface FlexibleNonceForwarder extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -137,7 +155,10 @@ export interface FlexibleNonceForwarder extends BaseContract {
     ): Promise<BigNumber>;
   };
 
-  filters: {};
+  filters: {
+    "ForwardResult(bool)"(arg0?: null): ForwardResultEventFilter;
+    ForwardResult(arg0?: null): ForwardResultEventFilter;
+  };
 
   estimateGas: {
     execute(

@@ -16,6 +16,8 @@ pub enum NetworkErrors {
     InsufficientAccessTokens,
     #[msg("Insufficient access to set fees")]
     InsufficientAccessFees,
+    #[msg("Insufficient access to create gatekeeper")]
+    InsufficientAccessCreateGatekeeper,
     #[msg("Auth key not found")]
     AuthKeyNotFound,
     #[msg("Invalid key provided")]
@@ -24,6 +26,8 @@ pub enum NetworkErrors {
     AccountInUse,
     #[msg("Network Fee was not provided")]
     FeesNotProvided,
+    #[msg("Network Fee more than 100%")]
+    NetworkFeeOutOfBounds,
     #[msg("Token not supported")]
     TokenNotSupported,
     #[msg("A network feature is not enabled for this instruction")]

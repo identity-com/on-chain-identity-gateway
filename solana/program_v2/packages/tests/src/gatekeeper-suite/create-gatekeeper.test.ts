@@ -1,6 +1,9 @@
 import {
   AdminService,
+  CreateNetworkData,
+  FeeStructure,
   GatekeeperKeyFlags,
+  NetworkKeyFlags,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
@@ -16,7 +19,13 @@ describe('Gateway v2 Client', () => {
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
   const programProvider = program.provider as anchor.AnchorProvider;
-
+  const fees: FeeStructure = {
+    token: PublicKey.unique(),
+    issue: 100,
+    expire: 100,
+    verify: 100,
+    refresh: 100,
+  };
   let adminService: AdminService;
   let networkService: NetworkService;
   let gatekeeperDataAccount: PublicKey;
@@ -59,9 +68,21 @@ describe('Gateway v2 Client', () => {
       },
       programProvider
     );
-
+    const networkData: CreateNetworkData = {
+      authThreshold: 1,
+      passExpireTime: 16,
+      fees: [fees],
+      authKeys: [
+        {
+          flags: NetworkKeyFlags.AUTH | NetworkKeyFlags.CREATE_GATEKEEPER,
+          key: gatekeeperAuthority.publicKey,
+        },
+      ],
+      supportedTokens: [],
+      networkFeatures: 0,
+    };
     await adminService
-      .createNetwork()
+      .createNetwork(networkData)
       .withPartialSigners(networkAuthority)
       .rpc();
   });
@@ -97,7 +118,7 @@ describe('Gateway v2 Client', () => {
             stakingDataAccount,
             adminAuthority.publicKey,
             {
-              tokenFees: [],
+              tokenFees: [fees],
               authThreshold: 1,
               authKeys: [],
               supportedTokens: [],
@@ -159,7 +180,15 @@ describe('Gateway v2 Client', () => {
           stakingDataAccount,
           adminAuthority.publicKey,
           {
-            tokenFees: [],
+            tokenFees: [
+              {
+                token: PublicKey.unique(),
+                issue: 100,
+                expire: 100,
+                verify: 100,
+                refresh: 100,
+              },
+            ],
             authThreshold: 2,
             authKeys: [
               {
