@@ -678,20 +678,20 @@ Generate a gatekeeper key `GK3o4HKqnTTSkh6D59BdK28mto63TiXaPaNsDeFpG7mj` in this
 
 ```bash
 gateway network create \
- -g ./gXu29PYZTfeKJfCeDuquGzBYpHmtcSCVmLVsqfg61AN.json \
- -n ./nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm.json \
- -t 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU \ #initial SPL token for fees (USDC in this example)
- -f 100 \ # default fee amount
- -c devnet # the cluster devnet|localnet|mainnet
+ --gaudianKeypair ./gXu29PYZTfeKJfCeDuquGzBYpHmtcSCVmLVsqfg61AN.json \
+ --networkKeypair ./nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm.json \
+ --token 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU \ #initial SPL token for fees (USDC in this example)
+ --fees 100 \ # default fee amount
+ --cluster devnet # the cluster devnet|localnet|mainnet
 ```
 
 # Create a gatekeeper
 
 ```bash
 gateway gatekeeper create \
- -k ./GK3o4HKqnTTSkh6D59BdK28mto63TiXaPaNsDeFpG7mj.json 
- -n nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm 
- -t 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU \ # an SPL token to support payments in (USDC in this example)
- -f 5 \ # The fee percentage split between the gatekeeper and network
- -c devnet # the cluster devnet|localnet|mainnet
+ --keypair ./GK3o4HKqnTTSkh6D59BdK28mto63TiXaPaNsDeFpG7mj.json 
+ --network nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm 
+ --token 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU \ # an SPL token to support payments in (USDC in this example)
+ --fees 5 \ # The fee percentage split between the gatekeeper and network
+ --cluster devnet # the cluster devnet|localnet|mainnet
 ```
