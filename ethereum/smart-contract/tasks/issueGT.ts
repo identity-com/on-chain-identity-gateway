@@ -1,10 +1,10 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Wallet } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { DEFAULT_FORWARDER_ADDRESS, DEFAULT_GATEWAY_TOKEN_ADDRESS } from '../../gateway-eth-ts/src';
+import addresses from '../defaultContractAddresses.json';
 import { NULL_CHARGE } from '../test/utils/eth';
-import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
-import { Forwarder } from '../typechain-types';
+// import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
+// import { Forwarder } from '../typechain-types';
 
 export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const { ethers } = hre;
@@ -17,7 +17,7 @@ export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
 
   const account = ethers.utils.getAddress(args.address);
 
-  const contract = await ethers.getContractAt('GatewayToken', DEFAULT_GATEWAY_TOKEN_ADDRESS);
+  const contract = await ethers.getContractAt('GatewayToken', addresses.gatewayToken);
 
   const hasToken = await contract['verifyToken(address,uint256)'](account, args.gatekeepernetwork);
   console.log({ hasToken });
@@ -33,17 +33,19 @@ export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
   if (!args.forwarded) {
     transactionReceipt = await gatekeeper.sendTransaction(mintTx);
   } else {
-    const forwarder = (await ethers.getContractAt('Forwarder', DEFAULT_FORWARDER_ADDRESS)).connect(owner);
-
-    const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as Forwarder, {
-      from: gatekeeper.address,
-      to: DEFAULT_GATEWAY_TOKEN_ADDRESS,
-      data: mintTx.data,
-    });
-
-    const unsignedTx = await forwarder.populateTransaction.execute(request, signature);
-
-    transactionReceipt = await owner.sendTransaction(unsignedTx);
+    throw new Error('Forwarding not implemented yet');
+    // TODO remove the dependency with gateway-eth to avoid circular dependencies - move signMetaTxRequest into its own package
+    // const forwarder = (await ethers.getContractAt('Forwarder', addresses.forwarder)).connect(owner);
+    //
+    // const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as Forwarder, {
+    //   from: gatekeeper.address,
+    //   to: addresses.gatewayToken,
+    //   data: mintTx.data,
+    // });
+    //
+    // const unsignedTx = await forwarder.populateTransaction.execute(request, signature);
+    //
+    // transactionReceipt = await owner.sendTransaction(unsignedTx);
   }
   console.log(transactionReceipt);
 

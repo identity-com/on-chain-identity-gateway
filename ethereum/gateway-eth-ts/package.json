@@ -12,7 +12,7 @@
     "pretest": "cd ../smart-contract && (NODE_ENV=test yarn local &) && sleep 10",
     "test": "ts-mocha src/**/*.test.ts",
     "stop-network": "lsof -t -i:8545 | xargs kill",
-    "copy-contracts": "cp -r ../smart-contract/build/contracts/* src/contracts/abi/ && cp -r ../smart-contract/typechain-types src/contracts"
+    "copy-contracts": "cp -r ../smart-contract/build/contracts/* src/contracts/abi/ && cp -r ../smart-contract/typechain-types src/contracts && cp ../smart-contract/defaultContractAddresses.json src/contracts/addresses.json"
   },
   "repository": "git@github.com:identity-com/on-chain-identity-gateway.git",
   "author": "Daniel Kelleher",

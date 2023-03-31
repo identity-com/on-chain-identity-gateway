@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  gateway-protocol-hardhat:
+    image: identitydotcom/gateway-protocol-hardhat
+    env_file:
+      - ../.env.dev
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8545:8545"
