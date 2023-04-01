@@ -39,9 +39,8 @@ export const gatewayTokenAddressFlag = Flags.custom<string>({
 
 export const chainFlag = Flags.custom<BaseProvider>({
   char: 'c',
-  env: 'DEFAULT_CHAIN',
   parse: async (input: string) => getProvider(input as keyof typeof networks),
-  default: async () => getProvider('mainnet'),
+  default: async () => getProvider(process.env.DEFAULT_CHAIN as keyof typeof networks || 'ethereum'),
   options: Object.keys(networks),
   description: 'Specify target chain to work with (or set DEFAULT_CHAIN environment variable)',
 })

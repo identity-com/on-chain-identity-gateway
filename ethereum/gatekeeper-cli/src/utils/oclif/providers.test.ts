@@ -8,7 +8,7 @@ describe('Check ethers provider', function () {
   const goerliNetworkID = 5
 
   it('Try connect to mainnet ethers provider, check network ID', async () => {
-    provider = getProvider('mainnet')
+    provider = getProvider('ethereum')
     const networkId = (await provider.getNetwork()).chainId
 
     assert.equal(networkId, mainnetNetworkID)

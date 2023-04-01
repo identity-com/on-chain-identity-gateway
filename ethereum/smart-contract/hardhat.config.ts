@@ -198,6 +198,18 @@ module.exports = {
       accounts: liveAccounts,
       chainId: 51,
     },
+    polygonZkEVM: {
+      url: 'https://zkevm-rpc.com',
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 1101,
+    },
+    polygonZkEVMTestnet: {
+      url: 'https://rpc.public.zkevm-test.net',
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 1442,
+    },
   },
   solidity: {
     version: "0.8.9",

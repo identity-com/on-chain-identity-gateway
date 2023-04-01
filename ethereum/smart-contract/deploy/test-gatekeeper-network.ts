@@ -6,13 +6,15 @@ const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 const gatekeeperNetwork = 1;
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const { deployments, ethers } = hre;
-    const { deployer, authority, gatekeeper } = await getAccounts(hre);
+  const { deployments, ethers } = hre;
 
-    // WARNING! If any of the above keys are the same as each other
-    // hardhat does not resolve them properly.
-    // Use this hack in that case:
-    // const gatekeeper = gatekeeper === authority
+  // WARNING! If any of the below keys are the same as each other
+  // hardhat does not resolve them properly. Check by deploying to localhost that they are correct first
+  // yarn local --no-deploy &
+  // yarn deploy localhost
+  let { deployer, authority, gatekeeper } = await getAccounts(hre);
+  // hack for the deduping keys bug- set the gatekeeper auth to the authority
+  if (process.env.STAGE === 'prod') gatekeeper = authority;
 
     const deployerSigner = await ethers.getSigner(deployer);
     const authoritySigner = await ethers.getSigner(authority);

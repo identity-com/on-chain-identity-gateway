@@ -13,7 +13,7 @@ export const networks = {
     url: 'http://localhost:8545/',
     chainId: 31_337,
   },
-  mainnet: {
+  ethereum: {
     url: 'https://mainnet.infura.io/v3/',
     chainId: 1,
   },
@@ -29,7 +29,7 @@ export const networks = {
     url: 'https://polygon-mumbai.infura.io/v3/',
     chainId: 80_001,
   },
-  polygonMainnet: {
+  polygon: {
     url: 'https://polygon-mainnet.infura.io/v3/',
     chainId: 137,
   },
@@ -37,7 +37,7 @@ export const networks = {
     url: 'https://aurora-testnet.infura.io/v3/',
     chainId: 1_313_161_555,
   },
-  auroraMainnet: {
+  aurora: {
     url: 'https://aurora-mainnet.infura.io/v3/',
     chainId: 1_313_161_554,
   },
@@ -45,7 +45,7 @@ export const networks = {
     url: 'https://optimism-goerli.infura.io/v3/',
     chainId: 420,
   },
-  optimismMainnet: {
+  optimism: {
     url: 'https://optimism-mainnet.infura.io/v3/',
     chainId: 10,
   },
@@ -53,7 +53,7 @@ export const networks = {
     url: 'https://palm-testnet.infura.io/v3/',
     chainId: 11_297_108_099,
   },
-  palmMainnet: {
+  palm: {
     url: 'https://palm-mainnet.infura.io/v3/',
     chainId: 11_297_108_109,
   },
@@ -61,11 +61,11 @@ export const networks = {
     url: 'https://arbitrum-goerli.infura.io/v3/',
     chainId: 421_613,
   },
-  arbitrumMainnet: {
+  arbitrum: {
     url: 'https://arbitrum-mainnet.infura.io/v3/',
     chainId: 42_161,
   },
-  celoMainnet: {
+  celo: {
     url: 'https://celo-mainnet.infura.io/v3/',
     chainId: 42_220,
   },
@@ -81,7 +81,7 @@ export const networks = {
     url: 'https://avalanche-fuji.infura.io/v3/',
     chainId: 43_113,
   },
-  starknetMainnet: {
+  starknet: {
     url: 'https://starknet-mainnet.infura.io/v3/',
     chainId: 0,
   },
@@ -120,6 +120,14 @@ export const networks = {
   moonriver: {
     url: 'https://moonriver.public.blastapi.io',
     chainId: 1285,
+  },
+  polygonZkEVMTestnet: {
+    url: 'https://rpc.public.zkevm-test.net',
+    chainId: 1442,
+  },
+  polygonZkEVM: {
+    url: 'https://zkevm-rpc.com',
+    chainId: 1101,
   },
 }
 
