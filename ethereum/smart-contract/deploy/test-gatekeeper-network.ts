@@ -13,10 +13,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // yarn local --no-deploy &
   // yarn deploy localhost
   let { deployer, authority, gatekeeper } = await getAccounts(hre);
-  // hack for the deduping keys bug- set the network auth to the deployer
-  if (process.env.STAGE === 'prod') authority = deployer;
+  // hack for the deduping keys bug- set the gatekeeper auth to the authority
+  if (process.env.STAGE === 'prod') gatekeeper = authority;
 
-  const deployerSigner = await ethers.getSigner(deployer);
+    const deployerSigner = await ethers.getSigner(deployer);
   const authoritySigner = await ethers.getSigner(authority);
 
   console.log('deployer', deployer);

@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/gateway-eth-cli",
-  "version": "0.0.11",
+  "version": "0.0.13",
   "description": "Identity.com Gateway Protocol EVM CLI",
   "author": "dankelleher @dankelleher",
   "bin": {
