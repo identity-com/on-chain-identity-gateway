@@ -101,7 +101,10 @@ export const setUpAdminNetworkGatekeeper = async (
         },
       ],
       authKeys: [
-        { flags: NetworkKeyFlags.AUTH, key: gatekeeperAuthority.publicKey },
+        {
+          flags: NetworkKeyFlags.AUTH | NetworkKeyFlags.CREATE_GATEKEEPER,
+          key: gatekeeperAuthority.publicKey,
+        },
       ],
       supportedTokens: [{ key: mint }],
       networkFeatures: NetworkFeatures.CHANGE_PASS_GATEKEEPER,

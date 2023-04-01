@@ -243,14 +243,14 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "splTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
+        },
+        {
+          "name": "splTokenProgram",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "receiverTokenAccount",
@@ -260,6 +260,11 @@ export type SolanaAnchorGateway = {
         {
           "name": "gatekeeperTokenAccount",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -314,7 +319,7 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -407,7 +412,7 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -543,7 +548,7 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -604,7 +609,7 @@ export type SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -1496,36 +1501,41 @@ export type SolanaAnchorGateway = {
     },
     {
       "code": 6007,
+      "name": "InsufficientAccessCreateGatekeeper",
+      "msg": "Insufficient access to create gatekeeper"
+    },
+    {
+      "code": 6008,
       "name": "AuthKeyNotFound",
       "msg": "Auth key not found"
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "InvalidKey",
       "msg": "Invalid key provided"
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "AccountInUse",
       "msg": "The network account is in use"
     },
     {
-      "code": 6010,
+      "code": 6011,
       "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
     },
     {
-      "code": 6011,
+      "code": 6012,
       "name": "NetworkFeeOutOfBounds",
       "msg": "Network Fee more than 100%"
     },
     {
-      "code": 6012,
+      "code": 6013,
       "name": "TokenNotSupported",
       "msg": "Token not supported"
     },
     {
-      "code": 6013,
+      "code": 6014,
       "name": "UnsupportedNetworkFeature",
       "msg": "A network feature is not enabled for this instruction"
     }
@@ -1777,14 +1787,14 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "splTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
+        },
+        {
+          "name": "splTokenProgram",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "receiverTokenAccount",
@@ -1794,6 +1804,11 @@ export const IDL: SolanaAnchorGateway = {
         {
           "name": "gatekeeperTokenAccount",
           "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -1848,7 +1863,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -1941,7 +1956,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -2077,7 +2092,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -2138,7 +2153,7 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": false
         },
         {
-          "name": "mintAccount",
+          "name": "mint",
           "isMut": false,
           "isSigner": false
         },
@@ -3030,36 +3045,41 @@ export const IDL: SolanaAnchorGateway = {
     },
     {
       "code": 6007,
+      "name": "InsufficientAccessCreateGatekeeper",
+      "msg": "Insufficient access to create gatekeeper"
+    },
+    {
+      "code": 6008,
       "name": "AuthKeyNotFound",
       "msg": "Auth key not found"
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "InvalidKey",
       "msg": "Invalid key provided"
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "AccountInUse",
       "msg": "The network account is in use"
     },
     {
-      "code": 6010,
+      "code": 6011,
       "name": "FeesNotProvided",
       "msg": "Network Fee was not provided"
     },
     {
-      "code": 6011,
+      "code": 6012,
       "name": "NetworkFeeOutOfBounds",
       "msg": "Network Fee more than 100%"
     },
     {
-      "code": 6012,
+      "code": 6013,
       "name": "TokenNotSupported",
       "msg": "Token not supported"
     },
     {
-      "code": 6013,
+      "code": 6014,
       "name": "UnsupportedNetworkFeature",
       "msg": "A network feature is not enabled for this instruction"
     }

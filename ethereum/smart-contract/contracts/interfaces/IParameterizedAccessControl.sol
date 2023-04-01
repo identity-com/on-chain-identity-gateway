@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (access/IAccessControl.sol)
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
 /**
  * @dev External interface of AccessControl declared to support ERC165 detection.
@@ -15,7 +15,12 @@ interface IParameterizedAccessControl {
      *
      * _Available since v3.1._
      */
-    event RoleAdminChanged(bytes32 indexed role, uint256 domain, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole);
+    event RoleAdminChanged(
+        bytes32 indexed role,
+        uint256 domain,
+        bytes32 indexed previousAdminRole,
+        bytes32 indexed newAdminRole
+    );
 
     event SuperAdminAdded(address indexed account);
 
@@ -36,20 +41,10 @@ interface IParameterizedAccessControl {
      *   - if using `revokeRole`, it is the admin role bearer
      *   - if using `renounceRole`, it is the role bearer (i.e. `account`)
      */
-    event RoleRevoked(bytes32 indexed role,  uint256 domain, address indexed account, address indexed sender);
+    event RoleRevoked(bytes32 indexed role, uint256 domain, address indexed account, address indexed sender);
 
-    /**
-     * @dev Returns `true` if `account` has been granted `role`.
-     */
-    function hasRole(bytes32 role, uint256 domain, address account) external view returns (bool);
-
-    /**
-     * @dev Returns the admin role that controls `role`. See {grantRole} and
-     * {revokeRole}.
-     *
-     * To change a role's admin, use {AccessControl-_setRoleAdmin}.
-     */
-    function getRoleAdmin(bytes32 role, uint256 domain) external view returns (bytes32);
+    /// A sender can only renounce roles for themselves
+    error ParameterizedAccessControl__RenounceRoleNotForSelf(bytes32 role, address account);
 
     /**
      * @dev Grants `role` to `account`.
@@ -90,7 +85,22 @@ interface IParameterizedAccessControl {
      */
     function renounceRole(bytes32 role, uint256 domain, address account) external;
 
-    function isSuperAdmin(address account) external view returns (bool);
     function setSuperAdmin(address account) external;
+
     function revokeSuperAdmin(address account) external;
+
+    /**
+     * @dev Returns `true` if `account` has been granted `role`.
+     */
+    function hasRole(bytes32 role, uint256 domain, address account) external view returns (bool);
+
+    /**
+     * @dev Returns the admin role that controls `role`. See {grantRole} and
+     * {revokeRole}.
+     *
+     * To change a role's admin, use {AccessControl-_setRoleAdmin}.
+     */
+    function getRoleAdmin(bytes32 role, uint256 domain) external view returns (bytes32);
+
+    function isSuperAdmin(address account) external view returns (bool);
 }

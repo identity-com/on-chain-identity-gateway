@@ -1,71 +1,79 @@
 import 'dotenv/config';
-import * as dotenv from 'dotenv'
+import * as dotenv from 'dotenv';
 dotenv.config();
 
-import {task} from "hardhat/config";
+import { task } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
 import '@nomiclabs/hardhat-ethers';
-import '@typechain/hardhat'
+import '@typechain/hardhat';
 import 'hardhat-deploy';
-import "@nomiclabs/hardhat-solhint";
-import "@nomiclabs/hardhat-etherscan";
+import '@nomiclabs/hardhat-solhint';
+import '@nomiclabs/hardhat-etherscan';
 import '@openzeppelin/hardhat-upgrades';
 import 'hardhat-contract-sizer';
 
-import { checkGT } from "./tasks/checkGT";
-import { addGatekeeper } from "./tasks/addGatekeeper";
-import { issueGT} from "./tasks/issueGT";
-import { fund } from "./tasks/fund";
-import { printPrivateKey } from "./tasks/printPrivateKey";
-import { createWallet } from "./tasks/createWallet";
-import { addForwarder } from "./tasks/addForwarder";
+import { checkGT } from './tasks/checkGT';
+import { addGatekeeper } from './tasks/addGatekeeper';
+import { issueGT } from './tasks/issueGT';
+import { fund } from './tasks/fund';
+import { printPrivateKey } from './tasks/printPrivateKey';
+import { createWallet } from './tasks/createWallet';
+import { addForwarder } from './tasks/addForwarder';
 
 const derivedAccounts = {
-  mnemonic: process.env.MNEMONIC || "test test test test test test test test test test test junk",
+  mnemonic: process.env.MNEMONIC || 'test test test test test test test test test test test junk',
   path: process.env.MNEMONIC_PATH || "m/44'/60'/0'/0/",
   initialIndex: 0,
   count: 20,
-}
-const liveAccounts = (process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY) ?
-    [`0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`, `0x${process.env.GATEKEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY}`]
-: [];
+};
+const liveAccounts =
+  process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY
+    ? [
+        `0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
+        `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
+        `0x${process.env.GATEKEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
+      ]
+    : [];
 
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
-    .addParam('address', 'The wallet to check')
-    .addParam('gatekeepernetwork', 'The gatekeeper network')
-    .setAction(checkGT)
+  .addParam('address', 'The wallet to check')
+  .addParam('gatekeepernetwork', 'The gatekeeper network')
+  .setAction(checkGT);
 task('add-gatekeeper', 'add a gatekeeper to a network')
-    .addParam('gatekeeper', 'The gatekeeper to add')
-    .addParam('gatekeepernetwork', 'The gatekeeper network to add the gatekeeper to')
-    .setAction(addGatekeeper)
+  .addParam('gatekeeper', 'The gatekeeper to add')
+  .addParam('gatekeepernetwork', 'The gatekeeper network to add the gatekeeper to')
+  .setAction(addGatekeeper);
 task('issue-gt', 'issue a gateway token')
-    .addParam('gatekeepernetwork', 'The gatekeeper network to issue the token against')
-    .addParam('address', 'The wallet to issue the gateway token for')
-    .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
-    .setAction(issueGT)
+  .addParam('gatekeepernetwork', 'The gatekeeper network to issue the token against')
+  .addParam('address', 'The wallet to issue the gateway token for')
+  .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
+  .setAction(issueGT);
 task('fund', 'fund a wallet')
-    .addParam('from', 'The funder wallet')
-    .addParam('to', 'The wallet to fund')
-    .addParam('amount', 'The amount in eth to send')
-    .addFlag('dryrun', 'Do not actually send the transaction')
-    .setAction(fund)
-task('print-private-key', 'Print the private key of a wallet used by hardhat (WARNING - DO NOT USE THIS FOR PRODUCTION KEYS)')
-    .addParam('index', 'the index of the wallet to get the private key for')
-    .setAction(printPrivateKey)
-task('create-wallet', 'Create a test wallet')
-    .setAction(createWallet)
+  .addParam('from', 'The funder wallet')
+  .addParam('to', 'The wallet to fund')
+  .addParam('amount', 'The amount in eth to send')
+  .addFlag('dryrun', 'Do not actually send the transaction')
+  .setAction(fund);
+task(
+  'print-private-key',
+  'Print the private key of a wallet used by hardhat (WARNING - DO NOT USE THIS FOR PRODUCTION KEYS)',
+)
+  .addParam('index', 'the index of the wallet to get the private key for')
+  .setAction(printPrivateKey);
+task('create-wallet', 'Create a test wallet').setAction(createWallet);
 task('add-forwarder', 'add a forwarder to the gateway token smart contract (e.g. to support a relayer)')
-    .addParam('forwarder', 'The forwarder to add')
-    .setAction(addForwarder)
+  .addParam('forwarder', 'The forwarder to add')
+  .setAction(addForwarder);
 
 module.exports = {
-  defaultNetwork: "hardhat",
+  defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
-      accounts: process.env.NODE_ENV === 'test' ?
-          derivedAccounts :
-          liveAccounts.map(a => ({ privateKey: a, balance: '10000000000000000000000'})),
+      accounts:
+        process.env.NODE_ENV === 'test'
+          ? derivedAccounts
+          : liveAccounts.map((a) => ({ privateKey: a, balance: '10000000000000000000000' })),
     },
     localhost: {
       saveDeployments: true,
@@ -212,29 +220,29 @@ module.exports = {
     },
   },
   solidity: {
-    version: "0.8.9",
+    version: '0.8.9',
     settings: {
       optimizer: {
         enabled: true,
-        runs: 100
-      }
-    }
+        runs: 100,
+      },
+    },
   },
   contractSizer: {
     runOnCompile: true,
     strict: true,
   },
   paths: {
-    sources: "./contracts",
-    tests: "./test",
-    cache: "./cache",
-    artifacts: "./build",
-    deploy: "./deploy",
-    deployments: "./deployments"
+    sources: './contracts',
+    tests: './test',
+    cache: './cache',
+    artifacts: './build',
+    deploy: './deploy',
+    deployments: './deployments',
   },
   gasReporter: {
     currency: 'USD',
-    gasPrice: 15
+    gasPrice: 15,
   },
   mocha: {
     timeout: 100000,
@@ -246,6 +254,8 @@ module.exports = {
     flat: true,
   },
   etherscan: {
+    // Use this when you want to verify on ArbiScan
+    // apiKey: process.env.ARBISCAN_API_KEY,
     // Use this when you want to verify on PolygonScan
     // apiKey: process.env.POLYGONSCAN_API_KEY,
     apiKey: process.env.ETHERSCAN_API_KEY,
@@ -262,11 +272,11 @@ module.exports = {
     },
   },
   typechain: {
-    // outDir: 'src/types',
+    outDir: 'typechain-types',
     // target: 'ethers-v5',
     // alwaysGenerateOverloads: false, // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
     // externalArtifacts: ['externalArtifacts/*.json'], // optional array of glob patterns with external artifacts to process (for example external libs from node_modules)
     // dontOverrideCompile: false // defaults to false
     tsNocheck: true,
   },
-}
+};

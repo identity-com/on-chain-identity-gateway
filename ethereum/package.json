@@ -1,11 +1,20 @@
 {
   "private": true,
   "__workspaces_comment": "Order is build order, parent must come first",
-  "workspaces": [
-    "smart-contract",
-    "gateway-eth-ts",
-    "gatekeeper-cli"
-  ],
+  "workspaces": {
+    "packages": [
+      "smart-contract",
+      "gateway-eth-ts",
+      "gatekeeper-cli"
+    ],
+    "nohoist": [
+      "**/@openzeppelin/*",
+      "**/@typechain/*",
+      "**/@nomicfoundation/*",
+      "**/@nomiclabs/*",
+      "**/@solvprotocol/*"
+    ]
+  },
   "scripts": {
     "test": "yarn workspaces run test",
     "build": "yarn workspaces run build"

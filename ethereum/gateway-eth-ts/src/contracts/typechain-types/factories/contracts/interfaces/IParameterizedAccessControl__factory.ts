@@ -12,6 +12,22 @@ import type {
 
 const _abi = [
   {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "ParameterizedAccessControl__RenounceRoleNotForSelf",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {

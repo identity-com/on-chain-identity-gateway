@@ -1,0 +1,5 @@
+{
+  "filter_paths": "node_modules",
+  "detectors_to_exclude": "timestamp",
+  "hardhat_artifacts_directory": "build"
+}

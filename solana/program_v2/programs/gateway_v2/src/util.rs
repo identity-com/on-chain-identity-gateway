@@ -2,12 +2,13 @@
 use std::ops::{Div, Mul};
 
 use crate::constants::MAX_NETWORK_FEE;
-use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
-use anchor_lang::{Key, ToAccountInfo};
-use anchor_spl::token::{Token, TokenAccount};
+use anchor_lang::context::CpiContext;
+use anchor_lang::prelude::{Interface, InterfaceAccount, Pubkey, Signer};
+use anchor_lang::ToAccountInfo;
+use anchor_spl::token_interface::{
+    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
+};
 use solana_program::entrypoint::ProgramResult;
-use solana_program::program::invoke;
-use spl_token::instruction::transfer;
 
 use crate::errors::{GatekeeperErrors, NetworkErrors};
 use crate::state::{GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, NetworkFeesPercentage};
@@ -67,31 +68,27 @@ pub fn calculate_network_and_gatekeeper_fee(fee: u64, percent: u16) -> (u64, u64
 }
 
 pub fn create_and_invoke_transfer<'a>(
-    spl_token_address: Program<'a, Token>,
-    source_account: Account<'a, TokenAccount>,
-    destination_account: Account<'a, TokenAccount>,
+    spl_token_address: Interface<'a, TokenInterface>,
+    source_account: InterfaceAccount<'a, TokenAccount>,
+    destination_account: InterfaceAccount<'a, TokenAccount>,
+    mint: InterfaceAccount<'a, Mint>,
     authority_account: Signer<'a>,
-    signer_pubkeys: &[&Pubkey],
     amount: u64,
 ) -> ProgramResult {
-    let transfer_instruction_network_result = transfer(
-        &spl_token_address.key(),
-        &source_account.key(),
-        &destination_account.key(),
-        &authority_account.key(),
-        signer_pubkeys,
+    let accounts_checked = TransferChecked {
+        from: source_account.to_account_info(),
+        mint: mint.to_account_info(),
+        to: destination_account.to_account_info(),
+        authority: authority_account.to_account_info(),
+    };
+
+    transfer_checked(
+        CpiContext::new(spl_token_address.to_account_info(), accounts_checked),
         amount,
+        mint.decimals,
     )?;
 
-    invoke(
-        &transfer_instruction_network_result,
-        &[
-            source_account.to_account_info(),
-            destination_account.to_account_info(),
-            authority_account.to_account_info(),
-            spl_token_address.to_account_info(),
-        ],
-    )
+    Ok(())
 }
 
 pub fn check_gatekeeper_auth_threshold(
