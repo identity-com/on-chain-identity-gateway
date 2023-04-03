@@ -169,7 +169,10 @@ describe('Verify a pass', () => {
   });
 
   it('Fails to verify a pass in a halted gatekeeper', async () => {
-    await networkService.setGatekeeperState(GatekeeperState.Halted).rpc();
+    await networkService
+      .setGatekeeperState(GatekeeperState.Halted)
+      .withPartialSigners(networkAuthority)
+      .rpc();
 
     return expect(
       gatekeeperService
@@ -188,7 +191,10 @@ describe('Verify a pass', () => {
   });
 
   it('Succeeds to verify a pass in a frozen gatekeeper', async () => {
-    await networkService.setGatekeeperState(GatekeeperState.Frozen).rpc();
+    await networkService
+      .setGatekeeperState(GatekeeperState.Frozen)
+      .withPartialSigners(networkAuthority)
+      .rpc();
 
     await gatekeeperService
       .verifyPass(
