@@ -2,9 +2,9 @@ import { Command, Flags } from '@oclif/core';
 import { parseGatekeeperUpdateData } from '../../util/util';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import {
-  UpdateGatekeeperData,
-  NetworkService,
   ExtendedCluster,
+  NetworkService,
+  UpdateGatekeeperData,
 } from '@identity.com/gateway-solana-client';
 import { Wallet } from '@coral-xyz/anchor';
 import fsPromises from 'node:fs/promises';
@@ -48,6 +48,7 @@ export default class Update extends Command {
   };
 
   static args = [];
+
   async run(): Promise<void> {
     const { flags } = await this.parse(Update);
 
@@ -74,6 +75,9 @@ export default class Update extends Command {
       authorityKeypair.publicKey,
       gatekeeper,
       {
+        // TODO: Remove this as part of IDCOM-2386
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         wallet: authorityWallet,
         clusterType: cluster as ExtendedCluster,
       }
