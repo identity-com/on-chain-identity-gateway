@@ -16,7 +16,7 @@ import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe.only('Change pass state', () => {
+describe('Change pass state', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
