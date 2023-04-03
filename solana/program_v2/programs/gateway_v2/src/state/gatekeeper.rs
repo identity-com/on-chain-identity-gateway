@@ -17,7 +17,7 @@ pub struct Gatekeeper {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
     /// the authority for this gatekeeper
-    pub authority: Pubkey,
+    pub subject: Pubkey,
     /// The bump for the signer of this gatekeeper
     pub gatekeeper_bump: u8,
     /// The [`GatekeeperNetwork`] this gatekeeper is on
@@ -486,7 +486,7 @@ mod tests {
 
         Gatekeeper {
             version: 0,
-            authority: *authority_pubkey,
+            subject: *authority_pubkey,
             gatekeeper_bump: 0,
             gatekeeper_network: Pubkey::new_unique(),
             staking_account: Pubkey::new_unique(),

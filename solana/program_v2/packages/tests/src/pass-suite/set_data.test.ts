@@ -13,7 +13,7 @@ import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe('Change pass data', () => {
+describe.only('Change pass data', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;

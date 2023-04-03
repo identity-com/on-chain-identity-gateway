@@ -1,8 +1,9 @@
 import * as anchor from '@coral-xyz/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 import {
+  airdrop,
   GatekeeperService,
   NetworkService,
-  airdrop,
 } from '@identity.com/gateway-solana-client';
 import {
   TEST_GATEKEEPER,
@@ -11,7 +12,6 @@ import {
 } from '../util/constants';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
-import { Wallet } from '@coral-xyz/anchor';
 import { loadPrivateKey } from '../util/lib';
 import { before } from 'mocha';
 
@@ -45,6 +45,7 @@ export const createNetworkService = async (
 
   return NetworkService.buildFromAnchor(
     program,
+    authority.publicKey, // TODO: Replace with network authority
     authority.publicKey,
     dataAccount,
     {

@@ -29,7 +29,7 @@ pub struct PassSetState<'info> {
     #[account(
     constraint = pass.gatekeeper == gatekeeper.key(),
     constraint = gatekeeper.can_set_pass_state(state),
-    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), gatekeeper.gatekeeper_network.as_ref()],
+    seeds = [GATEKEEPER_SEED, gatekeeper.subject.as_ref(), gatekeeper.gatekeeper_network.as_ref()],
     bump = gatekeeper.gatekeeper_bump
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,

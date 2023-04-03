@@ -116,7 +116,8 @@ describe('Change pass gatekeeper', () => {
     );
 
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .setGatekeeperState(GatekeeperState.Halted)
+      .withPartialSigners(networkAuthority)
       .rpc();
 
     // Act
@@ -135,7 +136,8 @@ describe('Change pass gatekeeper', () => {
     );
 
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .setGatekeeperState(GatekeeperState.Frozen)
+      .withPartialSigners(networkAuthority)
       .rpc();
 
     // Act

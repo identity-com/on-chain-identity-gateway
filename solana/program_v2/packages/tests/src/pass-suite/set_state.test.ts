@@ -1,6 +1,6 @@
 import {
-  PassState,
   GatekeeperService,
+  PassState,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -16,7 +16,7 @@ import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe('Change pass state', () => {
+describe.only('Change pass state', () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;

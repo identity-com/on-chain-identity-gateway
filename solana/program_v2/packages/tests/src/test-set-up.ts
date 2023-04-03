@@ -78,6 +78,7 @@ export const setUpAdminNetworkGatekeeper = async (
 
   const networkService = await NetworkService.buildFromAnchor(
     program,
+    networkAuthority.publicKey,
     gatekeeperAuthority.publicKey,
     gatekeeperPDA,
     {
@@ -103,7 +104,7 @@ export const setUpAdminNetworkGatekeeper = async (
       authKeys: [
         {
           flags: NetworkKeyFlags.AUTH | NetworkKeyFlags.CREATE_GATEKEEPER,
-          key: gatekeeperAuthority.publicKey,
+          key: networkAuthority.publicKey,
         },
       ],
       supportedTokens: [{ key: mint }],
@@ -113,12 +114,8 @@ export const setUpAdminNetworkGatekeeper = async (
     .rpc();
 
   await networkService
-    .createGatekeeper(
-      networkAuthority.publicKey,
-      stakingPDA,
-      adminAuthority.publicKey
-    )
-    .withPartialSigners(adminAuthority)
+    .createGatekeeper(stakingPDA)
+    .withPartialSigners(networkAuthority)
     .rpc();
 
   await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
@@ -148,6 +145,7 @@ export const setUpAdminNetworkGatekeeper = async (
       wallet: new anchor.Wallet(gatekeeperAuthority),
     }
   );
+
   return {
     adminService,
     networkService,
