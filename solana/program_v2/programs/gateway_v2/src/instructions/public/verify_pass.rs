@@ -66,7 +66,7 @@ pub struct PassVerify<'info> {
     #[account(
     constraint = pass.gatekeeper == gatekeeper.key(),
     constraint = gatekeeper.gatekeeper_state != GatekeeperState::Halted @ GatekeeperErrors::InvalidState,
-    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
+    seeds = [GATEKEEPER_SEED, gatekeeper.subject.as_ref(), network.key().as_ref()],
     bump = gatekeeper.gatekeeper_bump
     )]
     pub gatekeeper: Box<Account<'info, Gatekeeper>>,

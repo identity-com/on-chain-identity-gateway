@@ -1,7 +1,7 @@
 import {
+  ExtendedCluster,
   GatekeeperState,
   NetworkService,
-  ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@coral-xyz/anchor';
@@ -52,7 +52,6 @@ export default class SetState extends Command {
     const { flags } = await this.parse(SetState);
     const gatekeeper = new PublicKey(flags.gatekeeper);
     const state = flags.state;
-    const network = new PublicKey(flags.network);
     const cluster =
       flags.cluster === 'localnet' ||
       flags.cluster === 'devnet' ||
@@ -76,6 +75,9 @@ export default class SetState extends Command {
       authPair.publicKey,
       gatekeeper,
       {
+        // TODO: Remove this as part of IDCOM-2386
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         wallet: authorityWallet,
         clusterType: cluster as ExtendedCluster,
       }
@@ -85,7 +87,7 @@ export default class SetState extends Command {
     const initialState = gatekeeperAccount?.state as GatekeeperState;
 
     const stateChangeSignature = await networkService
-      .setGatekeeperState(network, targetState)
+      .setGatekeeperState(targetState)
       .rpc();
     gatekeeperAccount = await networkService.getGatekeeperAccount();
     const newState = gatekeeperAccount?.state as GatekeeperState;

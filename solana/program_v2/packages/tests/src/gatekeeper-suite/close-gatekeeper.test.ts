@@ -1,13 +1,13 @@
 import {
-  NetworkService,
   AdminService,
   NetworkKeyFlags,
+  NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@coral-xyz/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { expect } from 'chai';
 import * as chai from 'chai';
+import { expect } from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
 import { generateFundedKey } from '../util/lib';
@@ -26,15 +26,19 @@ describe('Gateway v2 Client', () => {
   let gatekeeperDataAccount: PublicKey;
   let stakingDataAccount: PublicKey;
 
+  let feePayerAuthority: Keypair;
   let adminAuthority: Keypair;
+  let gatekeeperAuthority: Keypair;
   let networkAuthority: Keypair;
 
   before(async () => {
+    feePayerAuthority = await generateFundedKey();
     adminAuthority = await generateFundedKey();
+    gatekeeperAuthority = await generateFundedKey();
     networkAuthority = await generateFundedKey();
 
     [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
-      adminAuthority.publicKey,
+      gatekeeperAuthority.publicKey,
       networkAuthority.publicKey
     );
     [stakingDataAccount] = await NetworkService.createStakingAddress(
@@ -53,11 +57,12 @@ describe('Gateway v2 Client', () => {
 
     networkService = await NetworkService.buildFromAnchor(
       program,
-      adminAuthority.publicKey,
+      networkAuthority.publicKey,
+      gatekeeperAuthority.publicKey,
       gatekeeperDataAccount,
       {
         clusterType: 'localnet',
-        wallet: new anchor.Wallet(adminAuthority),
+        wallet: new anchor.Wallet(feePayerAuthority),
       },
       programProvider
     );
@@ -76,7 +81,10 @@ describe('Gateway v2 Client', () => {
           },
         ],
         authKeys: [
-          { flags: NetworkKeyFlags.AUTH, key: networkAuthority.publicKey },
+          {
+            flags: NetworkKeyFlags.AUTH | NetworkKeyFlags.CREATE_GATEKEEPER,
+            key: networkAuthority.publicKey,
+          },
         ],
         supportedTokens: [{ key: PublicKey.unique() }],
         networkFeatures: NetworkFeatures.CHANGE_PASS_GATEKEEPER,
@@ -85,12 +93,8 @@ describe('Gateway v2 Client', () => {
       .rpc();
 
     await networkService
-      .createGatekeeper(
-        networkAuthority.publicKey,
-        stakingDataAccount,
-        adminAuthority.publicKey
-      )
-      .withPartialSigners(adminAuthority)
+      .createGatekeeper(stakingDataAccount)
+      .withPartialSigners(networkAuthority)
       .rpc();
   });
 
@@ -101,12 +105,8 @@ describe('Gateway v2 Client', () => {
 
       // runs closeGatekeeper
       await networkService
-        .closeGatekeeper(
-          networkAuthority.publicKey,
-          undefined,
-          adminAuthority.publicKey
-        )
-        .withPartialSigners(adminAuthority)
+        .closeGatekeeper()
+        .withPartialSigners(networkAuthority)
         .rpc();
 
       network = await adminService.getNetworkAccount();

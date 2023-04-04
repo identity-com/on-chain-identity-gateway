@@ -34,7 +34,7 @@ pub struct PassSetData<'info> {
     #[account(
     constraint = pass.gatekeeper == gatekeeper.key(),
     constraint = gatekeeper.gatekeeper_state != GatekeeperState::Halted,
-    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), gatekeeper.gatekeeper_network.as_ref()],
+    seeds = [GATEKEEPER_SEED, gatekeeper.subject.as_ref(), gatekeeper.gatekeeper_network.as_ref()],
     bump = gatekeeper.gatekeeper_bump
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,

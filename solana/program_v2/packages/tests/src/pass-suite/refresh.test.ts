@@ -118,7 +118,8 @@ describe('Refresh a pass', () => {
 
   it('should not refresh a pass if gatekeeper is halted', async () => {
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .setGatekeeperState(GatekeeperState.Halted)
+      .withPartialSigners(networkAuthority)
       .rpc();
 
     // Act
@@ -140,7 +141,8 @@ describe('Refresh a pass', () => {
   });
   it('should not refresh a pass if gatekeeper is frozen', async () => {
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .setGatekeeperState(GatekeeperState.Frozen)
+      .withPartialSigners(networkAuthority)
       .rpc();
 
     // Act
@@ -227,7 +229,8 @@ describe('Refresh a pass', () => {
   it('Cannot issue a pass if gatekeeper is frozen', async () => {
     // Assemble
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .setGatekeeperState(GatekeeperState.Frozen)
+      .withPartialSigners(networkAuthority)
       .rpc();
     // Act + Assert
     return expect(
@@ -250,7 +253,8 @@ describe('Refresh a pass', () => {
   it('Cannot refresh a pass if gatekeeper is halted', async () => {
     // Assemble
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .setGatekeeperState(GatekeeperState.Halted)
+      .withPartialSigners(networkAuthority)
       .rpc();
     // Act + Assert
     return expect(

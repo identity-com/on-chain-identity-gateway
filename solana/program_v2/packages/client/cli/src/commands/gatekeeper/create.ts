@@ -76,6 +76,9 @@ export default class Create extends Command {
       authPair.publicKey,
       dataAccount,
       {
+        // TODO: Remove this as part of IDCOM-2386
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         wallet: authorityWallet,
         clusterType: cluster as ExtendedCluster,
       }
@@ -101,13 +104,9 @@ export default class Create extends Command {
       supportedTokens: [{ key: new PublicKey(token) }],
     };
     const gatekeeperSignature = await networkService
-      .createGatekeeper(
-        networkAddress,
-        stakingAccount,
-        undefined,
-        gatekeeperData
-      )
+      .createGatekeeper(stakingAccount, gatekeeperData)
       .rpc();
+
     this.log(`Staking Account: ${stakingAccount}`);
     this.log(`Gatekeeper Signature: ${gatekeeperSignature}`);
     const gkAccount = await networkService.getGatekeeperAccount();

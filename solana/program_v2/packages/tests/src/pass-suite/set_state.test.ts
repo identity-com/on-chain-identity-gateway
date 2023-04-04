@@ -1,6 +1,6 @@
 import {
-  PassState,
   GatekeeperService,
+  PassState,
 } from '@identity.com/gateway-solana-client';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';

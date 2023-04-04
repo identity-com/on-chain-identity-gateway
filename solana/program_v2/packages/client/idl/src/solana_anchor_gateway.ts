@@ -103,6 +103,11 @@ export type SolanaAnchorGateway = {
           "isSigner": true
         },
         {
+          "name": "subject",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -190,7 +195,7 @@ export type SolanaAnchorGateway = {
         },
         {
           "name": "authority",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -649,7 +654,7 @@ export type SolanaAnchorGateway = {
             "type": "u8"
           },
           {
-            "name": "authority",
+            "name": "subject",
             "docs": [
               "the authority for this gatekeeper"
             ],
@@ -1647,6 +1652,11 @@ export const IDL: SolanaAnchorGateway = {
           "isSigner": true
         },
         {
+          "name": "subject",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -1734,7 +1744,7 @@ export const IDL: SolanaAnchorGateway = {
         },
         {
           "name": "authority",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -2193,7 +2203,7 @@ export const IDL: SolanaAnchorGateway = {
             "type": "u8"
           },
           {
-            "name": "authority",
+            "name": "subject",
             "docs": [
               "the authority for this gatekeeper"
             ],
