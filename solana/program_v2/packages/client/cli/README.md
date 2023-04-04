@@ -689,8 +689,9 @@ gateway network create \
 
 ```bash
 gateway gatekeeper create \
- --keypair ./GK3o4HKqnTTSkh6D59BdK28mto63TiXaPaNsDeFpG7mj.json 
- --network nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm 
+ --gatekeeper GK3o4HKqnTTSkh6D59BdK28mto63TiXaPaNsDeFpG7mj \
+ --networkKeypair ./nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm.json \
+ --payerKeypair ./nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm.json \
  --token 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU \ # an SPL token to support payments in (USDC in this example)
  --fees 5 \ # The fee percentage split between the gatekeeper and network
  --cluster devnet # the cluster devnet|localnet|mainnet
