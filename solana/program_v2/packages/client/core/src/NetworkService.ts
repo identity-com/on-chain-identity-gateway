@@ -253,10 +253,9 @@ export class NetworkService extends AbstractService {
   /**
    * Closes a gatekeeper and claims back the rent
    *
-   * @param receiver The receiever of the rent reclaimed
+   * @param receiver The receiver of the rent reclaimed
    * @param payer The fee payer
-   * @param authority_authority The authority required to close the account
-   * @param network_authority
+   * @param network_authority the network authority required to create the gatekeeper
    */
   closeGatekeeper(
     receiver: PublicKey = this._network,

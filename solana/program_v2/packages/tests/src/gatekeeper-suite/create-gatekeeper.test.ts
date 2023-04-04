@@ -8,7 +8,6 @@ import {
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@coral-xyz/anchor';
-import { BN } from '@coral-xyz/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import * as chai from 'chai';
 import { expect } from 'chai';
@@ -139,10 +138,10 @@ describe('Gateway v2 Client', () => {
               token: tokenKey.publicKey,
               // TODO: Fix the representation in: https://github.com/identity-com/on-chain-identity-gateway/blob/develop/solana/program_v2/packages/client/core/src/lib/types.ts#L18-L18
               // TODO: These parameters are u64 in Rust and cannot be represented as numbers: https://github.com/identity-com/on-chain-identity-gateway/blob/develop/solana/program_v2/programs/gateway_v2/src/state/gatekeeper.rs#L235-L235
-              issue: new BN(0) as unknown as number,
-              refresh: new BN(0) as unknown as number,
-              expire: new BN(0) as unknown as number,
-              verify: new BN(0) as unknown as number,
+              issue: 0,
+              refresh: 0,
+              expire: 0,
+              verify: 0,
             },
           ],
           authThreshold: 1,

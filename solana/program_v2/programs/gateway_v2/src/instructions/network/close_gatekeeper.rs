@@ -4,8 +4,6 @@ use crate::constants::GATEKEEPER_SEED;
 use crate::errors::*;
 use crate::state::*;
 
-// TODO: Think about it: Should Gatekeepers only be able to remove themselves WITH a signoff of the
-// Network
 pub fn close_gatekeeper(ctx: Context<CloseGatekeeperAccount>) -> Result<()> {
     let network = &mut ctx.accounts.network;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
