@@ -17,14 +17,19 @@ export default class Create extends Command {
 
   static flags = {
     help: Flags.help({ char: 'h' }),
-    network: Flags.string({
+    networkKeypair: Flags.string({
       char: 'n',
-      description: "String representing the network's address",
+      description: 'Path to the network keypair',
       required: true,
     }),
-    keypair: Flags.string({
-      char: 'k',
-      description: 'Path to a solana keypair',
+    payerKeypair: Flags.string({
+      char: 'p',
+      description: 'Path to the payer keypair',
+      required: true,
+    }),
+    gatekeeper: Flags.string({
+      char: 'g',
+      description: "String representing the gatekeeper's address",
       required: true,
     }),
     cluster: Flags.string({
@@ -48,7 +53,7 @@ export default class Create extends Command {
 
   async run(): Promise<void> {
     const { flags } = await this.parse(Create);
-    const networkAddress = new PublicKey(flags.network);
+    const gatekeeperAddress = new PublicKey(flags.gatekeeper);
     const stakingAccount = Keypair.generate().publicKey;
     const cluster =
       flags.cluster === 'localnet' ||
@@ -62,23 +67,30 @@ export default class Create extends Command {
     const token = flags.token;
     const fee = parseInt(flags.fees);
 
-    const authKey = await fsPromises.readFile(`${flags.keypair}`);
-    const authKeyArr = Uint8Array.from(JSON.parse(authKey.toString()));
-    const authPair = Keypair.fromSecretKey(authKeyArr);
-    const authorityWallet = new Wallet(authPair);
+    const networkAuthKey = await fsPromises.readFile(`${flags.networkKeypair}`);
+    const networkAuthKeyArr = Uint8Array.from(
+      JSON.parse(networkAuthKey.toString())
+    );
+    const networkAuthPair = Keypair.fromSecretKey(networkAuthKeyArr);
+
+    const payerAuthKey = await fsPromises.readFile(`${flags.payerKeypair}`);
+    const payerAuthKeyArr = Uint8Array.from(
+      JSON.parse(payerAuthKey.toString())
+    );
+    const payerAuthPair = Keypair.fromSecretKey(payerAuthKeyArr);
+
+    const authorityWallet = new Wallet(payerAuthPair);
     const [dataAccount] = await NetworkService.createGatekeeperAddress(
-      authorityWallet.publicKey,
-      networkAddress
+      gatekeeperAddress,
+      networkAuthPair.publicKey
     );
     this.log(`Derived GK Data Account: ${dataAccount}`);
 
     const networkService = await NetworkService.build(
-      authPair.publicKey,
+      networkAuthPair.publicKey,
+      gatekeeperAddress,
       dataAccount,
       {
-        // TODO: Remove this as part of IDCOM-2386
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         wallet: authorityWallet,
         clusterType: cluster as ExtendedCluster,
       }
@@ -98,13 +110,15 @@ export default class Create extends Command {
       authKeys: [
         {
           flags: 65535,
-          key: authPair.publicKey,
+          key: networkAuthPair.publicKey,
         },
       ],
       supportedTokens: [{ key: new PublicKey(token) }],
     };
+
     const gatekeeperSignature = await networkService
       .createGatekeeper(stakingAccount, gatekeeperData)
+      .withPartialSigners(networkAuthPair)
       .rpc();
 
     this.log(`Staking Account: ${stakingAccount}`);

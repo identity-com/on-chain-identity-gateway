@@ -102,6 +102,7 @@ export default class Create extends Command {
         {
           flags:
             NetworkKeyFlags.AUTH |
+            NetworkKeyFlags.CREATE_GATEKEEPER |
             NetworkKeyFlags.ADD_FEES |
             NetworkKeyFlags.ADJUST_FEES |
             NetworkKeyFlags.SET_EXPIRE_TIME,

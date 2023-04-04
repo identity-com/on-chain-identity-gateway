@@ -66,13 +66,15 @@ export default class Close extends Command {
       network
     );
 
-    const networkService = await NetworkService.build(gatekeeper, dataAccount, {
-      // TODO: Remove this as part of IDCOM-2386
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      wallet: authorityWallet,
-      clusterType: cluster as ExtendedCluster,
-    });
+    const networkService = await NetworkService.build(
+      network,
+      gatekeeper,
+      dataAccount,
+      {
+        wallet: authorityWallet,
+        clusterType: cluster as ExtendedCluster,
+      }
+    );
 
     const gatekeeperAccount = await networkService.getGatekeeperAccount(
       dataAccount
