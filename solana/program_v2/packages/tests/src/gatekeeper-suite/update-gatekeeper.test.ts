@@ -1,6 +1,6 @@
 import {
-  NetworkService,
   GatekeeperKeyFlags,
+  NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import * as anchor from '@coral-xyz/anchor';

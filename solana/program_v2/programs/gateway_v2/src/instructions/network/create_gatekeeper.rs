@@ -10,7 +10,7 @@ pub fn create_gatekeeper(
     ctx: Context<CreateGatekeeperAccount>,
     data: CreateGatekeeperData,
 ) -> Result<()> {
-    let authority = &mut ctx.accounts.authority;
+    let subject = &mut ctx.accounts.subject;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let network = &mut ctx.accounts.network;
     let staking_account = &ctx.accounts.staking_account;
@@ -21,7 +21,7 @@ pub fn create_gatekeeper(
         GatekeeperErrors::InsufficientAuthKeys
     );
 
-    gatekeeper.authority = *authority.key;
+    gatekeeper.subject = *subject.key;
     gatekeeper.gatekeeper_bump = *ctx.bumps.get("gatekeeper").unwrap();
     gatekeeper.gatekeeper_network = network.key();
     gatekeeper.staking_account = staking_account.key();
@@ -54,11 +54,12 @@ pub struct CreateGatekeeperAccount<'info> {
     data.token_fees.len(),
     data.auth_keys.len(),
     ),
-    seeds = [GATEKEEPER_SEED, authority.key().as_ref(), network.key().as_ref()],
+    seeds = [GATEKEEPER_SEED, subject.key().as_ref(), network.key().as_ref()],
     bump
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     pub authority: Signer<'info>,
+    pub subject: SystemAccount<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account(
@@ -71,7 +72,7 @@ pub struct CreateGatekeeperAccount<'info> {
     ),
     realloc::payer = payer,
     realloc::zero = false,
-    constraint = network.can_access(&authority, NetworkKeyFlags::CREATE_GATEKEEPER) @ NetworkErrors::InsufficientAccessCreateGatekeeper,
+    constraint = network.can_access(& authority, NetworkKeyFlags::CREATE_GATEKEEPER) @ NetworkErrors::InsufficientAccessCreateGatekeeper,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]

@@ -36,13 +36,13 @@ pub struct PassChangeGatekeeper<'info> {
     #[account(
     constraint = pass.gatekeeper == old_gatekeeper.key(),
     constraint = old_gatekeeper.gatekeeper_state != GatekeeperState::Halted @ GatekeeperErrors::InvalidState,
-    seeds = [GATEKEEPER_SEED, old_gatekeeper.authority.as_ref(), old_gatekeeper.gatekeeper_network.as_ref()],
+    seeds = [GATEKEEPER_SEED, old_gatekeeper.subject.as_ref(), old_gatekeeper.gatekeeper_network.as_ref()],
     bump = old_gatekeeper.gatekeeper_bump
     )]
     pub old_gatekeeper: Account<'info, Gatekeeper>,
     #[account(
     constraint = old_gatekeeper.gatekeeper_network == new_gatekeeper.gatekeeper_network @ PassErrors::InvalidNetwork,
-    seeds = [GATEKEEPER_SEED, new_gatekeeper.authority.as_ref(), new_gatekeeper.gatekeeper_network.as_ref()],
+    seeds = [GATEKEEPER_SEED, new_gatekeeper.subject.as_ref(), new_gatekeeper.gatekeeper_network.as_ref()],
     bump = new_gatekeeper.gatekeeper_bump
     )]
     pub new_gatekeeper: Account<'info, Gatekeeper>,

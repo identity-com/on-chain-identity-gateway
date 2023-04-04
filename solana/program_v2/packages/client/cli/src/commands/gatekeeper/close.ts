@@ -1,6 +1,6 @@
 import {
-  NetworkService,
   ExtendedCluster,
+  NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@coral-xyz/anchor';
@@ -67,6 +67,9 @@ export default class Close extends Command {
     );
 
     const networkService = await NetworkService.build(gatekeeper, dataAccount, {
+      // TODO: Remove this as part of IDCOM-2386
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       wallet: authorityWallet,
       clusterType: cluster as ExtendedCluster,
     });

@@ -66,7 +66,7 @@ pub struct PassExpire<'info> {
     pub network: Box<Account<'info, GatekeeperNetwork>>,
     #[account(
     constraint = pass.gatekeeper == gatekeeper.key(),
-    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
+    seeds = [GATEKEEPER_SEED, gatekeeper.subject.as_ref(), network.key().as_ref()],
     constraint = gatekeeper.gatekeeper_state != GatekeeperState::Halted @ GatekeeperErrors::InvalidState,
     bump = gatekeeper.gatekeeper_bump
     )]

@@ -1,9 +1,10 @@
-use crate::constants::GATEKEEPER_SEED;
-use crate::errors::GatekeeperErrors;
-use crate::state::{Gatekeeper, GatekeeperKeyFlags};
 use anchor_lang::prelude::*;
 use anchor_spl::token::TransferChecked;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
+
+use crate::constants::GATEKEEPER_SEED;
+use crate::errors::GatekeeperErrors;
+use crate::state::{Gatekeeper, GatekeeperKeyFlags};
 
 // Will withdraw funds from the gatekeeper
 pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: u64) -> Result<()> {
@@ -17,7 +18,7 @@ pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: 
     let gatekeeper_token_account = &ctx.accounts.gatekeeper_token_account;
     let mint = &ctx.accounts.mint;
 
-    let gatekeeper_authority_key = gatekeeper.authority.key();
+    let gatekeeper_authority_key = gatekeeper.subject.key();
     let gatekeeper_bump = gatekeeper.gatekeeper_bump.to_le_bytes();
 
     let authority_seed = &[
@@ -50,9 +51,9 @@ pub fn gatekeeper_withdraw(ctx: Context<GatekeeperWithdrawAccount>, mut amount: 
 #[instruction(amount: u64)]
 pub struct GatekeeperWithdrawAccount<'info> {
     #[account(
-        seeds = [GATEKEEPER_SEED, authority.key().as_ref(), gatekeeper.gatekeeper_network.key().as_ref()],
-        bump = gatekeeper.gatekeeper_bump,
-        constraint = gatekeeper.can_access(&authority, GatekeeperKeyFlags::WITHDRAW) @ GatekeeperErrors::InsufficientAccessAuthKeys,
+    seeds = [GATEKEEPER_SEED, authority.key().as_ref(), gatekeeper.gatekeeper_network.key().as_ref()],
+    bump = gatekeeper.gatekeeper_bump,
+    constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::WITHDRAW) @ GatekeeperErrors::InsufficientAccessAuthKeys,
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     pub authority: Signer<'info>,
@@ -61,7 +62,7 @@ pub struct GatekeeperWithdrawAccount<'info> {
     pub receiver_token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(
     mut,
-    constraint = gatekeeper_token_account.owner == *gatekeeper.to_account_info().key
+    constraint = gatekeeper_token_account.owner == * gatekeeper.to_account_info().key
     )]
     pub gatekeeper_token_account: InterfaceAccount<'info, TokenAccount>,
     pub mint: InterfaceAccount<'info, Mint>,

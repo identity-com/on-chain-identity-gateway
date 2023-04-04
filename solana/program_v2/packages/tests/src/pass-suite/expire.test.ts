@@ -130,7 +130,8 @@ describe('Expire a pass', () => {
 
   it('Can expire a pass if the gatekeeper is frozen', async () => {
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .setGatekeeperState(GatekeeperState.Frozen)
+      .withPartialSigners(networkAuthority)
       .rpc();
 
     await gatekeeperService
@@ -155,7 +156,8 @@ describe('Expire a pass', () => {
 
   it('Cannot expire a pass if the gatekeeper is halted', async () => {
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .setGatekeeperState(GatekeeperState.Halted)
+      .withPartialSigners(networkAuthority)
       .rpc();
 
     return expect(
