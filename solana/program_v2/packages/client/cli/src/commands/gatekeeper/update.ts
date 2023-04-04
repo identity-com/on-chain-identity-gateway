@@ -53,6 +53,7 @@ export default class Update extends Command {
     const { flags } = await this.parse(Update);
 
     const gatekeeper = new PublicKey(flags.gatekeeper);
+    const network = new PublicKey(flags.network);
     const stakingAccount = new PublicKey(flags.stake);
     const cluster =
       flags.cluster === 'localnet' ||
@@ -72,12 +73,10 @@ export default class Update extends Command {
     const authorityWallet = new Wallet(authorityKeypair);
 
     const networkService = await NetworkService.build(
+      network,
       authorityKeypair.publicKey,
       gatekeeper,
       {
-        // TODO: Remove this as part of IDCOM-2386
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         wallet: authorityWallet,
         clusterType: cluster as ExtendedCluster,
       }
