@@ -3,7 +3,7 @@ import {
   NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
-import { BN, Wallet } from '@coral-xyz/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 
@@ -100,10 +100,10 @@ export default class Create extends Command {
       tokenFees: [
         {
           token: new PublicKey(token),
-          issue: new BN(fee),
-          refresh: new BN(fee),
-          expire: new BN(fee),
-          verify: new BN(fee),
+          issue: fee,
+          refresh: fee,
+          expire: fee,
+          verify: fee,
         },
       ],
       authThreshold: 1,
