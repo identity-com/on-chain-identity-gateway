@@ -1,13 +1,13 @@
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@coral-xyz/anchor';
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import {
   AdminService,
   ExtendedCluster,
   NetworkKeyFlags,
 } from '@identity.com/gateway-solana-client';
-import fsPromises from 'node:fs/promises';
 import { NetworkFeatures } from '@identity.com/gateway-solana-client/dist/lib/constants';
+import { readKeyFromFile } from '../../util/util';
 
 export default class Create extends Command {
   static description = 'Creates a gatekeeper network';
@@ -62,26 +62,15 @@ export default class Create extends Command {
     const token = flags.token;
     const fee = parseInt(flags.fees);
 
-    const gaurdianLcalSecretKey = await fsPromises.readFile(
-      `${flags.gaurdianKeypair}`
-    );
-    const guardianPrivateKey = Uint8Array.from(
-      JSON.parse(gaurdianLcalSecretKey.toString())
-    );
-    const gaurdianKeypair = Keypair.fromSecretKey(guardianPrivateKey);
-    const gaurdian = new Wallet(gaurdianKeypair);
-    this.log(`Gaurdian Authority: ${gaurdian.publicKey.toBase58()}`);
+    const gaurdianKeypair = readKeyFromFile(flags.gaurdianKeypair);
+    const gaurdianWallet = new Wallet(gaurdianKeypair);
 
-    const networkLcalSecretKey = await fsPromises.readFile(
-      `${flags.networkKeypair}`
-    );
-    const networkPrivateKey = Uint8Array.from(
-      JSON.parse(networkLcalSecretKey.toString())
-    );
-    const networkKeypair = Keypair.fromSecretKey(networkPrivateKey);
+    this.log(`Gaurdian Authority: ${gaurdianWallet.publicKey.toBase58()}`);
+
+    const networkKeypair = readKeyFromFile(flags.networkKeypair);
 
     const adminService = await AdminService.build(networkKeypair.publicKey, {
-      wallet: gaurdian,
+      wallet: gaurdianWallet,
       clusterType: cluster as ExtendedCluster,
     });
 

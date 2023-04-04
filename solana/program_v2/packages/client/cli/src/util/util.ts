@@ -5,7 +5,20 @@ import {
   UpdateGatekeeperData,
   UpdateNetworkData,
 } from '@identity.com/gateway-solana-client';
-import { PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
+import fs from 'fs';
+
+export const readKeyFromFile = (filename: string) => {
+  if (!fs.existsSync(filename)) {
+    throw new Error(`File not found: ${filename}`);
+  }
+
+  const filedata = fs.readFileSync(filename);
+
+  return Keypair.fromSecretKey(
+    Uint8Array.from(JSON.parse(filedata.toString()))
+  );
+};
 
 export const parseNetworkUpdateData = (
   updateData: UpdateNetworkData

@@ -5,7 +5,7 @@ import {
 import { Command, Flags } from '@oclif/core';
 import { Wallet } from '@coral-xyz/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import fsPromises from 'node:fs/promises';
+import { readKeyFromFile } from '../../util/util';
 
 export default class Create extends Command {
   static description = 'Creates a gatekeeper on an existing network';
@@ -67,17 +67,9 @@ export default class Create extends Command {
     const token = flags.token;
     const fee = parseInt(flags.fees);
 
-    const networkAuthKey = await fsPromises.readFile(`${flags.networkKeypair}`);
-    const networkAuthKeyArr = Uint8Array.from(
-      JSON.parse(networkAuthKey.toString())
-    );
-    const networkAuthPair = Keypair.fromSecretKey(networkAuthKeyArr);
+    const networkAuthPair = readKeyFromFile(flags.networkKeypair);
 
-    const payerAuthKey = await fsPromises.readFile(`${flags.payerKeypair}`);
-    const payerAuthKeyArr = Uint8Array.from(
-      JSON.parse(payerAuthKey.toString())
-    );
-    const payerAuthPair = Keypair.fromSecretKey(payerAuthKeyArr);
+    const payerAuthPair = readKeyFromFile(flags.payerKeypair);
 
     const authorityWallet = new Wallet(payerAuthPair);
     const [dataAccount] = await NetworkService.createGatekeeperAddress(
