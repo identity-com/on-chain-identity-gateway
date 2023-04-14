@@ -250,13 +250,7 @@ contract GatewayToken is
      */
     function getToken(
         uint tokenId
-    )
-        public
-        view
-        virtual
-        override
-        returns (address owner, uint8 state, string memory identity, uint expiration, uint bitmask)
-    {
+    ) public view virtual returns (address owner, uint8 state, string memory identity, uint expiration, uint bitmask) {
         owner = ownerOf(tokenId);
         state = uint8(_tokenStates[tokenId]);
         expiration = _expirations[tokenId];
@@ -465,7 +459,7 @@ contract GatewayToken is
      * @dev Triggers to verify if address has a GATEKEEPER role.
      * @param gatekeeper Gatekeeper address
      */
-    function isGatekeeper(address gatekeeper, uint network) external view virtual override returns (bool) {
+    function isGatekeeper(address gatekeeper, uint network) external view virtual returns (bool) {
         return hasRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
@@ -475,7 +469,7 @@ contract GatewayToken is
      *
      * @notice Can be triggered by Gateway Token Controller or any Network Authority
      */
-    function addNetworkAuthority(address authority, uint network) external virtual override {
+    function addNetworkAuthority(address authority, uint network) external virtual {
         grantRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
@@ -485,7 +479,7 @@ contract GatewayToken is
      *
      * @notice Can be triggered by Gateway Token Controller or any Network Authority
      */
-    function removeNetworkAuthority(address authority, uint network) external virtual override {
+    function removeNetworkAuthority(address authority, uint network) external virtual {
         revokeRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
@@ -493,7 +487,7 @@ contract GatewayToken is
      * @dev Triggers to verify if authority has a NETWORK_AUTHORITY_ROLE role.
      * @param authority Network Authority address
      */
-    function isNetworkAuthority(address authority, uint network) external view virtual override returns (bool) {
+    function isNetworkAuthority(address authority, uint network) external view virtual returns (bool) {
         return hasRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
@@ -508,7 +502,7 @@ contract GatewayToken is
      * @param newManager Address to transfer DAO Manager role for.
      * @notice GatewayToken contract has to be DAO Governed
      */
-    function transferDAOManager(address previousManager, address newManager, uint network) public override {
+    function transferDAOManager(address previousManager, address newManager, uint network) public {
         if (!isNetworkDAOGoverned[network]) revert GatewayToken__NotDAOGoverned(network);
 
         // check the previous manager is a current dao manager

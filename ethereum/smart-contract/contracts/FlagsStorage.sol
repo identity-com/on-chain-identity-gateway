@@ -21,11 +21,12 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     using BitMask for uint256;
 
     EnumerableSet.Bytes32Set private _supportedFlags;
-    address public override superAdmin;
 
-    uint256 public override supportedFlagsMask;
+    address public superAdmin;
 
-    mapping(bytes32 => uint8) public override flagIndexes;
+    uint256 public supportedFlagsMask;
+
+    mapping(bytes32 => uint8) public flagIndexes;
 
     /// The flag being added already exists
     /// @param flag The flag being added
@@ -66,7 +67,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param newSuperAdmin New super admin contract address
      * @notice Only executed by existing super admin
      */
-    function updateSuperAdmin(address newSuperAdmin) public override onlySuperAdmin {
+    function updateSuperAdmin(address newSuperAdmin) public onlySuperAdmin {
         if (newSuperAdmin == address(0)) revert Common__MissingAccount();
 
         emit SuperAdminUpdated(superAdmin, newSuperAdmin);
@@ -79,7 +80,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param index Flag index (limited to 255)
      * @notice Only executed by existing DAO Manager
      */
-    function addFlag(bytes32 flag, uint8 index) public override onlySuperAdmin {
+    function addFlag(bytes32 flag, uint8 index) public onlySuperAdmin {
         _addFlag(flag, index);
     }
 
@@ -89,7 +90,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param indexes Array of flag indexes (limited to 255)
      * @notice Only executed by existing DAO Manager
      */
-    function addFlags(bytes32[] memory flags, uint8[] memory indexes) public override onlySuperAdmin {
+    function addFlags(bytes32[] memory flags, uint8[] memory indexes) public onlySuperAdmin {
         if (flags.length != indexes.length) revert FlagsStorage__IncorrectVariableLength(flags.length, indexes.length);
 
         for (uint8 i = 0; i < flags.length; i++) {
@@ -102,7 +103,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param flag Flag short identifier
      * @notice Only executed by existing DAO Manager
      */
-    function removeFlag(bytes32 flag) public override onlySuperAdmin {
+    function removeFlag(bytes32 flag) public onlySuperAdmin {
         if (!_supportedFlags.contains(flag)) revert FlagsStorage__FlagNotSupported(flag);
 
         _removeFlag(flag);
@@ -113,7 +114,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param flags Array of flag short identifiers
      * @notice Only executed by existing DAO Manager
      */
-    function removeFlags(bytes32[] memory flags) public override onlySuperAdmin {
+    function removeFlags(bytes32[] memory flags) public onlySuperAdmin {
         for (uint8 i = 0; i < flags.length; i++) {
             // additional check to reduce incorrect FlagRemoved events
             if (!_supportedFlags.contains(flags[i])) revert FlagsStorage__FlagNotSupported(flags[i]);
@@ -127,7 +128,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param flag Flag short identifier
      * @return Boolean for flag support
      */
-    function isFlagSupported(bytes32 flag) public view override returns (bool) {
+    function isFlagSupported(bytes32 flag) public view returns (bool) {
         return _supportedFlags.contains(flag);
     }
 
