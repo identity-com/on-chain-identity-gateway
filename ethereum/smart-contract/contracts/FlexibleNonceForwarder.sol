@@ -44,7 +44,7 @@ contract FlexibleNonceForwarder is IForwarder, EIP712, ReentrancyGuard {
     function execute(
         ForwardRequest calldata req,
         bytes calldata signature
-    ) public payable nonReentrant returns (bool, bytes memory) {
+    ) external payable nonReentrant returns (bool, bytes memory) {
         _verifyFlexibleNonce(req, signature);
 
         (bool success, bytes memory returndata) = req.to.call{gas: req.gas, value: req.value}(
@@ -68,7 +68,7 @@ contract FlexibleNonceForwarder is IForwarder, EIP712, ReentrancyGuard {
         return (success, returndata);
     }
 
-    function getNonce(address from) public view returns (uint256) {
+    function getNonce(address from) external view returns (uint256) {
         return _nonces[from].currentNonce;
     }
 

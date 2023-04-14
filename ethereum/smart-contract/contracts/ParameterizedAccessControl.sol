@@ -144,7 +144,7 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
         _revokeRole(role, domain, account);
     }
 
-    function setSuperAdmin(address account) public onlySuperAdmin {
+    function setSuperAdmin(address account) external onlySuperAdmin {
         emit SuperAdminAdded(account);
         _superAdmins[account] = true;
     }
