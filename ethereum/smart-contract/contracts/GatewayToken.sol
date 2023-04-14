@@ -77,7 +77,7 @@ contract GatewayToken is
         address _superAdmin,
         address _flagsStorage,
         address[] memory _trustedForwarders
-    ) public initializer {
+    ) external initializer {
         __ERC3525_init(_name, _symbol, 0);
         __MultiERC2771Context_init(_trustedForwarders);
 
@@ -97,7 +97,7 @@ contract GatewayToken is
         return true;
     }
 
-    function setMetadataDescriptor(address _metadataDescriptor) public onlySuperAdmin {
+    function setMetadataDescriptor(address _metadataDescriptor) external onlySuperAdmin {
         _setMetadataDescriptor(_metadataDescriptor);
     }
 
@@ -132,7 +132,7 @@ contract GatewayToken is
     /**
      * @dev Returns true if gateway token owner transfers restricted, and false otherwise.
      */
-    function transfersRestricted() public view virtual returns (bool) {
+    function transfersRestricted() external view virtual returns (bool) {
         return true;
     }
 
