@@ -93,7 +93,8 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     function addFlags(bytes32[] memory flags, uint8[] memory indexes) external onlySuperAdmin {
         if (flags.length != indexes.length) revert FlagsStorage__IncorrectVariableLength(flags.length, indexes.length);
 
-        for (uint8 i = 0; i < flags.length; i++) {
+        uint256 length = flags.length;
+        for (uint8 i = 0; i < length; i++) {
             _addFlag(flags[i], indexes[i]);
         }
     }
@@ -115,7 +116,8 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @notice Only executed by existing DAO Manager
      */
     function removeFlags(bytes32[] memory flags) external onlySuperAdmin {
-        for (uint8 i = 0; i < flags.length; i++) {
+        uint256 length = flags.length;
+        for (uint8 i = 0; i < length; i++) {
             // additional check to reduce incorrect FlagRemoved events
             if (!_supportedFlags.contains(flags[i])) revert FlagsStorage__FlagNotSupported(flags[i]);
 
