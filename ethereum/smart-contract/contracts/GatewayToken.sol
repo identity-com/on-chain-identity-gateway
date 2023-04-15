@@ -211,9 +211,10 @@ contract GatewayToken is
     }
 
     function _getTokenIdsByOwnerAndNetwork(address owner, uint network) internal view returns (uint[] memory, uint) {
-        uint[] memory tokenIds = new uint[](balanceOf(owner));
+        uint length = balanceOf(owner);
+        uint[] memory tokenIds = new uint[](length);
         uint count = 0;
-        for (uint i = 0; i < tokenIds.length; i++) {
+        for (uint i = 0; i < length; i++) {
             uint tokenId = tokenOfOwnerByIndex(owner, i);
             if (slotOf(tokenId) == network) {
                 tokenIds[count++] = tokenId;
