@@ -148,7 +148,7 @@ contract GatewayToken is
     /**
      * @dev Returns true if gateway token owner transfers restricted, and false otherwise.
      */
-    function transfersRestricted() external view virtual returns (bool) {
+    function transfersRestricted() external pure virtual returns (bool) {
         return true;
     }
 
