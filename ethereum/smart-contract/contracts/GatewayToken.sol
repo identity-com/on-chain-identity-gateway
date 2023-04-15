@@ -515,7 +515,7 @@ contract GatewayToken is
      * @param newManager Address to transfer DAO Manager role for.
      * @notice GatewayToken contract has to be DAO Governed
      */
-    function transferDAOManager(address previousManager, address newManager, uint network) public {
+    function transferDAOManager(address previousManager, address newManager, uint network) external {
         if (!isNetworkDAOGoverned[network]) revert GatewayToken__NotDAOGoverned(network);
 
         // check the previous manager is a current dao manager
