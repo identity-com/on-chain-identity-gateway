@@ -24,7 +24,7 @@ contract FlexibleNonceForwarder is IForwarder, EIP712, ReentrancyGuard {
 
     mapping(address => FlexibleNonce) private _nonces;
 
-    uint256 private _blockAgeTolerance;
+    uint256 private immutable _blockAgeTolerance;
 
     event ForwardResult(bool);
 
