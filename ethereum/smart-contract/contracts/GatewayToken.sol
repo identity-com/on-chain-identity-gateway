@@ -45,9 +45,6 @@ contract GatewayToken is
     using Address for address;
     using Strings for uint;
 
-    // Gateway Token controller contract address
-    address public controller;
-
     // Off-chain DAO governance access control
     mapping(uint => bool) public isNetworkDAOGoverned;
 
@@ -483,7 +480,7 @@ contract GatewayToken is
      * @dev Triggers to add new network authority into the system.
      * @param authority Network Authority address
      *
-     * @notice Can be triggered by Gateway Token Controller or any Network Authority
+     * @notice Can be triggered by DAO Manager or any Network Authority
      */
     function addNetworkAuthority(address authority, uint network) external virtual {
         grantRole(NETWORK_AUTHORITY_ROLE, network, authority);
@@ -493,7 +490,7 @@ contract GatewayToken is
      * @dev Triggers to remove existing network authority from gateway token.
      * @param authority Network Authority address
      *
-     * @notice Can be triggered by Gateway Token Controller or any Network Authority
+     * @notice Can be triggered by DAO Manager or any Network Authority
      */
     function removeNetworkAuthority(address authority, uint network) external virtual {
         revokeRole(NETWORK_AUTHORITY_ROLE, network, authority);
