@@ -78,6 +78,22 @@ contract GatewayToken is
         address _flagsStorage,
         address[] memory _trustedForwarders
     ) external initializer {
+        // Check for zero addresses
+        if (_superAdmin == address(0)) {
+            revert Common__MissingAccount();
+        }
+
+        if (_flagsStorage == address(0)) {
+            revert Common__MissingAccount();
+        }
+
+        // Check for zero addresses in the trusted forwarders array
+        for (uint256 i = 0; i < _trustedForwarders.length; i++) {
+            if (_trustedForwarders[i] == address(0)) {
+                revert Common__MissingAccount();
+            }
+        }
+
         __ERC3525_init(_name, _symbol, 0);
         __MultiERC2771Context_init(_trustedForwarders);
 

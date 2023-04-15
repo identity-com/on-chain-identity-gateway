@@ -95,6 +95,22 @@ contract GatewayTokenUpgradeTest is
         address _flagsStorage,
         address[] memory _trustedForwarders
     ) external initializer {
+        // Check for zero addresses
+        if (_superAdmin == address(0)) {
+            revert Common__MissingAccount();
+        }
+
+        if (_flagsStorage == address(0)) {
+            revert Common__MissingAccount();
+        }
+
+        // Check for zero addresses in the trusted forwarders array
+        for (uint256 i = 0; i < _trustedForwarders.length; i++) {
+            if (_trustedForwarders[i] == address(0)) {
+                revert Common__MissingAccount();
+            }
+        }
+
         __ERC3525_init(_name, _symbol, 0);
         __MultiERC2771Context_init(_trustedForwarders);
 
@@ -210,7 +226,7 @@ contract GatewayTokenUpgradeTest is
         _networks[network] = name;
     }
 
-    function getNetwork(uint network) external view virtual returns (string memory) {
+    function getNetwork(uint network) public view virtual returns (string memory) {
         return _networks[network];
     }
 
@@ -267,12 +283,7 @@ contract GatewayTokenUpgradeTest is
      */
     function getToken(
         uint tokenId
-    )
-        external
-        view
-        virtual
-        returns (address owner, uint8 state, string memory identity, uint expiration, uint bitmask)
-    {
+    ) public view virtual returns (address owner, uint8 state, string memory identity, uint expiration, uint bitmask) {
         owner = ownerOf(tokenId);
         state = uint8(_tokenStates[tokenId]);
         expiration = _expirations[tokenId];
@@ -331,12 +342,12 @@ contract GatewayTokenUpgradeTest is
      * @dev Triggers to burn gateway token
      * @param tokenId Gateway token id
      */
-    function burn(uint tokenId) external virtual {
+    function burn(uint tokenId) public virtual {
         _checkGatekeeper(slotOf(tokenId));
         _burn(tokenId);
     }
 
-    function revoke(uint tokenId) external virtual override {
+    function revoke(uint tokenId) public virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
         _tokenStates[tokenId] = TokenState.REVOKED;
@@ -348,7 +359,7 @@ contract GatewayTokenUpgradeTest is
      * @dev Triggers to freeze gateway token
      * @param tokenId Gateway token id
      */
-    function freeze(uint tokenId) external virtual override {
+    function freeze(uint tokenId) public virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
         _freeze(tokenId);
@@ -358,7 +369,7 @@ contract GatewayTokenUpgradeTest is
      * @dev Triggers to unfreeze gateway token
      * @param tokenId Gateway token id
      */
-    function unfreeze(uint tokenId) external virtual override {
+    function unfreeze(uint tokenId) public virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
         _unfreeze(tokenId);
@@ -368,7 +379,7 @@ contract GatewayTokenUpgradeTest is
      * @dev Triggers to get specified `tokenId` expiration timestamp
      * @param tokenId Gateway token id
      */
-    function getExpiration(uint tokenId) external view virtual override returns (uint) {
+    function getExpiration(uint tokenId) public view virtual override returns (uint) {
         _checkTokenExists(tokenId);
 
         return _expirations[tokenId];
@@ -378,7 +389,7 @@ contract GatewayTokenUpgradeTest is
      * @dev Triggers to set expiration for tokenId
      * @param tokenId Gateway token id
      */
-    function setExpiration(uint tokenId, uint timestamp, Charge calldata) external virtual override {
+    function setExpiration(uint tokenId, uint timestamp, Charge calldata) public virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
         _setExpiration(tokenId, timestamp);
@@ -445,7 +456,7 @@ contract GatewayTokenUpgradeTest is
      * @dev Triggers to add new gatekeeper into the system.
      * @param gatekeeper Gatekeeper address
      */
-    function addGatekeeper(address gatekeeper, uint network) external virtual {
+    function addGatekeeper(address gatekeeper, uint network) public virtual {
         grantRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
@@ -453,7 +464,7 @@ contract GatewayTokenUpgradeTest is
      * @dev Triggers to remove existing gatekeeper from gateway token.
      * @param gatekeeper Gatekeeper address
      */
-    function removeGatekeeper(address gatekeeper, uint network) external virtual {
+    function removeGatekeeper(address gatekeeper, uint network) public virtual {
         revokeRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
@@ -503,7 +514,7 @@ contract GatewayTokenUpgradeTest is
      * @param newManager Address to transfer DAO Manager role for.
      * @notice GatewayToken contract has to be DAO Governed
      */
-    function transferDAOManager(address previousManager, address newManager, uint network) external {
+    function transferDAOManager(address previousManager, address newManager, uint network) public {
         if (!isNetworkDAOGoverned[network]) revert GatewayToken__NotDAOGoverned(network);
 
         // check the previous manager is a current dao manager
@@ -530,21 +541,21 @@ contract GatewayTokenUpgradeTest is
      * @dev Triggers to update FlagsStorage contract address
      * @param flagsStorage FlagsStorage contract address
      */
-    function updateFlagsStorage(address flagsStorage) external onlySuperAdmin {
+    function updateFlagsStorage(address flagsStorage) public onlySuperAdmin {
         _setFlagsStorage(flagsStorage);
     }
 
     /**
      * @dev Triggers to get gateway token bitmask
      */
-    function getTokenBitmask(uint tokenId) external view returns (uint) {
+    function getTokenBitmask(uint tokenId) public view returns (uint) {
         return _getBitMask(tokenId);
     }
 
     /**
      * @dev Triggers to set full bitmask for gateway token with `tokenId`
      */
-    function setBitmask(uint tokenId, uint mask) external {
+    function setBitmask(uint tokenId, uint mask) public {
         _checkSenderRole(GATEKEEPER_ROLE, slotOf(tokenId));
         _setBitMask(tokenId, mask);
     }

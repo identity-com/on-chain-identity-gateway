@@ -58,13 +58,39 @@ describe('GatewayToken', async () => {
     flagsStorage = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
     await flagsStorage.deployed();
 
-    const args = ['Gateway Protocol', 'GWY', identityCom.address, NULL_ADDRESS, [forwarder.address]];
+    const args = ['Gateway Protocol', 'GWY', identityCom.address, flagsStorage.address, [forwarder.address]];
     gatewayToken = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
     await gatewayToken.deployed();
 
     // create gatekeeper networks
     await gatewayToken.connect(identityCom).createNetwork(gkn1, 'Test GKN 1', false, NULL_ADDRESS);
     await gatewayToken.connect(identityCom).createNetwork(gkn2, 'Test GKN 2', false, NULL_ADDRESS);
+  });
+
+  describe('Deployment Tests', async () => {
+    it('fails deployment with a NULL ADDRESS for the superAdmin', async () => {
+      const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
+
+      const args = ['Gateway Protocol', 'GWY', NULL_ADDRESS, flagsStorage.address, [forwarder.address]];
+      await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' }))
+        .to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
+    });
+
+    it('fails deployment with a NULL ADDRESS for the flagsStorage', async () => {
+      const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
+
+      const args = ['Gateway Protocol', 'GWY', identityCom.address, NULL_ADDRESS, [forwarder.address]];
+      await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' }))
+        .to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
+    });
+
+    it('fails deployment with a NULL ADDRESS for the trusted forwarder array', async () => {
+      const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
+
+      const args = ['Gateway Protocol', 'GWY', identityCom.address, flagsStorage.address, [forwarder.address, NULL_ADDRESS]];
+      await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' }))
+        .to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
+    });
   });
 
   describe('Test get gatekeeper network', async () => {
