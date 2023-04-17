@@ -62,11 +62,12 @@ contract GatewayToken is
     mapping(uint => string) internal _networks;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    // constructor is empty as we are using the proxy pattern,
+    // constructor is "empty" as we are using the proxy pattern,
     // where setup code is in the initialize function
     // called by the proxy contract
-    // solhint-disable-next-line no-empty-blocks
-    constructor() initializer {}
+    constructor() {
+        _disableInitializers();
+    }
 
     function initialize(
         string memory _name,

@@ -9,9 +9,9 @@ import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Cont
 abstract contract MultiERC2771Context is ContextUpgradeable {
     mapping(address => bool) private _trustedForwarders;
 
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    // solhint-disable-next-line no-empty-blocks
-    constructor() initializer {}
+    // because MultiERC2771Context is abstract we don't implement a
+    // constructor. It's the responsibility of the derived contract to
+    // disable the Initializers with "_disableInitializers()"
 
     // solhint-disable-next-line func-name-mixedcase
     function __MultiERC2771Context_init(address[] memory trustedForwarders) internal initializer {
