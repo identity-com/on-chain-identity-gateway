@@ -54,12 +54,12 @@ contract GatewayToken is
     bytes32 public constant NETWORK_AUTHORITY_ROLE = keccak256("NETWORK_AUTHORITY_ROLE");
 
     // Optional mapping for gateway token bitmaps
-    mapping(uint => TokenState) private _tokenStates;
+    mapping(uint => TokenState) internal _tokenStates;
 
     // Optional Mapping from token ID to expiration date
-    mapping(uint => uint) private _expirations;
+    mapping(uint => uint) internal _expirations;
 
-    mapping(uint => string) private _networks;
+    mapping(uint => string) internal _networks;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor is empty as we are using the proxy pattern,
@@ -321,7 +321,7 @@ contract GatewayToken is
      * @param network Gateway token type
      * @param mask The bitmask for the token
      */
-    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) public virtual {
+    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) external virtual {
         _checkGatekeeper(network);
 
         uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
