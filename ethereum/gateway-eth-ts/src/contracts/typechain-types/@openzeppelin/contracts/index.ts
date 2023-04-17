@@ -2,7 +2,5 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
-import type * as metatx from "./metatx";
-export type { metatx };
 import type * as utils from "./utils";
 export type { utils };
