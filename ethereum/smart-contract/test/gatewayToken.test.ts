@@ -249,8 +249,17 @@ describe('GatewayToken', async () => {
       ).to.be.revertedWith('ERC3525: transfer caller is not owner nor approved');
     });
 
+    it('Try to approve transferring a token, expect revert', async () => {
+      await expect(
+        gatewayToken.connect(alice)['approve(address,uint256)'](bob.address, 1),
+      ).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__TransferDisabled');
+
+      await expect(
+        gatewayToken.connect(alice)['approve(uint256,address,uint256)'](1, bob.address, 1),
+      ).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__TransferDisabled');
+    });
+
     it('Try to transfer 1st tokenId by Carol while transfers still restricted', async () => {
-      await gatewayToken.connect(alice)['approve(address,uint256)'](carol.address, 1);
       await expect(
         gatewayToken.connect(carol)['safeTransferFrom(address,address,uint256)'](alice.address, alice.address, 1),
       ).to.be.revertedWith('ERC3525: transfer caller is not owner nor approved');
