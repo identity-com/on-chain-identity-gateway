@@ -50,10 +50,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165Upgradeable__factory>;
     getContractFactory(
-      name: "MinimalForwarder",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.MinimalForwarder__factory>;
-    getContractFactory(
       name: "ERC165",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC165__factory>;
@@ -113,10 +109,6 @@ declare module "hardhat/types/runtime" {
       name: "FlexibleNonceForwarder",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FlexibleNonceForwarder__factory>;
-    getContractFactory(
-      name: "Forwarder",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Forwarder__factory>;
     getContractFactory(
       name: "Gated",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -220,11 +212,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165Upgradeable>;
     getContractAt(
-      name: "MinimalForwarder",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.MinimalForwarder>;
-    getContractAt(
       name: "ERC165",
       address: string,
       signer?: ethers.Signer
@@ -299,11 +286,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.FlexibleNonceForwarder>;
-    getContractAt(
-      name: "Forwarder",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Forwarder>;
     getContractAt(
       name: "Gated",
       address: string,

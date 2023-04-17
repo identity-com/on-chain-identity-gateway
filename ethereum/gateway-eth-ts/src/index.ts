@@ -11,11 +11,11 @@ export {
 } from "./utils";
 
 import GatewayToken from "./contracts/abi/GatewayToken.sol/GatewayToken.json";
-import Forwarder from "./contracts/abi/Forwarder.sol/Forwarder.json";
+import FlexibleNonceForwarder from "./contracts/abi/FlexibleNonceForwarder.sol/FlexibleNonceForwarder.json";
 import FlagsStorage from "./contracts/abi/FlagsStorage.sol/FlagsStorage.json";
 
 export const abi = {
   GatewayToken,
-  Forwarder,
+  FlexibleNonceForwarder,
   FlagsStorage,
 };
