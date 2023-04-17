@@ -43,6 +43,7 @@ contract GatewayToken is
     TokenBitMask
 {
     using Address for address;
+    using Address for address payable;
     using Strings for uint;
 
     // Off-chain DAO governance access control
@@ -106,7 +107,7 @@ contract GatewayToken is
             revert GatewayToken__InsufficientFunds(address(this).balance, amount);
         }
 
-        payable(_msgSender()).transfer(amount);
+        payable(_msgSender()).sendValue(amount);
         return true;
     }
 
