@@ -1,5 +1,5 @@
-import { Wallet, Contract, Overrides, PopulatedTransaction } from "ethers";
-import { Forwarder, GatewayToken } from "../contracts/typechain-types";
+import { Overrides, PopulatedTransaction } from "ethers";
+import { GatewayToken } from "../contracts/typechain-types";
 import { GatewayTsInternal } from "./GatewayTsInternal";
 import {
   mappedOpNames,
@@ -7,9 +7,7 @@ import {
   ReadOnlyOperation,
   readOnlyOpNames,
 } from "../utils/types";
-import { mapObjIndexed, pick } from "ramda";
-import { signMetaTxRequest } from "../utils/metatx";
-import { Provider } from "@ethersproject/providers";
+import { pick } from "ramda";
 
 type MappedGatewayToken = ReadOnlyOperation &
   Pick<GatewayToken["populateTransaction"], WriteOps>;
