@@ -14,13 +14,13 @@ abstract contract MultiERC2771Context is ContextUpgradeable {
     // disable the Initializers with "_disableInitializers()"
 
     // solhint-disable-next-line func-name-mixedcase
-    function __MultiERC2771Context_init(address[] memory trustedForwarders) internal initializer {
+    function __MultiERC2771Context_init(address[] calldata trustedForwarders) internal initializer {
         __Context_init_unchained();
         __MultiERC2771Context_init_unchained(trustedForwarders);
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __MultiERC2771Context_init_unchained(address[] memory trustedForwarders) internal initializer {
+    function __MultiERC2771Context_init_unchained(address[] calldata trustedForwarders) internal initializer {
         for (uint i = 0; i < trustedForwarders.length; i++) {
             _trustedForwarders[trustedForwarders[i]] = true;
         }
