@@ -33,7 +33,7 @@ jobs:
         with:
           path: |
             ./node_modules
-          key: yarn-ethereum-sc-${{ hashFiles('ethereum/smart-contract/yarn.lock') }}
+          key: yarn-ethereum-${{ hashFiles('ethereum/yarn.lock') }}
 
       - name: NPM login
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
