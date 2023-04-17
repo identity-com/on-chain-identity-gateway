@@ -71,11 +71,11 @@ contract GatewayToken is
     }
 
     function initialize(
-        string memory _name,
-        string memory _symbol,
+        string calldata _name,
+        string calldata _symbol,
         address _superAdmin,
         address _flagsStorage,
-        address[] memory _trustedForwarders
+        address[] calldata _trustedForwarders
     ) external initializer {
         // Check for zero addresses
         if (_superAdmin == address(0)) {
@@ -146,7 +146,7 @@ contract GatewayToken is
         emit DAOManagerTransferred(previousManager, newManager, network);
     }
 
-    function createNetwork(uint network, string memory name, bool daoGoverned, address daoManager) external virtual {
+    function createNetwork(uint network, string calldata name, bool daoGoverned, address daoManager) external virtual {
         if (bytes(_networks[network]).length != 0) {
             revert GatewayToken__NetworkAlreadyExists(network);
         }
@@ -179,7 +179,7 @@ contract GatewayToken is
         }
     }
 
-    function renameNetwork(uint network, string memory name) external virtual {
+    function renameNetwork(uint network, string calldata name) external virtual {
         if (bytes(_networks[network]).length == 0) {
             revert GatewayToken__NetworkDoesNotExist(network);
         }
