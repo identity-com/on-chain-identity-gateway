@@ -16,7 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // hack for the deduping keys bug- set the gatekeeper auth to the authority
   if (process.env.STAGE === 'prod') gatekeeper = authority;
 
-    const deployerSigner = await ethers.getSigner(deployer);
+  const deployerSigner = await ethers.getSigner(deployer);
   const authoritySigner = await ethers.getSigner(authority);
 
   console.log('deployer', deployer);

@@ -13,6 +13,8 @@ export type { OwnableUpgradeable } from "./@openzeppelin/contracts-upgradeable/a
 export { OwnableUpgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable__factory";
 export type { IERC1822ProxiableUpgradeable } from "./@openzeppelin/contracts-upgradeable/interfaces/draft-IERC1822Upgradeable.sol/IERC1822ProxiableUpgradeable";
 export { IERC1822ProxiableUpgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/interfaces/draft-IERC1822Upgradeable.sol/IERC1822ProxiableUpgradeable__factory";
+export type { IERC1967Upgradeable } from "./@openzeppelin/contracts-upgradeable/interfaces/IERC1967Upgradeable";
+export { IERC1967Upgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/interfaces/IERC1967Upgradeable__factory";
 export type { IBeaconUpgradeable } from "./@openzeppelin/contracts-upgradeable/proxy/beacon/IBeaconUpgradeable";
 export { IBeaconUpgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/proxy/beacon/IBeaconUpgradeable__factory";
 export type { ERC1967UpgradeUpgradeable } from "./@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable";
@@ -23,8 +25,6 @@ export type { UUPSUpgradeable } from "./@openzeppelin/contracts-upgradeable/prox
 export { UUPSUpgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable__factory";
 export type { ContextUpgradeable } from "./@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable";
 export { ContextUpgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable__factory";
-export type { ERC165Upgradeable } from "./@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable";
-export { ERC165Upgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable__factory";
 export type { IERC165Upgradeable } from "./@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable";
 export { IERC165Upgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable__factory";
 export type { MinimalForwarder } from "./@openzeppelin/contracts/metatx/MinimalForwarder";
@@ -61,6 +61,8 @@ export type { FlexibleNonceForwarder } from "./contracts/FlexibleNonceForwarder"
 export { FlexibleNonceForwarder__factory } from "./factories/contracts/FlexibleNonceForwarder__factory";
 export type { Forwarder } from "./contracts/Forwarder";
 export { Forwarder__factory } from "./factories/contracts/Forwarder__factory";
+export type { Gated } from "./contracts/Gated";
+export { Gated__factory } from "./factories/contracts/Gated__factory";
 export type { GatewayToken } from "./contracts/GatewayToken";
 export { GatewayToken__factory } from "./factories/contracts/GatewayToken__factory";
 export type { GatewayTokenUpgradeTest } from "./contracts/GatewayTokenUpgradeTest";
@@ -81,8 +83,6 @@ export type { IGatewayTokenVerifier } from "./contracts/interfaces/IGatewayToken
 export { IGatewayTokenVerifier__factory } from "./factories/contracts/interfaces/IGatewayTokenVerifier__factory";
 export type { IParameterizedAccessControl } from "./contracts/interfaces/IParameterizedAccessControl";
 export { IParameterizedAccessControl__factory } from "./factories/contracts/interfaces/IParameterizedAccessControl__factory";
-export type { IsGated } from "./contracts/IsGated.sol/IsGated";
-export { IsGated__factory } from "./factories/contracts/IsGated.sol/IsGated__factory";
 export type { MultiERC2771Context } from "./contracts/MultiERC2771Context";
 export { MultiERC2771Context__factory } from "./factories/contracts/MultiERC2771Context__factory";
 export type { ParameterizedAccessControl } from "./contracts/ParameterizedAccessControl";

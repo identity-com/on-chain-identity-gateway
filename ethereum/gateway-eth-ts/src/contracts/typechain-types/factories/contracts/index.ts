@@ -2,11 +2,11 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
-export * as isGatedSol from "./IsGated.sol";
 export * as interfaces from "./interfaces";
 export { FlagsStorage__factory } from "./FlagsStorage__factory";
 export { FlexibleNonceForwarder__factory } from "./FlexibleNonceForwarder__factory";
 export { Forwarder__factory } from "./Forwarder__factory";
+export { Gated__factory } from "./Gated__factory";
 export { GatewayToken__factory } from "./GatewayToken__factory";
 export { GatewayTokenUpgradeTest__factory } from "./GatewayTokenUpgradeTest__factory";
 export { MultiERC2771Context__factory } from "./MultiERC2771Context__factory";
