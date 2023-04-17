@@ -30,6 +30,7 @@ describe("GatewayTS", function () {
     provider = getDefaultProvider("http://localhost:8545");
     network = await provider.getNetwork();
     gatekeeper = gatekeeperWallet(provider);
+
     gateway = new GatewayTs(
       gatekeeper,
       TEST_GATEWAY_TOKEN_ADDRESS.gatewayToken

@@ -72,24 +72,36 @@ describe('GatewayToken', async () => {
       const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
       const args = ['Gateway Protocol', 'GWY', NULL_ADDRESS, flagsStorage.address, [forwarder.address]];
-      await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' }))
-        .to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
+      await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
+        gatewayToken,
+        'Common__MissingAccount',
+      );
     });
 
     it('fails deployment with a NULL ADDRESS for the flagsStorage', async () => {
       const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
       const args = ['Gateway Protocol', 'GWY', identityCom.address, NULL_ADDRESS, [forwarder.address]];
-      await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' }))
-        .to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
+      await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
+        gatewayToken,
+        'Common__MissingAccount',
+      );
     });
 
     it('fails deployment with a NULL ADDRESS for the trusted forwarder array', async () => {
       const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
-      const args = ['Gateway Protocol', 'GWY', identityCom.address, flagsStorage.address, [forwarder.address, NULL_ADDRESS]];
-      await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' }))
-        .to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
+      const args = [
+        'Gateway Protocol',
+        'GWY',
+        identityCom.address,
+        flagsStorage.address,
+        [forwarder.address, NULL_ADDRESS],
+      ];
+      await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
+        gatewayToken,
+        'Common__MissingAccount',
+      );
     });
   });
 
