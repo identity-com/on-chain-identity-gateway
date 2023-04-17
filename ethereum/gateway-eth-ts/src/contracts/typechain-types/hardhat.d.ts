@@ -22,6 +22,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC1822ProxiableUpgradeable__factory>;
     getContractFactory(
+      name: "IERC1967Upgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC1967Upgradeable__factory>;
+    getContractFactory(
       name: "IBeaconUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IBeaconUpgradeable__factory>;
@@ -41,10 +45,6 @@ declare module "hardhat/types/runtime" {
       name: "ContextUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ContextUpgradeable__factory>;
-    getContractFactory(
-      name: "ERC165Upgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ERC165Upgradeable__factory>;
     getContractFactory(
       name: "IERC165Upgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -118,6 +118,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Forwarder__factory>;
     getContractFactory(
+      name: "Gated",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Gated__factory>;
+    getContractFactory(
       name: "GatewayToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GatewayToken__factory>;
@@ -158,10 +162,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IParameterizedAccessControl__factory>;
     getContractFactory(
-      name: "IsGated",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IsGated__factory>;
-    getContractFactory(
       name: "MultiERC2771Context",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MultiERC2771Context__factory>;
@@ -184,6 +184,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC1822ProxiableUpgradeable>;
+    getContractAt(
+      name: "IERC1967Upgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC1967Upgradeable>;
     getContractAt(
       name: "IBeaconUpgradeable",
       address: string,
@@ -209,11 +214,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ContextUpgradeable>;
-    getContractAt(
-      name: "ERC165Upgradeable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.ERC165Upgradeable>;
     getContractAt(
       name: "IERC165Upgradeable",
       address: string,
@@ -305,6 +305,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Forwarder>;
     getContractAt(
+      name: "Gated",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Gated>;
+    getContractAt(
       name: "GatewayToken",
       address: string,
       signer?: ethers.Signer
@@ -354,11 +359,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IParameterizedAccessControl>;
-    getContractAt(
-      name: "IsGated",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IsGated>;
     getContractAt(
       name: "MultiERC2771Context",
       address: string,

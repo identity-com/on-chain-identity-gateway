@@ -59,7 +59,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     "balanceOf(uint256)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
     "contractURI()": FunctionFragment;
-    "controller()": FunctionFragment;
     "createNetwork(uint256,string,bool,address)": FunctionFragment;
     "flagsStorage()": FunctionFragment;
     "freeze(uint256)": FunctionFragment;
@@ -138,7 +137,6 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "balanceOf(uint256)"
       | "burn"
       | "contractURI"
-      | "controller"
       | "createNetwork"
       | "flagsStorage"
       | "freeze"
@@ -259,10 +257,6 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "contractURI",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "controller",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -612,7 +606,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "contractURI",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "controller", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "createNetwork",
     data: BytesLike
@@ -1182,8 +1175,6 @@ export interface GatewayToken extends BaseContract {
 
     contractURI(overrides?: CallOverrides): Promise<[string]>;
 
-    controller(overrides?: CallOverrides): Promise<[string]>;
-
     createNetwork(
       network: PromiseOrValue<BigNumberish>,
       name: PromiseOrValue<string>,
@@ -1577,8 +1568,6 @@ export interface GatewayToken extends BaseContract {
 
   contractURI(overrides?: CallOverrides): Promise<string>;
 
-  controller(overrides?: CallOverrides): Promise<string>;
-
   createNetwork(
     network: PromiseOrValue<BigNumberish>,
     name: PromiseOrValue<string>,
@@ -1971,8 +1960,6 @@ export interface GatewayToken extends BaseContract {
     ): Promise<void>;
 
     contractURI(overrides?: CallOverrides): Promise<string>;
-
-    controller(overrides?: CallOverrides): Promise<string>;
 
     createNetwork(
       network: PromiseOrValue<BigNumberish>,
@@ -2572,8 +2559,6 @@ export interface GatewayToken extends BaseContract {
 
     contractURI(overrides?: CallOverrides): Promise<BigNumber>;
 
-    controller(overrides?: CallOverrides): Promise<BigNumber>;
-
     createNetwork(
       network: PromiseOrValue<BigNumberish>,
       name: PromiseOrValue<string>,
@@ -2963,8 +2948,6 @@ export interface GatewayToken extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    controller(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     createNetwork(
       network: PromiseOrValue<BigNumberish>,
