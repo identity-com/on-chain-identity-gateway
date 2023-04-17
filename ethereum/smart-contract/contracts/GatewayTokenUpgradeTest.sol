@@ -19,7 +19,7 @@ import {MultiERC2771Context} from "./MultiERC2771Context.sol";
 import {Charge} from "./library/Charge.sol";
 import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
 import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
-import "./GatewayToken.sol";
+import {GatewayToken} from "./GatewayToken.sol";
 
 /**
  * @dev An extension of the GatewayToken.sol, used to test the upgradeability of the contract.

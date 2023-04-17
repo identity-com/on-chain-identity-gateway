@@ -6,7 +6,6 @@ import type * as interfaces from "./interfaces";
 export type { interfaces };
 export type { FlagsStorage } from "./FlagsStorage";
 export type { FlexibleNonceForwarder } from "./FlexibleNonceForwarder";
-export type { Forwarder } from "./Forwarder";
 export type { Gated } from "./Gated";
 export type { GatewayToken } from "./GatewayToken";
 export type { GatewayTokenUpgradeTest } from "./GatewayTokenUpgradeTest";

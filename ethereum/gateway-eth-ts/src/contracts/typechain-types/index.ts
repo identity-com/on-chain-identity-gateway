@@ -27,8 +27,6 @@ export type { ContextUpgradeable } from "./@openzeppelin/contracts-upgradeable/u
 export { ContextUpgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable__factory";
 export type { IERC165Upgradeable } from "./@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable";
 export { IERC165Upgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable__factory";
-export type { MinimalForwarder } from "./@openzeppelin/contracts/metatx/MinimalForwarder";
-export { MinimalForwarder__factory } from "./factories/@openzeppelin/contracts/metatx/MinimalForwarder__factory";
 export type { ERC165 } from "./@openzeppelin/contracts/utils/introspection/ERC165";
 export { ERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/ERC165__factory";
 export type { IERC165 } from "./@openzeppelin/contracts/utils/introspection/IERC165";
@@ -59,8 +57,6 @@ export type { FlagsStorage } from "./contracts/FlagsStorage";
 export { FlagsStorage__factory } from "./factories/contracts/FlagsStorage__factory";
 export type { FlexibleNonceForwarder } from "./contracts/FlexibleNonceForwarder";
 export { FlexibleNonceForwarder__factory } from "./factories/contracts/FlexibleNonceForwarder__factory";
-export type { Forwarder } from "./contracts/Forwarder";
-export { Forwarder__factory } from "./factories/contracts/Forwarder__factory";
 export type { Gated } from "./contracts/Gated";
 export { Gated__factory } from "./factories/contracts/Gated__factory";
 export type { GatewayToken } from "./contracts/GatewayToken";
