@@ -43,7 +43,7 @@
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "ganache-time-traveler": "^1.0.16",
-    "hardhat": "^2.12.5",
+    "hardhat": "2.14.0",
     "hardhat-abi-exporter": "^2.2.1",
     "hardhat-contract-sizer": "^2.8.0",
     "hardhat-deploy": "^0.11.22",
