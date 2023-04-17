@@ -4,11 +4,8 @@
 /* eslint-disable */
 import { Signer, utils, Contract, ContractFactory, Overrides } from "ethers";
 import type { Provider, TransactionRequest } from "@ethersproject/providers";
-import type { PromiseOrValue } from "../../../common";
-import type {
-  IsGated,
-  IsGatedInterface,
-} from "../../../contracts/IsGated.sol/IsGated";
+import type { PromiseOrValue } from "../../common";
+import type { Gated, GatedInterface } from "../../contracts/Gated";
 
 const _abi = [
   {
@@ -25,18 +22,18 @@ const _abi = [
 ] as const;
 
 const _bytecode =
-  "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212203a886e22094e5dd593985db6ad4f90f8de0de96d263f4f945affd4489633091c64736f6c63430008090033";
+  "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220e3148ceca30f7bc26a702ac88fbfefe7b3aedefac3944052554b7ccb315c6faf64736f6c63430008090033";
 
-type IsGatedConstructorParams =
+type GatedConstructorParams =
   | [signer?: Signer]
   | ConstructorParameters<typeof ContractFactory>;
 
 const isSuperArgs = (
-  xs: IsGatedConstructorParams
+  xs: GatedConstructorParams
 ): xs is ConstructorParameters<typeof ContractFactory> => xs.length > 1;
 
-export class IsGated__factory extends ContractFactory {
-  constructor(...args: IsGatedConstructorParams) {
+export class Gated__factory extends ContractFactory {
+  constructor(...args: GatedConstructorParams) {
     if (isSuperArgs(args)) {
       super(...args);
     } else {
@@ -46,30 +43,27 @@ export class IsGated__factory extends ContractFactory {
 
   override deploy(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<IsGated> {
-    return super.deploy(overrides || {}) as Promise<IsGated>;
+  ): Promise<Gated> {
+    return super.deploy(overrides || {}) as Promise<Gated>;
   }
   override getDeployTransaction(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): TransactionRequest {
     return super.getDeployTransaction(overrides || {});
   }
-  override attach(address: string): IsGated {
-    return super.attach(address) as IsGated;
+  override attach(address: string): Gated {
+    return super.attach(address) as Gated;
   }
-  override connect(signer: Signer): IsGated__factory {
-    return super.connect(signer) as IsGated__factory;
+  override connect(signer: Signer): Gated__factory {
+    return super.connect(signer) as Gated__factory;
   }
 
   static readonly bytecode = _bytecode;
   static readonly abi = _abi;
-  static createInterface(): IsGatedInterface {
-    return new utils.Interface(_abi) as IsGatedInterface;
+  static createInterface(): GatedInterface {
+    return new utils.Interface(_abi) as GatedInterface;
   }
-  static connect(
-    address: string,
-    signerOrProvider: Signer | Provider
-  ): IsGated {
-    return new Contract(address, _abi, signerOrProvider) as IsGated;
+  static connect(address: string, signerOrProvider: Signer | Provider): Gated {
+    return new Contract(address, _abi, signerOrProvider) as Gated;
   }
 }
