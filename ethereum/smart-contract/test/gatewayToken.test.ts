@@ -271,6 +271,19 @@ describe('GatewayToken', async () => {
     });
   });
 
+  describe('Test Gated modifier', async () => {
+    before(async () => {
+      const clientFactory = await ethers.getContractFactory('GatewayTokenClientTest');
+      const client = await clientFactory.deploy(gatewayToken.address, gkn1);
+
+      // Alice is verified
+      expect(client.connect(alice).testGated()).to.emit(client, 'Success');
+
+      // Carol is not
+      expect(client.connect(carol).testGated()).not.to.emit(client, 'Success');
+    });
+  });
+
   describe('Test gateway token verification with frozen, active, expired tokens', async () => {
     let aliceTokenIdsGKN1;
     let aliceTokenIdsGKN2;
