@@ -1,12 +1,12 @@
 import { ethers, upgrades } from 'hardhat';
-import { BigNumber, Contract, PopulatedTransaction, Wallet } from 'ethers';
+import { BigNumber, Contract, PopulatedTransaction } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { keccak256 } from '@ethersproject/keccak256';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { toBytes32 } from './utils';
 
 import { expect } from 'chai';
-import { NULL_CHARGE, randomAddress } from './utils/eth';
+import { NULL_CHARGE, randomAddress, randomWallet } from './utils/eth';
 import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
 import { IForwarder } from '../typechain-types';
 
@@ -41,11 +41,11 @@ describe('GatewayToken', async () => {
   };
 
   const makeMetaTx = (tx: PopulatedTransaction) =>
-    signMetaTxRequest(gatekeeper, forwarder as IForwarder, {
-      from: gatekeeper.address,
-      to: gatewayToken.address,
-      data: tx.data as string,
-    });
+      signMetaTxRequest(gatekeeper, forwarder as IForwarder, {
+        from: gatekeeper.address,
+        to: gatewayToken.address,
+        data: tx.data as string,
+      });
 
   before('deploy contracts', async () => {
     [identityCom, alice, bob, carol, gatekeeper, gatekeeper2, networkAuthority2] = await ethers.getSigners();
@@ -80,8 +80,8 @@ describe('GatewayToken', async () => {
 
       const args = ['Gateway Protocol', 'GWY', NULL_ADDRESS, flagsStorage.address, [forwarder.address]];
       await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
-        gatewayToken,
-        'Common__MissingAccount',
+          gatewayToken,
+          'Common__MissingAccount',
       );
     });
 
@@ -90,8 +90,8 @@ describe('GatewayToken', async () => {
 
       const args = ['Gateway Protocol', 'GWY', identityCom.address, NULL_ADDRESS, [forwarder.address]];
       await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
-        gatewayToken,
-        'Common__MissingAccount',
+          gatewayToken,
+          'Common__MissingAccount',
       );
     });
 
@@ -106,24 +106,44 @@ describe('GatewayToken', async () => {
         [forwarder.address, NULL_ADDRESS],
       ];
       await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
-        gatewayToken,
-        'Common__MissingAccount',
+          gatewayToken,
+          'Common__MissingAccount',
       );
     });
   });
 
-  describe('Test get gatekeeper network', async () => {
+  describe('Gatekeeper Networks', async () => {
     it('Get gatekeeper network by id', async () => {
       let network = await gatewayToken.getNetwork(gkn1);
       expect(network).to.equal('Test GKN 1');
+    });
+
+    it('rename gatekeeper network - reverts if unauthorized', async () => {
+      await expect(gatewayToken.connect(alice).renameNetwork(gkn1, 'Test GKN 1 Renamed')).to.be.revertedWithCustomError(
+          gatewayToken,
+          'Common__Unauthorized',
+      );
+    });
+
+    it('rename gatekeeper network - reverts if network does not exist', async () => {
+      await expect(
+          gatewayToken.connect(alice).renameNetwork(11111, 'Test GKN 1 Renamed'),
+      ).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__NetworkDoesNotExist');
+    });
+
+    it('rename gatekeeper network', async () => {
+      const newName = 'Test GKN 1 Renamed';
+      await gatewayToken.connect(identityCom).renameNetwork(gkn1, newName);
+      let network = await gatewayToken.getNetwork(gkn1);
+      expect(network).to.equal(newName);
     });
   });
 
   describe('Test executing functions only for Identity.com admin by third-party address', async () => {
     it('Try to change admin by Bob, expect revert due to invalid access', async () => {
       await expect(gatewayToken.connect(bob).setSuperAdmin(bob.address)).to.be.revertedWithCustomError(
-        gatewayToken,
-        'Common__NotSuperAdmin',
+          gatewayToken,
+          'Common__NotSuperAdmin',
       );
     });
   });
@@ -131,28 +151,71 @@ describe('GatewayToken', async () => {
   describe('Test FlagsStorage smart contract', async () => {
     it('Try to add new flag by Bob, expect revert due to invalid access', async () => {
       await expect(flagsStorage.connect(bob).addFlag(hexRetailFlag, 0)).to.be.revertedWithCustomError(
-        gatewayToken,
-        'Common__NotSuperAdmin',
+          gatewayToken,
+          'Common__NotSuperAdmin',
       );
     });
 
-    it('Successfully add flag by superadmin, expect success', async () => {
+    it('add flag by superadmin, expect success', async () => {
       await flagsStorage.connect(identityCom).addFlag(hexRetailFlag, 0);
     });
 
-    it('Successfully add several flags by daoController, expect success', async () => {
+    it('add several flags by superadmin, expect success', async () => {
       let flagCodes = [hexInstitutionFlag, hexAccreditedInvestorFlag];
       let indexArray = [1, 2];
 
-      await flagsStorage.addFlags(flagCodes, indexArray);
+      await flagsStorage.connect(identityCom).addFlags(flagCodes, indexArray);
     });
 
-    it('Try to add new flag at already used index, expect revert', async () => {
+    it('add new flag at already used index - revert', async () => {
       await expect(flagsStorage.addFlag(hexRetailFlag, 0)).to.be.revertedWithCustomError(
-        flagsStorage,
-        'FlagsStorage__IndexAlreadyUsed',
+          flagsStorage,
+          'FlagsStorage__IndexAlreadyUsed',
       );
     });
+
+    it('remove flag', async () => {
+      const tempFlag = toBytes32('tempFlag');
+      await flagsStorage.connect(identityCom).addFlag(tempFlag, 3);
+      expect(await flagsStorage.isFlagSupported(tempFlag)).to.be.true;
+
+      await flagsStorage.connect(identityCom).removeFlag(tempFlag);
+      expect(await flagsStorage.isFlagSupported(tempFlag)).to.be.false;
+    });
+
+    it('remove flags', async () => {
+      const tempFlags = [
+        toBytes32('tempFlag1'),
+        toBytes32('tempFlag2')
+      ];
+      await flagsStorage.connect(identityCom).addFlags(tempFlags, [3, 4]);
+      expect(await flagsStorage.isFlagSupported(tempFlags[0])).to.be.true;
+      expect(await flagsStorage.isFlagSupported(tempFlags[1])).to.be.true;
+
+      await flagsStorage.connect(identityCom).removeFlags(tempFlags);
+      expect(await flagsStorage.isFlagSupported(tempFlags[0])).to.be.false;
+      expect(await flagsStorage.isFlagSupported(tempFlags[1])).to.be.false;
+    });
+
+    it('Sets a new flag storage contract', async () => {
+      const flagsStorageFactory = await ethers.getContractFactory('FlagsStorage');
+      const flagsStorage2 = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
+      await flagsStorage2.deployed();
+
+      await gatewayToken.updateFlagsStorage(flagsStorage2.address);
+
+      expect(await gatewayToken.flagsStorage()).to.equal(flagsStorage2.address);
+    });
+
+    it('updates the flags storage super admin', async () => {
+      // give bob the super admin role
+      await flagsStorage.updateSuperAdmin(bob.address);
+        expect(await flagsStorage.superAdmin()).to.equal(bob.address);
+
+        // send it back
+        await flagsStorage.connect(bob).updateSuperAdmin(identityCom.address);
+      expect(await flagsStorage.superAdmin()).to.equal(identityCom.address);
+    })
   });
 
   describe('Test adding network authorities', async () => {
@@ -167,14 +230,14 @@ describe('GatewayToken', async () => {
 
     it('Expect revert when attempting to issue as a non-gatekeeper network authority', async () => {
       await expect(
-        gatewayToken.connect(networkAuthority2).mint(alice.address, gkn1, 0, 0, NULL_CHARGE),
+          gatewayToken.connect(networkAuthority2).mint(alice.address, gkn1, 0, 0, NULL_CHARGE),
       ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
     });
 
     it("Try to remove non-existing network authorities, don't expect revert", async () => {
       await gatewayToken
-        .connect(identityCom)
-        .removeNetworkAuthority('0x2F60d06Fa6795365B7b42B27Fa23e3e8c8b82f66', gkn1);
+          .connect(identityCom)
+          .removeNetworkAuthority('0x2F60d06Fa6795365B7b42B27Fa23e3e8c8b82f66', gkn1);
     });
 
     it('Remove a network authority', async () => {
@@ -183,19 +246,19 @@ describe('GatewayToken', async () => {
 
     it('Expect revert on adding new network authority by Alice', async () => {
       await expect(gatewayToken.connect(alice).addNetworkAuthority(bob.address, gkn1)).to.be.revertedWithCustomError(
-        gatewayToken,
-        'Common__Unauthorized',
+          gatewayToken,
+          'Common__Unauthorized',
       );
     });
 
     it('Expect revert on removing existing network authority by Alice', async () => {
       await expect(
-        gatewayToken.connect(alice).removeNetworkAuthority(identityCom.address, gkn1),
+          gatewayToken.connect(alice).removeNetworkAuthority(identityCom.address, gkn1),
       ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
     });
   });
 
-  describe('Add Gatekeeper', () => {
+  describe('Add and remove Gatekeeper', () => {
     it('can add a gatekeeper', async () => {
       await gatewayToken.connect(identityCom).addGatekeeper(gatekeeper.address, gkn1);
       const isGatekeeperResult = await gatewayToken.isGatekeeper(gatekeeper.address, gkn1);
@@ -207,6 +270,15 @@ describe('GatewayToken', async () => {
       const isGatekeeperResult = await gatewayToken.isGatekeeper(gatekeeper.address, gkn2);
 
       expect(isGatekeeperResult).to.be.false;
+    });
+
+    it('can remove a gatekeeper', async () => {
+      const dummyGatekeeper = randomAddress();
+      await gatewayToken.connect(identityCom).addGatekeeper(dummyGatekeeper, gkn1);
+      expect(await gatewayToken.isGatekeeper(dummyGatekeeper, gkn1)).to.be.true;
+
+      await gatewayToken.connect(identityCom).removeGatekeeper(dummyGatekeeper, gkn1);
+      expect(await gatewayToken.isGatekeeper(dummyGatekeeper, gkn1)).to.be.false;
     });
   });
 
@@ -222,10 +294,16 @@ describe('GatewayToken', async () => {
     });
 
     it('retrieves tokenId', async () => {
-      let tokenId = await gatewayToken.tokenOfOwnerByIndex(alice.address, 0);
+      const tokenId = await gatewayToken.tokenOfOwnerByIndex(alice.address, 0);
       expect(tokenId).to.equal(BigNumber.from(1));
       let tokenOwner = await gatewayToken.ownerOf(1);
       expect(tokenOwner).to.equal(alice.address);
+    });
+
+    it('retrieves token by tokenId', async () => {
+      const tokenId = await gatewayToken.tokenOfOwnerByIndex(alice.address, 0);
+      const token = await gatewayToken.getToken(tokenId);
+      expect(token.owner).to.equal(alice.address);
     });
 
     it('Successfully mint Gateway Token for Alice by gatekeeper with gatekeeperNetwork = 2', async () => {
@@ -252,24 +330,46 @@ describe('GatewayToken', async () => {
 
     it('Try to transfer a token, expect revert', async () => {
       await expect(
-        gatewayToken.connect(alice)['transferFrom(address,address,uint256)'](alice.address, bob.address, 1),
+          gatewayToken.connect(alice)['transferFrom(address,address,uint256)'](alice.address, bob.address, 1),
       ).to.be.revertedWith('ERC3525: transfer caller is not owner nor approved');
     });
 
     it('Try to approve transferring a token, expect revert', async () => {
       await expect(
-        gatewayToken.connect(alice)['approve(address,uint256)'](bob.address, 1),
+          gatewayToken.connect(alice)['approve(address,uint256)'](bob.address, 1),
       ).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__TransferDisabled');
 
       await expect(
-        gatewayToken.connect(alice)['approve(uint256,address,uint256)'](1, bob.address, 1),
+          gatewayToken.connect(alice)['approve(uint256,address,uint256)'](1, bob.address, 1),
       ).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__TransferDisabled');
     });
 
     it('Try to transfer 1st tokenId by Carol while transfers still restricted', async () => {
       await expect(
-        gatewayToken.connect(carol)['safeTransferFrom(address,address,uint256)'](alice.address, alice.address, 1),
+          gatewayToken.connect(carol)['safeTransferFrom(address,address,uint256)'](alice.address, alice.address, 1),
       ).to.be.revertedWith('ERC3525: transfer caller is not owner nor approved');
+    });
+
+    it('Mint a token with a bitmask', async () => {
+      const expectedBitmask = 1;
+      const dummyWallet = randomAddress();
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, expectedBitmask, NULL_CHARGE);
+
+      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      const bitmask = await gatewayToken.getTokenBitmask(dummyWalletTokenId);
+
+      expect(bitmask).to.equal(expectedBitmask);
+    });
+
+    it('Mint a token with an expiration', async () => {
+      const dummyWallet = randomAddress();
+      const expectedExpiration = Date.parse('2222-01-01') / 1000;
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, expectedExpiration, 0, NULL_CHARGE);
+
+      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      const expiration = await gatewayToken.getExpiration(dummyWalletTokenId);
+
+      expect(expiration).to.equal(expectedExpiration);
     });
   });
 
@@ -289,72 +389,133 @@ describe('GatewayToken', async () => {
     it('rejects the user if they do not have a gateway token', async () => {
       // Carol is not verified
       await expect(client.connect(carol).testGated()).to.be.revertedWithCustomError(
-        client,
-        'IsGated__InvalidGatewayToken',
+          client,
+          'IsGated__InvalidGatewayToken',
       );
     });
   });
 
-  describe('Test gateway token verification with frozen, active, expired tokens', async () => {
-    let aliceTokenIdsGKN1;
-    let aliceTokenIdsGKN2;
+  describe('Test gateway token operations: freeze, unfreeze, setExpiration, revoke', async () => {
+    let dummyWallet: string;
+    let dummyWalletTokenId: number;
 
-    before(async () => {
-      aliceTokenIdsGKN1 = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1);
-      aliceTokenIdsGKN2 = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn2);
+    beforeEach(async () => {
+      dummyWallet = randomAddress();
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
+
+      [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
     });
 
     it('freeze token', async () => {
-      await gatewayToken.connect(gatekeeper).freeze(aliceTokenIdsGKN2[0]);
+      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId);
 
-      return expectVerified(alice.address, gkn2).to.be.false;
+      return expectVerified(dummyWallet, gkn1).to.be.false;
+    });
+
+    it('freeze token - revert if already frozen', async () => {
+      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId);
+
+      await expect(gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId)).to.be.revertedWithCustomError(
+          gatewayToken,
+          'GatewayToken__TokenDoesNotExistOrIsInactive',
+      );
     });
 
     it('unfreeze token', async () => {
-      await gatewayToken.connect(gatekeeper).unfreeze(aliceTokenIdsGKN2[0]);
+      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId);
+
+      await gatewayToken.connect(gatekeeper).unfreeze(dummyWalletTokenId);
 
       return expectVerified(alice.address, gkn2).to.be.true;
     });
 
+    it('unfreeze token - revert if not frozen', async () => {
+      await expect(gatewayToken.connect(gatekeeper).unfreeze(dummyWalletTokenId)).to.be.revertedWithCustomError(
+          gatewayToken,
+          'GatewayToken__TokenInvalidStateForOperation',
+      );
+    });
+
     it('all tokens must be frozen for to verify to return false', async () => {
-      await gatewayToken.connect(gatekeeper).freeze(aliceTokenIdsGKN1[0]);
+      // mint a second token
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
+      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1);
+
+      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenIds[0]);
 
       await expectVerified(alice.address, gkn1).to.be.true;
 
-      await gatewayToken.connect(gatekeeper).freeze(aliceTokenIdsGKN1[1]);
+      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenIds[1]);
 
       await expectVerified(alice.address, gkn1).to.be.false;
 
-      await gatewayToken.connect(gatekeeper).unfreeze(aliceTokenIdsGKN1[0]);
+      await gatewayToken.connect(gatekeeper).unfreeze(dummyWalletTokenIds[0]);
 
       return expectVerified(alice.address, gkn1).to.be.true;
     });
 
     it('expire token', async () => {
       await gatewayToken
-        .connect(gatekeeper)
-        .setExpiration(aliceTokenIdsGKN1[0], Date.parse('2020-01-01') / 1000, NULL_CHARGE);
+          .connect(gatekeeper)
+          .setExpiration(dummyWalletTokenId, Date.parse('2020-01-01') / 1000, NULL_CHARGE);
 
-      return expectVerified(alice.address, gkn1).to.be.false;
+      const currentExpiration = await gatewayToken.getExpiration(dummyWalletTokenId);
+      expect(currentExpiration).to.equal(Date.parse('2020-01-01') / 1000);
+
+      return expectVerified(dummyWallet, gkn1).to.be.false;
     });
 
     it('extend expiry', async () => {
       await gatewayToken
-        .connect(gatekeeper)
-        .setExpiration(aliceTokenIdsGKN1[0], Date.parse('2222-01-01') / 1000, NULL_CHARGE);
+          .connect(gatekeeper)
+          .setExpiration(dummyWalletTokenId, Date.parse('2222-01-01') / 1000, NULL_CHARGE);
 
-      return expectVerified(alice.address, gkn1).to.be.true;
+      const currentExpiration = await gatewayToken.getExpiration(dummyWalletTokenId);
+      expect(currentExpiration).to.equal(Date.parse('2222-01-01') / 1000);
+
+      return expectVerified(dummyWallet, gkn1).to.be.true;
+    });
+
+    it('get expiration - reverts if the token does not exist', async () => {
+      await expect(gatewayToken.getExpiration(123456789)).to.be.revertedWithCustomError(
+          gatewayToken,
+          'GatewayToken__TokenDoesNotExist',
+      );
     });
 
     it('burn', async () => {
-      // burn the second token
-      await gatewayToken.connect(gatekeeper).burn(aliceTokenIdsGKN1[1]);
+      await gatewayToken.connect(gatekeeper).burn(dummyWalletTokenId);
+      return expectVerified(dummyWallet, gkn1).to.be.false;
+    });
 
-      let validity = await gatewayToken.functions['verifyToken(uint256)'](aliceTokenIdsGKN1[1]);
+    it('all tokens must be burned for verified to return false', async () => {
+      // mint a second token
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
+      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+
+      await gatewayToken.connect(gatekeeper).burn(dummyWalletTokenIds[0]);
+
+      // the wallet still has the other token
+      return expectVerified(dummyWallet, gkn1).to.be.true;
+    });
+
+    it('revoke a token', async () => {
+      await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenId);
+      return expectVerified(dummyWallet, gkn1).to.be.false;
+    });
+
+    it('all tokens must be revoked for verified to return false', async () => {
+      // mint a second token
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
+      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+
+      await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenIds[0]);
+
+      let validity = await gatewayToken.functions['verifyToken(uint256)'](dummyWalletTokenIds[0]);
       expect(validity[0]).to.equal(false);
 
-      // alice still has the other token
-      return expectVerified(alice.address, gkn1).to.be.true;
+      // the wallet still has the other token
+      return expectVerified(dummyWallet, gkn1).to.be.true;
     });
   });
 
@@ -387,25 +548,43 @@ describe('GatewayToken', async () => {
     it('Checks a forwarder exists', async () => {
       expect(await gatewayToken.isTrustedForwarder(forwarder.address)).to.equal(true);
     });
-    it('Successfully add a forwarder', async () => {
+    it('add a forwarder', async () => {
       const newForwarder = randomAddress();
       await gatewayToken.connect(identityCom).addForwarder(newForwarder);
 
       expect(await gatewayToken.isTrustedForwarder(newForwarder)).to.equal(true);
     });
 
-    it('Successfully removes a forwarder', async () => {
+    it('add a forwarder - reverts if not superadmin', async () => {
       const newForwarder = randomAddress();
-      await gatewayToken.connect(identityCom).addForwarder(newForwarder);
-      await gatewayToken.connect(identityCom).removeForwarder(newForwarder);
 
-      expect(await gatewayToken.isTrustedForwarder(newForwarder)).to.equal(false);
+      await expect(gatewayToken.connect(alice).addForwarder(newForwarder)).to.be.revertedWithCustomError(
+          gatewayToken,
+          'Common__NotSuperAdmin',
+      );
     });
 
-    it('Successfully forwards a call', async () => {
+    it('add a forwarder', async () => {
+      const newForwarder = randomAddress();
+      await gatewayToken.connect(identityCom).addForwarder(newForwarder);
+
+      expect(await gatewayToken.isTrustedForwarder(newForwarder)).to.equal(true);
+    });
+
+    it('remove a forwarder - reverts if not superadmin', async () => {
+      const newForwarder = randomAddress();
+      await gatewayToken.connect(identityCom).addForwarder(newForwarder);
+
+      await expect(gatewayToken.connect(alice).removeForwarder(newForwarder)).to.be.revertedWithCustomError(
+          gatewayToken,
+          'Common__NotSuperAdmin',
+      );
+    });
+
+    it('forward a call', async () => {
       const mintTx = await gatewayToken
-        .connect(gatekeeper)
-        .populateTransaction.mint(carol.address, gkn1, 0, 0, NULL_CHARGE);
+          .connect(gatekeeper)
+          .populateTransaction.mint(carol.address, gkn1, 0, 0, NULL_CHARGE);
 
       // Carol does not have the GT yet, because the tx has not been sent
       await expectVerified(carol.address, gkn1).to.be.false;
@@ -432,10 +611,10 @@ describe('GatewayToken', async () => {
       // this should fail.
       // although this particular case is harmless, re-entrancy is
       // dangerous in general and this ensures we protect against it.
-      const wallet = ethers.Wallet.createRandom();
+      const wallet = randomWallet();
       const mintTx = await gatewayToken
-        .connect(gatekeeper)
-        .populateTransaction.mint(wallet.address, gkn1, 0, 0, NULL_CHARGE);
+          .connect(gatekeeper)
+          .populateTransaction.mint(wallet.address, gkn1, 0, 0, NULL_CHARGE);
 
       const input1 = {
         from: gatekeeper.address,
@@ -443,23 +622,23 @@ describe('GatewayToken', async () => {
         data: mintTx.data as string,
       };
       const { request: request1, signature: signature1 } = await signMetaTxRequest(
-        gatekeeper,
-        forwarder as IForwarder,
-        input1,
+          gatekeeper,
+          forwarder as IForwarder,
+          input1,
       );
 
       const forwarderTx1 = await forwarder
-        .connect(alice)
-        .populateTransaction.execute(request1, signature1, { gasLimit: 1000000 });
+          .connect(alice)
+          .populateTransaction.execute(request1, signature1, { gasLimit: 1000000 });
       const input2 = {
         from: alice.address,
         to: forwarder.address,
         data: forwarderTx1.data as string,
       };
       const { request: request2, signature: signature2 } = await signMetaTxRequest(
-        alice,
-        forwarder as IForwarder,
-        input2,
+          alice,
+          forwarder as IForwarder,
+          input2,
       );
 
       // attempt to send the forwarded transaction
@@ -478,11 +657,11 @@ describe('GatewayToken', async () => {
     it('Forwards transactions out of sync', async () => {
       // create two transactions, that share the same forwarder nonce
       const tx1 = await gatewayToken
-        .connect(gatekeeper)
-        .populateTransaction.mint(Wallet.createRandom().address, gkn1, 0, 0, NULL_CHARGE);
+          .connect(gatekeeper)
+          .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
       const tx2 = await gatewayToken
-        .connect(gatekeeper)
-        .populateTransaction.mint(Wallet.createRandom().address, gkn1, 0, 0, NULL_CHARGE);
+          .connect(gatekeeper)
+          .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
 
       const req1 = await makeMetaTx(tx1);
       const req2 = await makeMetaTx(tx2);
@@ -498,7 +677,7 @@ describe('GatewayToken', async () => {
 
     // Transactions cannot be replayed. This is important if "out-of-sync" sending is enabled.
     it('Protects against replay attacks', async () => {
-      const userToBeFrozen = Wallet.createRandom();
+      const userToBeFrozen = randomWallet();
       // mint and freeze a user's token
       await gatewayToken.connect(gatekeeper).mint(userToBeFrozen.address, gkn1, 0, 0, NULL_CHARGE);
       const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(userToBeFrozen.address, gkn1);
@@ -511,17 +690,17 @@ describe('GatewayToken', async () => {
 
       // unfreeze the user, then freeze them again
       await (
-        await forwarder
-          .connect(alice)
-          .execute(forwardedUnfreezeTx.request, forwardedUnfreezeTx.signature, { gasLimit: 1000000 })
+          await forwarder
+              .connect(alice)
+              .execute(forwardedUnfreezeTx.request, forwardedUnfreezeTx.signature, { gasLimit: 1000000 })
       ).wait;
       await gatewayToken.connect(gatekeeper).freeze(tokenId);
       await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
 
       // cannot replay the unfreeze transaction
       const shouldFail = forwarder
-        .connect(alice)
-        .execute(forwardedUnfreezeTx.request, forwardedUnfreezeTx.signature, { gasLimit: 1000000 });
+          .connect(alice)
+          .execute(forwardedUnfreezeTx.request, forwardedUnfreezeTx.signature, { gasLimit: 1000000 });
       // const shouldFail = attemptedReplayTransactionResponse.wait();
       // expect(attemptedReplayTransactionReceipt.status).to.equal(0);
       await expect(shouldFail).to.be.revertedWithCustomError(forwarder, 'FlexibleNonceForwarder__TxAlreadySeen');
@@ -538,11 +717,11 @@ describe('GatewayToken', async () => {
 
       // create two transactions,
       const tx1 = await gatewayToken
-        .connect(gatekeeper)
-        .populateTransaction.mint(Wallet.createRandom().address, gkn1, 0, 0, NULL_CHARGE);
+          .connect(gatekeeper)
+          .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
       const tx2 = await gatewayToken
-        .connect(gatekeeper)
-        .populateTransaction.mint(Wallet.createRandom().address, gkn1, 0, 0, NULL_CHARGE);
+          .connect(gatekeeper)
+          .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
       const req1 = await signMetaTxRequest(gatekeeper, intolerantForwarder as IForwarder, {
         from: gatekeeper.address,
         to: gatewayToken.address,
@@ -559,15 +738,15 @@ describe('GatewayToken', async () => {
       await intolerantForwarder.connect(alice).execute(req1.request, req1.signature, { gasLimit: 1000000 });
 
       const shouldFail = intolerantForwarder
-        .connect(alice)
-        .execute(req2.request, req2.signature, { gasLimit: 1000000 });
+          .connect(alice)
+          .execute(req2.request, req2.signature, { gasLimit: 1000000 });
       await expect(shouldFail).to.be.revertedWithCustomError(forwarder, 'FlexibleNonceForwarder__TxTooOld');
     });
 
     it('Refunds excess Eth sent with a transaction', async () => {
       const tx = await gatewayToken
-        .connect(gatekeeper)
-        .populateTransaction.mint(Wallet.createRandom().address, gkn1, 0, 0, NULL_CHARGE);
+          .connect(gatekeeper)
+          .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
       const req = await makeMetaTx(tx);
 
       const valueInForwardedTransaction = ethers.utils.parseUnits('1', 'ether');
@@ -575,8 +754,8 @@ describe('GatewayToken', async () => {
 
       const initialBalance = await alice.getBalance();
       const forwarderTx = await forwarder
-        .connect(alice)
-        .execute(req.request, req.signature, { gasPrice, gasLimit: 1_000_000, value: valueInForwardedTransaction });
+          .connect(alice)
+          .execute(req.request, req.signature, { gasPrice, gasLimit: 1_000_000, value: valueInForwardedTransaction });
       const receipt = await forwarderTx.wait();
       const finalBalance = await alice.getBalance();
 
@@ -597,9 +776,27 @@ describe('GatewayToken', async () => {
         data: txIndirect.data as string,
       });
       await expect(forwarder.connect(alice).execute(req.request, req.signature)).to.emit(
-        gatewayTokenInternalsTest,
-        'MsgData',
+          gatewayTokenInternalsTest,
+          'MsgData',
       );
+    });
+
+    it('Exposes the correct message sender when forwarding a transaction', async () => {
+      await expect(gatewayTokenInternalsTest.connect(gatekeeper).getMsgSender())
+          .to.emit(gatewayTokenInternalsTest, 'MsgSender')
+          .withArgs(gatekeeper.address);
+
+      const txIndirect = await gatewayTokenInternalsTest.connect(gatekeeper).populateTransaction.getMsgSender();
+
+      const req = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, {
+        from: gatekeeper.address,
+        // specify the internals test contract here instead of gatewayToken
+        to: gatewayTokenInternalsTest.address,
+        data: txIndirect.data as string,
+      });
+      await expect(forwarder.connect(alice).execute(req.request, req.signature))
+          .to.emit(gatewayTokenInternalsTest, 'MsgSender')
+          .withArgs(gatekeeper.address);
     });
   });
 
@@ -615,8 +812,23 @@ describe('GatewayToken', async () => {
 
     it('create a dao-managed network', async () => {
       await gatewayToken
-        .connect(identityCom)
-        .createNetwork(daoManagedGkn, 'DAO-managed GKN', true, multisigWallet1.address);
+          .connect(identityCom)
+          .createNetwork(daoManagedGkn, 'DAO-managed GKN', true, multisigWallet1.address);
+    });
+
+    it('create a dao-managed network - revert if the network already exists', async () => {
+      await expect(
+          gatewayToken
+              .connect(identityCom)
+              .createNetwork(daoManagedGkn, 'DAO-managed GKN', true, multisigWallet1.address),
+      ).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__NetworkAlreadyExists');
+    });
+
+    it('create a dao-managed network - revert if the dao manager is not a contract', async () => {
+      const nonContractAddress = randomAddress();
+      await expect(
+          gatewayToken.connect(identityCom).createNetwork(12345, 'DAO-managed GKN', true, nonContractAddress),
+      ).to.be.revertedWithCustomError(gatewayToken, 'Common__NotContract');
     });
 
     it('verifies management role', async () => {
@@ -639,27 +851,57 @@ describe('GatewayToken', async () => {
 
     it('fails to create a dao-managed network with a NULL_ADDRESS', async () => {
       await expect(
-        gatewayToken.connect(identityCom).createNetwork(40, 'AnotherDAO-managed GKN', true, NULL_ADDRESS),
+          gatewayToken.connect(identityCom).createNetwork(40, 'AnotherDAO-managed GKN', true, NULL_ADDRESS),
       ).to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
     });
 
     it('transfer DAO management to a new multisig - reverts if not dao-managed', async () => {
       await expect(
-        gatewayToken.connect(alice).transferDAOManager(multisigWallet1.address, multisigWallet2.address, gkn1),
+          gatewayToken.connect(alice).transferDAOManager(multisigWallet1.address, multisigWallet2.address, gkn1),
       ).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__NotDAOGoverned');
     });
 
     it('transfer DAO management to a new multisig - reverts if called directly', async () => {
       await expect(
-        gatewayToken.connect(alice).transferDAOManager(multisigWallet1.address, multisigWallet2.address, daoManagedGkn),
+          gatewayToken.connect(alice).transferDAOManager(multisigWallet1.address, multisigWallet2.address, daoManagedGkn),
       ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
     });
 
     it('transfers DAO management to a new multisig', async () => {
-
       // Note, the multisig wallet (using a stub here) is responsible for authorising the caller.
       // since we are using a stub, anyone can call it here.
       await (await multisigWallet1.connect(alice).reassignOwnership(multisigWallet2.address)).wait();
+    });
+  });
+
+  describe('Internals', () => {
+    const _INTERFACE_ID_IERC3525 = '0xd5358140';
+    const _INTERFACE_ID_IERC721 = '0x80ac58cd';
+    const _INTERFACE_ID_IERC3525MetadataUpgradeable = '0xe1600902';
+    const _INTERFACE_ID_ERC20 = '0x36372b07';
+
+    it('supports the ERC165 interface', async () => {
+      const supportsErc721 = await gatewayToken.supportsInterface(_INTERFACE_ID_IERC721);
+      const supportsErc3525 = await gatewayToken.supportsInterface(_INTERFACE_ID_IERC3525);
+      const supportsErc3525MetadataUpgradeable = await gatewayToken.supportsInterface(
+          _INTERFACE_ID_IERC3525MetadataUpgradeable,
+      );
+      const supportsErc20 = await gatewayToken.supportsInterface(_INTERFACE_ID_ERC20);
+      expect(supportsErc721).to.be.true;
+      expect(supportsErc3525).to.be.true;
+      expect(supportsErc3525MetadataUpgradeable).to.be.true;
+      // does not match the ERC20 interface
+      expect(supportsErc20).to.be.false;
+    });
+
+    it('can set a metadata descriptor', async () => {
+      const metadataDescriptor = randomAddress();
+      await gatewayToken.connect(identityCom).setMetadataDescriptor(metadataDescriptor);
+      expect(await gatewayToken.metadataDescriptor()).to.equal(metadataDescriptor);
+    });
+
+    it('restricts all transfers', async () => {
+      expect(await gatewayToken.transfersRestricted()).to.be.true;
     });
   });
 
@@ -678,7 +920,7 @@ describe('GatewayToken', async () => {
       const currentDate = Math.ceil(Date.now() / 1000);
       const tomorrow = currentDate + 86_400;
 
-      const wallet = ethers.Wallet.createRandom();
+      const wallet = randomWallet();
       await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, tomorrow, 0, NULL_CHARGE);
 
       let verified = await gatewayToken['verifyToken(address,uint256)'](wallet.address, gkn1);
@@ -686,10 +928,10 @@ describe('GatewayToken', async () => {
     });
 
     it('can no longer issue a token with no expiry (testing the upgraded behaviour)', async () => {
-      const wallet = ethers.Wallet.createRandom();
+      const wallet = randomWallet();
 
       await expect(gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, 0, 0, NULL_CHARGE)).to.be.revertedWith(
-        'TEST MODE: Expiry must be > zero',
+          'TEST MODE: Expiry must be > zero',
       );
     });
   });
