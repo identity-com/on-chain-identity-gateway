@@ -1,3 +1,3 @@
 module.exports = {
-  skipFiles: ['GatewayTokenUpgradeTest.sol'],
+  skipFiles: ['GatewayTokenUpgradeTest.sol', 'GatewayTokenInternalsTest.sol'],
 };

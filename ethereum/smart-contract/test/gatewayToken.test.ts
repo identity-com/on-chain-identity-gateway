@@ -24,6 +24,7 @@ describe('GatewayToken', async () => {
   let forwarder: Contract;
   let flagsStorage: Contract;
   let gatewayToken: Contract;
+  let gatewayTokenInternalsTest: Contract;
 
   let hexRetailFlag = toBytes32('Retail');
   let hexInstitutionFlag = toBytes32('Institution');
@@ -50,17 +51,21 @@ describe('GatewayToken', async () => {
     const forwarderFactory = await ethers.getContractFactory('FlexibleNonceForwarder');
     const flagsStorageFactory = await ethers.getContractFactory('FlagsStorage');
     const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
+    const gatewayTokenInternalsTestFactory = await ethers.getContractFactory('GatewayTokenInternalsTest');
 
     forwarder = await forwarderFactory.deploy(100);
     await forwarder.deployed();
 
-    // flagsStorage = await flagsStorageFactory.deploy(identityCom.address);
     flagsStorage = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
     await flagsStorage.deployed();
 
     const args = ['Gateway Protocol', 'GWY', identityCom.address, flagsStorage.address, [forwarder.address]];
     gatewayToken = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
     await gatewayToken.deployed();
+
+    // Use the internal test contract to test internal functionss
+    gatewayTokenInternalsTest = await upgrades.deployProxy(gatewayTokenInternalsTestFactory, args, { kind: 'uups' });
+    await gatewayTokenInternalsTest.deployed();
 
     // create gatekeeper networks
     await gatewayToken.connect(identityCom).createNetwork(gkn1, 'Test GKN 1', false, NULL_ADDRESS);
@@ -554,6 +559,23 @@ describe('GatewayToken', async () => {
       // the balance should be reduced by just the gas used. The valueInForwardedTransaction should be refunded
       console.log('gas used', receipt.gasUsed.toString());
       expect(finalBalance).to.equal(initialBalance.sub(receipt.gasUsed.mul(gasPrice)));
+    });
+
+    it('Exposes the correct message data when forwarding a transaction', async () => {
+      await expect(gatewayTokenInternalsTest.getMsgData(1)).to.emit(gatewayTokenInternalsTest, 'MsgData');
+
+      const txIndirect = await gatewayTokenInternalsTest.connect(gatekeeper).populateTransaction.getMsgData(1);
+
+      const req = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, {
+        from: gatekeeper.address,
+        // specify the internals test contract here instead of gatewayToken
+        to: gatewayTokenInternalsTest.address,
+        data: txIndirect.data as string,
+      });
+      await expect(forwarder.connect(alice).execute(req.request, req.signature)).to.emit(
+        gatewayTokenInternalsTest,
+        'MsgData',
+      );
     });
   });
 
