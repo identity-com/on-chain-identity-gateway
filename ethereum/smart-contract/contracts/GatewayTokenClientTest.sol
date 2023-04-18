@@ -17,10 +17,11 @@ contract GatewayTokenClientTest is Gated {
         _gatewayTokenContract = gatewayTokenContract;
         _gatekeeperNetwork = gatekeeperNetwork;
     }
+
     /**
      * @dev A public version of _msgData() in the GatewayToken contract, use for testing the forwarding logic.
      */
-    function testGated() external virtual gated(_gatewayTokenContract, _gatekeeperNetwork) {
+    function testGated() external gated(_gatewayTokenContract, _gatekeeperNetwork) {
         emit Success();
     }
 }

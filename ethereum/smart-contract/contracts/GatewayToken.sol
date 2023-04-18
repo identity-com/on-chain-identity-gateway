@@ -172,8 +172,12 @@ contract GatewayToken is
             // since this network does not exist yet, it has no existing network authority
             _grantRole(DAO_MANAGER_ROLE, network, daoManager);
             _grantRole(NETWORK_AUTHORITY_ROLE, network, daoManager);
+
+            // DAO managers can assign and revoke network authorities and gatekeepers
             _setRoleAdmin(NETWORK_AUTHORITY_ROLE, network, DAO_MANAGER_ROLE);
             _setRoleAdmin(GATEKEEPER_ROLE, network, DAO_MANAGER_ROLE);
+            // DAO Managers can administrate themselves
+            _setRoleAdmin(DAO_MANAGER_ROLE, network, DAO_MANAGER_ROLE);
         } else {
             // use the internal function to avoid the check for the network authority role
             // since this network does not exist yet, it has no existing network authority
@@ -527,15 +531,15 @@ contract GatewayToken is
 
         // check the previous manager is a current dao manager
         _checkRole(DAO_MANAGER_ROLE, network, previousManager);
-        // check the new manager is a dao manager
-        _checkRole(DAO_MANAGER_ROLE, network, _msgSender());
 
         if (newManager == address(0)) revert Common__MissingAccount();
 
+        // grant the new manager the relevant roles
         grantRole(DAO_MANAGER_ROLE, network, newManager);
         grantRole(NETWORK_AUTHORITY_ROLE, network, newManager);
         grantRole(GATEKEEPER_ROLE, network, newManager);
 
+        // revoke the relevant roles from the previous manager
         revokeRole(GATEKEEPER_ROLE, network, previousManager);
         revokeRole(NETWORK_AUTHORITY_ROLE, network, previousManager);
         revokeRole(DAO_MANAGER_ROLE, network, previousManager);

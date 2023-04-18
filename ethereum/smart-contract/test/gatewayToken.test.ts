@@ -1,7 +1,8 @@
 import { ethers, upgrades } from 'hardhat';
 import { BigNumber, Contract, PopulatedTransaction, Wallet } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-
+import { keccak256 } from '@ethersproject/keccak256';
+import { toUtf8Bytes } from '@ethersproject/strings';
 import { toBytes32 } from './utils';
 
 import { expect } from 'chai';
@@ -32,6 +33,7 @@ describe('GatewayToken', async () => {
 
   let gkn1 = 10;
   let gkn2 = 20;
+  let daoManagedGkn = 30;
 
   const expectVerified = (address: string, gkn: number): Chai.PromisedAssertion => {
     const verified = gatewayToken['verifyToken(address,uint256)'](address, gkn);
@@ -272,7 +274,6 @@ describe('GatewayToken', async () => {
   });
 
   describe('Test Gated modifier', async () => {
-
     let client: Contract;
 
     before(async () => {
@@ -282,13 +283,15 @@ describe('GatewayToken', async () => {
 
     it('approves the user if they have a gateway token', async () => {
       // Alice is verified
-      await expect(client.connect(alice).testGated()).to.emit(client, 'Success')
+      await expect(client.connect(alice).testGated()).to.emit(client, 'Success');
     });
 
     it('rejects the user if they do not have a gateway token', async () => {
       // Carol is not verified
-      await expect(client.connect(carol).testGated())
-          .to.be.revertedWithCustomError(client, 'IsGated__InvalidGatewayToken');
+      await expect(client.connect(carol).testGated()).to.be.revertedWithCustomError(
+        client,
+        'IsGated__InvalidGatewayToken',
+      );
     });
   });
 
@@ -597,6 +600,66 @@ describe('GatewayToken', async () => {
         gatewayTokenInternalsTest,
         'MsgData',
       );
+    });
+  });
+
+  describe('DAO Management', () => {
+    let multisigWallet1: Contract;
+    let multisigWallet2: Contract;
+
+    before('deploy multisig wallets', async () => {
+      const stubMultisigWalletFactory = await ethers.getContractFactory('StubMultisig');
+      multisigWallet1 = await stubMultisigWalletFactory.deploy(gatewayToken.address, daoManagedGkn);
+      multisigWallet2 = await stubMultisigWalletFactory.deploy(gatewayToken.address, daoManagedGkn);
+    });
+
+    it('create a dao-managed network', async () => {
+      await gatewayToken
+        .connect(identityCom)
+        .createNetwork(daoManagedGkn, 'DAO-managed GKN', true, multisigWallet1.address);
+    });
+
+    it('verifies management role', async () => {
+      const isMultisig1DaoManager = await gatewayToken.hasRole(
+          keccak256(toUtf8Bytes('DAO_MANAGER_ROLE')),
+          daoManagedGkn,
+          multisigWallet1.address,
+      );
+
+      expect(isMultisig1DaoManager).to.be.true;
+
+      const isMultisig2DaoManager = await gatewayToken.hasRole(
+          keccak256(toUtf8Bytes('DAO_MANAGER_ROLE')),
+          daoManagedGkn,
+          multisigWallet2.address,
+      );
+
+      expect(isMultisig2DaoManager).to.be.false;
+    });
+
+    it('fails to create a dao-managed network with a NULL_ADDRESS', async () => {
+      await expect(
+        gatewayToken.connect(identityCom).createNetwork(40, 'AnotherDAO-managed GKN', true, NULL_ADDRESS),
+      ).to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
+    });
+
+    it('transfer DAO management to a new multisig - reverts if not dao-managed', async () => {
+      await expect(
+        gatewayToken.connect(alice).transferDAOManager(multisigWallet1.address, multisigWallet2.address, gkn1),
+      ).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__NotDAOGoverned');
+    });
+
+    it('transfer DAO management to a new multisig - reverts if called directly', async () => {
+      await expect(
+        gatewayToken.connect(alice).transferDAOManager(multisigWallet1.address, multisigWallet2.address, daoManagedGkn),
+      ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
+    });
+
+    it('transfers DAO management to a new multisig', async () => {
+
+      // Note, the multisig wallet (using a stub here) is responsible for authorising the caller.
+      // since we are using a stub, anyone can call it here.
+      await (await multisigWallet1.connect(alice).reassignOwnership(multisigWallet2.address)).wait();
     });
   });
 
