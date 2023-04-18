@@ -7,6 +7,7 @@ export { FlagsStorage__factory } from "./FlagsStorage__factory";
 export { FlexibleNonceForwarder__factory } from "./FlexibleNonceForwarder__factory";
 export { Gated__factory } from "./Gated__factory";
 export { GatewayToken__factory } from "./GatewayToken__factory";
+export { GatewayTokenInternalsTest__factory } from "./GatewayTokenInternalsTest__factory";
 export { GatewayTokenUpgradeTest__factory } from "./GatewayTokenUpgradeTest__factory";
 export { MultiERC2771Context__factory } from "./MultiERC2771Context__factory";
 export { ParameterizedAccessControl__factory } from "./ParameterizedAccessControl__factory";
