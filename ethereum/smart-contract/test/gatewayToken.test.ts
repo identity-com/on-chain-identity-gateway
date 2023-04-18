@@ -272,15 +272,23 @@ describe('GatewayToken', async () => {
   });
 
   describe('Test Gated modifier', async () => {
+
+    let client: Contract;
+
     before(async () => {
       const clientFactory = await ethers.getContractFactory('GatewayTokenClientTest');
-      const client = await clientFactory.deploy(gatewayToken.address, gkn1);
+      client = await clientFactory.deploy(gatewayToken.address, gkn1);
+    });
 
+    it('approves the user if they have a gateway token', async () => {
       // Alice is verified
-      expect(client.connect(alice).testGated()).to.emit(client, 'Success');
+      await expect(client.connect(alice).testGated()).to.emit(client, 'Success')
+    });
 
-      // Carol is not
-      expect(client.connect(carol).testGated()).not.to.emit(client, 'Success');
+    it('rejects the user if they do not have a gateway token', async () => {
+      // Carol is not verified
+      await expect(client.connect(carol).testGated())
+          .to.be.revertedWithCustomError(client, 'IsGated__InvalidGatewayToken');
     });
   });
 
