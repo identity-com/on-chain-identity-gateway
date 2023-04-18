@@ -226,10 +226,16 @@ describe('GatewayToken', async () => {
     });
 
     it('remove flag, revert if not superAdmin', async () => {
-      await expect(flagsStorage.connect(bob).addFlag(hexRetailFlag, 0)).to.be.revertedWithCustomError(
+      await expect(flagsStorage.connect(bob).removeFlag(hexRetailFlag)).to.be.revertedWithCustomError(
         flagsStorage,
         'Common__NotSuperAdmin',
       );
+    });
+
+    it('remove flag, revert if not supported', async () => {
+      await expect(
+        flagsStorage.connect(identityCom).removeFlag(toBytes32('unknownFlag')),
+      ).to.be.revertedWithCustomError(flagsStorage, 'FlagsStorage__FlagNotSupported');
     });
 
     it('remove flag', async () => {
@@ -314,7 +320,17 @@ describe('GatewayToken', async () => {
     });
   });
 
-  describe('Test adding network authorities', async () => {
+  describe('super-admin', async () => {
+    it('set and revoke super admin', async () => {
+      await gatewayToken.connect(identityCom).setSuperAdmin(alice.address);
+        expect(await gatewayToken.isSuperAdmin(alice.address)).to.be.true;
+
+        await gatewayToken.connect(identityCom).revokeSuperAdmin(alice.address);
+      expect(await gatewayToken.isSuperAdmin(alice.address)).to.be.false;
+    });
+  });
+
+  describe('network authorities', async () => {
     it('Successfully add 1 new network authority to gatekeeper network', async () => {
       await gatewayToken.connect(identityCom).addNetworkAuthority(networkAuthority2.address, gkn1);
       expect(await gatewayToken.connect(identityCom).isNetworkAuthority(networkAuthority2.address, gkn1)).to.be.true;
@@ -351,6 +367,19 @@ describe('GatewayToken', async () => {
       await expect(
         gatewayToken.connect(alice).removeNetworkAuthority(identityCom.address, gkn1),
       ).to.be.revertedWithCustomError(gatewayToken, 'Common__Unauthorized');
+    });
+  });
+
+  describe('RBAC', () => {
+    it('renounce role', async () => {
+      // add bob as a gatekeeper
+      await gatewayToken.connect(identityCom).addGatekeeper(bob.address, gkn1)
+      // bob renounces
+      await gatewayToken.connect(bob).renounceRole(
+          keccak256(toUtf8Bytes('GATEKEEPER_ROLE')),
+          gkn1,
+          bob.address,
+      )
     });
   });
 
@@ -707,6 +736,27 @@ describe('GatewayToken', async () => {
       await expectVerified(carol.address, gkn1).to.be.true;
     });
 
+    it('forward a call - revert if the signer is not the from address', async () => {
+      const mintTx = await gatewayToken
+          .connect(gatekeeper)
+          .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
+
+      const input = {
+        from: gatekeeper.address,
+        to: gatewayToken.address,
+        data: mintTx.data as string,
+      };
+      const { request, signature } = await signMetaTxRequest(
+          bob,  // bob is not the gatekeeper
+          forwarder as IForwarder, input
+      );
+
+      // send the forwarded transaction
+      await expect(
+          forwarder.connect(alice).execute(request, signature, { gasLimit: 1000000 })
+      ).to.be.revertedWithCustomError(forwarder, 'FlexibleNonceForwarder__InvalidSigner');
+    });
+
     it('protects against reentrancy', async () => {
       // we are going to create a Gateway transaction,
       // then wrap it twice in a forwarder meta-transaction
@@ -901,6 +951,21 @@ describe('GatewayToken', async () => {
         .withArgs(gatekeeper.address);
     });
 
+    // forwarding reserves 63 gas for the forwarder to use. If the gas limit is less than 63 more than the target
+    // transaction, the transaction will fail
+    it('reverts if the gas limit less than 63 more than the target transaction', async () => {
+      // create two transactions, that share the same forwarder nonce
+      const tx1 = await gatewayToken
+          .connect(gatekeeper)
+          .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
+      const req1 = await makeMetaTx(tx1);
+      // 25560 is what is reported by the evm as needed
+      // 60 is not enough for the forwarder to do its work
+      await expect(
+          forwarder.connect(alice).execute(req1.request, req1.signature, { gasLimit: 25560 + 60 })
+      ).to.be.reverted;
+    });
+
     it('Authorizes an upgrade via a forwarder', async () => {
       // identityCom can authorize an upgrade
       await expect(gatewayTokenInternalsTest.connect(identityCom).authorizedUpgrade()).to.emit(
@@ -1060,7 +1125,7 @@ describe('GatewayToken', async () => {
   });
 
   describe('Test gateway token upgradeability', async () => {
-    it('upgrades the contract to v2', async () => {
+    it('upgrades the gateway token contract to v2', async () => {
       const gatewayTokenV2Factory = await ethers.getContractFactory('GatewayTokenUpgradeTest');
       await upgrades.upgradeProxy(gatewayToken.address, gatewayTokenV2Factory);
     });
@@ -1087,6 +1152,20 @@ describe('GatewayToken', async () => {
       await expect(gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, 0, 0, NULL_CHARGE)).to.be.revertedWith(
         'TEST MODE: Expiry must be > zero',
       );
+    });
+
+    it('upgrades the flags storage contract to v2', async () => {
+      // just using the same contract here, to test the upgradeability feature
+      const flagsStorageV2Factory = await ethers.getContractFactory('FlagsStorage');
+      await upgrades.upgradeProxy(flagsStorage.address, flagsStorageV2Factory);
+    });
+
+    it('upgrades the flags storage contract to v2 - reverts if not superadmin', async () => {
+      // just using the same contract here, to test the upgradeability feature
+      const flagsStorageV2Factory = await ethers.getContractFactory('FlagsStorage');
+      await expect(
+          upgrades.upgradeProxy(flagsStorage.address, flagsStorageV2Factory.connect(bob))
+      ).to.be.revertedWithCustomError(gatewayToken, 'Common__NotSuperAdmin');
     });
   });
 });
