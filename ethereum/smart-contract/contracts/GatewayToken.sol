@@ -43,7 +43,6 @@ contract GatewayToken is
     TokenBitMask
 {
     using Address for address;
-    using Address for address payable;
     using Strings for uint;
 
     // Off-chain DAO governance access control
@@ -98,18 +97,6 @@ contract GatewayToken is
 
         _setFlagsStorage(_flagsStorage);
         _superAdmins[_superAdmin] = true;
-    }
-
-    // if any funds are sent to this contract, use this function to withdraw them
-    // keep init functions at the top by the constructor
-
-    function withdraw(uint amount) external onlySuperAdmin returns (bool) {
-        if (amount > address(this).balance) {
-            revert GatewayToken__InsufficientFunds(address(this).balance, amount);
-        }
-
-        payable(_msgSender()).sendValue(amount);
-        return true;
     }
 
     function setMetadataDescriptor(address _metadataDescriptor) external onlySuperAdmin {
@@ -210,6 +197,26 @@ contract GatewayToken is
         revokeRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
+    /**
+     * @dev Triggers to mint gateway token
+     * @param to Gateway token owner
+     * @param network Gateway token type
+     * @param mask The bitmask for the token
+     */
+    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) external virtual {
+        _checkGatekeeper(network);
+
+        uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
+
+        if (expiration > 0) {
+            _expirations[tokenId] = expiration;
+        }
+
+        if (mask > 0) {
+            _setBitMask(tokenId, mask);
+        }
+    }
+
     function getTokenIdsByOwnerAndNetwork(address owner, uint network) external view virtual returns (uint[] memory) {
         (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
         uint[] memory tokenIdsResized = new uint[](count);
@@ -268,7 +275,18 @@ contract GatewayToken is
         return true;
     }
 
-    // solhint-disable-next-line ordering
+    /**
+     * @dev Transfers are disabled for Gateway Tokens - override ERC3525 approve functions to revert
+     * Note - transferFrom and safeTransferFrom are disabled indirectly with the _isApprovedOrOwner function
+     */
+    function approve(uint256, address, uint256) public payable virtual override {
+        revert GatewayToken__TransferDisabled();
+    }
+
+    function approve(address, uint256) public payable virtual override {
+        revert GatewayToken__TransferDisabled();
+    }
+
     function addForwarder(address forwarder) external onlySuperAdmin {
         _addForwarder(forwarder);
     }
@@ -318,27 +336,7 @@ contract GatewayToken is
         _burn(tokenId);
     }
 
-    /**
-     * @dev Triggers to mint gateway token
-     * @param to Gateway token owner
-     * @param network Gateway token type
-     * @param mask The bitmask for the token
-     */
-    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) external virtual {
-        _checkGatekeeper(network);
-
-        uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
-
-        if (expiration > 0) {
-            _expirations[tokenId] = expiration;
-        }
-
-        if (mask > 0) {
-            _setBitMask(tokenId, mask);
-        }
-    }
-
-    function revoke(uint tokenId) external virtual {
+    function revoke(uint tokenId) public virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
         _tokenStates[tokenId] = TokenState.REVOKED;

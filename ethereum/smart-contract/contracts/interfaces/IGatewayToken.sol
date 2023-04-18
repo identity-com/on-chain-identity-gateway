@@ -48,6 +48,9 @@ interface IGatewayToken {
     /// @param expectedState expected token state.
     error GatewayToken__TokenInvalidStateForOperation(uint256 tokenId, TokenState state, TokenState expectedState);
 
+    /// Token transfers are disabled
+    error GatewayToken__TransferDisabled();
+
     /**
      * @dev Triggers to verify if address has a GATEKEEPER role.
      * @param gatekeeper Gatekeeper address
