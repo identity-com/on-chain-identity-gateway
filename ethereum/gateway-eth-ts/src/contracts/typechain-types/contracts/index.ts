@@ -8,6 +8,7 @@ export type { FlagsStorage } from "./FlagsStorage";
 export type { FlexibleNonceForwarder } from "./FlexibleNonceForwarder";
 export type { Gated } from "./Gated";
 export type { GatewayToken } from "./GatewayToken";
+export type { GatewayTokenInternalsTest } from "./GatewayTokenInternalsTest";
 export type { GatewayTokenUpgradeTest } from "./GatewayTokenUpgradeTest";
 export type { MultiERC2771Context } from "./MultiERC2771Context";
 export type { ParameterizedAccessControl } from "./ParameterizedAccessControl";

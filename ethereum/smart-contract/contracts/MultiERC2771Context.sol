@@ -26,11 +26,6 @@ abstract contract MultiERC2771Context is ContextUpgradeable {
         }
     }
 
-    // solhint-disable-next-line ordering
-    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
-        return _trustedForwarders[forwarder];
-    }
-
     // The overridden function should declare the appropriate access control//
     // keep init functions at the top by the constructor
     function _addForwarder(address forwarder) internal virtual {
@@ -40,6 +35,10 @@ abstract contract MultiERC2771Context is ContextUpgradeable {
     // The overridden function should declare the appropriate access control
     function _removeForwarder(address forwarder) internal virtual {
         _trustedForwarders[forwarder] = false;
+    }
+
+    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
+        return _trustedForwarders[forwarder];
     }
 
     function _msgSender() internal view virtual override returns (address sender) {
