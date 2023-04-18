@@ -118,6 +118,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GatewayToken__factory>;
     getContractFactory(
+      name: "GatewayTokenClientTest",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.GatewayTokenClientTest__factory>;
+    getContractFactory(
       name: "GatewayTokenInternalsTest",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GatewayTokenInternalsTest__factory>;
@@ -165,6 +169,10 @@ declare module "hardhat/types/runtime" {
       name: "ParameterizedAccessControl",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ParameterizedAccessControl__factory>;
+    getContractFactory(
+      name: "StubMultisig",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.StubMultisig__factory>;
     getContractFactory(
       name: "TokenBitMask",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -301,6 +309,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.GatewayToken>;
     getContractAt(
+      name: "GatewayTokenClientTest",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.GatewayTokenClientTest>;
+    getContractAt(
       name: "GatewayTokenInternalsTest",
       address: string,
       signer?: ethers.Signer
@@ -360,6 +373,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ParameterizedAccessControl>;
+    getContractAt(
+      name: "StubMultisig",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.StubMultisig>;
     getContractAt(
       name: "TokenBitMask",
       address: string,

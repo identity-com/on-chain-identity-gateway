@@ -55,6 +55,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     "allowance(uint256,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "approve(uint256,address,uint256)": FunctionFragment;
+    "authorizedUpgrade()": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "balanceOf(uint256)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
@@ -65,6 +66,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     "getApproved(uint256)": FunctionFragment;
     "getExpiration(uint256)": FunctionFragment;
     "getMsgData(uint256)": FunctionFragment;
+    "getMsgSender()": FunctionFragment;
     "getNetwork(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32,uint256)": FunctionFragment;
     "getToken(uint256)": FunctionFragment;
@@ -133,6 +135,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
       | "allowance"
       | "approve(address,uint256)"
       | "approve(uint256,address,uint256)"
+      | "authorizedUpgrade"
       | "balanceOf(address)"
       | "balanceOf(uint256)"
       | "burn"
@@ -143,6 +146,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
       | "getApproved"
       | "getExpiration"
       | "getMsgData"
+      | "getMsgSender"
       | "getNetwork"
       | "getRoleAdmin"
       | "getToken"
@@ -244,6 +248,10 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "authorizedUpgrade",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "balanceOf(address)",
     values: [PromiseOrValue<string>]
   ): string;
@@ -287,6 +295,10 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getMsgData",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMsgSender",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getNetwork",
@@ -594,6 +606,10 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "authorizedUpgrade",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "balanceOf(address)",
     data: BytesLike
   ): Result;
@@ -624,6 +640,10 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getMsgData", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getMsgSender",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getNetwork", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
@@ -795,6 +815,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
     "ApprovalValue(uint256,address,uint256)": EventFragment;
+    "AuthorizedUpgrade()": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
     "BitMaskUpdated(uint256,uint256)": EventFragment;
     "DAOManagerTransferred(address,address,uint256)": EventFragment;
@@ -803,6 +824,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     "Freeze(uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
     "MsgData(bytes)": EventFragment;
+    "MsgSender(address)": EventFragment;
     "Revoke(uint256)": EventFragment;
     "RoleAdminChanged(bytes32,uint256,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,uint256,address,address)": EventFragment;
@@ -821,6 +843,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalValue"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AuthorizedUpgrade"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BitMaskUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOManagerTransferred"): EventFragment;
@@ -829,6 +852,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "Freeze"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MsgData"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MsgSender"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Revoke"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
@@ -889,6 +913,15 @@ export type ApprovalValueEvent = TypedEvent<
 >;
 
 export type ApprovalValueEventFilter = TypedEventFilter<ApprovalValueEvent>;
+
+export interface AuthorizedUpgradeEventObject {}
+export type AuthorizedUpgradeEvent = TypedEvent<
+  [],
+  AuthorizedUpgradeEventObject
+>;
+
+export type AuthorizedUpgradeEventFilter =
+  TypedEventFilter<AuthorizedUpgradeEvent>;
 
 export interface BeaconUpgradedEventObject {
   beacon: string;
@@ -966,6 +999,13 @@ export interface MsgDataEventObject {
 export type MsgDataEvent = TypedEvent<[string], MsgDataEventObject>;
 
 export type MsgDataEventFilter = TypedEventFilter<MsgDataEvent>;
+
+export interface MsgSenderEventObject {
+  arg0: string;
+}
+export type MsgSenderEvent = TypedEvent<[string], MsgSenderEventObject>;
+
+export type MsgSenderEventFilter = TypedEventFilter<MsgSenderEvent>;
 
 export interface RevokeEventObject {
   tokenId: BigNumber;
@@ -1167,6 +1207,10 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    authorizedUpgrade(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     "balanceOf(address)"(
       owner_: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1211,6 +1255,10 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     getMsgData(
       x: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    getMsgSender(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1560,6 +1608,10 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  authorizedUpgrade(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   "balanceOf(address)"(
     owner_: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -1604,6 +1656,10 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
   getMsgData(
     x: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  getMsgSender(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1953,6 +2009,8 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    authorizedUpgrade(overrides?: CallOverrides): Promise<void>;
+
     "balanceOf(address)"(
       owner_: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1999,6 +2057,8 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       x: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    getMsgSender(overrides?: CallOverrides): Promise<void>;
 
     getNetwork(
       network: PromiseOrValue<BigNumberish>,
@@ -2345,6 +2405,9 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       _value?: null
     ): ApprovalValueEventFilter;
 
+    "AuthorizedUpgrade()"(): AuthorizedUpgradeEventFilter;
+    AuthorizedUpgrade(): AuthorizedUpgradeEventFilter;
+
     "BeaconUpgraded(address)"(
       beacon?: PromiseOrValue<string> | null
     ): BeaconUpgradedEventFilter;
@@ -2395,6 +2458,9 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     "MsgData(bytes)"(arg0?: null): MsgDataEventFilter;
     MsgData(arg0?: null): MsgDataEventFilter;
+
+    "MsgSender(address)"(arg0?: null): MsgSenderEventFilter;
+    MsgSender(arg0?: null): MsgSenderEventFilter;
 
     "Revoke(uint256)"(
       tokenId?: PromiseOrValue<BigNumberish> | null
@@ -2554,6 +2620,10 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    authorizedUpgrade(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     "balanceOf(address)"(
       owner_: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -2598,6 +2668,10 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     getMsgData(
       x: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    getMsgSender(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2944,6 +3018,10 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    authorizedUpgrade(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     "balanceOf(address)"(
       owner_: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -2988,6 +3066,10 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     getMsgData(
       x: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getMsgSender(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

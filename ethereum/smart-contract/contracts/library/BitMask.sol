@@ -27,15 +27,4 @@ library BitMask {
     function checkBit(uint256 self, uint8 index) internal pure returns (bool) {
         return (self & (uint256(1) << index)) > 0;
     }
-
-    /**
-     * @dev OR operator between two bitmasks:
-     * '0' OR '0' -> '0'
-     * '0' OR '1' -> '1'
-     * '1' OR '0' -> '1'
-     * '1' OR '1' -> '1'
-     */
-    function or(uint256 self, uint256 mask) internal pure returns (uint256) {
-        return self | mask;
-    }
 }
