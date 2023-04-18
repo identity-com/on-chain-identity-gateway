@@ -534,6 +534,27 @@ describe('GatewayToken', async () => {
         .execute(req2.request, req2.signature, { gasLimit: 1000000 });
       await expect(shouldFail).to.be.revertedWithCustomError(forwarder, 'FlexibleNonceForwarder__TxTooOld');
     });
+
+    it('Refunds excess Eth sent with a transaction', async () => {
+      const tx = await gatewayToken
+        .connect(gatekeeper)
+        .populateTransaction.mint(Wallet.createRandom().address, gkn1, 0, 0, NULL_CHARGE);
+      const req = await makeMetaTx(tx);
+
+      const valueInForwardedTransaction = ethers.utils.parseUnits('1', 'ether');
+      const gasPrice = ethers.utils.parseUnits('1', 'gwei');
+
+      const initialBalance = await alice.getBalance();
+      const forwarderTx = await forwarder
+        .connect(alice)
+        .execute(req.request, req.signature, { gasPrice, gasLimit: 1_000_000, value: valueInForwardedTransaction });
+      const receipt = await forwarderTx.wait();
+      const finalBalance = await alice.getBalance();
+
+      // the balance should be reduced by just the gas used. The valueInForwardedTransaction should be refunded
+      console.log('gas used', receipt.gasUsed.toString());
+      expect(finalBalance).to.equal(initialBalance.sub(receipt.gasUsed.mul(gasPrice)));
+    });
   });
 
   describe('Test gateway token upgradeability', async () => {

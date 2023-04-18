@@ -54,7 +54,9 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
     // empty constructor in line with the UUPS upgradeable proxy pattern
     // solhint-disable-next-line no-empty-blocks
-    constructor() initializer {}
+    constructor() {
+        _disableInitializers();
+    }
 
     function initialize(address _superAdmin) external initializer {
         if (_superAdmin == address(0)) revert Common__MissingAccount();

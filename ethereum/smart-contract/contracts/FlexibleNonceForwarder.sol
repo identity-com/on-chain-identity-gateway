@@ -4,10 +4,12 @@ pragma solidity 0.8.9;
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {IForwarder} from "./interfaces/IForwarder.sol";
 
 contract FlexibleNonceForwarder is IForwarder, EIP712, ReentrancyGuard {
     using ECDSA for bytes32;
+    using Address for address payable;
 
     struct SigsForNonce {
         mapping(bytes => bool) sigs;
@@ -46,6 +48,7 @@ contract FlexibleNonceForwarder is IForwarder, EIP712, ReentrancyGuard {
         bytes calldata signature
     ) external payable nonReentrant returns (bool, bytes memory) {
         _verifyFlexibleNonce(req, signature);
+        _refundExcessValue(req);
 
         (bool success, bytes memory returndata) = req.to.call{gas: req.gas, value: req.value}(
             abi.encodePacked(req.data, req.from)
@@ -99,5 +102,12 @@ contract FlexibleNonceForwarder is IForwarder, EIP712, ReentrancyGuard {
 
         // store the signature for this nonce to ensure no replay attacks
         _nonces[req.from].sigsForNonce[req.nonce].sigs[signature] = true;
+    }
+
+    function _refundExcessValue(ForwardRequest calldata req) internal {
+        // Refund the excess value sent to the forwarder if the value inside the request is less than the value sent.
+        if (msg.value > req.value) {
+            payable(msg.sender).sendValue(msg.value - req.value);
+        }
     }
 }

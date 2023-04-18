@@ -1139,8 +1139,8 @@ export interface GatewayToken extends BaseContract {
     ): Promise<[BigNumber]>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1527,8 +1527,8 @@ export interface GatewayToken extends BaseContract {
   ): Promise<BigNumber>;
 
   "approve(address,uint256)"(
-    to_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
+    arg0: PromiseOrValue<string>,
+    arg1: PromiseOrValue<BigNumberish>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1915,8 +1915,8 @@ export interface GatewayToken extends BaseContract {
     ): Promise<BigNumber>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2508,8 +2508,8 @@ export interface GatewayToken extends BaseContract {
     ): Promise<BigNumber>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2893,8 +2893,8 @@ export interface GatewayToken extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -62,11 +62,12 @@ contract GatewayToken is
     mapping(uint => string) internal _networks;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    // constructor is empty as we are using the proxy pattern,
+    // constructor is "empty" as we are using the proxy pattern,
     // where setup code is in the initialize function
     // called by the proxy contract
-    // solhint-disable-next-line no-empty-blocks
-    constructor() initializer {}
+    constructor() {
+        _disableInitializers();
+    }
 
     function initialize(
         string memory _name,
@@ -196,6 +197,26 @@ contract GatewayToken is
         revokeRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
+    /**
+     * @dev Triggers to mint gateway token
+     * @param to Gateway token owner
+     * @param network Gateway token type
+     * @param mask The bitmask for the token
+     */
+    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) external virtual {
+        _checkGatekeeper(network);
+
+        uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
+
+        if (expiration > 0) {
+            _expirations[tokenId] = expiration;
+        }
+
+        if (mask > 0) {
+            _setBitMask(tokenId, mask);
+        }
+    }
+
     function getTokenIdsByOwnerAndNetwork(address owner, uint network) external view returns (uint[] memory) {
         (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
         uint[] memory tokenIdsResized = new uint[](count);
@@ -258,12 +279,11 @@ contract GatewayToken is
      * @dev Transfers are disabled for Gateway Tokens - override ERC3525 approve functions to revert
      * Note - transferFrom and safeTransferFrom are disabled indirectly with the _isApprovedOrOwner function
      */
-    // solhint-disable-next-line no-empty-blocks
     function approve(uint256, address, uint256) public payable virtual override {
         revert GatewayToken__TransferDisabled();
     }
 
-    function approve(address to_, uint256 tokenId_) public payable virtual override {
+    function approve(address, uint256) public payable virtual override {
         revert GatewayToken__TransferDisabled();
     }
 
@@ -314,26 +334,6 @@ contract GatewayToken is
     function burn(uint tokenId) public virtual {
         _checkGatekeeper(slotOf(tokenId));
         _burn(tokenId);
-    }
-
-    /**
-     * @dev Triggers to mint gateway token
-     * @param to Gateway token owner
-     * @param network Gateway token type
-     * @param mask The bitmask for the token
-     */
-    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) external virtual {
-        _checkGatekeeper(network);
-
-        uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
-
-        if (expiration > 0) {
-            _expirations[tokenId] = expiration;
-        }
-
-        if (mask > 0) {
-            _setBitMask(tokenId, mask);
-        }
     }
 
     function revoke(uint tokenId) public virtual override {
