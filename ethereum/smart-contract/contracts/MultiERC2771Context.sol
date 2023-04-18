@@ -9,6 +9,10 @@ import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Cont
 abstract contract MultiERC2771Context is ContextUpgradeable {
     mapping(address => bool) private _trustedForwarders;
 
+    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
+        return _trustedForwarders[forwarder];
+    }
+
     // because MultiERC2771Context is abstract we don't implement a
     // constructor. It's the responsibility of the derived contract to
     // disable the Initializers with "_disableInitializers()"
@@ -35,10 +39,6 @@ abstract contract MultiERC2771Context is ContextUpgradeable {
     // The overridden function should declare the appropriate access control
     function _removeForwarder(address forwarder) internal virtual {
         _trustedForwarders[forwarder] = false;
-    }
-
-    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
-        return _trustedForwarders[forwarder];
     }
 
     function _msgSender() internal view virtual override returns (address sender) {
