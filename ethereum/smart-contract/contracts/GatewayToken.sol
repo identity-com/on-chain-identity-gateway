@@ -210,6 +210,26 @@ contract GatewayToken is
         revokeRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
+    /**
+     * @dev Triggers to mint gateway token
+     * @param to Gateway token owner
+     * @param network Gateway token type
+     * @param mask The bitmask for the token
+     */
+    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) external virtual {
+        _checkGatekeeper(network);
+
+        uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
+
+        if (expiration > 0) {
+            _expirations[tokenId] = expiration;
+        }
+
+        if (mask > 0) {
+            _setBitMask(tokenId, mask);
+        }
+    }
+
     function getTokenIdsByOwnerAndNetwork(address owner, uint network) external view returns (uint[] memory) {
         (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
         uint[] memory tokenIdsResized = new uint[](count);
@@ -315,26 +335,6 @@ contract GatewayToken is
     function burn(uint tokenId) public virtual {
         _checkGatekeeper(slotOf(tokenId));
         _burn(tokenId);
-    }
-
-    /**
-     * @dev Triggers to mint gateway token
-     * @param to Gateway token owner
-     * @param network Gateway token type
-     * @param mask The bitmask for the token
-     */
-    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) external virtual {
-        _checkGatekeeper(network);
-
-        uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
-
-        if (expiration > 0) {
-            _expirations[tokenId] = expiration;
-        }
-
-        if (mask > 0) {
-            _setBitMask(tokenId, mask);
-        }
     }
 
     function revoke(uint tokenId) public virtual override {
