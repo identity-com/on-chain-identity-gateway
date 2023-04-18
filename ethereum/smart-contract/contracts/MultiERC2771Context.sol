@@ -14,32 +14,32 @@ abstract contract MultiERC2771Context is ContextUpgradeable {
     // disable the Initializers with "_disableInitializers()"
 
     // solhint-disable-next-line func-name-mixedcase
-    function __MultiERC2771Context_init(address[] memory trustedForwarders) internal initializer {
+    function __MultiERC2771Context_init(address[] calldata trustedForwarders) internal initializer {
         __Context_init_unchained();
         __MultiERC2771Context_init_unchained(trustedForwarders);
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __MultiERC2771Context_init_unchained(address[] memory trustedForwarders) internal initializer {
+    function __MultiERC2771Context_init_unchained(address[] calldata trustedForwarders) internal initializer {
         for (uint i = 0; i < trustedForwarders.length; i++) {
             _trustedForwarders[trustedForwarders[i]] = true;
         }
     }
 
+    // solhint-disable-next-line ordering
+    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
+        return _trustedForwarders[forwarder];
+    }
+
     // The overridden function should declare the appropriate access control//
     // keep init functions at the top by the constructor
-    // solhint-disable-next-line ordering
-    function addForwarder(address forwarder) public virtual {
+    function _addForwarder(address forwarder) internal virtual {
         _trustedForwarders[forwarder] = true;
     }
 
     // The overridden function should declare the appropriate access control
-    function removeForwarder(address forwarder) public virtual {
+    function _removeForwarder(address forwarder) internal virtual {
         _trustedForwarders[forwarder] = false;
-    }
-
-    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
-        return _trustedForwarders[forwarder];
     }
 
     function _msgSender() internal view virtual override returns (address sender) {

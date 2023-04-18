@@ -32,19 +32,6 @@ const _abi = [
         type: "address",
       },
     ],
-    name: "addForwarder",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "forwarder",
-        type: "address",
-      },
-    ],
     name: "isTrustedForwarder",
     outputs: [
       {
@@ -54,19 +41,6 @@ const _abi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "forwarder",
-        type: "address",
-      },
-    ],
-    name: "removeForwarder",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;

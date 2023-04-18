@@ -70,11 +70,11 @@ contract GatewayToken is
     }
 
     function initialize(
-        string memory _name,
-        string memory _symbol,
+        string calldata _name,
+        string calldata _symbol,
         address _superAdmin,
         address _flagsStorage,
-        address[] memory _trustedForwarders
+        address[] calldata _trustedForwarders
     ) external initializer {
         // Check for zero addresses
         if (_superAdmin == address(0)) {
@@ -133,7 +133,7 @@ contract GatewayToken is
         emit DAOManagerTransferred(previousManager, newManager, network);
     }
 
-    function createNetwork(uint network, string memory name, bool daoGoverned, address daoManager) external virtual {
+    function createNetwork(uint network, string calldata name, bool daoGoverned, address daoManager) external virtual {
         if (bytes(_networks[network]).length != 0) {
             revert GatewayToken__NetworkAlreadyExists(network);
         }
@@ -166,7 +166,7 @@ contract GatewayToken is
         }
     }
 
-    function renameNetwork(uint network, string memory name) external virtual {
+    function renameNetwork(uint network, string calldata name) external virtual {
         if (bytes(_networks[network]).length == 0) {
             revert GatewayToken__NetworkDoesNotExist(network);
         }
@@ -217,7 +217,7 @@ contract GatewayToken is
         }
     }
 
-    function getTokenIdsByOwnerAndNetwork(address owner, uint network) external view returns (uint[] memory) {
+    function getTokenIdsByOwnerAndNetwork(address owner, uint network) external view virtual returns (uint[] memory) {
         (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
         uint[] memory tokenIdsResized = new uint[](count);
         for (uint i = 0; i < count; i++) {
@@ -287,19 +287,19 @@ contract GatewayToken is
         revert GatewayToken__TransferDisabled();
     }
 
-    function addForwarder(address forwarder) public override(MultiERC2771Context) onlySuperAdmin {
-        super.addForwarder(forwarder);
+    function addForwarder(address forwarder) external onlySuperAdmin {
+        _addForwarder(forwarder);
     }
 
-    function removeForwarder(address forwarder) public override(MultiERC2771Context) onlySuperAdmin {
-        super.removeForwarder(forwarder);
+    function removeForwarder(address forwarder) external onlySuperAdmin {
+        _removeForwarder(forwarder);
     }
 
     /**
      * @dev Triggers to add new gatekeeper into the system.
      * @param gatekeeper Gatekeeper address
      */
-    function addGatekeeper(address gatekeeper, uint network) public virtual {
+    function addGatekeeper(address gatekeeper, uint network) external virtual {
         grantRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
@@ -307,7 +307,7 @@ contract GatewayToken is
      * @dev Triggers to remove existing gatekeeper from gateway token.
      * @param gatekeeper Gatekeeper address
      */
-    function removeGatekeeper(address gatekeeper, uint network) public virtual {
+    function removeGatekeeper(address gatekeeper, uint network) external virtual {
         revokeRole(GATEKEEPER_ROLE, network, gatekeeper);
     }
 
@@ -315,14 +315,14 @@ contract GatewayToken is
      * @dev Triggers to update FlagsStorage contract address
      * @param flagsStorage FlagsStorage contract address
      */
-    function updateFlagsStorage(address flagsStorage) public onlySuperAdmin {
+    function updateFlagsStorage(address flagsStorage) external onlySuperAdmin {
         _setFlagsStorage(flagsStorage);
     }
 
     /**
      * @dev Triggers to set full bitmask for gateway token with `tokenId`
      */
-    function setBitmask(uint tokenId, uint mask) public {
+    function setBitmask(uint tokenId, uint mask) external virtual {
         _checkSenderRole(GATEKEEPER_ROLE, slotOf(tokenId));
         _setBitMask(tokenId, mask);
     }
@@ -331,7 +331,7 @@ contract GatewayToken is
      * @dev Triggers to burn gateway token
      * @param tokenId Gateway token id
      */
-    function burn(uint tokenId) public virtual {
+    function burn(uint tokenId) external virtual {
         _checkGatekeeper(slotOf(tokenId));
         _burn(tokenId);
     }
@@ -348,7 +348,7 @@ contract GatewayToken is
      * @dev Triggers to freeze gateway token
      * @param tokenId Gateway token id
      */
-    function freeze(uint tokenId) public virtual override {
+    function freeze(uint tokenId) external virtual {
         _checkGatekeeper(slotOf(tokenId));
 
         _freeze(tokenId);
@@ -358,7 +358,7 @@ contract GatewayToken is
      * @dev Triggers to unfreeze gateway token
      * @param tokenId Gateway token id
      */
-    function unfreeze(uint tokenId) public virtual override {
+    function unfreeze(uint tokenId) external virtual {
         _checkGatekeeper(slotOf(tokenId));
 
         _unfreeze(tokenId);
@@ -368,7 +368,7 @@ contract GatewayToken is
      * @dev Triggers to set expiration for tokenId
      * @param tokenId Gateway token id
      */
-    function setExpiration(uint tokenId, uint timestamp, Charge calldata) public virtual override {
+    function setExpiration(uint tokenId, uint timestamp, Charge calldata) external virtual {
         _checkGatekeeper(slotOf(tokenId));
 
         _setExpiration(tokenId, timestamp);
@@ -387,7 +387,7 @@ contract GatewayToken is
             super.supportsInterface(interfaceId);
     }
 
-    function getNetwork(uint network) public view virtual returns (string memory) {
+    function getNetwork(uint network) external view virtual returns (string memory) {
         return _networks[network];
     }
 
@@ -397,7 +397,12 @@ contract GatewayToken is
      */
     function getToken(
         uint tokenId
-    ) public view virtual returns (address owner, uint8 state, string memory identity, uint expiration, uint bitmask) {
+    )
+        external
+        view
+        virtual
+        returns (address owner, uint8 state, string memory identity, uint expiration, uint bitmask)
+    {
         owner = ownerOf(tokenId);
         state = uint8(_tokenStates[tokenId]);
         expiration = _expirations[tokenId];
@@ -410,7 +415,7 @@ contract GatewayToken is
      * @dev Triggers to get specified `tokenId` expiration timestamp
      * @param tokenId Gateway token id
      */
-    function getExpiration(uint tokenId) public view virtual override returns (uint) {
+    function getExpiration(uint tokenId) external view virtual returns (uint) {
         _checkTokenExists(tokenId);
 
         return _expirations[tokenId];
@@ -419,7 +424,7 @@ contract GatewayToken is
     /**
      * @dev Triggers to get gateway token bitmask
      */
-    function getTokenBitmask(uint tokenId) public view returns (uint) {
+    function getTokenBitmask(uint tokenId) external view virtual returns (uint) {
         return _getBitMask(tokenId);
     }
 
