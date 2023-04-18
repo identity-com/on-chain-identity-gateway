@@ -78,11 +78,6 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
         _;
     }
 
-    function setSuperAdmin(address account) external onlySuperAdmin {
-        emit SuperAdminAdded(account);
-        _superAdmins[account] = true;
-    }
-
     function revokeSuperAdmin(address account) external onlySuperAdmin {
         emit SuperAdminRemoved(account);
         _superAdmins[account] = false;
@@ -147,6 +142,11 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
         if (account != _msgSender()) revert ParameterizedAccessControl__RenounceRoleNotForSelf(role, account);
 
         _revokeRole(role, domain, account);
+    }
+
+    function setSuperAdmin(address account) external onlySuperAdmin {
+        emit SuperAdminAdded(account);
+        _superAdmins[account] = true;
     }
 
     function isSuperAdmin(address account) public view returns (bool) {

@@ -61,6 +61,8 @@ export type { Gated } from "./contracts/Gated";
 export { Gated__factory } from "./factories/contracts/Gated__factory";
 export type { GatewayToken } from "./contracts/GatewayToken";
 export { GatewayToken__factory } from "./factories/contracts/GatewayToken__factory";
+export type { GatewayTokenInternalsTest } from "./contracts/GatewayTokenInternalsTest";
+export { GatewayTokenInternalsTest__factory } from "./factories/contracts/GatewayTokenInternalsTest__factory";
 export type { GatewayTokenUpgradeTest } from "./contracts/GatewayTokenUpgradeTest";
 export { GatewayTokenUpgradeTest__factory } from "./factories/contracts/GatewayTokenUpgradeTest__factory";
 export type { IERC721Expirable } from "./contracts/interfaces/IERC721Expirable";

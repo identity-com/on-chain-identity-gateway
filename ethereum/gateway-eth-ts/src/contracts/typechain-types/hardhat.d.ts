@@ -118,6 +118,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GatewayToken__factory>;
     getContractFactory(
+      name: "GatewayTokenInternalsTest",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.GatewayTokenInternalsTest__factory>;
+    getContractFactory(
       name: "GatewayTokenUpgradeTest",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GatewayTokenUpgradeTest__factory>;
@@ -296,6 +300,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.GatewayToken>;
+    getContractAt(
+      name: "GatewayTokenInternalsTest",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.GatewayTokenInternalsTest>;
     getContractAt(
       name: "GatewayTokenUpgradeTest",
       address: string,
