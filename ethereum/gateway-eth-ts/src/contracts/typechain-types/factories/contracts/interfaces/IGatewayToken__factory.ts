@@ -109,6 +109,11 @@ const _abi = [
     type: "error",
   },
   {
+    inputs: [],
+    name: "GatewayToken__TransferDisabled",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {

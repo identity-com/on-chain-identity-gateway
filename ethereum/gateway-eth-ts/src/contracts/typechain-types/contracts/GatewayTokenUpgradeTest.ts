@@ -118,7 +118,6 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     "valueDecimals()": FunctionFragment;
     "verifyToken(address,uint256)": FunctionFragment;
     "verifyToken(uint256)": FunctionFragment;
-    "withdraw(uint256)": FunctionFragment;
   };
 
   getFunction(
@@ -196,7 +195,6 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
       | "valueDecimals"
       | "verifyToken(address,uint256)"
       | "verifyToken(uint256)"
-      | "withdraw"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -551,10 +549,6 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     functionFragment: "verifyToken(uint256)",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "withdraw",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "DAO_MANAGER_ROLE",
@@ -788,7 +782,6 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     functionFragment: "verifyToken(uint256)",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
     "AdminChanged(address,address)": EventFragment;
@@ -1146,15 +1139,15 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     ): Promise<[BigNumber]>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     "approve(uint256,address,uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<string>,
+      arg2: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1500,11 +1493,6 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    withdraw(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
   };
 
   DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -1539,15 +1527,15 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
   ): Promise<BigNumber>;
 
   "approve(address,uint256)"(
-    to_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
+    arg0: PromiseOrValue<string>,
+    arg1: PromiseOrValue<BigNumberish>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   "approve(uint256,address,uint256)"(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    to_: PromiseOrValue<string>,
-    value_: PromiseOrValue<BigNumberish>,
+    arg0: PromiseOrValue<BigNumberish>,
+    arg1: PromiseOrValue<string>,
+    arg2: PromiseOrValue<BigNumberish>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1894,11 +1882,6 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  withdraw(
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<string>;
 
@@ -1932,15 +1915,15 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     ): Promise<BigNumber>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "approve(uint256,address,uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<string>,
+      arg2: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2286,11 +2269,6 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    withdraw(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
   };
 
   filters: {
@@ -2530,15 +2508,15 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     ): Promise<BigNumber>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     "approve(uint256,address,uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<string>,
+      arg2: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2876,11 +2854,6 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    withdraw(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -2920,15 +2893,15 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     "approve(uint256,address,uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<string>,
+      arg2: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -3269,11 +3242,6 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     "verifyToken(uint256)"(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    withdraw(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

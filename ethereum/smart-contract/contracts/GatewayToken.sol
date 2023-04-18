@@ -43,7 +43,6 @@ contract GatewayToken is
     TokenBitMask
 {
     using Address for address;
-    using Address for address payable;
     using Strings for uint;
 
     // Off-chain DAO governance access control
@@ -98,18 +97,6 @@ contract GatewayToken is
 
         _setFlagsStorage(_flagsStorage);
         _superAdmins[_superAdmin] = true;
-    }
-
-    // if any funds are sent to this contract, use this function to withdraw them
-    // keep init functions at the top by the constructor
-
-    function withdraw(uint amount) external onlySuperAdmin returns (bool) {
-        if (amount > address(this).balance) {
-            revert GatewayToken__InsufficientFunds(address(this).balance, amount);
-        }
-
-        payable(_msgSender()).sendValue(amount);
-        return true;
     }
 
     function setMetadataDescriptor(address _metadataDescriptor) external onlySuperAdmin {
@@ -286,6 +273,18 @@ contract GatewayToken is
      */
     function transfersRestricted() external pure virtual returns (bool) {
         return true;
+    }
+
+    /**
+     * @dev Transfers are disabled for Gateway Tokens - override ERC3525 approve functions to revert
+     * Note - transferFrom and safeTransferFrom are disabled indirectly with the _isApprovedOrOwner function
+     */
+    function approve(uint256, address, uint256) public payable virtual override {
+        revert GatewayToken__TransferDisabled();
+    }
+
+    function approve(address, uint256) public payable virtual override {
+        revert GatewayToken__TransferDisabled();
     }
 
     function addForwarder(address forwarder) public override(MultiERC2771Context) onlySuperAdmin {
