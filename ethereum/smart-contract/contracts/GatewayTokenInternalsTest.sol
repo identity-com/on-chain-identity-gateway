@@ -13,11 +13,12 @@ import {console} from "hardhat/console.sol";
 contract GatewayTokenInternalsTest is GatewayToken {
     event MsgData(bytes);
     event MsgSender(address);
+    event AuthorizedUpgrade();
 
     /**
      * @dev A public version of _msgData() in the GatewayToken contract, use for testing the forwarding logic.
      */
-    function getMsgData(uint x) external virtual {
+    function getMsgData(uint x) external {
         console.log("Called getMsgData(%d)", x);
         emit MsgData(super._msgData());
     }
@@ -25,8 +26,12 @@ contract GatewayTokenInternalsTest is GatewayToken {
     /**
      * @dev A public version of _msgSender() in the GatewayToken contract, use for testing the forwarding logic.
      */
-    function getMsgSender() external virtual {
-        console.log("Called getMsgSender()");
+    function getMsgSender() external {
         emit MsgSender(super._msgSender());
+    }
+
+    function authorizedUpgrade() external {
+        _authorizeUpgrade(super._msgSender());
+        emit AuthorizedUpgrade();
     }
 }

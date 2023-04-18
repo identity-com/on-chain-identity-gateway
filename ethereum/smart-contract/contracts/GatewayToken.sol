@@ -207,12 +207,14 @@ contract GatewayToken is
         uint length = balanceOf(owner);
         uint[] memory tokenIds = new uint[](length);
         uint count = 0;
+
         for (uint i = 0; i < length; i++) {
             uint tokenId = tokenOfOwnerByIndex(owner, i);
             if (slotOf(tokenId) == network) {
                 tokenIds[count++] = tokenId;
             }
         }
+
         return (tokenIds, count);
     }
 
@@ -234,9 +236,7 @@ contract GatewayToken is
         (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
 
         for (uint i = 0; i < count; i++) {
-            if (tokenIds[i] != 0) {
-                if (_existsAndActive(tokenIds[i], false)) return true;
-            }
+            if (_existsAndActive(tokenIds[i], false)) return true;
         }
 
         return false;
