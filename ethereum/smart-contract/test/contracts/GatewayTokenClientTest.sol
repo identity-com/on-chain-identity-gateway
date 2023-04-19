@@ -8,10 +8,10 @@ import {Gated} from "../../contracts/Gated.sol";
  * NOTE: DO NOT DEPLOY THIS CONTRACT. It should be deployed locally by the test suite only.
  */
 contract GatewayTokenClientTest is Gated {
-    event Success();
-
     address private _gatewayTokenContract;
     uint256 private _gatekeeperNetwork;
+
+    event Success();
 
     constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) {
         _gatewayTokenContract = gatewayTokenContract;

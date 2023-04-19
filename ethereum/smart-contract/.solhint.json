@@ -12,7 +12,7 @@
     "private-vars-leading-underscore": ["error", { "strict": false }],
     "no-console": "off",
     "not-rely-on-time": "off",
-    "ordering": "off",
+    "ordering": "error",
     "no-global-import": "error"
   }
 }
