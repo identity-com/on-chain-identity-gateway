@@ -10,16 +10,16 @@ import {IERC3525MetadataUpgradeable} from "@solvprotocol/erc-3525/extensions/IER
 import {ERC3525Upgradeable} from "@solvprotocol/erc-3525/ERC3525Upgradeable.sol";
 import {IERC721} from "@solvprotocol/erc-3525/IERC721.sol";
 import {IERC3525} from "@solvprotocol/erc-3525/IERC3525.sol";
-import {TokenBitMask} from "./TokenBitMask.sol";
-import {IGatewayToken} from "./interfaces/IGatewayToken.sol";
-import {IERC721Freezable} from "./interfaces/IERC721Freezable.sol";
-import {IERC721Expirable} from "./interfaces/IERC721Expirable.sol";
-import {IERC721Revokable} from "./interfaces/IERC721Revokable.sol";
-import {MultiERC2771Context} from "./MultiERC2771Context.sol";
-import {Charge} from "./library/Charge.sol";
-import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
-import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
-import {GatewayToken} from "./GatewayToken.sol";
+import {TokenBitMask} from "../../contracts/TokenBitMask.sol";
+import {IGatewayToken} from "../../contracts/interfaces/IGatewayToken.sol";
+import {IERC721Freezable} from "../../contracts/interfaces/IERC721Freezable.sol";
+import {IERC721Expirable} from "../../contracts/interfaces/IERC721Expirable.sol";
+import {IERC721Revokable} from "../../contracts/interfaces/IERC721Revokable.sol";
+import {MultiERC2771Context} from "../../contracts/MultiERC2771Context.sol";
+import {Charge} from "../../contracts/library/Charge.sol";
+import {ParameterizedAccessControl} from "../../contracts/ParameterizedAccessControl.sol";
+import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "../../contracts/library/CommonErrors.sol";
+import {GatewayToken} from "../../contracts/GatewayToken.sol";
 
 /**
  * @dev An extension of the GatewayToken.sol, used to test the upgradeability of the contract.

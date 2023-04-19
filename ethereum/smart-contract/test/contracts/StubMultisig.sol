@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
-import "./interfaces/IGatewayToken.sol";
+import "../../contracts/interfaces/IGatewayToken.sol";
 
 /**
  * @dev An stub multisig contract, used to test the DAO Management functionality
