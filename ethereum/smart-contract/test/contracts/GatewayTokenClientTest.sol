@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
-import {Gated} from "./Gated.sol";
+import {Gated} from "../../contracts/Gated.sol";
 
 /**
  * @dev An example client contract, used to test the Gated modifier.

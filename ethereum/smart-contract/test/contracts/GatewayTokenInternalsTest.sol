@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
-import {GatewayToken} from "./GatewayToken.sol";
-import {Charge} from "./library/Charge.sol";
+import {GatewayToken} from "../../contracts/GatewayToken.sol";
+import {Charge} from "../../contracts/library/Charge.sol";
 import {ERC3525Upgradeable} from "@solvprotocol/erc-3525/ERC3525Upgradeable.sol";
 import {console} from "hardhat/console.sol";
 
