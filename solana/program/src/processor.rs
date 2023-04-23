@@ -120,7 +120,7 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         &[
             funder_info.clone(),
             gatekeeper_account_info.clone(),
-            system_program_info.clone(),
+            // system_program_info.clone(),
         ],
         &[gatekeeper_signer_seeds],
     )?;

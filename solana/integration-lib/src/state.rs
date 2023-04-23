@@ -6,7 +6,7 @@ use std::convert::TryInto;
 use std::mem::{size_of, transmute};
 use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
-    sol_did::validate_owner,
+    sol_did::{ integrations::is_authority },
     solana_program::{
         account_info::AccountInfo,
         clock::UnixTimestamp,
@@ -536,7 +536,17 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess {
         }
 
         // check that one of the transaction signers is an authority on the DID
-        validate_owner(did, signers).is_ok()
+        signers
+            .iter()
+            .any(
+                |signer| is_authority(
+                    did,
+                    None,
+                    &[],
+                    signer.key.to_bytes().as_ref(),
+                    None, None
+                ).unwrap()
+            )
     }
 
     fn is_session_token(&self) -> bool {
@@ -617,10 +627,12 @@ pub mod tests {
     use crate::test_utils::test_utils_stubs::{init, now};
     use rand::{CryptoRng, Rng, RngCore, SeedableRng};
     use rand_chacha::ChaCha20Rng;
-    use sol_did::state::{SolData, VerificationMethod};
     use solana_sdk::signature::{Keypair, Signer};
     use std::iter::FusedIterator;
     use std::{cell::RefCell, rc::Rc};
+    use sol_did::state::{DidAccount, VerificationMethod};
+    use sol_did::integrations::derive_did_account;
+    use solana_program::system_program;
 
     fn stub_vanilla_gateway_token() -> GatewayToken {
         GatewayToken {
@@ -635,23 +647,8 @@ pub mod tests {
         }
     }
 
-    fn stub_identity(identity_owner: &Keypair) -> SolData {
-        let key_id = "default";
-        SolData {
-            authority: Default::default(),
-            version: "".to_string(),
-            verification_method: vec![VerificationMethod {
-                id: key_id.to_string(),
-                verification_type: "".to_string(),
-                pubkey: identity_owner.pubkey(),
-            }],
-            authentication: vec![],
-            capability_invocation: vec![key_id.to_string()],
-            capability_delegation: vec![],
-            key_agreement: vec![],
-            assertion_method: vec![],
-            service: vec![],
-        }
+    fn stub_identity(identity_owner: &Keypair) -> DidAccount {
+        DidAccount::new(0, &identity_owner.pubkey())
     }
 
     #[test]
@@ -695,24 +692,22 @@ pub mod tests {
     // This test is verbose, mainly because of the AccountInfo object which uses a lot of references.
     #[test]
     fn owned_by_identity() {
-        // the address of the DID on-chain
-        let did_key: Pubkey = Pubkey::new_from_array([100; 32]);
         // a key held by the holder of the DID
         let identity_owner: Keypair = Keypair::new();
 
-        // create the DID and serialise it
-        let identity = stub_identity(&identity_owner);
-        let mut serialized_identity = identity.try_to_vec().unwrap();
+        // the address of the DID on-chain
+        let (did_key, _) = derive_did_account(&identity_owner.pubkey().to_bytes());
 
         // create an AccountInfo object referencing the DID
         let mut did_lamports = 0;
-        let did_account_info = AccountInfo {
+        let mut data = vec![];
+        let generative_did_account_info = AccountInfo {
             key: &did_key,
             is_signer: false,
             is_writable: false,
             lamports: Rc::new(RefCell::new(&mut did_lamports)),
-            data: Rc::new(RefCell::new(&mut serialized_identity)),
-            owner: &sol_did::id(),
+            data: Rc::new(RefCell::new(&mut data)),
+            owner: &system_program::id(),
             executable: false,
             rent_epoch: 0,
         };
@@ -733,15 +728,15 @@ pub mod tests {
         // create a gateway token linked to the DID
         let mut token = stub_vanilla_gateway_token();
         token.set_feature(Feature::IdentityLinked);
-        token.owner_identity = Some(*did_account_info.key);
+        token.owner_identity = Some(*generative_did_account_info.key);
 
         // verify that the token is owned by the DID and that the signer account is a valid
         // signer of the DID
-        assert!(token.owned_by_did(&did_account_info, &[&signer_account_info]));
+        assert!(token.owned_by_did(&generative_did_account_info, &[&signer_account_info]));
 
         // verify that the token can be used in this transaction, as a signature from
         // a valid signer of the linked identity has been provided.
-        assert!(token.is_valid_exotic(&did_account_info, &[&signer_account_info]))
+        assert!(token.is_valid_exotic(&generative_did_account_info, &[&signer_account_info]))
     }
 
     #[test]

@@ -6,7 +6,7 @@ use solana_gateway::state::{
 use solana_gateway::{borsh as program_borsh, instruction};
 use solana_gateway_program::{id, processor::process_instruction};
 use solana_program::{pubkey::Pubkey, system_program, sysvar};
-use solana_program_test::{processor, ProgramTest, ProgramTestContext};
+use solana_program_test::{BanksClientError, processor, ProgramTest, ProgramTestContext};
 use solana_sdk::{
     clock::UnixTimestamp,
     instruction::{AccountMeta, Instruction},
@@ -104,7 +104,7 @@ impl GatewayContext {
         &mut self,
         authority: &Pubkey,
         network: &Keypair,
-    ) -> transport::Result<()> {
+    ) -> Result<(), BanksClientError> {
         let transaction = Transaction::new_signed_with_payer(
             &[instruction::add_gatekeeper(
                 &self.context.payer.pubkey(),
@@ -115,6 +115,7 @@ impl GatewayContext {
             &[&self.context.payer, network],
             self.context.last_blockhash,
         );
+
         self.context
             .banks_client
             .process_transaction(transaction)
@@ -128,7 +129,7 @@ impl GatewayContext {
         gatekeeper_account: &Pubkey,
         network: &Pubkey,
         expire_time: Option<UnixTimestamp>,
-    ) -> transport::Result<()> {
+    ) -> Result<(), BanksClientError> {
         let transaction = Transaction::new_signed_with_payer(
             &[instruction::issue_vanilla(
                 &self.context.payer.pubkey(),
@@ -155,7 +156,7 @@ impl GatewayContext {
         gatekeeper_authority: &Keypair,
         gatekeeper_account: &Pubkey,
         expire_time: UnixTimestamp,
-    ) -> transport::Result<()> {
+    ) -> Result<(), BanksClientError> {
         let (gateway_token, _) = get_gateway_token_address_with_seed(
             owner,
             &None,
@@ -184,7 +185,7 @@ impl GatewayContext {
         gatekeeper_authority: &Keypair,
         gatekeeper_account: &Pubkey,
         gateway_token_state: GatewayTokenState,
-    ) -> transport::Result<()> {
+    ) -> Result<(), BanksClientError> {
         let transaction = Transaction::new_signed_with_payer(
             &[instruction::set_state(
                 gateway_account,
@@ -206,7 +207,7 @@ impl GatewayContext {
         &mut self,
         authority: &Pubkey,
         network: &Pubkey,
-    ) -> transport::Result<()> {
+    ) -> Result<(), BanksClientError> {
         let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(authority, network);
         // create an instruction that doesn't require the network signature.
         let instruction = Instruction::new_with_borsh(
@@ -268,15 +269,26 @@ impl GatewayContext {
             &None,
             &self.gatekeeper_network.as_ref().unwrap().pubkey(),
         );
-        self.context
+        let acccount_info = self.context
             .banks_client
             .get_account(gateway_token)
             .await
-            .unwrap()
-            .map(|account_info| {
-                program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data)
-                    .unwrap()
-            })
+            .unwrap();
+            // .map(|account_info| {
+            //     program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data)
+            //         .unwrap()
+            // })
+
+        println!("account_info: {:?}", acccount_info);
+
+        match acccount_info {
+            Some(account_info) => {
+                let gateway_token = program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data)
+                    .unwrap();
+                Some(gateway_token)
+            },
+            None => None
+        }
     }
 
     pub async fn issue_gateway_token(
