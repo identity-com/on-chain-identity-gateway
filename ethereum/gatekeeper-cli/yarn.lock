@@ -600,10 +600,10 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@identity.com/gateway-eth-ts@0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@identity.com/gateway-eth-ts/-/gateway-eth-ts-0.7.0.tgz#43205a3a31c03658bdf5c3cf3e785d22e28a0f15"
-  integrity sha512-pJytX1GvfDmhDr0FZwsPsHZxY+lEHHl2c3FPMnX33BOu0DvG4FNLCiRDGEa13Bj+isO1icWcukgSVjQE5JcrfQ==
+"@identity.com/gateway-eth-ts@0.7.1":
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/@identity.com/gateway-eth-ts/-/gateway-eth-ts-0.7.1.tgz#56f8e93d47a789bfcbb615fe6cb97c00ee0eb958"
+  integrity sha512-fMCsVYOGEylttA+ZcWtt/SnOw+O1o+D6Kgsy1yKX7Vo3tQhACjk4VNxF6c7/bkuaYrh0shGoRYCGEKPDqbR00w==
   dependencies:
     "@ethersproject/abi" "^5.7.0"
     "@ethersproject/abstract-signer" "^5.7.0"
