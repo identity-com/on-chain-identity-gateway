@@ -6,6 +6,7 @@ const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const gatekeeperNetwork = 1;
 // open to all - private key is known
 const testGatekeeper = "0x34bb5808d46a21AaeBf7C1300Ef17213Fe215B91";
+const civicDevGatekeeper = "0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, ethers } = hre;
@@ -70,6 +71,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       gatewayToken.address +
       ' using ' +
       addTestGatekeeperTx.gasUsed.toNumber() +
+      ' gas',
+  );
+
+  const addCivicDevGatekeeperTx = await (
+      await token.addGatekeeper(civicDevGatekeeper, gatekeeperNetwork)
+  ).wait();
+  console.log(
+      'added civic dev gatekeeper with ' +
+      civicDevGatekeeper +
+      ' address into Gateway Token at ' +
+      gatewayToken.address +
+      ' using ' +
+      addCivicDevGatekeeperTx.gasUsed.toNumber() +
       ' gas',
   );
 };
