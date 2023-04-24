@@ -1,9 +1,5 @@
 import { Wallet, Contract, Overrides, PopulatedTransaction } from "ethers";
-import {
-  IForwarder,
-  GatewayToken,
-  FlexibleNonceForwarder,
-} from "../contracts/typechain-types";
+import { IForwarder, GatewayToken } from "../contracts/typechain-types";
 import { GatewayTsInternal } from "./GatewayTsInternal";
 import {
   mappedOpNames,

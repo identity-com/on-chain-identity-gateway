@@ -59,7 +59,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     "balanceOf(uint256)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
     "contractURI()": FunctionFragment;
-    "controller()": FunctionFragment;
     "createNetwork(uint256,string,bool,address)": FunctionFragment;
     "flagsStorage()": FunctionFragment;
     "freeze(uint256)": FunctionFragment;
@@ -119,7 +118,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     "valueDecimals()": FunctionFragment;
     "verifyToken(address,uint256)": FunctionFragment;
     "verifyToken(uint256)": FunctionFragment;
-    "withdraw(uint256)": FunctionFragment;
   };
 
   getFunction(
@@ -138,7 +136,6 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "balanceOf(uint256)"
       | "burn"
       | "contractURI"
-      | "controller"
       | "createNetwork"
       | "flagsStorage"
       | "freeze"
@@ -198,7 +195,6 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "valueDecimals"
       | "verifyToken(address,uint256)"
       | "verifyToken(uint256)"
-      | "withdraw"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -259,10 +255,6 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "contractURI",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "controller",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -557,10 +549,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "verifyToken(uint256)",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "withdraw",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "DAO_MANAGER_ROLE",
@@ -612,7 +600,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "contractURI",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "controller", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "createNetwork",
     data: BytesLike
@@ -795,7 +782,6 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "verifyToken(uint256)",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
     "AdminChanged(address,address)": EventFragment;
@@ -1153,15 +1139,15 @@ export interface GatewayToken extends BaseContract {
     ): Promise<[BigNumber]>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     "approve(uint256,address,uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<string>,
+      arg2: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1181,8 +1167,6 @@ export interface GatewayToken extends BaseContract {
     ): Promise<ContractTransaction>;
 
     contractURI(overrides?: CallOverrides): Promise<[string]>;
-
-    controller(overrides?: CallOverrides): Promise<[string]>;
 
     createNetwork(
       network: PromiseOrValue<BigNumberish>,
@@ -1509,11 +1493,6 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    withdraw(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
   };
 
   DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -1548,15 +1527,15 @@ export interface GatewayToken extends BaseContract {
   ): Promise<BigNumber>;
 
   "approve(address,uint256)"(
-    to_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
+    arg0: PromiseOrValue<string>,
+    arg1: PromiseOrValue<BigNumberish>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   "approve(uint256,address,uint256)"(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    to_: PromiseOrValue<string>,
-    value_: PromiseOrValue<BigNumberish>,
+    arg0: PromiseOrValue<BigNumberish>,
+    arg1: PromiseOrValue<string>,
+    arg2: PromiseOrValue<BigNumberish>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1576,8 +1555,6 @@ export interface GatewayToken extends BaseContract {
   ): Promise<ContractTransaction>;
 
   contractURI(overrides?: CallOverrides): Promise<string>;
-
-  controller(overrides?: CallOverrides): Promise<string>;
 
   createNetwork(
     network: PromiseOrValue<BigNumberish>,
@@ -1905,11 +1882,6 @@ export interface GatewayToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  withdraw(
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<string>;
 
@@ -1943,15 +1915,15 @@ export interface GatewayToken extends BaseContract {
     ): Promise<BigNumber>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "approve(uint256,address,uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<string>,
+      arg2: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1971,8 +1943,6 @@ export interface GatewayToken extends BaseContract {
     ): Promise<void>;
 
     contractURI(overrides?: CallOverrides): Promise<string>;
-
-    controller(overrides?: CallOverrides): Promise<string>;
 
     createNetwork(
       network: PromiseOrValue<BigNumberish>,
@@ -2299,11 +2269,6 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    withdraw(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
   };
 
   filters: {
@@ -2543,15 +2508,15 @@ export interface GatewayToken extends BaseContract {
     ): Promise<BigNumber>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     "approve(uint256,address,uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<string>,
+      arg2: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2571,8 +2536,6 @@ export interface GatewayToken extends BaseContract {
     ): Promise<BigNumber>;
 
     contractURI(overrides?: CallOverrides): Promise<BigNumber>;
-
-    controller(overrides?: CallOverrides): Promise<BigNumber>;
 
     createNetwork(
       network: PromiseOrValue<BigNumberish>,
@@ -2891,11 +2854,6 @@ export interface GatewayToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    withdraw(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -2935,15 +2893,15 @@ export interface GatewayToken extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     "approve(address,uint256)"(
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     "approve(uint256,address,uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
+      arg1: PromiseOrValue<string>,
+      arg2: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2963,8 +2921,6 @@ export interface GatewayToken extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    controller(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     createNetwork(
       network: PromiseOrValue<BigNumberish>,
@@ -3286,11 +3242,6 @@ export interface GatewayToken extends BaseContract {
     "verifyToken(uint256)"(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    withdraw(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

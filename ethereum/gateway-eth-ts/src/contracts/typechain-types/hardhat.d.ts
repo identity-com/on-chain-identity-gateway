@@ -22,6 +22,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC1822ProxiableUpgradeable__factory>;
     getContractFactory(
+      name: "IERC1967Upgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC1967Upgradeable__factory>;
+    getContractFactory(
       name: "IBeaconUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IBeaconUpgradeable__factory>;
@@ -42,17 +46,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ContextUpgradeable__factory>;
     getContractFactory(
-      name: "ERC165Upgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ERC165Upgradeable__factory>;
-    getContractFactory(
       name: "IERC165Upgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165Upgradeable__factory>;
-    getContractFactory(
-      name: "MinimalForwarder",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.MinimalForwarder__factory>;
     getContractFactory(
       name: "ERC165",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -114,17 +110,13 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FlexibleNonceForwarder__factory>;
     getContractFactory(
-      name: "Forwarder",
+      name: "Gated",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Forwarder__factory>;
+    ): Promise<Contracts.Gated__factory>;
     getContractFactory(
       name: "GatewayToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GatewayToken__factory>;
-    getContractFactory(
-      name: "GatewayTokenUpgradeTest",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.GatewayTokenUpgradeTest__factory>;
     getContractFactory(
       name: "IERC721Expirable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -158,10 +150,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IParameterizedAccessControl__factory>;
     getContractFactory(
-      name: "IsGated",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IsGated__factory>;
-    getContractFactory(
       name: "MultiERC2771Context",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MultiERC2771Context__factory>;
@@ -173,6 +161,22 @@ declare module "hardhat/types/runtime" {
       name: "TokenBitMask",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TokenBitMask__factory>;
+    getContractFactory(
+      name: "GatewayTokenClientTest",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.GatewayTokenClientTest__factory>;
+    getContractFactory(
+      name: "GatewayTokenInternalsTest",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.GatewayTokenInternalsTest__factory>;
+    getContractFactory(
+      name: "GatewayTokenUpgradeTest",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.GatewayTokenUpgradeTest__factory>;
+    getContractFactory(
+      name: "StubMultisig",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.StubMultisig__factory>;
 
     getContractAt(
       name: "OwnableUpgradeable",
@@ -184,6 +188,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC1822ProxiableUpgradeable>;
+    getContractAt(
+      name: "IERC1967Upgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC1967Upgradeable>;
     getContractAt(
       name: "IBeaconUpgradeable",
       address: string,
@@ -210,20 +219,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ContextUpgradeable>;
     getContractAt(
-      name: "ERC165Upgradeable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.ERC165Upgradeable>;
-    getContractAt(
       name: "IERC165Upgradeable",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165Upgradeable>;
-    getContractAt(
-      name: "MinimalForwarder",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.MinimalForwarder>;
     getContractAt(
       name: "ERC165",
       address: string,
@@ -300,20 +299,15 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.FlexibleNonceForwarder>;
     getContractAt(
-      name: "Forwarder",
+      name: "Gated",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.Forwarder>;
+    ): Promise<Contracts.Gated>;
     getContractAt(
       name: "GatewayToken",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.GatewayToken>;
-    getContractAt(
-      name: "GatewayTokenUpgradeTest",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.GatewayTokenUpgradeTest>;
     getContractAt(
       name: "IERC721Expirable",
       address: string,
@@ -355,11 +349,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IParameterizedAccessControl>;
     getContractAt(
-      name: "IsGated",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IsGated>;
-    getContractAt(
       name: "MultiERC2771Context",
       address: string,
       signer?: ethers.Signer
@@ -374,6 +363,26 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.TokenBitMask>;
+    getContractAt(
+      name: "GatewayTokenClientTest",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.GatewayTokenClientTest>;
+    getContractAt(
+      name: "GatewayTokenInternalsTest",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.GatewayTokenInternalsTest>;
+    getContractAt(
+      name: "GatewayTokenUpgradeTest",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.GatewayTokenUpgradeTest>;
+    getContractAt(
+      name: "StubMultisig",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.StubMultisig>;
 
     // default types
     getContractFactory(

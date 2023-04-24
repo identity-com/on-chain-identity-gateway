@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity 0.8.9;
 
 import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
@@ -9,18 +9,22 @@ import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Cont
 abstract contract MultiERC2771Context is ContextUpgradeable {
     mapping(address => bool) private _trustedForwarders;
 
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    // solhint-disable-next-line no-empty-blocks
-    constructor() initializer {}
+    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
+        return _trustedForwarders[forwarder];
+    }
+
+    // because MultiERC2771Context is abstract we don't implement a
+    // constructor. It's the responsibility of the derived contract to
+    // disable the Initializers with "_disableInitializers()"
 
     // solhint-disable-next-line func-name-mixedcase
-    function __MultiERC2771Context_init(address[] memory trustedForwarders) internal initializer {
+    function __MultiERC2771Context_init(address[] calldata trustedForwarders) internal initializer {
         __Context_init_unchained();
         __MultiERC2771Context_init_unchained(trustedForwarders);
     }
 
     // solhint-disable-next-line func-name-mixedcase
-    function __MultiERC2771Context_init_unchained(address[] memory trustedForwarders) internal initializer {
+    function __MultiERC2771Context_init_unchained(address[] calldata trustedForwarders) internal initializer {
         for (uint i = 0; i < trustedForwarders.length; i++) {
             _trustedForwarders[trustedForwarders[i]] = true;
         }
@@ -28,18 +32,13 @@ abstract contract MultiERC2771Context is ContextUpgradeable {
 
     // The overridden function should declare the appropriate access control//
     // keep init functions at the top by the constructor
-    // solhint-disable-next-line ordering
-    function addForwarder(address forwarder) public virtual {
+    function _addForwarder(address forwarder) internal virtual {
         _trustedForwarders[forwarder] = true;
     }
 
     // The overridden function should declare the appropriate access control
-    function removeForwarder(address forwarder) public virtual {
+    function _removeForwarder(address forwarder) internal virtual {
         _trustedForwarders[forwarder] = false;
-    }
-
-    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
-        return _trustedForwarders[forwarder];
     }
 
     function _msgSender() internal view virtual override returns (address sender) {

@@ -7,8 +7,6 @@ import type {
   BigNumber,
   BytesLike,
   CallOverrides,
-  ContractTransaction,
-  Overrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -29,41 +27,18 @@ import type {
 
 export interface MultiERC2771ContextInterface extends utils.Interface {
   functions: {
-    "addForwarder(address)": FunctionFragment;
     "isTrustedForwarder(address)": FunctionFragment;
-    "removeForwarder(address)": FunctionFragment;
   };
 
-  getFunction(
-    nameOrSignatureOrTopic:
-      | "addForwarder"
-      | "isTrustedForwarder"
-      | "removeForwarder"
-  ): FunctionFragment;
+  getFunction(nameOrSignatureOrTopic: "isTrustedForwarder"): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: "addForwarder",
-    values: [PromiseOrValue<string>]
-  ): string;
   encodeFunctionData(
     functionFragment: "isTrustedForwarder",
     values: [PromiseOrValue<string>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "removeForwarder",
-    values: [PromiseOrValue<string>]
-  ): string;
 
   decodeFunctionResult(
-    functionFragment: "addForwarder",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "isTrustedForwarder",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "removeForwarder",
     data: BytesLike
   ): Result;
 
@@ -108,52 +83,22 @@ export interface MultiERC2771Context extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     isTrustedForwarder(
       forwarder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
   };
-
-  addForwarder(
-    forwarder: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   isTrustedForwarder(
     forwarder: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  removeForwarder(
-    forwarder: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     isTrustedForwarder(
       forwarder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
   };
 
   filters: {
@@ -162,36 +107,16 @@ export interface MultiERC2771Context extends BaseContract {
   };
 
   estimateGas: {
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     isTrustedForwarder(
       forwarder: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     isTrustedForwarder(
       forwarder: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity 0.8.9;
 
 import {Charge} from "../library/Charge.sol";
 
@@ -47,6 +47,9 @@ interface IGatewayToken {
     /// @param state current token state.
     /// @param expectedState expected token state.
     error GatewayToken__TokenInvalidStateForOperation(uint256 tokenId, TokenState state, TokenState expectedState);
+
+    /// Token transfers are disabled
+    error GatewayToken__TransferDisabled();
 
     /**
      * @dev Triggers to verify if address has a GATEKEEPER role.

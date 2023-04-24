@@ -17,6 +17,7 @@ import {
 dotenv.config();
 
 describe("GatewayTS", function () {
+  this.timeout(5_000);
   let gateway: GatewayTs;
   let provider: BaseProvider;
   let network: Network;
@@ -25,11 +26,10 @@ describe("GatewayTS", function () {
   const sampleWalletAddress = Wallet.createRandom().address;
 
   before("Initialize GatewayTS class", async function () {
-    this.timeout(20_000);
-
     provider = getDefaultProvider("http://localhost:8545");
     network = await provider.getNetwork();
     gatekeeper = gatekeeperWallet(provider);
+
     gateway = new GatewayTs(
       gatekeeper,
       TEST_GATEWAY_TOKEN_ADDRESS.gatewayToken

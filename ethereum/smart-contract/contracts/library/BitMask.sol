@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity 0.8.9;
 
 library BitMask {
     uint internal constant _ONE = uint256(1);
@@ -26,16 +26,5 @@ library BitMask {
      */
     function checkBit(uint256 self, uint8 index) internal pure returns (bool) {
         return (self & (uint256(1) << index)) > 0;
-    }
-
-    /**
-     * @dev OR operator between two bitmasks:
-     * '0' OR '0' -> '0'
-     * '0' OR '1' -> '1'
-     * '1' OR '0' -> '1'
-     * '1' OR '1' -> '1'
-     */
-    function or(uint256 self, uint256 mask) internal pure returns (uint256) {
-        return self | mask;
     }
 }

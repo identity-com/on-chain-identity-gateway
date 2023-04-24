@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity 0.8.9;
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -21,11 +21,12 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     using BitMask for uint256;
 
     EnumerableSet.Bytes32Set private _supportedFlags;
-    address public override superAdmin;
 
-    uint256 public override supportedFlagsMask;
+    address public superAdmin;
 
-    mapping(bytes32 => uint8) public override flagIndexes;
+    uint256 public supportedFlagsMask;
+
+    mapping(bytes32 => uint8) public flagIndexes;
 
     /// The flag being added already exists
     /// @param flag The flag being added
@@ -53,9 +54,11 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
     // empty constructor in line with the UUPS upgradeable proxy pattern
     // solhint-disable-next-line no-empty-blocks
-    constructor() initializer {}
+    constructor() {
+        _disableInitializers();
+    }
 
-    function initialize(address _superAdmin) public initializer {
+    function initialize(address _superAdmin) external initializer {
         if (_superAdmin == address(0)) revert Common__MissingAccount();
         superAdmin = _superAdmin;
     }
@@ -66,7 +69,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param newSuperAdmin New super admin contract address
      * @notice Only executed by existing super admin
      */
-    function updateSuperAdmin(address newSuperAdmin) public override onlySuperAdmin {
+    function updateSuperAdmin(address newSuperAdmin) external onlySuperAdmin {
         if (newSuperAdmin == address(0)) revert Common__MissingAccount();
 
         emit SuperAdminUpdated(superAdmin, newSuperAdmin);
@@ -79,7 +82,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param index Flag index (limited to 255)
      * @notice Only executed by existing DAO Manager
      */
-    function addFlag(bytes32 flag, uint8 index) public override onlySuperAdmin {
+    function addFlag(bytes32 flag, uint8 index) external onlySuperAdmin {
         _addFlag(flag, index);
     }
 
@@ -89,10 +92,11 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param indexes Array of flag indexes (limited to 255)
      * @notice Only executed by existing DAO Manager
      */
-    function addFlags(bytes32[] memory flags, uint8[] memory indexes) public override onlySuperAdmin {
+    function addFlags(bytes32[] calldata flags, uint8[] calldata indexes) external onlySuperAdmin {
         if (flags.length != indexes.length) revert FlagsStorage__IncorrectVariableLength(flags.length, indexes.length);
 
-        for (uint8 i = 0; i < flags.length; i++) {
+        uint256 length = flags.length;
+        for (uint8 i = 0; i < length; i++) {
             _addFlag(flags[i], indexes[i]);
         }
     }
@@ -102,7 +106,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param flag Flag short identifier
      * @notice Only executed by existing DAO Manager
      */
-    function removeFlag(bytes32 flag) public override onlySuperAdmin {
+    function removeFlag(bytes32 flag) external onlySuperAdmin {
         if (!_supportedFlags.contains(flag)) revert FlagsStorage__FlagNotSupported(flag);
 
         _removeFlag(flag);
@@ -113,8 +117,9 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param flags Array of flag short identifiers
      * @notice Only executed by existing DAO Manager
      */
-    function removeFlags(bytes32[] memory flags) public override onlySuperAdmin {
-        for (uint8 i = 0; i < flags.length; i++) {
+    function removeFlags(bytes32[] calldata flags) external onlySuperAdmin {
+        uint256 length = flags.length;
+        for (uint8 i = 0; i < length; i++) {
             // additional check to reduce incorrect FlagRemoved events
             if (!_supportedFlags.contains(flags[i])) revert FlagsStorage__FlagNotSupported(flags[i]);
 
@@ -127,7 +132,7 @@ contract FlagsStorage is Initializable, IFlagsStorage, UUPSUpgradeable {
      * @param flag Flag short identifier
      * @return Boolean for flag support
      */
-    function isFlagSupported(bytes32 flag) public view override returns (bool) {
+    function isFlagSupported(bytes32 flag) external view returns (bool) {
         return _supportedFlags.contains(flag);
     }
 

@@ -65,6 +65,25 @@ task('add-forwarder', 'add a forwarder to the gateway token smart contract (e.g.
   .addParam('forwarder', 'The forwarder to add')
   .setAction(addForwarder);
 
+// Set the default contracts path to "contracts"
+const defaultPath = "./contracts";
+const testContractsPath = "./test/contracts";
+
+// Override the default "compile" task to compile both main and test contracts
+task("compile", "Compiles the entire project, including main and test contracts")
+  .addFlag("noTestContracts", "Don't compile test contracts")
+  .setAction(async (args, hre, runSuper) => {
+    // First, compile main contracts
+    hre.config.paths.sources = defaultPath;
+    await runSuper(args);
+
+    // Then, compile test contracts (unless --noTestContracts flag is provided)
+    if (!args.noTestContracts) {
+      hre.config.paths.sources = testContractsPath;
+      await runSuper(args);
+    }
+  });
+
 module.exports = {
   defaultNetwork: 'hardhat',
   networks: {
@@ -233,7 +252,7 @@ module.exports = {
     strict: true,
   },
   paths: {
-    sources: './contracts',
+    sources: defaultPath,
     tests: './test',
     cache: './cache',
     artifacts: './build',
