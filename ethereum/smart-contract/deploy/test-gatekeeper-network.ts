@@ -4,6 +4,9 @@ import { getAccounts } from '../scripts/util';
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const gatekeeperNetwork = 1;
+const civicDevGatekeeper = "0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688";
+// open to all - private key is known
+const testGatekeeper = "0x34bb5808d46a21AaeBf7C1300Ef17213Fe215B91";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, ethers } = hre;
@@ -12,16 +15,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // hardhat does not resolve them properly. Check by deploying to localhost that they are correct first
   // yarn local --no-deploy &
   // yarn deploy localhost
-  let { deployer, authority, gatekeeper } = await getAccounts(hre);
-  // hack for the deduping keys bug- set the gatekeeper auth to the authority
-  if (process.env.STAGE === 'prod') gatekeeper = authority;
+  let { deployer } = await getAccounts(hre);
 
   const deployerSigner = await ethers.getSigner(deployer);
-  const authoritySigner = await ethers.getSigner(authority);
-
-  console.log('deployer', deployer);
-  console.log('authority', authority);
-  console.log('gatekeeper', gatekeeper);
 
   const gatewayToken = await deployments.get('GatewayTokenProxy');
 
@@ -30,19 +26,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // check if superadmin
   const isSuperAdmin = await token.isSuperAdmin(deployer);
   console.log('deployer ', deployer, 'isSuperAdmin', isSuperAdmin);
-
-  // // add the flexible nonce forwarder
-  // const flexibleNonceForwarder = await deployments.get('FlexibleNonceForwarder');
-  // const addForwarderTx = await (await token.addForwarder(flexibleNonceForwarder.address, { from: deployer })).wait();
-  // console.log(
-  //   'Added flexible nonce forwarder ' +
-  //     flexibleNonceForwarder.address +
-  //     ' on Gateway Token at ' +
-  //     gatewayToken.address +
-  //     ' using ' +
-  //     addForwarderTx.gasUsed.toNumber() +
-  //     ' gas',
-  // );
 
   if (await token.getNetwork(gatekeeperNetwork)) {
     console.log('network ' + gatekeeperNetwork + ' already exists');
@@ -63,27 +46,31 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
   }
 
-  const addNetworkAuthorityTx = await (await token.addNetworkAuthority(authority, gatekeeperNetwork)).wait();
-  console.log(
-    'added new network authority with ' +
-      authority +
-      ' into Gateway Token at ' +
-      gatewayToken.address +
-      ' using ' +
-      addNetworkAuthorityTx.gasUsed.toNumber() +
-      ' gas',
-  );
 
   const addGatekeeperTx = await (
-    await token.connect(authoritySigner).addGatekeeper(gatekeeper, gatekeeperNetwork)
+    await token.addGatekeeper(civicDevGatekeeper, gatekeeperNetwork)
   ).wait();
   console.log(
     'added new gatekeeper with ' +
-      gatekeeper +
+      civicDevGatekeeper +
       ' address into Gateway Token at ' +
       gatewayToken.address +
       ' using ' +
       addGatekeeperTx.gasUsed.toNumber() +
+      ' gas',
+  );
+
+
+  const addTestGatekeeperTx = await (
+      await token.addGatekeeper(testGatekeeper, gatekeeperNetwork)
+  ).wait();
+  console.log(
+      'added test gatekeeper with ' +
+      testGatekeeper +
+      ' address into Gateway Token at ' +
+      gatewayToken.address +
+      ' using ' +
+      addTestGatekeeperTx.gasUsed.toNumber() +
       ' gas',
   );
 };
