@@ -30,7 +30,6 @@ const liveAccounts =
   process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY
     ? [
         `0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
-        `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
         `0x${process.env.GATEKEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
       ]
     : [];
@@ -282,9 +281,6 @@ module.exports = {
   namedAccounts: {
     deployer: {
       default: 0,
-    },
-    authority: {
-      default: 1,
     },
     gatekeeper: {
       default: 2,

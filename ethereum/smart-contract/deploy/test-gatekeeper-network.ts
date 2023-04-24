@@ -4,7 +4,6 @@ import { getAccounts } from '../scripts/util';
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const gatekeeperNetwork = 1;
-const civicDevGatekeeper = "0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688";
 // open to all - private key is known
 const testGatekeeper = "0x34bb5808d46a21AaeBf7C1300Ef17213Fe215B91";
 
@@ -15,7 +14,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // hardhat does not resolve them properly. Check by deploying to localhost that they are correct first
   // yarn local --no-deploy &
   // yarn deploy localhost
-  let { deployer } = await getAccounts(hre);
+  let { deployer, gatekeeper } = await getAccounts(hre);
 
   const deployerSigner = await ethers.getSigner(deployer);
 
@@ -48,11 +47,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
   const addGatekeeperTx = await (
-    await token.addGatekeeper(civicDevGatekeeper, gatekeeperNetwork)
+    await token.addGatekeeper(gatekeeper, gatekeeperNetwork)
   ).wait();
   console.log(
     'added new gatekeeper with ' +
-      civicDevGatekeeper +
+      gatekeeper +
       ' address into Gateway Token at ' +
       gatewayToken.address +
       ' using ' +
@@ -78,4 +77,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 func.id = 'create_test_gatekeeper_network';
 func.tags = ['TestGatekeeperNetwork'];
-func.dependencies = ['GatewayToken'];
+func.dependencies = ['GatewayToken', 'Forwarder'];
