@@ -1,18 +1,11 @@
 //! Program state
 use crate::networks::GATEWAY_NETWORKS;
 use crate::{Gateway, GatewayError};
-use std::convert::TryInto;
-use std::mem::{size_of, transmute};
-use strum::EnumCount;
-use strum_macros::EnumCount as EnumCountMacro;
 use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
-    sol_did::{ integrations::is_authority },
     solana_program::{
         account_info::AccountInfo,
         clock::UnixTimestamp,
-        entrypoint::ProgramResult,
-        program_error::ProgramError,
         pubkey::Pubkey,
         sysvar::{clock::Clock, Sysvar},
     },
@@ -104,6 +97,7 @@ pub fn get_expire_address_with_seed(network: &Pubkey) -> (Pubkey, u8) {
 #[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq)]
 pub struct GatewayToken {
     /// Feature flags that define the type of gateway token
+    /// NOTE: DEPRECATED - This is kept to maintain backwards compatibility, but is not used
     pub features: u8,
     /// If the token is a session token,
     /// this is set to the parent token that was used to generate it.
@@ -123,8 +117,6 @@ pub struct GatewayToken {
 
     /// The expiry time of the token (unix timestamp) (expirable tokens only)
     pub expire_time: Option<UnixTimestamp>,
-    // /// Details about the transaction that this token has been issued for (session tokens only)
-    // pub transaction_details: Option<dyn CompatibleTransactionDetails>
 }
 impl GatewayToken {
     pub const SIZE: usize = 1 + (1 + 32) + 32 + (1 + 32) + 32 + 32 + 1;
@@ -134,7 +126,7 @@ impl GatewayToken {
         issuing_gatekeeper: &Pubkey,
         expire_time: &Option<UnixTimestamp>,
     ) -> Self {
-        let mut result = Self {
+        Self {
             features: 0,
             parent_gateway_token: None,
             owner_wallet: *owner_wallet,
@@ -144,29 +136,10 @@ impl GatewayToken {
             issuing_gatekeeper: *issuing_gatekeeper,
             state: Default::default(),
             expire_time: *expire_time,
-        };
-
-        if expire_time.is_some() {
-            result.set_feature(Feature::Expirable)
-        };
-
-        result
-    }
-
-    // TODO should probably do away with the feature bitmap and just infer
-    // the features from the properties. This is currently not typesafe as
-    // you can set a feature (eg Expirable) without giving the gateway token
-    // the appropriate properites (e.g. expire_time). It was added to help
-    // serialisation but this is not necessary unless we use traits for different
-    // features.
-    /// Set a feature flag on a gateway token
-    pub fn set_feature(&mut self, feature: Feature) {
-        let ordinal = feature as u8;
-        self.features |= 1 << ordinal;
+        }
     }
 
     pub fn set_expire_time(&mut self, expire_time: UnixTimestamp) {
-        self.set_feature(Feature::Expirable);
         self.expire_time = Some(expire_time);
     }
 
@@ -191,17 +164,7 @@ impl GatewayToken {
     }
 }
 
-fn pubkey_ref_from_array<'a>(val: &'a [u8; 32]) -> &'a Pubkey {
-    // Safe because pubkey is transparent to [u8; 32]
-    unsafe { transmute::<&'a [u8; 32], &'a Pubkey>(val) }
-}
-fn pubkey_mut_ref_from_array<'a>(val: &'a mut [u8; 32]) -> &'a mut Pubkey {
-    // Safe because pubkey is transparent to [u8; 32]
-    unsafe { transmute::<&'a mut [u8; 32], &'a mut Pubkey>(val) }
-}
-
 pub trait GatewayTokenAccess {
-    fn features(&self) -> u8;
     fn parent_gateway_token(&self) -> Option<&Pubkey>;
     fn owner_wallet(&self) -> &Pubkey;
     fn owner_identity(&self) -> Option<&Pubkey>;
@@ -211,10 +174,6 @@ pub trait GatewayTokenAccess {
     fn expire_time(&self) -> Option<UnixTimestamp>;
 }
 impl GatewayTokenAccess for GatewayToken {
-    fn features(&self) -> u8 {
-        self.features
-    }
-
     fn parent_gateway_token(&self) -> Option<&Pubkey> {
         self.parent_gateway_token.as_ref()
     }
@@ -244,12 +203,6 @@ impl GatewayTokenAccess for GatewayToken {
     }
 }
 pub trait GatewayTokenFunctions: GatewayTokenAccess {
-    /// Tests if the gateway token has the required feature
-    fn has_feature(&self, feature: Feature) -> bool {
-        let ordinal = feature as u8;
-
-        self.features() & (1 << ordinal) != 0
-    }
 
     /// Checks if the gateway token is in a valid state
     /// Note, this does not check ownership or expiry.
@@ -263,7 +216,7 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess {
     }
 
     fn has_expired(&self, tolerance: u32) -> bool {
-        self.has_feature(Feature::Expirable) && before_now(self.expire_time().unwrap(), tolerance)
+        self.expire_time() != None && before_now(self.expire_time().unwrap(), tolerance)
     }
 }
 impl<T> GatewayTokenFunctions for T where T: GatewayTokenAccess {}
@@ -287,22 +240,6 @@ impl Default for GatewayTokenState {
         GatewayTokenState::Active
     }
 }
-
-/// Feature flag names. The values are encoded as a bitmap in a gateway token
-/// NOTE: There may be only 8 values here, as long as the "features" bitmap is a u8
-#[derive(EnumCountMacro)]
-pub enum Feature {
-    /// The expire_time field must be set and the expire time must not be in the past.
-    Expirable,
-    /// The following flags are not defined by the protocol, but may be used by gatekeeper networks
-    /// to add custom features or restrictions to gateway tokens.
-    Custom0,
-    Custom1,
-    Custom2,
-    Custom3,
-}
-// Enforce that there are no more than 8 features, since they are encoded in a u8 in the gateway token
-const_assert!(Feature::COUNT <= 8);
 
 #[cfg(test)]
 pub mod tests {
@@ -350,14 +287,6 @@ pub mod tests {
 
         token.state = GatewayTokenState::Frozen;
         assert!(!token.is_valid());
-    }
-
-    #[test]
-    fn set_feature() {
-        let mut token = stub_gateway_token();
-        assert!(!token.has_feature(Feature::Expirable));
-        token.set_feature(Feature::Expirable);
-        assert!(token.has_feature(Feature::Expirable))
     }
 
     #[test]
