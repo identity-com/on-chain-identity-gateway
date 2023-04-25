@@ -21,10 +21,6 @@ pub enum GatewayError {
     #[error("The gateway token account is not of the correct type")]
     InvalidToken,
 
-    /// The gateway token is a session token, but has a lamport balance that would make it exceed the lifetime of the transaction.
-    #[error("The gateway token is a session token, but has a lamport balance that would make it exceed the lifetime of the transaction.")]
-    InvalidSessionToken,
-
     /// The gateway token was revoked
     #[error("The gateway token was revoked")]
     TokenRevoked,

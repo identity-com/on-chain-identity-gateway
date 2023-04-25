@@ -38,8 +38,8 @@ pub fn process_instruction(
 
     let result = match instruction {
         GatewayInstruction::AddGatekeeper {} => add_gatekeeper(accounts),
-        GatewayInstruction::IssueVanilla { seed, expire_time } => {
-            issue_vanilla(accounts, &seed, &expire_time)
+        GatewayInstruction::Issue { seed, expire_time } => {
+            issue(accounts, &seed, &expire_time)
         }
         GatewayInstruction::SetState { state } => set_state(accounts, state),
         GatewayInstruction::UpdateExpiry { expire_time } => update_expiry(accounts, expire_time),
@@ -122,12 +122,12 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
     Ok(())
 }
 
-fn issue_vanilla(
+fn issue(
     accounts: &[AccountInfo],
     seed: &Option<AddressSeed>,
     expire_time: &Option<UnixTimestamp>,
 ) -> ProgramResult {
-    msg!("GatewayInstruction::IssueVanilla");
+    msg!("GatewayInstruction::Issue");
     let account_info_iter = &mut accounts.iter();
     let funder_info = next_account_info(account_info_iter)?;
     let gateway_token_info = next_account_info(account_info_iter)?;
@@ -174,7 +174,7 @@ fn issue_vanilla(
         &[gateway_token_bump_seed],
     ];
 
-    let gateway_token = GatewayToken::new_vanilla(
+    let gateway_token = GatewayToken::new(
         owner_info.key,
         gatekeeper_network_info.key,
         gatekeeper_authority_info.key,

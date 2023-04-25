@@ -131,7 +131,7 @@ impl GatewayContext {
         expire_time: Option<UnixTimestamp>,
     ) -> Result<(), BanksClientError> {
         let transaction = Transaction::new_signed_with_payer(
-            &[instruction::issue_vanilla(
+            &[instruction::issue(
                 &self.context.payer.pubkey(),
                 owner,
                 gatekeeper_account,
