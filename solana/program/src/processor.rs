@@ -14,7 +14,7 @@ use solana_program::clock::{Clock, UnixTimestamp};
 use {
     crate::id,
     borsh::{BorshDeserialize, BorshSerialize},
-    solana_gateway::{borsh::get_instance_packed_len, state::GatewayToken},
+    solana_gateway::state::GatewayToken,
     solana_program::{
         account_info::{next_account_info, AccountInfo},
         entrypoint::ProgramResult,
@@ -193,16 +193,13 @@ fn issue_vanilla(
         gatekeeper_authority_info.key,
         expire_time,
     );
-    let size = get_instance_packed_len(&gateway_token).unwrap() as u64;
-    // Shouldn't fail but if size is same as `GATEKEEPER_ACCOUNT_LENGTH` then many more obscure problems will occur later
-    assert_ne!(size as usize, GATEKEEPER_ACCOUNT_LENGTH);
 
     invoke_signed(
         &system_instruction::create_account(
             funder_info.key,
             gateway_token_info.key,
-            1.max(rent.minimum_balance(size as usize)),
-            size,
+            1.max(rent.minimum_balance(GatewayToken::SIZE as usize)),
+            GatewayToken::SIZE as u64,
             &id(),
         ),
         &[

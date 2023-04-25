@@ -124,6 +124,7 @@ pub struct GatewayToken {
     // pub transaction_details: Option<dyn CompatibleTransactionDetails>
 }
 impl GatewayToken {
+    pub const SIZE: usize = 1 + (1 + 32) + 32 + (1 + 32) + 32 + 32 + 1;
     pub fn new_vanilla(
         owner_wallet: &Pubkey,
         gatekeeper_network: &Pubkey,
