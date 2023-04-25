@@ -3,8 +3,8 @@ use solana_gateway::state::{
     get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, GatewayToken,
     GatewayTokenState,
 };
-use solana_gateway::{borsh as program_borsh, instruction};
-use solana_gateway_program::{id, processor::process_instruction};
+use solana_gateway::{borsh as program_borsh, Gateway, instruction};
+use solana_gateway_program::{processor::process_instruction};
 use solana_program::{pubkey::Pubkey, system_program, sysvar};
 use solana_program_test::{BanksClientError, processor, ProgramTest, ProgramTestContext};
 use solana_sdk::{
@@ -20,7 +20,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 fn program_test() -> ProgramTest {
     ProgramTest::new(
         "solana_gateway_program",
-        id(),
+        Gateway::program_id(),
         processor!(process_instruction),
     )
 }
@@ -211,7 +211,7 @@ impl GatewayContext {
         let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(authority, network);
         // create an instruction that doesn't require the network signature.
         let instruction = Instruction::new_with_borsh(
-            id(),
+            Gateway::program_id(),
             &GatewayInstruction::AddGatekeeper {},
             vec![
                 AccountMeta::new(self.context.payer.pubkey(), true),

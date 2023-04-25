@@ -11,6 +11,9 @@ pub mod state;
 #[cfg(test)]
 mod test_utils;
 
+#[macro_use]
+extern crate static_assertions;
+
 use crate::instruction::expire_token;
 use crate::state::{GatewayTokenAccess, GatewayTokenFunctions};
 use crate::{

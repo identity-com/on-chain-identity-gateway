@@ -446,7 +446,7 @@ pub mod tests {
         let mut gatekeeper_authority_lamports = 0;
         let mut gatekeeper_account_lamports = 0;
         let rent_epoch = 0;
-        let owner = id();
+        let owner = Gateway::program_id();
         let gatekeeper_authority = Default::default();
         let gatekeeper_account = Default::default();
         let gateway_token = AccountInfo::new(
@@ -509,7 +509,7 @@ pub mod tests {
         let mut gatekeeper_authority_lamports = 0;
         let mut gatekeeper_account_lamports = 0;
         let rent_epoch = 0;
-        let owner = id();
+        let owner = Gateway::program_id();
         let gatekeeper_authority = Default::default();
         let gatekeeper_account = Default::default();
         let gateway_token = AccountInfo::new(

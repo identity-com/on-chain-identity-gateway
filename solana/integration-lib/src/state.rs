@@ -1,9 +1,10 @@
 //! Program state
-
 use crate::networks::GATEWAY_NETWORKS;
 use crate::{Gateway, GatewayError};
 use std::convert::TryInto;
 use std::mem::{size_of, transmute};
+use strum::EnumCount;
+use strum_macros::EnumCount as EnumCountMacro;
 use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
     sol_did::{ integrations::is_authority },
@@ -246,12 +247,8 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess {
     /// Tests if the gateway token has the required feature
     fn has_feature(&self, feature: Feature) -> bool {
         let ordinal = feature as u8;
-        if ordinal < 8 {
-            // If this fails, the features enum must have grown to >8 elements
-            self.features() & (1 << ordinal) != 0
-        } else {
-            false
-        }
+
+        self.features() & (1 << ordinal) != 0
     }
 
     /// Checks if the gateway token is in a valid state
@@ -293,6 +290,7 @@ impl Default for GatewayTokenState {
 
 /// Feature flag names. The values are encoded as a bitmap in a gateway token
 /// NOTE: There may be only 8 values here, as long as the "features" bitmap is a u8
+#[derive(EnumCountMacro)]
 pub enum Feature {
     /// The expire_time field must be set and the expire time must not be in the past.
     Expirable,
@@ -303,6 +301,8 @@ pub enum Feature {
     Custom2,
     Custom3,
 }
+// Enforce that there are no more than 8 features, since they are encoded in a u8 in the gateway token
+const_assert!(Feature::COUNT <= 8);
 
 #[cfg(test)]
 pub mod tests {
