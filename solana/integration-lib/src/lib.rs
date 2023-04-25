@@ -46,7 +46,7 @@ pub const DEFAULT_VERIFICATION_OPTIONS: VerificationOptions = VerificationOption
 
 pub struct Gateway {}
 impl Gateway {
-    fn program_id() -> Pubkey {
+    pub fn program_id() -> Pubkey {
         Pubkey::from_str("gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs").unwrap()
     }
 

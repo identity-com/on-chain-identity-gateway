@@ -1,18 +1,18 @@
 //! Program state processor
 
-use crate::state::Transitionable;
-use solana_gateway::error::GatewayError;
-use solana_gateway::instruction::{GatewayInstruction, NetworkFeature};
-use solana_gateway::state::{
-    get_expire_address_with_seed, get_gatekeeper_address_with_seed,
-    get_gateway_token_address_with_seed, verify_gatekeeper, AddressSeed, GatewayTokenAccess,
-    GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
-    NETWORK_EXPIRE_FEATURE_SEED,
+use solana_gateway::{
+    state::{
+        get_expire_address_with_seed, get_gatekeeper_address_with_seed,
+        get_gateway_token_address_with_seed, verify_gatekeeper, AddressSeed, GatewayTokenAccess,
+        GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
+        NETWORK_EXPIRE_FEATURE_SEED,
+    },
+    instruction::{GatewayInstruction, NetworkFeature},
+    error::GatewayError,
+    Gateway,
 };
-use solana_gateway::Gateway;
 use solana_program::clock::{Clock, UnixTimestamp};
 use {
-    crate::id,
     borsh::{BorshDeserialize, BorshSerialize},
     solana_gateway::state::GatewayToken,
     solana_program::{
@@ -107,7 +107,7 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
             gatekeeper_account_info.key,
             1.max(rent.minimum_balance(0)),
             0,
-            &id(),
+            &Gateway::program_id(),
         ),
         &[
             funder_info.clone(),
@@ -187,7 +187,7 @@ fn issue_vanilla(
             gateway_token_info.key,
             1.max(rent.minimum_balance(GatewayToken::SIZE as usize)),
             GatewayToken::SIZE as u64,
-            &id(),
+            &Gateway::program_id(),
         ),
         &[
             funder_info.clone(),
@@ -214,7 +214,7 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    if gateway_token_info.owner.ne(&id()) {
+    if gateway_token_info.owner.ne(&Gateway::program_id()) {
         msg!("Incorrect program Id for gateway token account");
         return Err(ProgramError::IncorrectProgramId);
     }
@@ -265,7 +265,7 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    if gateway_token_info.owner.ne(&id()) {
+    if gateway_token_info.owner.ne(&Gateway::program_id()) {
         msg!("Incorrect program Id for gateway token account");
         return Err(ProgramError::IncorrectProgramId);
     }
@@ -326,7 +326,7 @@ fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> Program
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    if network_expire_feature.owner != &id() {
+    if network_expire_feature.owner != &Gateway::program_id() {
         return Err(ProgramError::IllegalOwner);
     }
 
@@ -334,7 +334,7 @@ fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> Program
         return Err(ProgramError::InvalidArgument);
     }
 
-    if gateway_token_info.owner != &id() {
+    if gateway_token_info.owner != &Gateway::program_id() {
         return Err(ProgramError::IllegalOwner);
     }
 
@@ -388,7 +388,7 @@ fn add_feature_to_network(accounts: &[AccountInfo], feature: NetworkFeature) -> 
                     feature_account.key,
                     1.max(Rent::default().minimum_balance(0)),
                     0,
-                    &id(),
+                    &Gateway::program_id(),
                 ),
                 &[
                     system_program.clone(),

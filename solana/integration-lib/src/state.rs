@@ -166,6 +166,26 @@ impl GatewayToken {
         self.set_feature(Feature::Expirable);
         self.expire_time = Some(expire_time);
     }
+
+    pub fn is_valid_state_change(&self, new_state: &GatewayTokenState) -> bool {
+        match new_state {
+            GatewayTokenState::Active => match self.state {
+                GatewayTokenState::Active => false,
+                GatewayTokenState::Frozen => true,
+                GatewayTokenState::Revoked => false,
+            },
+            GatewayTokenState::Frozen => match self.state {
+                GatewayTokenState::Active => true,
+                GatewayTokenState::Frozen => false,
+                GatewayTokenState::Revoked => false,
+            },
+            GatewayTokenState::Revoked => match self.state {
+                GatewayTokenState::Active => true,
+                GatewayTokenState::Frozen => true,
+                GatewayTokenState::Revoked => false,
+            },
+        }
+    }
 }
 
 fn pubkey_ref_from_array<'a>(val: &'a [u8; 32]) -> &'a Pubkey {
@@ -337,13 +357,8 @@ impl Default for GatewayTokenState {
 /// Feature flag names. The values are encoded as a bitmap in a gateway token
 /// NOTE: There may be only 8 values here, as long as the "features" bitmap is a u8
 pub enum Feature {
-    /// The token is valid for the current transaction only. Must have its lamport balance set to 0.
-    Session,
     /// The expire_time field must be set and the expire time must not be in the past.
     Expirable,
-    /// Expect a transaction-details struct, and check the contents against the details of
-    /// the transaction that the token is being used for.
-    TransactionLinked,
     /// Expect an owner-identity property, and check that a valid signer account for that identity.
     IdentityLinked,
     /// The following flags are not defined by the protocol, but may be used by gatekeeper networks
