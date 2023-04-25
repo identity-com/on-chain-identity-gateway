@@ -29,15 +29,15 @@ pub const NETWORK_EXPIRE_FEATURE_SEED: &[u8] = br"expire";
 /// allowing multiple gateway tokens per wallet
 pub type AddressSeed = [u8; 8];
 
-/// Get program-derived gateway token address for the authority
+/// Get program-derived gateway token address for the owner
 pub fn get_gateway_token_address_with_seed(
-    authority: &Pubkey,
+    owner: &Pubkey,
     additional_seed: &Option<AddressSeed>,
     network: &Pubkey,
 ) -> (Pubkey, u8) {
     Pubkey::find_program_address(
         &[
-            &authority.to_bytes(),
+            &owner.to_bytes(),
             GATEWAY_TOKEN_ADDRESS_SEED,
             &additional_seed.unwrap_or_default(),
             &network.to_bytes(),
@@ -60,7 +60,7 @@ pub fn get_gatekeeper_address_with_seed(authority: &Pubkey, network: &Pubkey) ->
 
 /// Verifies that the gatekeeper account matches the passed in gatekeeper and gatekeeper network
 /// NOTE: This does not check that the gatekeeper is a signer of the transaction.
-pub fn verify_gatekeeper(
+pub fn verify_gatekeeper_address_and_account(
     gatekeeper_account_info: &AccountInfo,
     gatekeeper: &Pubkey,
     gatekeeper_network: &Pubkey,

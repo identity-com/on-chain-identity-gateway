@@ -3,7 +3,7 @@
 use solana_gateway::{
     state::{
         get_expire_address_with_seed, get_gatekeeper_address_with_seed,
-        get_gateway_token_address_with_seed, verify_gatekeeper, AddressSeed, GatewayTokenAccess,
+        get_gateway_token_address_with_seed, verify_gatekeeper_address_and_account, AddressSeed, GatewayTokenAccess,
         GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
         NETWORK_EXPIRE_FEATURE_SEED,
     },
@@ -147,7 +147,7 @@ fn issue(
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    verify_gatekeeper(
+    verify_gatekeeper_address_and_account(
         gatekeeper_account_info,
         gatekeeper_authority_info.key,
         gatekeeper_network_info.key,
@@ -221,7 +221,7 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
 
     let mut gateway_token = Gateway::parse_gateway_token(gateway_token_info)?;
 
-    verify_gatekeeper(
+    verify_gatekeeper_address_and_account(
         gatekeeper_account_info,
         gatekeeper_authority_info.key,
         &gateway_token.gatekeeper_network,
@@ -272,7 +272,7 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
 
     let mut gateway_token = Gateway::parse_gateway_token(gateway_token_info)?;
 
-    verify_gatekeeper(
+    verify_gatekeeper_address_and_account(
         gatekeeper_account_info,
         gatekeeper_authority_info.key,
         &gateway_token.gatekeeper_network,
