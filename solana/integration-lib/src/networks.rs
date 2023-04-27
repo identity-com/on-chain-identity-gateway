@@ -1,13 +1,15 @@
 use solana_program::pubkey::Pubkey;
 
-/// A cached gatekeeper network for optimizing CPI calls
-pub struct GatewayNetwork {
+/// A cached gatekeeper network expire address for optimizing CPI calls.
+/// Since the expire feature is frequently used inside a CPI, as a gateway token is "consumed",
+/// we try to reduce the amount of compute that the expire instruction requires.
+pub struct GatekeeperNetworksWithExpireAddresses {
     pub address: Pubkey,
     pub expire_address: (Pubkey, u8),
 }
 
 /// The IGNITE network
-pub const IGNITE: GatewayNetwork = GatewayNetwork {
+pub const IGNITE: GatekeeperNetworksWithExpireAddresses = GatekeeperNetworksWithExpireAddresses {
     // `ignREusXmGrscGNUesoU9mxfds9AiYTezUKex2PsZV6`
     address: Pubkey::new_from_array([
         10, 173, 203, 200, 162, 28, 105, 73, 70, 177, 164, 71, 227, 99, 161, 76, 204, 121, 56, 243,
@@ -22,7 +24,7 @@ pub const IGNITE: GatewayNetwork = GatewayNetwork {
         255,
     ),
 };
-pub const TIBER: GatewayNetwork = GatewayNetwork {
+pub const TIBER: GatekeeperNetworksWithExpireAddresses = GatekeeperNetworksWithExpireAddresses {
     // `tibePmPaoTgrs929rWpu755EXaxC7M3SthVCf6GzjZt`
     address: Pubkey::new_from_array([
         13, 63, 167, 207, 48, 68, 126, 44, 126, 102, 37, 62, 157, 146, 5, 221, 217, 42, 146, 19,
@@ -37,7 +39,7 @@ pub const TIBER: GatewayNetwork = GatewayNetwork {
         255,
     ),
 };
-pub const TEST_TIBER: GatewayNetwork = GatewayNetwork {
+pub const TEST_TIBER: GatekeeperNetworksWithExpireAddresses = GatekeeperNetworksWithExpireAddresses {
     // `ttib7tuX8PTWPqFsmUFQTj78MbRhUmqxidJRDv4hRRE`
     address: Pubkey::new_from_array([
         13, 75, 25, 16, 79, 191, 241, 61, 154, 96, 8, 182, 184, 22, 47, 245, 222, 247, 123, 184,
@@ -53,5 +55,27 @@ pub const TEST_TIBER: GatewayNetwork = GatewayNetwork {
     ),
 };
 
-/// A list of all cached networks
-pub const GATEWAY_NETWORKS: &[GatewayNetwork] = &[IGNITE, TIBER, TEST_TIBER];
+/// A list of cached gatekeeper networks with their expire addresses for optimizing CPI calls.
+pub const GATEKEEPER_NETWORKS_WITH_EXPIRE_ADDRESSES: &[GatekeeperNetworksWithExpireAddresses] = &[IGNITE, TIBER, TEST_TIBER];
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    use std::str::FromStr;
+
+    #[test]
+    fn test_gatekeeper_networks_with_expire_addresses() {
+        assert_eq!(IGNITE.expire_address, (
+            Pubkey::from_str("DH46SxsYWBMf3Ca1hPMUYyZzQpf9bfAw93ncUKhvZCWA").unwrap(),
+            255
+            ));
+        assert_eq!(TIBER.expire_address, (
+            Pubkey::from_str("BNkYz4VZFuNaLey1hF1GCjFfN1p11trYouGPKqwH7ioJ").unwrap(),
+            255
+        ));
+        assert_eq!(TEST_TIBER.expire_address, (
+            Pubkey::from_str("GbFW949aZ2nRWMxEvd2AX7RQ47Q2GK1CDuN4F6TQFWgt").unwrap(),
+            253
+        ));
+    }
+}

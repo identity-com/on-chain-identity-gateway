@@ -1,5 +1,5 @@
 //! Program state
-use crate::networks::GATEWAY_NETWORKS;
+use crate::networks::GATEKEEPER_NETWORKS_WITH_EXPIRE_ADDRESSES;
 use crate::{Gateway, GatewayError};
 use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
@@ -80,9 +80,12 @@ pub fn verify_gatekeeper_address_and_account(
     Ok(())
 }
 
-// Ignite bump seed is 255 so most optimal create
+// Expire feature addresses for gatekeeper networks are PDAs derived from the network address.
+// Since the expire feature is frequently used inside a CPI, as a gateway token is "consumed",
+// we try to reduce the amount of compute that the expire instruction requires.
+// To do this, we precompute and cache the more common gatekeeper network expire addresses and use them here.
 pub fn get_expire_address_with_seed(network: &Pubkey) -> (Pubkey, u8) {
-    for gateway_network in GATEWAY_NETWORKS {
+    for gateway_network in GATEKEEPER_NETWORKS_WITH_EXPIRE_ADDRESSES {
         if &gateway_network.address == network {
             return gateway_network.expire_address;
         }
@@ -250,8 +253,6 @@ pub mod tests {
     use solana_sdk::signature::{Keypair, Signer};
     use std::iter::FusedIterator;
     use std::{cell::RefCell, rc::Rc};
-    use sol_did::state::{DidAccount, VerificationMethod};
-    use sol_did::integrations::derive_did_account;
     use solana_program::system_program;
 
     fn stub_gateway_token() -> GatewayToken {
@@ -265,10 +266,6 @@ pub mod tests {
             state: Default::default(),
             expire_time: None,
         }
-    }
-
-    fn stub_identity(identity_owner: &Keypair) -> DidAccount {
-        DidAccount::new(0, &identity_owner.pubkey())
     }
 
     #[test]
