@@ -1,14 +1,14 @@
 //! Program state processor
 
 use solana_gateway::{
+    error::GatewayError,
+    instruction::{GatewayInstruction, NetworkFeature},
     state::{
         get_expire_address_with_seed, get_gatekeeper_address_with_seed,
-        get_gateway_token_address_with_seed, verify_gatekeeper_address_and_account, AddressSeed, GatewayTokenAccess,
-        GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
+        get_gateway_token_address_with_seed, verify_gatekeeper_address_and_account, AddressSeed,
+        GatewayTokenAccess, GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
         NETWORK_EXPIRE_FEATURE_SEED,
     },
-    instruction::{GatewayInstruction, NetworkFeature},
-    error::GatewayError,
     Gateway,
 };
 use solana_program::clock::{Clock, UnixTimestamp};
@@ -38,9 +38,7 @@ pub fn process_instruction(
 
     let result = match instruction {
         GatewayInstruction::AddGatekeeper {} => add_gatekeeper(accounts),
-        GatewayInstruction::Issue { seed, expire_time } => {
-            issue(accounts, &seed, &expire_time)
-        }
+        GatewayInstruction::Issue { seed, expire_time } => issue(accounts, &seed, &expire_time),
         GatewayInstruction::SetState { state } => set_state(accounts, state),
         GatewayInstruction::UpdateExpiry { expire_time } => update_expiry(accounts, expire_time),
         GatewayInstruction::RemoveGatekeeper => remove_gatekeeper(accounts),
@@ -71,7 +69,6 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
     let gatekeeper_network_info = next_account_info(account_info_iter)?;
 
     let rent_info = next_account_info(account_info_iter)?;
-    let system_program_info = next_account_info(account_info_iter)?;
     let rent = &Rent::from_account_info(rent_info)?;
 
     if !funder_info.is_signer {
@@ -185,7 +182,7 @@ fn issue(
         &system_instruction::create_account(
             funder_info.key,
             gateway_token_info.key,
-            1.max(rent.minimum_balance(GatewayToken::SIZE as usize)),
+            1.max(rent.minimum_balance(GatewayToken::SIZE)),
             GatewayToken::SIZE as u64,
             &Gateway::program_id(),
         ),
@@ -338,7 +335,7 @@ fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> Program
         return Err(ProgramError::IllegalOwner);
     }
 
-    let mut gateway_token = Gateway::parse_gateway_token(&gateway_token_info).unwrap();
+    let mut gateway_token = Gateway::parse_gateway_token(gateway_token_info).unwrap();
 
     if gateway_token.owner_wallet() != owner.key {
         return Err(GatewayError::InvalidOwner.into());
@@ -348,8 +345,7 @@ fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> Program
         return Err(ProgramError::InvalidAccountData);
     }
 
-    gateway_token
-        .set_expire_time(Clock::get()?.unix_timestamp - 120);
+    gateway_token.set_expire_time(Clock::get()?.unix_timestamp - 120);
 
     Ok(())
 }

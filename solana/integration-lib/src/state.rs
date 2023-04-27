@@ -206,7 +206,6 @@ impl GatewayTokenAccess for GatewayToken {
     }
 }
 pub trait GatewayTokenFunctions: GatewayTokenAccess {
-
     /// Checks if the gateway token is in a valid state
     /// Note, this does not check ownership or expiry.
     fn is_valid_state(&self) -> bool {
@@ -219,15 +218,16 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess {
     }
 
     fn has_expired(&self, tolerance: u32) -> bool {
-        self.expire_time() != None && before_now(self.expire_time().unwrap(), tolerance)
+        self.expire_time().is_some() && before_now(self.expire_time().unwrap(), tolerance)
     }
 }
 impl<T> GatewayTokenFunctions for T where T: GatewayTokenAccess {}
 
 /// Enum representing the states that a gateway token can be in.
-#[derive(Copy, Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, BorshSchema)]
+#[derive(Default, Copy, Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, BorshSchema)]
 pub enum GatewayTokenState {
     /// Valid, non-frozen token. Note - a token may be active but have passed its expire_time.
+    #[default]
     Active,
     /// Temporarily paused token.
     Frozen,
@@ -238,11 +238,6 @@ impl GatewayTokenState {
     pub const ALL_STATES: &'static [GatewayTokenState] =
         &[Self::Active, Self::Frozen, Self::Revoked];
 }
-impl Default for GatewayTokenState {
-    fn default() -> Self {
-        GatewayTokenState::Active
-    }
-}
 
 #[cfg(test)]
 pub mod tests {
@@ -250,10 +245,10 @@ pub mod tests {
     use crate::test_utils::test_utils_stubs::{init, now};
     use rand::{CryptoRng, Rng, RngCore, SeedableRng};
     use rand_chacha::ChaCha20Rng;
+    use solana_program::system_program;
     use solana_sdk::signature::{Keypair, Signer};
     use std::iter::FusedIterator;
     use std::{cell::RefCell, rc::Rc};
-    use solana_program::system_program;
 
     fn stub_gateway_token() -> GatewayToken {
         GatewayToken {

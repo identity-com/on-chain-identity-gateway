@@ -3,10 +3,10 @@ use solana_gateway::state::{
     get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, GatewayToken,
     GatewayTokenState,
 };
-use solana_gateway::{borsh as program_borsh, Gateway, instruction};
-use solana_gateway_program::{processor::process_instruction};
+use solana_gateway::{borsh as program_borsh, instruction, Gateway};
+use solana_gateway_program::processor::process_instruction;
 use solana_program::{pubkey::Pubkey, system_program, sysvar};
-use solana_program_test::{BanksClientError, processor, ProgramTest, ProgramTestContext};
+use solana_program_test::{processor, BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
     clock::UnixTimestamp,
     instruction::{AccountMeta, Instruction},
@@ -269,25 +269,27 @@ impl GatewayContext {
             &None,
             &self.gatekeeper_network.as_ref().unwrap().pubkey(),
         );
-        let acccount_info = self.context
+        let acccount_info = self
+            .context
             .banks_client
             .get_account(gateway_token)
             .await
             .unwrap();
-            // .map(|account_info| {
-            //     program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data)
-            //         .unwrap()
-            // })
+        // .map(|account_info| {
+        //     program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data)
+        //         .unwrap()
+        // })
 
         println!("account_info: {:?}", acccount_info);
 
         match acccount_info {
             Some(account_info) => {
-                let gateway_token = program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data)
-                    .unwrap();
+                let gateway_token =
+                    program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data)
+                        .unwrap();
                 Some(gateway_token)
-            },
-            None => None
+            }
+            None => None,
         }
     }
 

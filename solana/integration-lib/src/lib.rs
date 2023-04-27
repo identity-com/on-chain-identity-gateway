@@ -1,4 +1,3 @@
-#![deny(unaligned_references)]
 #![allow(clippy::try_err)]
 
 #[macro_use]
@@ -299,12 +298,8 @@ pub mod tests {
     fn verify_gateway_token_account_info_fails_an_expired_token_if_check_expiry_is_on() {
         init();
         let token = expired_gateway_token();
-        let verify_result = Gateway::verify_gateway_token(
-            &token,
-            &Default::default(),
-            &Default::default(),
-            None,
-        );
+        let verify_result =
+            Gateway::verify_gateway_token(&token, &Default::default(), &Default::default(), None);
 
         assert!(matches!(verify_result, Err(GatewayError::TokenExpired)))
     }

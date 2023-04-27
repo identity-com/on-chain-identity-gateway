@@ -39,24 +39,26 @@ pub const TIBER: GatekeeperNetworksWithExpireAddresses = GatekeeperNetworksWithE
         255,
     ),
 };
-pub const TEST_TIBER: GatekeeperNetworksWithExpireAddresses = GatekeeperNetworksWithExpireAddresses {
-    // `ttib7tuX8PTWPqFsmUFQTj78MbRhUmqxidJRDv4hRRE`
-    address: Pubkey::new_from_array([
-        13, 75, 25, 16, 79, 191, 241, 61, 154, 96, 8, 182, 184, 22, 47, 245, 222, 247, 123, 184,
-        212, 183, 224, 132, 29, 120, 183, 206, 131, 102, 52, 109,
-    ]),
-    // `GbFW949aZ2nRWMxEvd2AX7RQ47Q2GK1CDuN4F6TQFWgt`
-    expire_address: (
-        Pubkey::new_from_array([
-            231, 165, 115, 6, 50, 67, 132, 135, 53, 124, 67, 183, 215, 236, 15, 180, 19, 106, 212,
-            180, 188, 60, 246, 150, 34, 210, 33, 41, 14, 130, 10, 61,
+pub const TEST_TIBER: GatekeeperNetworksWithExpireAddresses =
+    GatekeeperNetworksWithExpireAddresses {
+        // `ttib7tuX8PTWPqFsmUFQTj78MbRhUmqxidJRDv4hRRE`
+        address: Pubkey::new_from_array([
+            13, 75, 25, 16, 79, 191, 241, 61, 154, 96, 8, 182, 184, 22, 47, 245, 222, 247, 123,
+            184, 212, 183, 224, 132, 29, 120, 183, 206, 131, 102, 52, 109,
         ]),
-        253,
-    ),
-};
+        // `GbFW949aZ2nRWMxEvd2AX7RQ47Q2GK1CDuN4F6TQFWgt`
+        expire_address: (
+            Pubkey::new_from_array([
+                231, 165, 115, 6, 50, 67, 132, 135, 53, 124, 67, 183, 215, 236, 15, 180, 19, 106,
+                212, 180, 188, 60, 246, 150, 34, 210, 33, 41, 14, 130, 10, 61,
+            ]),
+            253,
+        ),
+    };
 
 /// A list of cached gatekeeper networks with their expire addresses for optimizing CPI calls.
-pub const GATEKEEPER_NETWORKS_WITH_EXPIRE_ADDRESSES: &[GatekeeperNetworksWithExpireAddresses] = &[IGNITE, TIBER, TEST_TIBER];
+pub const GATEKEEPER_NETWORKS_WITH_EXPIRE_ADDRESSES: &[GatekeeperNetworksWithExpireAddresses] =
+    &[IGNITE, TIBER, TEST_TIBER];
 
 #[cfg(test)]
 pub mod tests {
@@ -65,17 +67,26 @@ pub mod tests {
 
     #[test]
     fn test_gatekeeper_networks_with_expire_addresses() {
-        assert_eq!(IGNITE.expire_address, (
-            Pubkey::from_str("DH46SxsYWBMf3Ca1hPMUYyZzQpf9bfAw93ncUKhvZCWA").unwrap(),
-            255
-            ));
-        assert_eq!(TIBER.expire_address, (
-            Pubkey::from_str("BNkYz4VZFuNaLey1hF1GCjFfN1p11trYouGPKqwH7ioJ").unwrap(),
-            255
-        ));
-        assert_eq!(TEST_TIBER.expire_address, (
-            Pubkey::from_str("GbFW949aZ2nRWMxEvd2AX7RQ47Q2GK1CDuN4F6TQFWgt").unwrap(),
-            253
-        ));
+        assert_eq!(
+            IGNITE.expire_address,
+            (
+                Pubkey::from_str("DH46SxsYWBMf3Ca1hPMUYyZzQpf9bfAw93ncUKhvZCWA").unwrap(),
+                255
+            )
+        );
+        assert_eq!(
+            TIBER.expire_address,
+            (
+                Pubkey::from_str("BNkYz4VZFuNaLey1hF1GCjFfN1p11trYouGPKqwH7ioJ").unwrap(),
+                255
+            )
+        );
+        assert_eq!(
+            TEST_TIBER.expire_address,
+            (
+                Pubkey::from_str("GbFW949aZ2nRWMxEvd2AX7RQ47Q2GK1CDuN4F6TQFWgt").unwrap(),
+                253
+            )
+        );
     }
 }
