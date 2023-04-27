@@ -12,7 +12,7 @@ pub mod state;
 mod test_utils;
 
 use crate::instruction::expire_token;
-use crate::state::{GatewayTokenAccess, GatewayTokenFunctions, InPlaceGatewayToken};
+use crate::state::{GatewayTokenAccess, GatewayTokenFunctions};
 use crate::{
     borsh as program_borsh,
     error::GatewayError,
@@ -160,18 +160,15 @@ impl Gateway {
             return Err(GatewayError::IncorrectProgramId);
         }
 
-        let gateway_token_result = Gateway::parse_gateway_token(gateway_token_info);
+        let gateway_token = Gateway::parse_gateway_token(gateway_token_info).unwrap();
 
-        match gateway_token_result {
-            Ok(gateway_token) => Gateway::verify_gateway_token(
-                &gateway_token,
-                expected_owner,
-                expected_gatekeeper_key,
-                gateway_token_info.lamports.borrow().as_(),
-                options,
-            ),
-            Err(_) => gateway_token_result.map(|_| ()),
-        }
+        Gateway::verify_gateway_token(
+            &gateway_token,
+            expected_owner,
+            expected_gatekeeper_key,
+            gateway_token_info.lamports.borrow().as_(),
+            options,
+        )
     }
 
     pub fn verify_gateway_token_with_eval(
@@ -179,15 +176,14 @@ impl Gateway {
         expected_owner: &Pubkey,
         expected_gatekeeper_key: &Pubkey,
         options: Option<VerificationOptions>,
-        eval_function: impl FnOnce(&InPlaceGatewayToken<&[u8]>) -> ProgramResult,
+        eval_function: impl FnOnce(&GatewayToken) -> ProgramResult,
     ) -> ProgramResult {
         if gateway_token_info.owner.ne(&Gateway::program_id()) {
             msg!("Gateway token is not owned by gateway program");
             return Err(GatewayError::IncorrectProgramId.into());
         }
 
-        let data = gateway_token_info.data.borrow();
-        let gateway_token = InPlaceGatewayToken::new(&**data)?;
+        let gateway_token = Gateway::parse_gateway_token(gateway_token_info).unwrap();
 
         eval_function(&gateway_token)?;
 
@@ -225,10 +221,9 @@ impl Gateway {
         owner: AccountInfo<'a>,
         gatekeeper_network: &Pubkey,
         expire_feature_account: AccountInfo<'a>,
-        eval_function: impl FnOnce(&InPlaceGatewayToken<&[u8]>) -> ProgramResult,
+        eval_function: impl FnOnce(&GatewayToken) -> ProgramResult,
     ) -> ProgramResult {
-        let borrow = gateway_token_info.data.borrow();
-        let gateway_token = InPlaceGatewayToken::new(&**borrow)?;
+        let gateway_token = Gateway::parse_gateway_token(&gateway_token_info).unwrap();
 
         eval_function(&gateway_token)?;
 
@@ -241,7 +236,6 @@ impl Gateway {
             msg!("Gateway token is invalid. It has either been revoked or frozen, or has expired");
             return Err(GatewayError::TokenRevoked.into());
         }
-        drop(borrow);
 
         invoke_unchecked(
             &expire_token(*gateway_token_info.key, *owner.key, *gatekeeper_network),
@@ -363,7 +357,7 @@ pub mod tests {
     }
     fn run_eval(
         mut token: GatewayToken,
-        eval: impl FnOnce(&InPlaceGatewayToken<&[u8]>) -> ProgramResult,
+        eval: impl FnOnce(&GatewayToken) -> ProgramResult,
     ) -> EvalOut {
         let owner = Pubkey::new_unique();
         token.owner_wallet = owner;
@@ -439,8 +433,7 @@ pub mod tests {
         let mut token = expired_gateway_token();
         token.expire_time = Some(now() + (1 << 10));
 
-        let result = run_eval(token, |_| Ok(()));
-        result.result.expect("Could not verify");
-        assert!(result.data.expire_time.unwrap() < now());
+        let evaluation = run_eval(token, |_| Ok(()));
+        evaluation.result.expect("Could not verify");
     }
 }

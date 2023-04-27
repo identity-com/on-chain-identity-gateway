@@ -6,7 +6,7 @@ use solana_gateway::instruction::{GatewayInstruction, NetworkFeature};
 use solana_gateway::state::{
     get_expire_address_with_seed, get_gatekeeper_address_with_seed,
     get_gateway_token_address_with_seed, verify_gatekeeper, AddressSeed, GatewayTokenAccess,
-    GatewayTokenState, InPlaceGatewayToken, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
+    GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
     NETWORK_EXPIRE_FEATURE_SEED,
 };
 use solana_gateway::Gateway;
@@ -340,7 +340,7 @@ fn remove_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
 fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> ProgramResult {
     msg!("GatewayInstruction::ExpireToken");
     let account_info_iter = &mut accounts.iter();
-    let gateway_token = next_account_info(account_info_iter)?;
+    let gateway_token_info = next_account_info(account_info_iter)?;
     let owner = next_account_info(account_info_iter)?;
     let network_expire_feature = next_account_info(account_info_iter)?;
 
@@ -356,26 +356,24 @@ fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> Program
         return Err(ProgramError::InvalidArgument);
     }
 
-    if gateway_token.owner != &id() {
+    if gateway_token_info.owner != &id() {
         return Err(ProgramError::IllegalOwner);
     }
 
-    verify_token_length(gateway_token)?;
+    verify_token_length(gateway_token_info)?;
 
-    let mut borrow = gateway_token.data.borrow_mut();
-    let mut gateway_token_data = InPlaceGatewayToken::new(&mut **borrow)?;
+    let mut gateway_token = Gateway::parse_gateway_token(&gateway_token_info).unwrap();
 
-    if gateway_token_data.owner_wallet() != owner.key {
+    if gateway_token.owner_wallet() != owner.key {
         return Err(GatewayError::InvalidOwner.into());
     }
 
-    if gateway_token_data.gatekeeper_network() != &gatekeeper_network {
+    if gateway_token.gatekeeper_network() != &gatekeeper_network {
         return Err(ProgramError::InvalidAccountData);
     }
 
-    gateway_token_data
-        .set_expire_time(Clock::get()?.unix_timestamp - 120)
-        .expect("Could not set expire time");
+    gateway_token
+        .set_expire_time(Clock::get()?.unix_timestamp - 120);
 
     Ok(())
 }
