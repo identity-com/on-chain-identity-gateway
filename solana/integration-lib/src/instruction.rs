@@ -130,7 +130,6 @@ pub fn add_gatekeeper(
             AccountMeta::new(gatekeeper_account, false),
             AccountMeta::new_readonly(*gatekeeper_authority, false),
             AccountMeta::new_readonly(*gatekeeper_network, true),
-            AccountMeta::new_readonly(sysvar::rent::id(), false),
             AccountMeta::new_readonly(system_program::id(), false),
         ],
     )
@@ -157,7 +156,6 @@ pub fn issue(
             AccountMeta::new_readonly(*gatekeeper_account, false),
             AccountMeta::new_readonly(*gatekeeper_authority, true),
             AccountMeta::new_readonly(*gatekeeper_network, false),
-            AccountMeta::new_readonly(sysvar::rent::id(), false),
             AccountMeta::new_readonly(system_program::id(), false),
         ],
     )
@@ -179,7 +177,6 @@ pub fn set_state(
             AccountMeta::new(*gateway_token, false),
             AccountMeta::new_readonly(*gatekeeper_authority, true),
             AccountMeta::new_readonly(*gatekeeper_account, false),
-            AccountMeta::new_readonly(sysvar::rent::id(), false),
             AccountMeta::new_readonly(system_program::id(), false),
         ],
     )

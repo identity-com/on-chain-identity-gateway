@@ -68,8 +68,7 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
     let gatekeeper_authority_info = next_account_info(account_info_iter)?;
     let gatekeeper_network_info = next_account_info(account_info_iter)?;
 
-    let rent_info = next_account_info(account_info_iter)?;
-    let rent = &Rent::from_account_info(rent_info)?;
+    let system_program_info = next_account_info(account_info_iter)?;
 
     if !funder_info.is_signer {
         msg!("Funder signature missing");
@@ -102,14 +101,14 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         &system_instruction::create_account(
             funder_info.key,
             gatekeeper_account_info.key,
-            1.max(rent.minimum_balance(0)),
+            1.max(Rent::get().unwrap().minimum_balance(0)),
             0,
             &Gateway::program_id(),
         ),
         &[
             funder_info.clone(),
             gatekeeper_account_info.clone(),
-            // system_program_info.clone(),
+            system_program_info.clone(),
         ],
         &[gatekeeper_signer_seeds],
     )?;
@@ -135,9 +134,7 @@ fn issue(
     let gatekeeper_authority_info = next_account_info(account_info_iter)?;
     let gatekeeper_network_info = next_account_info(account_info_iter)?;
 
-    let rent_info = next_account_info(account_info_iter)?;
     let system_program_info = next_account_info(account_info_iter)?;
-    let rent = &Rent::from_account_info(rent_info)?;
 
     if !gatekeeper_authority_info.is_signer {
         msg!("Gatekeeper authority signature missing");
@@ -182,7 +179,7 @@ fn issue(
         &system_instruction::create_account(
             funder_info.key,
             gateway_token_info.key,
-            1.max(rent.minimum_balance(GatewayToken::SIZE)),
+            1.max(Rent::get().unwrap().minimum_balance(GatewayToken::SIZE)),
             GatewayToken::SIZE as u64,
             &Gateway::program_id(),
         ),

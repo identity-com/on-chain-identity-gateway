@@ -218,7 +218,6 @@ impl GatewayContext {
                 AccountMeta::new(gatekeeper_account, false),
                 AccountMeta::new_readonly(*authority, false),
                 AccountMeta::new_readonly(*network, false),
-                AccountMeta::new_readonly(sysvar::rent::id(), false),
                 AccountMeta::new_readonly(system_program::id(), false),
             ],
         );
