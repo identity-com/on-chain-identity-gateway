@@ -47,7 +47,7 @@ impl Gateway {
 
     /// Unpacks an account into a gateway token object
     pub fn parse_gateway_token(account_info: &AccountInfo) -> Result<GatewayToken, GatewayError> {
-        program_borsh::try_from_slice_incomplete::<GatewayToken>(*account_info.data.borrow())
+        program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data.borrow())
             .map_err(|_| GatewayError::InvalidToken)
     }
 
@@ -233,7 +233,7 @@ pub mod tests {
     use super::*;
     use crate::state::{get_expire_address_with_seed, get_gateway_token_address_with_seed};
     use crate::test_utils::test_utils_stubs::{init, now};
-    use ::borsh::{BorshDeserialize, BorshSerialize};
+    use ::borsh::BorshSerialize;
     use std::{cell::RefCell, rc::Rc};
 
     fn expired_gateway_token() -> GatewayToken {
@@ -324,7 +324,6 @@ pub mod tests {
 
     struct EvalOut {
         result: ProgramResult,
-        data: GatewayToken,
     }
     fn run_eval(
         mut token: GatewayToken,
@@ -381,10 +380,7 @@ pub mod tests {
             ),
             eval,
         );
-        EvalOut {
-            result,
-            data: GatewayToken::deserialize(&mut token_data.as_slice()).unwrap(),
-        }
+        EvalOut { result }
     }
 
     #[test]

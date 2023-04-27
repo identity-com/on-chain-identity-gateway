@@ -243,12 +243,7 @@ impl GatewayTokenState {
 pub mod tests {
     use super::*;
     use crate::test_utils::test_utils_stubs::{init, now};
-    use rand::{CryptoRng, Rng, RngCore, SeedableRng};
-    use rand_chacha::ChaCha20Rng;
-    use solana_program::system_program;
-    use solana_sdk::signature::{Keypair, Signer};
     use std::iter::FusedIterator;
-    use std::{cell::RefCell, rc::Rc};
 
     fn stub_gateway_token() -> GatewayToken {
         GatewayToken {
@@ -290,37 +285,6 @@ pub mod tests {
 
         assert!(token.has_expired(0));
         assert!(!token.is_valid());
-    }
-
-    fn new_token(
-        rng: &mut (impl RngCore + CryptoRng),
-        has_parent: bool,
-        has_owner_identity: bool,
-        has_expire_time: bool,
-        state: GatewayTokenState,
-    ) -> GatewayToken {
-        GatewayToken {
-            features: rng.gen(),
-            parent_gateway_token: if has_parent {
-                Some(Keypair::generate(rng).pubkey())
-            } else {
-                None
-            },
-            owner_wallet: Keypair::generate(rng).pubkey(),
-            owner_identity: if has_owner_identity {
-                Some(Keypair::generate(rng).pubkey())
-            } else {
-                None
-            },
-            gatekeeper_network: Keypair::generate(rng).pubkey(),
-            issuing_gatekeeper: Keypair::generate(rng).pubkey(),
-            state,
-            expire_time: if has_expire_time {
-                Some(rng.gen())
-            } else {
-                None
-            },
-        }
     }
 
     pub trait CompoundIterator: Iterator + Sized {

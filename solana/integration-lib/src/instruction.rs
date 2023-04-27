@@ -12,7 +12,7 @@ use {
     solana_program::{
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
-        system_program, sysvar,
+        system_program,
     },
 };
 

@@ -5,7 +5,7 @@ use solana_gateway::state::{
 };
 use solana_gateway::{borsh as program_borsh, instruction, Gateway};
 use solana_gateway_program::processor::process_instruction;
-use solana_program::{pubkey::Pubkey, system_program, sysvar};
+use solana_program::{pubkey::Pubkey, system_program};
 use solana_program_test::{processor, BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
     clock::UnixTimestamp,
@@ -13,7 +13,6 @@ use solana_sdk::{
     signature::Keypair,
     signature::Signer,
     transaction::Transaction,
-    transport,
 };
 use std::time::{SystemTime, UNIX_EPOCH};
 

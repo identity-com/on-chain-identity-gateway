@@ -97,14 +97,16 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
     ];
 
     msg!("Creating gatekeeper account");
+    let create_account_ix = system_instruction::create_account(
+        funder_info.key,
+        gatekeeper_account_info.key,
+        1.max(Rent::get().unwrap().minimum_balance(0)),
+        0,
+        &Gateway::program_id(),
+    );
+
     invoke_signed(
-        &system_instruction::create_account(
-            funder_info.key,
-            gatekeeper_account_info.key,
-            1.max(Rent::get().unwrap().minimum_balance(0)),
-            0,
-            &Gateway::program_id(),
-        ),
+        &create_account_ix,
         &[
             funder_info.clone(),
             gatekeeper_account_info.clone(),
