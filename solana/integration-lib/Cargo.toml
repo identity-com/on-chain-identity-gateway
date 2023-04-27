@@ -26,6 +26,9 @@ num-derive = "0.3"
 num-traits = "0.2.12"
 thiserror = "1.0.20"
 bitflags = "2.1.0"
+static_assertions = "1.1.0"
+strum = "0.24"
+strum_macros = "0.24"
 
 [dev-dependencies]
 solana-sdk = "1.15.2"

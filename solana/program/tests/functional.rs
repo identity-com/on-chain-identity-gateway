@@ -111,7 +111,7 @@ async fn add_gatekeeper_should_succeed() {
 // }
 //
 // #[tokio::test]
-// async fn issue_vanilla_wrong_account_should_fail() {
+// async fn issue_wrong_account_should_fail() {
 //     let mut context = GatewayContext::new().await;
 //     context.create_gatekeeper().await;
 //

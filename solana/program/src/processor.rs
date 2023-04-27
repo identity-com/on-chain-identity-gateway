@@ -1,18 +1,18 @@
 //! Program state processor
 
-use crate::state::Transitionable;
-use solana_gateway::error::GatewayError;
-use solana_gateway::instruction::{GatewayInstruction, NetworkFeature};
-use solana_gateway::state::{
-    get_expire_address_with_seed, get_gatekeeper_address_with_seed,
-    get_gateway_token_address_with_seed, verify_gatekeeper, AddressSeed, GatewayTokenAccess,
-    GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
-    NETWORK_EXPIRE_FEATURE_SEED,
+use solana_gateway::{
+    state::{
+        get_expire_address_with_seed, get_gatekeeper_address_with_seed,
+        get_gateway_token_address_with_seed, verify_gatekeeper, AddressSeed, GatewayTokenAccess,
+        GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
+        NETWORK_EXPIRE_FEATURE_SEED,
+    },
+    instruction::{GatewayInstruction, NetworkFeature},
+    error::GatewayError,
+    Gateway,
 };
-use solana_gateway::Gateway;
 use solana_program::clock::{Clock, UnixTimestamp};
 use {
-    crate::id,
     borsh::{BorshDeserialize, BorshSerialize},
     solana_gateway::state::GatewayToken,
     solana_program::{
@@ -28,8 +28,6 @@ use {
     },
 };
 
-const GATEKEEPER_ACCOUNT_LENGTH: usize = 0;
-
 /// Instruction processor
 pub fn process_instruction(
     _program_id: &Pubkey,
@@ -40,8 +38,8 @@ pub fn process_instruction(
 
     let result = match instruction {
         GatewayInstruction::AddGatekeeper {} => add_gatekeeper(accounts),
-        GatewayInstruction::IssueVanilla { seed, expire_time } => {
-            issue_vanilla(accounts, &seed, &expire_time)
+        GatewayInstruction::Issue { seed, expire_time } => {
+            issue(accounts, &seed, &expire_time)
         }
         GatewayInstruction::SetState { state } => set_state(accounts, state),
         GatewayInstruction::UpdateExpiry { expire_time } => update_expiry(accounts, expire_time),
@@ -95,12 +93,6 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         return Err(ProgramError::InvalidArgument);
     }
 
-    let data_len = gatekeeper_account_info.data.borrow().len();
-    if data_len > 0 {
-        msg!("Error: gatekeeper account already initialized");
-        return Err(ProgramError::AccountAlreadyInitialized);
-    }
-
     let gatekeeper_signer_seeds: &[&[_]] = &[
         &gatekeeper_authority_info.key.to_bytes(),
         &gatekeeper_network_info.key.to_bytes(),
@@ -115,7 +107,7 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
             gatekeeper_account_info.key,
             1.max(rent.minimum_balance(0)),
             0,
-            &id(),
+            &Gateway::program_id(),
         ),
         &[
             funder_info.clone(),
@@ -130,12 +122,12 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
     Ok(())
 }
 
-fn issue_vanilla(
+fn issue(
     accounts: &[AccountInfo],
     seed: &Option<AddressSeed>,
     expire_time: &Option<UnixTimestamp>,
 ) -> ProgramResult {
-    msg!("GatewayInstruction::IssueVanilla");
+    msg!("GatewayInstruction::Issue");
     let account_info_iter = &mut accounts.iter();
     let funder_info = next_account_info(account_info_iter)?;
     let gateway_token_info = next_account_info(account_info_iter)?;
@@ -149,11 +141,6 @@ fn issue_vanilla(
     let rent_info = next_account_info(account_info_iter)?;
     let system_program_info = next_account_info(account_info_iter)?;
     let rent = &Rent::from_account_info(rent_info)?;
-
-    if !funder_info.is_signer {
-        msg!("Funder signature missing");
-        return Err(ProgramError::MissingRequiredSignature);
-    }
 
     if !gatekeeper_authority_info.is_signer {
         msg!("Gatekeeper authority signature missing");
@@ -187,7 +174,7 @@ fn issue_vanilla(
         &[gateway_token_bump_seed],
     ];
 
-    let gateway_token = GatewayToken::new_vanilla(
+    let gateway_token = GatewayToken::new(
         owner_info.key,
         gatekeeper_network_info.key,
         gatekeeper_authority_info.key,
@@ -200,7 +187,7 @@ fn issue_vanilla(
             gateway_token_info.key,
             1.max(rent.minimum_balance(GatewayToken::SIZE as usize)),
             GatewayToken::SIZE as u64,
-            &id(),
+            &Gateway::program_id(),
         ),
         &[
             funder_info.clone(),
@@ -227,12 +214,10 @@ fn set_state(accounts: &[AccountInfo], state: GatewayTokenState) -> ProgramResul
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    if gateway_token_info.owner.ne(&id()) {
+    if gateway_token_info.owner.ne(&Gateway::program_id()) {
         msg!("Incorrect program Id for gateway token account");
         return Err(ProgramError::IncorrectProgramId);
     }
-
-    verify_token_length(gateway_token_info)?;
 
     let mut gateway_token = Gateway::parse_gateway_token(gateway_token_info)?;
 
@@ -280,16 +265,9 @@ fn update_expiry(accounts: &[AccountInfo], expire_time: UnixTimestamp) -> Progra
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    if gateway_token_info.owner.ne(&id()) {
+    if gateway_token_info.owner.ne(&Gateway::program_id()) {
         msg!("Incorrect program Id for gateway token account");
         return Err(ProgramError::IncorrectProgramId);
-    }
-
-    if gateway_token_info.data_len() == GATEKEEPER_ACCOUNT_LENGTH
-        || gateway_token_info.data.borrow().iter().all(|&d| d == 0)
-    {
-        msg!("Incorrect account type for gateway token account");
-        return Err(ProgramError::InvalidAccountData);
     }
 
     let mut gateway_token = Gateway::parse_gateway_token(gateway_token_info)?;
@@ -348,7 +326,7 @@ fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> Program
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    if network_expire_feature.owner != &id() {
+    if network_expire_feature.owner != &Gateway::program_id() {
         return Err(ProgramError::IllegalOwner);
     }
 
@@ -356,11 +334,9 @@ fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> Program
         return Err(ProgramError::InvalidArgument);
     }
 
-    if gateway_token_info.owner != &id() {
+    if gateway_token_info.owner != &Gateway::program_id() {
         return Err(ProgramError::IllegalOwner);
     }
-
-    verify_token_length(gateway_token_info)?;
 
     let mut gateway_token = Gateway::parse_gateway_token(&gateway_token_info).unwrap();
 
@@ -386,7 +362,7 @@ fn add_feature_to_network(accounts: &[AccountInfo], feature: NetworkFeature) -> 
     let feature_account = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
 
-    if !funder_account.is_signer || !gatekeeper_network.is_signer {
+    if !gatekeeper_network.is_signer {
         return Err(ProgramError::MissingRequiredSignature);
     }
 
@@ -412,7 +388,7 @@ fn add_feature_to_network(accounts: &[AccountInfo], feature: NetworkFeature) -> 
                     feature_account.key,
                     1.max(Rent::default().minimum_balance(0)),
                     0,
-                    &id(),
+                    &Gateway::program_id(),
                 ),
                 &[
                     system_program.clone(),
@@ -450,20 +426,6 @@ fn remove_feature_from_network(accounts: &[AccountInfo], feature: NetworkFeature
     Ok(())
 }
 
-fn verify_token_length(gateway_token_info: &AccountInfo) -> ProgramResult {
-    // Length must not be same as `GATEKEEPER_ACCOUNT_LENGTH` and have at least one non-zero byte.
-    // Must have one non-zero as being assigned an account with the proper length requires all bytes be zero
-    // Pubkey guarantees one non-zero byte with proper data
-    if gateway_token_info.data_len() == GATEKEEPER_ACCOUNT_LENGTH
-        || gateway_token_info.data.borrow().iter().all(|&d| d == 0)
-    {
-        msg!("Incorrect account type for gateway token account");
-        Err(ProgramError::InvalidAccountData)
-    } else {
-        Ok(())
-    }
-}
-
 #[cfg(test)]
 pub mod tests {
     use super::*;
@@ -484,7 +446,7 @@ pub mod tests {
         let mut gatekeeper_authority_lamports = 0;
         let mut gatekeeper_account_lamports = 0;
         let rent_epoch = 0;
-        let owner = id();
+        let owner = Gateway::program_id();
         let gatekeeper_authority = Default::default();
         let gatekeeper_account = Default::default();
         let gateway_token = AccountInfo::new(
@@ -547,7 +509,7 @@ pub mod tests {
         let mut gatekeeper_authority_lamports = 0;
         let mut gatekeeper_account_lamports = 0;
         let rent_epoch = 0;
-        let owner = id();
+        let owner = Gateway::program_id();
         let gatekeeper_authority = Default::default();
         let gatekeeper_account = Default::default();
         let gateway_token = AccountInfo::new(

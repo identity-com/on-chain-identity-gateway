@@ -44,7 +44,7 @@ pub enum GatewayInstruction {
     /// 5. `[]`                    gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
     /// 6. `[]`                    Rent sysvar
     /// 7. `[]`                    System program
-    IssueVanilla {
+    Issue {
         /// An optional seed to use when generating a gateway token
         /// allowing multiple gateway tokens per wallet
         seed: Option<AddressSeed>,
@@ -136,8 +136,8 @@ pub fn add_gatekeeper(
     )
 }
 
-/// Create a `GatewayInstruction::IssueVanilla` instruction
-pub fn issue_vanilla(
+/// Create a `GatewayInstruction::Issue` instruction
+pub fn issue(
     funder_account: &Pubkey,            // the payer of the transaction
     owner: &Pubkey,                     // the wallet that the gateway token is issued for
     gatekeeper_account: &Pubkey, // the account containing details of the gatekeeper issuing the gateway token
@@ -149,7 +149,7 @@ pub fn issue_vanilla(
     let (gateway_token, _) = get_gateway_token_address_with_seed(owner, &seed, gatekeeper_network);
     Instruction::new_with_borsh(
         Gateway::program_id(),
-        &GatewayInstruction::IssueVanilla { seed, expire_time },
+        &GatewayInstruction::Issue { seed, expire_time },
         vec![
             AccountMeta::new(*funder_account, true),
             AccountMeta::new(gateway_token, false),
@@ -280,9 +280,9 @@ mod tests {
     use solana_program::program_error::ProgramError;
 
     #[test]
-    fn serialize_issue_vanilla() {
+    fn serialize_issue() {
         let expected = [1, 0, 0];
-        let instruction = GatewayInstruction::IssueVanilla {
+        let instruction = GatewayInstruction::Issue {
             seed: None,
             expire_time: None,
         };

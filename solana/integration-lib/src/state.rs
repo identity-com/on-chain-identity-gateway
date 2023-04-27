@@ -1,9 +1,10 @@
 //! Program state
-
 use crate::networks::GATEWAY_NETWORKS;
 use crate::{Gateway, GatewayError};
 use std::convert::TryInto;
 use std::mem::{size_of, transmute};
+use strum::EnumCount;
+use strum_macros::EnumCount as EnumCountMacro;
 use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
     sol_did::{ integrations::is_authority },
@@ -106,10 +107,12 @@ pub struct GatewayToken {
     pub features: u8,
     /// If the token is a session token,
     /// this is set to the parent token that was used to generate it.
+    /// NOTE: DEPRECATED - This is kept to maintain backwards compatibility, but is not used
     pub parent_gateway_token: Option<Pubkey>,
-    /// The public key of the wallet to which this token was assigned  
+    /// The public key of the wallet to which this token was assigned
     pub owner_wallet: Pubkey,
     /// The DID (must be on Solana) of the identity to which the token was assigned
+    /// NOTE: DEPRECATED - This is kept to maintain backwards compatibility, but is not used
     pub owner_identity: Option<Pubkey>,
     /// The gateway network that issued the token
     pub gatekeeper_network: Pubkey,
@@ -125,7 +128,7 @@ pub struct GatewayToken {
 }
 impl GatewayToken {
     pub const SIZE: usize = 1 + (1 + 32) + 32 + (1 + 32) + 32 + 32 + 1;
-    pub fn new_vanilla(
+    pub fn new(
         owner_wallet: &Pubkey,
         gatekeeper_network: &Pubkey,
         issuing_gatekeeper: &Pubkey,
@@ -165,6 +168,26 @@ impl GatewayToken {
     pub fn set_expire_time(&mut self, expire_time: UnixTimestamp) {
         self.set_feature(Feature::Expirable);
         self.expire_time = Some(expire_time);
+    }
+
+    pub fn is_valid_state_change(&self, new_state: &GatewayTokenState) -> bool {
+        match new_state {
+            GatewayTokenState::Active => match self.state {
+                GatewayTokenState::Active => false,
+                GatewayTokenState::Frozen => true,
+                GatewayTokenState::Revoked => false,
+            },
+            GatewayTokenState::Frozen => match self.state {
+                GatewayTokenState::Active => true,
+                GatewayTokenState::Frozen => false,
+                GatewayTokenState::Revoked => false,
+            },
+            GatewayTokenState::Revoked => match self.state {
+                GatewayTokenState::Active => true,
+                GatewayTokenState::Frozen => true,
+                GatewayTokenState::Revoked => false,
+            },
+        }
     }
 }
 
@@ -224,18 +247,8 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess {
     /// Tests if the gateway token has the required feature
     fn has_feature(&self, feature: Feature) -> bool {
         let ordinal = feature as u8;
-        if ordinal < 8 {
-            // If this fails, the features enum must have grown to >8 elements
-            self.features() & (1 << ordinal) != 0
-        } else {
-            false
-        }
-    }
 
-    /// Checks if this is a "vanilla" token,
-    /// ie one that needs no additional account inputs to validate it
-    fn is_vanilla(&self) -> bool {
-        !self.has_feature(Feature::IdentityLinked)
+        self.features() & (1 << ordinal) != 0
     }
 
     /// Checks if the gateway token is in a valid state
@@ -244,73 +257,14 @@ pub trait GatewayTokenFunctions: GatewayTokenAccess {
         self.state() == GatewayTokenState::Active
     }
 
-    /// Checks if a vanilla gateway token is in a valid state
-    /// Use is_valid_exotic to validate exotic gateway tokens
+    /// Checks if a gateway token is in a valid state
     fn is_valid(&self) -> bool {
-        self.is_vanilla() && self.is_valid_state() && !self.has_expired(0)
+        self.is_valid_state() && !self.has_expired(0)
     }
 
     fn has_expired(&self, tolerance: u32) -> bool {
         self.has_feature(Feature::Expirable) && before_now(self.expire_time().unwrap(), tolerance)
     }
-
-    /// Checks if the exotic gateway token is in a valid state (not inactive or expired)
-    /// Note, this does not check association to any wallet.
-    fn is_valid_exotic(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
-        // Check the token is active
-        if !self.is_valid_state() {
-            return false;
-        }
-
-        // Check the token has not expired
-        if self.has_expired(0) {
-            return false;
-        }
-
-        // Check that the token is owned by did (if identity-linked)
-        if self.has_feature(Feature::IdentityLinked) && !self.owned_by_did(did, signers) {
-            return false;
-        }
-
-        true
-    }
-
-    /// Checks if the gateway token is owned by the identity,
-    /// and that the identity has signed the transaction
-    fn owned_by_did(&self, did: &AccountInfo, signers: &[&AccountInfo]) -> bool {
-        // check if this gateway token is linked to an identity
-        if !self.has_feature(Feature::IdentityLinked) {
-            return false;
-        }
-
-        // check if the passed-in did is the owner of this gateway token
-        if did.key != self.owner_identity().unwrap() {
-            return false;
-        }
-
-        // check that one of the transaction signers is an authority on the DID
-        signers
-            .iter()
-            .any(
-                |signer| is_authority(
-                    did,
-                    None,
-                    &[],
-                    signer.key.to_bytes().as_ref(),
-                    None, None
-                ).unwrap()
-            )
-    }
-
-    fn is_session_token(&self) -> bool {
-        self.parent_gateway_token().is_some()
-    }
-
-    // pub fn matches_transaction_details(&self, transaction_details: &dyn CompatibleTransactionDetails) -> bool {
-    //     if !self.has_feature(Feature::TransactionLinked) { return false }
-    //
-    //     self.transaction_details.unwrap().compatible_with(transaction_details)
-    // }
 }
 impl<T> GatewayTokenFunctions for T where T: GatewayTokenAccess {}
 
@@ -336,16 +290,10 @@ impl Default for GatewayTokenState {
 
 /// Feature flag names. The values are encoded as a bitmap in a gateway token
 /// NOTE: There may be only 8 values here, as long as the "features" bitmap is a u8
+#[derive(EnumCountMacro)]
 pub enum Feature {
-    /// The token is valid for the current transaction only. Must have its lamport balance set to 0.
-    Session,
     /// The expire_time field must be set and the expire time must not be in the past.
     Expirable,
-    /// Expect a transaction-details struct, and check the contents against the details of
-    /// the transaction that the token is being used for.
-    TransactionLinked,
-    /// Expect an owner-identity property, and check that a valid signer account for that identity.
-    IdentityLinked,
     /// The following flags are not defined by the protocol, but may be used by gatekeeper networks
     /// to add custom features or restrictions to gateway tokens.
     Custom0,
@@ -353,26 +301,8 @@ pub enum Feature {
     Custom2,
     Custom3,
 }
-
-pub trait CompatibleTransactionDetails {
-    fn compatible_with(&self, rhs: Self) -> bool;
-}
-
-/// A simple struct defining details of a transaction, optionally used for session tokens
-/// to restrict access based on details of a transaction
-#[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq)]
-pub struct SimpleTransactionDetails {
-    /// The transaction size (in units based on the token. Assume SOL if no token is provided)
-    pub amount: u64,
-    /// The spl-token that denominates the transaction (if any)
-    pub token: Option<Pubkey>,
-}
-impl CompatibleTransactionDetails for SimpleTransactionDetails {
-    /// The amount and the token must match for these transaction details to be considered compatible
-    fn compatible_with(&self, rhs: Self) -> bool {
-        self.eq(&rhs)
-    }
-}
+// Enforce that there are no more than 8 features, since they are encoded in a u8 in the gateway token
+const_assert!(Feature::COUNT <= 8);
 
 #[cfg(test)]
 pub mod tests {
@@ -387,7 +317,7 @@ pub mod tests {
     use sol_did::integrations::derive_did_account;
     use solana_program::system_program;
 
-    fn stub_vanilla_gateway_token() -> GatewayToken {
+    fn stub_gateway_token() -> GatewayToken {
         GatewayToken {
             features: 0,
             parent_gateway_token: None,
@@ -406,7 +336,7 @@ pub mod tests {
 
     #[test]
     fn serialize_data() {
-        let token = stub_vanilla_gateway_token();
+        let token = stub_gateway_token();
         let serialized = token.try_to_vec().unwrap();
         let deserialized = GatewayToken::try_from_slice(&serialized).unwrap();
         assert_eq!(token, deserialized);
@@ -414,7 +344,7 @@ pub mod tests {
 
     #[test]
     fn is_inactive() {
-        let mut token = stub_vanilla_gateway_token();
+        let mut token = stub_gateway_token();
         token.state = GatewayTokenState::Revoked;
         assert!(!token.is_valid());
 
@@ -424,7 +354,7 @@ pub mod tests {
 
     #[test]
     fn set_feature() {
-        let mut token = stub_vanilla_gateway_token();
+        let mut token = stub_gateway_token();
         assert!(!token.has_feature(Feature::Expirable));
         token.set_feature(Feature::Expirable);
         assert!(token.has_feature(Feature::Expirable))
@@ -433,63 +363,12 @@ pub mod tests {
     #[test]
     fn has_expired() {
         init();
-        let mut token = stub_vanilla_gateway_token();
+        let mut token = stub_gateway_token();
 
         token.set_expire_time(now() - 1000);
 
         assert!(token.has_expired(0));
         assert!(!token.is_valid());
-    }
-
-    // Tests that a gateway token that is owned by a DID can be checked.
-    // This test is verbose, mainly because of the AccountInfo object which uses a lot of references.
-    #[test]
-    fn owned_by_identity() {
-        // a key held by the holder of the DID
-        let identity_owner: Keypair = Keypair::new();
-
-        // the address of the DID on-chain
-        let (did_key, _) = derive_did_account(&identity_owner.pubkey().to_bytes());
-
-        // create an AccountInfo object referencing the DID
-        let mut did_lamports = 0;
-        let mut data = vec![];
-        let generative_did_account_info = AccountInfo {
-            key: &did_key,
-            is_signer: false,
-            is_writable: false,
-            lamports: Rc::new(RefCell::new(&mut did_lamports)),
-            data: Rc::new(RefCell::new(&mut data)),
-            owner: &system_program::id(),
-            executable: false,
-            rent_epoch: 0,
-        };
-
-        // create an AccountInfo object referencing the identity owner
-        let mut signer_lamports = 0;
-        let signer_account_info = AccountInfo {
-            key: &identity_owner.pubkey(),
-            is_signer: true,
-            is_writable: false,
-            lamports: Rc::new(RefCell::new(&mut signer_lamports)),
-            data: Rc::new(RefCell::new(&mut [])),
-            owner: &Default::default(),
-            executable: false,
-            rent_epoch: 0,
-        };
-
-        // create a gateway token linked to the DID
-        let mut token = stub_vanilla_gateway_token();
-        token.set_feature(Feature::IdentityLinked);
-        token.owner_identity = Some(*generative_did_account_info.key);
-
-        // verify that the token is owned by the DID and that the signer account is a valid
-        // signer of the DID
-        assert!(token.owned_by_did(&generative_did_account_info, &[&signer_account_info]));
-
-        // verify that the token can be used in this transaction, as a signature from
-        // a valid signer of the linked identity has been provided.
-        assert!(token.is_valid_exotic(&generative_did_account_info, &[&signer_account_info]))
     }
 
     fn new_token(

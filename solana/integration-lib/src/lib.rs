@@ -11,6 +11,9 @@ pub mod state;
 #[cfg(test)]
 mod test_utils;
 
+#[macro_use]
+extern crate static_assertions;
+
 use crate::instruction::expire_token;
 use crate::state::{GatewayTokenAccess, GatewayTokenFunctions};
 use crate::{
@@ -24,9 +27,6 @@ use solana_program::program::invoke_unchecked;
 use solana_program::program_error::ProgramError;
 use solana_program::{account_info::AccountInfo, msg, pubkey::Pubkey};
 use std::str::FromStr;
-
-// Session gateway tokens, that have a lamport balance that exceeds this value, are rejected
-const MAX_SESSION_TOKEN_BALANCE: u64 = 0;
 
 /// Options to configure how a gateway token is considered valid. Typically, integrators should
 /// use the default options.
@@ -46,7 +46,7 @@ pub const DEFAULT_VERIFICATION_OPTIONS: VerificationOptions = VerificationOption
 
 pub struct Gateway {}
 impl Gateway {
-    fn program_id() -> Pubkey {
+    pub fn program_id() -> Pubkey {
         Pubkey::from_str("gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs").unwrap()
     }
 
@@ -100,20 +100,6 @@ impl Gateway {
         if expected_gatekeeper_network_key != gateway_token.gatekeeper_network() {
             msg!("Gateway token not issued by correct gatekeeper network");
             return Err(GatewayError::IncorrectGatekeeper);
-        }
-
-        if !gateway_token.is_vanilla() {
-            msg!(
-                "Gateway token is of an invalid type. Only vanilla gateway tokens can be verified."
-            );
-            return Err(GatewayError::InvalidToken);
-        }
-
-        if gateway_token.is_session_token()
-            && gateway_token_account_balance > MAX_SESSION_TOKEN_BALANCE
-        {
-            msg!("Gateway token is a session token, but has a lamport balance that would make it exceed the lifetime of the transaction.");
-            return Err(GatewayError::InvalidSessionToken);
         }
 
         if !gateway_token.is_valid_state() {
