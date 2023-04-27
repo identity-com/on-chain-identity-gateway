@@ -386,7 +386,7 @@ fn add_feature_to_network(accounts: &[AccountInfo], feature: NetworkFeature) -> 
                 &solana_program::system_instruction::create_account(
                     funder_account.key,
                     feature_account.key,
-                    1.max(Rent::default().minimum_balance(0)),
+                    1.max(Rent::get().unwrap().minimum_balance(0)),
                     0,
                     &Gateway::program_id(),
                 ),
