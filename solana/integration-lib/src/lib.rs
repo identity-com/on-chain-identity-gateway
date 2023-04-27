@@ -11,9 +11,6 @@ pub mod state;
 #[cfg(test)]
 mod test_utils;
 
-#[macro_use]
-extern crate static_assertions;
-
 use crate::instruction::expire_token;
 use crate::state::{GatewayTokenAccess, GatewayTokenFunctions};
 use crate::{
@@ -21,7 +18,6 @@ use crate::{
     error::GatewayError,
     state::{GatewayToken, GatewayTokenState},
 };
-use num_traits::AsPrimitive;
 use solana_program::entrypoint_deprecated::ProgramResult;
 use solana_program::program::invoke_unchecked;
 use solana_program::program_error::ProgramError;
@@ -84,7 +80,6 @@ impl Gateway {
         gateway_token: &impl GatewayTokenAccess,
         expected_owner: &Pubkey,
         expected_gatekeeper_network_key: &Pubkey,
-        gateway_token_account_balance: u64,
         options: Option<VerificationOptions>,
     ) -> Result<(), GatewayError> {
         let verification_options = options.unwrap_or(DEFAULT_VERIFICATION_OPTIONS);
@@ -152,7 +147,6 @@ impl Gateway {
             &gateway_token,
             expected_owner,
             expected_gatekeeper_key,
-            gateway_token_info.lamports.borrow().as_(),
             options,
         )
     }
@@ -177,7 +171,6 @@ impl Gateway {
             &gateway_token,
             expected_owner,
             expected_gatekeeper_key,
-            gateway_token_info.lamports.borrow().as_(),
             options,
         )?)
     }
@@ -293,7 +286,6 @@ pub mod tests {
             &token,
             &Default::default(),
             &Default::default(),
-            0,
             Some(VerificationOptions {
                 check_expiry: false,
                 ..Default::default()
@@ -311,7 +303,6 @@ pub mod tests {
             &token,
             &Default::default(),
             &Default::default(),
-            0,
             None,
         );
 
@@ -327,7 +318,6 @@ pub mod tests {
             &token,
             &Default::default(),
             &Default::default(),
-            0,
             Some(VerificationOptions {
                 check_expiry: true,
                 expiry_tolerance_seconds: Some(60),

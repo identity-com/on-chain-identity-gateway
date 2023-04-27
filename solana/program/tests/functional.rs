@@ -6,7 +6,6 @@ use solana_gateway::instruction::{add_feature_to_network, expire_token, NetworkF
 use solana_gateway::state::{
     get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
 };
-use solana_gateway_program::id;
 use solana_sdk::transaction::Transaction;
 use {
     crate::gateway_context::GatewayContext,
@@ -196,7 +195,7 @@ async fn add_gatekeeper_should_succeed() {
 //         .unwrap()
 //         .unwrap();
 //
-//     assert_eq!(account.owner, id());
+//     assert_eq!(account.owner, Gateway::program_id());
 //
 //     let funds_to = context.remove_gatekeeper().await;
 //
