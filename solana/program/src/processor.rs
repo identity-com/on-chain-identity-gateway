@@ -1,20 +1,11 @@
 //! Program state processor
 
-use solana_gateway::{
-    error::GatewayError,
-    instruction::{GatewayInstruction, NetworkFeature},
-    state::{
-        get_expire_address_with_seed, get_gatekeeper_address_with_seed,
-        get_gateway_token_address_with_seed, verify_gatekeeper_address_and_account, AddressSeed,
-        GatewayTokenAccess, GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED,
-        NETWORK_EXPIRE_FEATURE_SEED,
-    },
-    Gateway,
-};
+use    crate::error::GatewayError;
+use    crate::instruction::{GatewayInstruction, NetworkFeature};
+use crate::state::{get_expire_address_with_seed, get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, verify_gatekeeper_address_and_account, AddressSeed, GatewayTokenAccess, GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED, NETWORK_EXPIRE_FEATURE_SEED, GatewayToken};
 use solana_program::clock::{Clock, UnixTimestamp};
 use {
     borsh::{BorshDeserialize, BorshSerialize},
-    solana_gateway::state::GatewayToken,
     solana_program::{
         account_info::{next_account_info, AccountInfo},
         entrypoint::ProgramResult,
@@ -27,6 +18,7 @@ use {
         sysvar::Sysvar,
     },
 };
+use crate::Gateway;
 
 /// Instruction processor
 pub fn process_instruction(

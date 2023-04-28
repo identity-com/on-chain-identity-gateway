@@ -1,18 +1,15 @@
 #![cfg(feature = "test-sbf")]
 
-use solana_gateway::instruction::{add_feature_to_network, expire_token, NetworkFeature};
-use solana_gateway::state::{
-    get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed,
-};
-use solana_gateway::{instruction, Gateway};
+use crate::instruction::{add_feature_to_network, expire_token, NetworkFeature};
 use solana_sdk::transaction::Transaction;
+use solana_sdk::signature::{Keypair, Signer};
 use {
     crate::gateway_context::GatewayContext,
-    solana_gateway::state::GatewayTokenState,
     solana_program::pubkey::Pubkey,
     solana_program_test::tokio,
-    solana_sdk::signature::{Keypair, Signer},
 };
+use solana_gateway_program::{Gateway, instruction};
+use solana_gateway_program::state::{GatewayTokenState, get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed};
 
 mod gateway_context;
 

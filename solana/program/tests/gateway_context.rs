@@ -1,9 +1,4 @@
-use solana_gateway::instruction::GatewayInstruction;
-use solana_gateway::state::{
-    get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, GatewayToken,
-    GatewayTokenState,
-};
-use solana_gateway::{borsh as program_borsh, instruction, Gateway};
+use crate::instruction::GatewayInstruction;
 use solana_gateway_program::processor::process_instruction;
 use solana_program::{pubkey::Pubkey, system_program};
 use solana_program_test::{processor, BanksClientError, ProgramTest, ProgramTestContext};
@@ -15,6 +10,9 @@ use solana_sdk::{
     transaction::Transaction,
 };
 use std::time::{SystemTime, UNIX_EPOCH};
+use solana_gateway_program::{Gateway, instruction};
+use solana_gateway_program::state::{GatewayToken, GatewayTokenState, get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed};
+use solana_gateway_program::borsh::try_from_slice_incomplete;
 
 fn program_test() -> ProgramTest {
     ProgramTest::new(
@@ -273,17 +271,11 @@ impl GatewayContext {
             .get_account(gateway_token)
             .await
             .unwrap();
-        // .map(|account_info| {
-        //     program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data)
-        //         .unwrap()
-        // })
-
-        println!("account_info: {:?}", acccount_info);
 
         match acccount_info {
             Some(account_info) => {
                 let gateway_token =
-                    program_borsh::try_from_slice_incomplete::<GatewayToken>(&account_info.data)
+                    try_from_slice_incomplete::<GatewayToken>(&account_info.data)
                         .unwrap();
                 Some(gateway_token)
             }
