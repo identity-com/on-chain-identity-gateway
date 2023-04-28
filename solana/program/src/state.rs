@@ -117,12 +117,11 @@ pub struct GatewayToken {
     pub issuing_gatekeeper: Pubkey,
     /// The current token state
     pub state: GatewayTokenState,
-
     /// The expiry time of the token (unix timestamp) (expirable tokens only)
     pub expire_time: Option<UnixTimestamp>,
 }
 impl GatewayToken {
-    pub const SIZE: usize = 1 + (1 + 32) + 32 + (1 + 32) + 32 + 32 + 1;
+    pub const SIZE: usize = 1 + (1 + 32) + 32 + (1 + 32) + 32 + 32 + 1 + (1 + 8);
     pub fn new(
         owner_wallet: &Pubkey,
         gatekeeper_network: &Pubkey,
