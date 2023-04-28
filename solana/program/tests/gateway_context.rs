@@ -1,5 +1,11 @@
 use crate::instruction::GatewayInstruction;
+use solana_gateway_program::borsh::try_from_slice_incomplete;
 use solana_gateway_program::processor::process_instruction;
+use solana_gateway_program::state::{
+    get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, GatewayToken,
+    GatewayTokenState,
+};
+use solana_gateway_program::{instruction, Gateway};
 use solana_program::{pubkey::Pubkey, system_program};
 use solana_program_test::{processor, BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
@@ -10,9 +16,6 @@ use solana_sdk::{
     transaction::Transaction,
 };
 use std::time::{SystemTime, UNIX_EPOCH};
-use solana_gateway_program::{Gateway, instruction};
-use solana_gateway_program::state::{GatewayToken, GatewayTokenState, get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed};
-use solana_gateway_program::borsh::try_from_slice_incomplete;
 
 fn program_test() -> ProgramTest {
     ProgramTest::new(
@@ -200,6 +203,35 @@ impl GatewayContext {
             .await
     }
 
+    pub async fn burn_gateway_token_transaction(
+        &mut self,
+        owner: &Pubkey,
+        gatekeeper_authority: &Keypair,
+        gatekeeper_account: &Pubkey,
+        recipient: &Pubkey,
+    ) -> Result<(), BanksClientError> {
+        let (gateway_token, _) = get_gateway_token_address_with_seed(
+            owner,
+            &None,
+            &self.gatekeeper_network.as_ref().unwrap().pubkey(),
+        );
+        let transaction = Transaction::new_signed_with_payer(
+            &[instruction::burn_token(
+                &gateway_token,
+                &gatekeeper_authority.pubkey(),
+                gatekeeper_account,
+                &recipient,
+            )],
+            Some(&self.context.payer.pubkey()),
+            &[&self.context.payer, gatekeeper_authority],
+            self.context.last_blockhash,
+        );
+        self.context
+            .banks_client
+            .process_transaction(transaction)
+            .await
+    }
+
     pub async fn attempt_add_gatekeeper_without_network_signature(
         &mut self,
         authority: &Pubkey,
@@ -259,7 +291,7 @@ impl GatewayContext {
         gatekeeper_account
     }
 
-    async fn get_gateway_token(&mut self, owner: &Pubkey) -> Option<GatewayToken> {
+    pub async fn get_gateway_token(&mut self, owner: &Pubkey) -> Option<GatewayToken> {
         let (gateway_token, _) = get_gateway_token_address_with_seed(
             owner,
             &None,
@@ -275,8 +307,7 @@ impl GatewayContext {
         match acccount_info {
             Some(account_info) => {
                 let gateway_token =
-                    try_from_slice_incomplete::<GatewayToken>(&account_info.data)
-                        .unwrap();
+                    try_from_slice_incomplete::<GatewayToken>(&account_info.data).unwrap();
                 Some(gateway_token)
             }
             None => None,
@@ -353,6 +384,30 @@ impl GatewayContext {
         let account_data = self.get_gateway_token(owner).await;
 
         account_data.unwrap()
+    }
+
+    pub async fn burn_gateway_token(&mut self, owner: &Pubkey) -> () {
+        // TODO find nicer way to clone a Keypair to fix borrowing issues
+        let gatekeeper_authority = Keypair::from_base58_string(
+            self.gatekeeper_authority
+                .as_ref()
+                .unwrap()
+                .to_base58_string()
+                .as_str(),
+        );
+        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
+            &gatekeeper_authority.pubkey(),
+            &self.gatekeeper_network.as_ref().unwrap().pubkey(),
+        );
+
+        self.burn_gateway_token_transaction(
+            owner,
+            &gatekeeper_authority,
+            &gatekeeper_account,
+            &gatekeeper_authority.pubkey(),
+        )
+        .await
+        .unwrap()
     }
 
     pub async fn set_gateway_token_state(

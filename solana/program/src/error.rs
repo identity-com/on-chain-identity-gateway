@@ -40,6 +40,10 @@ pub enum GatewayError {
     /// The gateway token has expired
     #[error("The gateway token has expired")]
     TokenExpired,
+
+    /// An error occurred when burning the token
+    #[error("An error occurred when burning the token")]
+    BurnError,
 }
 impl From<GatewayError> for ProgramError {
     fn from(e: GatewayError) -> Self {

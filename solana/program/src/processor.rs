@@ -1,9 +1,16 @@
 //! Program state processor
 
-use    crate::error::GatewayError;
-use    crate::instruction::{GatewayInstruction, NetworkFeature};
-use crate::state::{get_expire_address_with_seed, get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, verify_gatekeeper_address_and_account, AddressSeed, GatewayTokenAccess, GatewayTokenState, GATEKEEPER_ADDRESS_SEED, GATEWAY_TOKEN_ADDRESS_SEED, NETWORK_EXPIRE_FEATURE_SEED, GatewayToken};
+use crate::error::GatewayError;
+use crate::instruction::{GatewayInstruction, NetworkFeature};
+use crate::state::{
+    get_expire_address_with_seed, get_gatekeeper_address_with_seed,
+    get_gateway_token_address_with_seed, verify_gatekeeper_address_and_account, AddressSeed,
+    GatewayToken, GatewayTokenAccess, GatewayTokenState, GATEKEEPER_ADDRESS_SEED,
+    GATEWAY_TOKEN_ADDRESS_SEED, NETWORK_EXPIRE_FEATURE_SEED,
+};
+use crate::Gateway;
 use solana_program::clock::{Clock, UnixTimestamp};
+use std::ops::DerefMut;
 use {
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::{
@@ -18,7 +25,25 @@ use {
         sysvar::Sysvar,
     },
 };
-use crate::Gateway;
+
+// Taken from Solana-program-library Token program
+// https://github.com/solana-labs/solana-program-library/blob/4349f160850c4e0351266a3209bc68a23305b61b/token/program/src/processor.rs#L1014
+/// Helper function to mostly delete an account in a test environment.
+#[cfg(not(target_os = "solana"))]
+fn delete_account(account_info: &AccountInfo) -> Result<(), ProgramError> {
+    account_info.assign(&system_program::id());
+    let mut account_data = account_info.data.borrow_mut();
+    let data_len = account_data.len();
+    solana_program::program_memory::sol_memset(account_data.deref_mut(), 0, data_len);
+    Ok(())
+}
+
+/// Helper function to totally delete an account on-chain
+#[cfg(target_os = "solana")]
+fn delete_account(account_info: &AccountInfo) -> Result<(), ProgramError> {
+    account_info.assign(&system_program::id());
+    account_info.realloc(0, false)
+}
 
 /// Instruction processor
 pub fn process_instruction(
@@ -43,6 +68,7 @@ pub fn process_instruction(
         GatewayInstruction::RemoveFeatureFromNetwork { feature } => {
             remove_feature_from_network(accounts, feature)
         }
+        GatewayInstruction::BurnToken => burn_token(accounts),
     };
 
     if let Some(e) = result.clone().err() {
@@ -409,6 +435,44 @@ fn remove_feature_from_network(accounts: &[AccountInfo], feature: NetworkFeature
 
     **funds_to_account.lamports.borrow_mut() += **feature_account.lamports.borrow();
     **feature_account.lamports.borrow_mut() = 0;
+
+    Ok(())
+}
+
+fn burn_token(accounts: &[AccountInfo]) -> ProgramResult {
+    msg!("GatewayInstruction::BurnToken");
+    let account_info_iter = &mut accounts.iter();
+    let gateway_token_info = next_account_info(account_info_iter)?;
+    let gatekeeper_authority_info = next_account_info(account_info_iter)?;
+    let gatekeeper_account_info = next_account_info(account_info_iter)?;
+    let recipient_info = next_account_info(account_info_iter)?;
+
+    if !gatekeeper_authority_info.is_signer {
+        msg!("Gatekeeper authority signature missing");
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+
+    if gateway_token_info.owner.ne(&Gateway::program_id()) {
+        msg!("Incorrect program Id for gateway token account");
+        return Err(ProgramError::IncorrectProgramId);
+    }
+
+    let gateway_token = Gateway::parse_gateway_token(gateway_token_info)?;
+
+    // check the gatekeeper is in the correct gatekeeper network
+    verify_gatekeeper_address_and_account(
+        gatekeeper_account_info,
+        gatekeeper_authority_info.key,
+        &gateway_token.gatekeeper_network,
+    )?;
+
+    let recipient_starting_lamports = recipient_info.lamports();
+    **recipient_info.lamports.borrow_mut() = recipient_starting_lamports
+        .checked_add(gateway_token_info.lamports())
+        .ok_or(GatewayError::BurnError)?;
+
+    **gateway_token_info.lamports.borrow_mut() = 0;
+    delete_account(gateway_token_info)?;
 
     Ok(())
 }

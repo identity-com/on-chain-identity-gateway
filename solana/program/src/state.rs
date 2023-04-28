@@ -104,12 +104,12 @@ pub struct GatewayToken {
     pub features: u8,
     /// If the token is a session token,
     /// this is set to the parent token that was used to generate it.
-    /// NOTE: DEPRECATED - This is kept to maintain backwards compatibility, but is not used
+    /// NOTE: DEPRECATED - This is kept to maintain backward compatibility, but is not used
     pub parent_gateway_token: Option<Pubkey>,
     /// The public key of the wallet to which this token was assigned
     pub owner_wallet: Pubkey,
     /// The DID (must be on Solana) of the identity to which the token was assigned
-    /// NOTE: DEPRECATED - This is kept to maintain backwards compatibility, but is not used
+    /// NOTE: DEPRECATED - This is kept to maintain backward compatibility, but is not used
     pub owner_identity: Option<Pubkey>,
     /// The gateway network that issued the token
     pub gatekeeper_network: Pubkey,
@@ -121,7 +121,23 @@ pub struct GatewayToken {
     pub expire_time: Option<UnixTimestamp>,
 }
 impl GatewayToken {
-    pub const SIZE: usize = 1 + (1 + 32) + 32 + (1 + 32) + 32 + 32 + 1 + (1 + 8);
+    // Fix the size of gateway token accounts to ensure that gateway token structs can be resized,
+    // for example, if an expire time is added later.
+    // Note - to avoid breaking backward compatibility, the unused, and deprecated fields,
+    // parent_gateway_token and owner_identity, are fixed to a size of 1.
+    // While this is not necessary on the program side, it avoids breaking older typescript clients,
+    // which are using borsh's `deserialize` function to read the account data.
+    // This function throws an error if the account size exceeds the schema size.
+    // Setting these deprecated fields to 1 ensures new gatewaytoken accounts have
+    // the same size as all existing gateway token accounts that have `None` set for these values
+    // and Some(x) set for expire_time.
+    // In conjunction with this change, the client library is updated to use deserializeUnchecked,
+    // which allows future GTs to have None set for expire_time without throwing an error.
+    pub const SIZE: usize = 1 +
+            1 + // parent_gateway_token NOTE - SIZE FIXED TO 1 - DEPRECATED - see note above
+            32 +
+            1 + // owner_identity NOTE - SIZE FIXED TO 1 - DEPRECATED - see note above
+            32 + 32 + 1 + (1 + 8);
     pub fn new(
         owner_wallet: &Pubkey,
         gatekeeper_network: &Pubkey,
@@ -167,25 +183,15 @@ impl GatewayToken {
 }
 
 pub trait GatewayTokenAccess {
-    fn parent_gateway_token(&self) -> Option<&Pubkey>;
     fn owner_wallet(&self) -> &Pubkey;
-    fn owner_identity(&self) -> Option<&Pubkey>;
     fn gatekeeper_network(&self) -> &Pubkey;
     fn issuing_gatekeeper(&self) -> &Pubkey;
     fn state(&self) -> GatewayTokenState;
     fn expire_time(&self) -> Option<UnixTimestamp>;
 }
 impl GatewayTokenAccess for GatewayToken {
-    fn parent_gateway_token(&self) -> Option<&Pubkey> {
-        self.parent_gateway_token.as_ref()
-    }
-
     fn owner_wallet(&self) -> &Pubkey {
         &self.owner_wallet
-    }
-
-    fn owner_identity(&self) -> Option<&Pubkey> {
-        self.owner_identity.as_ref()
     }
 
     fn gatekeeper_network(&self) -> &Pubkey {

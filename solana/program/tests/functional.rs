@@ -1,15 +1,16 @@
 #![cfg(feature = "test-sbf")]
 
 use crate::instruction::{add_feature_to_network, expire_token, NetworkFeature};
-use solana_sdk::transaction::Transaction;
+use solana_gateway_program::state::{
+    get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, GatewayTokenState,
+};
+use solana_gateway_program::{instruction, Gateway};
 use solana_sdk::signature::{Keypair, Signer};
+use solana_sdk::transaction::Transaction;
 use {
-    crate::gateway_context::GatewayContext,
-    solana_program::pubkey::Pubkey,
+    crate::gateway_context::GatewayContext, solana_program::pubkey::Pubkey,
     solana_program_test::tokio,
 };
-use solana_gateway_program::{Gateway, instruction};
-use solana_gateway_program::state::{GatewayTokenState, get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed};
 
 mod gateway_context;
 
@@ -343,4 +344,30 @@ async fn expire_token_should_succeed() {
         .process_transaction(expire_tx)
         .await
         .unwrap();
+}
+
+#[tokio::test]
+async fn burn_and_reissue_a_gateway_token() {
+    let mut context = GatewayContext::new().await;
+    context.create_gatekeeper().await;
+
+    let owner = Pubkey::new_unique();
+
+    // issue a gateway token
+    context.issue_gateway_token(&owner, None).await;
+
+    // burn it
+    context.burn_gateway_token(&owner).await;
+
+    let gt_option = context.get_gateway_token(&owner).await;
+    assert!(gt_option.is_none());
+
+    // re-issue it
+    let gateway_token = context.issue_gateway_token(&owner, Some(4794223772)).await;
+
+    assert_eq!(gateway_token.owner_wallet, owner);
+    assert_eq!(
+        gateway_token.issuing_gatekeeper,
+        context.gatekeeper_authority.unwrap().pubkey()
+    );
 }

@@ -4,7 +4,6 @@ extern crate core;
 mod entrypoint;
 pub mod processor;
 
-
 #[macro_use]
 pub mod error;
 pub mod borsh;

@@ -107,6 +107,16 @@ pub enum GatewayInstruction {
         /// The gatekeeper network
         gatekeeper_network: Pubkey,
     },
+
+    /// Remove a gateway token from the system, closing the account
+    ///
+    /// Accounts expected by this instruction:
+    ///
+    /// 0. `[writable]`            gateway_token: the account of the gateway token
+    /// 1. `[signer]`              gatekeeper_authority: the gatekeeper authority that is burning the token
+    /// 2. `[]`                    gatekeeper_account: the gatekeeper account linking the gatekeeper authority to the gatekeeper network
+    /// 3. `[writeable]`           recipient: the recipient of the lamports in the gateway token account
+    BurnToken,
 }
 
 #[derive(Copy, Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq, Eq)]
@@ -267,6 +277,25 @@ pub fn remove_feature_from_network(
             AccountMeta::new(funds_to, false),
             AccountMeta::new_readonly(gatekeeper_network, true),
             AccountMeta::new(get_expire_address_with_seed(&gatekeeper_network).0, false),
+        ],
+    )
+}
+
+/// Create a `GatewayInstruction::BurnToken` instruction
+pub fn burn_token(
+    gateway_token: &Pubkey,        // the gateway token account
+    gatekeeper_authority: &Pubkey, // the authority that owns the gatekeeper account
+    gatekeeper_account: &Pubkey, // the account containing details of the gatekeeper that issued the gateway token
+    recipient: &Pubkey,          // recipient of the lamports stored in the gateway token account
+) -> Instruction {
+    Instruction::new_with_borsh(
+        Gateway::program_id(),
+        &GatewayInstruction::BurnToken {},
+        vec![
+            AccountMeta::new(*gateway_token, false),
+            AccountMeta::new_readonly(*gatekeeper_authority, true),
+            AccountMeta::new_readonly(*gatekeeper_account, false),
+            AccountMeta::new(*recipient, false),
         ],
     )
 }

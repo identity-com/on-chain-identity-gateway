@@ -1,5 +1,6 @@
 #[cfg(test)]
 pub mod test_utils_stubs {
+    use crate::processor::process_instruction;
     use crate::Gateway;
     use solana_program::account_info::AccountInfo;
     use solana_program::clock::{Clock, UnixTimestamp};
@@ -8,7 +9,6 @@ pub mod test_utils_stubs {
     use solana_program::program_stubs;
     use std::sync::Once;
     use std::time::{SystemTime, UNIX_EPOCH};
-    use crate::processor::process_instruction;
 
     static INIT_TESTS: Once = Once::new();
 
@@ -52,11 +52,7 @@ pub mod test_utils_stubs {
             _signers_seeds: &[&[&[u8]]],
         ) -> ProgramResult {
             if instruction.program_id == Gateway::program_id() {
-                process_instruction(
-                    &instruction.program_id,
-                    account_infos,
-                    &instruction.data,
-                )
+                process_instruction(&instruction.program_id, account_infos, &instruction.data)
             } else {
                 panic!("Cannot execute other programs");
             }
