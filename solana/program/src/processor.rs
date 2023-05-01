@@ -10,7 +10,6 @@ use crate::state::{
 };
 use crate::Gateway;
 use solana_program::clock::{Clock, UnixTimestamp};
-use std::ops::DerefMut;
 use {
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::{
@@ -30,11 +29,14 @@ use {
 // https://github.com/solana-labs/solana-program-library/blob/4349f160850c4e0351266a3209bc68a23305b61b/token/program/src/processor.rs#L1014
 /// Helper function to mostly delete an account in a test environment.
 #[cfg(not(target_os = "solana"))]
+// The compiler does not like the explicit auto deref here and the deref_mut function (which would solve it)
+// is not available in solana v.1.15.2
+#[allow(clippy::explicit_auto_deref)]
 fn delete_account(account_info: &AccountInfo) -> Result<(), ProgramError> {
     account_info.assign(&system_program::id());
     let mut account_data = account_info.data.borrow_mut();
     let data_len = account_data.len();
-    solana_program::program_memory::sol_memset(account_data.deref_mut(), 0, data_len);
+    solana_program::program_memory::sol_memset(*account_data, 0, data_len);
     Ok(())
 }
 
