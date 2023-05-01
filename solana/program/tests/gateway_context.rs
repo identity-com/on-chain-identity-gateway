@@ -220,7 +220,7 @@ impl GatewayContext {
                 &gateway_token,
                 &gatekeeper_authority.pubkey(),
                 gatekeeper_account,
-                &recipient,
+                recipient,
             )],
             Some(&self.context.payer.pubkey()),
             &[&self.context.payer, gatekeeper_authority],
@@ -386,7 +386,7 @@ impl GatewayContext {
         account_data.unwrap()
     }
 
-    pub async fn burn_gateway_token(&mut self, owner: &Pubkey) -> () {
+    pub async fn burn_gateway_token(&mut self, owner: &Pubkey) {
         // TODO find nicer way to clone a Keypair to fix borrowing issues
         let gatekeeper_authority = Keypair::from_base58_string(
             self.gatekeeper_authority
