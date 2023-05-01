@@ -19,7 +19,7 @@ $ npm install -g @identity.com/solana-gatekeeper-cli
 $ gateway COMMAND
 running command...
 $ gateway (-v|--version|version)
-@identity.com/solana-gatekeeper-cli/0.0.1 darwin-arm64 node-v16.17.1
+@identity.com/solana-gatekeeper-cli/0.0.2-alpha.1 darwin-arm64 node-v16.17.1
 $ gateway --help [COMMAND]
 USAGE
   $ gateway COMMAND
@@ -29,6 +29,7 @@ USAGE
 # Commands
 <!-- commands -->
 * [`gateway add-gatekeeper ADDRESS`](#gateway-add-gatekeeper-address)
+* [`gateway burn GATEWAYTOKEN`](#gateway-burn-gatewaytoken)
 * [`gateway freeze GATEWAYTOKEN`](#gateway-freeze-gatewaytoken)
 * [`gateway help [COMMAND]`](#gateway-help-command)
 * [`gateway issue ADDRESS`](#gateway-issue-address)
@@ -75,6 +76,38 @@ OPTIONS
 
 EXAMPLE
   $ gateway add-gatekeeper tgky5YfBseCvqehzsycwCG6rh2udA4w14MxZMnZz9Hp
+```
+
+## `gateway burn GATEWAYTOKEN`
+
+Burns a gateway token
+
+```
+USAGE
+  $ gateway burn GATEWAYTOKEN
+
+ARGUMENTS
+  GATEWAYTOKEN  The gateway token to burn
+
+OPTIONS
+  -a, --airdrop                                                Airdrop SOL if needed
+
+  -c, --cluster=mainnet-beta|testnet|devnet|civicnet|localnet  [default: mainnet-beta] The cluster to target.
+                                                               Alternatively, set the environment variable
+                                                               SOLANA_CLUSTER. To override this property with a specific
+                                                               endpoint url, set SOLANA_CLUSTER_URL
+
+  -g, --gatekeeperKey=gatekeeperKey                            [default: [object Object]] The private key file for the
+                                                               gatekeeper authority
+
+  -h, --help                                                   Show CLI help.
+
+  -n, --gatekeeperNetworkKey=gatekeeperNetworkKey              [default: [object Object]] The public key (in base 58) of
+                                                               the gatekeeper network that the gatekeeper belongs to.
+
+EXAMPLE
+  $ gateway burn EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
+  Revoked
 ```
 
 ## `gateway freeze GATEWAYTOKEN`

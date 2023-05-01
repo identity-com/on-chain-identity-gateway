@@ -10,7 +10,7 @@ import {
   revoke,
   unfreeze,
   updateExpiry,
-  burnToken
+  burn
 } from "@identity.com/solana-gateway-ts";
 
 import {Action, SendableDataTransaction, SendableTransaction} from "../util";
@@ -303,7 +303,7 @@ export class GatekeeperService {
       gatewayTokenKey: PublicKey,
       options?: TransactionOptions
   ): Promise<SendableDataTransaction<void>> {
-    const instruction: TransactionInstruction = burnToken(
+    const instruction: TransactionInstruction = burn(
         gatewayTokenKey,
         this.gatekeeperAuthority.publicKey,
         this.gatekeeperAccountAddress(),
