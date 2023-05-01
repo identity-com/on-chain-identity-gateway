@@ -6,7 +6,7 @@ use solana_program::clock::UnixTimestamp;
 use {
     crate::state::GatewayTokenState,
     crate::state::{
-        get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, AddressSeed,
+        get_gatekeeper_account_address, get_gateway_token_address_with_seed, AddressSeed,
     },
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::{
@@ -131,7 +131,7 @@ pub fn add_gatekeeper(
     gatekeeper_network: &Pubkey,   // the gatekeeper network to which the gatekeeper belongs
 ) -> Instruction {
     let (gatekeeper_account, _) =
-        get_gatekeeper_address_with_seed(gatekeeper_authority, gatekeeper_network);
+        get_gatekeeper_account_address(gatekeeper_authority, gatekeeper_network);
     Instruction::new_with_borsh(
         Gateway::program_id(),
         &GatewayInstruction::AddGatekeeper {},
@@ -216,14 +216,14 @@ pub fn remove_gatekeeper(
     gatekeeper_authority: &Pubkey,
     gatekeeper_network: &Pubkey,
 ) -> Instruction {
-    let (gatekeeper_address, _) =
-        get_gatekeeper_address_with_seed(gatekeeper_authority, gatekeeper_network);
+    let (gatekeeper_account, _) =
+        get_gatekeeper_account_address(gatekeeper_authority, gatekeeper_network);
     Instruction::new_with_borsh(
         Gateway::program_id(),
         &GatewayInstruction::RemoveGatekeeper,
         vec![
             AccountMeta::new(*funds_to_account, false),
-            AccountMeta::new(gatekeeper_address, false),
+            AccountMeta::new(gatekeeper_account, false),
             AccountMeta::new_readonly(*gatekeeper_authority, false),
             AccountMeta::new_readonly(*gatekeeper_network, true),
         ],

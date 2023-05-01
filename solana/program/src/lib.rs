@@ -1,4 +1,3 @@
-// #![allow(clippy::try_err)]
 extern crate core;
 
 mod entrypoint;

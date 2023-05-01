@@ -3,7 +3,7 @@
 use crate::error::GatewayError;
 use crate::instruction::{GatewayInstruction, NetworkFeature};
 use crate::state::{
-    get_expire_address_with_seed, get_gatekeeper_address_with_seed,
+    get_expire_address_with_seed, get_gatekeeper_account_address,
     get_gateway_token_address_with_seed, verify_gatekeeper_address_and_account, AddressSeed,
     GatewayToken, GatewayTokenAccess, GatewayTokenState, GATEKEEPER_ADDRESS_SEED,
     GATEWAY_TOKEN_ADDRESS_SEED, NETWORK_EXPIRE_FEATURE_SEED,
@@ -100,10 +100,8 @@ fn add_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    let (gatekeeper_address, gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
-        gatekeeper_authority_info.key,
-        gatekeeper_network_info.key,
-    );
+    let (gatekeeper_address, gatekeeper_bump_seed) =
+        get_gatekeeper_account_address(gatekeeper_authority_info.key, gatekeeper_network_info.key);
     if gatekeeper_address != *gatekeeper_account_info.key {
         msg!("Error: gatekeeper account address derivation mismatch");
         return Err(ProgramError::InvalidArgument);
@@ -314,10 +312,8 @@ fn remove_gatekeeper(accounts: &[AccountInfo]) -> ProgramResult {
         return Err(ProgramError::MissingRequiredSignature);
     }
 
-    let (gatekeeper_address, _gatekeeper_bump_seed) = get_gatekeeper_address_with_seed(
-        gatekeeper_authority_info.key,
-        gatekeeper_network_info.key,
-    );
+    let (gatekeeper_address, _gatekeeper_bump_seed) =
+        get_gatekeeper_account_address(gatekeeper_authority_info.key, gatekeeper_network_info.key);
     if gatekeeper_address != *gatekeeper_account_info.key {
         msg!("Error: gatekeeper account address derivation mismatch");
         return Err(ProgramError::InvalidArgument);

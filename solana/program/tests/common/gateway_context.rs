@@ -1,8 +1,13 @@
+// Required for clippy in tests. https://github.com/rust-lang/rust/issues/46379#issuecomment-487421236
+#![allow(dead_code)]
+#![allow(clippy::await_holding_refcell_ref)]
+
+use super::util::clone_keypair;
 use crate::instruction::GatewayInstruction;
 use solana_gateway_program::borsh::try_from_slice_incomplete;
 use solana_gateway_program::processor::process_instruction;
 use solana_gateway_program::state::{
-    get_gatekeeper_address_with_seed, get_gateway_token_address_with_seed, GatewayToken,
+    get_gatekeeper_account_address, get_gateway_token_address_with_seed, GatewayToken,
     GatewayTokenState,
 };
 use solana_gateway_program::{instruction, Gateway};
@@ -15,6 +20,8 @@ use solana_sdk::{
     signature::Signer,
     transaction::Transaction,
 };
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 fn program_test() -> ProgramTest {
@@ -26,9 +33,11 @@ fn program_test() -> ProgramTest {
 }
 
 pub struct GatewayContext {
-    pub context: ProgramTestContext,
+    pub context: Rc<RefCell<ProgramTestContext>>,
     pub gatekeeper_authority: Option<Keypair>,
     pub gatekeeper_network: Option<Keypair>,
+    pub gatekeeper_account: Option<Pubkey>,
+    pub owner: Keypair,
 }
 impl GatewayContext {
     // Get the current unix timestamp from SystemTime
@@ -44,9 +53,23 @@ impl GatewayContext {
     pub async fn new() -> Self {
         let context = program_test().start_with_context().await;
         Self {
-            context,
+            context: Rc::new(RefCell::new(context)),
             gatekeeper_network: None,
             gatekeeper_authority: None,
+            gatekeeper_account: None,
+            owner: Keypair::new(),
+        }
+    }
+
+    pub async fn new_shared_test_context(
+        program_test_context: &Rc<RefCell<ProgramTestContext>>,
+    ) -> Self {
+        Self {
+            context: program_test_context.clone(),
+            gatekeeper_network: None,
+            gatekeeper_authority: None,
+            gatekeeper_account: None,
+            owner: Keypair::new(),
         }
     }
 
@@ -54,6 +77,13 @@ impl GatewayContext {
         let gatekeeper_authority = Keypair::new();
         let gatekeeper_network = Keypair::new();
 
+        self.gatekeeper_account = Some(
+            get_gatekeeper_account_address(
+                &gatekeeper_authority.pubkey(),
+                &gatekeeper_network.pubkey(),
+            )
+            .0,
+        );
         self.gatekeeper_authority = Some(gatekeeper_authority);
         self.gatekeeper_network = Some(gatekeeper_network);
     }
@@ -65,11 +95,23 @@ impl GatewayContext {
         self.add_gatekeeper().await;
     }
 
+    pub async fn execute_transaction(
+        &mut self,
+        transaction: Transaction,
+    ) -> Result<(), BanksClientError> {
+        self.context
+            .borrow_mut()
+            .banks_client
+            .process_transaction(transaction)
+            .await
+    }
+
     /// Returns funds_to
     pub async fn remove_gatekeeper(&mut self) -> Pubkey {
         let funds_to = Keypair::new().pubkey();
         assert!(self
             .context
+            .borrow_mut()
             .banks_client
             .get_account(funds_to)
             .await
@@ -83,15 +125,16 @@ impl GatewayContext {
                 &self.gatekeeper_authority.as_ref().unwrap().pubkey(),
                 &self.gatekeeper_network.as_ref().unwrap().pubkey(),
             )],
-            Some(&self.context.payer.pubkey()),
+            Some(&self.context.borrow().payer.pubkey()),
             &[
-                &self.context.payer,
+                &self.context.borrow().payer,
                 self.gatekeeper_network.as_ref().unwrap(),
             ],
-            self.context.last_blockhash,
+            self.context.borrow().last_blockhash,
         );
 
         self.context
+            .borrow_mut()
             .banks_client
             .process_transaction(transaction)
             .await
@@ -100,39 +143,34 @@ impl GatewayContext {
         funds_to
     }
 
-    async fn add_gatekeeper_transaction(
+    pub fn add_gatekeeper_transaction(
         &mut self,
         authority: &Pubkey,
         network: &Keypair,
-    ) -> Result<(), BanksClientError> {
-        let transaction = Transaction::new_signed_with_payer(
+    ) -> Transaction {
+        Transaction::new_signed_with_payer(
             &[instruction::add_gatekeeper(
-                &self.context.payer.pubkey(),
+                &self.context.borrow().payer.pubkey(),
                 authority,
                 &network.pubkey(),
             )],
-            Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, network],
-            self.context.last_blockhash,
-        );
-
-        self.context
-            .banks_client
-            .process_transaction(transaction)
-            .await
+            Some(&self.context.borrow().payer.pubkey()),
+            &[&self.context.borrow().payer, network],
+            self.context.borrow().last_blockhash,
+        )
     }
 
-    pub async fn issue_gateway_token_transaction(
+    pub fn issue_gateway_token_detailed(
         &mut self,
         owner: &Pubkey,
         gatekeeper_authority: &Keypair,
         gatekeeper_account: &Pubkey,
         network: &Pubkey,
         expire_time: Option<UnixTimestamp>,
-    ) -> Result<(), BanksClientError> {
-        let transaction = Transaction::new_signed_with_payer(
+    ) -> Transaction {
+        Transaction::new_signed_with_payer(
             &[instruction::issue(
-                &self.context.payer.pubkey(),
+                &self.context.borrow().payer.pubkey(),
                 owner,
                 gatekeeper_account,
                 &gatekeeper_authority.pubkey(),
@@ -140,96 +178,80 @@ impl GatewayContext {
                 None,
                 expire_time,
             )],
-            Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, gatekeeper_authority],
-            self.context.last_blockhash,
-        );
-        self.context
-            .banks_client
-            .process_transaction(transaction)
-            .await
+            Some(&self.context.borrow().payer.pubkey()),
+            &[&self.context.borrow().payer, gatekeeper_authority],
+            self.context.borrow().last_blockhash,
+        )
     }
 
-    pub async fn update_gateway_token_expiry_transaction(
+    pub fn update_gateway_token_expiry_transaction(
         &mut self,
         owner: &Pubkey,
         gatekeeper_authority: &Keypair,
         gatekeeper_account: &Pubkey,
         expire_time: UnixTimestamp,
-    ) -> Result<(), BanksClientError> {
+    ) -> Transaction {
         let (gateway_token, _) = get_gateway_token_address_with_seed(
             owner,
             &None,
             &self.gatekeeper_network.as_ref().unwrap().pubkey(),
         );
-        let transaction = Transaction::new_signed_with_payer(
+        Transaction::new_signed_with_payer(
             &[instruction::update_expiry(
                 &gateway_token,
                 &gatekeeper_authority.pubkey(),
                 gatekeeper_account,
                 expire_time,
             )],
-            Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, gatekeeper_authority],
-            self.context.last_blockhash,
-        );
-        self.context
-            .banks_client
-            .process_transaction(transaction)
-            .await
+            Some(&self.context.borrow().payer.pubkey()),
+            &[&self.context.borrow().payer, gatekeeper_authority],
+            self.context.borrow().last_blockhash,
+        )
     }
 
-    pub async fn set_gateway_token_state_transaction(
+    pub fn set_gateway_token_state_detailed(
         &mut self,
-        gateway_account: &Pubkey,
+        gateway_token: &Pubkey,
         gatekeeper_authority: &Keypair,
         gatekeeper_account: &Pubkey,
         gateway_token_state: GatewayTokenState,
-    ) -> Result<(), BanksClientError> {
-        let transaction = Transaction::new_signed_with_payer(
+    ) -> Transaction {
+        Transaction::new_signed_with_payer(
             &[instruction::set_state(
-                gateway_account,
+                gateway_token,
                 &gatekeeper_authority.pubkey(),
                 gatekeeper_account,
                 gateway_token_state,
             )],
-            Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, gatekeeper_authority],
-            self.context.last_blockhash,
-        );
-        self.context
-            .banks_client
-            .process_transaction(transaction)
-            .await
+            Some(&self.context.borrow().payer.pubkey()),
+            &[&self.context.borrow().payer, gatekeeper_authority],
+            self.context.borrow().last_blockhash,
+        )
     }
 
-    pub async fn burn_gateway_token_transaction(
+    pub fn burn_gateway_token_transaction(
         &mut self,
         owner: &Pubkey,
         gatekeeper_authority: &Keypair,
         gatekeeper_account: &Pubkey,
         recipient: &Pubkey,
-    ) -> Result<(), BanksClientError> {
+    ) -> Transaction {
         let (gateway_token, _) = get_gateway_token_address_with_seed(
             owner,
             &None,
             &self.gatekeeper_network.as_ref().unwrap().pubkey(),
         );
-        let transaction = Transaction::new_signed_with_payer(
+        Transaction::new_signed_with_payer(
             &[instruction::burn_token(
                 &gateway_token,
                 &gatekeeper_authority.pubkey(),
                 gatekeeper_account,
                 recipient,
             )],
-            Some(&self.context.payer.pubkey()),
-            &[&self.context.payer, gatekeeper_authority],
-            self.context.last_blockhash,
-        );
-        self.context
-            .banks_client
-            .process_transaction(transaction)
-            .await
+            Some(&self.context.borrow().payer.pubkey()),
+            &[&self.context.borrow().payer, gatekeeper_authority],
+            self.context.borrow().last_blockhash,
+        )
     }
 
     pub async fn attempt_add_gatekeeper_without_network_signature(
@@ -237,14 +259,13 @@ impl GatewayContext {
         authority: &Pubkey,
         network: &Pubkey,
     ) -> Result<(), BanksClientError> {
-        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(authority, network);
         // create an instruction that doesn't require the network signature.
         let instruction = Instruction::new_with_borsh(
             Gateway::program_id(),
             &GatewayInstruction::AddGatekeeper {},
             vec![
-                AccountMeta::new(self.context.payer.pubkey(), true),
-                AccountMeta::new(gatekeeper_account, false),
+                AccountMeta::new(self.context.borrow().payer.pubkey(), true),
+                AccountMeta::new(self.gatekeeper_account.unwrap(), false),
                 AccountMeta::new_readonly(*authority, false),
                 AccountMeta::new_readonly(*network, false),
                 AccountMeta::new_readonly(system_program::id(), false),
@@ -253,42 +274,26 @@ impl GatewayContext {
 
         let transaction = Transaction::new_signed_with_payer(
             &[instruction],
-            Some(&self.context.payer.pubkey()),
-            &[&self.context.payer],
-            self.context.last_blockhash,
+            Some(&self.context.borrow().payer.pubkey()),
+            &[&self.context.borrow().payer],
+            self.context.borrow().last_blockhash,
         );
         self.context
+            .borrow_mut()
             .banks_client
             .process_transaction(transaction)
             .await
     }
 
     pub async fn add_gatekeeper(&mut self) -> Pubkey {
-        // TODO find nicer way to clone a Keypair to fix borrowing issues
-        let gatekeeper_network = Keypair::from_base58_string(
-            self.gatekeeper_network
-                .as_ref()
-                .unwrap()
-                .to_base58_string()
-                .as_str(),
-        );
-        let gatekeeper_authority = Keypair::from_base58_string(
-            self.gatekeeper_authority
-                .as_ref()
-                .unwrap()
-                .to_base58_string()
-                .as_str(),
-        );
+        let authority = &self.gatekeeper_authority.as_ref().unwrap().pubkey();
+        let network = clone_keypair(self.gatekeeper_network.as_ref().unwrap());
 
-        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
-            &gatekeeper_authority.pubkey(),
-            &gatekeeper_network.pubkey(),
-        );
-        self.add_gatekeeper_transaction(&gatekeeper_authority.pubkey(), &gatekeeper_network)
-            .await
-            .unwrap();
+        let tx = self.add_gatekeeper_transaction(authority, &network);
 
-        gatekeeper_account
+        self.execute_transaction(tx).await.unwrap();
+
+        self.gatekeeper_account.unwrap()
     }
 
     pub async fn get_gateway_token(&mut self, owner: &Pubkey) -> Option<GatewayToken> {
@@ -297,14 +302,15 @@ impl GatewayContext {
             &None,
             &self.gatekeeper_network.as_ref().unwrap().pubkey(),
         );
-        let acccount_info = self
+        let account_info = self
             .context
+            .borrow_mut()
             .banks_client
             .get_account(gateway_token)
             .await
             .unwrap();
 
-        match acccount_info {
+        match account_info {
             Some(account_info) => {
                 let gateway_token =
                     try_from_slice_incomplete::<GatewayToken>(&account_info.data).unwrap();
@@ -319,39 +325,30 @@ impl GatewayContext {
         owner: &Pubkey,
         expire_time: Option<UnixTimestamp>,
     ) -> GatewayToken {
-        // TODO find nicer way to clone a Keypair to fix borrowing issues
-        let gatekeeper_network = Keypair::from_base58_string(
-            self.gatekeeper_network
-                .as_ref()
-                .unwrap()
-                .to_base58_string()
-                .as_str(),
-        );
-        let gatekeeper_authority = Keypair::from_base58_string(
-            self.gatekeeper_authority
-                .as_ref()
-                .unwrap()
-                .to_base58_string()
-                .as_str(),
-        );
+        let tx = self.issue_gateway_token_transaction(owner, expire_time);
 
-        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
-            &gatekeeper_authority.pubkey(),
-            &gatekeeper_network.pubkey(),
-        );
-        self.issue_gateway_token_transaction(
-            owner,
-            &gatekeeper_authority,
-            &gatekeeper_account,
-            &gatekeeper_network.pubkey(),
-            expire_time,
-        )
-        .await
-        .unwrap();
+        self.execute_transaction(tx).await.unwrap();
 
         let account_data = self.get_gateway_token(owner).await;
 
         account_data.unwrap()
+    }
+
+    pub fn issue_gateway_token_transaction(
+        &mut self,
+        owner: &Pubkey,
+        expire_time: Option<UnixTimestamp>,
+    ) -> Transaction {
+        let authority = clone_keypair(self.gatekeeper_authority.as_ref().unwrap());
+        let network = &self.gatekeeper_network.as_ref().unwrap().pubkey();
+
+        self.issue_gateway_token_detailed(
+            owner,
+            &authority,
+            &self.gatekeeper_account.unwrap(),
+            network,
+            expire_time,
+        )
     }
 
     pub async fn update_gateway_token_expiry(
@@ -359,27 +356,16 @@ impl GatewayContext {
         owner: &Pubkey,
         expire_time: UnixTimestamp,
     ) -> GatewayToken {
-        // TODO find nicer way to clone a Keypair to fix borrowing issues
-        let gatekeeper_authority = Keypair::from_base58_string(
-            self.gatekeeper_authority
-                .as_ref()
-                .unwrap()
-                .to_base58_string()
-                .as_str(),
-        );
-        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
-            &gatekeeper_authority.pubkey(),
-            &self.gatekeeper_network.as_ref().unwrap().pubkey(),
-        );
+        let gatekeeper_authority = clone_keypair(self.gatekeeper_authority.as_ref().unwrap());
 
-        self.update_gateway_token_expiry_transaction(
+        let tx = self.update_gateway_token_expiry_transaction(
             owner,
             &gatekeeper_authority,
-            &gatekeeper_account,
+            &self.gatekeeper_account.unwrap(),
             expire_time,
-        )
-        .await
-        .unwrap();
+        );
+
+        self.execute_transaction(tx).await.unwrap();
 
         let account_data = self.get_gateway_token(owner).await;
 
@@ -387,27 +373,16 @@ impl GatewayContext {
     }
 
     pub async fn burn_gateway_token(&mut self, owner: &Pubkey) {
-        // TODO find nicer way to clone a Keypair to fix borrowing issues
-        let gatekeeper_authority = Keypair::from_base58_string(
-            self.gatekeeper_authority
-                .as_ref()
-                .unwrap()
-                .to_base58_string()
-                .as_str(),
-        );
-        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
-            &gatekeeper_authority.pubkey(),
-            &self.gatekeeper_network.as_ref().unwrap().pubkey(),
-        );
+        let gatekeeper_authority = clone_keypair(self.gatekeeper_authority.as_ref().unwrap());
 
-        self.burn_gateway_token_transaction(
+        let tx = self.burn_gateway_token_transaction(
             owner,
             &gatekeeper_authority,
-            &gatekeeper_account,
+            &self.gatekeeper_account.unwrap(),
             &gatekeeper_authority.pubkey(),
-        )
-        .await
-        .unwrap()
+        );
+
+        self.execute_transaction(tx).await.unwrap();
     }
 
     pub async fn set_gateway_token_state(
@@ -415,34 +390,31 @@ impl GatewayContext {
         owner: &Pubkey,
         gateway_token_state: GatewayTokenState,
     ) -> GatewayToken {
-        // TODO find nicer way to clone a Keypair to fix borrowing issues
-        let gatekeeper_authority = Keypair::from_base58_string(
-            self.gatekeeper_authority
-                .as_ref()
-                .unwrap()
-                .to_base58_string()
-                .as_str(),
-        );
-        let (gatekeeper_account, _) = get_gatekeeper_address_with_seed(
-            &gatekeeper_authority.pubkey(),
-            &self.gatekeeper_network.as_ref().unwrap().pubkey(),
-        );
+        let tx = self.set_gateway_token_state_transaction(owner, gateway_token_state);
+
+        self.execute_transaction(tx).await.unwrap();
+
+        let account_data = self.get_gateway_token(owner).await;
+
+        account_data.unwrap()
+    }
+
+    pub fn set_gateway_token_state_transaction(
+        &mut self,
+        owner: &Pubkey,
+        gateway_token_state: GatewayTokenState,
+    ) -> Transaction {
+        let gatekeeper_authority = clone_keypair(self.gatekeeper_authority.as_ref().unwrap());
         let (gateway_account, _) = get_gateway_token_address_with_seed(
             owner,
             &None,
             &self.gatekeeper_network.as_ref().unwrap().pubkey(),
         );
-        self.set_gateway_token_state_transaction(
+        self.set_gateway_token_state_detailed(
             &gateway_account,
             &gatekeeper_authority,
-            &gatekeeper_account,
+            &self.gatekeeper_account.unwrap(),
             gateway_token_state,
         )
-        .await
-        .unwrap();
-
-        let account_data = self.get_gateway_token(owner).await;
-
-        account_data.unwrap()
     }
 }

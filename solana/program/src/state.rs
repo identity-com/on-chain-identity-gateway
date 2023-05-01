@@ -47,7 +47,7 @@ pub fn get_gateway_token_address_with_seed(
 }
 
 /// Get program-derived gatekeeper address for the authority
-pub fn get_gatekeeper_address_with_seed(authority: &Pubkey, network: &Pubkey) -> (Pubkey, u8) {
+pub fn get_gatekeeper_account_address(authority: &Pubkey, network: &Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
         &[
             &authority.to_bytes(),
@@ -72,7 +72,7 @@ pub fn verify_gatekeeper_address_and_account(
 
     // Gatekeeper account must be derived correctly from the gatekeeper and gatekeeper network
     let (gatekeeper_address, _gatekeeper_bump_seed) =
-        get_gatekeeper_address_with_seed(gatekeeper, gatekeeper_network);
+        get_gatekeeper_account_address(gatekeeper, gatekeeper_network);
     if gatekeeper_address != *gatekeeper_account_info.key {
         return Err(GatewayError::IncorrectGatekeeper);
     }
