@@ -231,7 +231,7 @@ Accounts expected by this instruction:
 
 Defines the gateway token structure.
 
-- `features: u8`: Feature flags that define the type of gateway token. Note: Deprecated - This is kept to maintain backwards compatibility, but is not used.
+- `version: u8`: Version field for backwards compatibility - currently 0.
 - `parent_gateway_token: Option<Pubkey>`: If the token is a session token, this is set to the parent token that was used to generate it. Note: Deprecated - This is kept to maintain backward compatibility, but is not used.
 - `owner_wallet: Pubkey`: The public key of the wallet to which this token was assigned.
 - `owner_identity: Option<Pubkey>`: The DID (must be on Solana) of the identity to which the token was assigned. Note: Deprecated - This is kept to maintain backward compatibility, but is not used.

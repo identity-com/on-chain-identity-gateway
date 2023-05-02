@@ -241,7 +241,7 @@ pub mod tests {
 
     fn expired_gateway_token() -> GatewayToken {
         let mut token = GatewayToken {
-            features: 0,
+            version: 0,
             parent_gateway_token: None,
             owner_wallet: Default::default(),
             owner_identity: None,

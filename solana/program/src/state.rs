@@ -99,9 +99,9 @@ pub fn get_expire_address_with_seed(network: &Pubkey) -> (Pubkey, u8) {
 /// Defines the gateway token structure
 #[derive(Clone, Debug, Default, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq)]
 pub struct GatewayToken {
-    /// Feature flags that define the type of gateway token
-    /// NOTE: DEPRECATED - This is kept to maintain backwards compatibility, but is not used
-    pub features: u8,
+    /// Version flag that allows for future upgrades
+    /// Currently ignored and initialised to 0
+    pub version: u8,
     /// If the token is a session token,
     /// this is set to the parent token that was used to generate it.
     /// NOTE: DEPRECATED - This is kept to maintain backward compatibility, but is not used
@@ -145,7 +145,7 @@ impl GatewayToken {
         expire_time: &Option<UnixTimestamp>,
     ) -> Self {
         Self {
-            features: 0,
+            version: 0,
             parent_gateway_token: None,
             owner_wallet: *owner_wallet,
 
@@ -252,7 +252,7 @@ pub mod tests {
 
     fn stub_gateway_token() -> GatewayToken {
         GatewayToken {
-            features: 0,
+            version: 0,
             parent_gateway_token: None,
             owner_wallet: Default::default(),
             owner_identity: None,

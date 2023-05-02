@@ -25,7 +25,7 @@ const getAccountInfoWithState = (
     owner: AssignablePublicKey.fromPublicKey(ownerKey),
     issuingGatekeeper: AssignablePublicKey.fromPublicKey(gatekeeperKey),
     gatekeeperNetwork: AssignablePublicKey.fromPublicKey(gatekeeperNetworkKey),
-    features: [0],
+    version: [0],
     parentGatewayToken: undefined,
     ownerIdentity: undefined,
     expiry: undefined,
