@@ -3,13 +3,38 @@
 The Gateway Protocol is a protocol that allows a Solana program to restrict access
 to holders of a valid Gateway Token.
 
-Gateway tokens are issued by gatekeepers. A cluster of gatekeepers with similar rules for issuing gateway tokens are defined as a Gatekeeper Network.
+## Functional Details
+
+A Gateway Token is an on-chain, non-transferrable token that dApps can issue,
+freeze, or revoke for user access control.
+
+The presence of an active gateway token proves that a user's wallet was verified according to a dApp's requirements.
+
+The dApp can verify the state of a wallet's gateway token before allowing transactions through,
+thus blocking non-compliant users.
+
+Gateway tokens are issued by Gatekeepers. A gatekeeper may be a single dApp, an organisation that performs KYC,
+or a third-party that obtains KYC information from a user and issues a gateway token on their behalf.
+
+A cluster of gatekeepers with similar rules for issuing gateway tokens are defined as a Gatekeeper Network.
+A gatekeeper network is identified by a public key. This key (which may be owned by a DAO or multisig)
+has the power to add and remove gatekeepers from the network.
+
+In general, a user's wallet can be associated with multiple gateway tokens (1:N),
+however, a token is only ever issued for a single specific Gatekeeper Network (1:1).
+
+Creating a gatekeeper network is a permissionless process, however, gatekeepers must be added to the network by the network authority.
 
 This program defines the operations that gatekeepers can perform on the Solana blockchain,
 such as issuing and revoking gateway tokens, as well as operations to add/remove gatekeepers,
 performed by gatekeeper network authorities.
 
+
 ## Integration
+
+This section describes how to integrate the gateway protocol into your program.
+
+Follow these steps if you want to use the gateway protocol to restrict access to your program based on gateway tokens.
 
 Integrating programs choose a gatekeeper network to trust, by adding its public key to a program account.
 
@@ -83,6 +108,44 @@ let gateway_verification_result:Result<(), GatewayError> =
                 },
             }
         );
+```
+
+## Getting Started
+
+Prerequisites for building the program:
+
+1. Rust
+
+```shell
+$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+2. Solana 
+
+```shell
+$ sh -c "$(curl -sSfL https://release.solana.com/v1.14.17/install)"
+```
+
+To build the program:
+
+```shell
+$ cargo build-spf
+```
+
+To run the tests:
+
+```shell
+# unit tests
+$ cargo test
+# functional tests
+$ cargo test-sbf
+```
+
+To deploy to a local environment:
+
+```shell
+$ cargo build-spf
+$ solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs target/deploy/solana_gateway.so
 ```
 
 ## Instructions
