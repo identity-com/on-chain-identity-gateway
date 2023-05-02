@@ -3,6 +3,11 @@
 The Gateway Protocol is a protocol that allows a Solana program to restrict access
 to holders of a valid Gateway Token.
 
+* [Functional Details](#functional-details)
+* [Integration](#integration)
+* [Getting Started](#getting-started)
+* [Technical Details](#technical-details)
+
 ## Functional Details
 
 A Gateway Token is an on-chain, non-transferrable token that dApps can issue,
@@ -28,7 +33,6 @@ Creating a gatekeeper network is a permissionless process, however, gatekeepers 
 This program defines the operations that gatekeepers can perform on the Solana blockchain,
 such as issuing and revoking gateway tokens, as well as operations to add/remove gatekeepers,
 performed by gatekeeper network authorities.
-
 
 ## Integration
 
@@ -148,11 +152,13 @@ $ cargo build-spf
 $ solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs target/deploy/solana_gateway.so
 ```
 
-## Instructions
+## Technical Details
+
+### Instructions
 
 The program provides the following instructions:
 
-### AddGatekeeper
+#### AddGatekeeper
 
 Add a new Gatekeeper to a network.
 
@@ -165,7 +171,7 @@ Accounts expected by this instruction:
 5. `[]`                    Rent sysvar
 6. `[]`                    System program
 
-### RemoveGatekeeper
+#### RemoveGatekeeper
 
 Removes a gatekeeper funding the rent back to an address and invalidating their addresses.
 
@@ -176,7 +182,7 @@ Accounts expected by this instruction:
 3. `[]`                    gatekeeper_authority: the authority that owns the gatekeeper account
 4. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
 
-### Issue
+#### Issue
 
 Issue a new gateway token.
 
@@ -196,7 +202,7 @@ Fields:
 - `seed: Option<AddressSeed>`: An optional seed to use when generating a gateway token allowing multiple gateway tokens per wallet
 - `expire_time: Option<UnixTimestamp>`: An optional unix timestamp at which point the issued token is no longer valid
 
-### SetState
+#### SetState
 
 Update the gateway token state (Revoke, freeze or unfreeze).
 
@@ -213,7 +219,7 @@ Fields:
 
 - `state: GatewayTokenState`: The new state of the gateway token
 
-### UpdateExpiry
+#### UpdateExpiry
 
 Update the gateway token expiry time.
 
@@ -227,7 +233,7 @@ Fields:
 
 - `expire_time: UnixTimestamp`: The new expiry time of the gateway token
 
-### AddFeatureToNetwork
+#### AddFeatureToNetwork
 
 Add a new feature to a gatekeeper network. An example feature is "UserTokenExpiry" (see below).
 
@@ -244,7 +250,7 @@ Fields:
 
 - `feature: NetworkFeature`: The network feature to add
 
-### RemoveFeatureFromNetwork
+#### RemoveFeatureFromNetwork
 
 Remove a feature from a gatekeeper network.
 
@@ -258,7 +264,7 @@ Fields:
 
 - `feature: NetworkFeature`: The network feature to remove
 
-### ExpireToken
+#### ExpireToken
 
 Expire a gateway token in a gatekeeper network with the UserTokenExpiry feature. This instruction is signed by the owner, usually as a CPI from a separate program that is gated by the gateway protocol.
 
@@ -275,7 +281,7 @@ Fields:
 - `padding: Option<AddressSeed>`: Padding for backwards compatibility
 - `gatekeeper_network: Pubkey`: The gatekeeper network
 
-### BurnToken
+#### BurnToken
 
 Remove a gateway token from the system, closing the account. Unlike revoking a gateway token, this does not leave an open account on chain, and can be reversed by reissuing the token.
 
@@ -286,11 +292,9 @@ Accounts expected by this instruction:
 3. `[]`                    gatekeeper_account: the gatekeeper account linking the gatekeeper authority to the gatekeeper network
 4. `[writeable]`           recipient: the recipient of the lamports in the gateway token account
 
-## Account Structures
+### Account Structures
 
-### Gateway Token
-
-### GatewayToken Structure
+#### Gateway Token
 
 Defines the gateway token structure.
 
