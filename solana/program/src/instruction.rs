@@ -55,6 +55,9 @@ pub enum GatewayInstruction {
     /// Update the gateway token state
     /// Revoke, freeze or unfreeze
     ///
+    /// Gatekeepers may freeze or unfreeze any gateway tokens issued by them.
+    /// Additionally, any gatekeeper may revoke tokens in the same gatekeeper network.
+    ///
     /// Accounts expected by this instruction:
     ///
     /// 0. `[writable]`            gateway_token: the destination account of the gateway token
@@ -84,23 +87,44 @@ pub enum GatewayInstruction {
     /// 0. `[writable]`            funds_to_account: the account that will receive the rent back
     /// 1. `[writable]`            gatekeeper_account: the gatekeeper account to close
     /// 2. `[]`                    gatekeeper_authority: the authority that owns the gatekeeper account
-    /// 3. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belong
+    /// 3. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
     RemoveGatekeeper,
 
+    /// Add a new feature to a gatekeeper network
+    ///
+    /// The presence of a feature in a gatekeeper network is indicated by the presence of a PDA with a known
+    /// address derivable from the gatekeeper network address and the feature name.
+    ///
+    /// Accounts expected by this instruction:
+    ///
     /// 0. `[signer, writable]` funder_account: The account funding this transaction
     /// 1. `[signer]`           gatekeeper_network: The gatekeeper network receiving a feature
     /// 2. `[writable]`         feature_account: The new feature account
     /// 3. `[]`                 system_program: The system program
     AddFeatureToNetwork { feature: NetworkFeature },
 
+    /// Remove a feature from a gatekeeper network
+    ///
+    /// Accounts expected by this instruction:
+    ///
     /// 0. `[signer, writable]` funds_to_account: The account receiving the funds
     /// 1. `[signer]`           gatekeeper_network: The gatekeeper network receiving a feature
     /// 2. `[writable]`         feature_account: The new feature account
     RemoveFeatureFromNetwork { feature: NetworkFeature },
 
+    /// Expire a gateway token in a gatekeeper network with the UserTokenExpiry feature
+    ///
+    /// This instruction is signed by the owner, usually as a CPI from a separate program that
+    /// is gated by the gateway protocol.
+    ///
+    /// The gatekeeper network must have the UserTokenExpiry feature enabled, indicated by the presence
+    /// of a PDA with a known address derivable from the gatekeeper network address and the feature name.
+    ///
+    /// Accounts expected by this instruction:
+    ///
     /// 0. `[writable]`    gateway_token: The token to expire
     /// 1. `[signer]`      owner: The wallet that the gateway token is for
-    /// 2. `[]`            network_expire_feature: The expire feature for the gatekeeper network
+    /// 2. `[]`            network_expire_feature: The UserTokenExpiry feature account for the gatekeeper network
     ExpireToken {
         /// Padding for backwards compatibility
         padding: Option<AddressSeed>,
@@ -108,7 +132,8 @@ pub enum GatewayInstruction {
         gatekeeper_network: Pubkey,
     },
 
-    /// Remove a gateway token from the system, closing the account
+    /// Remove a gateway token from the system, closing the account. Unlike revoking a gateway token,
+    /// this does not leave on open account on chain, and can be reversed by reissuing the token.
     ///
     /// Accounts expected by this instruction:
     ///
@@ -119,8 +144,19 @@ pub enum GatewayInstruction {
     BurnToken,
 }
 
+/// Features are properties of a gatekeeper network that can be enabled or disabled.
+/// They are represented by a PDA with a known address derivable from the gatekeeper network address
+/// and the feature name.
 #[derive(Copy, Clone, Debug, BorshSerialize, BorshDeserialize, PartialEq, Eq)]
 pub enum NetworkFeature {
+    /// The UserTokenExpiry feature allows users to set an expiry time on their own gateway tokens.
+    /// A use-case for this feature is a smart contract that checks and then expires a gateway token.
+    /// This allows for "single-use" gateway tokens, e.g. for token sales or airdrops, which need to be
+    /// re-activated after use.
+    ///
+    /// Note, all gateway tokens may have an expire time set by the gatekeeper, whether a network supports UserTokenExpiry
+    /// or not.
+    ///
     UserTokenExpiry,
 }
 

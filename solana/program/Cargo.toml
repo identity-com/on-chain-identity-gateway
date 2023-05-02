@@ -1,6 +1,6 @@
 [package]
-name = "solana-gateway-program"
-version = "0.1.3"
+name = "solana-gateway"
+version = "0.3.0"
 description = "OCIV Gateway Program"
 authors = ["Daniel Kelleher <daniel@identity.com>"]
 repository = "https://github.com/identity-com/on-chain-identity-gateway"

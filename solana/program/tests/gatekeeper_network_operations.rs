@@ -4,8 +4,8 @@
 mod common;
 
 use common::util::assert_instruction_error;
-use solana_gateway_program::state::get_gatekeeper_account_address;
-use solana_gateway_program::{instruction, Gateway};
+use solana_gateway::state::get_gatekeeper_account_address;
+use solana_gateway::{instruction, Gateway};
 use solana_program::instruction::InstructionError;
 use solana_sdk::signature::{Keypair, Signer};
 use solana_sdk::transaction::Transaction;

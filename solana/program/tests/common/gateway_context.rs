@@ -4,13 +4,13 @@
 
 use super::util::clone_keypair;
 use crate::instruction::GatewayInstruction;
-use solana_gateway_program::borsh::try_from_slice_incomplete;
-use solana_gateway_program::processor::process_instruction;
-use solana_gateway_program::state::{
+use solana_gateway::borsh::try_from_slice_incomplete;
+use solana_gateway::processor::process_instruction;
+use solana_gateway::state::{
     get_gatekeeper_account_address, get_gateway_token_address_with_seed, GatewayToken,
     GatewayTokenState,
 };
-use solana_gateway_program::{instruction, Gateway};
+use solana_gateway::{instruction, Gateway};
 use solana_program::{pubkey::Pubkey, system_program};
 use solana_program_test::{processor, BanksClientError, ProgramTest, ProgramTestContext};
 use solana_sdk::{
@@ -26,7 +26,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 fn program_test() -> ProgramTest {
     ProgramTest::new(
-        "solana_gateway_program",
+        "solana_gateway",
         Gateway::program_id(),
         processor!(process_instruction),
     )

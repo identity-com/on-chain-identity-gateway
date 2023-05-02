@@ -2,7 +2,7 @@
 
 mod common;
 
-use solana_gateway_program::{instruction, Gateway};
+use solana_gateway::{instruction, Gateway};
 use solana_program::instruction::Instruction;
 use solana_sdk::signature::Signer;
 use solana_sdk::transaction::Transaction;

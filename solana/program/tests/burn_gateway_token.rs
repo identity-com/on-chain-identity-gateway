@@ -3,8 +3,8 @@
 mod common;
 
 use common::util::{assert_instruction_error, clone_keypair};
-use solana_gateway_program::instruction;
-use solana_gateway_program::state::get_gatekeeper_account_address;
+use solana_gateway::instruction;
+use solana_gateway::state::get_gatekeeper_account_address;
 use solana_program::instruction::InstructionError;
 use solana_program::instruction::InstructionError::Custom;
 use solana_program::pubkey::Pubkey;

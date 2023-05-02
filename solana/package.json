@@ -6,7 +6,7 @@
     "gatekeeper-lib"
   ],
   "scripts": {
-    "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs target/deploy/solana_gateway_program.so --reset",
+    "start-validator": "solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs target/deploy/solana_gateway.so --reset",
     "test": "start-server-and-test start-validator http://localhost:8899/health test:inner",
     "test:inner": "yarn workspaces run test",
     "build": "yarn workspaces run build",
