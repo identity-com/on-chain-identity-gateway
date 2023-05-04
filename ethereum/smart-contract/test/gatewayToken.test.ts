@@ -1194,6 +1194,16 @@ describe('GatewayToken', async () => {
         );
       });
 
+      it('can charge ETH - revert if no amount sent', async () => {
+        const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        // forward it so that Alice sends it. Alice tries to send it without a value
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__InsufficientValue');
+      });
+
       it('can charge ETH - revert if charge is too high', async () => {
         const balance = await alice.getBalance();
         const charge = makeWeiCharge(balance.mul(2));
@@ -1240,7 +1250,6 @@ describe('GatewayToken', async () => {
 
       it('can charge ERC20 - reject if the allowance is insufficient', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
-        const balanceBefore = await erc20.balanceOf(alice.address);
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(gatewayToken.address, charge.value.sub(100));

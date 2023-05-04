@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type * as interfaces from "./interfaces";
 export type { interfaces };
+export type { ChargeHandler } from "./ChargeHandler";
 export type { FlagsStorage } from "./FlagsStorage";
 export type { FlexibleNonceForwarder } from "./FlexibleNonceForwarder";
 export type { Gated } from "./Gated";

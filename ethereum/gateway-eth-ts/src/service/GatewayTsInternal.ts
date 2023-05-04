@@ -7,9 +7,10 @@ import {
   ReadOnlyOperation,
   TokenData,
 } from "../utils/types";
-import { NULL_CHARGE } from "../utils/charge";
+import { Charge, ChargeType, NULL_CHARGE } from "../utils/charge";
 import { NULL_ADDRESS } from "../utils/constants";
 import { omit } from "ramda";
+import { PayableOverrides } from "@ethersproject/contracts";
 
 /**
  * The main API of the Ethereum Gateway client library.
@@ -34,6 +35,20 @@ export class GatewayTsInternal<
 
   private get overrides(): Overrides {
     return omit(["tolerateMultipleTokens"], this.options);
+  }
+
+  /**
+   * If there is an eth charge, add the value to the overrides (making them PayableOverrides).
+   * @param charge
+   * @private
+   */
+  private payableOverrides(charge: Charge): PayableOverrides {
+    const value =
+      charge.chargeType === ChargeType.ETH ? charge.value : undefined;
+    return {
+      ...this.overrides,
+      value,
+    };
   }
 
   public async checkedGetTokenId(
@@ -135,7 +150,8 @@ export class GatewayTsInternal<
     owner: string,
     network: bigint,
     expiry: BigNumberish = 0,
-    bitmask: BigNumberish = 0
+    bitmask: BigNumberish = 0,
+    charge: Charge = NULL_CHARGE
   ): Promise<O> {
     const expirationTime = expiry > 0 ? getExpirationTime(expiry) : 0;
 
@@ -144,8 +160,8 @@ export class GatewayTsInternal<
       network,
       expirationTime,
       bitmask,
-      NULL_CHARGE,
-      this.overrides
+      charge,
+      this.payableOverrides(charge)
     );
   }
 
@@ -172,15 +188,16 @@ export class GatewayTsInternal<
   async refresh(
     owner: string,
     network: bigint,
-    expiry?: number | BigNumber
+    expiry?: number | BigNumber,
+    charge: Charge = NULL_CHARGE
   ): Promise<O> {
     const tokenId = await this.checkedGetTokenId(owner, network);
     const expirationTime = getExpirationTime(expiry);
     return this.gatewayTokenContract.setExpiration(
       tokenId,
       expirationTime,
-      NULL_CHARGE,
-      this.overrides
+      charge,
+      this.payableOverrides(charge)
     );
   }
 

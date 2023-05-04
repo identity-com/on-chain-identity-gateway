@@ -11,6 +11,8 @@ import {Charge, ChargeType} from "./library/Charge.sol";
  * The charge functionality operates in conjunction with the forwarder to allow a transaction to be
  * a) signed by a gatekeeper, but
  * b) sent from a gateway token recipient
+ * This is necessary for the ETH charge type, as the charge payer must sign the transaction. For ERC20
+ * transactions, it is sufficient for the charge payer to sign an approval transaction beforehand.
  *
  * Note: The sender address of the charge can differ between the ETH and ERC20 charge types.
  * ETH: The funds are sent via the "value" property of an eth transaction, and are forwarded on to the

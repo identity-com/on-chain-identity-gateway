@@ -2,6 +2,7 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+export type { DummyERC20 } from "./DummyERC20";
 export type { GatewayTokenClientTest } from "./GatewayTokenClientTest";
 export type { GatewayTokenInternalsTest } from "./GatewayTokenInternalsTest";
 export type { GatewayTokenUpgradeTest } from "./GatewayTokenUpgradeTest";

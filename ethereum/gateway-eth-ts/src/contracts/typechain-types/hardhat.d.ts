@@ -50,6 +50,26 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165Upgradeable__factory>;
     getContractFactory(
+      name: "ERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC20__factory>;
+    getContractFactory(
+      name: "ERC20Burnable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC20Burnable__factory>;
+    getContractFactory(
+      name: "IERC20Metadata",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC20Metadata__factory>;
+    getContractFactory(
+      name: "IERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC20__factory>;
+    getContractFactory(
+      name: "ERC20PresetFixedSupply",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC20PresetFixedSupply__factory>;
+    getContractFactory(
       name: "ERC165",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC165__factory>;
@@ -101,6 +121,10 @@ declare module "hardhat/types/runtime" {
       name: "IERC3525MetadataDescriptorUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC3525MetadataDescriptorUpgradeable__factory>;
+    getContractFactory(
+      name: "ChargeHandler",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ChargeHandler__factory>;
     getContractFactory(
       name: "FlagsStorage",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -161,6 +185,10 @@ declare module "hardhat/types/runtime" {
       name: "TokenBitMask",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TokenBitMask__factory>;
+    getContractFactory(
+      name: "DummyERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.DummyERC20__factory>;
     getContractFactory(
       name: "GatewayTokenClientTest",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -223,6 +251,31 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165Upgradeable>;
+    getContractAt(
+      name: "ERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC20>;
+    getContractAt(
+      name: "ERC20Burnable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC20Burnable>;
+    getContractAt(
+      name: "IERC20Metadata",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC20Metadata>;
+    getContractAt(
+      name: "IERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC20>;
+    getContractAt(
+      name: "ERC20PresetFixedSupply",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC20PresetFixedSupply>;
     getContractAt(
       name: "ERC165",
       address: string,
@@ -288,6 +341,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC3525MetadataDescriptorUpgradeable>;
+    getContractAt(
+      name: "ChargeHandler",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ChargeHandler>;
     getContractAt(
       name: "FlagsStorage",
       address: string,
@@ -363,6 +421,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.TokenBitMask>;
+    getContractAt(
+      name: "DummyERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.DummyERC20>;
     getContractAt(
       name: "GatewayTokenClientTest",
       address: string,

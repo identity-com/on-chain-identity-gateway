@@ -71,7 +71,24 @@ A Gateway Token is a form of Soulbound Token, in that it is bound to a specific 
 In addition, GTs add features that give gatekeepers more control over the lifecycle of the token. In particular, GTs include
 - expiry dates: GTs can be set to expire at a specific time, after which they will no longer be considered active, until refreshed by a gatekeeper
 - freeze/unfreeze: GTs can be frozen by a gatekeeper, preventing them from being used until they are unfrozen. The conditions by which a GT is frozen and unfrozen are determined by the gatekeeper network.
-- revoked: GTs can be revoked by a gatekeeper, permanently disabling them. The conditions by which a GT is revoked are determined by the gatekeeper network. Revocation differs from "burning" a token, in that it leaves a record on-chain. In fact, in the Gateway Protocol, GTs are not burnable by the holder. In this way, they can be used for "negative reputation" use-cases. 
+- revoked: GTs can be revoked by a gatekeeper, permanently disabling them. The conditions by which a GT is revoked are determined by the gatekeeper network. Revocation differs from "burning" a token, in that it leaves a record on-chain. In fact, in the Gateway Protocol, GTs are not burnable by the holder. In this way, they can be used for "negative reputation" use-cases.
+
+## Costs
+
+The Gateway Protocol includes a charge mechanism, allowing gatekeepers to charge users for the gateway tokens that they issue,
+either in the chain's native coin, or an ERC20 token.
+
+The cost of a gateway token is determined by the gatekeeper and can be changed at any time. It is good practice
+for the gatekeeper to advertise their prices, but this does not need to be on chain.
+
+### Charging while Forwarding
+
+Since the gatekeeper is the signer of a token issuance transaction, the user approves the charge in one of the following ways:
+
+1. If the charge type is ETH, the transaction must be relayed through a forwarder, and the outer transaction must be signed by the charge payer
+2. If the charge type is ERC20, the charge payer must first approve the withdrawal of tokens by the gateway protocol
+
+Note, in both cases, the charge payer does not strictly need to be, although often is, the recipient of the gateway token.
 
 ## Standards
 

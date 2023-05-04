@@ -31,19 +31,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const isSuperAdmin = await token.isSuperAdmin(deployer);
   console.log('deployer ', deployer, 'isSuperAdmin', isSuperAdmin);
 
-  // // add the flexible nonce forwarder
-  // const flexibleNonceForwarder = await deployments.get('FlexibleNonceForwarder');
-  // const addForwarderTx = await (await token.addForwarder(flexibleNonceForwarder.address, { from: deployer })).wait();
-  // console.log(
-  //   'Added flexible nonce forwarder ' +
-  //     flexibleNonceForwarder.address +
-  //     ' on Gateway Token at ' +
-  //     gatewayToken.address +
-  //     ' using ' +
-  //     addForwarderTx.gasUsed.toNumber() +
-  //     ' gas',
-  // );
-
   if (await token.getNetwork(gatekeeperNetwork)) {
     console.log('network ' + gatekeeperNetwork + ' already exists');
   } else {

@@ -33,13 +33,15 @@ export type ChargeStruct = {
   value: PromiseOrValue<BigNumberish>;
   chargeType: PromiseOrValue<BigNumberish>;
   token: PromiseOrValue<string>;
+  tokenSender: PromiseOrValue<string>;
   recipient: PromiseOrValue<string>;
 };
 
-export type ChargeStructOutput = [BigNumber, number, string, string] & {
+export type ChargeStructOutput = [BigNumber, number, string, string, string] & {
   value: BigNumber;
   chargeType: number;
   token: string;
+  tokenSender: string;
   recipient: string;
 };
 
@@ -82,7 +84,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     "isSuperAdmin(address)": FunctionFragment;
     "isTrustedForwarder(address)": FunctionFragment;
     "metadataDescriptor()": FunctionFragment;
-    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
+    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "proxiableUUID()": FunctionFragment;
@@ -98,7 +100,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBitmask(uint256,uint256)": FunctionFragment;
-    "setExpiration(uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
+    "setExpiration(uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
     "setMetadataDescriptor(address)": FunctionFragment;
     "setSuperAdmin(address)": FunctionFragment;
     "slotOf(uint256)": FunctionFragment;
@@ -818,6 +820,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     "AuthorizedUpgrade()": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
     "BitMaskUpdated(uint256,uint256)": EventFragment;
+    "ChargePaid(tuple)": EventFragment;
     "DAOManagerTransferred(address,address,uint256)": EventFragment;
     "Expiration(uint256,uint256)": EventFragment;
     "FlagsStorageUpdated(address)": EventFragment;
@@ -846,6 +849,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AuthorizedUpgrade"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BitMaskUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChargePaid"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOManagerTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Expiration"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FlagsStorageUpdated"): EventFragment;
@@ -943,6 +947,16 @@ export type BitMaskUpdatedEvent = TypedEvent<
 >;
 
 export type BitMaskUpdatedEventFilter = TypedEventFilter<BitMaskUpdatedEvent>;
+
+export interface ChargePaidEventObject {
+  arg0: ChargeStructOutput;
+}
+export type ChargePaidEvent = TypedEvent<
+  [ChargeStructOutput],
+  ChargePaidEventObject
+>;
+
+export type ChargePaidEventFilter = TypedEventFilter<ChargePaidEvent>;
 
 export interface DAOManagerTransferredEventObject {
   previousDAOManager: string;
@@ -1360,8 +1374,8 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      arg4: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
@@ -1450,8 +1464,8 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      arg2: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     setMetadataDescriptor(
@@ -1761,8 +1775,8 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     network: PromiseOrValue<BigNumberish>,
     expiration: PromiseOrValue<BigNumberish>,
     mask: PromiseOrValue<BigNumberish>,
-    arg4: ChargeStruct,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    charge: ChargeStruct,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
@@ -1851,8 +1865,8 @@ export interface GatewayTokenInternalsTest extends BaseContract {
   setExpiration(
     tokenId: PromiseOrValue<BigNumberish>,
     timestamp: PromiseOrValue<BigNumberish>,
-    arg2: ChargeStruct,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    charge: ChargeStruct,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   setMetadataDescriptor(
@@ -2158,7 +2172,7 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      arg4: ChargeStruct,
+      charge: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2248,7 +2262,7 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      arg2: ChargeStruct,
+      charge: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2420,6 +2434,9 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       bitmask?: null
     ): BitMaskUpdatedEventFilter;
     BitMaskUpdated(tokenId?: null, bitmask?: null): BitMaskUpdatedEventFilter;
+
+    "ChargePaid(tuple)"(arg0?: null): ChargePaidEventFilter;
+    ChargePaid(arg0?: null): ChargePaidEventFilter;
 
     "DAOManagerTransferred(address,address,uint256)"(
       previousDAOManager?: null,
@@ -2765,8 +2782,8 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      arg4: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
@@ -2855,8 +2872,8 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      arg2: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     setMetadataDescriptor(
@@ -3165,8 +3182,8 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      arg4: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -3255,8 +3272,8 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      arg2: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     setMetadataDescriptor(

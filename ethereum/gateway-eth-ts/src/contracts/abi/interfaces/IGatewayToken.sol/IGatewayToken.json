@@ -323,6 +323,11 @@
             },
             {
               "internalType": "address",
+              "name": "tokenSender",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
               "name": "recipient",
               "type": "address"
             }
@@ -334,7 +339,7 @@
       ],
       "name": "mint",
       "outputs": [],
-      "stateMutability": "nonpayable",
+      "stateMutability": "payable",
       "type": "function"
     },
     {

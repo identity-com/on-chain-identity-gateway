@@ -73,7 +73,6 @@ contract FlexibleNonceForwarder is IForwarder, EIP712, ReentrancyGuard {
                 invalid()
             }
         }
-
         emit ForwardResult(success);
 
         return (success, returndata);

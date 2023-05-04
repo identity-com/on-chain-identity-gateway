@@ -331,6 +331,11 @@ const _abi = [
           },
           {
             internalType: "address",
+            name: "tokenSender",
+            type: "address",
+          },
+          {
+            internalType: "address",
             name: "recipient",
             type: "address",
           },
@@ -342,7 +347,7 @@ const _abi = [
     ],
     name: "mint",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {

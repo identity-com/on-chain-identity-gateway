@@ -80,6 +80,11 @@ const _abi = [
           },
           {
             internalType: "address",
+            name: "tokenSender",
+            type: "address",
+          },
+          {
+            internalType: "address",
             name: "recipient",
             type: "address",
           },
@@ -91,7 +96,7 @@ const _abi = [
     ],
     name: "setExpiration",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
 ] as const;
