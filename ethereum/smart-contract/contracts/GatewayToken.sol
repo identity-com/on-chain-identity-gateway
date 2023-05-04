@@ -19,6 +19,7 @@ import {MultiERC2771Context} from "./MultiERC2771Context.sol";
 import {Charge} from "./library/Charge.sol";
 import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
 import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
+import {ChargeHandler} from "./ChargeHandler.sol";
 
 /**
  * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens
@@ -40,7 +41,8 @@ contract GatewayToken is
     IERC721Expirable,
     IERC721Revokable,
     IGatewayToken,
-    TokenBitMask
+    TokenBitMask,
+    ChargeHandler
 {
     using Address for address;
     using Strings for uint;
@@ -134,8 +136,15 @@ contract GatewayToken is
      * @param network Gateway token type
      * @param mask The bitmask for the token
      */
-    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) external virtual {
+    function mint(
+        address to,
+        uint network,
+        uint expiration,
+        uint mask,
+        Charge calldata charge
+    ) external payable virtual {
         _checkGatekeeper(network);
+        _handleCharge(charge);
 
         uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
 
@@ -179,9 +188,12 @@ contract GatewayToken is
     /**
      * @dev Triggers to set expiration for tokenId
      * @param tokenId Gateway token id
+     * @param timestamp Expiration timestamp
+     * @param charge Charge for the operation
      */
-    function setExpiration(uint tokenId, uint timestamp, Charge calldata) external virtual {
+    function setExpiration(uint tokenId, uint timestamp, Charge calldata charge) external payable virtual {
         _checkGatekeeper(slotOf(tokenId));
+        _handleCharge(charge);
 
         _setExpiration(tokenId, timestamp);
     }

@@ -93,7 +93,13 @@ interface IGatewayToken {
      */
     function transferDAOManager(address previousManager, address newManager, uint256 network) external;
 
-    function mint(address to, uint256 network, uint256 expiration, uint256 mask, Charge calldata charge) external;
+    function mint(
+        address to,
+        uint256 network,
+        uint256 expiration,
+        uint256 mask,
+        Charge calldata charge
+    ) external payable;
 
     /**
      * @dev Triggers to get all information relating to gateway `tokenId`

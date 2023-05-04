@@ -30,7 +30,6 @@ const liveAccounts =
   process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY
     ? [
         `0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
-        `0x${process.env.AUTHORITY_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
         `0x${process.env.GATEKEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
       ]
     : [];
@@ -66,12 +65,12 @@ task('add-forwarder', 'add a forwarder to the gateway token smart contract (e.g.
   .setAction(addForwarder);
 
 // Set the default contracts path to "contracts"
-const defaultPath = "./contracts";
-const testContractsPath = "./test/contracts";
+const defaultPath = './contracts';
+const testContractsPath = './test/contracts';
 
 // Override the default "compile" task to compile both main and test contracts
-task("compile", "Compiles the entire project, including main and test contracts")
-  .addFlag("noTestContracts", "Don't compile test contracts")
+task('compile', 'Compiles the entire project, including main and test contracts')
+  .addFlag('noTestContracts', "Don't compile test contracts")
   .setAction(async (args, hre, runSuper) => {
     // First, compile main contracts
     hre.config.paths.sources = defaultPath;
