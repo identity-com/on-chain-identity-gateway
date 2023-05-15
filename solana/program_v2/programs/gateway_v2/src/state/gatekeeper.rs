@@ -7,7 +7,7 @@ use crate::instructions::network::{
     UpdateGatekeeperData, UpdateGatekeeperFees, UpdateGatekeeperKeys,
 };
 use crate::state::operations::UpdateOperations;
-use crate::state::{AuthKey, PassState, UpdateOperands};
+use crate::state::{PassState, UpdateOperands};
 use crate::util::*;
 
 /// A gatekeeper on a [`GatekeeperNetwork`] that can issue passes
@@ -17,7 +17,7 @@ pub struct Gatekeeper {
     /// The version of this struct, should be 0 until a new version is released
     pub version: u8,
     /// the authority for this gatekeeper
-    pub authority: Pubkey,
+    pub subject: Pubkey,
     /// The bump for the signer of this gatekeeper
     pub gatekeeper_bump: u8,
     /// The [`GatekeeperNetwork`] this gatekeeper is on
@@ -34,7 +34,7 @@ pub struct Gatekeeper {
     pub auth_keys: Vec<GatekeeperAuthKey>,
 }
 
-#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Copy, PartialEq)]
+#[derive(Clone, Debug, AnchorSerialize, AnchorDeserialize, Copy, PartialEq, InitSpace)]
 pub struct GatekeeperAuthKey {
     /// The permissions this key has
     pub flags: u32,
@@ -42,22 +42,18 @@ pub struct GatekeeperAuthKey {
     pub key: Pubkey,
 }
 
-impl OnChainSize for GatekeeperAuthKey {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_U32 + OC_SIZE_PUBKEY;
-}
-
 impl Gatekeeper {
-    pub fn size(fees_count: usize, auth_keys: usize) -> usize {
+    pub fn size(token_fees_count: usize, auth_keys_count: usize) -> usize {
         OC_SIZE_DISCRIMINATOR
             + OC_SIZE_U8 // version
             + OC_SIZE_PUBKEY // authority
             + OC_SIZE_U8 // gatekeeper_bump
             + OC_SIZE_PUBKEY // gatekeeper_network
             + OC_SIZE_PUBKEY // staking account
-            + GatekeeperState::ON_CHAIN_SIZE // gatekeeper state
-            + OC_SIZE_VEC_PREFIX + GatekeeperFees::ON_CHAIN_SIZE * fees_count // fees
+            + GatekeeperState::INIT_SPACE // gatekeeper state
+            + OC_SIZE_VEC_PREFIX + GatekeeperFees::INIT_SPACE * token_fees_count // fees
             + OC_SIZE_U8 // auth_threshold
-            + OC_SIZE_VEC_PREFIX + AuthKey::ON_CHAIN_SIZE * auth_keys
+            + OC_SIZE_VEC_PREFIX + GatekeeperAuthKey::INIT_SPACE * auth_keys_count
         // auth keys
     }
 
@@ -198,7 +194,7 @@ impl UpdateOperations<UpdateGatekeeperFees, GatekeeperFees> for Gatekeeper {
 }
 
 /// The state of a [`Gatekeeper`]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, AnchorSerialize, AnchorDeserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, AnchorSerialize, AnchorDeserialize, InitSpace)]
 pub enum GatekeeperState {
     /// Functional gatekeeper
     Active = 0,
@@ -206,10 +202,6 @@ pub enum GatekeeperState {
     Frozen = 1,
     /// Gatekeeper may not issue passes and all passes invalid
     Halted = 2,
-}
-
-impl OnChainSize for GatekeeperState {
-    const ON_CHAIN_SIZE: usize = 1;
 }
 
 #[derive(Clone, Debug)]
@@ -231,7 +223,7 @@ pub struct CreateGatekeeperData {
 }
 
 /// The fees a gatekeeper/network can take
-#[derive(Debug, Clone, Eq, PartialEq, AnchorSerialize, AnchorDeserialize, Copy)]
+#[derive(Debug, Clone, Eq, PartialEq, AnchorSerialize, AnchorDeserialize, Copy, InitSpace)]
 pub struct GatekeeperFees {
     /// The token for these fees. None value for this means native SOL price
     pub token: Pubkey,
@@ -247,14 +239,10 @@ pub struct GatekeeperFees {
     pub verify: u64,
 }
 
-impl OnChainSize for GatekeeperFees {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + OC_SIZE_U16 * 4;
-}
-
 bitflags! {
      /// The flags for a key on a gatekeeper
      #[derive(AnchorSerialize, AnchorDeserialize)]
-     pub struct GatekeeperKeyFlags: u32{
+     pub struct GatekeeperKeyFlags: u32 {
          /// Key can change keys
          const AUTH = 1 << 0;
          /// Key can issue passes
@@ -290,10 +278,6 @@ bitflags! {
          /// Key can withdraw fees from the gatekeeper
          const WITHDRAW = 1 << 16;
      }
-}
-
-impl OnChainSize for GatekeeperKeyFlags {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_U32;
 }
 
 #[cfg(test)]
@@ -502,7 +486,7 @@ mod tests {
 
         Gatekeeper {
             version: 0,
-            authority: *authority_pubkey,
+            subject: *authority_pubkey,
             gatekeeper_bump: 0,
             gatekeeper_network: Pubkey::new_unique(),
             staking_account: Pubkey::new_unique(),

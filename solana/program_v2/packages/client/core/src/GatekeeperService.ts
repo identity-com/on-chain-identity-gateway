@@ -1,9 +1,9 @@
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
-import * as anchor from '@project-serum/anchor';
-import { AnchorProvider, Program } from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
+import { AnchorProvider, Program } from '@coral-xyz/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 
-import { GatewayServiceOptions, Wallet } from './lib/types';
+import { GatewayServiceOptions } from './lib/types';
 
 import { EnumMapper } from './lib/utils';
 import {
@@ -28,7 +28,7 @@ export class GatekeeperService extends AbstractService {
     private _network: PublicKey,
     private _gatekeeper: PublicKey,
     _cluster: ExtendedCluster = SOLANA_MAINNET,
-    _wallet: Wallet = new NonSigningWallet(),
+    _wallet = new NonSigningWallet(),
     _opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {
     super(_program, _cluster, _wallet, _opts);
@@ -136,7 +136,7 @@ export class GatekeeperService extends AbstractService {
    *
    * @param passAccount The PDA for the pass
    * @param subject The subject (account) the pass is issued to
-   * @param splToken The spl token program
+   * @param splTokenProgram The spl token program
    * @param mint The mintAccount for the spl token
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
@@ -149,12 +149,12 @@ export class GatekeeperService extends AbstractService {
   issue(
     passAccount: PublicKey,
     subject: PublicKey,
-    splToken?: PublicKey,
-    mint?: PublicKey,
-    networkTokenAccount?: PublicKey,
-    gatekeeperTokenAccount?: PublicKey,
-    funderTokenAccount?: PublicKey,
-    funder?: PublicKey,
+    splTokenProgram: PublicKey,
+    mint: PublicKey,
+    networkTokenAccount: PublicKey,
+    gatekeeperTokenAccount: PublicKey,
+    funderTokenAccount: PublicKey,
+    funder: PublicKey,
     passNumber = 0,
     authority: PublicKey = this.getWallet().publicKey,
     payer = authority
@@ -166,10 +166,10 @@ export class GatekeeperService extends AbstractService {
         systemProgram: anchor.web3.SystemProgram.programId,
         payer,
         authority,
-        splTokenProgram: splToken,
+        splTokenProgram: splTokenProgram,
         network: this._network,
         gatekeeper: this._gatekeeper,
-        mintAccount: mint,
+        mint,
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
@@ -216,7 +216,7 @@ export class GatekeeperService extends AbstractService {
    * @param passAccount The ODA for the pass
    * @param authority The gatekeeper authority for setting the pass state
    * @param splTokenProgram The spl token program
-   * @param mintAccount The mintAccount for the spl token
+   * @param mint The mintAccount for the spl token
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
    * @param funderTokenAccount The ATA for the payer of the network and gatekeeper fees
@@ -225,12 +225,12 @@ export class GatekeeperService extends AbstractService {
   refreshPass(
     passAccount: PublicKey,
     authority: PublicKey = this.getWallet().publicKey,
-    splTokenProgram?: PublicKey,
-    mintAccount?: PublicKey,
-    networkTokenAccount?: PublicKey,
-    gatekeeperTokenAccount?: PublicKey,
-    funderTokenAccount?: PublicKey,
-    funder?: PublicKey
+    splTokenProgram: PublicKey,
+    mint: PublicKey,
+    networkTokenAccount: PublicKey,
+    gatekeeperTokenAccount: PublicKey,
+    funderTokenAccount: PublicKey,
+    funder: PublicKey
   ): ServiceBuilder {
     const instructionPromise = this.getProgram()
       .methods.refreshPass()
@@ -240,7 +240,7 @@ export class GatekeeperService extends AbstractService {
         network: this._network,
         gatekeeper: this._gatekeeper,
         splTokenProgram: splTokenProgram,
-        mintAccount,
+        mint,
         networkTokenAccount: networkTokenAccount,
         gatekeeperTokenAccount: gatekeeperTokenAccount,
         funderTokenAccount: funderTokenAccount,
@@ -258,7 +258,7 @@ export class GatekeeperService extends AbstractService {
    * Expires a pass so that it can no longer be used
    *
    * @param passAccount The PDA for the pass
-   * @param splToken The spl token program
+   * @param splTokenProgram The spl token program
    * @param mint The mintAccount for the spl token
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
@@ -269,12 +269,12 @@ export class GatekeeperService extends AbstractService {
    */
   expirePass(
     passAccount: PublicKey,
-    splToken?: PublicKey,
-    mint?: PublicKey,
-    networkTokenAccount?: PublicKey,
-    gatekeeperTokenAccount?: PublicKey,
-    funderTokenAccount?: PublicKey,
-    funder?: PublicKey,
+    splTokenProgram: PublicKey,
+    mint: PublicKey,
+    networkTokenAccount: PublicKey,
+    gatekeeperTokenAccount: PublicKey,
+    funderTokenAccount: PublicKey,
+    funder: PublicKey,
     authority: PublicKey = this.getWallet().publicKey,
     payer: PublicKey = authority
   ): ServiceBuilder {
@@ -286,8 +286,8 @@ export class GatekeeperService extends AbstractService {
         gatekeeper: this._gatekeeper,
         network: this._network,
         payer,
-        splTokenProgram: splToken,
-        mintAccount: mint,
+        splTokenProgram: splTokenProgram,
+        mint,
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,
@@ -305,7 +305,7 @@ export class GatekeeperService extends AbstractService {
    * Calls an on-chain instruction to verify a pass is active and not expired.
    *
    * @param passAccount The PDA for the pass to verify
-   * @param splToken The spl token program
+   * @param splTokenProgram The spl token program
    * @param mint The mintAccount for the spl token
    * @param networkTokenAccount The ATA for the network
    * @param gatekeeperTokenAccount The ATA for the gatekeeper
@@ -316,12 +316,12 @@ export class GatekeeperService extends AbstractService {
    */
   verifyPass(
     passAccount: PublicKey,
-    splToken?: PublicKey,
-    mint?: PublicKey,
-    networkTokenAccount?: PublicKey,
-    gatekeeperTokenAccount?: PublicKey,
-    funderTokenAccount?: PublicKey,
-    funder?: PublicKey,
+    splTokenProgram: PublicKey,
+    mint: PublicKey,
+    networkTokenAccount: PublicKey,
+    gatekeeperTokenAccount: PublicKey,
+    funderTokenAccount: PublicKey,
+    funder: PublicKey,
     authority: PublicKey = this.getWallet().publicKey,
     payer = authority
   ): ServiceBuilder {
@@ -333,8 +333,8 @@ export class GatekeeperService extends AbstractService {
         network: this._network,
         gatekeeper: this._gatekeeper,
         payer,
-        splTokenProgram: splToken,
-        mintAccount: mint,
+        splTokenProgram: splTokenProgram,
+        mint,
         networkTokenAccount,
         gatekeeperTokenAccount,
         funderTokenAccount,

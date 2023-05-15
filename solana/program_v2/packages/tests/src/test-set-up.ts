@@ -12,7 +12,7 @@ import {
   NetworkKeyFlags,
   NetworkService,
 } from '@identity.com/gateway-solana-client';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   createMint,
@@ -20,7 +20,7 @@ import {
   mintTo,
 } from '@solana/spl-token';
 import { Account } from '@solana/spl-token/src/state/account';
-import { setGatekeeperFlagsAndFees } from './util/lib';
+import { generateFundedKey, setGatekeeperFlagsAndFees } from './util/lib';
 import { NetworkFeatures } from '@identity.com/gateway-solana-client/dist/lib/constants';
 
 export const setUpAdminNetworkGatekeeper = async (
@@ -41,34 +41,12 @@ export const setUpAdminNetworkGatekeeper = async (
   subject: Keypair;
   mintAccount: Keypair;
 }> => {
-  const adminAuthority = Keypair.generate();
-  const networkAuthority = Keypair.generate();
-  const gatekeeperAuthority = Keypair.generate();
-  const mintAuthority = Keypair.generate();
+  const adminAuthority = await generateFundedKey();
+  const networkAuthority = await generateFundedKey();
+  const gatekeeperAuthority = await generateFundedKey();
+  const mintAuthority = await generateFundedKey();
   const subject = Keypair.generate();
   const mintAccount = Keypair.generate();
-
-  // Airdrops
-  await airdrop(
-    programProvider.connection,
-    adminAuthority.publicKey,
-    LAMPORTS_PER_SOL * 2
-  );
-  await airdrop(
-    programProvider.connection,
-    networkAuthority.publicKey,
-    LAMPORTS_PER_SOL * 2
-  );
-  await airdrop(
-    programProvider.connection,
-    gatekeeperAuthority.publicKey,
-    LAMPORTS_PER_SOL * 2
-  );
-  await airdrop(
-    programProvider.connection,
-    mintAuthority.publicKey,
-    LAMPORTS_PER_SOL * 2
-  );
 
   const mint = await createMint(
     programProvider.connection,
@@ -100,6 +78,7 @@ export const setUpAdminNetworkGatekeeper = async (
 
   const networkService = await NetworkService.buildFromAnchor(
     program,
+    networkAuthority.publicKey,
     gatekeeperAuthority.publicKey,
     gatekeeperPDA,
     {
@@ -123,7 +102,10 @@ export const setUpAdminNetworkGatekeeper = async (
         },
       ],
       authKeys: [
-        { flags: NetworkKeyFlags.AUTH, key: gatekeeperAuthority.publicKey },
+        {
+          flags: NetworkKeyFlags.AUTH | NetworkKeyFlags.CREATE_GATEKEEPER,
+          key: networkAuthority.publicKey,
+        },
       ],
       supportedTokens: [{ key: mint }],
       networkFeatures: NetworkFeatures.CHANGE_PASS_GATEKEEPER,
@@ -132,12 +114,8 @@ export const setUpAdminNetworkGatekeeper = async (
     .rpc();
 
   await networkService
-    .createGatekeeper(
-      networkAuthority.publicKey,
-      stakingPDA,
-      adminAuthority.publicKey
-    )
-    .withPartialSigners(adminAuthority)
+    .createGatekeeper(stakingPDA)
+    .withPartialSigners(networkAuthority)
     .rpc();
 
   await setGatekeeperFlagsAndFees(stakingPDA, networkService, 65535, [
@@ -156,7 +134,7 @@ export const setUpAdminNetworkGatekeeper = async (
   );
 
   // Airdrop to passAccount
-  await airdrop(programProvider.connection, passAccount, LAMPORTS_PER_SOL * 2);
+  await airdrop(programProvider.connection, passAccount, LAMPORTS_PER_SOL);
 
   const gatekeeperService = await GatekeeperService.buildFromAnchor(
     program,
@@ -167,6 +145,7 @@ export const setUpAdminNetworkGatekeeper = async (
       wallet: new anchor.Wallet(gatekeeperAuthority),
     }
   );
+
   return {
     adminService,
     networkService,
@@ -199,8 +178,7 @@ export const makeAssociatedTokenAccountsForIssue = async (
   funderAta: Account;
   funderKeypair: Keypair;
 }> => {
-  const funderKeypair = Keypair.generate();
-  await airdrop(connection, funderKeypair.publicKey);
+  const funderKeypair = await generateFundedKey();
 
   const gatekeeperAta = await getOrCreateAssociatedTokenAccount(
     connection,

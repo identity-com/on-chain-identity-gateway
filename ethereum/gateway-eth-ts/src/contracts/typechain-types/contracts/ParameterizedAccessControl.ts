@@ -146,6 +146,7 @@ export interface ParameterizedAccessControlInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "Initialized(uint8)": EventFragment;
     "RoleAdminChanged(bytes32,uint256,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,uint256,address,address)": EventFragment;
     "RoleRevoked(bytes32,uint256,address,address)": EventFragment;
@@ -153,12 +154,20 @@ export interface ParameterizedAccessControlInterface extends utils.Interface {
     "SuperAdminRemoved(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SuperAdminAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SuperAdminRemoved"): EventFragment;
 }
+
+export interface InitializedEventObject {
+  version: number;
+}
+export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
+
+export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
 export interface RoleAdminChangedEventObject {
   role: string;
@@ -420,6 +429,9 @@ export interface ParameterizedAccessControl extends BaseContract {
   };
 
   filters: {
+    "Initialized(uint8)"(version?: null): InitializedEventFilter;
+    Initialized(version?: null): InitializedEventFilter;
+
     "RoleAdminChanged(bytes32,uint256,bytes32,bytes32)"(
       role?: PromiseOrValue<BytesLike> | null,
       domain?: null,

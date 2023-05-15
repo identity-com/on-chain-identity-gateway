@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::Key;
-use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 use crate::constants::{GATEKEEPER_SEED, PASS_SEED};
 use crate::errors::{GatekeeperErrors, NetworkErrors};
@@ -19,15 +19,17 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
     let funder = &mut ctx.accounts.funder;
 
     let spl_token_program = &mut ctx.accounts.spl_token_program;
-    let mint_address = &mut ctx.accounts.mint_account.key();
+    let mint_account = &mut ctx.accounts.mint;
 
     let network_ata = &mut ctx.accounts.network_token_account;
     let gatekeeper_ata = &mut ctx.accounts.gatekeeper_token_account;
     let funder_ata = &mut ctx.accounts.funder_token_account;
 
+    let mint_address = mint_account.key();
+
     // TODO: Can we put the fee transfers into a trait and reuse dependent on the type of instruction?
-    let absolute_fee = get_gatekeeper_fees(&gatekeeper.token_fees, *mint_address)?.issue;
-    let network_percentage = get_network_fees(&network.fees, *mint_address)?.issue;
+    let absolute_fee = get_gatekeeper_fees(&gatekeeper.token_fees, mint_address)?.issue;
+    let network_percentage = get_network_fees(&network.fees, mint_address)?.issue;
     let (network_fee, gatekeeper_fee) =
         calculate_network_and_gatekeeper_fee(absolute_fee, network_percentage);
 
@@ -35,8 +37,8 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
         spl_token_program.to_owned(),
         funder_ata.to_owned(),
         gatekeeper_ata.to_owned(),
+        mint_account.to_owned(),
         funder.to_owned(),
-        &[&funder.key()],
         gatekeeper_fee,
     )?;
 
@@ -44,8 +46,8 @@ pub fn issue_pass(ctx: Context<IssuePass>, subject: Pubkey, pass_number: u16) ->
         spl_token_program.to_owned(),
         funder_ata.to_owned(),
         network_ata.to_owned(),
+        mint_account.to_owned(),
         funder.to_owned(),
-        &[&funder.key()],
         network_fee,
     )?;
 
@@ -67,7 +69,7 @@ pub struct IssuePass<'info> {
     #[account(
     init,
     payer = payer,
-    space = Pass::ON_CHAIN_SIZE,
+    space = crate::util::OC_SIZE_DISCRIMINATOR + Pass::INIT_SPACE,
     seeds = [PASS_SEED, subject.as_ref(), network.key().as_ref(), & pass_number.to_le_bytes()],
     constraint = gatekeeper.can_access(& authority, GatekeeperKeyFlags::ISSUE),
     bump
@@ -78,7 +80,7 @@ pub struct IssuePass<'info> {
     )]
     pub network: Box<Account<'info, GatekeeperNetwork>>,
     #[account(
-    seeds = [GATEKEEPER_SEED, gatekeeper.authority.as_ref(), network.key().as_ref()],
+    seeds = [GATEKEEPER_SEED, gatekeeper.subject.as_ref(), network.key().as_ref()],
     constraint = gatekeeper.gatekeeper_state == GatekeeperState::Active @ GatekeeperErrors::InvalidState,
     bump = gatekeeper.gatekeeper_bump
     )]
@@ -88,19 +90,19 @@ pub struct IssuePass<'info> {
     pub authority: Signer<'info>,
     pub funder: Signer<'info>,
     pub system_program: Program<'info, System>,
-    pub spl_token_program: Program<'info, Token>,
-    #[account(constraint = network.is_token_supported(& mint_account.key()) @ NetworkErrors::TokenNotSupported)]
-    pub mint_account: Account<'info, Mint>,
+    pub spl_token_program: Interface<'info, TokenInterface>,
+    #[account(constraint = network.is_token_supported(& mint.key()) @ NetworkErrors::TokenNotSupported)]
+    pub mint: InterfaceAccount<'info, Mint>,
     #[account(mut)]
-    pub funder_token_account: Account<'info, TokenAccount>,
+    pub funder_token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(
     mut,
     constraint = network_token_account.owner == * network.to_account_info().key,
     )]
-    pub network_token_account: Account<'info, TokenAccount>,
+    pub network_token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(
     mut,
     constraint = gatekeeper_token_account.owner == * gatekeeper.to_account_info().key,
     )]
-    pub gatekeeper_token_account: Account<'info, TokenAccount>,
+    pub gatekeeper_token_account: InterfaceAccount<'info, TokenAccount>,
 }

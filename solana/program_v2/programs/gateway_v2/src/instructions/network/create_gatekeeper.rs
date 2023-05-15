@@ -1,18 +1,16 @@
 use anchor_lang::prelude::*;
 
 use crate::constants::GATEKEEPER_SEED;
-use crate::errors::GatekeeperErrors;
+use crate::errors::{GatekeeperErrors, NetworkErrors};
 use crate::state::gatekeeper::{Gatekeeper, GatekeeperFees, GatekeeperState};
-use crate::state::{GatekeeperAuthKey, GatekeeperNetwork};
+use crate::state::{GatekeeperAuthKey, GatekeeperNetwork, NetworkKeyFlags};
 use crate::util::check_gatekeeper_auth_threshold;
 
-// TODO: Right now ANYONE can create a Gatekeeper in a Network. This should be restricted to an authority
-// in network.auth_keys.
 pub fn create_gatekeeper(
     ctx: Context<CreateGatekeeperAccount>,
     data: CreateGatekeeperData,
 ) -> Result<()> {
-    let authority = &mut ctx.accounts.authority;
+    let subject = &mut ctx.accounts.subject;
     let gatekeeper = &mut ctx.accounts.gatekeeper;
     let network = &mut ctx.accounts.network;
     let staking_account = &ctx.accounts.staking_account;
@@ -23,7 +21,7 @@ pub fn create_gatekeeper(
         GatekeeperErrors::InsufficientAuthKeys
     );
 
-    gatekeeper.authority = *authority.key;
+    gatekeeper.subject = *subject.key;
     gatekeeper.gatekeeper_bump = *ctx.bumps.get("gatekeeper").unwrap();
     gatekeeper.gatekeeper_network = network.key();
     gatekeeper.staking_account = staking_account.key();
@@ -53,14 +51,15 @@ pub struct CreateGatekeeperAccount<'info> {
     init,
     payer = payer,
     space = Gatekeeper::size(
-    data.auth_keys.len(),
     data.token_fees.len(),
+    data.auth_keys.len(),
     ),
-    seeds = [GATEKEEPER_SEED, authority.key().as_ref(), network.key().as_ref()],
+    seeds = [GATEKEEPER_SEED, subject.key().as_ref(), network.key().as_ref()],
     bump
     )]
     pub gatekeeper: Account<'info, Gatekeeper>,
     pub authority: Signer<'info>,
+    pub subject: SystemAccount<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account(
@@ -73,6 +72,7 @@ pub struct CreateGatekeeperAccount<'info> {
     ),
     realloc::payer = payer,
     realloc::zero = false,
+    constraint = network.can_access(& authority, NetworkKeyFlags::CREATE_GATEKEEPER) @ NetworkErrors::InsufficientAccessCreateGatekeeper,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]

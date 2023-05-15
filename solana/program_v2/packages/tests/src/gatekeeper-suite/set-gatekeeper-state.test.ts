@@ -1,18 +1,21 @@
 import {
   AdminService,
-  NetworkService,
-  airdrop,
+  CreateNetworkData,
   EnumMapper,
+  FeeStructure,
   GatekeeperState,
   GatekeeperStateMapping,
+  NetworkKeyFlags,
+  NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
-import * as anchor from '@project-serum/anchor';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { expect } from 'chai';
+import * as anchor from '@coral-xyz/anchor';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import * as chai from 'chai';
+import { expect } from 'chai';
 import { describe } from 'mocha';
 import chaiAsPromised from 'chai-as-promised';
+import { generateFundedKey } from '../util/lib';
 
 chai.use(chaiAsPromised);
 
@@ -21,33 +24,31 @@ describe('Gateway v2 Client', () => {
   const program = anchor.workspace
     .SolanaAnchorGateway as anchor.Program<SolanaAnchorGateway>;
   const programProvider = program.provider as anchor.AnchorProvider;
-
+  const fees: FeeStructure = {
+    token: PublicKey.unique(),
+    issue: 100,
+    expire: 100,
+    verify: 100,
+    refresh: 100,
+  };
   let adminService: AdminService;
   let networkService: NetworkService;
   let gatekeeperDataAccount: PublicKey;
   let stakingDataAccount: PublicKey;
 
+  let feePayerAuthority: Keypair;
   let adminAuthority: Keypair;
   let networkAuthority: Keypair;
+  let gatekeeperAuthority: Keypair;
 
-  before(async () => {
-    adminAuthority = Keypair.generate();
-    networkAuthority = Keypair.generate();
-
-    //network airdrop
-    await airdrop(
-      programProvider.connection,
-      adminAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
-    await airdrop(
-      programProvider.connection,
-      networkAuthority.publicKey,
-      LAMPORTS_PER_SOL * 2
-    );
+  beforeEach(async () => {
+    feePayerAuthority = await generateFundedKey();
+    adminAuthority = await generateFundedKey();
+    networkAuthority = await generateFundedKey();
+    gatekeeperAuthority = await generateFundedKey();
 
     [gatekeeperDataAccount] = await NetworkService.createGatekeeperAddress(
-      adminAuthority.publicKey,
+      gatekeeperAuthority.publicKey,
       networkAuthority.publicKey
     );
     [stakingDataAccount] = await NetworkService.createStakingAddress(
@@ -66,27 +67,37 @@ describe('Gateway v2 Client', () => {
 
     networkService = await NetworkService.buildFromAnchor(
       program,
-      adminAuthority.publicKey,
+      networkAuthority.publicKey,
+      gatekeeperAuthority.publicKey,
       gatekeeperDataAccount,
       {
         clusterType: 'localnet',
-        wallet: new anchor.Wallet(adminAuthority),
+        wallet: new anchor.Wallet(feePayerAuthority),
       },
       programProvider
     );
 
+    const networkData: CreateNetworkData = {
+      authThreshold: 1,
+      passExpireTime: 16,
+      fees: [fees],
+      authKeys: [
+        {
+          flags: NetworkKeyFlags.AUTH | NetworkKeyFlags.CREATE_GATEKEEPER,
+          key: networkAuthority.publicKey,
+        },
+      ],
+      supportedTokens: [],
+      networkFeatures: 0,
+    };
     await adminService
-      .createNetwork()
+      .createNetwork(networkData)
       .withPartialSigners(networkAuthority)
       .rpc();
 
     await networkService
-      .createGatekeeper(
-        networkAuthority.publicKey,
-        stakingDataAccount,
-        adminAuthority.publicKey
-      )
-      .withPartialSigners(adminAuthority)
+      .createGatekeeper(stakingDataAccount)
+      .withPartialSigners(networkAuthority)
       .rpc();
   });
 
@@ -97,7 +108,8 @@ describe('Gateway v2 Client', () => {
       const initialState = gatekeeperAccount?.state;
       // sets the gatekeeper's state to Frozen
       await networkService
-        .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+        .setGatekeeperState(GatekeeperState.Frozen)
+        .withPartialSigners(networkAuthority)
         .rpc();
       // retrieves gatekeeper account after state change and stores its state as a const
       gatekeeperAccount = await networkService.getGatekeeperAccount();

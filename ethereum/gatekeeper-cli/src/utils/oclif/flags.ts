@@ -1,17 +1,17 @@
 import {Flags} from '@oclif/core'
 import {BaseProvider, Provider} from '@ethersproject/providers'
 
-import {estimateGasPrice, GasPriceKey} from './gas'
+import {GasPriceKey} from './gas'
 import {getProvider, networks} from './providers'
 import {isAddress} from '@ethersproject/address'
 import {DEFAULT_GATEWAY_TOKEN_ADDRESS} from '@identity.com/gateway-eth-ts'
-import {GetTxGasParamsRes} from 'gas-price-oracle'
 import {BigNumber} from '@ethersproject/bignumber'
 
 // PRIVATE KEY FOR TEST, DEMO ONLY
 // DO NOT USE THIS IN PRODUCTION
 // 0x34bb5808d46a21AaeBf7C1300Ef17213Fe215B91
 const DEFAULT_NETWORK_AUTHORITY_PRIVATE_KEY = '0xf1ddf80d2b5d038bc2ab7ae9a26e017d2252218dc687ab72d45f84bfbee2957d'
+
 // The test GKN: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf
 export const DEFAULT_GATEKEEPER_NETWORK = 1
 
@@ -39,9 +39,8 @@ export const gatewayTokenAddressFlag = Flags.custom<string>({
 
 export const chainFlag = Flags.custom<BaseProvider>({
   char: 'c',
-  env: 'DEFAULT_CHAIN',
-  parse: async (input: string) => getProvider(input),
-  default: async () => getProvider('mainnet'),
+  parse: async (input: string) => getProvider(input as keyof typeof networks),
+  default: async () => getProvider(process.env.DEFAULT_CHAIN as keyof typeof networks || 'ethereum'),
   options: Object.keys(networks),
   description: 'Specify target chain to work with (or set DEFAULT_CHAIN environment variable)',
 })
@@ -55,10 +54,10 @@ export const gatekeeperNetworkFlag = Flags.custom<number>({
       'Gatekeeper network. Defaults to the test Gatekeeper Network',
 })
 
-export const feesFlag = Flags.custom<GetTxGasParamsRes>({
+export const feesFlag = Flags.custom<GasPriceKey>({
   char: 'f',
   name: 'fees',
-  parse: async (input: string) => estimateGasPrice(input as GasPriceKey),
+  parse: async (input: string) => input as GasPriceKey,
   description:
     'Gas Price level to execute transaction with. For example: instant, fast, standard, slow',
 })
@@ -80,11 +79,20 @@ export const bitmaskFlag = Flags.custom<BigNumber>({
   description: 'Bitmask constraints to link with newly minting token',
 })
 
+export const gasLimitFlag = Flags.custom<BigNumber>({
+  char: 'g',
+  name: 'gasLimit',
+  parse: async (input: string) => BigNumber.from(input),
+  description:
+    'Gas limit to set for the transaction. Required only for chains/providers that do not support eth_estimateGas',
+})
+
 type Flags = {
   chain: Provider | undefined
   gatewayTokenAddress: string | undefined
   gatekeeperNetwork: number | undefined
-  fees?: GetTxGasParamsRes | undefined
+  fees?: GasPriceKey | undefined
+  gasLimit?: BigNumber | undefined
 };
 export const parseFlags = (flags: Flags) => {
   // These all have defaults and can therefore be safely cast
@@ -97,6 +105,7 @@ export const parseFlags = (flags: Flags) => {
     gatewayTokenAddress,
     gatekeeperNetwork,
     fees: flags.fees,
+    gasLimit: flags.gasLimit,
   }
 }
 

@@ -1,9 +1,9 @@
 import {
-  NetworkService,
   ExtendedCluster,
+  NetworkService,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
-import { Wallet } from '@project-serum/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 
@@ -66,10 +66,15 @@ export default class Close extends Command {
       network
     );
 
-    const networkService = await NetworkService.build(gatekeeper, dataAccount, {
-      wallet: authorityWallet,
-      clusterType: cluster as ExtendedCluster,
-    });
+    const networkService = await NetworkService.build(
+      network,
+      gatekeeper,
+      dataAccount,
+      {
+        wallet: authorityWallet,
+        clusterType: cluster as ExtendedCluster,
+      }
+    );
 
     const gatekeeperAccount = await networkService.getGatekeeperAccount(
       dataAccount

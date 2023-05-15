@@ -1,5 +1,5 @@
-import * as anchor from '@project-serum/anchor';
-import { AnchorProvider, Program } from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
+import { AnchorProvider, Program } from '@coral-xyz/anchor';
 import { ConfirmOptions, PublicKey } from '@solana/web3.js';
 import {
   AuthKeyStructure,
@@ -10,7 +10,6 @@ import {
   GatekeeperStateMapping,
   GatewayServiceOptions,
   UpdateGatekeeperData,
-  Wallet,
 } from './lib/types';
 import { ExtendedCluster, getConnectionByCluster } from './lib/connection';
 import { EnumMapper } from './lib/utils';
@@ -32,10 +31,11 @@ import {
 export class NetworkService extends AbstractService {
   constructor(
     program: Program<SolanaAnchorGateway>,
+    private _network: PublicKey,
     private _gatekeeper: PublicKey,
     private _gatekeeperAccount: PublicKey,
     cluster: ExtendedCluster = SOLANA_MAINNET,
-    wallet: Wallet = new NonSigningWallet(),
+    wallet = new NonSigningWallet(),
     opts: ConfirmOptions = AnchorProvider.defaultOptions()
   ) {
     super(program, cluster, wallet, opts);
@@ -44,11 +44,13 @@ export class NetworkService extends AbstractService {
   /**
    * Builds an instance of the NetworkService
    *
+   * @param network The network the gatekeeper exists in
    * @param gatekeeper The gatekeeper this network service manages
    * @param gatekeeperAccount The PDA for the gatekeeper
    * @param options Options to override default values for the NetworkService
    */
   static async build(
+    network: PublicKey,
     gatekeeper: PublicKey,
     gatekeeperAccount: PublicKey,
     options: GatewayServiceOptions = {
@@ -72,6 +74,7 @@ export class NetworkService extends AbstractService {
 
     return new NetworkService(
       program,
+      network,
       gatekeeper,
       gatekeeperAccount,
       options.clusterType,
@@ -84,6 +87,7 @@ export class NetworkService extends AbstractService {
    * Builds and returns an instance of an NetworkService using an instance of the anchor program
    *
    * @param program The Anchor program to build the GatekeeperService instance from
+   * @param network The network the gatekeeper exists in
    * @param gatekeeper The gatekeeper this network service manages
    * @param gatekeeperAccount The PDA for the gatekeeper
    * @param options Options to override default values for the NetworkService
@@ -91,6 +95,7 @@ export class NetworkService extends AbstractService {
    */
   static async buildFromAnchor(
     program: Program<SolanaAnchorGateway>,
+    network: PublicKey,
     gatekeeper: PublicKey,
     gatekeeperAccount: PublicKey,
     options: GatewayServiceOptions = {
@@ -102,6 +107,7 @@ export class NetworkService extends AbstractService {
 
     return new NetworkService(
       program,
+      network,
       gatekeeper,
       gatekeeperAccount,
       options.clusterType,
@@ -113,17 +119,17 @@ export class NetworkService extends AbstractService {
   /**
    * Creates the gatekeeper PDA
    *
-   * @param authority The initial gatekeeper authority
+   * @param gatekeeper The initial gatekeeper key
    * @param network The network the gatekeeper belongs to
    */
   static async createGatekeeperAddress(
-    authority: PublicKey,
+    gatekeeper: PublicKey,
     network: PublicKey
   ): Promise<[PublicKey, number]> {
     return PublicKey.findProgramAddress(
       [
         anchor.utils.bytes.utf8.encode(GATEKEEPER_SEED),
-        authority.toBuffer(),
+        gatekeeper.toBuffer(),
         network.toBuffer(),
       ],
       GATEWAY_PROGRAM
@@ -143,16 +149,13 @@ export class NetworkService extends AbstractService {
   /**
    * Creates a gatekeeper within the network
    *
-   * @param network The network to create the gatekeeper account in (TODO: should this default to the network provided on build)
    * @param stakingAccount The staking account for the gatekeeper
-   * @param payer The fee payer
    * @param data The initial state to create the gatekeeper with
-   * @param authority The authority used to create the gatekeeper
+   * @param payer The fee payer
+   * @param network_authority The authority used to create the gatekeeper
    */
   createGatekeeper(
-    network: PublicKey,
     stakingAccount: PublicKey,
-    payer: PublicKey = this._wallet.publicKey,
     data: CreateGatekeeperData = {
       tokenFees: [],
       authThreshold: 1,
@@ -165,30 +168,38 @@ export class NetworkService extends AbstractService {
       ],
       supportedTokens: [],
     },
-    authority: PublicKey = this._wallet.publicKey
+    payer: PublicKey = this._wallet.publicKey,
+    network_authority: PublicKey = this._network
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       // anchor IDL does not work with nested types
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .createGatekeeper({
-        tokenFees: data.tokenFees,
+        tokenFees: data.tokenFees.map((fee) => ({
+          token: fee?.token,
+          issue: new anchor.BN(fee.issue),
+          expire: new anchor.BN(fee.expire),
+          verify: new anchor.BN(fee.verify),
+          refresh: new anchor.BN(fee.refresh),
+        })),
         authThreshold: data.authThreshold,
         authKeys: data.authKeys,
       })
       .accounts({
         gatekeeper: this._gatekeeperAccount,
-        authority,
-        network,
+        authority: network_authority,
+        network: this._network,
         stakingAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         payer,
+        subject: this._gatekeeper,
       })
       .instruction();
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      authority,
+      authority: network_authority,
     });
   }
 
@@ -242,16 +253,14 @@ export class NetworkService extends AbstractService {
   /**
    * Closes a gatekeeper and claims back the rent
    *
-   * @param network The network the gatekeeper is in
-   * @param receiver The receiever of the rent reclaimed
+   * @param receiver The receiver of the rent reclaimed
    * @param payer The fee payer
-   * @param authority The authority required to close the account
+   * @param network_authority the network authority required to create the gatekeeper
    */
   closeGatekeeper(
-    network: PublicKey,
-    receiver: PublicKey = this._wallet.publicKey,
+    receiver: PublicKey = this._network,
     payer: PublicKey = this._wallet.publicKey,
-    authority: PublicKey = this._wallet.publicKey
+    network_authority: PublicKey = this._network
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       //anchor IDL does not work with nested types
@@ -262,42 +271,40 @@ export class NetworkService extends AbstractService {
         gatekeeper: this._gatekeeperAccount,
         systemProgram: anchor.web3.SystemProgram.programId,
         destination: receiver,
-        authority,
-        network,
+        authority: network_authority,
+        network: this._network,
         payer,
       })
       .instruction();
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      authority,
+      authority: network_authority,
     });
   }
 
   /**
    * Changes the gatekeeper state
    *
-   * @param network The network to which the gatekeeper belongs
    * @param state The new state for the gatekeeper
-   * @param authority An authority allowed to change gatekeeper state
+   * @param network_authority An authority allowed to change gatekeeper state
    */
   setGatekeeperState(
-    network: PublicKey,
     state: GatekeeperState = GatekeeperState.Active,
-    authority: PublicKey = this._wallet.publicKey
+    network_authority: PublicKey = this._network
   ): ServiceBuilder {
     const instructionPromise = this._program.methods
       .setGatekeeperState(EnumMapper.to(state, GatekeeperStateMapping))
       .accounts({
         gatekeeper: this._gatekeeperAccount,
-        authority,
-        network,
+        authority: network_authority,
+        network: this._network,
       })
       .instruction();
 
     return new ServiceBuilder(this, {
       instructionPromise,
-      authority,
+      authority: network_authority,
     });
   }
 
@@ -305,6 +312,7 @@ export class NetworkService extends AbstractService {
     gatekeeper: PublicKey,
     authority: PublicKey = this._wallet.publicKey,
     splTokenProgram: PublicKey,
+    mint: PublicKey,
     receiverTokenAccount: PublicKey,
     gatekeeperTokenAccount: PublicKey,
     amount: number
@@ -315,6 +323,7 @@ export class NetworkService extends AbstractService {
         gatekeeper,
         authority,
         splTokenProgram,
+        mint,
         receiverTokenAccount,
         gatekeeperTokenAccount,
       })

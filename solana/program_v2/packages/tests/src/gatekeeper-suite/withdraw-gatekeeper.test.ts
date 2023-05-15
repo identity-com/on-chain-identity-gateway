@@ -8,7 +8,7 @@ import {
   mintTo,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   GatekeeperKeyFlags,
@@ -93,6 +93,7 @@ describe('withdraw gatekeeper', () => {
         gatekeeperService.getGatekeeper(),
         gatekeeperAuthority.publicKey,
         TOKEN_PROGRAM_ID,
+        mintAccount.publicKey,
         receiverTokenAta.address,
         gatekeeperAta.address,
         1
@@ -132,6 +133,7 @@ describe('withdraw gatekeeper', () => {
         gatekeeperService.getGatekeeper(),
         gatekeeperAuthority.publicKey,
         TOKEN_PROGRAM_ID,
+        mintAccount.publicKey,
         receiverTokenAta!.address,
         gatekeeperAta.address,
         0

@@ -1,12 +1,14 @@
 //! Utility functions and types.
 use std::ops::{Div, Mul};
 
-use anchor_lang::prelude::{Account, Program, Pubkey, Signer};
-use anchor_lang::{Key, ToAccountInfo};
-use anchor_spl::token::{Token, TokenAccount};
+use crate::constants::MAX_NETWORK_FEE;
+use anchor_lang::context::CpiContext;
+use anchor_lang::prelude::{Interface, InterfaceAccount, Pubkey, Signer};
+use anchor_lang::ToAccountInfo;
+use anchor_spl::token_interface::{
+    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
+};
 use solana_program::entrypoint::ProgramResult;
-use solana_program::program::invoke;
-use spl_token::instruction::transfer;
 
 use crate::errors::{GatekeeperErrors, NetworkErrors};
 use crate::state::{GatekeeperAuthKey, GatekeeperFees, GatekeeperKeyFlags, NetworkFeesPercentage};
@@ -23,16 +25,15 @@ pub const OC_SIZE_VEC_PREFIX: usize = 4;
 pub const OC_SIZE_DISCRIMINATOR: usize = 8;
 // pub const OC_SIZE_TIMESTAMP: usize = 8;
 
-/// This value has as static size on-chain
-pub trait OnChainSize {
-    /// The size on-chain
-    const ON_CHAIN_SIZE: usize;
-}
-
-/// Theis value can be sized with a given argument
-pub trait OnChainSizeWithArg<Arg> {
-    /// Gets the size with an argument
-    fn on_chain_size_with_arg(arg: Arg) -> usize;
+// validate_fees_within_bounds returns true when
+// the fees in NetworkFeesPercentage are not more than MAX_NETWORK_FEE
+pub fn validate_fees_within_bounds(fees: &[NetworkFeesPercentage]) -> bool {
+    fees.iter().all(|fee| {
+        fee.issue <= MAX_NETWORK_FEE
+            && fee.refresh <= MAX_NETWORK_FEE
+            && fee.expire <= MAX_NETWORK_FEE
+            && fee.verify <= MAX_NETWORK_FEE
+    })
 }
 
 pub fn get_gatekeeper_fees(
@@ -67,31 +68,27 @@ pub fn calculate_network_and_gatekeeper_fee(fee: u64, percent: u16) -> (u64, u64
 }
 
 pub fn create_and_invoke_transfer<'a>(
-    spl_token_address: Program<'a, Token>,
-    source_account: Account<'a, TokenAccount>,
-    destination_account: Account<'a, TokenAccount>,
+    spl_token_address: Interface<'a, TokenInterface>,
+    source_account: InterfaceAccount<'a, TokenAccount>,
+    destination_account: InterfaceAccount<'a, TokenAccount>,
+    mint: InterfaceAccount<'a, Mint>,
     authority_account: Signer<'a>,
-    signer_pubkeys: &[&Pubkey],
     amount: u64,
 ) -> ProgramResult {
-    let transfer_instruction_network_result = transfer(
-        &spl_token_address.key(),
-        &source_account.key(),
-        &destination_account.key(),
-        &authority_account.key(),
-        signer_pubkeys,
+    let accounts_checked = TransferChecked {
+        from: source_account.to_account_info(),
+        mint: mint.to_account_info(),
+        to: destination_account.to_account_info(),
+        authority: authority_account.to_account_info(),
+    };
+
+    transfer_checked(
+        CpiContext::new(spl_token_address.to_account_info(), accounts_checked),
         amount,
+        mint.decimals,
     )?;
 
-    invoke(
-        &transfer_instruction_network_result,
-        &[
-            source_account.to_account_info(),
-            destination_account.to_account_info(),
-            authority_account.to_account_info(),
-            spl_token_address.to_account_info(),
-        ],
-    )
+    Ok(())
 }
 
 pub fn check_gatekeeper_auth_threshold(
@@ -111,7 +108,30 @@ pub fn check_gatekeeper_auth_threshold(
 #[cfg(test)]
 mod tests {
     use crate::state::{GatekeeperAuthKey, GatekeeperFees, NetworkFeesPercentage};
-    use crate::util::check_gatekeeper_auth_threshold;
+    use crate::util::{check_gatekeeper_auth_threshold, validate_fees_within_bounds};
+
+    #[test]
+    fn test_check_fees_percentage() {
+        // Test case where there are fees but one of them is over 100%
+        let fee1 = NetworkFeesPercentage {
+            token: Default::default(),
+            issue: 6,
+            refresh: 8,
+            expire: 8,
+            verify: 8,
+        };
+
+        let fee2 = NetworkFeesPercentage {
+            token: Default::default(),
+            issue: 5,
+            refresh: 5,
+            expire: 3,
+            verify: 10001,
+        };
+
+        assert!(validate_fees_within_bounds(&[fee1]));
+        assert!(!validate_fees_within_bounds(&[fee1, fee2]));
+    }
 
     #[test]
     fn get_fees_test_split_100() {

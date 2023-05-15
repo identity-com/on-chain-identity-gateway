@@ -3,7 +3,7 @@ import {
   bitmaskFlag, confirmationsFlag,
   feesFlag, gatekeeperNetworkFlag, gatewayTokenAddressFlag,
   chainFlag, parseFlagsWithPrivateKey,
-  privateKeyFlag,
+  privateKeyFlag, gasLimitFlag,
 } from '../utils/oclif/flags'
 import {makeGatewayTs} from '../utils/oclif/utils'
 import {addressArg} from '../utils/oclif/args'
@@ -26,7 +26,14 @@ export default class IssueToken extends Command {
     chain: chainFlag(),
     fees: feesFlag(),
     confirmations: confirmationsFlag(),
+    gasLimit: gasLimitFlag(),
     bitmask: bitmaskFlag(),
+    uri: Flags.string({
+      char: 'u',
+      name: 'uri',
+      required: false,
+      description: 'TokenURI to link with the issued token',
+    }),
   };
 
   static args = [
@@ -34,7 +41,7 @@ export default class IssueToken extends Command {
     {
       name: 'expiry',
       required: false,
-      description: 'Expiry timestamp for newly issued token',
+      description: 'Expiry timestamp for the issued token',
       parse: async (input: string): Promise<BigNumber> => BigNumber.from(input),
       default: BigNumber.from(0),
     },

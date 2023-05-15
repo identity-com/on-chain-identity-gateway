@@ -112,6 +112,7 @@ pub struct UpdateNetworkAccount<'info> {
     constraint = data.can_update_fees(& network, & authority) @ NetworkErrors::InsufficientAccessFees,
     constraint = data.can_update_features(& network, & authority) @ NetworkErrors::InsufficientAccessFeatures,
     constraint = data.can_update_tokens(& network, & authority) @ NetworkErrors::InsufficientAccessTokens,
+    constraint = crate::util::validate_fees_within_bounds(& data.fees.add) @ NetworkErrors::NetworkFeeOutOfBounds,
     )]
     pub network: Account<'info, GatekeeperNetwork>,
     #[account(mut)]

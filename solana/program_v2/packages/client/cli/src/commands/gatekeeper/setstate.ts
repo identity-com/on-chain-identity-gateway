@@ -1,10 +1,10 @@
 import {
+  ExtendedCluster,
   GatekeeperState,
   NetworkService,
-  ExtendedCluster,
 } from '@identity.com/gateway-solana-client';
 import { Command, Flags } from '@oclif/core';
-import { Wallet } from '@project-serum/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import fsPromises from 'node:fs/promises';
 
@@ -51,8 +51,8 @@ export default class SetState extends Command {
   async run(): Promise<void> {
     const { flags } = await this.parse(SetState);
     const gatekeeper = new PublicKey(flags.gatekeeper);
-    const state = flags.state;
     const network = new PublicKey(flags.network);
+    const state = flags.state;
     const cluster =
       flags.cluster === 'localnet' ||
       flags.cluster === 'devnet' ||
@@ -73,6 +73,7 @@ export default class SetState extends Command {
     const authorityWallet = new Wallet(authPair);
 
     const networkService = await NetworkService.build(
+      network,
       authPair.publicKey,
       gatekeeper,
       {
@@ -85,7 +86,7 @@ export default class SetState extends Command {
     const initialState = gatekeeperAccount?.state as GatekeeperState;
 
     const stateChangeSignature = await networkService
-      .setGatekeeperState(network, targetState)
+      .setGatekeeperState(targetState)
       .rpc();
     gatekeeperAccount = await networkService.getGatekeeperAccount();
     const newState = gatekeeperAccount?.state as GatekeeperState;

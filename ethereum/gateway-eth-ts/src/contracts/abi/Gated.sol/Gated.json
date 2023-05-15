@@ -1,0 +1,22 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "Gated",
+  "sourceName": "contracts/Gated.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "gatewayToken",
+          "type": "address"
+        }
+      ],
+      "name": "IsGated__InvalidGatewayToken",
+      "type": "error"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220e3148ceca30f7bc26a702ac88fbfefe7b3aedefac3944052554b7ccb315c6faf64736f6c63430008090033",
+  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220e3148ceca30f7bc26a702ac88fbfefe7b3aedefac3944052554b7ccb315c6faf64736f6c63430008090033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

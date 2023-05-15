@@ -7,11 +7,9 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "resolveJsonModule": true,
-    "noImplicitAny": false, 
+    "noImplicitAny": false
   },
   "include": ["./scripts", "./test", "./deploy", "./tasks"],
   "exclude": ["node_modules"],
-  "files": [
-    "./hardhat.config.ts"
-  ]
+  "files": ["./hardhat.config.ts"]
 }

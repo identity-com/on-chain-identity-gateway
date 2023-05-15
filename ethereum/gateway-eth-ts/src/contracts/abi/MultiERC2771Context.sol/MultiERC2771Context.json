@@ -4,17 +4,17 @@
   "sourceName": "contracts/MultiERC2771Context.sol",
   "abi": [
     {
+      "anonymous": false,
       "inputs": [
         {
-          "internalType": "address",
-          "name": "forwarder",
-          "type": "address"
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "version",
+          "type": "uint8"
         }
       ],
-      "name": "addForwarder",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
+      "name": "Initialized",
+      "type": "event"
     },
     {
       "inputs": [
@@ -33,19 +33,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "forwarder",
-          "type": "address"
-        }
-      ],
-      "name": "removeForwarder",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     }
   ],

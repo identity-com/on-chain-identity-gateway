@@ -3,7 +3,7 @@ import assert = require('assert');
 import {getDefaultProvider} from '@ethersproject/providers'
 import {Wallet} from '@ethersproject/wallet'
 
-export declare const SAMPLE_PRIVATE_KEY = '16cf319b463e6e8db6fc525ad2cb300963a0f0661dbb94b5209073e29b43abfe'
+const SAMPLE_PRIVATE_KEY = '16cf319b463e6e8db6fc525ad2cb300963a0f0661dbb94b5209073e29b43abfe'
 describe('Check ethers signers', function () {
   let wallet: Wallet
 
@@ -17,30 +17,32 @@ describe('Check ethers signers', function () {
   const invalidMnemonic =
     'test test test test test test test test test invalid mnemonic phrase'
 
+  const defaultProvider = getDefaultProvider()
+
   it('Try to generate wallet from private key, should throw an error on invalid private key or mnemonic', () => {
-    wallet = privateKeySigner(SAMPLE_PRIVATE_KEY, getDefaultProvider())
+    wallet = privateKeySigner(SAMPLE_PRIVATE_KEY, defaultProvider)
     assert.equal(wallet.address, privateKeyAddr)
 
     assert.throws(() => {
-      privateKeySigner(invalidPrivateKey, getDefaultProvider())
+      privateKeySigner(invalidPrivateKey, defaultProvider)
     }, Error)
     assert.throws(() => {
-      privateKeySigner(sampleMnemonic, getDefaultProvider())
+      privateKeySigner(sampleMnemonic, defaultProvider)
     }, Error)
     assert.throws(() => {
-      privateKeySigner(invalidMnemonic, getDefaultProvider())
+      privateKeySigner(invalidMnemonic, defaultProvider)
     }, Error)
   })
 
   it('Try to generate wallet from mnemonic phrase, should throw an error on invalid mnemonic or private key', () => {
-    wallet = mnemonicSigner(sampleMnemonic, getDefaultProvider())
+    wallet = mnemonicSigner(sampleMnemonic, defaultProvider)
     assert.equal(wallet.address, mnemonicAddr)
 
     assert.throws(() => {
-      mnemonicSigner(invalidMnemonic, getDefaultProvider())
+      mnemonicSigner(invalidMnemonic, defaultProvider)
     }, new Error('invalid mnemonic'))
     assert.throws(() => {
-      mnemonicSigner(SAMPLE_PRIVATE_KEY, getDefaultProvider())
+      mnemonicSigner(SAMPLE_PRIVATE_KEY, defaultProvider)
     }, new Error('invalid mnemonic'))
   })
 })

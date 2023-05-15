@@ -1,8 +1,4 @@
-import {
-  BaseProvider,
-  JsonRpcProvider,
-  getDefaultProvider, InfuraProvider, Networkish,
-} from '@ethersproject/providers'
+import {BaseProvider, getDefaultProvider, InfuraProvider, JsonRpcProvider, Networkish} from '@ethersproject/providers'
 import {Network} from '@ethersproject/networks'
 import {ConnectionInfo} from '@ethersproject/web'
 
@@ -17,7 +13,7 @@ export const networks = {
     url: 'http://localhost:8545/',
     chainId: 31_337,
   },
-  mainnet: {
+  ethereum: {
     url: 'https://mainnet.infura.io/v3/',
     chainId: 1,
   },
@@ -33,7 +29,7 @@ export const networks = {
     url: 'https://polygon-mumbai.infura.io/v3/',
     chainId: 80_001,
   },
-  polygonMainnet: {
+  polygon: {
     url: 'https://polygon-mainnet.infura.io/v3/',
     chainId: 137,
   },
@@ -41,7 +37,7 @@ export const networks = {
     url: 'https://aurora-testnet.infura.io/v3/',
     chainId: 1_313_161_555,
   },
-  auroraMainnet: {
+  aurora: {
     url: 'https://aurora-mainnet.infura.io/v3/',
     chainId: 1_313_161_554,
   },
@@ -49,7 +45,7 @@ export const networks = {
     url: 'https://optimism-goerli.infura.io/v3/',
     chainId: 420,
   },
-  optimismMainnet: {
+  optimism: {
     url: 'https://optimism-mainnet.infura.io/v3/',
     chainId: 10,
   },
@@ -57,7 +53,7 @@ export const networks = {
     url: 'https://palm-testnet.infura.io/v3/',
     chainId: 11_297_108_099,
   },
-  palmMainnet: {
+  palm: {
     url: 'https://palm-mainnet.infura.io/v3/',
     chainId: 11_297_108_109,
   },
@@ -65,11 +61,11 @@ export const networks = {
     url: 'https://arbitrum-goerli.infura.io/v3/',
     chainId: 421_613,
   },
-  arbitrumMainnet: {
+  arbitrum: {
     url: 'https://arbitrum-mainnet.infura.io/v3/',
     chainId: 42_161,
   },
-  celoMainnet: {
+  celo: {
     url: 'https://celo-mainnet.infura.io/v3/',
     chainId: 42_220,
   },
@@ -85,13 +81,53 @@ export const networks = {
     url: 'https://avalanche-fuji.infura.io/v3/',
     chainId: 43_113,
   },
-  starknetMainnet: {
+  starknet: {
     url: 'https://starknet-mainnet.infura.io/v3/',
     chainId: 0,
   },
   starknetGoerli: {
     url: 'https://starknet-goerli.infura.io/v3/',
     chainId: 0,
+  },
+  xdc: {
+    url: 'https://erpc.xinfin.network',
+    chainId: 50,
+  },
+  xdcApothem: {
+    url: 'https://erpc.apothem.network',
+    chainId: 51,
+  },
+  bsc: {
+    url: 'https://bsc.rpc.blxrbdn.com',
+    chainId: 56,
+  },
+  cronos: {
+    url: 'https://cronos.blockpi.network/v1/rpc/public',
+    chainId: 25,
+  },
+  fantom: {
+    url: 'https://rpc.fantom.network',
+    chainId: 250,
+  },
+  gnosis: {
+    url: 'https://rpc.gnosischain.com',
+    chainId: 100,
+  },
+  moonbeam: {
+    url: 'https://1rpc.io/glmr',
+    chainId: 1284,
+  },
+  moonriver: {
+    url: 'https://moonriver.public.blastapi.io',
+    chainId: 1285,
+  },
+  polygonZkEVMTestnet: {
+    url: 'https://rpc.public.zkevm-test.net',
+    chainId: 1442,
+  },
+  polygonZkEVM: {
+    url: 'https://zkevm-rpc.com',
+    chainId: 1101,
   },
 }
 
@@ -116,11 +152,14 @@ class ExtendedInfuraProvider extends InfuraProvider {
 }
 
 export const getProvider = function (
-  network: string,
+  network:  keyof typeof networks,
 ): BaseProvider {
-  if (network === 'localhost' || network === 'hardhat') return getLocalhostProvider()
+  if (network === 'localhost') return getLocalhostProvider()
 
-  if (process.env.INFURA_API_KEY) return new ExtendedInfuraProvider(network, process.env.INFURA_API_KEY)
+  const url = networks[network].url
+  if (url.includes('infura')) {
+    return new ExtendedInfuraProvider(network, process.env.INFURA_API_KEY)
+  }
 
-  return getDefaultProvider(network)
+  return getDefaultProvider(url)
 }

@@ -35,13 +35,9 @@ pub struct GatekeeperNetwork {
     // pub network_features_data: Vec<u8>
 }
 
-#[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, AnchorDeserialize, AnchorSerialize, PartialEq, InitSpace)]
 pub struct SupportedToken {
     key: Pubkey,
-}
-
-impl OnChainSize for SupportedToken {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY;
 }
 
 impl GatekeeperNetwork {
@@ -58,11 +54,11 @@ impl GatekeeperNetwork {
             + OC_SIZE_U8 // auth_threshold
             + OC_SIZE_U64 // pass_expire_time
             + OC_SIZE_U8 // signer_bump
-            + OC_SIZE_VEC_PREFIX + NetworkFeesPercentage::ON_CHAIN_SIZE * fees_count // fees
-            + OC_SIZE_VEC_PREFIX + AuthKey::ON_CHAIN_SIZE * auth_keys // auth_keys
+            + OC_SIZE_VEC_PREFIX + NetworkFeesPercentage::INIT_SPACE * fees_count // fees
+            + OC_SIZE_VEC_PREFIX + AuthKey::INIT_SPACE * auth_keys // auth_keys
             + OC_SIZE_VEC_PREFIX + (OC_SIZE_PUBKEY * gatekeepers) // gatekeeper list
             + OC_SIZE_U16 // network_index
-            + OC_SIZE_VEC_PREFIX + SupportedToken::ON_CHAIN_SIZE * supported_tokens
+            + OC_SIZE_VEC_PREFIX + SupportedToken::INIT_SPACE * supported_tokens
         // supported tokens list
     }
 
@@ -196,7 +192,9 @@ impl UpdateOperations<UpdateSupportedTokens, SupportedToken> for GatekeeperNetwo
 }
 
 /// Fees that a [`GatekeeperNetwork`] can charge
-#[derive(Clone, Debug, Default, Eq, PartialEq, Copy, AnchorDeserialize, AnchorSerialize)]
+#[derive(
+    Clone, Debug, Default, Eq, PartialEq, Copy, AnchorDeserialize, AnchorSerialize, InitSpace,
+)]
 pub struct NetworkFeesPercentage {
     /// The token for the fee, `None` means fee is invalid
     pub token: Pubkey,
@@ -208,10 +206,6 @@ pub struct NetworkFeesPercentage {
     pub expire: u16,
     /// Percentage taken on verify. In Hundredths of a percent (0.01% or 0.0001).
     pub verify: u16,
-}
-
-impl OnChainSize for NetworkFeesPercentage {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_PUBKEY + OC_SIZE_U16 * 4;
 }
 
 bitflags! {
@@ -250,9 +244,6 @@ bitflags! {
         /// Allows a pass to change gatekeepers
         const CHANGE_PASS_GATEKEEPER = 1 << 0;
     }
-}
-impl OnChainSize for NetworkKeyFlags {
-    const ON_CHAIN_SIZE: usize = OC_SIZE_U16;
 }
 
 #[cfg(test)]

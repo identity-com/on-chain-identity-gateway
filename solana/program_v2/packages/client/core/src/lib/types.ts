@@ -1,19 +1,6 @@
-import {
-  ConfirmOptions,
-  Connection,
-  PublicKey,
-  Transaction,
-} from '@solana/web3.js';
-import { BN } from '@project-serum/anchor';
+import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
+import { BN, Wallet } from '@coral-xyz/anchor';
 import { CustomClusterUrlConfig, ExtendedCluster } from './connection';
-
-export interface Wallet {
-  signTransaction(tx: Transaction): Promise<Transaction>;
-
-  signAllTransactions(txs: Transaction[]): Promise<Transaction[]>;
-
-  publicKey: PublicKey;
-}
 
 export type FeeStructure = {
   token: PublicKey;
@@ -28,7 +15,7 @@ export type UpdateFeeStructure = {
   remove: PublicKey[];
 };
 
-export type UpdateAuthKeytructure = {
+export type UpdateAuthKeyStructure = {
   add: AuthKeyStructure[];
   remove: PublicKey[];
 };
@@ -51,7 +38,7 @@ export type UpdateNetworkData = {
   authThreshold: number;
   passExpireTime: number;
   fees: UpdateFeeStructure;
-  authKeys: UpdateAuthKeytructure;
+  authKeys: UpdateAuthKeyStructure;
   networkFeatures: number;
   supportedTokens: UpdateSupportedTokens;
 };
@@ -96,7 +83,7 @@ export type UpdateGatekeeperData = {
   // TODO: Maybe set these to be optional
   tokenFees: UpdateFeeStructure;
   authThreshold: number;
-  authKeys: UpdateAuthKeytructure;
+  authKeys: UpdateAuthKeyStructure;
 };
 
 export type GatekeeperFees = {

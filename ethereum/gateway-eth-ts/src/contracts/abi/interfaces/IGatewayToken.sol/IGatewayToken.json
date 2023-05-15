@@ -4,6 +4,108 @@
   "sourceName": "contracts/interfaces/IGatewayToken.sol",
   "abi": [
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "available",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "required",
+          "type": "uint256"
+        }
+      ],
+      "name": "GatewayToken__InsufficientFunds",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
+        }
+      ],
+      "name": "GatewayToken__NetworkAlreadyExists",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
+        }
+      ],
+      "name": "GatewayToken__NetworkDoesNotExist",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
+        }
+      ],
+      "name": "GatewayToken__NotDAOGoverned",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "GatewayToken__TokenDoesNotExist",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "allowExpired",
+          "type": "bool"
+        }
+      ],
+      "name": "GatewayToken__TokenDoesNotExistOrIsInactive",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum IGatewayToken.TokenState",
+          "name": "state",
+          "type": "uint8"
+        },
+        {
+          "internalType": "enum IGatewayToken.TokenState",
+          "name": "expectedState",
+          "type": "uint8"
+        }
+      ],
+      "name": "GatewayToken__TokenInvalidStateForOperation",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "GatewayToken__TransferDisabled",
+      "type": "error"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
@@ -78,6 +180,25 @@
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "network",
+          "type": "uint256"
+        }
+      ],
+      "name": "getNetwork",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
         }
@@ -108,25 +229,6 @@
           "internalType": "uint256",
           "name": "bitmask",
           "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
-        }
-      ],
-      "name": "getTokenState",
-      "outputs": [
-        {
-          "internalType": "uint8",
-          "name": "state",
-          "type": "uint8"
         }
       ],
       "stateMutability": "view",

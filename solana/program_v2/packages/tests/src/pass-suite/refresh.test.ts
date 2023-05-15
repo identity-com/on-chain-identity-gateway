@@ -9,7 +9,7 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { Account } from '@solana/spl-token/src/state/account';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import {
   makeAssociatedTokenAccountsForIssue,
@@ -118,7 +118,8 @@ describe('Refresh a pass', () => {
 
   it('should not refresh a pass if gatekeeper is halted', async () => {
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .setGatekeeperState(GatekeeperState.Halted)
+      .withPartialSigners(networkAuthority)
       .rpc();
 
     // Act
@@ -140,7 +141,8 @@ describe('Refresh a pass', () => {
   });
   it('should not refresh a pass if gatekeeper is frozen', async () => {
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .setGatekeeperState(GatekeeperState.Frozen)
+      .withPartialSigners(networkAuthority)
       .rpc();
 
     // Act
@@ -220,14 +222,15 @@ describe('Refresh a pass', () => {
 
     // Assert
     expect(funderAccount.amount).to.equal(0n);
-    expect(networkAccount.amount).to.equal(1000n);
-    expect(gatekeeperAccount.amount).to.equal(1000n);
+    expect(networkAccount.amount).to.equal(2n);
+    expect(gatekeeperAccount.amount).to.equal(1998n);
   });
 
   it('Cannot issue a pass if gatekeeper is frozen', async () => {
     // Assemble
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .setGatekeeperState(GatekeeperState.Frozen)
+      .withPartialSigners(networkAuthority)
       .rpc();
     // Act + Assert
     return expect(
@@ -250,7 +253,8 @@ describe('Refresh a pass', () => {
   it('Cannot refresh a pass if gatekeeper is halted', async () => {
     // Assemble
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .setGatekeeperState(GatekeeperState.Halted)
+      .withPartialSigners(networkAuthority)
       .rpc();
     // Act + Assert
     return expect(

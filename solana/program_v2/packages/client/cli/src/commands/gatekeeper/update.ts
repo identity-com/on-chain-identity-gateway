@@ -2,11 +2,11 @@ import { Command, Flags } from '@oclif/core';
 import { parseGatekeeperUpdateData } from '../../util/util';
 import { Keypair, PublicKey } from '@solana/web3.js';
 import {
-  UpdateGatekeeperData,
-  NetworkService,
   ExtendedCluster,
+  NetworkService,
+  UpdateGatekeeperData,
 } from '@identity.com/gateway-solana-client';
-import { Wallet } from '@project-serum/anchor';
+import { Wallet } from '@coral-xyz/anchor';
 import fsPromises from 'node:fs/promises';
 
 export default class Update extends Command {
@@ -48,10 +48,12 @@ export default class Update extends Command {
   };
 
   static args = [];
+
   async run(): Promise<void> {
     const { flags } = await this.parse(Update);
 
     const gatekeeper = new PublicKey(flags.gatekeeper);
+    const network = new PublicKey(flags.network);
     const stakingAccount = new PublicKey(flags.stake);
     const cluster =
       flags.cluster === 'localnet' ||
@@ -71,6 +73,7 @@ export default class Update extends Command {
     const authorityWallet = new Wallet(authorityKeypair);
 
     const networkService = await NetworkService.build(
+      network,
       authorityKeypair.publicKey,
       gatekeeper,
       {

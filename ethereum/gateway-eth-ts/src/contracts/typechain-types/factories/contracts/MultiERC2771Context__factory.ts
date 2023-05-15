@@ -12,17 +12,17 @@ import type {
 
 const _abi = [
   {
+    anonymous: false,
     inputs: [
       {
-        internalType: "address",
-        name: "forwarder",
-        type: "address",
+        indexed: false,
+        internalType: "uint8",
+        name: "version",
+        type: "uint8",
       },
     ],
-    name: "addForwarder",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    name: "Initialized",
+    type: "event",
   },
   {
     inputs: [
@@ -41,19 +41,6 @@ const _abi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "forwarder",
-        type: "address",
-      },
-    ],
-    name: "removeForwarder",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;

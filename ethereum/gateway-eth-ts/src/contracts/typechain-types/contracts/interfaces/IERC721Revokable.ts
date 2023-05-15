@@ -102,8 +102,10 @@ export interface IERC721Revokable extends BaseContract {
   };
 
   filters: {
-    "Revoke(uint256)"(tokenId?: null): RevokeEventFilter;
-    Revoke(tokenId?: null): RevokeEventFilter;
+    "Revoke(uint256)"(
+      tokenId?: PromiseOrValue<BigNumberish> | null
+    ): RevokeEventFilter;
+    Revoke(tokenId?: PromiseOrValue<BigNumberish> | null): RevokeEventFilter;
   };
 
   estimateGas: {

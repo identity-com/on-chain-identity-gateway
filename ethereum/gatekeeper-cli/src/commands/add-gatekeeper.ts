@@ -3,7 +3,7 @@ import {
   feesFlag, gatekeeperNetworkFlag,
   gatewayTokenAddressFlag,
   chainFlag, parseFlagsWithPrivateKey,
-  privateKeyFlag,
+  privateKeyFlag, gasLimitFlag,
 } from '../utils/oclif/flags'
 import {Command, Flags} from '@oclif/core'
 import {makeGatewayTs} from '../utils/oclif/utils'
@@ -24,6 +24,7 @@ export default class AddGatekeeper extends Command {
     gatekeeperNetwork: gatekeeperNetworkFlag(),
     chain: chainFlag(),
     fees: feesFlag(),
+    gasLimit: gasLimitFlag(),
     confirmations: confirmationsFlag(),
   };
 

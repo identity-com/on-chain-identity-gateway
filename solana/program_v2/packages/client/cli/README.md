@@ -1,7 +1,7 @@
-
 # Usage
 
   <!-- usage -->
+
 ```sh-session
 $ npm install -g @identity.com/gateway-solana-cli
 $ gateway COMMAND
@@ -13,11 +13,13 @@ USAGE
   $ gateway COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 # Commands
 
   <!-- commands -->
+
 * [`gateway gatekeeper`](#gateway-gatekeeper)
 * [`gateway gatekeeper close`](#gateway-gatekeeper-close)
 * [`gateway gatekeeper create`](#gateway-gatekeeper-create)
@@ -58,7 +60,8 @@ DESCRIPTION
   Controls a gatekeeper on a network
 ```
 
-_See code: [dist/commands/gatekeeper/index.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v2.0.0-beta.13/dist/commands/gatekeeper/index.ts)_
+_See
+code: [dist/commands/gatekeeper/index.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v2.0.0-beta.13/dist/commands/gatekeeper/index.ts)_
 
 ## `gateway gatekeeper close`
 
@@ -181,7 +184,8 @@ DESCRIPTION
   Controls a gatekeeper network
 ```
 
-_See code: [dist/commands/network/index.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v2.0.0-beta.13/dist/commands/network/index.ts)_
+_See
+code: [dist/commands/network/index.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v2.0.0-beta.13/dist/commands/network/index.ts)_
 
 ## `gateway network close`
 
@@ -258,7 +262,8 @@ DESCRIPTION
   Controls the gateway pass interface
 ```
 
-_See code: [dist/commands/pass/index.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v2.0.0-beta.13/dist/commands/pass/index.ts)_
+_See
+code: [dist/commands/pass/index.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v2.0.0-beta.13/dist/commands/pass/index.ts)_
 
 ## `gateway pass changegatekeeper`
 
@@ -653,4 +658,41 @@ FLAGS
 DESCRIPTION
   Update installed plugins.
 ```
+
 <!-- commandsstop -->
+
+## Tutorial :: Creating and using a Gatekeeper Network
+
+## Initial Setup
+
+Generate a guardian key `gXu29PYZTfeKJfCeDuquGzBYpHmtcSCVmLVsqfg61AN` in this example:
+`solana-keygen grind --starts-with=g:1`
+
+Generate a network key `nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm` in this example:
+`solana-keygen grind --starts-with=n:1`
+
+Generate a gatekeeper key `GK3o4HKqnTTSkh6D59BdK28mto63TiXaPaNsDeFpG7mj` in this example:
+`solana-keygen grind --starts-with=GK:1`
+
+## Create a network
+
+```bash
+gateway network create \
+ --gaudianKeypair ./gXu29PYZTfeKJfCeDuquGzBYpHmtcSCVmLVsqfg61AN.json \
+ --networkKeypair ./nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm.json \
+ --token 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU \ #initial SPL token for fees (USDC in this example)
+ --fees 100 \ # default fee amount
+ --cluster devnet # the cluster devnet|localnet|mainnet
+```
+
+# Create a gatekeeper
+
+```bash
+gateway gatekeeper create \
+ --gatekeeper GK3o4HKqnTTSkh6D59BdK28mto63TiXaPaNsDeFpG7mj \
+ --networkKeypair ./nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm.json \
+ --payerKeypair ./nq6ZsUo4offk5MifQ1CceSx4Ezk5wN9V8vSvkoA8xHm.json \
+ --token 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU \ # an SPL token to support payments in (USDC in this example)
+ --fees 5 \ # The fee percentage split between the gatekeeper and network
+ --cluster devnet # the cluster devnet|localnet|mainnet
+```

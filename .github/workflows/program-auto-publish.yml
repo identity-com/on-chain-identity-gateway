@@ -1,0 +1,27 @@
+name: "Program Auto Publish"
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - "solana/program_v2/programs/gateway_v2/Cargo.toml"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+
+  publish-gateway:
+    uses: "./.github/workflows/program-auto-publish-workflow.yml"
+    with:
+      environment: "program-auto-publish"
+      package-path: "solana/program_v2/programs/gateway_v2/Cargo.toml"
+      program-address: "gate2TBGydKNyMNUqz64s8bz4uaWS9PNreMbmAjb1Ft"
+      solana-version: "stable"
+      rust-version: "stable"
+      working-directory: "./solana/program_v2"
+      solana-environment: "devnet"
+      program-binary: "target/deploy/solana_anchor_gateway.so"
+    secrets:
+      program-authority: ${{ secrets.SOLANA_PROGRAM_AUTHORITY }}

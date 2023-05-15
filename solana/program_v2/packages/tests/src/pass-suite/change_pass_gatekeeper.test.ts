@@ -13,7 +13,7 @@ import {
   makeAssociatedTokenAccountsForIssue,
   setUpAdminNetworkGatekeeper,
 } from '../test-set-up';
-import * as anchor from '@project-serum/anchor';
+import * as anchor from '@coral-xyz/anchor';
 import { SolanaAnchorGateway } from '@identity.com/gateway-solana-idl';
 import { Account, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
@@ -116,7 +116,8 @@ describe('Change pass gatekeeper', () => {
     );
 
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Halted)
+      .setGatekeeperState(GatekeeperState.Halted)
+      .withPartialSigners(networkAuthority)
       .rpc();
 
     // Act
@@ -135,7 +136,8 @@ describe('Change pass gatekeeper', () => {
     );
 
     await networkService
-      .setGatekeeperState(networkAuthority.publicKey, GatekeeperState.Frozen)
+      .setGatekeeperState(GatekeeperState.Frozen)
+      .withPartialSigners(networkAuthority)
       .rpc();
 
     // Act

@@ -5,7 +5,8 @@
 import type * as interfaces from "./interfaces";
 export type { interfaces };
 export type { FlagsStorage } from "./FlagsStorage";
-export type { Forwarder } from "./Forwarder";
+export type { FlexibleNonceForwarder } from "./FlexibleNonceForwarder";
+export type { Gated } from "./Gated";
 export type { GatewayToken } from "./GatewayToken";
 export type { MultiERC2771Context } from "./MultiERC2771Context";
 export type { ParameterizedAccessControl } from "./ParameterizedAccessControl";
