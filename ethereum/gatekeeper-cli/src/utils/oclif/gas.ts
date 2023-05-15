@@ -1,4 +1,4 @@
-import {GasPriceOracle, GetTxGasParamsRes, FallbackGasPrices, GasOracleOptions} from 'gas-price-oracle'
+import {FallbackGasPrices, GasOracleOptions, GasPriceOracle, GetTxGasParamsRes} from 'gas-price-oracle'
 import {JsonRpcProvider, Provider} from '@ethersproject/providers'
 
 export declare type GasPriceKey = 'instant' | 'fast' | 'standard' | 'low';
@@ -53,18 +53,7 @@ export const estimateGasPrice = async (
 
     ...oracleOptions,
   }
-  const payload = priceKey ? {legacySpeed: priceKey} : {isLegacy: false}
-
-  console.log('Payload to Gas Price Oracle', {
-    payload,
-    resolvedOptions,
-  })
-
   const oracle = new GasPriceOracle(resolvedOptions)
 
-  const txGasParams = await oracle.getTxGasParams()
-
-  console.log('Result from Gas Price Oracle', txGasParams)
-
-  return txGasParams
+  return oracle.getTxGasParams()
 }
