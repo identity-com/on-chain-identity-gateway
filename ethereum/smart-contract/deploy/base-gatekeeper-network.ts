@@ -4,6 +4,10 @@ import { getAccounts } from '../scripts/util';
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {Contract} from "ethers";
 
+/**
+ * Deploy the base set of gatekeeper networks. Note - this is only possible by holders of the gatea
+ */
+
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 const networks = {
@@ -81,6 +85,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 func.skip = async () => process.env.NODE_ENV === 'test';
-func.id = 'create_civic_gatekeeper_networks';
-func.tags = ['CivicGatekeeperNetworks'];
+func.id = 'create_base_gatekeeper_networks';
+func.tags = ['BaseGatekeeperNetworks'];
 func.dependencies = ['GatewayToken', 'Forwarder', 'TestGatekeeperNetwork'];
