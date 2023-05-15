@@ -4,8 +4,7 @@
   "workspaces": {
     "packages": [
       "smart-contract",
-      "gateway-eth-ts",
-      "gatekeeper-cli"
+      "gateway-eth-ts"
     ],
     "nohoist": [
       "**/@openzeppelin/*",
