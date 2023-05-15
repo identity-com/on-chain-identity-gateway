@@ -8,20 +8,15 @@ import {Gated} from "../../contracts/Gated.sol";
  * NOTE: DO NOT DEPLOY THIS CONTRACT. It should be deployed locally by the test suite only.
  */
 contract GatewayTokenClientTest is Gated {
-    address private _gatewayTokenContract;
-    uint256 private _gatekeeperNetwork;
-
     event Success();
 
-    constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) {
-        _gatewayTokenContract = gatewayTokenContract;
-        _gatekeeperNetwork = gatekeeperNetwork;
+    constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) Gated(gatewayTokenContract, gatekeeperNetwork) {
     }
 
     /**
      * @dev A public version of _msgData() in the GatewayToken contract, use for testing the forwarding logic.
      */
-    function testGated() external gated(_gatewayTokenContract, _gatekeeperNetwork) {
+    function testGated() external gated {
         emit Success();
     }
 }
