@@ -2,12 +2,35 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
-import { Signer, utils, Contract, ContractFactory, Overrides } from "ethers";
+import {
+  Signer,
+  utils,
+  Contract,
+  ContractFactory,
+  BigNumberish,
+  Overrides,
+} from "ethers";
 import type { Provider, TransactionRequest } from "@ethersproject/providers";
 import type { PromiseOrValue } from "../../common";
 import type { Gated, GatedInterface } from "../../contracts/Gated";
 
 const _abi = [
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "gatewayTokenContract",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "gatekeeperNetwork",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
   {
     inputs: [
       {
@@ -22,7 +45,7 @@ const _abi = [
 ] as const;
 
 const _bytecode =
-  "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220e3148ceca30f7bc26a702ac88fbfefe7b3aedefac3944052554b7ccb315c6faf64736f6c63430008090033";
+  "0x6080604052348015600f57600080fd5b5060405160d638038060d6833981016040819052602a916052565b600080546001600160a01b0319166001600160a01b039390931692909217909155600155608a565b60008060408385031215606457600080fd5b82516001600160a01b0381168114607a57600080fd5b6020939093015192949293505050565b603f8060976000396000f3fe6080604052600080fdfea26469706673582212203febb2ecc75d5c0fa410141b81f609c99801aafe65a766dda868fccb3f59177d64736f6c63430008090033";
 
 type GatedConstructorParams =
   | [signer?: Signer]
@@ -42,14 +65,26 @@ export class Gated__factory extends ContractFactory {
   }
 
   override deploy(
+    gatewayTokenContract: PromiseOrValue<string>,
+    gatekeeperNetwork: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<Gated> {
-    return super.deploy(overrides || {}) as Promise<Gated>;
+    return super.deploy(
+      gatewayTokenContract,
+      gatekeeperNetwork,
+      overrides || {}
+    ) as Promise<Gated>;
   }
   override getDeployTransaction(
+    gatewayTokenContract: PromiseOrValue<string>,
+    gatekeeperNetwork: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): TransactionRequest {
-    return super.getDeployTransaction(overrides || {});
+    return super.getDeployTransaction(
+      gatewayTokenContract,
+      gatekeeperNetwork,
+      overrides || {}
+    );
   }
   override attach(address: string): Gated {
     return super.attach(address) as Gated;
