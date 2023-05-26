@@ -51,6 +51,16 @@ export class GatewayTsInternal<
     };
   }
 
+  /**
+   * Overrides that are safe to use for read-only operations.
+   * Some chains / RPC providers (e.g. Polygon zkEVM) do not allow gasLimit or gasPrice to be set
+   * for read-only operations.
+   * @private
+   */
+  private get readOnlyOverrides(): Overrides {
+    return omit(["gasLimit", "gasPrice"], this.overrides);
+  }
+
   public async checkedGetTokenId(
     owner: string,
     network: bigint
@@ -59,7 +69,7 @@ export class GatewayTsInternal<
       await this.gatewayTokenContract.getTokenIdsByOwnerAndNetwork(
         owner,
         network,
-        this.overrides
+        this.readOnlyOverrides
       );
     if (tokenIds.length > 1 && !this.options?.tolerateMultipleTokens)
       throw new Error("Multiple tokens found for owner and network");
@@ -92,7 +102,10 @@ export class GatewayTsInternal<
   }
 
   getGatekeeperNetwork(network: bigint): Promise<string> {
-    return this.gatewayTokenContract.getNetwork(network, this.overrides);
+    return this.gatewayTokenContract.getNetwork(
+      network,
+      this.readOnlyOverrides
+    );
   }
 
   listNetworks(
@@ -225,7 +238,8 @@ export class GatewayTsInternal<
   verify(owner: string, network: bigint): Promise<boolean> {
     return this.gatewayTokenContract["verifyToken(address,uint256)"](
       owner,
-      network
+      network,
+      this.readOnlyOverrides
     );
   }
 
@@ -233,7 +247,10 @@ export class GatewayTsInternal<
     const [tokenId] = await this.getTokenIdsByOwnerAndNetwork(owner, network);
     if (!tokenId) return null;
 
-    const rawData = await this.gatewayTokenContract.getToken(tokenId);
+    const rawData = await this.gatewayTokenContract.getToken(
+      tokenId,
+      this.readOnlyOverrides
+    );
     return {
       owner: rawData.owner,
       tokenId,
@@ -250,7 +267,7 @@ export class GatewayTsInternal<
     return this.gatewayTokenContract.getTokenIdsByOwnerAndNetwork(
       owner,
       network,
-      this.overrides
+      this.readOnlyOverrides
     );
   }
 }

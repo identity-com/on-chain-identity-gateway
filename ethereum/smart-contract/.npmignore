@@ -1,0 +1,6 @@
+# NPM Ignore file for @identity.com/gateway-protocol-eth
+# Note - only the verifier interface and Gated contract are exported
+# As only those are needed to integrate Gateway
+*
+!contracts/interfaces/IGatewayTokenVerifier.sol
+!contracts/Gated.sol

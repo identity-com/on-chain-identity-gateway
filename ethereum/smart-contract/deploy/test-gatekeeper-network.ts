@@ -4,6 +4,9 @@ import { getAccounts } from '../scripts/util';
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const gatekeeperNetwork = 1;
+// open to all - private key is known
+const testGatekeeper = "0x34bb5808d46a21AaeBf7C1300Ef17213Fe215B91";
+const civicDevGatekeeper = "0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, ethers } = hre;
@@ -12,16 +15,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // hardhat does not resolve them properly. Check by deploying to localhost that they are correct first
   // yarn local --no-deploy &
   // yarn deploy localhost
-  let { deployer, authority, gatekeeper } = await getAccounts(hre);
-  // hack for the deduping keys bug- set the gatekeeper auth to the authority
-  if (process.env.STAGE === 'prod') gatekeeper = authority;
+  let { deployer, gatekeeper } = await getAccounts(hre);
 
   const deployerSigner = await ethers.getSigner(deployer);
-  const authoritySigner = await ethers.getSigner(authority);
-
-  console.log('deployer', deployer);
-  console.log('authority', authority);
-  console.log('gatekeeper', gatekeeper);
 
   const gatewayToken = await deployments.get('GatewayTokenProxy');
 
@@ -50,19 +46,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
   }
 
-  const addNetworkAuthorityTx = await (await token.addNetworkAuthority(authority, gatekeeperNetwork)).wait();
-  console.log(
-    'added new network authority with ' +
-      authority +
-      ' into Gateway Token at ' +
-      gatewayToken.address +
-      ' using ' +
-      addNetworkAuthorityTx.gasUsed.toNumber() +
-      ' gas',
-  );
 
   const addGatekeeperTx = await (
-    await token.connect(authoritySigner).addGatekeeper(gatekeeper, gatekeeperNetwork)
+    await token.addGatekeeper(gatekeeper, gatekeeperNetwork)
   ).wait();
   console.log(
     'added new gatekeeper with ' +
@@ -73,9 +59,36 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       addGatekeeperTx.gasUsed.toNumber() +
       ' gas',
   );
+
+
+  const addTestGatekeeperTx = await (
+      await token.addGatekeeper(testGatekeeper, gatekeeperNetwork)
+  ).wait();
+  console.log(
+      'added test gatekeeper with ' +
+      testGatekeeper +
+      ' address into Gateway Token at ' +
+      gatewayToken.address +
+      ' using ' +
+      addTestGatekeeperTx.gasUsed.toNumber() +
+      ' gas',
+  );
+
+  const addCivicDevGatekeeperTx = await (
+      await token.addGatekeeper(civicDevGatekeeper, gatekeeperNetwork)
+  ).wait();
+  console.log(
+      'added civic dev gatekeeper with ' +
+      civicDevGatekeeper +
+      ' address into Gateway Token at ' +
+      gatewayToken.address +
+      ' using ' +
+      addCivicDevGatekeeperTx.gasUsed.toNumber() +
+      ' gas',
+  );
 };
 
 export default func;
 func.id = 'create_test_gatekeeper_network';
 func.tags = ['TestGatekeeperNetwork'];
-func.dependencies = ['GatewayToken'];
+func.dependencies = ['GatewayToken', 'Forwarder'];
