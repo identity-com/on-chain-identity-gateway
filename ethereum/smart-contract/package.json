@@ -11,7 +11,7 @@
     "test": "NODE_ENV=test hardhat test",
     "deploy": "hardhat deploy --tags GatewayToken --network $1",
     "upgrade-contract": "hardhat deploy --tags UpgradeV1 --network $1",
-    "local": "STAGE=dev hardhat node --tags GatewayToken",
+    "local": "STAGE=dev hardhat node",
     "build": "hardhat compile",
     "lint:sol": "solhint --config .solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
     "prettier:write": "prettier --config prettier.config.js --write '**/*.{js,md,sol,ts,json}'",

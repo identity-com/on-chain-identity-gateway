@@ -10,7 +10,6 @@ import { NULL_CHARGE, randomAddress, randomWallet, ZERO_ADDRESS } from './utils/
 import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
 import { IForwarder } from '../typechain-types';
 import { TransactionReceipt } from '@ethersproject/providers';
-import { NULL_ADDRESS } from '@identity.com/gateway-eth-ts/dist/utils/constants';
 
 describe('GatewayToken', async () => {
   let signers: SignerWithAddress[];
@@ -1429,7 +1428,7 @@ describe('GatewayToken', async () => {
       const tokenId = await upgradedGatewayToken.tokenOfOwnerByIndex(alice.address, 0);
       const issuingGatekeeper = await upgradedGatewayToken.getIssuingGatekeeper(tokenId);
 
-      expect(issuingGatekeeper).to.equal(NULL_ADDRESS);
+      expect(issuingGatekeeper).to.equal(ZERO_ADDRESS);
     });
 
     it('new tokens can be issued, and store the gatekeeper field', async () => {
