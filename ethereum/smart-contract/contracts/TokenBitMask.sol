@@ -29,7 +29,7 @@ contract TokenBitMask {
     event FlagsStorageUpdated(address indexed flagsStorage);
 
     /**
-     * @dev Internal funciton to set FlagsStorage contract address
+     * @dev Internal function to set FlagsStorage contract address
      * @param _flagsStorage FlagsStorage contract address
      */
     function _setFlagsStorage(address _flagsStorage) internal {

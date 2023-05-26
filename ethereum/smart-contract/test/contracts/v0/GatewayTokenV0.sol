@@ -10,17 +10,19 @@ import {IERC3525MetadataUpgradeable} from "@solvprotocol/erc-3525/extensions/IER
 import {ERC3525Upgradeable} from "@solvprotocol/erc-3525/ERC3525Upgradeable.sol";
 import {IERC721} from "@solvprotocol/erc-3525/IERC721.sol";
 import {IERC3525} from "@solvprotocol/erc-3525/IERC3525.sol";
-import {TokenBitMask} from "./TokenBitMask.sol";
-import {IGatewayToken} from "./interfaces/IGatewayToken.sol";
-import {IERC721Freezable} from "./interfaces/IERC721Freezable.sol";
-import {IERC721Expirable} from "./interfaces/IERC721Expirable.sol";
-import {IERC721Revokable} from "./interfaces/IERC721Revokable.sol";
-import {MultiERC2771Context} from "./MultiERC2771Context.sol";
-import {Charge} from "./library/Charge.sol";
-import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
-import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
-import {ChargeHandler} from "./ChargeHandler.sol";
-import {BitMask} from "./library/BitMask.sol";
+import {TokenBitMask} from "../../../contracts/TokenBitMask.sol";
+import {IERC721Freezable} from "../../../contracts/interfaces/IERC721Freezable.sol";
+import {IERC721ExpirableV0} from "./IERC721ExpirableV0.sol";
+import {IERC721Revokable} from "../../../contracts/interfaces/IERC721Revokable.sol";
+import {MultiERC2771Context} from "../../../contracts/MultiERC2771Context.sol";
+import {Charge} from "./ChargeV0.sol";
+import {ParameterizedAccessControl} from "../../../contracts/ParameterizedAccessControl.sol";
+import {
+    Common__MissingAccount,
+    Common__NotContract,
+    Common__Unauthorized
+} from "../../../contracts/library/CommonErrors.sol";
+import {IGatewayTokenV0} from "./IGatewayTokenV0.sol";
 
 /**
  * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens
@@ -33,27 +35,19 @@ import {BitMask} from "./library/BitMask.sol";
  * and overall system Admin who can add
  * new Gatekeepers and Network Authorities
  */
-contract GatewayToken is
+contract GatewayTokenV0 is
     UUPSUpgradeable,
     MultiERC2771Context,
     ERC3525Upgradeable,
     ParameterizedAccessControl,
     IERC721Freezable,
-    IERC721Expirable,
+    IERC721ExpirableV0,
     IERC721Revokable,
-    IGatewayToken,
-    TokenBitMask,
-    ChargeHandler
+    IGatewayTokenV0,
+    TokenBitMask
 {
     using Address for address;
     using Strings for uint;
-    using BitMask for uint256;
-
-    enum NetworkFeature {
-        // if set, gateway tokens are considered invalid if the gatekeeper that minted them is removed from the network
-        // defaults to false, and can be set by the network authority.
-        REMOVE_GATEKEEPER_INVALIDATES_TOKENS
-    }
 
     // Off-chain DAO governance access control
     mapping(uint => bool) public isNetworkDAOGoverned;
@@ -63,19 +57,13 @@ contract GatewayToken is
     bytes32 public constant GATEKEEPER_ROLE = keccak256("GATEKEEPER_ROLE");
     bytes32 public constant NETWORK_AUTHORITY_ROLE = keccak256("NETWORK_AUTHORITY_ROLE");
 
-    // Mapping from token id to state
+    // Optional mapping for gateway token bitmaps
     mapping(uint => TokenState) internal _tokenStates;
 
     // Optional Mapping from token ID to expiration date
     mapping(uint => uint) internal _expirations;
 
     mapping(uint => string) internal _networks;
-
-    // Specifies the gatekeeper that minted a given token
-    mapping(uint => address) internal _issuingGatekeepers;
-
-    // Mapping for gatekeeper network features
-    mapping(uint => uint256) internal _networkFeatures;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor is "empty" as we are using the proxy pattern,
@@ -150,15 +138,8 @@ contract GatewayToken is
      * @param network Gateway token type
      * @param mask The bitmask for the token
      */
-    function mint(
-        address to,
-        uint network,
-        uint expiration,
-        uint mask,
-        Charge calldata charge
-    ) external payable virtual {
+    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) external virtual {
         _checkGatekeeper(network);
-        _handleCharge(charge);
 
         uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
 
@@ -169,8 +150,6 @@ contract GatewayToken is
         if (mask > 0) {
             _setBitMask(tokenId, mask);
         }
-
-        _issuingGatekeepers[tokenId] = _msgSender();
     }
 
     function revoke(uint tokenId) external virtual override {
@@ -204,12 +183,9 @@ contract GatewayToken is
     /**
      * @dev Triggers to set expiration for tokenId
      * @param tokenId Gateway token id
-     * @param timestamp Expiration timestamp
-     * @param charge Charge for the operation
      */
-    function setExpiration(uint tokenId, uint timestamp, Charge calldata charge) external payable virtual {
+    function setExpiration(uint tokenId, uint timestamp, Charge calldata) external virtual {
         _checkGatekeeper(slotOf(tokenId));
-        _handleCharge(charge);
 
         _setExpiration(tokenId, timestamp);
     }
@@ -336,17 +312,8 @@ contract GatewayToken is
         _setBitMask(tokenId, mask);
     }
 
-    function setNetworkFeatures(uint network, uint256 mask) external virtual {
-        _checkSenderRole(NETWORK_AUTHORITY_ROLE, network);
-        _networkFeatures[network] = mask;
-    }
-
     function getNetwork(uint network) external view virtual returns (string memory) {
         return _networks[network];
-    }
-
-    function getIssuingGatekeeper(uint tokenId) external view virtual returns (address) {
-        return _issuingGatekeepers[tokenId];
     }
 
     function getTokenIdsByOwnerAndNetwork(address owner, uint network) external view virtual returns (uint[] memory) {
@@ -467,10 +434,6 @@ contract GatewayToken is
             super.supportsInterface(interfaceId);
     }
 
-    function networkHasFeature(uint network, NetworkFeature feature) public view virtual returns (bool) {
-        return _networkFeatures[network].checkBit(uint8(feature));
-    }
-
     /**
      * @dev Freezes `tokenId` and it's usage by gateway token owner.
      *
@@ -558,17 +521,6 @@ contract GatewayToken is
         // and avoids a revert, if the token does not exist.
         TokenState state = _tokenStates[tokenId];
         if (state != TokenState.ACTIVE) return false;
-
-        // if the network has the REMOVE_GATEKEEPER_INVALIDATES_TOKENS feature,
-        // check that the gatekeeper is still in the gatekeeper network.
-        // tokens issued without gatekeepers are exempt.
-        uint network = slotOf(tokenId);
-        if (networkHasFeature(network, NetworkFeature.REMOVE_GATEKEEPER_INVALIDATES_TOKENS)) {
-            address gatekeeper = _issuingGatekeepers[tokenId];
-            if (gatekeeper != address(0) && !hasRole(GATEKEEPER_ROLE, network, gatekeeper)) {
-                return false;
-            }
-        }
 
         address owner = ownerOf(tokenId);
         if (_expirations[tokenId] != 0 && !allowExpired) {

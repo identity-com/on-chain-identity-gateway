@@ -47,12 +47,17 @@ gatekeeper network. Gatekeeper networks are self-organising, and each has their 
 Like the GTs themselves, anyone can create a new gatekeeper network, and determine the rules around how gatekeepers are
 added to, and removed from, the network.
 
+If a gatekeeper is removed from a gatekeeper network, the tokens that they have issued will still be valid,
+unless the gatekeeper network is configured to automatically revoke them.
+
 ## Integration
 
 The Gateway Protocol is designed to be integrated into existing smart contracts with minimal effort.
 As mentioned above, the client smart contract specifies the Gatekeeper Network that it wishes to accept tokens from.
 The client smart contract then calls the Gateway Protocol to verify that the user has a valid GT under that network.
 If it does, the client smart contract can proceed with the transaction.
+
+See smart-contract/README.md for more details.
 
 ## Obtaining Gateway Tokens
 

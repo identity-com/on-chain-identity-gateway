@@ -107,3 +107,9 @@ export type { GatewayTokenUpgradeTest } from "./test/contracts/GatewayTokenUpgra
 export { GatewayTokenUpgradeTest__factory } from "./factories/test/contracts/GatewayTokenUpgradeTest__factory";
 export type { StubMultisig } from "./test/contracts/StubMultisig";
 export { StubMultisig__factory } from "./factories/test/contracts/StubMultisig__factory";
+export type { GatewayTokenV0 } from "./test/contracts/v0/GatewayTokenV0";
+export { GatewayTokenV0__factory } from "./factories/test/contracts/v0/GatewayTokenV0__factory";
+export type { IERC721ExpirableV0 } from "./test/contracts/v0/IERC721ExpirableV0";
+export { IERC721ExpirableV0__factory } from "./factories/test/contracts/v0/IERC721ExpirableV0__factory";
+export type { IGatewayTokenV0 } from "./test/contracts/v0/IGatewayTokenV0";
+export { IGatewayTokenV0__factory } from "./factories/test/contracts/v0/IGatewayTokenV0__factory";

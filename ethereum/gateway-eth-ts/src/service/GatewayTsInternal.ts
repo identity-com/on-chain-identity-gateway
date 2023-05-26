@@ -146,6 +146,14 @@ export class GatewayTsInternal<
     );
   }
 
+  setNetworkFeature(featureBitmask: bigint, network: bigint): Promise<O> {
+    return this.gatewayTokenContract.setNetworkFeatures(
+      network,
+      featureBitmask,
+      this.overrides
+    );
+  }
+
   issue(
     owner: string,
     network: bigint,

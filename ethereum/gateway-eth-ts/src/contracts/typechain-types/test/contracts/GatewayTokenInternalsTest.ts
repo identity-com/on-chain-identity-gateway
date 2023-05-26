@@ -67,6 +67,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     "freeze(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getExpiration(uint256)": FunctionFragment;
+    "getIssuingGatekeeper(uint256)": FunctionFragment;
     "getMsgData(uint256)": FunctionFragment;
     "getMsgSender()": FunctionFragment;
     "getNetwork(uint256)": FunctionFragment;
@@ -86,6 +87,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     "metadataDescriptor()": FunctionFragment;
     "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
     "name()": FunctionFragment;
+    "networkHasFeature(uint256,uint8)": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "proxiableUUID()": FunctionFragment;
     "removeForwarder(address)": FunctionFragment;
@@ -102,6 +104,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     "setBitmask(uint256,uint256)": FunctionFragment;
     "setExpiration(uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
     "setMetadataDescriptor(address)": FunctionFragment;
+    "setNetworkFeatures(uint256,uint256)": FunctionFragment;
     "setSuperAdmin(address)": FunctionFragment;
     "slotOf(uint256)": FunctionFragment;
     "slotURI(uint256)": FunctionFragment;
@@ -147,6 +150,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
       | "freeze"
       | "getApproved"
       | "getExpiration"
+      | "getIssuingGatekeeper"
       | "getMsgData"
       | "getMsgSender"
       | "getNetwork"
@@ -166,6 +170,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
       | "metadataDescriptor"
       | "mint"
       | "name"
+      | "networkHasFeature"
       | "ownerOf"
       | "proxiableUUID"
       | "removeForwarder"
@@ -182,6 +187,7 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
       | "setBitmask"
       | "setExpiration"
       | "setMetadataDescriptor"
+      | "setNetworkFeatures"
       | "setSuperAdmin"
       | "slotOf"
       | "slotURI"
@@ -295,6 +301,10 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getIssuingGatekeeper",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getMsgData",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -388,6 +398,10 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "networkHasFeature",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "ownerOf",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -471,6 +485,10 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "setMetadataDescriptor",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setNetworkFeatures",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "setSuperAdmin",
@@ -641,6 +659,10 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
     functionFragment: "getExpiration",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getIssuingGatekeeper",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getMsgData", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getMsgSender",
@@ -693,6 +715,10 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "networkHasFeature",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "proxiableUUID",
@@ -743,6 +769,10 @@ export interface GatewayTokenInternalsTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setMetadataDescriptor",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setNetworkFeatures",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1267,6 +1297,11 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getIssuingGatekeeper(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     getMsgData(
       x: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1380,6 +1415,12 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
+    networkHasFeature(
+      network: PromiseOrValue<BigNumberish>,
+      feature: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     ownerOf(
       tokenId_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1470,6 +1511,12 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     setMetadataDescriptor(
       _metadataDescriptor: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setNetworkFeatures(
+      network: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1668,6 +1715,11 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getIssuingGatekeeper(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   getMsgData(
     x: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1781,6 +1833,12 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
   name(overrides?: CallOverrides): Promise<string>;
 
+  networkHasFeature(
+    network: PromiseOrValue<BigNumberish>,
+    feature: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   ownerOf(
     tokenId_: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
@@ -1871,6 +1929,12 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
   setMetadataDescriptor(
     _metadataDescriptor: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setNetworkFeatures(
+    network: PromiseOrValue<BigNumberish>,
+    mask: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -2067,6 +2131,11 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getIssuingGatekeeper(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     getMsgData(
       x: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -2178,6 +2247,12 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<string>;
 
+    networkHasFeature(
+      network: PromiseOrValue<BigNumberish>,
+      feature: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     ownerOf(
       tokenId_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -2268,6 +2343,12 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     setMetadataDescriptor(
       _metadataDescriptor: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setNetworkFeatures(
+      network: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2683,6 +2764,11 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getIssuingGatekeeper(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getMsgData(
       x: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -2788,6 +2874,12 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
+    networkHasFeature(
+      network: PromiseOrValue<BigNumberish>,
+      feature: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     ownerOf(
       tokenId_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -2878,6 +2970,12 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     setMetadataDescriptor(
       _metadataDescriptor: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setNetworkFeatures(
+      network: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -3081,6 +3179,11 @@ export interface GatewayTokenInternalsTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getIssuingGatekeeper(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getMsgData(
       x: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -3188,6 +3291,12 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    networkHasFeature(
+      network: PromiseOrValue<BigNumberish>,
+      feature: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     ownerOf(
       tokenId_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -3278,6 +3387,12 @@ export interface GatewayTokenInternalsTest extends BaseContract {
 
     setMetadataDescriptor(
       _metadataDescriptor: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setNetworkFeatures(
+      network: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
