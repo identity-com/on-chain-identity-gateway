@@ -349,12 +349,39 @@ contract GatewayToken is
         return _issuingGatekeepers[tokenId];
     }
 
-    function getTokenIdsByOwnerAndNetwork(address owner, uint network) external view virtual returns (uint[] memory) {
+    function getTokenIdsByOwnerAndNetwork(address owner, uint network, bool onlyActive) external view virtual returns (uint[] memory) {
         (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
-        uint[] memory tokenIdsResized = new uint[](count);
-        for (uint i = 0; i < count; i++) {
-            tokenIdsResized[i] = tokenIds[i];
+
+        // treat the not onlyActive case separately so that we can avoid two passes
+        if (!onlyActive) {
+            uint[] memory tokenIdsResizedNoActiveCheck = new uint[](count);
+            for (uint i = 0; i < count; i++) {
+                tokenIdsResizedNoActiveCheck[i] = tokenIds[i];
+            }
+            return tokenIdsResizedNoActiveCheck;
         }
+
+        // For the 'onlyActive' case, we need to first count the number of elements, initialise the return array, then fill it
+        // First pass: Count the number of non-empty elements
+        uint nonEmptyCount = 0;
+        for (uint i = 0; i < count; i++) {
+            if (!_existsAndActive(tokenIds[i], false)) {
+                continue;
+            }
+            nonEmptyCount++;
+        }
+
+        // Second pass: Create a new array of the correct size and fill it
+        uint[] memory tokenIdsResized = new uint[](nonEmptyCount);
+        uint j = 0;
+        for (uint i = 0; i < count; i++) {
+            if (!_existsAndActive(tokenIds[i], false)) {
+                continue;
+            }
+            tokenIdsResized[j] = tokenIds[i];
+            j++;
+        }
+
         return tokenIdsResized;
     }
 

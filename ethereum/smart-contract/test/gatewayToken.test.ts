@@ -438,10 +438,34 @@ describe('GatewayToken', async () => {
     });
 
     it('get all tokens for a user and network', async () => {
-      const aliceTokenIdsGKN1 = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1);
+      const aliceTokenIdsGKN1 = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
       expect(aliceTokenIdsGKN1.length).to.equal(2);
       expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1[0])).to.equal(alice.address);
       expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1[1])).to.equal(alice.address);
+    });
+
+    it('onlyActive should determine whether an expired token is returned or not', async () => {
+      const aliceTokenIdsGKN1 = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
+      const beforeExpiration = await gatewayToken.getExpiration(aliceTokenIdsGKN1[1]);
+      await gatewayToken
+        .connect(gatekeeper)
+        .setExpiration(aliceTokenIdsGKN1[1], Date.parse('2020-01-01') / 1000, NULL_CHARGE);
+
+      const aliceTokenIdsGKN1AfterExpiry = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
+
+      console.log('aliceTokenIdsGKN1AfterExpiry.length', aliceTokenIdsGKN1AfterExpiry.length);
+      expect(aliceTokenIdsGKN1AfterExpiry.length).to.equal(1);
+      expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiry[0])).to.equal(alice.address);
+
+      const aliceTokenIdsGKN1AfterExpiryFlagFalse = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, false);
+      expect(aliceTokenIdsGKN1AfterExpiryFlagFalse.length).to.equal(2);
+      expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiryFlagFalse[0])).to.equal(alice.address);
+      expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiryFlagFalse[1])).to.equal(alice.address);
+
+      // reset expiration
+      await gatewayToken
+        .connect(gatekeeper)
+        .setExpiration(aliceTokenIdsGKN1[1], beforeExpiration, NULL_CHARGE);
     });
 
     it('Try to transfer a token, expect revert', async () => {
@@ -471,7 +495,7 @@ describe('GatewayToken', async () => {
       const dummyWallet = randomAddress();
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, expectedBitmask, NULL_CHARGE);
 
-      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
       const bitmask = await gatewayToken.getTokenBitmask(dummyWalletTokenId);
 
       expect(bitmask).to.equal(expectedBitmask);
@@ -482,7 +506,7 @@ describe('GatewayToken', async () => {
       const expectedExpiration = Date.parse('2222-01-01') / 1000;
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, expectedExpiration, 0, NULL_CHARGE);
 
-      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
       const expiration = await gatewayToken.getExpiration(dummyWalletTokenId);
 
       expect(expiration).to.equal(expectedExpiration);
@@ -577,7 +601,7 @@ describe('GatewayToken', async () => {
       dummyWallet = randomAddress();
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
 
-      [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
     });
 
     it('freeze token', async () => {
@@ -613,7 +637,7 @@ describe('GatewayToken', async () => {
     it('all tokens must be frozen for to verify to return false', async () => {
       // mint a second token
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
-      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1);
+      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenIds[0]);
 
@@ -665,7 +689,7 @@ describe('GatewayToken', async () => {
     it('all tokens must be burned for verified to return false', async () => {
       // mint a second token
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
-      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).burn(dummyWalletTokenIds[0]);
 
@@ -681,7 +705,7 @@ describe('GatewayToken', async () => {
     it('all tokens must be revoked for verified to return false', async () => {
       // mint a second token
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
-      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenIds[0]);
 
@@ -697,7 +721,7 @@ describe('GatewayToken', async () => {
     let tokenId;
 
     before(async () => {
-      [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1);
+      [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
     });
 
     it('Test bitmask operations for Alice token', async () => {
@@ -875,7 +899,7 @@ describe('GatewayToken', async () => {
       const userToBeFrozen = randomWallet();
       // mint and freeze a user's token
       await gatewayToken.connect(gatekeeper).mint(userToBeFrozen.address, gkn1, 0, 0, NULL_CHARGE);
-      const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(userToBeFrozen.address, gkn1);
+      const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(userToBeFrozen.address, gkn1, true);
       await gatewayToken.connect(gatekeeper).freeze(tokenId);
       await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
 
@@ -1413,7 +1437,7 @@ describe('GatewayToken', async () => {
     });
 
     it('existing tokens can be refreshed after the upgrade', async () => {
-      const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1);
+      const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
       const value = ethers.utils.parseEther('0.1');
       const charge = makeWeiCharge(value);
       // Since we are not forwarding the transaction, the gatekeeper will actually pay the charge here.

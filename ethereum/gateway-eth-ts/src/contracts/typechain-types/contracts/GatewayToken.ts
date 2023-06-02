@@ -71,7 +71,7 @@ export interface GatewayTokenInterface extends utils.Interface {
     "getRoleAdmin(bytes32,uint256)": FunctionFragment;
     "getToken(uint256)": FunctionFragment;
     "getTokenBitmask(uint256)": FunctionFragment;
-    "getTokenIdsByOwnerAndNetwork(address,uint256)": FunctionFragment;
+    "getTokenIdsByOwnerAndNetwork(address,uint256,bool)": FunctionFragment;
     "grantRole(bytes32,uint256,address)": FunctionFragment;
     "hasRole(bytes32,uint256,address)": FunctionFragment;
     "initialize(string,string,address,address,address[])": FunctionFragment;
@@ -312,7 +312,7 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTokenIdsByOwnerAndNetwork",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
@@ -1274,6 +1274,7 @@ export interface GatewayToken extends BaseContract {
     getTokenIdsByOwnerAndNetwork(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      onlyActive: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
@@ -1679,6 +1680,7 @@ export interface GatewayToken extends BaseContract {
   getTokenIdsByOwnerAndNetwork(
     owner: PromiseOrValue<string>,
     network: PromiseOrValue<BigNumberish>,
+    onlyActive: PromiseOrValue<boolean>,
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
@@ -2084,6 +2086,7 @@ export interface GatewayToken extends BaseContract {
     getTokenIdsByOwnerAndNetwork(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      onlyActive: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
@@ -2689,6 +2692,7 @@ export interface GatewayToken extends BaseContract {
     getTokenIdsByOwnerAndNetwork(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      onlyActive: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -3091,6 +3095,7 @@ export interface GatewayToken extends BaseContract {
     getTokenIdsByOwnerAndNetwork(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      onlyActive: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
