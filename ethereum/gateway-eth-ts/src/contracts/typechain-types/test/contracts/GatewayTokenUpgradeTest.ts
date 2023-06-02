@@ -72,6 +72,7 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     "getToken(uint256)": FunctionFragment;
     "getTokenBitmask(uint256)": FunctionFragment;
     "getTokenIdsByOwnerAndNetwork(address,uint256)": FunctionFragment;
+    "getTokenIdsByOwnerAndNetwork(address,uint256,bool)": FunctionFragment;
     "grantRole(bytes32,uint256,address)": FunctionFragment;
     "hasRole(bytes32,uint256,address)": FunctionFragment;
     "initialize(string,string,address,address,address[])": FunctionFragment;
@@ -151,7 +152,8 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
       | "getRoleAdmin"
       | "getToken"
       | "getTokenBitmask"
-      | "getTokenIdsByOwnerAndNetwork"
+      | "getTokenIdsByOwnerAndNetwork(address,uint256)"
+      | "getTokenIdsByOwnerAndNetwork(address,uint256,bool)"
       | "grantRole"
       | "hasRole"
       | "initialize"
@@ -311,8 +313,16 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getTokenIdsByOwnerAndNetwork",
+    functionFragment: "getTokenIdsByOwnerAndNetwork(address,uint256)",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTokenIdsByOwnerAndNetwork(address,uint256,bool)",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
@@ -652,7 +662,11 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getTokenIdsByOwnerAndNetwork",
+    functionFragment: "getTokenIdsByOwnerAndNetwork(address,uint256)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTokenIdsByOwnerAndNetwork(address,uint256,bool)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
@@ -1271,9 +1285,16 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    getTokenIdsByOwnerAndNetwork(
+    "getTokenIdsByOwnerAndNetwork(address,uint256)"(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[]]>;
+
+    "getTokenIdsByOwnerAndNetwork(address,uint256,bool)"(
+      owner: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      onlyActiveNonExpired: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
@@ -1676,9 +1697,16 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getTokenIdsByOwnerAndNetwork(
+  "getTokenIdsByOwnerAndNetwork(address,uint256)"(
     owner: PromiseOrValue<string>,
     network: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber[]>;
+
+  "getTokenIdsByOwnerAndNetwork(address,uint256,bool)"(
+    owner: PromiseOrValue<string>,
+    network: PromiseOrValue<BigNumberish>,
+    onlyActiveNonExpired: PromiseOrValue<boolean>,
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
@@ -2081,9 +2109,16 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getTokenIdsByOwnerAndNetwork(
+    "getTokenIdsByOwnerAndNetwork(address,uint256)"(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber[]>;
+
+    "getTokenIdsByOwnerAndNetwork(address,uint256,bool)"(
+      owner: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      onlyActiveNonExpired: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
@@ -2686,9 +2721,16 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getTokenIdsByOwnerAndNetwork(
+    "getTokenIdsByOwnerAndNetwork(address,uint256)"(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getTokenIdsByOwnerAndNetwork(address,uint256,bool)"(
+      owner: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      onlyActiveNonExpired: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -3088,9 +3130,16 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getTokenIdsByOwnerAndNetwork(
+    "getTokenIdsByOwnerAndNetwork(address,uint256)"(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getTokenIdsByOwnerAndNetwork(address,uint256,bool)"(
+      owner: PromiseOrValue<string>,
+      network: PromiseOrValue<BigNumberish>,
+      onlyActiveNonExpired: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

@@ -312,7 +312,11 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTokenIdsByOwnerAndNetwork",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>, PromiseOrValue<boolean>]
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
