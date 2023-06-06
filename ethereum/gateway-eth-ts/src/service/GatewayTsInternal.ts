@@ -63,12 +63,14 @@ export class GatewayTsInternal<
 
   public async checkedGetTokenId(
     owner: string,
-    network: bigint
+    network: bigint,
+    onlyActive: boolean = false
   ): Promise<BigNumber> {
     const tokenIds: BigNumber[] =
       await this.gatewayTokenContract.getTokenIdsByOwnerAndNetwork(
         owner,
         network,
+        onlyActive,
         this.readOnlyOverrides
       );
     if (tokenIds.length > 1 && !this.options?.tolerateMultipleTokens)
@@ -262,11 +264,13 @@ export class GatewayTsInternal<
 
   getTokenIdsByOwnerAndNetwork(
     owner: string,
-    network: bigint
+    network: bigint,
+    onlyActive: boolean = false
   ): Promise<BigNumber[]> {
     return this.gatewayTokenContract.getTokenIdsByOwnerAndNetwork(
       owner,
       network,
+      onlyActive,
       this.readOnlyOverrides
     );
   }

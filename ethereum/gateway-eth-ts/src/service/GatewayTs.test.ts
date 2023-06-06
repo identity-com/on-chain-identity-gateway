@@ -16,6 +16,8 @@ import {
 } from "./testUtils";
 dotenv.config();
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 describe("GatewayTS", function () {
   this.timeout(5_000);
   let gateway: GatewayTs;
@@ -116,22 +118,60 @@ describe("GatewayTS", function () {
     assert.equal(result, false);
   }).timeout(10_000);
 
-  it("getTokenIdsByOwnerAndNetwork", async () => {
-    const tokenIds = await gateway.getTokenIdsByOwnerAndNetwork(
-      sampleWalletAddress,
-      gatekeeperNetwork
-    );
-    assert.ok(tokenIds.toString());
-  });
+  context("getTokenIdsByOwnerAndNetwork", () => {
+    let expiredTokenAddress: string;
+    before("issue a token with a short-lived expiry", async () => {
+      expiredTokenAddress = Wallet.createRandom().address;
+      const expiry = BigNumber.from(1);
+      const expectedExpiry = BigNumber.from(
+        Math.floor(Date.now() / 1000 + 100)
+      );
+      await (
+        await gateway.issue(expiredTokenAddress, gatekeeperNetwork, expiry)
+      ).wait();
 
-  it("getTokenIdsByOwnerAndNetwork should return an empty array on a wallet without a gateway token", async () => {
-    const emptyWallet = Wallet.createRandom().address;
-    const tokenIds = await gateway.getTokenIdsByOwnerAndNetwork(
-      emptyWallet,
-      gatekeeperNetwork
-    );
-    assert.equal(tokenIds.length, 0);
-  }).timeout(10_000);
+      // wait for the token to expire
+      await sleep(101);
+    });
+    context("with onlyActive flag set to true", () => {
+      it("should not return any expired tokens getTokenIdsByOwnerAndNetwork", async () => {
+        const tokenIds = await gateway.getTokenIdsByOwnerAndNetwork(
+          expiredTokenAddress,
+          gatekeeperNetwork,
+          true
+        );
+        assert.equal(tokenIds.length, 0);
+      });
+    });
+
+    context("with onlyActive flag set to false", () => {
+      it("when onlyActive=false is passed, should return all tokens, including expired", async () => {
+        const tokenIds = await gateway.getTokenIdsByOwnerAndNetwork(
+          expiredTokenAddress,
+          gatekeeperNetwork,
+          false
+        );
+        assert.equal(tokenIds.length, 1);
+      });
+
+      it("when onlyActive=false is not passed, should return all tokens, including expired", async () => {
+        const tokenIds = await gateway.getTokenIdsByOwnerAndNetwork(
+          expiredTokenAddress,
+          gatekeeperNetwork
+        );
+        assert.equal(tokenIds.length, 1);
+      });
+    });
+
+    it("getTokenIdsByOwnerAndNetwork should return an empty array on a wallet without a gateway token", async () => {
+      const emptyWallet = Wallet.createRandom().address;
+      const tokenIds = await gateway.getTokenIdsByOwnerAndNetwork(
+        emptyWallet,
+        gatekeeperNetwork
+      );
+      assert.equal(tokenIds.length, 0);
+    }).timeout(10_000);
+  });
 
   it("Missing token returns null", async () => {
     const emptyWallet = Wallet.createRandom().address;
