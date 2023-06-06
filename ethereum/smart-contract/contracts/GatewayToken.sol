@@ -350,36 +350,11 @@ contract GatewayToken is
     }
 
     function getTokenIdsByOwnerAndNetwork(address owner, uint network, bool onlyActive) external view virtual returns (uint[] memory) {
-        (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
+        (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, onlyActive);
+        uint[] memory tokenIdsResized = new uint[](count);
 
-        // treat the not onlyActive case separately so that we can avoid two passes
-        if (!onlyActive) {
-            uint[] memory tokenIdsResizedNoActiveCheck = new uint[](count);
-            for (uint i = 0; i < count; i++) {
-                tokenIdsResizedNoActiveCheck[i] = tokenIds[i];
-            }
-            return tokenIdsResizedNoActiveCheck;
-        }
-
-        // For the 'onlyActive' case, we need to first count the number of elements, initialise the return array, then fill it
-        // First pass: Count the number of non-empty elements
-        uint nonEmptyCount = 0;
         for (uint i = 0; i < count; i++) {
-            if (!_existsAndActive(tokenIds[i], false)) {
-                continue;
-            }
-            nonEmptyCount++;
-        }
-
-        // Second pass: Create a new array of the correct size and fill it
-        uint[] memory tokenIdsResized = new uint[](nonEmptyCount);
-        uint j = 0;
-        for (uint i = 0; i < count; i++) {
-            if (!_existsAndActive(tokenIds[i], false)) {
-                continue;
-            }
-            tokenIdsResized[j] = tokenIds[i];
-            j++;
+            tokenIdsResized[i] = tokenIds[i];
         }
 
         return tokenIdsResized;
@@ -391,13 +366,9 @@ contract GatewayToken is
      * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
      */
     function verifyToken(address owner, uint network) external view virtual returns (bool) {
-        (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
+        (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, true);
 
-        for (uint i = 0; i < count; i++) {
-            if (_existsAndActive(tokenIds[i], false)) return true;
-        }
-
-        return false;
+        return count > 0;
     }
 
     /**
@@ -562,14 +533,14 @@ contract GatewayToken is
         return MultiERC2771Context._msgData();
     }
 
-    function _getTokenIdsByOwnerAndNetwork(address owner, uint network) internal view returns (uint[] memory, uint) {
+    function _getTokenIdsByOwnerAndNetwork(address owner, uint network, bool onlyActive) internal view returns (uint[] memory, uint) {
         uint length = balanceOf(owner);
         uint[] memory tokenIds = new uint[](length);
         uint count = 0;
 
         for (uint i = 0; i < length; i++) {
             uint tokenId = tokenOfOwnerByIndex(owner, i);
-            if (slotOf(tokenId) == network) {
+            if (slotOf(tokenId) == network && (!onlyActive || _existsAndActive(tokenId, false))) {
                 tokenIds[count++] = tokenId;
             }
         }

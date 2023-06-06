@@ -1437,7 +1437,7 @@ describe('GatewayToken', async () => {
     });
 
     it('existing tokens can be refreshed after the upgrade', async () => {
-      const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
+      const [tokenId] = await upgradedGatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
       const value = ethers.utils.parseEther('0.1');
       const charge = makeWeiCharge(value);
       // Since we are not forwarding the transaction, the gatekeeper will actually pay the charge here.
