@@ -349,7 +349,11 @@ contract GatewayToken is
         return _issuingGatekeepers[tokenId];
     }
 
-    function getTokenIdsByOwnerAndNetwork(address owner, uint network, bool onlyActive) external view virtual returns (uint[] memory) {
+    function getTokenIdsByOwnerAndNetwork(
+        address owner,
+        uint network,
+        bool onlyActive
+    ) external view virtual returns (uint[] memory) {
         (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, onlyActive);
         uint[] memory tokenIdsResized = new uint[](count);
 
@@ -366,7 +370,7 @@ contract GatewayToken is
      * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
      */
     function verifyToken(address owner, uint network) external view virtual returns (bool) {
-        (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, true);
+        (, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, true);
 
         return count > 0;
     }
@@ -533,7 +537,11 @@ contract GatewayToken is
         return MultiERC2771Context._msgData();
     }
 
-    function _getTokenIdsByOwnerAndNetwork(address owner, uint network, bool onlyActive) internal view returns (uint[] memory, uint) {
+    function _getTokenIdsByOwnerAndNetwork(
+        address owner,
+        uint network,
+        bool onlyActive
+    ) internal view returns (uint[] memory, uint) {
         uint length = balanceOf(owner);
         uint[] memory tokenIds = new uint[](length);
         uint count = 0;

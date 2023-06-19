@@ -457,15 +457,17 @@ describe('GatewayToken', async () => {
       expect(aliceTokenIdsGKN1AfterExpiry.length).to.equal(1);
       expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiry[0])).to.equal(alice.address);
 
-      const aliceTokenIdsGKN1AfterExpiryFlagFalse = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, false);
+      const aliceTokenIdsGKN1AfterExpiryFlagFalse = await gatewayToken.getTokenIdsByOwnerAndNetwork(
+        alice.address,
+        gkn1,
+        false,
+      );
       expect(aliceTokenIdsGKN1AfterExpiryFlagFalse.length).to.equal(2);
       expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiryFlagFalse[0])).to.equal(alice.address);
       expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiryFlagFalse[1])).to.equal(alice.address);
 
       // reset expiration
-      await gatewayToken
-        .connect(gatekeeper)
-        .setExpiration(aliceTokenIdsGKN1[1], beforeExpiration, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).setExpiration(aliceTokenIdsGKN1[1], beforeExpiration, NULL_CHARGE);
     });
 
     it('Try to transfer a token, expect revert', async () => {

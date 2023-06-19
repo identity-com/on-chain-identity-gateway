@@ -58,21 +58,18 @@ Then, in your smart contract, inherit the `Gated` contract, and add the `gated` 
 The function can only be called by a `msg.sender` that has a valid gateway token.
 
 ```solidity
-import "@identity.com/gateway-protocol-eth/contracts/Gated.sol";
+import '@identity.com/gateway-protocol-eth/contracts/Gated.sol';
 
 // Your contract
 contract MyContract is Gated {
+  constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) Gated(gatewayTokenContract, gatekeeperNetwork) {}
 
-    constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) 
-        Gated(gatewayTokenContract, gatekeeperNetwork) {
-    }
-    
-    function myFunction() external gated {
-    }
+  function myFunction() external gated {}
 }
 ```
 
-If you want more control over the verification process on-chain, you can use the following code instead of the Gated contract:
+If you want more control over the verification process on-chain, you can use the following code instead of the Gated
+contract:
 
 ```solidity
 import "@identity.com/gateway-protocol-eth/contracts/interfaces/IGatewayTokenVerifier.sol";
@@ -86,18 +83,18 @@ if (!verifier.verifyToken(addressToVerify, gatekeeperNetwork)) {
 
 ## Creating a Gatekeeper Network
 
-This section describes how to create a Gatekeeper Network (GKN) and add Gatekeepers to it.
-It uses [ethers](https//docs.ethers.org) to interact with the smart contracts.
+This section describes how to create a Gatekeeper Network (GKN) and add Gatekeepers to it. It uses
+[ethers](https//docs.ethers.org) to interact with the smart contracts.
 
 ```ts
 // check slot ID availability
-const slotId = ...; // select a slot ID 
+const slotId = ...; // select a slot ID
 const network = await gatewayToken.getNetwork(slotId);
 
-// create a gatekeeper network, owned by the wallet (the wallet is the network authority) 
+// create a gatekeeper network, owned by the wallet (the wallet is the network authority)
 await gatewayToken.connect(wallet).createNetwork(slotId, 'My Gatekeeper Network', false, ZERO_ADDRESS);
 
-// create a gatekeeper network, owned by a DAO 
+// create a gatekeeper network, owned by a DAO
 await gatewayToken.connect(wallet).createNetwork(slotId, 'My Gatekeeper Network', true, DAO_ADDRESS);
 ```
 
