@@ -33,33 +33,50 @@ contract ChargeHandler {
 
     error Charge__InsufficientValue(uint256 value, uint256 expectedValue);
 
+    error Charge__TransferFailed(uint256 value);
+
     /**
      * @dev Send a fee either in ETH (wei) or ERC20 to the gatekeeper.
      * Note, ERC20 requires that the sender has approved the amount.
+     * This function uses the CEI (checks-effects-interactions) pattern to avoid reentrancy
+     * when sending ETH to the recipient (if the recipient is a smart contract)
+     * @param charge The charge details
      **/
     function _handleCharge(Charge calldata charge) internal {
-        // send wei if the charge type is ETH
         if (charge.chargeType == ChargeType.ETH) {
+            // CHECKS
+            // send wei if the charge type is ETH
             if (msg.value < charge.value) {
                 revert Charge__InsufficientValue(msg.value, charge.value);
             }
 
-            payable(charge.recipient).transfer(charge.value);
+            // EFFECTS
             emit ChargePaid(charge);
-        }
 
-        // send tokens if the charge type is ERC20
-        if (charge.chargeType == ChargeType.ERC20) {
+            // INTERACTIONS
+            (bool success, ) = payable(charge.recipient).call{value: charge.value}("");
+            if (!success) {
+                revert Charge__TransferFailed(charge.value);
+            }
+        } else if (charge.chargeType == ChargeType.ERC20) {
+            // send tokens if the charge type is ERC20
             IERC20 token = IERC20(charge.token);
 
+            // CHECKS
             // check that the sender has approved the token transfer
             uint256 allowance = token.allowance(charge.tokenSender, address(this));
             if (allowance < charge.value) {
                 revert Charge__InsufficientAllowance(allowance, charge.value);
             }
 
-            token.transferFrom(charge.tokenSender, charge.recipient, charge.value);
+            // EFFECTS
             emit ChargePaid(charge);
+
+            // INTERACTIONS
+            bool success = token.transferFrom(charge.tokenSender, charge.recipient, charge.value);
+            if (!success) {
+                revert Charge__TransferFailed(charge.value);
+            }
         }
     }
 }
