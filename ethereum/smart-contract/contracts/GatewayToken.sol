@@ -157,9 +157,10 @@ contract GatewayToken is
         uint mask,
         Charge calldata charge
     ) external payable virtual {
+        // CHECKS
         _checkGatekeeper(network);
-        _handleCharge(charge);
 
+        // EFFECTS
         uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
 
         if (expiration > 0) {
@@ -171,6 +172,9 @@ contract GatewayToken is
         }
 
         _issuingGatekeepers[tokenId] = _msgSender();
+
+        // INTERACTIONS
+        _handleCharge(charge);
     }
 
     function revoke(uint tokenId) external virtual override {
@@ -208,10 +212,12 @@ contract GatewayToken is
      * @param charge Charge for the operation
      */
     function setExpiration(uint tokenId, uint timestamp, Charge calldata charge) external payable virtual {
+        // CHECKS
         _checkGatekeeper(slotOf(tokenId));
-        _handleCharge(charge);
-
+        // EFFECTS
         _setExpiration(tokenId, timestamp);
+        // INTERACTIONS
+        _handleCharge(charge);
     }
 
     /**
