@@ -56,7 +56,7 @@ describe("onGatewayTokenChange", () => {
       gatekeeperNetwork:
         AssignablePublicKey.fromPublicKey(gatekeeperNetworkKey),
       state: new GatewayTokenState({ active: new Active({}) }),
-      features: [0],
+      version: [0],
     });
   });
   afterEach(sandbox.restore);

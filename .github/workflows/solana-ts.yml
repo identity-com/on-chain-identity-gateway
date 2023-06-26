@@ -53,9 +53,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: ["1.58"]
+        # This should match rust-toolchain.toml ( actions-rs/toolchain@v1 does not pick it up directly in monorepos )
+        rust: ["1.66"]
         node: ["16.x"]
-        solana: ["stable"]
+        solana: ["v1.14.17"]
         os: [ubuntu-latest]
 
     defaults:
@@ -95,7 +96,7 @@ jobs:
       - name: Build Solana program
         uses: actions-rs/cargo@v1
         with:
-          command: build-bpf
+          command: build-sbf
           args: --manifest-path solana/Cargo.toml
 
       - name: Use Node ${{ matrix.node }}

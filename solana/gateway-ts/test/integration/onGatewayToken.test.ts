@@ -11,14 +11,17 @@ import {
   GatewayToken,
   getGatekeeperAccountAddress,
   getGatewayTokenAddressForOwnerAndGatekeeperNetwork,
-  issueVanilla,
+  issue,
   onGatewayToken,
 } from "../../src";
 import { VALIDATOR_URL } from "../constants";
 
 chai.use(chaiSubset);
 
-describe("onGatewayToken", () => {
+const tomorrow = Math.floor((Date.now() + 24 * 60 * 60 * 1000) / 1000);
+
+describe("onGatewayToken", function () {
+  this.timeout(10_000);
   const connection = new Connection(VALIDATOR_URL, "processed");
   const owner = Keypair.generate().publicKey;
   const gatekeeperAuthority = Keypair.generate();
@@ -30,8 +33,7 @@ describe("onGatewayToken", () => {
   );
   const payer = Keypair.generate();
 
-  before(async function () {
-    this.timeout(10_000);
+  before(async () => {
     // airdrop to payer
     await connection.confirmTransaction({
       signature: await connection.requestAirdrop(
@@ -78,14 +80,15 @@ describe("onGatewayToken", () => {
     );
 
     // issue the token
+    const gtAddress = getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
+      owner,
+      gatekeeperNetwork.publicKey
+    );
     const issueGTTransaction = new Transaction({
       feePayer: payer.publicKey,
     }).add(
-      issueVanilla(
-        await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
-          owner,
-          gatekeeperNetwork.publicKey
-        ),
+      issue(
+        gtAddress,
         payer.publicKey,
         gatekeeperAccount,
         owner,
@@ -93,6 +96,9 @@ describe("onGatewayToken", () => {
         gatekeeperNetwork.publicKey
       )
     );
+
+    console.log("issuing token to address", gtAddress.toBase58());
+
     await connection.confirmTransaction({
       signature: await connection.sendTransaction(issueGTTransaction, [
         payer,

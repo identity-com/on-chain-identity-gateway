@@ -6,10 +6,11 @@ import {
   getGatekeeperAccountAddress,
   getGatewayToken,
   getGatewayTokenAddressForOwnerAndGatekeeperNetwork,
-  issueVanilla,
+  issue,
   revoke,
   unfreeze,
   updateExpiry,
+  burn
 } from "@identity.com/solana-gateway-ts";
 
 import {Action, SendableDataTransaction, SendableTransaction} from "../util";
@@ -107,7 +108,7 @@ export class GatekeeperService {
     return transaction;
   }
 
-  private async issueVanilla(
+  private async issueWithSeed(
     owner: PublicKey,
     seed?: Uint8Array,
     options?: TransactionOptions
@@ -125,7 +126,7 @@ export class GatekeeperService {
 
     const expireTime = this.getDefaultExpireTime();
     const transaction = new Transaction().add(
-      issueVanilla(
+      issue(
         gatewayTokenAddress,
         normalizedOptions.rentPayer,
         gatekeeperAccount,
@@ -160,7 +161,7 @@ export class GatekeeperService {
     recipient: PublicKey,
     options?: TransactionOptions
   ): Promise<SendableDataTransaction<GatewayToken | null>> {
-    return this.issueVanilla(recipient, undefined, options);
+    return this.issueWithSeed(recipient, undefined, options);
   }
 
   /**
@@ -289,6 +290,33 @@ export class GatekeeperService {
       expireTime
     );
     return this.updateToken(gatewayTokenKey, instruction, Action.REFRESH, options);
+  }
+
+  /**
+   * Burn the gateway token. The token must have been issued by a gatekeeper in this network.
+   * @param gatewayTokenKey PublicKey
+   * @param options TransactionOptions
+   *
+   * @returns Promise<SendableDataTransaction<GatewayToken>>
+   */
+  async burn(
+      gatewayTokenKey: PublicKey,
+      options?: TransactionOptions
+  ): Promise<SendableDataTransaction<void>> {
+    const instruction: TransactionInstruction = burn(
+        gatewayTokenKey,
+        this.gatekeeperAuthority.publicKey,
+        this.gatekeeperAccountAddress(),
+        this.gatekeeperAuthority.publicKey,
+    );
+    const normalizedOptions = await this.optionsWithDefaults(options);
+    const transaction = new Transaction().add(instruction);
+
+    return new SendableTransaction(this.connection, transaction)
+        .withData(() => {})
+        .feePayer(normalizedOptions.feePayer)
+        .addHashOrNonce(normalizedOptions.blockhashOrNonce)
+        .then((t) => t.partialSign(this.gatekeeperAuthority));
   }
 
   // equivalent to GatekeeperNetworkService.hasGatekeeper, but requires no network private key

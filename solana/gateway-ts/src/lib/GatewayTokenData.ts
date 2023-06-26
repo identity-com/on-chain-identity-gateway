@@ -52,7 +52,7 @@ export class GatewayTokenState extends Enum {
 SCHEMA.set(GatewayTokenData, {
   kind: "struct",
   fields: [
-    ["features", [1]],
+    ["version", [1]],
     ["parentGatewayToken", { kind: "option", type: AssignablePublicKey }],
     ["owner", AssignablePublicKey],
     ["ownerIdentity", { kind: "option", type: AssignablePublicKey }],

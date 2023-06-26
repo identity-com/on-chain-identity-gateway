@@ -7,7 +7,7 @@ configs:
         mask: '00'
         gatekeeperPosition: 2
         gatekeeperNetworkPosition: 3
-      - name: IssueVanilla
+      - name: Issue
         mask: '01'
         gatewayTokenPosition: 1
         ownerPosition: 2

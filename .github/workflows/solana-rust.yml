@@ -16,7 +16,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [ '1.60' ]
+        # This should match rust-toolchain.toml ( actions-rs/toolchain@v1 does not pick it up directly in monorepos )
+        rust: [ '1.66' ]
         os: [ ubuntu-latest ]
 
     steps:
@@ -49,7 +50,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --tests --features test-bpf --manifest-path solana/Cargo.toml -- --deny=warnings
+          args: --tests --features test-sbf --manifest-path solana/Cargo.toml -- --deny=warnings
 
   solana-gateway-program-build:
     name: Build and test the solana rust code on Solana ${{ matrix.solana }}, Rust ${{ matrix.rust }} and ${{ matrix.os }}
@@ -57,8 +58,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [ '1.60' ]
-        solana: [ 'v1.9.29' ]
+        rust: [ '1.66' ] # This should match rust-toolchain.toml ( actions-rs/toolchain@v1 does not pick it up directly in monorepos )
+        solana: [ 'v1.14.17' ]
         os: [ ubuntu-latest ]
 
     steps:
@@ -101,5 +102,5 @@ jobs:
       - name: Build the program and run functional tests
         uses: actions-rs/cargo@v1
         with:
-          command: test-bpf
+          command: test-sbf
           args: --manifest-path solana/Cargo.toml
