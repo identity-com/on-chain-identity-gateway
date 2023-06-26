@@ -1,4 +1,4 @@
-import { Schema, serialize, deserialize } from "borsh";
+import { Schema, serialize, deserialize, deserializeUnchecked } from "borsh";
 
 export const SCHEMA: Schema = new Map();
 
@@ -7,7 +7,7 @@ export abstract class Assignable {
   constructor(properties: { [key: string]: any }) {
     Object.keys(properties).forEach((key: string) => {
       // this is probably possible in Typescript,
-      // but requires (keyof this) which is not possible in the the constructor
+      // but requires (keyof this) which is not possible in the constructor
       // @ts-ignore
       this[key] = properties[key];
     });
@@ -18,7 +18,9 @@ export abstract class Assignable {
   }
 
   static decode<T extends Assignable>(data: Buffer): T {
-    return deserialize(SCHEMA, this, data);
+    // use deserializeUnchecked here as opposed to deserialize,
+    // as the latter throws an error if the data has trailing bytes.
+    return deserializeUnchecked(SCHEMA, this, data);
   }
 }
 

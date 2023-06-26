@@ -18,7 +18,7 @@ import { getFeatureAccountAddress } from "./util";
  */
 
 class AddGatekeeper extends Assignable {}
-class IssueVanilla extends Assignable {
+class Issue extends Assignable {
   seed?: Uint8Array;
   expireTime?: number;
 }
@@ -35,15 +35,17 @@ class AddFeatureToNetwork extends Assignable {
 class RemoveFeatureFromNetwork extends Assignable {
   feature!: NetworkFeature;
 }
+class BurnToken extends Assignable {}
 
 export class GatewayInstruction extends Enum {
   addGatekeeper?: AddGatekeeper;
-  issueVanilla?: IssueVanilla;
+  issue?: Issue;
   setState?: SetState;
   updateExpiry?: UpdateExpiry;
   revokeGatekeeper?: RevokeGatekeeper;
   addFeatureToNetwork?: AddFeatureToNetwork;
   removeFeatureFromNetwork?: RemoveFeatureFromNetwork;
+  burnToken?: BurnToken;
 
   static addGatekeeper(): GatewayInstruction {
     return new GatewayInstruction({
@@ -51,12 +53,9 @@ export class GatewayInstruction extends Enum {
     });
   }
 
-  static issueVanilla(
-    seed?: Uint8Array,
-    expireTime?: number
-  ): GatewayInstruction {
+  static issue(seed?: Uint8Array, expireTime?: number): GatewayInstruction {
     return new GatewayInstruction({
-      issueVanilla: new IssueVanilla({ seed, expireTime }),
+      issue: new Issue({ seed, expireTime }),
     });
   }
 
@@ -111,6 +110,12 @@ export class GatewayInstruction extends Enum {
       removeFeatureFromNetwork: new RemoveFeatureFromNetwork({
         feature,
       }),
+    });
+  }
+
+  static burnToken(): GatewayInstruction {
+    return new GatewayInstruction({
+      burn: new BurnToken({}),
     });
   }
 }
@@ -176,8 +181,7 @@ export function revokeGatekeeper(
 }
 
 /**
- * Issue a gateway token to the owner publicKey. This is a 'vanilla' token, in that it does not
- * rely on any other accounts (e.g. identity accounts) to validate.
+ * Issue a gateway token to the owner publicKey.
  * Returns a Solana instruction that must be signed by the gatekeeper authority.
  * @param gatewayTokenAccount An uninitialised gateway token account PDA. The address must be derived via getGatewayTokenAddressForOwnerAndGatekeeperNetwork
  * @param payer The payer of the transaction (used to pay rent into the gatekeeper account).
@@ -188,7 +192,7 @@ export function revokeGatekeeper(
  * @param seed An 8-byte seed array, used to add multiple tokens to the same owner. Must be unique to each token, if present
  * @param expireTime The unix timestamp at which the token is no longer valid
  */
-export function issueVanilla(
+export function issue(
   gatewayTokenAccount: PublicKey,
   payer: PublicKey,
   gatekeeperAccount: PublicKey,
@@ -208,7 +212,7 @@ export function issueVanilla(
     { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
     { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
   ];
-  const data = GatewayInstruction.issueVanilla(seed, expireTime).encode();
+  const data = GatewayInstruction.issue(seed, expireTime).encode();
   return new TransactionInstruction({
     keys,
     programId: PROGRAM_ID,
@@ -384,24 +388,55 @@ export async function removeFeatureFromNetwork(
   });
 }
 
+/**
+ * Burn a gateway token.
+ * Returns a Solana instruction that must be signed by the gatekeeper authority.
+ * @param gatewayTokenAccount The gateway token to burn
+ * @param gatekeeperAuthority The gatekeeper burning the token (must be in the same network as the issuing gatekeeper)
+ * @param gatekeeperAccount The account in the gatekeeper network of the gatekeeper revoking the token
+ * @param recipient The account to receive the SOL from the burn
+ */
+export function burn(
+  gatewayTokenAccount: PublicKey,
+  gatekeeperAuthority: PublicKey,
+  gatekeeperAccount: PublicKey,
+  recipient: PublicKey
+): TransactionInstruction {
+  const keys: AccountMeta[] = [
+    ...getStateChangeAccountMeta(
+      gatewayTokenAccount,
+      gatekeeperAuthority,
+      gatekeeperAccount
+    ),
+    { pubkey: recipient, isSigner: false, isWritable: true },
+  ];
+  const data = GatewayInstruction.burnToken().encode();
+  return new TransactionInstruction({
+    keys,
+    programId: PROGRAM_ID,
+    data,
+  });
+}
+
 SCHEMA.set(GatewayInstruction, {
   kind: "enum",
   field: "enum",
   values: [
     ["addGatekeeper", AddGatekeeper],
-    ["issueVanilla", IssueVanilla],
+    ["issue", Issue],
     ["setState", SetState],
     ["updateExpiry", UpdateExpiry],
     ["revokeGatekeeper", RevokeGatekeeper],
     ["addFeatureToNetwork", AddFeatureToNetwork],
     ["removeFeatureFromNetwork", RemoveFeatureFromNetwork],
+    ["burnToken", BurnToken],
   ],
 });
 SCHEMA.set(AddGatekeeper, {
   kind: "struct",
   fields: [],
 });
-SCHEMA.set(IssueVanilla, {
+SCHEMA.set(Issue, {
   kind: "struct",
   fields: [
     ["seed", { kind: "option", type: [8] }],
@@ -427,4 +462,8 @@ SCHEMA.set(AddFeatureToNetwork, {
 SCHEMA.set(RemoveFeatureFromNetwork, {
   kind: "struct",
   fields: [["feature", NetworkFeature]],
+});
+SCHEMA.set(BurnToken, {
+  kind: "struct",
+  fields: [],
 });

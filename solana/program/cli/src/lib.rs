@@ -6,7 +6,7 @@ use solana_client::{
     rpc_config::RpcSendTransactionConfig,
     client_error::ClientError
 };
-use solana_gateway_program::instruction;
+use solana_gateway::instruction;
 use solana_sdk::{
     transaction::Transaction,
     signature::Signature,

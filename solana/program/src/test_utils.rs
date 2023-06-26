@@ -1,5 +1,6 @@
 #[cfg(test)]
 pub mod test_utils_stubs {
+    use crate::processor::process_instruction;
     use crate::Gateway;
     use solana_program::account_info::AccountInfo;
     use solana_program::clock::{Clock, UnixTimestamp};
@@ -51,11 +52,7 @@ pub mod test_utils_stubs {
             _signers_seeds: &[&[&[u8]]],
         ) -> ProgramResult {
             if instruction.program_id == Gateway::program_id() {
-                solana_gateway_program::processor::process_instruction(
-                    &instruction.program_id,
-                    account_infos,
-                    &instruction.data,
-                )
+                process_instruction(&instruction.program_id, account_infos, &instruction.data)
             } else {
                 panic!("Cannot execute other programs");
             }
