@@ -10,6 +10,7 @@ import {
 import { Active, Frozen, GatewayTokenState, Revoked } from "./GatewayTokenData";
 import { NetworkFeature, UserTokenExpiry } from "./GatewayNetworkData";
 import { getFeatureAccountAddress } from "./util";
+import { AssignablePublicKey } from "./AssignablePublicKey";
 
 /**
  * Creates instructions to send to the gateway program.
@@ -35,6 +36,11 @@ class AddFeatureToNetwork extends Assignable {
 class RemoveFeatureFromNetwork extends Assignable {
   feature!: NetworkFeature;
 }
+
+class ExpireToken extends Assignable {
+  padding?: Uint8Array;
+  gatekeeperNetwork!: AssignablePublicKey;
+}
 class BurnToken extends Assignable {}
 
 export class GatewayInstruction extends Enum {
@@ -45,6 +51,7 @@ export class GatewayInstruction extends Enum {
   revokeGatekeeper?: RevokeGatekeeper;
   addFeatureToNetwork?: AddFeatureToNetwork;
   removeFeatureFromNetwork?: RemoveFeatureFromNetwork;
+  expireToken?: ExpireToken;
   burnToken?: BurnToken;
 
   static addGatekeeper(): GatewayInstruction {
@@ -113,9 +120,18 @@ export class GatewayInstruction extends Enum {
     });
   }
 
+  static expireToken(gatekeeperNetwork: PublicKey): GatewayInstruction {
+    return new GatewayInstruction({
+      expireToken: new ExpireToken({
+        // padding: null,
+        gatekeeperNetwork: AssignablePublicKey.fromPublicKey(gatekeeperNetwork),
+      }),
+    });
+  }
+
   static burnToken(): GatewayInstruction {
     return new GatewayInstruction({
-      burn: new BurnToken({}),
+      burnToken: new BurnToken({}),
     });
   }
 }
@@ -389,6 +405,36 @@ export async function removeFeatureFromNetwork(
 }
 
 /**
+ * For a gatekeeper network that supports it, create an expireToken instruction,
+ * that is to be signed by the gateway token owner.
+ * @param gatewayTokenAccount
+ * @param owner
+ * @param gatekeeperNetwork
+ */
+export function expireToken(
+  gatewayTokenAccount: PublicKey,
+  owner: PublicKey,
+  gatekeeperNetwork: PublicKey
+): TransactionInstruction {
+  const feature = new NetworkFeature({
+    userTokenExpiry: new UserTokenExpiry({}),
+  });
+  const featureAccount = getFeatureAccountAddress(feature, gatekeeperNetwork);
+  console.log("featureAccount", featureAccount.toBase58());
+  const keys: AccountMeta[] = [
+    { pubkey: gatewayTokenAccount, isSigner: false, isWritable: true },
+    { pubkey: owner, isSigner: true, isWritable: true },
+    { pubkey: featureAccount, isSigner: false, isWritable: false },
+  ];
+  const data = GatewayInstruction.expireToken(gatekeeperNetwork).encode();
+  return new TransactionInstruction({
+    keys,
+    programId: PROGRAM_ID,
+    data,
+  });
+}
+
+/**
  * Burn a gateway token.
  * Returns a Solana instruction that must be signed by the gatekeeper authority.
  * @param gatewayTokenAccount The gateway token to burn
@@ -429,6 +475,7 @@ SCHEMA.set(GatewayInstruction, {
     ["revokeGatekeeper", RevokeGatekeeper],
     ["addFeatureToNetwork", AddFeatureToNetwork],
     ["removeFeatureFromNetwork", RemoveFeatureFromNetwork],
+    ["expireToken", ExpireToken],
     ["burnToken", BurnToken],
   ],
 });
@@ -462,6 +509,13 @@ SCHEMA.set(AddFeatureToNetwork, {
 SCHEMA.set(RemoveFeatureFromNetwork, {
   kind: "struct",
   fields: [["feature", NetworkFeature]],
+});
+SCHEMA.set(ExpireToken, {
+  kind: "struct",
+  fields: [
+    ["padding", { kind: "option", type: [8] }],
+    ["gatekeeperNetwork", AssignablePublicKey],
+  ],
 });
 SCHEMA.set(BurnToken, {
   kind: "struct",
