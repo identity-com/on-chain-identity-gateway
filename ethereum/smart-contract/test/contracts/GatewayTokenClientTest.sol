@@ -10,8 +10,10 @@ import {Gated} from "../../contracts/Gated.sol";
 contract GatewayTokenClientTest is Gated {
     event Success();
 
-    constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) Gated(gatewayTokenContract, gatekeeperNetwork) {
-    }
+    constructor(
+        address gatewayTokenContract,
+        uint256 gatekeeperNetwork
+    ) Gated(gatewayTokenContract, gatekeeperNetwork) {}
 
     /**
      * @dev A public version of _msgData() in the GatewayToken contract, use for testing the forwarding logic.

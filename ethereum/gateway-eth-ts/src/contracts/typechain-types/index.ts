@@ -29,6 +29,16 @@ export type { ContextUpgradeable } from "./@openzeppelin/contracts-upgradeable/u
 export { ContextUpgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable__factory";
 export type { IERC165Upgradeable } from "./@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable";
 export { IERC165Upgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable__factory";
+export type { ERC20 } from "./@openzeppelin/contracts/token/ERC20/ERC20";
+export { ERC20__factory } from "./factories/@openzeppelin/contracts/token/ERC20/ERC20__factory";
+export type { ERC20Burnable } from "./@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable";
+export { ERC20Burnable__factory } from "./factories/@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable__factory";
+export type { IERC20Metadata } from "./@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata";
+export { IERC20Metadata__factory } from "./factories/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata__factory";
+export type { IERC20 } from "./@openzeppelin/contracts/token/ERC20/IERC20";
+export { IERC20__factory } from "./factories/@openzeppelin/contracts/token/ERC20/IERC20__factory";
+export type { ERC20PresetFixedSupply } from "./@openzeppelin/contracts/token/ERC20/presets/ERC20PresetFixedSupply";
+export { ERC20PresetFixedSupply__factory } from "./factories/@openzeppelin/contracts/token/ERC20/presets/ERC20PresetFixedSupply__factory";
 export type { ERC165 } from "./@openzeppelin/contracts/utils/introspection/ERC165";
 export { ERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/ERC165__factory";
 export type { IERC165 } from "./@openzeppelin/contracts/utils/introspection/IERC165";
@@ -55,6 +65,8 @@ export type { IERC721Upgradeable } from "./@solvprotocol/erc-3525/IERC721Upgrade
 export { IERC721Upgradeable__factory } from "./factories/@solvprotocol/erc-3525/IERC721Upgradeable__factory";
 export type { IERC3525MetadataDescriptorUpgradeable } from "./@solvprotocol/erc-3525/periphery/interface/IERC3525MetadataDescriptorUpgradeable";
 export { IERC3525MetadataDescriptorUpgradeable__factory } from "./factories/@solvprotocol/erc-3525/periphery/interface/IERC3525MetadataDescriptorUpgradeable__factory";
+export type { ChargeHandler } from "./contracts/ChargeHandler";
+export { ChargeHandler__factory } from "./factories/contracts/ChargeHandler__factory";
 export type { FlagsStorage } from "./contracts/FlagsStorage";
 export { FlagsStorage__factory } from "./factories/contracts/FlagsStorage__factory";
 export type { FlexibleNonceForwarder } from "./contracts/FlexibleNonceForwarder";
@@ -85,6 +97,8 @@ export type { ParameterizedAccessControl } from "./contracts/ParameterizedAccess
 export { ParameterizedAccessControl__factory } from "./factories/contracts/ParameterizedAccessControl__factory";
 export type { TokenBitMask } from "./contracts/TokenBitMask";
 export { TokenBitMask__factory } from "./factories/contracts/TokenBitMask__factory";
+export type { DummyERC20 } from "./test/contracts/DummyERC20";
+export { DummyERC20__factory } from "./factories/test/contracts/DummyERC20__factory";
 export type { GatewayTokenClientTest } from "./test/contracts/GatewayTokenClientTest";
 export { GatewayTokenClientTest__factory } from "./factories/test/contracts/GatewayTokenClientTest__factory";
 export type { GatewayTokenInternalsTest } from "./test/contracts/GatewayTokenInternalsTest";
@@ -93,3 +107,9 @@ export type { GatewayTokenUpgradeTest } from "./test/contracts/GatewayTokenUpgra
 export { GatewayTokenUpgradeTest__factory } from "./factories/test/contracts/GatewayTokenUpgradeTest__factory";
 export type { StubMultisig } from "./test/contracts/StubMultisig";
 export { StubMultisig__factory } from "./factories/test/contracts/StubMultisig__factory";
+export type { GatewayTokenV0 } from "./test/contracts/v0/GatewayTokenV0";
+export { GatewayTokenV0__factory } from "./factories/test/contracts/v0/GatewayTokenV0__factory";
+export type { IERC721ExpirableV0 } from "./test/contracts/v0/IERC721ExpirableV0";
+export { IERC721ExpirableV0__factory } from "./factories/test/contracts/v0/IERC721ExpirableV0__factory";
+export type { IGatewayTokenV0 } from "./test/contracts/v0/IGatewayTokenV0";
+export { IGatewayTokenV0__factory } from "./factories/test/contracts/v0/IGatewayTokenV0__factory";

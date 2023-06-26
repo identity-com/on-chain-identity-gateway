@@ -2,6 +2,8 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+export * as v0 from "./v0";
+export { DummyERC20__factory } from "./DummyERC20__factory";
 export { GatewayTokenClientTest__factory } from "./GatewayTokenClientTest__factory";
 export { GatewayTokenInternalsTest__factory } from "./GatewayTokenInternalsTest__factory";
 export { GatewayTokenUpgradeTest__factory } from "./GatewayTokenUpgradeTest__factory";

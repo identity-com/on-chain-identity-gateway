@@ -6,11 +6,10 @@ import { toUtf8Bytes } from '@ethersproject/strings';
 import { toBytes32 } from './utils';
 
 import { expect } from 'chai';
-import { NULL_CHARGE, randomAddress, randomWallet } from './utils/eth';
+import { NULL_CHARGE, randomAddress, randomWallet, ZERO_ADDRESS } from './utils/eth';
 import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
 import { IForwarder } from '../typechain-types';
-
-const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
+import { TransactionReceipt } from '@ethersproject/providers';
 
 describe('GatewayToken', async () => {
   let signers: SignerWithAddress[];
@@ -47,6 +46,22 @@ describe('GatewayToken', async () => {
       data: tx.data as string,
     });
 
+  const makeWeiCharge = (value: BigNumber) => ({
+    token: ZERO_ADDRESS,
+    chargeType: 1,
+    value,
+    recipient: gatekeeper.address,
+    tokenSender: ZERO_ADDRESS,
+  });
+
+  const makeERC20Charge = (value: BigNumber, token: string, tokenSender: string) => ({
+    token,
+    chargeType: 2,
+    value,
+    recipient: gatekeeper.address,
+    tokenSender,
+  });
+
   before('deploy contracts', async () => {
     [identityCom, alice, bob, carol, gatekeeper, gatekeeper2, networkAuthority2] = await ethers.getSigners();
 
@@ -70,8 +85,8 @@ describe('GatewayToken', async () => {
     await gatewayTokenInternalsTest.deployed();
 
     // create gatekeeper networks
-    await gatewayToken.connect(identityCom).createNetwork(gkn1, 'Test GKN 1', false, NULL_ADDRESS);
-    await gatewayToken.connect(identityCom).createNetwork(gkn2, 'Test GKN 2', false, NULL_ADDRESS);
+    await gatewayToken.connect(identityCom).createNetwork(gkn1, 'Test GKN 1', false, ZERO_ADDRESS);
+    await gatewayToken.connect(identityCom).createNetwork(gkn2, 'Test GKN 2', false, ZERO_ADDRESS);
   });
 
   describe('Deployment Tests', async () => {
@@ -79,7 +94,7 @@ describe('GatewayToken', async () => {
       it('fails deployment with a NULL ADDRESS for the superAdmin', async () => {
         const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
-        const args = ['Gateway Protocol', 'GWY', NULL_ADDRESS, flagsStorage.address, [forwarder.address]];
+        const args = ['Gateway Protocol', 'GWY', ZERO_ADDRESS, flagsStorage.address, [forwarder.address]];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
           'Common__MissingAccount',
@@ -89,7 +104,7 @@ describe('GatewayToken', async () => {
       it('fails deployment with a NULL ADDRESS for the flagsStorage', async () => {
         const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
-        const args = ['Gateway Protocol', 'GWY', identityCom.address, NULL_ADDRESS, [forwarder.address]];
+        const args = ['Gateway Protocol', 'GWY', identityCom.address, ZERO_ADDRESS, [forwarder.address]];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
           'Common__MissingAccount',
@@ -104,7 +119,7 @@ describe('GatewayToken', async () => {
           'GWY',
           identityCom.address,
           flagsStorage.address,
-          [forwarder.address, NULL_ADDRESS],
+          [forwarder.address, ZERO_ADDRESS],
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -131,7 +146,7 @@ describe('GatewayToken', async () => {
       it('cannot call initialize with a null superAdmin', async () => {
         const flagsStorageFactory = await ethers.getContractFactory('FlagsStorage');
         await expect(
-          upgrades.deployProxy(flagsStorageFactory, [NULL_ADDRESS], { kind: 'uups' }),
+          upgrades.deployProxy(flagsStorageFactory, [ZERO_ADDRESS], { kind: 'uups' }),
         ).to.be.revertedWithCustomError(flagsStorage, 'Common__MissingAccount');
       });
     });
@@ -303,7 +318,7 @@ describe('GatewayToken', async () => {
     });
 
     it('updates the flags storage super admin - reverts if new superadmin is null address', async () => {
-      await expect(flagsStorage.updateSuperAdmin(NULL_ADDRESS)).to.be.revertedWithCustomError(
+      await expect(flagsStorage.updateSuperAdmin(ZERO_ADDRESS)).to.be.revertedWithCustomError(
         flagsStorage,
         'Common__MissingAccount',
       );
@@ -379,30 +394,6 @@ describe('GatewayToken', async () => {
     });
   });
 
-  describe('Add and remove Gatekeeper', () => {
-    it('can add a gatekeeper', async () => {
-      await gatewayToken.connect(identityCom).addGatekeeper(gatekeeper.address, gkn1);
-      const isGatekeeperResult = await gatewayToken.isGatekeeper(gatekeeper.address, gkn1);
-
-      expect(isGatekeeperResult).to.be.true;
-    });
-
-    it('does not add the gatekeeper to other networks', async () => {
-      const isGatekeeperResult = await gatewayToken.isGatekeeper(gatekeeper.address, gkn2);
-
-      expect(isGatekeeperResult).to.be.false;
-    });
-
-    it('can remove a gatekeeper', async () => {
-      const dummyGatekeeper = randomAddress();
-      await gatewayToken.connect(identityCom).addGatekeeper(dummyGatekeeper, gkn1);
-      expect(await gatewayToken.isGatekeeper(dummyGatekeeper, gkn1)).to.be.true;
-
-      await gatewayToken.connect(identityCom).removeGatekeeper(dummyGatekeeper, gkn1);
-      expect(await gatewayToken.isGatekeeper(dummyGatekeeper, gkn1)).to.be.false;
-    });
-  });
-
   describe('Test gateway token issuance', async () => {
     it('verified returns false if a token is not yet minted', async () => {
       return expectVerified(alice.address, gkn1).to.be.false;
@@ -447,10 +438,36 @@ describe('GatewayToken', async () => {
     });
 
     it('get all tokens for a user and network', async () => {
-      const aliceTokenIdsGKN1 = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1);
+      const aliceTokenIdsGKN1 = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
       expect(aliceTokenIdsGKN1.length).to.equal(2);
       expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1[0])).to.equal(alice.address);
       expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1[1])).to.equal(alice.address);
+    });
+
+    it('onlyActive should determine whether an expired token is returned or not', async () => {
+      const aliceTokenIdsGKN1 = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
+      const beforeExpiration = await gatewayToken.getExpiration(aliceTokenIdsGKN1[1]);
+      await gatewayToken
+        .connect(gatekeeper)
+        .setExpiration(aliceTokenIdsGKN1[1], Date.parse('2020-01-01') / 1000, NULL_CHARGE);
+
+      const aliceTokenIdsGKN1AfterExpiry = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
+
+      console.log('aliceTokenIdsGKN1AfterExpiry.length', aliceTokenIdsGKN1AfterExpiry.length);
+      expect(aliceTokenIdsGKN1AfterExpiry.length).to.equal(1);
+      expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiry[0])).to.equal(alice.address);
+
+      const aliceTokenIdsGKN1AfterExpiryFlagFalse = await gatewayToken.getTokenIdsByOwnerAndNetwork(
+        alice.address,
+        gkn1,
+        false,
+      );
+      expect(aliceTokenIdsGKN1AfterExpiryFlagFalse.length).to.equal(2);
+      expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiryFlagFalse[0])).to.equal(alice.address);
+      expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiryFlagFalse[1])).to.equal(alice.address);
+
+      // reset expiration
+      await gatewayToken.connect(gatekeeper).setExpiration(aliceTokenIdsGKN1[1], beforeExpiration, NULL_CHARGE);
     });
 
     it('Try to transfer a token, expect revert', async () => {
@@ -480,7 +497,7 @@ describe('GatewayToken', async () => {
       const dummyWallet = randomAddress();
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, expectedBitmask, NULL_CHARGE);
 
-      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
       const bitmask = await gatewayToken.getTokenBitmask(dummyWalletTokenId);
 
       expect(bitmask).to.equal(expectedBitmask);
@@ -491,10 +508,68 @@ describe('GatewayToken', async () => {
       const expectedExpiration = Date.parse('2222-01-01') / 1000;
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, expectedExpiration, 0, NULL_CHARGE);
 
-      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
       const expiration = await gatewayToken.getExpiration(dummyWalletTokenId);
 
       expect(expiration).to.equal(expectedExpiration);
+    });
+  });
+
+  describe('Add and remove Gatekeeper', () => {
+    it('can add a gatekeeper', async () => {
+      const dummyGatekeeper = randomAddress();
+      await gatewayToken.connect(identityCom).addGatekeeper(dummyGatekeeper, gkn1);
+      const isGatekeeperResult = await gatewayToken.isGatekeeper(dummyGatekeeper, gkn1);
+
+      expect(isGatekeeperResult).to.be.true;
+    });
+
+    it('does not add the gatekeeper to other networks', async () => {
+      const dummyGatekeeper = randomAddress();
+      await gatewayToken.connect(identityCom).addGatekeeper(dummyGatekeeper, gkn1);
+      const isGatekeeperResult = await gatewayToken.isGatekeeper(dummyGatekeeper, gkn2);
+
+      expect(isGatekeeperResult).to.be.false;
+    });
+
+    it('can remove a gatekeeper', async () => {
+      const dummyGatekeeper = randomAddress();
+      await gatewayToken.connect(identityCom).addGatekeeper(dummyGatekeeper, gkn1);
+      expect(await gatewayToken.isGatekeeper(dummyGatekeeper, gkn1)).to.be.true;
+
+      await gatewayToken.connect(identityCom).removeGatekeeper(dummyGatekeeper, gkn1);
+      expect(await gatewayToken.isGatekeeper(dummyGatekeeper, gkn1)).to.be.false;
+    });
+
+    it('removing a gatekeeper does not invalidate existing tokens by default', async () => {
+      const passRecipient = randomAddress();
+      await gatewayToken.connect(identityCom).addGatekeeper(gatekeeper2.address, gkn1);
+
+      await gatewayToken.connect(gatekeeper2).mint(passRecipient, gkn1, 0, 0, NULL_CHARGE);
+
+      await gatewayToken.connect(identityCom).removeGatekeeper(gatekeeper2.address, gkn1);
+      return expectVerified(passRecipient, gkn1).to.be.true;
+    });
+
+    it('removing a gatekeeper invalidates existing tokens if the network has the REMOVE_GATEKEEPER_INVALIDATES_TOKENS feature', async () => {
+      const passRecipient = randomAddress();
+      await gatewayToken.connect(identityCom).addGatekeeper(gatekeeper2.address, gkn2);
+
+      const removeGatekeeperInvalidatesTokensFeature = 0;
+      const mask = 1 << removeGatekeeperInvalidatesTokensFeature;
+
+      let b = await gatewayToken.networkHasFeature(gkn2, removeGatekeeperInvalidatesTokensFeature);
+      expect(b).to.be.false;
+
+      await gatewayToken.connect(identityCom).setNetworkFeatures(gkn2, mask);
+
+      b = await gatewayToken.networkHasFeature(gkn2, removeGatekeeperInvalidatesTokensFeature);
+      expect(b).to.be.true;
+
+      await gatewayToken.connect(gatekeeper2).mint(passRecipient, gkn2, 0, 0, NULL_CHARGE);
+
+      await gatewayToken.connect(identityCom).removeGatekeeper(gatekeeper2.address, gkn2);
+      return expectVerified(passRecipient, gkn2).to.be.false;
     });
   });
 
@@ -528,7 +603,7 @@ describe('GatewayToken', async () => {
       dummyWallet = randomAddress();
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
 
-      [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
     });
 
     it('freeze token', async () => {
@@ -564,7 +639,7 @@ describe('GatewayToken', async () => {
     it('all tokens must be frozen for to verify to return false', async () => {
       // mint a second token
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
-      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1);
+      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenIds[0]);
 
@@ -616,7 +691,7 @@ describe('GatewayToken', async () => {
     it('all tokens must be burned for verified to return false', async () => {
       // mint a second token
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
-      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).burn(dummyWalletTokenIds[0]);
 
@@ -632,7 +707,7 @@ describe('GatewayToken', async () => {
     it('all tokens must be revoked for verified to return false', async () => {
       // mint a second token
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
-      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1);
+      const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenIds[0]);
 
@@ -648,7 +723,7 @@ describe('GatewayToken', async () => {
     let tokenId;
 
     before(async () => {
-      [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1);
+      [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
     });
 
     it('Test bitmask operations for Alice token', async () => {
@@ -791,12 +866,9 @@ describe('GatewayToken', async () => {
       );
 
       // attempt to send the forwarded transaction
-      const forwarderTx2 = await forwarder.connect(alice).execute(request2, signature2, { gasLimit: 1000000 });
-      const receipt = await forwarderTx2.wait();
-      expect(receipt.status).to.equal(1);
-
-      // the return value event indicating that the forwarded call failed
-      expect(receipt.events.pop().args[0]).to.be.false;
+      await expect(forwarder.connect(alice).execute(request2, signature2, { gasLimit: 1000000 })).to.be.revertedWith(
+        /ReentrancyGuard: reentrant call/,
+      );
 
       await expectVerified(wallet.address, gkn1).to.be.false;
     });
@@ -829,7 +901,7 @@ describe('GatewayToken', async () => {
       const userToBeFrozen = randomWallet();
       // mint and freeze a user's token
       await gatewayToken.connect(gatekeeper).mint(userToBeFrozen.address, gkn1, 0, 0, NULL_CHARGE);
-      const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(userToBeFrozen.address, gkn1);
+      const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(userToBeFrozen.address, gkn1, true);
       await gatewayToken.connect(gatekeeper).freeze(tokenId);
       await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
 
@@ -863,6 +935,8 @@ describe('GatewayToken', async () => {
       // this forwarder only accepts transactions whose nonces have been seen in this block
       const intolerantForwarder = await forwarderFactory.deploy(0);
       await intolerantForwarder.deployed();
+
+      await gatewayToken.addForwarder(intolerantForwarder.address);
 
       // create two transactions,
       const tx1 = await gatewayToken
@@ -948,18 +1022,26 @@ describe('GatewayToken', async () => {
         .withArgs(gatekeeper.address);
     });
 
-    // forwarding reserves 63 gas for the forwarder to use. If the gas limit is less than 63 more than the target
-    // transaction, the transaction will fail
-    it('reverts if the gas limit less than 63 more than the target transaction', async () => {
+    // forwarding reserves 1/64rd of the gas for the forwarder to use. If the gas limit is less than that,
+    // it reverts.
+    it('reverts if the gas limit is less than 1/64rd more than the target transaction', async () => {
       // create two transactions, that share the same forwarder nonce
       const tx1 = await gatewayToken
         .connect(gatekeeper)
         .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
       const req1 = await makeMetaTx(tx1);
-      // 25560 is what is reported by the evm as needed
-      // 60 is not enough for the forwarder to do its work
-      await expect(forwarder.connect(alice).execute(req1.request, req1.signature, { gasLimit: 25560 + 60 })).to.be
-        .reverted;
+      // we pass 2,000,000 gas limit to the inner tx (see makeMetaTx)
+      // The forwarder reserves 1/64th of that
+      const reservedGas = Math.ceil(req1.request.gas / 64);
+
+      // 280000 is what is reported by the evm as needed by the mint tx.
+      // if we add `reservedGas` to that, and set that as the gas limit, it should work
+      // otherwise it will revert
+      // expect to have to change this if any of the parameters of the tx change, or if the contract chagnes
+      const requiredGas = 280000;
+      const gasLimit = requiredGas + reservedGas; // - 10; // less than the required
+      console.log('PAssed gas limit ', gasLimit);
+      await expect(forwarder.connect(alice).execute(req1.request, req1.signature, { gasLimit })).to.be.reverted;
     });
 
     it('Authorizes an upgrade via a forwarder', async () => {
@@ -1039,9 +1121,9 @@ describe('GatewayToken', async () => {
       expect(isMultisig2DaoManager).to.be.false;
     });
 
-    it('fails to create a dao-managed network with a NULL_ADDRESS', async () => {
+    it('fails to create a dao-managed network with a ZERO_ADDRESS', async () => {
       await expect(
-        gatewayToken.connect(identityCom).createNetwork(40, 'AnotherDAO-managed GKN', true, NULL_ADDRESS),
+        gatewayToken.connect(identityCom).createNetwork(40, 'AnotherDAO-managed GKN', true, ZERO_ADDRESS),
       ).to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
     });
 
@@ -1059,7 +1141,7 @@ describe('GatewayToken', async () => {
 
     it('transfer DAO management to a new multisig - reverts if the new manager is missing', async () => {
       await expect(
-        gatewayToken.connect(alice).transferDAOManager(multisigWallet1.address, NULL_ADDRESS, daoManagedGkn),
+        gatewayToken.connect(alice).transferDAOManager(multisigWallet1.address, ZERO_ADDRESS, daoManagedGkn),
       ).to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
     });
 
@@ -1120,7 +1202,167 @@ describe('GatewayToken', async () => {
     });
   });
 
-  describe('Test gateway token upgradeability', async () => {
+  describe('Charge', () => {
+    const forward = async (
+      tx: PopulatedTransaction,
+      from: SignerWithAddress,
+      value?: BigNumber,
+    ): Promise<TransactionReceipt> => {
+      const input = {
+        from: gatekeeper.address,
+        to: gatewayToken.address,
+        data: tx.data as string,
+        ...(value ? { value } : {}),
+      };
+      const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, input);
+
+      // send the forwarded transaction
+      const forwarderTx = await forwarder.connect(from).execute(request, signature, { gasLimit: 1000000, value });
+      const receipt = await forwarderTx.wait();
+      expect(receipt.status).to.equal(1);
+
+      return receipt;
+    };
+
+    context('ETH', () => {
+      it('can charge ETH through a forwarded call', async () => {
+        const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
+        const balanceBefore = await alice.getBalance();
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        // forward it so that Alice sends it, and includes a value
+        const receipt = await forward(tx, alice, charge.value);
+
+        // check that Alice's balance has gone down by the charge amount + gas
+        const balanceAfter = await alice.getBalance();
+        const gas = receipt.gasUsed.mul(receipt.effectiveGasPrice);
+        expect(balanceAfter).to.equal(balanceBefore.sub(charge.value).sub(gas));
+      });
+
+      it('can charge ETH - revert if amount sent is not equal to the charge', async () => {
+        const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        // forward it so that Alice sends it. Alice tries to include a lower value than the charge
+        await expect(forward(tx, alice, ethers.utils.parseEther('0.05'))).to.be.revertedWithCustomError(
+          gatewayToken,
+          'Charge__InsufficientValue',
+        );
+      });
+
+      it('can charge ETH - revert if no amount sent', async () => {
+        const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        // forward it so that Alice sends it. Alice tries to send it without a value
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__InsufficientValue');
+      });
+
+      it('can charge ETH - revert if charge is too high', async () => {
+        const balance = await alice.getBalance();
+        const charge = makeWeiCharge(balance.mul(2));
+        const shouldFail = gatewayToken.connect(alice).mint(alice.address, gkn1, 0, 0, charge, { value: charge.value });
+        await expect(shouldFail).to.be.rejectedWith(/sender doesn't have enough funds/);
+      });
+    });
+
+    context('ERC20', () => {
+      let erc20: Contract;
+
+      before('deploy ERC20 token', async () => {
+        const erc20Factory = await ethers.getContractFactory('DummyERC20');
+        erc20 = await erc20Factory.deploy('dummy erc20', 'dummy', ethers.utils.parseEther('1000000'), alice.address);
+        await erc20.deployed();
+      });
+
+      it('can charge ERC20 - rejects if the allowance was not made', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__InsufficientAllowance');
+      });
+
+      it('can charge ERC20 through a forwarded call', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+        const balanceBefore = await erc20.balanceOf(alice.address);
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        // forward it so that Alice sends it
+        await forward(tx, alice);
+
+        // check that Alice's balance has gone down by the charge amount
+        const balanceAfter = await erc20.balanceOf(alice.address);
+        expect(balanceAfter).to.equal(balanceBefore.sub(charge.value));
+      });
+
+      it('can charge ERC20 - reject if the allowance is insufficient', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(gatewayToken.address, charge.value.sub(100));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__InsufficientAllowance');
+      });
+
+      it('charge ERC20 - allows someone else to forward and pay the fee', async () => {
+        // Alice will be forwarding the tx and paying the fee on behalf of bob
+        // no connection between the fee payer, forwarder and the gateway token recipient
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+        const balanceBefore = await erc20.balanceOf(alice.address);
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+
+        // create a mint transaction for bob
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, 0, charge);
+
+        // forward it so that Alice sends it
+        await forward(tx, alice);
+
+        // check that Alice's balance has gone down by the charge amount
+        const balanceAfter = await erc20.balanceOf(alice.address);
+        expect(balanceAfter).to.equal(balanceBefore.sub(charge.value));
+      });
+
+      it('charge ERC20 - allows someone else to pay the fee, without forwarding', async () => {
+        // Bob will be forwarding the tx, but Alice will be paying the fee on behalf of bob
+        // no connection between the fee payer, forwarder and the gateway token recipient
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+        const balanceBefore = await erc20.balanceOf(alice.address);
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+
+        // create a mint transaction for bob
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, 0, charge);
+
+        // forward it so that Bob sends it
+        await forward(tx, bob);
+
+        // check that Alice's balance has gone down by the charge amount
+        const balanceAfter = await erc20.balanceOf(alice.address);
+        expect(balanceAfter).to.equal(balanceBefore.sub(charge.value));
+      });
+    });
+  });
+
+  describe('Test gateway token future version upgradeability', async () => {
     it('upgrades the gateway token contract to v2', async () => {
       const gatewayTokenV2Factory = await ethers.getContractFactory('GatewayTokenUpgradeTest');
       await upgrades.upgradeProxy(gatewayToken.address, gatewayTokenV2Factory);
@@ -1162,6 +1404,68 @@ describe('GatewayToken', async () => {
       await expect(
         upgrades.upgradeProxy(flagsStorage.address, flagsStorageV2Factory.connect(bob)),
       ).to.be.revertedWithCustomError(gatewayToken, 'Common__NotSuperAdmin');
+    });
+  });
+
+  describe('Test gateway token upgradeability from v0 (pre-issuing-gatekeeper and charge features)', async () => {
+    let gatewayTokenForUpgrade;
+    let upgradedGatewayToken;
+
+    before('deploys the v0 gateway token contract, issues a pass, then upgrades', async () => {
+      // Deploy the old contract version
+      const gatewayTokenV0Factory = await ethers.getContractFactory('GatewayTokenV0');
+      const args = ['Gateway Protocol', 'GWY', identityCom.address, flagsStorage.address, [forwarder.address]];
+      gatewayTokenForUpgrade = await upgrades.deployProxy(gatewayTokenV0Factory, args, { kind: 'uups' });
+      await gatewayTokenForUpgrade.deployed();
+
+      // create a gkn, add the gatekeeper, and mint a token
+      await gatewayTokenForUpgrade.connect(identityCom).createNetwork(gkn1, 'Test GKN 1', false, ZERO_ADDRESS);
+      await gatewayTokenForUpgrade.connect(identityCom).addGatekeeper(gatekeeper.address, gkn1);
+      await gatewayTokenForUpgrade.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE);
+
+      // verify that the token is issued
+      let verified = await gatewayTokenForUpgrade['verifyToken(address,uint256)'](alice.address, gkn1);
+      expect(verified).to.be.true;
+
+      // upgrade the contract to the current version
+      const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
+      await upgrades.upgradeProxy(gatewayTokenForUpgrade.address, gatewayTokenFactory);
+      upgradedGatewayToken = await ethers.getContractAt('GatewayToken', gatewayTokenForUpgrade.address);
+    });
+
+    it('existing tokens are still valid after the upgrade', async () => {
+      let verified = await upgradedGatewayToken['verifyToken(address,uint256)'](alice.address, gkn1);
+      expect(verified).to.be.true;
+    });
+
+    it('existing tokens can be refreshed after the upgrade', async () => {
+      const [tokenId] = await upgradedGatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
+      const value = ethers.utils.parseEther('0.1');
+      const charge = makeWeiCharge(value);
+      // Since we are not forwarding the transaction, the gatekeeper will actually pay the charge here.
+      // We are just testing the logic here and not who pays.
+      await upgradedGatewayToken
+        .connect(gatekeeper)
+        .setExpiration(tokenId, Date.parse('2030-01-01') / 1000, charge, { value });
+      // if the above does not fail, all is good.
+    });
+
+    it('existing tokens have no gatekeeper field', async () => {
+      const tokenId = await upgradedGatewayToken.tokenOfOwnerByIndex(alice.address, 0);
+      const issuingGatekeeper = await upgradedGatewayToken.getIssuingGatekeeper(tokenId);
+
+      expect(issuingGatekeeper).to.equal(ZERO_ADDRESS);
+    });
+
+    it('new tokens can be issued, and store the gatekeeper field', async () => {
+      await upgradedGatewayToken.connect(gatekeeper).mint(bob.address, gkn1, 0, 0, NULL_CHARGE);
+      let verified = await upgradedGatewayToken['verifyToken(address,uint256)'](bob.address, gkn1);
+      expect(verified).to.be.true;
+
+      const tokenId = await upgradedGatewayToken.tokenOfOwnerByIndex(bob.address, 0);
+      const issuingGatekeeper = await upgradedGatewayToken.getIssuingGatekeeper(tokenId);
+
+      expect(issuingGatekeeper).to.equal(gatekeeper.address);
     });
   });
 });

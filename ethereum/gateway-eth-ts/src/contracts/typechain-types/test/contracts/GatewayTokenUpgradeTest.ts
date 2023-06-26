@@ -33,13 +33,15 @@ export type ChargeStruct = {
   value: PromiseOrValue<BigNumberish>;
   chargeType: PromiseOrValue<BigNumberish>;
   token: PromiseOrValue<string>;
+  tokenSender: PromiseOrValue<string>;
   recipient: PromiseOrValue<string>;
 };
 
-export type ChargeStructOutput = [BigNumber, number, string, string] & {
+export type ChargeStructOutput = [BigNumber, number, string, string, string] & {
   value: BigNumber;
   chargeType: number;
   token: string;
+  tokenSender: string;
   recipient: string;
 };
 
@@ -64,6 +66,7 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     "freeze(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getExpiration(uint256)": FunctionFragment;
+    "getIssuingGatekeeper(uint256)": FunctionFragment;
     "getNetwork(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32,uint256)": FunctionFragment;
     "getToken(uint256)": FunctionFragment;
@@ -79,8 +82,9 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     "isSuperAdmin(address)": FunctionFragment;
     "isTrustedForwarder(address)": FunctionFragment;
     "metadataDescriptor()": FunctionFragment;
-    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
+    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
     "name()": FunctionFragment;
+    "networkHasFeature(uint256,uint8)": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "proxiableUUID()": FunctionFragment;
     "removeForwarder(address)": FunctionFragment;
@@ -95,8 +99,9 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBitmask(uint256,uint256)": FunctionFragment;
-    "setExpiration(uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
+    "setExpiration(uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
     "setMetadataDescriptor(address)": FunctionFragment;
+    "setNetworkFeatures(uint256,uint256)": FunctionFragment;
     "setSuperAdmin(address)": FunctionFragment;
     "slotOf(uint256)": FunctionFragment;
     "slotURI(uint256)": FunctionFragment;
@@ -141,6 +146,7 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
       | "freeze"
       | "getApproved"
       | "getExpiration"
+      | "getIssuingGatekeeper"
       | "getNetwork"
       | "getRoleAdmin"
       | "getToken"
@@ -158,6 +164,7 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
       | "metadataDescriptor"
       | "mint"
       | "name"
+      | "networkHasFeature"
       | "ownerOf"
       | "proxiableUUID"
       | "removeForwarder"
@@ -174,6 +181,7 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
       | "setBitmask"
       | "setExpiration"
       | "setMetadataDescriptor"
+      | "setNetworkFeatures"
       | "setSuperAdmin"
       | "slotOf"
       | "slotURI"
@@ -283,6 +291,10 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getIssuingGatekeeper",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getNetwork",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -368,6 +380,10 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "networkHasFeature",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "ownerOf",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -451,6 +467,10 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "setMetadataDescriptor",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setNetworkFeatures",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "setSuperAdmin",
@@ -617,6 +637,10 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     functionFragment: "getExpiration",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getIssuingGatekeeper",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getNetwork", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
@@ -664,6 +688,10 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "networkHasFeature",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "proxiableUUID",
@@ -714,6 +742,10 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setMetadataDescriptor",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setNetworkFeatures",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -790,6 +822,7 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     "ApprovalValue(uint256,address,uint256)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
     "BitMaskUpdated(uint256,uint256)": EventFragment;
+    "ChargePaid(tuple)": EventFragment;
     "DAOManagerTransferred(address,address,uint256)": EventFragment;
     "Expiration(uint256,uint256)": EventFragment;
     "FlagsStorageUpdated(address)": EventFragment;
@@ -815,6 +848,7 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ApprovalValue"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BitMaskUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChargePaid"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOManagerTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Expiration"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FlagsStorageUpdated"): EventFragment;
@@ -901,6 +935,16 @@ export type BitMaskUpdatedEvent = TypedEvent<
 >;
 
 export type BitMaskUpdatedEventFilter = TypedEventFilter<BitMaskUpdatedEvent>;
+
+export interface ChargePaidEventObject {
+  arg0: ChargeStructOutput;
+}
+export type ChargePaidEvent = TypedEvent<
+  [ChargeStructOutput],
+  ChargePaidEventObject
+>;
+
+export type ChargePaidEventFilter = TypedEventFilter<ChargePaidEvent>;
 
 export interface DAOManagerTransferredEventObject {
   previousDAOManager: string;
@@ -1193,6 +1237,11 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getIssuingGatekeeper(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     getNetwork(
       network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1291,11 +1340,17 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      arg4: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
+
+    networkHasFeature(
+      network: PromiseOrValue<BigNumberish>,
+      feature: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     ownerOf(
       tokenId_: PromiseOrValue<BigNumberish>,
@@ -1381,12 +1436,18 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      arg2: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     setMetadataDescriptor(
       _metadataDescriptor: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setNetworkFeatures(
+      network: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1581,6 +1642,11 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getIssuingGatekeeper(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   getNetwork(
     network: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
@@ -1679,11 +1745,17 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     network: PromiseOrValue<BigNumberish>,
     expiration: PromiseOrValue<BigNumberish>,
     mask: PromiseOrValue<BigNumberish>,
-    arg4: ChargeStruct,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    charge: ChargeStruct,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
+
+  networkHasFeature(
+    network: PromiseOrValue<BigNumberish>,
+    feature: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   ownerOf(
     tokenId_: PromiseOrValue<BigNumberish>,
@@ -1769,12 +1841,18 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
   setExpiration(
     tokenId: PromiseOrValue<BigNumberish>,
     timestamp: PromiseOrValue<BigNumberish>,
-    arg2: ChargeStruct,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    charge: ChargeStruct,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   setMetadataDescriptor(
     _metadataDescriptor: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setNetworkFeatures(
+    network: PromiseOrValue<BigNumberish>,
+    mask: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1969,6 +2047,11 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getIssuingGatekeeper(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     getNetwork(
       network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -2067,11 +2150,17 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      arg4: ChargeStruct,
+      charge: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
     name(overrides?: CallOverrides): Promise<string>;
+
+    networkHasFeature(
+      network: PromiseOrValue<BigNumberish>,
+      feature: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     ownerOf(
       tokenId_: PromiseOrValue<BigNumberish>,
@@ -2157,12 +2246,18 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      arg2: ChargeStruct,
+      charge: ChargeStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
     setMetadataDescriptor(
       _metadataDescriptor: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setNetworkFeatures(
+      network: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2326,6 +2421,9 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       bitmask?: null
     ): BitMaskUpdatedEventFilter;
     BitMaskUpdated(tokenId?: null, bitmask?: null): BitMaskUpdatedEventFilter;
+
+    "ChargePaid(tuple)"(arg0?: null): ChargePaidEventFilter;
+    ChargePaid(arg0?: null): ChargePaidEventFilter;
 
     "DAOManagerTransferred(address,address,uint256)"(
       previousDAOManager?: null,
@@ -2562,6 +2660,11 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getIssuingGatekeeper(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getNetwork(
       network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -2652,11 +2755,17 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      arg4: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    networkHasFeature(
+      network: PromiseOrValue<BigNumberish>,
+      feature: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     ownerOf(
       tokenId_: PromiseOrValue<BigNumberish>,
@@ -2742,12 +2851,18 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      arg2: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     setMetadataDescriptor(
       _metadataDescriptor: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setNetworkFeatures(
+      network: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2947,6 +3062,11 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getIssuingGatekeeper(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getNetwork(
       network: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -3039,11 +3159,17 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       network: PromiseOrValue<BigNumberish>,
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
-      arg4: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    networkHasFeature(
+      network: PromiseOrValue<BigNumberish>,
+      feature: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     ownerOf(
       tokenId_: PromiseOrValue<BigNumberish>,
@@ -3129,12 +3255,18 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     setExpiration(
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
-      arg2: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      charge: ChargeStruct,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     setMetadataDescriptor(
       _metadataDescriptor: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setNetworkFeatures(
+      network: PromiseOrValue<BigNumberish>,
+      mask: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -1,4 +1,11 @@
-import { Wallet, Contract, Overrides, PopulatedTransaction } from "ethers";
+import {
+  Wallet,
+  Contract,
+  Overrides,
+  PopulatedTransaction,
+  BigNumberish,
+  BigNumber,
+} from "ethers";
 import { IForwarder, GatewayToken } from "../contracts/typechain-types";
 import { GatewayTsInternal } from "./GatewayTsInternal";
 import {
@@ -10,6 +17,7 @@ import {
 import { mapObjIndexed, pick } from "ramda";
 import { signMetaTxRequest } from "../utils/metatx";
 import { Provider } from "@ethersproject/providers";
+import { Charge, ChargeType } from "../utils/charge";
 
 // This is essentially the GatewayToken contract type, but with the write operations converted to returning PopulatedTransactions.
 // ethers.js contract.populateTransaction is a bit interesting, because it returns a PopulatedTransaction not just for
@@ -45,6 +53,12 @@ const toMetaTx =
         from: wallet.address,
         to: toContract.address,
         data: populatedTransaction.data,
+        // if there is a value, add it to the request
+        // the forwarder passes the value in the request to the target contract
+        // so if it is not included here, it would be zero, even if the outer transaction had a value
+        ...(populatedTransaction.value
+          ? { value: populatedTransaction.value }
+          : {}),
       }
     );
     const populatedForwardedTransaction: PopulatedTransaction =
@@ -90,5 +104,34 @@ export class GatewayTsForwarder extends GatewayTsInternal<
       ...raw,
     };
     super(mappedGatewayToken, options);
+  }
+
+  async issue(
+    owner: string,
+    network: bigint,
+    expiry?: BigNumberish,
+    bitmask?: BigNumberish,
+    charge?: Charge
+  ): Promise<PopulatedTransaction> {
+    const tx = await super.issue(owner, network, expiry, bitmask, charge);
+
+    if (charge?.chargeType === ChargeType.ETH) {
+      tx.value = charge.value;
+    }
+    return tx;
+  }
+
+  async refresh(
+    owner: string,
+    network: bigint,
+    expiry?: number | BigNumber,
+    charge?: Charge
+  ): Promise<PopulatedTransaction> {
+    const tx = await super.refresh(owner, network, expiry, charge);
+
+    if (charge?.chargeType === ChargeType.ETH) {
+      tx.value = charge.value;
+    }
+    return tx;
   }
 }

@@ -45,73 +45,82 @@ After the successful deployment you'll be able to find the deployment result in 
 
 ## Integration
 
-To integrate Gateway Tokens and validate user's identities DeFi contract has to import
-[IGatewayTokenVerifier](./contracts/interfaces/IGatewayTokenVerifier.sol) interface.
+To integrate Gateway in your smart contract:
 
-After importing IGatewayTokenVerifier interface, you can trigger the function below:
+First, import the contract dependencies:
 
 ```
-pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+npm install @identity.com/gateway-protocol-eth
+```
 
-interface IGatewayTokenVerifier {
-    /**
-    * @dev Triggered by external contract to verify if `tokenId` and token `owner` are correct.
-    *
-    * Checks if token exists in gateway token contract, `tokenId` still active, and not expired.
-    * Performs additional checks to verify that `owner` is not blacklisted globally.
-    */
-    function verifyToken(address owner, uint256 tokenId) external view returns (bool);
+Then, in your smart contract, inherit the `Gated` contract, and add the `gated` modifier to any function.
 
-    /**
-    * @dev Triggered by external contract to verify the validity of the default token for `owner`.
-    *
-    * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
-    * Performs additional checks to verify that `owner` is not blacklisted globally.
-    */
-    function verifyToken(address owner) external view returns (bool);
+The function can only be called by a `msg.sender` that has a valid gateway token.
+
+```solidity
+import '@identity.com/gateway-protocol-eth/contracts/Gated.sol';
+
+// Your contract
+contract MyContract is Gated {
+  constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) Gated(gatewayTokenContract, gatekeeperNetwork) {}
+
+  function myFunction() external gated {}
 }
 ```
 
-By sending a user's address and optionally, token ID, as parameters, the system will validate if their gateway token is
-active.
+If you want more control over the verification process on-chain, you can use the following code instead of the Gated
+contract:
 
-## Integration example
-
-In order to validate your user's gateway tokens validation smart contract first has to import a validation interface:
-
-`import "./interfaces/IGatewayTokenVerifier.sol";`
-
-After importing an interface a validation smart contract has to either specify a GatewayToken contract address for which
-type of tokens contract needs to validate for, or pass a token address during into the validation function. Typically
-there is two ways to validate user's tokens such as:
-
-1. Validate specific token by tokenID
-
-```
-address gatekeeperNetwork;
-
-function borrow(uint256 amount, uint256 tokenId) {
-	IGatewayToken gt = IGatewayToken(gatekeeperNetwork);
-	require(gt.verify(msg.sender, tokenid), "INVALID OR MISSING GATEWAY TOKEN");
-	// transfer funds to msg.sender
-}
-```
-
-2. Or validate a default token for user
-
-```
-address gatekeeperNetwork;
-
-function borrow(uint256 amount) {
-	IGatewayToken gt = IGatewayToken(gatekeeperNetwork);
-	require(gt.verify(msg.sender), "INVALID OR MISSING GATEWAY TOKEN");
-	// transfer funds to msg.sender
-}
-```
-
-## Creating a GKN
+```solidity
+import "@identity.com/gateway-protocol-eth/contracts/interfaces/IGatewayTokenVerifier.sol";
 
 ...
+IGatewayTokenVerifier verifier = IGatewayTokenVerifier(gatewayTokenContract);
+if (!verifier.verifyToken(addressToVerify, gatekeeperNetwork)) {
+// some logic
+}
+```
+
+## Creating a Gatekeeper Network
+
+This section describes how to create a Gatekeeper Network (GKN) and add Gatekeepers to it. It uses
+[ethers](https//docs.ethers.org) to interact with the smart contracts.
+
+```ts
+// check slot ID availability
+const slotId = ...; // select a slot ID
+const network = await gatewayToken.getNetwork(slotId);
+
+// create a gatekeeper network, owned by the wallet (the wallet is the network authority)
+await gatewayToken.connect(wallet).createNetwork(slotId, 'My Gatekeeper Network', false, ZERO_ADDRESS);
+
+// create a gatekeeper network, owned by a DAO
+await gatewayToken.connect(wallet).createNetwork(slotId, 'My Gatekeeper Network', true, DAO_ADDRESS);
+```
 
 ### Adding a Gatekeeper to the GKN
+
+```ts
+// add a gatekeeper to the network
+await gatewayToken.connect(wallet).addGatekeeper(gatekeeperAddress, slotId);
+```
+
+### Setting a network feature
+
+Only one network feature is available:
+
+- `removeGatekeeperInvalidatesTokensFeature` - if set, removing a gatekeeper from the network will invalidate all
+  gateway tokens issued by the network.
+
+```ts
+const removeGatekeeperInvalidatesTokensFeature = 0;
+const mask = 1 << removeGatekeeperInvalidatesTokensFeature;
+
+// will be false
+await gatewayToken.networkHasFeature(slotId, removeGatekeeperInvalidatesTokensFeature);
+
+await gatewayToken.connect(identityCom).setNetworkFeatures(slotId, mask);
+
+// will be true
+await gatewayToken.networkHasFeature(slotId, removeGatekeeperInvalidatesTokensFeature);
+```

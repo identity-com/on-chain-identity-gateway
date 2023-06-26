@@ -4,7 +4,7 @@ pragma solidity 0.8.9;
 import {IGatewayToken} from "../../contracts/interfaces/IGatewayToken.sol";
 
 /**
- * @dev An stub multisig contract, used to test the DAO Management functionality
+ * @dev A stub multisig contract, used to test the DAO Management functionality
  * NOTE: DO NOT DEPLOY THIS CONTRACT. It should be deployed locally by the test suite only.
  */
 contract StubMultisig {

@@ -9,7 +9,7 @@ import type {
   BytesLike,
   CallOverrides,
   ContractTransaction,
-  Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -32,20 +32,22 @@ export type ChargeStruct = {
   value: PromiseOrValue<BigNumberish>;
   chargeType: PromiseOrValue<BigNumberish>;
   token: PromiseOrValue<string>;
+  tokenSender: PromiseOrValue<string>;
   recipient: PromiseOrValue<string>;
 };
 
-export type ChargeStructOutput = [BigNumber, number, string, string] & {
+export type ChargeStructOutput = [BigNumber, number, string, string, string] & {
   value: BigNumber;
   chargeType: number;
   token: string;
+  tokenSender: string;
   recipient: string;
 };
 
 export interface IERC721ExpirableInterface extends utils.Interface {
   functions: {
     "getExpiration(uint256)": FunctionFragment;
-    "setExpiration(uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
+    "setExpiration(uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
   };
 
   getFunction(
@@ -128,7 +130,7 @@ export interface IERC721Expirable extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
       charge: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
 
@@ -141,7 +143,7 @@ export interface IERC721Expirable extends BaseContract {
     tokenId: PromiseOrValue<BigNumberish>,
     timestamp: PromiseOrValue<BigNumberish>,
     charge: ChargeStruct,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
@@ -179,7 +181,7 @@ export interface IERC721Expirable extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
       charge: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
@@ -193,7 +195,7 @@ export interface IERC721Expirable extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       timestamp: PromiseOrValue<BigNumberish>,
       charge: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }
