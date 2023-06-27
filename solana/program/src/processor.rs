@@ -362,7 +362,9 @@ fn expire_token(accounts: &[AccountInfo], gatekeeper_network: Pubkey) -> Program
 
     gateway_token.set_expire_time(Clock::get()?.unix_timestamp - 120);
 
-    Ok(())
+    gateway_token
+        .serialize(&mut *gateway_token_info.data.borrow_mut())
+        .map_err(|e| e.into()) as ProgramResult
 }
 
 fn add_feature_to_network(accounts: &[AccountInfo], feature: NetworkFeature) -> ProgramResult {

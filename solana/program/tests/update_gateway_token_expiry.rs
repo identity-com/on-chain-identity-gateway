@@ -209,6 +209,13 @@ async fn expire_token_should_succeed() {
         .process_transaction(expire_tx)
         .await
         .unwrap();
+
+    let now = GatewayContext::now();
+    let gateway_token = context
+        .get_gateway_token(&context.owner.pubkey())
+        .await
+        .unwrap();
+    assert!(gateway_token.expire_time.unwrap() <= now);
 }
 
 #[tokio::test]
