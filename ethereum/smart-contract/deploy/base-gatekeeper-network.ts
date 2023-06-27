@@ -1,8 +1,8 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { getAccounts } from '../scripts/util';
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import {Contract} from "ethers";
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { Contract } from 'ethers';
 
 /**
  * Deploy the base set of gatekeeper networks. Note - this is only possible by holders of the gatea
@@ -15,26 +15,32 @@ const networks = {
     ignREusXmGrscGNUesoU9mxfds9AiYTezUKex2PsZV6: 4,
     bni1ewus6aMxTxBi5SAfzEmmXLf8KcVFRmTfproJuKw: 6,
     uniqobk8oGh4XBLMqM68K8M2zNu3CdYX7q5go7whQiv: 10,
-    vaa1QRNEBb1G2XjPohqGWnPsvxWnwwXF67pdjrhDSwM: 11
+    vaa1QRNEBb1G2XjPohqGWnPsvxWnwwXF67pdjrhDSwM: 11,
   },
   dev: {
     tigoYhp9SpCDoCQmXGj2im5xa3mnjR1zuXrpCJ5ZRmi: 14,
     tbniJdS9j7BWhUoJesjpqutC54AYr96cn2No7dJcqce: 16,
     tunQheuPpHhjjsbrUDp4rikqYez9UXv4SXLRHf9Kzsv: 20,
-    tvaaHL9BSgZGLRAqUrx1Fzs2Uneb6BWGdnYuqrFoXm3: 21
-  }
-}
+    tvaaHL9BSgZGLRAqUrx1Fzs2Uneb6BWGdnYuqrFoXm3: 21,
+  },
+};
 
-const addToNetwork = async (networkName: string, deployer: SignerWithAddress, gatekeeper: string, contract: Contract, slotId: number) => {
-  console.log("Creating NETWORK: " + networkName + " with slotId: " + slotId + " and gatekeeper: " + gatekeeper);
+const addToNetwork = async (
+  networkName: string,
+  deployer: SignerWithAddress,
+  gatekeeper: string,
+  contract: Contract,
+  slotId: number,
+) => {
+  console.log('Creating NETWORK: ' + networkName + ' with slotId: ' + slotId + ' and gatekeeper: ' + gatekeeper);
   if (await contract.getNetwork(slotId)) {
     console.log('network ' + slotId + ' already exists');
   } else {
-    const createNetworkTx = await (
-        await contract.createNetwork(slotId, networkName, false, NULL_ADDRESS)
-    ).wait();
+    const createNetworkTx = await (await contract.createNetwork(slotId, networkName, false, NULL_ADDRESS)).wait();
     console.log(
-        'created network ' + networkName + ' (' +
+      'created network ' +
+        networkName +
+        ' (' +
         slotId +
         ') on Gateway Token at ' +
         contract.address +
@@ -44,11 +50,9 @@ const addToNetwork = async (networkName: string, deployer: SignerWithAddress, ga
     );
   }
 
-  const addGatekeeperTx = await (
-      await contract.addGatekeeper(gatekeeper, slotId)
-  ).wait();
+  const addGatekeeperTx = await (await contract.addGatekeeper(gatekeeper, slotId)).wait();
   console.log(
-      'added new gatekeeper with ' +
+    'added new gatekeeper with ' +
       gatekeeper +
       ' address into Gateway Token at ' +
       contract.address +
@@ -56,19 +60,19 @@ const addToNetwork = async (networkName: string, deployer: SignerWithAddress, ga
       addGatekeeperTx.gasUsed.toNumber() +
       ' gas',
   );
-}
+};
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const {deployments, ethers} = hre;
+  const { deployments, ethers } = hre;
 
-  const prodGatekeeper = "0x964617b2d933c6e5c6c1B30681DCAee23Baa9836";
-  const devGatekeeper = "0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688";
+  const prodGatekeeper = '0x964617b2d933c6e5c6c1B30681DCAee23Baa9836';
+  const devGatekeeper = '0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688';
 
   // WARNING! If any of the below keys are the same as each other
   // hardhat does not resolve them properly. Check by deploying to localhost that they are correct first
   // yarn local --no-deploy &
   // yarn deploy localhost
-  let {deployer} = await getAccounts(hre);
+  let { deployer } = await getAccounts(hre);
 
   const deployerSigner = await ethers.getSigner(deployer);
 

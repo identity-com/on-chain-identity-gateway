@@ -53,3 +53,50 @@ The easiest way to associate certain flags with the gateway token is by using li
   flags = [KYCFlags.IDCOM_1];
   bitmask = addFlagsToBitmask(bitmask, flags);
 ```
+
+## Examples
+
+### Charges
+
+Charging in Eth:
+
+```js
+// when charging in ETH - the gatekeeper cannot send the transaction directly
+// Use GatewayTsTransaction to generate a transaction that can be sent to the client
+const gateway = new GatewayTsTransaction(
+    gatekeeper,
+    DEFAULT_GATEWAY_TOKEN_ADDRESS
+);
+const charge = makeWeiCharge(chargeValue, recipientAddress);
+const tx = gateway.issue(wallet, gatekeeperNetwork, undefined, undefined, charge)
+
+// send tx to the user to sign and send
+```
+
+Charging in ERC20:
+
+```js
+const charge = makeERC20Charge(
+    chargeValue,
+    erc20TokenAddress,
+    userAddress,
+    recipientAddress
+);
+const approvalTx = await approveERC20Charge(
+    charge,
+    provider,
+    DEFAULT_GATEWAY_TOKEN_ADDRESS
+);
+
+// send approvalTx to the user to sign
+// once the user has signed the above
+
+const gateway = new GatewayTs(
+    gatekeeper,
+    DEFAULT_GATEWAY_TOKEN_ADDRESS
+);
+
+await gateway.issue(wallet, gatekeeperNetwork, undefined, undefined, charge)
+```
+
+);

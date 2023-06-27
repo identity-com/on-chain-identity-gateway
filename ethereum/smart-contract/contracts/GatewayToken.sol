@@ -19,6 +19,8 @@ import {MultiERC2771Context} from "./MultiERC2771Context.sol";
 import {Charge} from "./library/Charge.sol";
 import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
 import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
+import {ChargeHandler} from "./ChargeHandler.sol";
+import {BitMask} from "./library/BitMask.sol";
 
 /**
  * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens
@@ -40,10 +42,18 @@ contract GatewayToken is
     IERC721Expirable,
     IERC721Revokable,
     IGatewayToken,
-    TokenBitMask
+    TokenBitMask,
+    ChargeHandler
 {
     using Address for address;
     using Strings for uint;
+    using BitMask for uint256;
+
+    enum NetworkFeature {
+        // if set, gateway tokens are considered invalid if the gatekeeper that minted them is removed from the network
+        // defaults to false, and can be set by the network authority.
+        REMOVE_GATEKEEPER_INVALIDATES_TOKENS
+    }
 
     // Off-chain DAO governance access control
     mapping(uint => bool) public isNetworkDAOGoverned;
@@ -53,13 +63,19 @@ contract GatewayToken is
     bytes32 public constant GATEKEEPER_ROLE = keccak256("GATEKEEPER_ROLE");
     bytes32 public constant NETWORK_AUTHORITY_ROLE = keccak256("NETWORK_AUTHORITY_ROLE");
 
-    // Optional mapping for gateway token bitmaps
+    // Mapping from token id to state
     mapping(uint => TokenState) internal _tokenStates;
 
     // Optional Mapping from token ID to expiration date
     mapping(uint => uint) internal _expirations;
 
     mapping(uint => string) internal _networks;
+
+    // Specifies the gatekeeper that minted a given token
+    mapping(uint => address) internal _issuingGatekeepers;
+
+    // Mapping for gatekeeper network features
+    mapping(uint => uint256) internal _networkFeatures;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor is "empty" as we are using the proxy pattern,
@@ -134,9 +150,17 @@ contract GatewayToken is
      * @param network Gateway token type
      * @param mask The bitmask for the token
      */
-    function mint(address to, uint network, uint expiration, uint mask, Charge calldata) external virtual {
+    function mint(
+        address to,
+        uint network,
+        uint expiration,
+        uint mask,
+        Charge calldata charge
+    ) external payable virtual {
+        // CHECKS
         _checkGatekeeper(network);
 
+        // EFFECTS
         uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
 
         if (expiration > 0) {
@@ -146,6 +170,11 @@ contract GatewayToken is
         if (mask > 0) {
             _setBitMask(tokenId, mask);
         }
+
+        _issuingGatekeepers[tokenId] = _msgSender();
+
+        // INTERACTIONS
+        _handleCharge(charge);
     }
 
     function revoke(uint tokenId) external virtual override {
@@ -179,11 +208,16 @@ contract GatewayToken is
     /**
      * @dev Triggers to set expiration for tokenId
      * @param tokenId Gateway token id
+     * @param timestamp Expiration timestamp
+     * @param charge Charge for the operation
      */
-    function setExpiration(uint tokenId, uint timestamp, Charge calldata) external virtual {
+    function setExpiration(uint tokenId, uint timestamp, Charge calldata charge) external payable virtual {
+        // CHECKS
         _checkGatekeeper(slotOf(tokenId));
-
+        // EFFECTS
         _setExpiration(tokenId, timestamp);
+        // INTERACTIONS
+        _handleCharge(charge);
     }
 
     /**
@@ -308,16 +342,31 @@ contract GatewayToken is
         _setBitMask(tokenId, mask);
     }
 
+    function setNetworkFeatures(uint network, uint256 mask) external virtual {
+        _checkSenderRole(NETWORK_AUTHORITY_ROLE, network);
+        _networkFeatures[network] = mask;
+    }
+
     function getNetwork(uint network) external view virtual returns (string memory) {
         return _networks[network];
     }
 
-    function getTokenIdsByOwnerAndNetwork(address owner, uint network) external view virtual returns (uint[] memory) {
-        (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
+    function getIssuingGatekeeper(uint tokenId) external view virtual returns (address) {
+        return _issuingGatekeepers[tokenId];
+    }
+
+    function getTokenIdsByOwnerAndNetwork(
+        address owner,
+        uint network,
+        bool onlyActive
+    ) external view virtual returns (uint[] memory) {
+        (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, onlyActive);
         uint[] memory tokenIdsResized = new uint[](count);
+
         for (uint i = 0; i < count; i++) {
             tokenIdsResized[i] = tokenIds[i];
         }
+
         return tokenIdsResized;
     }
 
@@ -327,13 +376,9 @@ contract GatewayToken is
      * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
      */
     function verifyToken(address owner, uint network) external view virtual returns (bool) {
-        (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network);
+        (, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, true);
 
-        for (uint i = 0; i < count; i++) {
-            if (_existsAndActive(tokenIds[i], false)) return true;
-        }
-
-        return false;
+        return count > 0;
     }
 
     /**
@@ -430,6 +475,10 @@ contract GatewayToken is
             super.supportsInterface(interfaceId);
     }
 
+    function networkHasFeature(uint network, NetworkFeature feature) public view virtual returns (bool) {
+        return _networkFeatures[network].checkBit(uint8(feature));
+    }
+
     /**
      * @dev Freezes `tokenId` and it's usage by gateway token owner.
      *
@@ -494,14 +543,18 @@ contract GatewayToken is
         return MultiERC2771Context._msgData();
     }
 
-    function _getTokenIdsByOwnerAndNetwork(address owner, uint network) internal view returns (uint[] memory, uint) {
+    function _getTokenIdsByOwnerAndNetwork(
+        address owner,
+        uint network,
+        bool onlyActive
+    ) internal view returns (uint[] memory, uint) {
         uint length = balanceOf(owner);
         uint[] memory tokenIds = new uint[](length);
         uint count = 0;
 
         for (uint i = 0; i < length; i++) {
             uint tokenId = tokenOfOwnerByIndex(owner, i);
-            if (slotOf(tokenId) == network) {
+            if (slotOf(tokenId) == network && (!onlyActive || _existsAndActive(tokenId, false))) {
                 tokenIds[count++] = tokenId;
             }
         }
@@ -517,6 +570,17 @@ contract GatewayToken is
         // and avoids a revert, if the token does not exist.
         TokenState state = _tokenStates[tokenId];
         if (state != TokenState.ACTIVE) return false;
+
+        // if the network has the REMOVE_GATEKEEPER_INVALIDATES_TOKENS feature,
+        // check that the gatekeeper is still in the gatekeeper network.
+        // tokens issued without gatekeepers are exempt.
+        uint network = slotOf(tokenId);
+        if (networkHasFeature(network, NetworkFeature.REMOVE_GATEKEEPER_INVALIDATES_TOKENS)) {
+            address gatekeeper = _issuingGatekeepers[tokenId];
+            if (gatekeeper != address(0) && !hasRole(GATEKEEPER_ROLE, network, gatekeeper)) {
+                return false;
+            }
+        }
 
         address owner = ownerOf(tokenId);
         if (_expirations[tokenId] != 0 && !allowExpired) {

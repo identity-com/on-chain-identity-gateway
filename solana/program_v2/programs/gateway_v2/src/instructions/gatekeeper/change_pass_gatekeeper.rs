@@ -7,7 +7,6 @@ use crate::state::{
 };
 
 pub fn change_pass_gatekeeper(ctx: Context<PassChangeGatekeeper>) -> Result<()> {
-    // TODO: Check if feature flag is set
     let pass = &mut ctx.accounts.pass;
     let new_gatekeeper = &ctx.accounts.new_gatekeeper;
 

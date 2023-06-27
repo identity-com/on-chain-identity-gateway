@@ -27,61 +27,61 @@ const derivedAccounts = {
   count: 20,
 };
 const liveAccounts =
-    process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY
-        ? [
-          `0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
-          `0x${process.env.GATEKEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
-        ]
-        : [];
+  process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY
+    ? [
+        `0x${process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
+        `0x${process.env.GATEKEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY}`,
+      ]
+    : [];
 
 task('check-gt', 'check if a wallet has a gateway token for a particular gatekeeper network')
-    .addParam('address', 'The wallet to check')
-    .addParam('gatekeepernetwork', 'The gatekeeper network')
-    .setAction(checkGT);
+  .addParam('address', 'The wallet to check')
+  .addParam('gatekeepernetwork', 'The gatekeeper network')
+  .setAction(checkGT);
 task('add-gatekeeper', 'add a gatekeeper to a network')
-    .addParam('gatekeeper', 'The gatekeeper to add')
-    .addParam('gatekeepernetwork', 'The gatekeeper network to add the gatekeeper to')
-    .setAction(addGatekeeper);
+  .addParam('gatekeeper', 'The gatekeeper to add')
+  .addParam('gatekeepernetwork', 'The gatekeeper network to add the gatekeeper to')
+  .setAction(addGatekeeper);
 task('issue-gt', 'issue a gateway token')
-    .addParam('gatekeepernetwork', 'The gatekeeper network to issue the token against')
-    .addParam('address', 'The wallet to issue the gateway token for')
-    .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
-    .setAction(issueGT);
+  .addParam('gatekeepernetwork', 'The gatekeeper network to issue the token against')
+  .addParam('address', 'The wallet to issue the gateway token for')
+  .addFlag('forwarded', 'Forwards the transaction using an ERC2771 forwarder')
+  .setAction(issueGT);
 task('fund', 'fund a wallet')
-    .addParam('from', 'The funder wallet')
-    .addParam('to', 'The wallet to fund')
-    .addParam('amount', 'The amount in eth to send')
-    .addFlag('dryrun', 'Do not actually send the transaction')
-    .setAction(fund);
+  .addParam('from', 'The funder wallet')
+  .addParam('to', 'The wallet to fund')
+  .addParam('amount', 'The amount in eth to send')
+  .addFlag('dryrun', 'Do not actually send the transaction')
+  .setAction(fund);
 task(
-    'print-private-key',
-    'Print the private key of a wallet used by hardhat (WARNING - DO NOT USE THIS FOR PRODUCTION KEYS)',
+  'print-private-key',
+  'Print the private key of a wallet used by hardhat (WARNING - DO NOT USE THIS FOR PRODUCTION KEYS)',
 )
-    .addParam('index', 'the index of the wallet to get the private key for')
-    .setAction(printPrivateKey);
+  .addParam('index', 'the index of the wallet to get the private key for')
+  .setAction(printPrivateKey);
 task('create-wallet', 'Create a test wallet').setAction(createWallet);
 task('add-forwarder', 'add a forwarder to the gateway token smart contract (e.g. to support a relayer)')
-    .addParam('forwarder', 'The forwarder to add')
-    .setAction(addForwarder);
+  .addParam('forwarder', 'The forwarder to add')
+  .setAction(addForwarder);
 
 // Set the default contracts path to "contracts"
-const defaultPath = "./contracts";
-const testContractsPath = "./test/contracts";
+const defaultPath = './contracts';
+const testContractsPath = './test/contracts';
 
 // Override the default "compile" task to compile both main and test contracts
-task("compile", "Compiles the entire project, including main and test contracts")
-    .addFlag("noTestContracts", "Don't compile test contracts")
-    .setAction(async (args, hre, runSuper) => {
-      // First, compile main contracts
-      hre.config.paths.sources = defaultPath;
-      await runSuper(args);
+task('compile', 'Compiles the entire project, including main and test contracts')
+  .addFlag('noTestContracts', "Don't compile test contracts")
+  .setAction(async (args, hre, runSuper) => {
+    // First, compile main contracts
+    hre.config.paths.sources = defaultPath;
+    await runSuper(args);
 
-      // Then, compile test contracts (unless --noTestContracts flag is provided)
-      if (!args.noTestContracts) {
-        hre.config.paths.sources = testContractsPath;
-        await runSuper(args);
-      }
-    });
+    // Then, compile test contracts (unless --noTestContracts flag is provided)
+    if (!args.noTestContracts) {
+      hre.config.paths.sources = testContractsPath;
+      await runSuper(args);
+    }
+  });
 
 module.exports = {
   defaultNetwork: 'hardhat',
@@ -89,9 +89,9 @@ module.exports = {
     hardhat: {
       allowUnlimitedContractSize: false,
       accounts:
-          process.env.NODE_ENV === 'test'
-              ? derivedAccounts
-              : liveAccounts.map((a) => ({ privateKey: a, balance: '10000000000000000000000' })),
+        process.env.NODE_ENV === 'test'
+          ? derivedAccounts
+          : liveAccounts.map((a) => ({ privateKey: a, balance: '10000000000000000000000' })),
     },
     localhost: {
       saveDeployments: true,
@@ -290,14 +290,14 @@ module.exports = {
         chainId: 1101,
       },
       {
-        network: "polygonZkEVMTestnet",
+        network: 'polygonZkEVMTestnet',
         urls: {
           apiURL: 'https://api-testnet-zkevm.polygonscan.com/api',
           browserURL: 'https://testnet-zkevm.polygonscan.com/',
         },
         chainId: 1442,
-      }
-    ]
+      },
+    ],
   },
   namedAccounts: {
     deployer: {

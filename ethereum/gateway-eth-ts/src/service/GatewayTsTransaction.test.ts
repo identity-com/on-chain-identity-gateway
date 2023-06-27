@@ -8,12 +8,10 @@ import * as assert from "assert";
 import * as dotenv from "dotenv";
 import { GatewayTs } from "./GatewayTs";
 import {
-  deployerWallet,
   gatekeeperNetwork,
   gatekeeperWallet,
   TEST_GATEWAY_TOKEN_ADDRESS,
 } from "./testUtils";
-import { PopulatedTransaction } from "ethers/lib/ethers";
 import { GatewayTsForwarder } from "./GatewayTsForwarder";
 import { Wallet } from "ethers";
 

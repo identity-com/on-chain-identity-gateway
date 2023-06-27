@@ -253,12 +253,12 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@identity.com/solana-gatekeeper-lib@^6.0.0-alpha.1":
-  version "6.0.0-alpha.1"
-  resolved "https://registry.yarnpkg.com/@identity.com/solana-gatekeeper-lib/-/solana-gatekeeper-lib-6.0.0-alpha.1.tgz#320c65914fd3d88dfa8e87c2309ae1e154ca41f9"
-  integrity sha512-1I+YMsCF31nX/5daffYGJBIufTC27rtA4LTa9ovkCCT6LFq31HpfyxTTSkfGBeY80CymJ5Y86wQRFxz4q8miyQ==
+"@identity.com/solana-gatekeeper-lib@^6.1.0":
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/@identity.com/solana-gatekeeper-lib/-/solana-gatekeeper-lib-6.1.0.tgz#9ce8977c13ecaf56e0e066ac1bf6f2ce34ed939c"
+  integrity sha512-OkNT/6olhowYp2YY1C4/PKPCeEbkI55pZn0KFXb8NxYrgZCxQ4ZfaEjKx5IWJjMzqAkXM1RL5GxocRXyMsz5pA==
   dependencies:
-    "@identity.com/solana-gateway-ts" "0.11.0-alpha.5"
+    "@identity.com/solana-gateway-ts" "0.12.0"
     "@solana/buffer-layout" "^4.0.0"
     "@solana/spl-token" "^0.3.5"
     "@solana/web3.js" "^1.61.0"
@@ -267,10 +267,10 @@
     ramda "^0.28.0"
     tslib "^1"
 
-"@identity.com/solana-gateway-ts@0.11.0-alpha.5", "@identity.com/solana-gateway-ts@^0.11.0-alpha.5":
-  version "0.11.0-alpha.5"
-  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.11.0-alpha.5.tgz#63bd8de3909eb5c190948657f6aef450adf7efdd"
-  integrity sha512-QF4haQ8rL9ipqlov7B9eCHNsdiyq9rSroJeM7e5JqrslW5684jlYjvKjcZhmYo37ameE8WEVaC7i8tVyx42dYw==
+"@identity.com/solana-gateway-ts@0.12.0", "@identity.com/solana-gateway-ts@^0.12.0":
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/@identity.com/solana-gateway-ts/-/solana-gateway-ts-0.12.0.tgz#8954dfacd0c4f3b02437541d6ab15a8069a6814b"
+  integrity sha512-VF3sjYLu9mD2fvSyTfR07HYRz3LnEhZPtqZ53Jmm3+CnlabsVLLShSvCvPSz+4TQtD/4gNKMG1VAJenxBr8W5Q==
   dependencies:
     "@solana/web3.js" "^1.63.0"
     async-retry "^1.3.3"

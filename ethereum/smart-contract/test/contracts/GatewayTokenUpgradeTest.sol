@@ -18,7 +18,11 @@ import {IERC721Revokable} from "../../contracts/interfaces/IERC721Revokable.sol"
 import {MultiERC2771Context} from "../../contracts/MultiERC2771Context.sol";
 import {Charge} from "../../contracts/library/Charge.sol";
 import {ParameterizedAccessControl} from "../../contracts/ParameterizedAccessControl.sol";
-import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "../../contracts/library/CommonErrors.sol";
+import {
+    Common__MissingAccount,
+    Common__NotContract,
+    Common__Unauthorized
+} from "../../contracts/library/CommonErrors.sol";
 import {GatewayToken} from "../../contracts/GatewayToken.sol";
 
 /**
@@ -31,15 +35,17 @@ contract GatewayTokenUpgradeTest is GatewayToken {
      * @param to Gateway token owner
      * @param network Gateway token type
      * @param mask The bitmask for the token
+     * @param charge The charge to be paid
      */
     function mint(
         address to,
         uint256 network,
         uint256 expiration,
         uint256 mask,
-        Charge calldata
-    ) external override(GatewayToken) {
+        Charge calldata charge
+    ) external payable override(GatewayToken) {
         _checkGatekeeper(network);
+        _handleCharge(charge);
 
         uint256 tokenId = ERC3525Upgradeable._mint(to, network, 1);
 

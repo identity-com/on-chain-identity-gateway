@@ -1,108 +1,329 @@
-# Solana On-Chain Gateway Program
+# Solana Gateway
+
+The Gateway Protocol is a protocol that allows a Solana program to restrict access
+to holders of a valid Gateway Token.
+
+* [Functional Details](#functional-details)
+* [Integration](#integration)
+* [Getting Started](#getting-started)
+* [Technical Details](#technical-details)
+
+## Functional Details
+
+A Gateway Token is an on-chain, non-transferrable token that dApps can issue,
+freeze, or revoke for user access control.
+
+The presence of an active gateway token proves that a user's wallet was verified according to a dApp's requirements.
+
+The dApp can verify the state of a wallet's gateway token before allowing transactions through,
+thus blocking non-compliant users.
+
+Gateway tokens are issued by Gatekeepers. A gatekeeper may be a single dApp, an organisation that performs KYC,
+or a third-party that obtains KYC information from a user and issues a gateway token on their behalf.
+
+A cluster of gatekeepers with similar rules for issuing gateway tokens are defined as a Gatekeeper Network.
+A gatekeeper network is identified by a public key. This key (which may be owned by a DAO or multisig)
+has the power to add and remove gatekeepers from the network.
+
+In general, a user's wallet can be associated with multiple gateway tokens (1:N),
+however, a token is only ever issued for a single specific Gatekeeper Network (1:1).
+
+Creating a gatekeeper network is a permissionless process, however, gatekeepers must be added to the network by the network authority.
 
 This program defines the operations that gatekeepers can perform on the Solana blockchain,
 such as issuing and revoking gateway tokens, as well as operations to add/remove gatekeepers,
 performed by gatekeeper network authorities.
 
-## Instructions
+## Integration
+
+This section describes how to integrate the gateway protocol into your program.
+
+Follow these steps if you want to use the gateway protocol to restrict access to your program based on gateway tokens.
+
+Integrating programs choose a gatekeeper network to trust, by adding its public key to a program account.
+
+This library then validates that gateway tokens are issued by gatekeepers in this network and are valid.
+
+To integrate Solana Gateway with your program:
+
+In Cargo.toml
+```toml
+solana-gateway = "<LATEST VERSION>"
+```
+
+In the instruction processor (typically processor.rs)
+
+```rust
+use solana_gateway::Gateway;
+use solana_program::{
+    account_info::AccountInfo,
+    program_pack::Pack,
+    pubkey::Pubkey,
+};
+
+fn process() {
+    // The owner of the gateway token
+    let owner: AccountInfo;
+    // The gateway token presented by the owner
+    let gateway_token_account_info: AccountInfo;
+    // The gatekeeper network key
+    let gatekeeper_network: Pubkey;
+
+    let gateway_verification_result:Result<(), GatewayError> =
+        Gateway::verify_gateway_token_account_info(
+            &gateway_token_account_info, &owner.key, &gatekeeper_network, None
+        );
+}
+```
+
+### Advanced Usage
+
+By default, the verify function will fail if the token has expired. This is an important security measure
+in some gatekeeper networks, particularly ones that require ongoing monitoring of the token's owner.
+
+In gatekeeper networks where this is not relevant, it is recommended to issue tokens without expiry.
+
+However, in some scenarios, an expired token may still be considered valid. Alternatively the integrator
+may wish to set a tolerance value.
+
+To ignore expiry:
+
+```rust
+let gateway_verification_result:Result<(), GatewayError> =
+        Gateway::verify_gateway_token_account_info(
+            &gateway_token_account_info, &owner.key, &gatekeeper_network, {
+                Some(VerificationOptions {
+                    check_expiry: false,
+                    ..Default::default()
+                },
+            }
+        );
+```
+
+To set a tolerance:
+
+```rust
+let gateway_verification_result:Result<(), GatewayError> =
+        Gateway::verify_gateway_token_account_info(
+            &gateway_token_account_info, &owner.key, &gatekeeper_network, {
+                Some(VerificationOptions {
+                    check_expiry: true,
+                    expiry_tolerance_seconds: Some(120),    // allow 2 minutes tolerance for token expiry
+                },
+            }
+        );
+```
+
+## Getting Started
+
+Prerequisites for building the program:
+
+1. Rust
+
+```shell
+$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+2. Solana 
+
+```shell
+$ sh -c "$(curl -sSfL https://release.solana.com/v1.14.17/install)"
+```
+
+To build the program:
+
+```shell
+$ cargo build-spf
+```
+
+To run the tests:
+
+```shell
+# unit tests
+$ cargo test
+# functional tests
+$ cargo test-sbf
+```
+
+To deploy to a local environment:
+
+```shell
+$ cargo build-spf
+$ solana-test-validator --bpf-program gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs target/deploy/solana_gateway.so
+```
+
+## Technical Details
+
+### Instructions
 
 The program provides the following instructions:
 
-### 1. Add Gatekeeper
+#### AddGatekeeper
 
-Callable by: Gatekeeper network authority
+Add a new Gatekeeper to a network.
 
-Input accounts:
-- `[Writeable, Signer]` Payer
-- `[Writeable]` Uninitialized gatekeeper account
-- `[]` Gatekeeper authority
-- `[Signer]` Gatekeeper network authority
+Accounts expected by this instruction:
 
+1. `[writable, signer]`    funder_account: the payer of the transaction
+2. `[writeable]`           gatekeeper_account: the destination account containing details of the gatekeeper
+3. `[]`                    gatekeeper_authority: the authority that owns the gatekeeper account
+4. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
+5. `[]`                    Rent sysvar
+6. `[]`                    System program
 
-### 2. Issue Gateway Token
+#### RemoveGatekeeper
 
-Callable by: Gatekeeper
+Removes a gatekeeper funding the rent back to an address and invalidating their addresses.
 
-Input accounts:
-- `[Writeable, Signer]` Payer
-- `[Writeable]` Uninitialized gateway token account
-- `[]` Owner wallet (TODO or DID)
-- `[]` Gatekeeper account
-- `[Signer]` Gatekeeper authority
-- `[]` Gatekeeper network
+Accounts expected by this instruction:
 
-Data:
-- Expiry (TODO clock time, block, slot or epoch)
-- Limits per currency (TODO optional)
-- Metadata - e.g. jurisdiction code
+1. `[writable]`            funds_to_account: the account that will receive the rent back
+2. `[writable]`            gatekeeper_account: the gatekeeper account to close
+3. `[]`                    gatekeeper_authority: the authority that owns the gatekeeper account
+4. `[signer]`              gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
 
-Generates a new gateway token for a trader
+#### Issue
 
-### 3. Set Gateway Token state
+Issue a new gateway token.
 
-Callable by: Gatekeeper
-Input accounts:
-- `[Writeable]` Gateway token account
-- `[Signer]` Gatekeeper authority
-- `[]` Gatekeeper account
+Accounts expected by this instruction:
 
-Data:
-- New state (Frozen, Revoked, Active)
+1. `[writable, signer]`    funder_account: the payer of the transaction
+2. `[writable]`            gateway_token: the destination account of the gateway token
+3. `[]`                    owner: the wallet that the gateway token is issued for
+4. `[]`                    gatekeeper_account: the account containing details of the gatekeeper issuing the gateway token
+5. `[signer]`              gatekeeper_authority: the authority that owns the gatekeeper account
+6. `[]`                    gatekeeper_network: the gatekeeper network to which the gatekeeper belongs
+7. `[]`                    Rent sysvar
+8. `[]`                    System program
 
-Updates the state of a gateway token.
-For details on the states, please see [Account Structures](#account-structures) below.
+Fields:
 
-Frozen gateway tokens can be unfrozen by setting them to Active
-Revoked tokens cannot be unrevoked.
+- `seed: Option<AddressSeed>`: An optional seed to use when generating a gateway token allowing multiple gateway tokens per wallet
+- `expire_time: Option<UnixTimestamp>`: An optional unix timestamp at which point the issued token is no longer valid
 
-### 4. Create Session   
+#### SetState
 
-Callable by: Gateway Token owner
-Input accounts:
-- `[Signer]` Payer
-- `[]` Gateway token account
-- `[Signer]` Owner wallet (TODO or DID)
-- `[Writeable]` Uninitialised session token account
-- `[Writeable]` Delegated CVC account
+Update the gateway token state (Revoke, freeze or unfreeze).
 
+Gatekeepers may freeze or unfreeze any gateway tokens issued by them.
+Additionally, any gatekeeper may revoke tokens in the same gatekeeper network.
 
-Data:
-- Transaction Details (see [below](#transaction-details-structure))
+Accounts expected by this instruction:
 
-Creates a short-lived (zero-rent) session token and pays the gatekeeper in CVC.
+1. `[writable]`            gateway_token: the destination account of the gateway token
+2. `[signer]`              gatekeeper_authority: the gatekeeper authority that is making the change
+3. `[]`                    gatekeeper_account: the account containing details of the gatekeeper
 
-## Account Structures
+Fields:
 
-### Gateway Token
+- `state: GatewayTokenState`: The new state of the gateway token
 
-- `features: Bitmap`    Feature flags that define the type of gateway token (see [below](#features))
-- `owner_wallet: Pubkey`  The public key of the wallet to which this token was assigned
-- `owner_identity: Option(Pubkey)`    The DID (must be on Solana) of the identity to which the token was assigned
-- `gatekeeper_network: Pubkey`    The gateway network that issued the token
-- `issuing_gatekeeper: Pubkey`    The specific gatekeeper that issued the token
-- `state: [Active, Revoked, Frozen]`  The current state of the token (see [below](#gateway-token-state))
-- `expiry: Option(UnixTimestamp)`   - The expiry time of the token as a unix timestamp  (i64) 
-- `transaction_details: Option(TransactionDetailsStruct)` (see [below](#transaction-details-structure))
+#### UpdateExpiry
+
+Update the gateway token expiry time.
+
+Accounts expected by this instruction:
+
+1. `[writable]`            gateway_token: the destination account of the gateway token
+2. `[signer]`              gatekeeper_authority: the gatekeeper authority that is making the change
+3. `[]`                    gatekeeper_account: the account containing details of the gatekeeper
+
+Fields:
+
+- `expire_time: UnixTimestamp`: The new expiry time of the gateway token
+
+#### AddFeatureToNetwork
+
+Add a new feature to a gatekeeper network. An example feature is "UserTokenExpiry" (see below).
+
+The presence of a feature in a gatekeeper network is indicated by the presence of a PDA with a known address derivable from the gatekeeper network address and the feature name.
+
+Accounts expected by this instruction:
+
+1. `[signer, writable]` funder_account: The account funding this transaction
+2. `[signer]`           gatekeeper_network: The gatekeeper network receiving a feature
+3. `[writable]`         feature_account: The new feature account
+4. `[]`                 system_program: The system program
+
+Fields:
+
+- `feature: NetworkFeature`: The network feature to add
+
+#### RemoveFeatureFromNetwork
+
+Remove a feature from a gatekeeper network.
+
+Accounts expected by this instruction:
+
+1. `[signer, writable]` funds_to_account: The account receiving the funds
+2. `[signer]`           gatekeeper_network: The gatekeeper network receiving a feature
+3. `[writable]`         feature_account: The new feature account
+
+Fields:
+
+- `feature: NetworkFeature`: The network feature to remove
+
+#### ExpireToken
+
+Expire a gateway token in a gatekeeper network with the UserTokenExpiry feature. This instruction is signed by the owner, usually as a CPI from a separate program that is gated by the gateway protocol.
+
+The gatekeeper network must have the UserTokenExpiry feature enabled, indicated by the presence of a PDA with a known address derivable from the gatekeeper network address and the feature name.
+
+Accounts expected by this instruction:
+
+1. `[writable]`    gateway_token: The token to expire
+2. `[signer]`      owner: The wallet that the gateway token is for
+3. `[]`            network_expire_feature: The UserTokenExpiry feature account for the gatekeeper network
+
+Fields:
+
+- `padding: Option<AddressSeed>`: Padding for backwards compatibility
+- `gatekeeper_network: Pubkey`: The gatekeeper network
+
+#### BurnToken
+
+Remove a gateway token from the system, closing the account. Unlike revoking a gateway token, this does not leave an open account on chain, and can be reversed by reissuing the token.
+
+Accounts expected by this instruction:
+
+1. `[writable]`            gateway_token: the account of the gateway token
+2. `[signer]`              gatekeeper_authority: the gatekeeper authority that is burning the token
+3. `[]`                    gatekeeper_account: the gatekeeper account linking the gatekeeper authority to the gatekeeper network
+4. `[writeable]`           recipient: the recipient of the lamports in the gateway token account
+
+### Account Structures
+
+#### Gateway Token
+
+Defines the gateway token structure.
+
+- `version: u8`: Version field for backwards compatibility - currently 0.
+- `parent_gateway_token: Option<Pubkey>`: If the token is a session token, this is set to the parent token that was used to generate it. Note: Deprecated - This is kept to maintain backward compatibility, but is not used.
+- `owner_wallet: Pubkey`: The public key of the wallet to which this token was assigned.
+- `owner_identity: Option<Pubkey>`: The DID (must be on Solana) of the identity to which the token was assigned. Note: Deprecated - This is kept to maintain backward compatibility, but is not used.
+- `gatekeeper_network: Pubkey`: The gateway network that issued the token.
+- `issuing_gatekeeper: Pubkey`: The specific gatekeeper that issued the token.
+- `state: GatewayTokenState`: The current token state.
+- `expire_time: Option<UnixTimestamp>`: The expiry time of the token (unix timestamp) (expirable tokens only).
 
 #### Features
 
-The FeatureBitmap is an 8-bit unsigned integer where each bit represents a flag:
+Features are properties of a gatekeeper network that can be enabled or disabled.
 
-| Bit 	| Name              	| Description                                                                                                                         	|
-|-----	|-------------------	|-------------------------------------------------------------------------------------------------------------------------------------	|
-| 0   	| Session           	| The token is valid for the current transaction only. Must have its lamport balance set to 0.                                        	|
-| 1   	| Expirable         	| The expiry field must be set and the expiry slot & epoch must not be in the past.                                                   	|
-| 2   	| TransactionLinked 	| Expect a transaction-details struct, and check the contents against the details of the transaction that the token is being used for. 	|
-| 3   	| IdentityLinked    	| Expect an owner-identity property, and check that a valid signer account for that identity.                                          	|
-| 4   	| Custom        	    |                                                                                                                                     	|
-| 5   	| Custom        	    |                                                                                                                                     	|
-| 6   	| Custom        	    |                                                                                                                                     	|
-| 7   	| Custom        	    |                                                                                                                                     	|
+They are represented by a PDA with a known address derivable from the gatekeeper network address and the feature name.
 
-The final four bits are not defined by the protocol, but may be used by gatekeeper networks
-to add custom features or restrictions to gateway tokens. For example, a gatekeeper network
-may agree to set bit 4 when issuing a token to a user in the US, and programs may then choose
-to accept or reject tokens based on that bit.
+Currently only one feature is supported: UserTokenExpiry.
+
+The UserTokenExpiry feature allows users to set an expiry time on their own gateway tokens.
+
+A use-case for this feature is a smart contract that checks and then expires a gateway token.
+
+This allows for "single-use" gateway tokens, e.g. for token sales or airdrops, which need to be
+re-activated after use.
+
+Note, all gateway tokens may have an expire time set by the gatekeeper, whether a network supports UserTokenExpiry
+or not.
 
 #### Gateway Token State
 
@@ -127,30 +348,3 @@ be unfrozen by the issuing gatekeeper.
 
 While not represented by a state on-chain, tokens may also have 'expired', in which
 case, they are treated as frozen.
-
-## Transaction Details Structure
-
-Note - may of the details of this section are TBD
-
-A TransactionDetails object encapsulates the details
-of the operation being performed on the program
-using the gateway.
-
-For example, if the trader is using a dex, the
-transactionDetails will contain the following fields:
-
-- dex program ID
-- market ID
-- order size
-- order direction
-- order (base) currency
-
-This transactionDetails object is encoded into the gateway session token, and checked
-by the program using the gateway to ensure it matches the details of the transaction.
-
-This ensures that gateway token costs can be based on the trade size,
-as well as allowing limits etc.
-
-## Pruning Revoked Tokens
-
-TODO

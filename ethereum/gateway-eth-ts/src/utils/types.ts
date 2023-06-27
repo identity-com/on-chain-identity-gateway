@@ -29,6 +29,7 @@ export type WriteOps =
   | "removeGatekeeper"
   | "addNetworkAuthority"
   | "removeNetworkAuthority"
+  | "setNetworkFeatures"
   | "mint"
   | "setExpiration"
   | "freeze"

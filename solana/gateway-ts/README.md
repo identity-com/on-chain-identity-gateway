@@ -13,7 +13,7 @@ like gateway token retrieval, lookup, and revocation.
     - [addGatekeeper](#addgatekeeper)
     - [getGatekeeperAccountKeyFromGatekeeperAuthority](#getgatekeeperaccountkeyfromgatekeeperauthority)
     - [getGatewayTokenKeyForOwner](#getgatewaytokenkeyforowner)
-    - [issueVanilla](#issuevanilla)
+    - [issue](#issue)
     - [findGatewayTokens](#findgatewaytokens-1)
 
 ## Usage
@@ -27,7 +27,7 @@ import {
   addGatekeeper,
   getGatekeeperAccountKeyFromGatekeeperAuthority,
   getGatewayTokenKeyForOwner,
-  issueVanilla,
+  issue,
   findGatewayTokens,
 } from "@identity.com/solana-gateway-ts";
 ```
@@ -81,8 +81,8 @@ Derives a gateway token key for an owner using the gateway program, additionally
 const gatewayTokenKey = await getGatewayTokenKeyForOwner(owner);
 ```
 
-### issueVanilla
-Issue a vanilla gatewayToken for an account
+### issue
+Issue a gatewayToken to an account
 ```
 const owner: PublicKey;
 const payer: Keypair;
@@ -97,7 +97,7 @@ const gatekeeperAccount =
   );
 
 const transaction = new Transaction().add(
-  issueVanilla(
+  issue(
     seed,
     gatewayTokenKey,
     payer.publicKey,

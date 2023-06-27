@@ -7,9 +7,10 @@ import {
   ReadOnlyOperation,
   TokenData,
 } from "../utils/types";
-import { NULL_CHARGE } from "../utils/charge";
+import { Charge, ChargeType, NULL_CHARGE } from "../utils/charge";
 import { NULL_ADDRESS } from "../utils/constants";
 import { omit } from "ramda";
+import { PayableOverrides } from "@ethersproject/contracts";
 
 /**
  * The main API of the Ethereum Gateway client library.
@@ -37,6 +38,20 @@ export class GatewayTsInternal<
   }
 
   /**
+   * If there is an eth charge, add the value to the overrides (making them PayableOverrides).
+   * @param charge
+   * @private
+   */
+  private payableOverrides(charge: Charge): PayableOverrides {
+    const value =
+      charge.chargeType === ChargeType.ETH ? charge.value : undefined;
+    return {
+      ...this.overrides,
+      value,
+    };
+  }
+
+  /**
    * Overrides that are safe to use for read-only operations.
    * Some chains / RPC providers (e.g. Polygon zkEVM) do not allow gasLimit or gasPrice to be set
    * for read-only operations.
@@ -48,12 +63,14 @@ export class GatewayTsInternal<
 
   public async checkedGetTokenId(
     owner: string,
-    network: bigint
+    network: bigint,
+    onlyActive: boolean = false
   ): Promise<BigNumber> {
     const tokenIds: BigNumber[] =
       await this.gatewayTokenContract.getTokenIdsByOwnerAndNetwork(
         owner,
         network,
+        onlyActive,
         this.readOnlyOverrides
       );
     if (tokenIds.length > 1 && !this.options?.tolerateMultipleTokens)
@@ -144,11 +161,20 @@ export class GatewayTsInternal<
     );
   }
 
+  setNetworkFeature(featureBitmask: bigint, network: bigint): Promise<O> {
+    return this.gatewayTokenContract.setNetworkFeatures(
+      network,
+      featureBitmask,
+      this.overrides
+    );
+  }
+
   issue(
     owner: string,
     network: bigint,
     expiry: BigNumberish = 0,
-    bitmask: BigNumberish = 0
+    bitmask: BigNumberish = 0,
+    charge: Charge = NULL_CHARGE
   ): Promise<O> {
     const expirationTime = expiry > 0 ? getExpirationTime(expiry) : 0;
 
@@ -157,8 +183,8 @@ export class GatewayTsInternal<
       network,
       expirationTime,
       bitmask,
-      NULL_CHARGE,
-      this.overrides
+      charge,
+      this.payableOverrides(charge)
     );
   }
 
@@ -185,15 +211,16 @@ export class GatewayTsInternal<
   async refresh(
     owner: string,
     network: bigint,
-    expiry?: number | BigNumber
+    expiry?: number | BigNumber,
+    charge: Charge = NULL_CHARGE
   ): Promise<O> {
     const tokenId = await this.checkedGetTokenId(owner, network);
     const expirationTime = getExpirationTime(expiry);
     return this.gatewayTokenContract.setExpiration(
       tokenId,
       expirationTime,
-      NULL_CHARGE,
-      this.overrides
+      charge,
+      this.payableOverrides(charge)
     );
   }
 
@@ -237,11 +264,13 @@ export class GatewayTsInternal<
 
   getTokenIdsByOwnerAndNetwork(
     owner: string,
-    network: bigint
+    network: bigint,
+    onlyActive: boolean = false
   ): Promise<BigNumber[]> {
     return this.gatewayTokenContract.getTokenIdsByOwnerAndNetwork(
       owner,
       network,
+      onlyActive,
       this.readOnlyOverrides
     );
   }
