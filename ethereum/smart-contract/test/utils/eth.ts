@@ -10,4 +10,5 @@ export const NULL_CHARGE = {
   chargeType: 0,
   token: ZERO_ADDRESS,
   recipient: ZERO_ADDRESS,
+  tokenSender: ZERO_ADDRESS,
 };

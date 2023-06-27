@@ -10,16 +10,16 @@ contract Gated {
     /// The gateway token is not valid.
     error IsGated__InvalidGatewayToken(address gatewayToken);
 
-    constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) {
-        _gatewayTokenContract = gatewayTokenContract;
-        _gatekeeperNetwork = gatekeeperNetwork;
-    }
-
     modifier gated() {
         IGatewayTokenVerifier verifier = IGatewayTokenVerifier(_gatewayTokenContract);
         if (!verifier.verifyToken(msg.sender, _gatekeeperNetwork)) {
             revert IsGated__InvalidGatewayToken(_gatewayTokenContract);
         }
         _;
+    }
+
+    constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) {
+        _gatewayTokenContract = gatewayTokenContract;
+        _gatekeeperNetwork = gatekeeperNetwork;
     }
 }

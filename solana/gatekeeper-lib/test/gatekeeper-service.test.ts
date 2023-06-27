@@ -98,7 +98,7 @@ describe("GatekeeperService", () => {
               activeGatewayToken.gatekeeperNetwork
             ),
             state: new GatewayTokenState({ active: new Active({}) }),
-            features: [0],
+            version: [0],
             parentGatewayToken: null,
             ownerIdentity: null,
             expiry: null,

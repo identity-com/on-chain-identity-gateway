@@ -10,6 +10,7 @@ import type {
   CallOverrides,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -32,13 +33,15 @@ export type ChargeStruct = {
   value: PromiseOrValue<BigNumberish>;
   chargeType: PromiseOrValue<BigNumberish>;
   token: PromiseOrValue<string>;
+  tokenSender: PromiseOrValue<string>;
   recipient: PromiseOrValue<string>;
 };
 
-export type ChargeStructOutput = [BigNumber, number, string, string] & {
+export type ChargeStructOutput = [BigNumber, number, string, string, string] & {
   value: BigNumber;
   chargeType: number;
   token: string;
+  tokenSender: string;
   recipient: string;
 };
 
@@ -50,7 +53,7 @@ export interface IGatewayTokenInterface extends utils.Interface {
     "getToken(uint256)": FunctionFragment;
     "isGatekeeper(address,uint256)": FunctionFragment;
     "isNetworkAuthority(address,uint256)": FunctionFragment;
-    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
+    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
     "removeNetworkAuthority(address,uint256)": FunctionFragment;
     "renameNetwork(uint256,string)": FunctionFragment;
     "transferDAOManager(address,address,uint256)": FunctionFragment;
@@ -255,7 +258,7 @@ export interface IGatewayToken extends BaseContract {
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
       charge: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     removeNetworkAuthority(
@@ -328,7 +331,7 @@ export interface IGatewayToken extends BaseContract {
     expiration: PromiseOrValue<BigNumberish>,
     mask: PromiseOrValue<BigNumberish>,
     charge: ChargeStruct,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   removeNetworkAuthority(
@@ -480,7 +483,7 @@ export interface IGatewayToken extends BaseContract {
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
       charge: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     removeNetworkAuthority(
@@ -546,7 +549,7 @@ export interface IGatewayToken extends BaseContract {
       expiration: PromiseOrValue<BigNumberish>,
       mask: PromiseOrValue<BigNumberish>,
       charge: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     removeNetworkAuthority(

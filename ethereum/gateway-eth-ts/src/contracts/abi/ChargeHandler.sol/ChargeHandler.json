@@ -1,0 +1,94 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ChargeHandler",
+  "sourceName": "contracts/ChargeHandler.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "allowance",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expectedAllowance",
+          "type": "uint256"
+        }
+      ],
+      "name": "Charge__InsufficientAllowance",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expectedValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "Charge__InsufficientValue",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Charge__TransferFailed",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            },
+            {
+              "internalType": "enum ChargeType",
+              "name": "chargeType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "tokenSender",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct Charge",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "name": "ChargePaid",
+      "type": "event"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212200aa9dd85b3bd093c1e516ef9a108665c4f241219415ce75422a1250fe665804264736f6c63430008090033",
+  "deployedBytecode": "0x6080604052600080fdfea26469706673582212200aa9dd85b3bd093c1e516ef9a108665c4f241219415ce75422a1250fe665804264736f6c63430008090033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

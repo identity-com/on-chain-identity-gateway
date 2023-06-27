@@ -15,7 +15,7 @@ interface IERC721Expirable {
      * @param tokenId Expiration timestamp
      * @param charge The charge details for token issuance (ignored here - handled if at all by the forwarding contract)
      */
-    function setExpiration(uint256 tokenId, uint256 timestamp, Charge calldata charge) external;
+    function setExpiration(uint256 tokenId, uint256 timestamp, Charge calldata charge) external payable;
 
     /**
      * @dev Get the gateway token expiry

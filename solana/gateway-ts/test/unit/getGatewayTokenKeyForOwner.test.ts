@@ -11,7 +11,7 @@ import {
   addGatekeeper,
   getGatekeeperAccountAddress,
   getGatewayTokenAddressForOwnerAndGatekeeperNetwork,
-  issueVanilla,
+  issue,
 } from "../../src";
 import { VALIDATOR_URL } from "../constants";
 
@@ -72,7 +72,7 @@ describe("getGatewayTokenKeyForOwner", function () {
               )
             )
             .add(
-              issueVanilla(
+              issue(
                 await getGatewayTokenAddressForOwnerAndGatekeeperNetwork(
                   owner,
                   gatekeeperNetwork.publicKey

@@ -12,8 +12,16 @@ enum ChargeType {
  * gateway token issuance or refresh.
  */
 struct Charge {
+    // the amount in either wei (if chargeType = ETH) or ERC20 minor denomination (if chargeType = ERC20)
     uint256 value;
+    // whether to charge in wei or ERC20
     ChargeType chargeType;
+    // if chargeType = ERC20, the token to charge in
     address token;
+    // the sender of the funds if chargeType = ERC20. This is necessary as the transaction is forwarded,
+    // and the originator of the transaction is not clear inside the GatewayToken contract.
+    // More details in ChargeHandler.sol
+    address tokenSender;
+    // the recipient of the funds. Typically a wallet owned by the gatekeeper.
     address recipient;
 }

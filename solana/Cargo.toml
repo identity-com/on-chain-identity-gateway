@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    "integration-lib",
     "program"
 ]
 

@@ -11,6 +11,7 @@ type Input = {
   from: string;
   to: string;
   data: string;
+  value?: number | BigNumber;
 };
 
 const eip712Domain = [
@@ -30,7 +31,7 @@ const forwardRequest = [
 ];
 
 type ForwardRequest = Input & {
-  value: number;
+  value: number | BigNumber;
   gas: number;
   nonce: string;
 };
