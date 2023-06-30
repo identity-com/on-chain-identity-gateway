@@ -27,7 +27,7 @@ export default class GetGatekeeperNetwork extends Command {
   async run(): Promise<void> {
     const {args, flags} = await this.parse(GetGatekeeperNetwork)
 
-    const parsedFlags = parseFlags({...flags, gatekeeperNetwork: DEFAULT_GATEKEEPER_NETWORK})
+    const parsedFlags = parseFlags({...flags, readOnly: true, gatekeeperNetwork: DEFAULT_GATEKEEPER_NETWORK})
 
     const gateway = await makeGatewayTs(parsedFlags)
     const name = await gateway.getGatekeeperNetwork(args.id)
