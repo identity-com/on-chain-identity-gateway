@@ -8,6 +8,8 @@ import {
 import {makeGatewayTs} from '../utils/oclif/utils'
 import {addressArg} from '../utils/oclif/args'
 import {BigNumber} from '@ethersproject/bignumber'
+import {makeWeiCharge} from '@identity.com/gateway-eth-ts/dist/utils/charge'
+import {Wallet} from '@ethersproject/wallet'
 
 export default class IssueToken extends Command {
   static description =
@@ -34,6 +36,19 @@ export default class IssueToken extends Command {
       required: false,
       description: 'TokenURI to link with the issued token',
     }),
+    forwarder: Flags.string({
+      char: 'x',
+      name: 'forwarder',
+      required: false,
+      description: 'Forward the transaction to the forwarder contract',
+    }),
+    charge: Flags.custom<BigNumber>({
+      char: 'a',
+      name: 'charge',
+      required: false,
+      parse: async (input: string) => BigNumber.from(input),
+      description: 'Charge in native tokens for the transaction',
+    })(),
   };
 
   static args = [
@@ -57,6 +72,21 @@ export default class IssueToken extends Command {
     const expiry = args.expiry as BigNumber
 
     const gateway = await makeGatewayTs(parsedFlags)
+
+    if (flags.forwarder) {
+      const charge = (flags.charge) ?
+        makeWeiCharge(flags.charge, (gateway.providerOrWallet as Wallet).address) :
+        undefined
+
+      const tx = await gateway
+      .forward(flags.forwarder)
+      .issue(ownerAddress, parsedFlags.gatekeeperNetwork, expiry, bitmask, charge)
+
+      this.log(`Transaction data: ${tx.data}`)
+      this.log(`Recipient: ${tx.to}`)
+      this.log(`Value: ${tx.value}`)
+      return
+    }
 
     const sendableTransaction = await gateway.issue(
       ownerAddress, parsedFlags.gatekeeperNetwork, expiry, bitmask,

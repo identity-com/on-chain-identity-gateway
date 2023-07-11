@@ -19,6 +19,7 @@ import { fund } from './tasks/fund';
 import { printPrivateKey } from './tasks/printPrivateKey';
 import { createWallet } from './tasks/createWallet';
 import { addForwarder } from './tasks/addForwarder';
+import { execute } from './tasks/execute';
 
 const derivedAccounts = {
   mnemonic: process.env.MNEMONIC || 'test test test test test test test test test test test junk',
@@ -63,6 +64,11 @@ task('create-wallet', 'Create a test wallet').setAction(createWallet);
 task('add-forwarder', 'add a forwarder to the gateway token smart contract (e.g. to support a relayer)')
   .addParam('forwarder', 'The forwarder to add')
   .setAction(addForwarder);
+task('execute', 'sign and send a transaction')
+    .addParam('tx', 'the transaction to sign as a hex string')
+    .addParam('to', 'the recipient of the transaction')
+    .addParam('value', 'the amount to send with the transaction')
+    .setAction(execute);
 
 // Set the default contracts path to "contracts"
 const defaultPath = './contracts';
