@@ -53,12 +53,12 @@ export class GatewayTsInternal<
 
   /**
    * Overrides that are safe to use for read-only operations.
-   * Some chains / RPC providers (e.g. Polygon zkEVM) do not allow gasLimit or gasPrice to be set
+   * Some chains / RPC providers (e.g. Polygon zkEVM) do not allow gasPrice to be set
    * for read-only operations.
    * @private
    */
   private get readOnlyOverrides(): Overrides {
-    return omit(["gasLimit", "gasPrice"], this.overrides);
+    return omit(["gasPrice"], this.overrides);
   }
 
   public async checkedGetTokenId(

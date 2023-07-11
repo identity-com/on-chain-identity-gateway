@@ -13,7 +13,8 @@ export const makeGatewayTs = async ({
 }: { provider: Provider, privateKey?: string, gatewayTokenAddress: string, fees?: GasPriceKey, gasLimit?: BigNumber, readOnly: boolean }):Promise<GatewayTs> => {
   const signer = privateKey ? getSigner(privateKey, provider) : undefined
   const feeAmount = readOnly ? {} : await estimateGasPrice(provider, fees)
-  return new GatewayTs(signer || provider, gatewayTokenAddress, {...feeAmount, gasLimit})
+  const providerOrWallet = readOnly ? provider : signer || provider
+  return new GatewayTs(providerOrWallet, gatewayTokenAddress, {...feeAmount, gasLimit})
 }
 
 export const checkedGetToken = async (
