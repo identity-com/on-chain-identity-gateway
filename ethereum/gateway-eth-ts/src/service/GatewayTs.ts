@@ -6,7 +6,7 @@ import {
   IForwarder__factory,
 } from "../contracts/typechain-types";
 import { GatewayTsInternal } from "./GatewayTsInternal";
-import { GatewayTsForwarder } from "./GatewayTsForwarder";
+import { ForwarderOptions, GatewayTsForwarder } from "./GatewayTsForwarder";
 import { Wallet } from "ethers";
 import { ContractTransaction } from "ethers";
 import {
@@ -39,16 +39,25 @@ export class GatewayTs extends GatewayTsInternal<
     this.providerOrWallet = providerOrWallet;
   }
 
+  private get forwarderOptions(): ForwarderOptions {
+    const gasLimit = this.options.gasLimit;
+    if (gasLimit && typeof gasLimit !== "number") {
+      throw new Error("gasLimit must be a number to use the forwarder");
+    }
+    return this.options as ForwarderOptions;
+  }
+
   public forward(forwarderAddress: string): GatewayTsForwarder {
     const forwarderContract = IForwarder__factory.connect(
       forwarderAddress,
       this.providerOrWallet
     );
+
     return new GatewayTsForwarder(
       this.providerOrWallet,
       this.gatewayTokenContract,
       forwarderContract,
-      this.options
+      this.forwarderOptions
     );
   }
 

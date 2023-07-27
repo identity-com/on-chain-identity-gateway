@@ -25,7 +25,7 @@ import {
 
 dotenv.config();
 
-describe("GatewayTS Forwarder", function () {
+describe.only("GatewayTS Forwarder", function () {
   let gateway: GatewayTsForwarder;
   let provider: BaseProvider;
 
@@ -39,6 +39,25 @@ describe("GatewayTS Forwarder", function () {
   ): Promise<TransactionReceipt> => {
     const populatedTx = await fn();
     return (await relayer.sendTransaction(populatedTx)).wait();
+  };
+
+  const estimateGas = async (
+    fn: () => Promise<PopulatedTransaction>
+  ): Promise<BigNumber> => {
+    const populatedTx = await fn();
+    const serialized = JSON.stringify(populatedTx);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { to, data, value } = JSON.parse(serialized);
+
+    return relayer.estimateGas({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      to,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      data,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      value,
+    });
   };
 
   const relaySerialized = async (
@@ -58,6 +77,7 @@ describe("GatewayTS Forwarder", function () {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       value,
     });
+    console.log("GAS LIMIT:", r.gasLimit.toString());
 
     return r.wait();
   };
@@ -226,5 +246,26 @@ describe("GatewayTS Forwarder", function () {
       chargeValue.toNumber(),
       gatekeeperBalanceAfter.sub(gatekeeperBalanceBefore).toNumber()
     );
+  });
+
+  it("should allow parameterisable gas limit for the internal transaction", async () => {
+    const parameterisedGateway = new GatewayTs(
+      gatekeeper,
+      TEST_GATEWAY_TOKEN_ADDRESS.gatewayToken,
+      { gasLimit: 10_000_000 }
+    ).forward(TEST_GATEWAY_TOKEN_ADDRESS.forwarder);
+
+    // setting the gas limit too high in the forwarder means that the
+    // internal transaction will fail, as the forwarder will reject
+    // due to the 1/64th rule, unless the estimateGas call raises the limit
+    // of the external transaction
+    const estimatedGasWithHighLimit = await estimateGas(() =>
+      parameterisedGateway.issue(sampleWalletAddress, gatekeeperNetwork)
+    );
+    const estimatedGasWithNormalLimit = await estimateGas(() =>
+      gateway.issue(sampleWalletAddress, gatekeeperNetwork)
+    );
+
+    assert.ok(estimatedGasWithHighLimit.gt(estimatedGasWithNormalLimit));
   });
 });

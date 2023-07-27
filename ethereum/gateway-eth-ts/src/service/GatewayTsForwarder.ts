@@ -19,6 +19,19 @@ import { signMetaTxRequest } from "../utils/metatx";
 import { Provider } from "@ethersproject/providers";
 import { Charge, ChargeType } from "../utils/charge";
 
+// This is the default gas limit used by the GatewayTs forwarder
+// if not overridden.
+// The Forwarder requires a gas limit to be set, as it is what is passed into the
+// inner transaction and signed. Without this, the forwarder would not know
+// how much gas to send to the recipient smart contract.
+// This gas limit will be ignored if the populatedTransaction includes its own gasLimit,
+// so it can be overridden for each transaction if necessary.
+const DEFAULT_GAS_LIMIT = 500_000;
+
+export type ForwarderOptions = Omit<Overrides, "gasLimit"> & {
+  gasLimit?: BigNumber | number;
+};
+
 // This is essentially the GatewayToken contract type, but with the write operations converted to returning PopulatedTransactions.
 // ethers.js contract.populateTransaction is a bit interesting, because it returns a PopulatedTransaction not just for
 // write operations (which we want), but also for read operations (which we don't want, because we want to just call those).
@@ -36,7 +49,12 @@ type InferArgs<T> = T extends (...t: [...infer Arg]) => any ? Arg : never;
 // 2) wraps that populated transaction in an ERC2770 metatransaction
 // 3) creates a populatedTransaction pointing that metatx to the forwarder contracts
 const toMetaTx =
-  (forwarderContract: IForwarder, toContract: Contract, wallet: Wallet) =>
+  (
+    forwarderContract: IForwarder,
+    toContract: Contract,
+    wallet: Wallet,
+    defaultGasLimit: number | BigNumber
+  ) =>
   <TFunc extends (...args: any[]) => Promise<PopulatedTransaction>>(
     fn: TFunc
   ): ((...args: InferArgs<TFunc>) => Promise<PopulatedTransaction>) =>
@@ -59,6 +77,7 @@ const toMetaTx =
         ...(populatedTransaction.value
           ? { value: populatedTransaction.value }
           : {}),
+        gas: populatedTransaction.gasLimit || defaultGasLimit,
       }
     );
     const populatedForwardedTransaction: PopulatedTransaction =
@@ -81,14 +100,15 @@ export class GatewayTsForwarder extends GatewayTsInternal<
     providerOrWallet: Provider | Wallet,
     gatewayTokenContract: GatewayToken,
     forwarderContract: IForwarder,
-    options?: Overrides
+    options: ForwarderOptions
   ) {
     const wallet =
       "_signTypedData" in providerOrWallet ? providerOrWallet : undefined;
     const toMetaTxFn = toMetaTx(
       forwarderContract,
       gatewayTokenContract,
-      wallet
+      wallet,
+      options.gasLimit || DEFAULT_GAS_LIMIT
     );
 
     // construct a new mappedGatewayToken object comprising write operations that return PopulatedTransactions
