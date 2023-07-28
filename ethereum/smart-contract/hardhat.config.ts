@@ -150,7 +150,7 @@ module.exports = {
       url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
       accounts: liveAccounts,
-      chainId: 420,
+      chainId: 420
     },
     optimismMainnet: {
       url: `https://optimism-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -280,6 +280,7 @@ module.exports = {
   etherscan: {
     apiKey: {
       mainnet: process.env.ETHERSCAN_API_KEY,
+      goerli: process.env.ETHERSCAN_API_KEY,
       polygon: process.env.POLYGONSCAN_API_KEY,
       polygonZkEVM: process.env.POLYGONSCAN_API_KEY,
       polygonZkEVMTestnet: process.env.POLYGONSCAN_API_KEY,
