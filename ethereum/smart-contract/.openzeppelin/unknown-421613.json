@@ -249,11 +249,7 @@
           },
           "t_enum(TokenState)19811": {
             "label": "enum IGatewayTokenV0.TokenState",
-            "members": [
-              "ACTIVE",
-              "FROZEN",
-              "REVOKED"
-            ],
+            "members": ["ACTIVE", "FROZEN", "REVOKED"],
             "numberOfBytes": "1"
           },
           "t_mapping(t_address,t_bool)": {
@@ -678,11 +674,7 @@
           },
           "t_enum(TokenState)9650": {
             "label": "enum IGatewayToken.TokenState",
-            "members": [
-              "ACTIVE",
-              "FROZEN",
-              "REVOKED"
-            ],
+            "members": ["ACTIVE", "FROZEN", "REVOKED"],
             "numberOfBytes": "1"
           },
           "t_mapping(t_address,t_bool)": {
