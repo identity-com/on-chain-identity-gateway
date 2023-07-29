@@ -1,5 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import {BigNumber} from "ethers";
+import { BigNumber } from 'ethers';
 
 export const execute = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const { ethers, getNamedAccounts } = hre;
@@ -11,7 +11,7 @@ export const execute = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const value = BigNumber.from(args.value);
 
   const [owner] = await ethers.getSigners();
-  const signer = new ethers.Wallet(process.env.PRIVATE_KEY, owner.provider)
+  const signer = new ethers.Wallet(process.env.PRIVATE_KEY, owner.provider);
 
   // const feeData = await signer.getFeeData();
 
@@ -26,7 +26,7 @@ export const execute = async (args: any, hre: HardhatRuntimeEnvironment) => {
     // maxFeePerGas: feeData.maxFeePerGas || undefined,
     // maxPriorityFeePerGas: 30_000_000_000,
   };
-  console.log('sending transaction', txToSend)
+  console.log('sending transaction', txToSend);
   const transactionReceipt = await signer.sendTransaction(txToSend);
 
   console.log('sent transaction', transactionReceipt);

@@ -65,10 +65,10 @@ task('add-forwarder', 'add a forwarder to the gateway token smart contract (e.g.
   .addParam('forwarder', 'The forwarder to add')
   .setAction(addForwarder);
 task('execute', 'sign and send a transaction')
-    .addParam('tx', 'the transaction to sign as a hex string')
-    .addParam('to', 'the recipient of the transaction')
-    .addParam('value', 'the amount to send with the transaction')
-    .setAction(execute);
+  .addParam('tx', 'the transaction to sign as a hex string')
+  .addParam('to', 'the recipient of the transaction')
+  .addParam('value', 'the amount to send with the transaction')
+  .setAction(execute);
 
 // Set the default contracts path to "contracts"
 const defaultPath = './contracts';
@@ -150,7 +150,7 @@ module.exports = {
       url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
       saveDeployments: true,
       accounts: liveAccounts,
-      chainId: 420
+      chainId: 420,
     },
     optimismMainnet: {
       url: `https://optimism-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
