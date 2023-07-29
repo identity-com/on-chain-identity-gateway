@@ -2,8 +2,9 @@
 pragma solidity ^0.8.9;
 
 import {IGatewayTokenVerifier} from "./interfaces/IGatewayTokenVerifier.sol";
+import {MultiERC2771Context} from "./MultiERC2771Context.sol";
 
-abstract contract Gated {
+abstract contract GatedERC2771 is MultiERC2771Context {
     address private _gatewayTokenContract;
     uint256 private _gatekeeperNetwork;
 
@@ -12,7 +13,7 @@ abstract contract Gated {
 
     modifier gated() {
         IGatewayTokenVerifier verifier = IGatewayTokenVerifier(_gatewayTokenContract);
-        if (!verifier.verifyToken(msg.sender, _gatekeeperNetwork)) {
+        if (!verifier.verifyToken(_msgSender(), _gatekeeperNetwork)) {
             revert IsGated__InvalidGatewayToken(_gatewayTokenContract);
         }
         _;

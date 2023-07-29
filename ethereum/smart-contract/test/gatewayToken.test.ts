@@ -44,7 +44,7 @@ describe('GatewayToken', async () => {
       from: gatekeeper.address,
       to: gatewayToken.address,
       data: tx.data as string,
-      gas: 500_000
+      gas: 500_000,
     });
 
   const makeWeiCharge = (value: BigNumber) => ({
@@ -594,6 +594,13 @@ describe('GatewayToken', async () => {
         'IsGated__InvalidGatewayToken',
       );
     });
+
+    it('supports ERC2771 clients', async () => {
+      const erc2771ClientFactory = await ethers.getContractFactory('GatewayTokenClientERC2771Test');
+      const erc2771Client = await erc2771ClientFactory.deploy(gatewayToken.address, gkn1);
+      // Alice is verified
+      await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
+    });
   });
 
   describe('Test gateway token operations: freeze, unfreeze, setExpiration, revoke', async () => {
@@ -796,7 +803,7 @@ describe('GatewayToken', async () => {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: mintTx.data as string,
-        gas: 500_000
+        gas: 500_000,
       };
       const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, input);
 
@@ -818,7 +825,7 @@ describe('GatewayToken', async () => {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: mintTx.data as string,
-        gas: 500_000
+        gas: 500_000,
       };
       const { request, signature } = await signMetaTxRequest(
         bob, // bob is not the gatekeeper
@@ -847,7 +854,7 @@ describe('GatewayToken', async () => {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: mintTx.data as string,
-        gas: 500_000
+        gas: 500_000,
       };
       const { request: request1, signature: signature1 } = await signMetaTxRequest(
         gatekeeper,
@@ -862,7 +869,7 @@ describe('GatewayToken', async () => {
         from: alice.address,
         to: forwarder.address,
         data: forwarderTx1.data as string,
-        gas: 500_000
+        gas: 500_000,
       };
       const { request: request2, signature: signature2 } = await signMetaTxRequest(
         alice,
@@ -952,13 +959,13 @@ describe('GatewayToken', async () => {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: tx1.data as string,
-        gas: 500_000
+        gas: 500_000,
       });
       const req2 = await signMetaTxRequest(gatekeeper, intolerantForwarder as IForwarder, {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: tx2.data as string,
-        gas: 500_000
+        gas: 500_000,
       });
 
       // send one now (claiming the nonce) and try to send the next one
@@ -1002,7 +1009,7 @@ describe('GatewayToken', async () => {
         // specify the internals test contract here instead of gatewayToken
         to: gatewayTokenInternalsTest.address,
         data: txIndirect.data as string,
-        gas: 500_000
+        gas: 500_000,
       });
       await expect(forwarder.connect(alice).execute(req.request, req.signature)).to.emit(
         gatewayTokenInternalsTest,
@@ -1022,7 +1029,7 @@ describe('GatewayToken', async () => {
         // specify the internals test contract here instead of gatewayToken
         to: gatewayTokenInternalsTest.address,
         data: txIndirect.data as string,
-        gas: 500_000
+        gas: 500_000,
       });
       await expect(forwarder.connect(alice).execute(req.request, req.signature))
         .to.emit(gatewayTokenInternalsTest, 'MsgSender')
@@ -1072,7 +1079,7 @@ describe('GatewayToken', async () => {
         // specify the internals test contract here instead of gatewayToken
         to: gatewayTokenInternalsTest.address,
         data: txIndirect.data as string,
-        gas: 500_000
+        gas: 500_000,
       });
       await expect(forwarder.connect(alice).execute(req.request, req.signature)).to.emit(
         gatewayTokenInternalsTest,
