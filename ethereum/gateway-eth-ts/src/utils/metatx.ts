@@ -12,6 +12,7 @@ type Input = {
   to: string;
   data: string;
   value?: number | BigNumber;
+  gas: number | BigNumber;
 };
 
 const eip712Domain = [
@@ -32,7 +33,6 @@ const forwardRequest = [
 
 type ForwardRequest = Input & {
   value: number | BigNumber;
-  gas: number;
   nonce: string;
 };
 
@@ -69,7 +69,7 @@ const buildRequest = async (
   const nonce = await forwarder
     .getNonce(input.from)
     .then((nonce: BigNumber) => nonce.toString());
-  return { value: 0, gas: 2e6, nonce, ...input };
+  return { value: 0, nonce, ...input };
 };
 
 const buildTypedData = async (

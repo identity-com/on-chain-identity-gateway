@@ -44,6 +44,7 @@ describe('GatewayToken', async () => {
       from: gatekeeper.address,
       to: gatewayToken.address,
       data: tx.data as string,
+      gas: 500_000
     });
 
   const makeWeiCharge = (value: BigNumber) => ({
@@ -795,6 +796,7 @@ describe('GatewayToken', async () => {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: mintTx.data as string,
+        gas: 500_000
       };
       const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, input);
 
@@ -816,6 +818,7 @@ describe('GatewayToken', async () => {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: mintTx.data as string,
+        gas: 500_000
       };
       const { request, signature } = await signMetaTxRequest(
         bob, // bob is not the gatekeeper
@@ -844,6 +847,7 @@ describe('GatewayToken', async () => {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: mintTx.data as string,
+        gas: 500_000
       };
       const { request: request1, signature: signature1 } = await signMetaTxRequest(
         gatekeeper,
@@ -858,6 +862,7 @@ describe('GatewayToken', async () => {
         from: alice.address,
         to: forwarder.address,
         data: forwarderTx1.data as string,
+        gas: 500_000
       };
       const { request: request2, signature: signature2 } = await signMetaTxRequest(
         alice,
@@ -928,8 +933,6 @@ describe('GatewayToken', async () => {
       await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
     });
 
-    // The forwarder allows two transactions to be sent with the same nonce, as long as they are different
-    // this is important for relayer support
     it('Rejects old transactions', async () => {
       const forwarderFactory = await ethers.getContractFactory('FlexibleNonceForwarder');
       // this forwarder only accepts transactions whose nonces have been seen in this block
@@ -949,11 +952,13 @@ describe('GatewayToken', async () => {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: tx1.data as string,
+        gas: 500_000
       });
       const req2 = await signMetaTxRequest(gatekeeper, intolerantForwarder as IForwarder, {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: tx2.data as string,
+        gas: 500_000
       });
 
       // send one now (claiming the nonce) and try to send the next one
@@ -997,6 +1002,7 @@ describe('GatewayToken', async () => {
         // specify the internals test contract here instead of gatewayToken
         to: gatewayTokenInternalsTest.address,
         data: txIndirect.data as string,
+        gas: 500_000
       });
       await expect(forwarder.connect(alice).execute(req.request, req.signature)).to.emit(
         gatewayTokenInternalsTest,
@@ -1016,6 +1022,7 @@ describe('GatewayToken', async () => {
         // specify the internals test contract here instead of gatewayToken
         to: gatewayTokenInternalsTest.address,
         data: txIndirect.data as string,
+        gas: 500_000
       });
       await expect(forwarder.connect(alice).execute(req.request, req.signature))
         .to.emit(gatewayTokenInternalsTest, 'MsgSender')
@@ -1032,7 +1039,8 @@ describe('GatewayToken', async () => {
       const req1 = await makeMetaTx(tx1);
       // we pass 2,000,000 gas limit to the inner tx (see makeMetaTx)
       // The forwarder reserves 1/64th of that
-      const reservedGas = Math.ceil(req1.request.gas / 64);
+      const gas = req1.request.gas;
+      const reservedGas = Math.ceil(BigNumber.from(gas).toNumber() / 64);
 
       // 280000 is what is reported by the evm as needed by the mint tx.
       // if we add `reservedGas` to that, and set that as the gas limit, it should work
@@ -1064,6 +1072,7 @@ describe('GatewayToken', async () => {
         // specify the internals test contract here instead of gatewayToken
         to: gatewayTokenInternalsTest.address,
         data: txIndirect.data as string,
+        gas: 500_000
       });
       await expect(forwarder.connect(alice).execute(req.request, req.signature)).to.emit(
         gatewayTokenInternalsTest,
@@ -1212,6 +1221,7 @@ describe('GatewayToken', async () => {
         from: gatekeeper.address,
         to: gatewayToken.address,
         data: tx.data as string,
+        gas: 500_000,
         ...(value ? { value } : {}),
       };
       const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, input);

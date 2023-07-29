@@ -13,12 +13,21 @@ export const execute = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const [owner] = await ethers.getSigners();
   const signer = new ethers.Wallet(process.env.PRIVATE_KEY, owner.provider)
 
-  const transactionReceipt = await signer.sendTransaction({
+  // const feeData = await signer.getFeeData();
+
+  const txToSend = {
     from: signer.address,
     to,
     data: tx,
-    value
-  });
+    value,
+    // use this if you want to manually configure the gas limit
+    // gasLimit: 330000,
+    // use these values for polygon
+    // maxFeePerGas: feeData.maxFeePerGas || undefined,
+    // maxPriorityFeePerGas: 30_000_000_000,
+  };
+  console.log('sending transaction', txToSend)
+  const transactionReceipt = await signer.sendTransaction(txToSend);
 
   console.log('sent transaction', transactionReceipt);
 
