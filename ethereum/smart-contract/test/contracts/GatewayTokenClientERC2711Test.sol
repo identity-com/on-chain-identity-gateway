@@ -15,9 +15,6 @@ contract GatewayTokenClientERC2771Test is GatedERC2771 {
         uint256 gatekeeperNetwork
     ) GatedERC2771(gatewayTokenContract, gatekeeperNetwork) {}
 
-    /**
-     * @dev A public version of _msgData() in the GatewayToken contract, use for testing the forwarding logic.
-     */
     function testGated() external gated {
         emit Success();
     }

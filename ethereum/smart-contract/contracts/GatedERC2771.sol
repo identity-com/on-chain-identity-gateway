@@ -2,9 +2,9 @@
 pragma solidity ^0.8.9;
 
 import {IGatewayTokenVerifier} from "./interfaces/IGatewayTokenVerifier.sol";
-import {MultiERC2771Context} from "./MultiERC2771Context.sol";
+import {MultiERC2771ContextNonUpgradeable} from "./MultiERC2771ContextNonUpgradeable.sol";
 
-abstract contract GatedERC2771 is MultiERC2771Context {
+abstract contract GatedERC2771 is MultiERC2771ContextNonUpgradeable {
     address private _gatewayTokenContract;
     uint256 private _gatekeeperNetwork;
 
@@ -19,7 +19,10 @@ abstract contract GatedERC2771 is MultiERC2771Context {
         _;
     }
 
-    constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) {
+    constructor(
+        address gatewayTokenContract,
+        uint256 gatekeeperNetwork
+    ) MultiERC2771ContextNonUpgradeable(new address[](0)) {
         _gatewayTokenContract = gatewayTokenContract;
         _gatekeeperNetwork = gatekeeperNetwork;
     }
