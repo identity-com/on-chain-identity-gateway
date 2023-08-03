@@ -2,9 +2,9 @@
 pragma solidity ^0.8.9;
 
 import {IGatewayTokenVerifier} from "./interfaces/IGatewayTokenVerifier.sol";
-import {MultiERC2771Context} from "./MultiERC2771Context.sol";
+import {MultiERC2771ContextUpgradeable} from "./MultiERC2771ContextUpgradeable.sol";
 
-abstract contract GatedERC2771Upgradeable is MultiERC2771Context {
+abstract contract GatedERC2771Upgradeable is MultiERC2771ContextUpgradeable {
     address private _gatewayTokenContract;
     uint256 private _gatekeeperNetwork;
 
@@ -24,9 +24,9 @@ abstract contract GatedERC2771Upgradeable is MultiERC2771Context {
         address gatewayTokenContract,
         uint256 gatekeeperNetwork,
         address[] calldata trustedForwarders
-    ) internal initializer {
+    ) internal onlyInitializing {
         _gatewayTokenContract = gatewayTokenContract;
         _gatekeeperNetwork = gatekeeperNetwork;
-        __MultiERC2771Context_init(trustedForwarders);
+        __MultiERC2771ContextUpgradeable_init(trustedForwarders);
     }
 }
