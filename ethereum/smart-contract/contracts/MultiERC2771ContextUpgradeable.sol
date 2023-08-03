@@ -1,23 +1,35 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
-import {Context} from "@openzeppelin/contracts/utils/Context.sol";
+import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
 /**
  * @dev Context variant with ERC2771 support for multiple trusted forwarders.
  */
-abstract contract MultiERC2771ContextNonUpgradeable is Context {
+abstract contract MultiERC2771ContextUpgradeable is ContextUpgradeable {
     mapping(address => bool) private _trustedForwarders;
-
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address[] memory trustedForwarders) {
-        for (uint i = 0; i < trustedForwarders.length; i++) {
-            _trustedForwarders[trustedForwarders[i]] = true;
-        }
-    }
 
     function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
         return _trustedForwarders[forwarder];
+    }
+
+    // because MultiERC2771ContextUpgradeable is abstract we don't implement a
+    // constructor. It's the responsibility of the derived contract to
+    // disable the Initializers with "_disableInitializers()"
+
+    // solhint-disable-next-line func-name-mixedcase
+    function __MultiERC2771ContextUpgradeable_init(address[] calldata trustedForwarders) internal onlyInitializing {
+        __Context_init_unchained();
+        __MultiERC2771ContextUpgradeable_init_unchained(trustedForwarders);
+    }
+
+    // solhint-disable-next-line func-name-mixedcase
+    function __MultiERC2771ContextUpgradeable_init_unchained(
+        address[] calldata trustedForwarders
+    ) internal onlyInitializing {
+        for (uint i = 0; i < trustedForwarders.length; i++) {
+            _trustedForwarders[trustedForwarders[i]] = true;
+        }
     }
 
     // The overridden function should declare the appropriate access control//

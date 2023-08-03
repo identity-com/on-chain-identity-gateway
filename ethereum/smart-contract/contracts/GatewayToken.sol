@@ -15,7 +15,7 @@ import {IGatewayToken} from "./interfaces/IGatewayToken.sol";
 import {IERC721Freezable} from "./interfaces/IERC721Freezable.sol";
 import {IERC721Expirable} from "./interfaces/IERC721Expirable.sol";
 import {IERC721Revokable} from "./interfaces/IERC721Revokable.sol";
-import {MultiERC2771Context} from "./MultiERC2771Context.sol";
+import {MultiERC2771ContextUpgradeable} from "./MultiERC2771ContextUpgradeable.sol";
 import {Charge} from "./library/Charge.sol";
 import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
 import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
@@ -35,7 +35,7 @@ import {BitMask} from "./library/BitMask.sol";
  */
 contract GatewayToken is
     UUPSUpgradeable,
-    MultiERC2771Context,
+    MultiERC2771ContextUpgradeable,
     ERC3525Upgradeable,
     ParameterizedAccessControl,
     IERC721Freezable,
@@ -109,7 +109,7 @@ contract GatewayToken is
         }
 
         __ERC3525_init(_name, _symbol, 0);
-        __MultiERC2771Context_init(_trustedForwarders);
+        __MultiERC2771ContextUpgradeable_init(_trustedForwarders);
 
         _setFlagsStorage(_flagsStorage);
         _superAdmins[_superAdmin] = true;
@@ -527,20 +527,20 @@ contract GatewayToken is
         internal
         view
         virtual
-        override(MultiERC2771Context, ContextUpgradeable)
+        override(MultiERC2771ContextUpgradeable, ContextUpgradeable)
         returns (address sender)
     {
-        return MultiERC2771Context._msgSender();
+        return MultiERC2771ContextUpgradeable._msgSender();
     }
 
     function _msgData()
         internal
         view
         virtual
-        override(MultiERC2771Context, ContextUpgradeable)
+        override(MultiERC2771ContextUpgradeable, ContextUpgradeable)
         returns (bytes calldata)
     {
-        return MultiERC2771Context._msgData();
+        return MultiERC2771ContextUpgradeable._msgData();
     }
 
     function _getTokenIdsByOwnerAndNetwork(
