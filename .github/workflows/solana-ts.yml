@@ -54,9 +54,9 @@ jobs:
     strategy:
       matrix:
         # This should match rust-toolchain.toml ( actions-rs/toolchain@v1 does not pick it up directly in monorepos )
-        rust: ["1.66"]
+        rust: ["1.69"]
         node: ["16.x"]
-        solana: ["v1.14.17"]
+        solana: ["edge"]
         os: [ubuntu-latest]
 
     defaults:
@@ -92,6 +92,8 @@ jobs:
         run: |
           sh -c "$(curl -sSfL https://release.solana.com/${{ matrix.solana }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
+          solana --version
 
       - name: Build Solana program
         uses: actions-rs/cargo@v1
