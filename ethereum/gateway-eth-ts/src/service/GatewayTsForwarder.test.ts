@@ -83,7 +83,7 @@ describe.only("GatewayTS Forwarder", function () {
   };
 
   // address of the erc20 token used for testing (obtainable from the output of yarn pretest)
-  const ERC20_TOKEN = "0x6A08D9A1d3E91bf8766907998717dAD016a69BE6";
+  const ERC20_TOKEN = "0x32CC358eb763B345f565fcf84f2B31a52d6a93D6";
   const erc20Balance = (address: string): Promise<BigNumber> => {
     // check erc20 balance
     const contract = new ethers.Contract(

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.9;
+pragma solidity >=0.8.19;
 
 import {GatewayToken} from "../../contracts/GatewayToken.sol";
 import {Charge} from "../../contracts/library/Charge.sol";
