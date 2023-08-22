@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.9;
+pragma solidity >=0.8.19;
 
 library BitMask {
     uint internal constant _ONE = uint256(1);

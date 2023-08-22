@@ -1,6 +1,6 @@
 {
   "name": "@identity.com/gateway-protocol-eth",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Identity.com Gateway Tokens ethereum smart contracts",
   "directories": {
     "test": "test"
