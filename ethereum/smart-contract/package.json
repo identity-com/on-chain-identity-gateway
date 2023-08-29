@@ -10,6 +10,7 @@
     "coverage": "NODE_ENV=test hardhat coverage && istanbul check-coverage --statements 60 --branches 38 --functions 62 --lines 60",
     "test": "NODE_ENV=test hardhat test",
     "deploy": "hardhat deploy --tags GatewayToken --network $1",
+    "deploy-forwarder": "hardhat deploy --tags Forwarder --network $1",
     "upgrade-contract": "hardhat deploy --tags UpgradeV1 --network $1",
     "local": "STAGE=dev hardhat node",
     "local-no-deploy": "STAGE=prod hardhat node --no-deploy",
