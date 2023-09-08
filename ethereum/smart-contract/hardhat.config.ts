@@ -242,6 +242,18 @@ module.exports = {
       accounts: liveAccounts,
       chainId: 1442,
     },
+    fantom: {
+      url: 'https://rpcapi.fantom.network',
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 250,
+    },
+    fantomTestnet: {
+      url: 'https://rpc.testnet.fantom.network',
+      saveDeployments: true,
+      accounts: liveAccounts,
+      chainId: 4002,
+    }
   },
   solidity: {
     version: '0.8.19',

@@ -35,4 +35,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 func.id = 'deploy_forwarder';
 func.tags = ['Forwarder'];
-func.dependencies = ['GatewayToken'];
+// func.dependencies = ['GatewayToken'];

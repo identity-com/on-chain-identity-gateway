@@ -109,6 +109,10 @@ export const networks = {
     url: 'https://rpc.fantom.network',
     chainId: 250,
   },
+  fantomTestnet: {
+    url: 'https://rpc.testnet.fantom.network',
+    chainId: 4002,
+  },
   gnosis: {
     url: 'https://rpc.gnosischain.com',
     chainId: 100,
