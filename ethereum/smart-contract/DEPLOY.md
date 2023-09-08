@@ -1,8 +1,14 @@
-# Deploy to a new Contract
+# Deploy to a new Chain
+
+Since the contract addresses are derived via Create2, the bytecode of the contract
+must be fixed to a particular version in order to derive a standard address across all chains.
+
+The code has undergone changes since the audit (to support later versions of solidity in client contracts,
+and similar non-breaking changes), so to obtain the correct Create2 address, the following steps must be taken:
 
 ## Deploy the proxy contract at the correct addresses
 
-1. Check out git commit `489e674b5d43f853761a6595e48eddcdaed774d1` (branch = `original-post-audit-evm-release`)
+1. Check out git tag [eth-deployment-step-1](https://github.com/identity-com/on-chain-identity-gateway/releases/tag/eth-deployment-step-1)
 2. Run `yarn build`
 3. In one terminal `yarn local-no-deploy` (`STAGE=prod hardhat node --no-deploy`)
 4. In another terminal `yarn deploy localhost`
@@ -11,7 +17,7 @@
 
 ## Upgrade to the latest version
 
-1. Check out git commit `b14606b8bebb85b4dd0f9354e312e298671db667` (branch = `fantom-post-charge-update`)
+1. Check out git tag [eth-deployment-step-2](https://github.com/identity-com/on-chain-identity-gateway/releases/tag/eth-deployment-step-2)
 2. Run `yarn build`
 3. Run `yarn upgrade-contract <chain>`
 4. Deploy the forwarder `yarn deploy-forwarder <chain>`
