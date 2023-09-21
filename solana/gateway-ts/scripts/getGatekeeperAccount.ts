@@ -4,7 +4,7 @@ import { gatekeeperExists } from "../src";
 // default to the civic cluster
 const endpoint =
   process.env.CLUSTER_ENDPOINT ||
-  "http://ec2-34-238-243-215.compute-1.amazonaws.com:8899";
+  "http://ec2-44-214-135-83.compute-1.amazonaws.com:8899";
 
 const connection = new Connection(endpoint, "processed");
 

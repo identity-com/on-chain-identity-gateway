@@ -5,7 +5,7 @@ import { GatewayToken } from "@identity.com/solana-gateway-ts";
 export type ExtendedCluster = Cluster | "localnet" | "civicnet";
 
 export const CIVICNET_URL =
-    "http://ec2-34-238-243-215.compute-1.amazonaws.com:8899";
+    "http://ec2-44-214-135-83.compute-1.amazonaws.com:8899";
 
 export const getTokenUpdateProperties = async (
   args: { [p: string]: any },

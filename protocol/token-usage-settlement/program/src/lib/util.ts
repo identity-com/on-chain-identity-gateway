@@ -18,7 +18,7 @@ const DEFAULT_COMMITMENT: Commitment = "confirmed";
 
 export type ExtendedCluster = Cluster | "localnet" | "civicnet";
 export const CIVICNET_URL =
-  "http://ec2-34-238-243-215.compute-1.amazonaws.com:8899";
+  "http://ec2-44-214-135-83.compute-1.amazonaws.com:8899";
 
 export const getClusterUrl = (cluster: ExtendedCluster): string => {
   switch (cluster) {
