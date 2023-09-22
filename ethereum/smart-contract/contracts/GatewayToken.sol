@@ -174,7 +174,7 @@ contract GatewayToken is
         _issuingGatekeepers[tokenId] = _msgSender();
 
         // INTERACTIONS
-        _handleCharge(charge);
+        _handleCharge(charge, network);
     }
 
     function revoke(uint tokenId) external virtual override {
@@ -213,11 +213,12 @@ contract GatewayToken is
      */
     function setExpiration(uint tokenId, uint timestamp, Charge calldata charge) external payable virtual {
         // CHECKS
+        uint network = slotOf(tokenId);
         _checkGatekeeper(slotOf(tokenId));
         // EFFECTS
         _setExpiration(tokenId, timestamp);
         // INTERACTIONS
-        _handleCharge(charge);
+        _handleCharge(charge, network);
     }
 
     /**

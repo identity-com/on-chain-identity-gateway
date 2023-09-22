@@ -1298,8 +1298,50 @@ describe('GatewayToken', async () => {
         await erc20.deployed();
       });
 
-      it('can charge ERC20 - rejects if the allowance was not made', async () => {
+      it('can charge ERC20 - rejects if the ERC20 allowance was not made', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
+      });
+
+      it('can charge ERC20 - reject if no internal allowance has been made', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
+      });
+
+      it('can charge ERC20 - reject if the ERC20 allowance is insufficient', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        // Alice allows the gateway token contract to transfer 90 to the gatekeeper
+        await erc20.connect(alice).approve(gatewayToken.address, charge.value.sub(10));
+
+        // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
+        await gatewayToken.connect(alice).setApproval(charge.value, gkn1);
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
+      });
+
+      it('can charge ERC20 - reject if the internal allowance is insufficient', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+
+        // Alice allows the gateway token contract to transfer 90 in the context of the gatekeeper network
+        await gatewayToken.connect(alice).setApproval(charge.value.sub(10), gkn1);
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
@@ -1314,6 +1356,9 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(gatewayToken.address, charge.value);
 
+        // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
+        await gatewayToken.connect(alice).setApproval(charge.value, gkn1);
+
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
@@ -1325,30 +1370,6 @@ describe('GatewayToken', async () => {
         expect(balanceAfter).to.equal(balanceBefore.sub(charge.value));
       });
 
-      it('can charge ERC20 - reject if the allowance is insufficient', async () => {
-        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
-
-        // Alice allows the gateway token contract to transfer 90 to the gatekeeper
-        await erc20.connect(alice).approve(gatewayToken.address, charge.value.sub(10));
-
-        // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
-
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
-      });
-
-      it('can charge ERC20 - reject if the allowance is excessive', async () => {
-        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
-
-        // Alice allows the gateway token contract to transfer 110 to the gatekeeper
-        await erc20.connect(alice).approve(gatewayToken.address, charge.value.add(10));
-
-        // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
-
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
-      });
-
       it('charge ERC20 - allows someone else to forward and pay the fee', async () => {
         // Alice will be forwarding the tx and paying the fee on behalf of bob
         // no connection between the fee payer, forwarder and the gateway token recipient
@@ -1357,6 +1378,9 @@ describe('GatewayToken', async () => {
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+
+        // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
+        await gatewayToken.connect(alice).setApproval(charge.value, gkn1);
 
         // create a mint transaction for bob
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, 0, charge);
@@ -1377,6 +1401,9 @@ describe('GatewayToken', async () => {
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+
+        // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
+        await gatewayToken.connect(alice).setApproval(charge.value, gkn1);
 
         // create a mint transaction for bob
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, 0, charge);

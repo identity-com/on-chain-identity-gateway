@@ -3,6 +3,7 @@ pragma solidity >=0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Charge, ChargeType} from "./library/Charge.sol";
+import {InternalTokenApproval} from "./InternalTokenApproval.sol";
 
 /**
  * @dev The ChargeHandler contract is an internal library used by the Gatekeeper
@@ -26,7 +27,7 @@ import {Charge, ChargeType} from "./library/Charge.sol";
  * typically the gateway token recipient, using tx.origin precludes the use of smart contract wallets, as well as
  * being discouraged for other security reasons.
  */
-contract ChargeHandler {
+contract ChargeHandler is InternalTokenApproval {
     event ChargePaid(Charge);
 
     error Charge__IncorrectAllowance(uint256 allowance, uint256 expectedAllowance);
@@ -42,7 +43,7 @@ contract ChargeHandler {
      * when sending ETH to the recipient (if the recipient is a smart contract)
      * @param charge The charge details
      **/
-    function _handleCharge(Charge calldata charge) internal {
+    function _handleCharge(Charge calldata charge, uint network) internal {
         if (charge.chargeType == ChargeType.ETH) {
             // CHECKS
             // send wei if the charge type is ETH
@@ -64,12 +65,15 @@ contract ChargeHandler {
 
             // CHECKS
             // check that the sender has approved the token transfer
-            // note - for security's sake, check that the allowance is equal to the charge value
-            // to avoid an attack wherein the payer approves a large allowance for a valid issuance,
-            // then an attacker issues their own token, and uses the allowance from the valid one
-            // to drain the payer's ERC-20
+            // note - for security's sake, the user has to approve the tokens to a particular
+            // gatekeeper network, to avoid front-running attacks. For more details, see
+            // InternalTokenApproval.sol
             uint256 allowance = token.allowance(charge.tokenSender, address(this));
-            if (allowance != charge.value) {
+            if (allowance < charge.value) {
+                revert Charge__IncorrectAllowance(allowance, charge.value);
+            }
+            bool approvalValid = super.consumeApproval(charge.tokenSender, charge.value, network);
+            if (!approvalValid) {
                 revert Charge__IncorrectAllowance(allowance, charge.value);
             }
 
