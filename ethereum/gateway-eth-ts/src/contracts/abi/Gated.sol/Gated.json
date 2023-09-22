@@ -7,22 +7,6 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "gatewayTokenContract",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "gatekeeperNetwork",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "gatewayToken",
           "type": "address"
         }
@@ -31,8 +15,8 @@
       "type": "error"
     }
   ],
-  "bytecode": "0x6080604052348015600f57600080fd5b5060405160d638038060d6833981016040819052602a916052565b600080546001600160a01b0319166001600160a01b039390931692909217909155600155608a565b60008060408385031215606457600080fd5b82516001600160a01b0381168114607a57600080fd5b6020939093015192949293505050565b603f8060976000396000f3fe6080604052600080fdfea2646970667358221220ec45e29495c29981e2c7649c1543d372b3febfe5b295b9d972102a9867700e4f64736f6c63430008090033",
-  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220ec45e29495c29981e2c7649c1543d372b3febfe5b295b9d972102a9867700e4f64736f6c63430008090033",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
   "linkReferences": {},
   "deployedLinkReferences": {}
 }

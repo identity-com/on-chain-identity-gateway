@@ -1304,7 +1304,7 @@ describe('GatewayToken', async () => {
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__InsufficientAllowance');
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
       });
 
       it('can charge ERC20 through a forwarded call', async () => {
@@ -1328,13 +1328,25 @@ describe('GatewayToken', async () => {
       it('can charge ERC20 - reject if the allowance is insufficient', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
 
-        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
-        await erc20.connect(alice).approve(gatewayToken.address, charge.value.sub(100));
+        // Alice allows the gateway token contract to transfer 90 to the gatekeeper
+        await erc20.connect(alice).approve(gatewayToken.address, charge.value.sub(10));
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__InsufficientAllowance');
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
+      });
+
+      it('can charge ERC20 - reject if the allowance is excessive', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        // Alice allows the gateway token contract to transfer 110 to the gatekeeper
+        await erc20.connect(alice).approve(gatewayToken.address, charge.value.add(10));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
       });
 
       it('charge ERC20 - allows someone else to forward and pay the fee', async () => {

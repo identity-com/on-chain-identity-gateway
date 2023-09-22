@@ -138,6 +138,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Gated__factory>;
     getContractFactory(
+      name: "GatedERC2771",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.GatedERC2771__factory>;
+    getContractFactory(
+      name: "GatedERC2771Upgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.GatedERC2771Upgradeable__factory>;
+    getContractFactory(
       name: "GatewayToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GatewayToken__factory>;
@@ -178,6 +186,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MultiERC2771Context__factory>;
     getContractFactory(
+      name: "MultiERC2771ContextUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MultiERC2771ContextUpgradeable__factory>;
+    getContractFactory(
       name: "ParameterizedAccessControl",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ParameterizedAccessControl__factory>;
@@ -189,6 +201,10 @@ declare module "hardhat/types/runtime" {
       name: "DummyERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.DummyERC20__factory>;
+    getContractFactory(
+      name: "GatewayTokenClientERC2771Test",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.GatewayTokenClientERC2771Test__factory>;
     getContractFactory(
       name: "GatewayTokenClientTest",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -374,6 +390,16 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Gated>;
     getContractAt(
+      name: "GatedERC2771",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.GatedERC2771>;
+    getContractAt(
+      name: "GatedERC2771Upgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.GatedERC2771Upgradeable>;
+    getContractAt(
       name: "GatewayToken",
       address: string,
       signer?: ethers.Signer
@@ -424,6 +450,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.MultiERC2771Context>;
     getContractAt(
+      name: "MultiERC2771ContextUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MultiERC2771ContextUpgradeable>;
+    getContractAt(
       name: "ParameterizedAccessControl",
       address: string,
       signer?: ethers.Signer
@@ -438,6 +469,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.DummyERC20>;
+    getContractAt(
+      name: "GatewayTokenClientERC2771Test",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.GatewayTokenClientERC2771Test>;
     getContractAt(
       name: "GatewayTokenClientTest",
       address: string,

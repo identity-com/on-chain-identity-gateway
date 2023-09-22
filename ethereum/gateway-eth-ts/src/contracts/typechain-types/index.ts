@@ -73,6 +73,10 @@ export type { FlexibleNonceForwarder } from "./contracts/FlexibleNonceForwarder"
 export { FlexibleNonceForwarder__factory } from "./factories/contracts/FlexibleNonceForwarder__factory";
 export type { Gated } from "./contracts/Gated";
 export { Gated__factory } from "./factories/contracts/Gated__factory";
+export type { GatedERC2771 } from "./contracts/GatedERC2771";
+export { GatedERC2771__factory } from "./factories/contracts/GatedERC2771__factory";
+export type { GatedERC2771Upgradeable } from "./contracts/GatedERC2771Upgradeable";
+export { GatedERC2771Upgradeable__factory } from "./factories/contracts/GatedERC2771Upgradeable__factory";
 export type { GatewayToken } from "./contracts/GatewayToken";
 export { GatewayToken__factory } from "./factories/contracts/GatewayToken__factory";
 export type { IERC721Expirable } from "./contracts/interfaces/IERC721Expirable";
@@ -93,12 +97,16 @@ export type { IParameterizedAccessControl } from "./contracts/interfaces/IParame
 export { IParameterizedAccessControl__factory } from "./factories/contracts/interfaces/IParameterizedAccessControl__factory";
 export type { MultiERC2771Context } from "./contracts/MultiERC2771Context";
 export { MultiERC2771Context__factory } from "./factories/contracts/MultiERC2771Context__factory";
+export type { MultiERC2771ContextUpgradeable } from "./contracts/MultiERC2771ContextUpgradeable";
+export { MultiERC2771ContextUpgradeable__factory } from "./factories/contracts/MultiERC2771ContextUpgradeable__factory";
 export type { ParameterizedAccessControl } from "./contracts/ParameterizedAccessControl";
 export { ParameterizedAccessControl__factory } from "./factories/contracts/ParameterizedAccessControl__factory";
 export type { TokenBitMask } from "./contracts/TokenBitMask";
 export { TokenBitMask__factory } from "./factories/contracts/TokenBitMask__factory";
 export type { DummyERC20 } from "./test/contracts/DummyERC20";
 export { DummyERC20__factory } from "./factories/test/contracts/DummyERC20__factory";
+export type { GatewayTokenClientERC2771Test } from "./test/contracts/GatewayTokenClientERC2711Test.sol/GatewayTokenClientERC2771Test";
+export { GatewayTokenClientERC2771Test__factory } from "./factories/test/contracts/GatewayTokenClientERC2711Test.sol/GatewayTokenClientERC2771Test__factory";
 export type { GatewayTokenClientTest } from "./test/contracts/GatewayTokenClientTest";
 export { GatewayTokenClientTest__factory } from "./factories/test/contracts/GatewayTokenClientTest__factory";
 export type { GatewayTokenInternalsTest } from "./test/contracts/GatewayTokenInternalsTest";

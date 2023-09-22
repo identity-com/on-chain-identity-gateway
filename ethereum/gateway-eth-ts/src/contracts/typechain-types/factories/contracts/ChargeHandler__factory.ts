@@ -24,7 +24,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "Charge__InsufficientAllowance",
+    name: "Charge__IncorrectAllowance",
     type: "error",
   },
   {
@@ -97,7 +97,7 @@ const _abi = [
 ] as const;
 
 const _bytecode =
-  "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212200aa9dd85b3bd093c1e516ef9a108665c4f241219415ce75422a1250fe665804264736f6c63430008090033";
+  "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea264697066735822122061fce5b79de729eb9efc4aa251c736cca7fec6b5afb4d27e37a5da87b61f35a964736f6c63430008130033";
 
 type ChargeHandlerConstructorParams =
   | [signer?: Signer]

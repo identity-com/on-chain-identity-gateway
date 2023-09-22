@@ -29,7 +29,7 @@ import {Charge, ChargeType} from "./library/Charge.sol";
 contract ChargeHandler {
     event ChargePaid(Charge);
 
-    error Charge__InsufficientAllowance(uint256 allowance, uint256 expectedAllowance);
+    error Charge__IncorrectAllowance(uint256 allowance, uint256 expectedAllowance);
 
     error Charge__InsufficientValue(uint256 value, uint256 expectedValue);
 
@@ -64,9 +64,13 @@ contract ChargeHandler {
 
             // CHECKS
             // check that the sender has approved the token transfer
+            // note - for security's sake, check that the allowance is equal to the charge value
+            // to avoid an attack wherein the payer approves a large allowance for a valid issuance,
+            // then an attacker issues their own token, and uses the allowance from the valid one
+            // to drain the payer's ERC-20
             uint256 allowance = token.allowance(charge.tokenSender, address(this));
-            if (allowance < charge.value) {
-                revert Charge__InsufficientAllowance(allowance, charge.value);
+            if (allowance != charge.value) {
+                revert Charge__IncorrectAllowance(allowance, charge.value);
             }
 
             // EFFECTS

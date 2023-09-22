@@ -2,6 +2,7 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+export * as gatewayTokenClientErc2711TestSol from "./GatewayTokenClientERC2711Test.sol";
 export * as v0 from "./v0";
 export { DummyERC20__factory } from "./DummyERC20__factory";
 export { GatewayTokenClientTest__factory } from "./GatewayTokenClientTest__factory";

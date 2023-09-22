@@ -2,6 +2,8 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+import type * as gatewayTokenClientErc2711TestSol from "./GatewayTokenClientERC2711Test.sol";
+export type { gatewayTokenClientErc2711TestSol };
 import type * as v0 from "./v0";
 export type { v0 };
 export type { DummyERC20 } from "./DummyERC20";
