@@ -3,7 +3,7 @@ pragma solidity >=0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Charge, ChargeType} from "./library/Charge.sol";
-import {InternalTokenApproval} from "./InternalTokenApproval.sol";
+import {InternalTokenApproval} from "./library/InternalTokenApproval.sol";
 
 /**
  * @dev The ChargeHandler contract is an internal library used by the Gatekeeper
@@ -27,7 +27,9 @@ import {InternalTokenApproval} from "./InternalTokenApproval.sol";
  * typically the gateway token recipient, using tx.origin precludes the use of smart contract wallets, as well as
  * being discouraged for other security reasons.
  */
-contract ChargeHandler is InternalTokenApproval {
+contract ChargeHandler {
+    using InternalTokenApproval for mapping(address => InternalTokenApproval.Approval);
+
     event ChargePaid(Charge);
 
     error Charge__IncorrectAllowance(uint256 allowance, uint256 expectedAllowance);
@@ -43,7 +45,11 @@ contract ChargeHandler is InternalTokenApproval {
      * when sending ETH to the recipient (if the recipient is a smart contract)
      * @param charge The charge details
      **/
-    function _handleCharge(Charge calldata charge, uint network) internal {
+    function _handleCharge(
+        Charge calldata charge,
+        uint network,
+        mapping(address => InternalTokenApproval.Approval) storage _approvals
+    ) internal {
         if (charge.chargeType == ChargeType.ETH) {
             // CHECKS
             // send wei if the charge type is ETH
@@ -72,7 +78,7 @@ contract ChargeHandler is InternalTokenApproval {
             if (allowance < charge.value) {
                 revert Charge__IncorrectAllowance(allowance, charge.value);
             }
-            bool approvalValid = super.consumeApproval(charge.tokenSender, charge.value, network);
+            bool approvalValid = _approvals.consumeApproval(charge.tokenSender, charge.value, network);
             if (!approvalValid) {
                 revert Charge__IncorrectAllowance(allowance, charge.value);
             }

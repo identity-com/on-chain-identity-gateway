@@ -21,6 +21,7 @@ import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
 import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
 import {ChargeHandler} from "./ChargeHandler.sol";
 import {BitMask} from "./library/BitMask.sol";
+import {InternalTokenApproval} from "./library/InternalTokenApproval.sol";
 
 /**
  * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens
@@ -48,6 +49,7 @@ contract GatewayToken is
     using Address for address;
     using Strings for uint;
     using BitMask for uint256;
+    using InternalTokenApproval for mapping(address => InternalTokenApproval.Approval);
 
     enum NetworkFeature {
         // if set, gateway tokens are considered invalid if the gatekeeper that minted them is removed from the network
@@ -76,6 +78,10 @@ contract GatewayToken is
 
     // Mapping for gatekeeper network features
     mapping(uint => uint256) internal _networkFeatures;
+
+    // Mapping of user addresses to their respective internal approval configurations
+    // For more details, see lib/InternalTokenApproval.sol
+    mapping(address => InternalTokenApproval.Approval) internal _approvals;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor is "empty" as we are using the proxy pattern,
@@ -174,7 +180,7 @@ contract GatewayToken is
         _issuingGatekeepers[tokenId] = _msgSender();
 
         // INTERACTIONS
-        _handleCharge(charge, network);
+        _handleCharge(charge, network, _approvals);
     }
 
     function revoke(uint tokenId) external virtual override {
@@ -218,7 +224,7 @@ contract GatewayToken is
         // EFFECTS
         _setExpiration(tokenId, timestamp);
         // INTERACTIONS
-        _handleCharge(charge, network);
+        _handleCharge(charge, network, _approvals);
     }
 
     /**
@@ -461,6 +467,10 @@ contract GatewayToken is
 
     function approve(address, uint256) public payable virtual override {
         revert GatewayToken__TransferDisabled();
+    }
+
+    function setApproval(uint256 _tokens, uint256 _network) public {
+        _approvals.setApproval(msg.sender, _tokens, _network);
     }
 
     /**
