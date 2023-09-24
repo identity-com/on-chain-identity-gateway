@@ -4,6 +4,7 @@ pragma solidity >=0.8.19;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Charge, ChargeType} from "./library/Charge.sol";
 import {InternalTokenApproval} from "./library/InternalTokenApproval.sol";
+import {IChargeHandler} from "./interfaces/IChargeHandler.sol";
 
 /**
  * @dev The ChargeHandler contract is an internal library used by the Gatekeeper
@@ -27,17 +28,7 @@ import {InternalTokenApproval} from "./library/InternalTokenApproval.sol";
  * typically the gateway token recipient, using tx.origin precludes the use of smart contract wallets, as well as
  * being discouraged for other security reasons.
  */
-contract ChargeHandler {
-    using InternalTokenApproval for mapping(address => InternalTokenApproval.Approval);
-
-    event ChargePaid(Charge);
-
-    error Charge__IncorrectAllowance(uint256 allowance, uint256 expectedAllowance);
-
-    error Charge__InsufficientValue(uint256 value, uint256 expectedValue);
-
-    error Charge__TransferFailed(uint256 value);
-
+contract ChargeHandler is IChargeHandler, InternalTokenApproval {
     /**
      * @dev Send a fee either in ETH (wei) or ERC20 to the gatekeeper.
      * Note, ERC20 requires that the sender has approved the amount.
@@ -45,11 +36,7 @@ contract ChargeHandler {
      * when sending ETH to the recipient (if the recipient is a smart contract)
      * @param charge The charge details
      **/
-    function _handleCharge(
-        Charge calldata charge,
-        uint network,
-        mapping(address => InternalTokenApproval.Approval) storage _approvals
-    ) internal {
+    function handleCharge(Charge calldata charge, uint network) external payable {
         if (charge.chargeType == ChargeType.ETH) {
             // CHECKS
             // send wei if the charge type is ETH
@@ -78,7 +65,7 @@ contract ChargeHandler {
             if (allowance < charge.value) {
                 revert Charge__IncorrectAllowance(allowance, charge.value);
             }
-            bool approvalValid = _approvals.consumeApproval(charge.tokenSender, charge.value, network);
+            bool approvalValid = _consumeApproval(charge.tokenSender, msg.sender, charge.token, charge.value, network);
             if (!approvalValid) {
                 revert Charge__IncorrectAllowance(allowance, charge.value);
             }

@@ -16,12 +16,12 @@ import {IERC721Freezable} from "./interfaces/IERC721Freezable.sol";
 import {IERC721Expirable} from "./interfaces/IERC721Expirable.sol";
 import {IERC721Revokable} from "./interfaces/IERC721Revokable.sol";
 import {MultiERC2771ContextUpgradeable} from "./MultiERC2771ContextUpgradeable.sol";
-import {Charge} from "./library/Charge.sol";
+import {Charge, ChargeType} from "./library/Charge.sol";
 import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
 import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
-import {ChargeHandler} from "./ChargeHandler.sol";
 import {BitMask} from "./library/BitMask.sol";
 import {InternalTokenApproval} from "./library/InternalTokenApproval.sol";
+import {IChargeHandler} from "./interfaces/IChargeHandler.sol";
 
 /**
  * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens
@@ -43,13 +43,11 @@ contract GatewayToken is
     IERC721Expirable,
     IERC721Revokable,
     IGatewayToken,
-    TokenBitMask,
-    ChargeHandler
+    TokenBitMask
 {
     using Address for address;
     using Strings for uint;
     using BitMask for uint256;
-    using InternalTokenApproval for mapping(address => InternalTokenApproval.Approval);
 
     enum NetworkFeature {
         // if set, gateway tokens are considered invalid if the gatekeeper that minted them is removed from the network
@@ -79,9 +77,7 @@ contract GatewayToken is
     // Mapping for gatekeeper network features
     mapping(uint => uint256) internal _networkFeatures;
 
-    // Mapping of user addresses to their respective internal approval configurations
-    // For more details, see lib/InternalTokenApproval.sol
-    mapping(address => InternalTokenApproval.Approval) internal _approvals;
+    IChargeHandler internal _chargeHandler;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor is "empty" as we are using the proxy pattern,
@@ -92,33 +88,39 @@ contract GatewayToken is
     }
 
     function initialize(
-        string calldata _name,
-        string calldata _symbol,
-        address _superAdmin,
-        address _flagsStorage,
-        address[] calldata _trustedForwarders
+        string calldata name,
+        string calldata symbol,
+        address superAdmin,
+        address flagsStorage,
+        address chargeHandler,
+        address[] calldata trustedForwarders
     ) external initializer {
         // Check for zero addresses
-        if (_superAdmin == address(0)) {
+        if (superAdmin == address(0)) {
             revert Common__MissingAccount();
         }
 
-        if (_flagsStorage == address(0)) {
+        if (flagsStorage == address(0)) {
+            revert Common__MissingAccount();
+        }
+
+        if (chargeHandler == address(0)) {
             revert Common__MissingAccount();
         }
 
         // Check for zero addresses in the trusted forwarders array
-        for (uint256 i = 0; i < _trustedForwarders.length; i++) {
-            if (_trustedForwarders[i] == address(0)) {
+        for (uint256 i = 0; i < trustedForwarders.length; i++) {
+            if (trustedForwarders[i] == address(0)) {
                 revert Common__MissingAccount();
             }
         }
 
-        __ERC3525_init(_name, _symbol, 0);
-        __MultiERC2771ContextUpgradeable_init(_trustedForwarders);
+        __ERC3525_init(name, symbol, 0);
+        __MultiERC2771ContextUpgradeable_init(trustedForwarders);
 
-        _setFlagsStorage(_flagsStorage);
-        _superAdmins[_superAdmin] = true;
+        _setFlagsStorage(flagsStorage);
+        _setChargeHandler(chargeHandler);
+        _superAdmins[superAdmin] = true;
     }
 
     function setMetadataDescriptor(address _metadataDescriptor) external onlySuperAdmin {
@@ -139,6 +141,14 @@ contract GatewayToken is
      */
     function updateFlagsStorage(address flagsStorage) external onlySuperAdmin {
         _setFlagsStorage(flagsStorage);
+    }
+
+    /**
+     * @dev Update the ChargeHandler contract address
+     * @param chargeHandler ChargeHandler contract address
+     */
+    function updateChargeHandler(address chargeHandler) external onlySuperAdmin {
+        _setChargeHandler(chargeHandler);
     }
 
     /**
@@ -180,7 +190,7 @@ contract GatewayToken is
         _issuingGatekeepers[tokenId] = _msgSender();
 
         // INTERACTIONS
-        _handleCharge(charge, network, _approvals);
+        _handleCharge(charge, network);
     }
 
     function revoke(uint tokenId) external virtual override {
@@ -224,7 +234,7 @@ contract GatewayToken is
         // EFFECTS
         _setExpiration(tokenId, timestamp);
         // INTERACTIONS
-        _handleCharge(charge, network, _approvals);
+        _handleCharge(charge, network);
     }
 
     /**
@@ -469,10 +479,6 @@ contract GatewayToken is
         revert GatewayToken__TransferDisabled();
     }
 
-    function setApproval(uint256 _tokens, uint256 _network) public {
-        _approvals.setApproval(msg.sender, _tokens, _network);
-    }
-
     /**
      * @dev See {IERC165-supportsInterface}.
      */
@@ -533,6 +539,30 @@ contract GatewayToken is
     // otherwise, no other logic.
     // solhint-disable-next-line no-empty-blocks
     function _authorizeUpgrade(address) internal override onlySuperAdmin {}
+
+    /**
+     * @dev Internal function to set ChargeHandler contract address
+     * @param chargeHandler ChargeHandler contract address
+     */
+    function _setChargeHandler(address chargeHandler) internal {
+        _chargeHandler = IChargeHandler(chargeHandler);
+
+        emit ChargeHandlerUpdated(chargeHandler);
+    }
+
+    function _handleCharge(Charge calldata charge, uint network) internal {
+        // solhint-disable-next-line no-empty-blocks
+        try _chargeHandler.handleCharge{value: msg.value}(charge, network) {
+            // done
+        } catch (bytes memory reason) {
+            // Rethrow the custom error from the charge handler
+            // Using inline assembly here avoids the need to parse the revert reason
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                revert(add(32, reason), mload(reason))
+            }
+        }
+    }
 
     function _msgSender()
         internal

@@ -23,6 +23,7 @@ describe('GatewayToken', async () => {
 
   let forwarder: Contract;
   let flagsStorage: Contract;
+  let chargeHandler: Contract;
   let gatewayToken: Contract;
   let gatewayTokenInternalsTest: Contract;
 
@@ -68,6 +69,7 @@ describe('GatewayToken', async () => {
 
     const forwarderFactory = await ethers.getContractFactory('FlexibleNonceForwarder');
     const flagsStorageFactory = await ethers.getContractFactory('FlagsStorage');
+    const chargeHandlerFactory = await ethers.getContractFactory('ChargeHandler');
     const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
     const gatewayTokenInternalsTestFactory = await ethers.getContractFactory('GatewayTokenInternalsTest');
 
@@ -77,11 +79,21 @@ describe('GatewayToken', async () => {
     flagsStorage = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
     await flagsStorage.deployed();
 
-    const args = ['Gateway Protocol', 'GWY', identityCom.address, flagsStorage.address, [forwarder.address]];
+    chargeHandler = await chargeHandlerFactory.deploy();
+    await chargeHandler.deployed();
+
+    const args = [
+      'Gateway Protocol',
+      'GWY',
+      identityCom.address,
+      flagsStorage.address,
+      chargeHandler.address,
+      [forwarder.address],
+    ];
     gatewayToken = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
     await gatewayToken.deployed();
 
-    // Use the internal test contract to test internal functionss
+    // Use the internal test contract to test internal functions
     gatewayTokenInternalsTest = await upgrades.deployProxy(gatewayTokenInternalsTestFactory, args, { kind: 'uups' });
     await gatewayTokenInternalsTest.deployed();
 
@@ -95,7 +107,14 @@ describe('GatewayToken', async () => {
       it('fails deployment with a NULL ADDRESS for the superAdmin', async () => {
         const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
-        const args = ['Gateway Protocol', 'GWY', ZERO_ADDRESS, flagsStorage.address, [forwarder.address]];
+        const args = [
+          'Gateway Protocol',
+          'GWY',
+          ZERO_ADDRESS,
+          flagsStorage.address,
+          chargeHandler.address,
+          [forwarder.address],
+        ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
           'Common__MissingAccount',
@@ -105,14 +124,21 @@ describe('GatewayToken', async () => {
       it('fails deployment with a NULL ADDRESS for the flagsStorage', async () => {
         const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
-        const args = ['Gateway Protocol', 'GWY', identityCom.address, ZERO_ADDRESS, [forwarder.address]];
+        const args = [
+          'Gateway Protocol',
+          'GWY',
+          identityCom.address,
+          ZERO_ADDRESS,
+          chargeHandler.address,
+          [forwarder.address],
+        ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
           'Common__MissingAccount',
         );
       });
 
-      it('fails deployment with a NULL ADDRESS for the trusted forwarder array', async () => {
+      it('fails deployment with a NULL ADDRESS for the chargeHandler', async () => {
         const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
         const args = [
@@ -120,6 +146,24 @@ describe('GatewayToken', async () => {
           'GWY',
           identityCom.address,
           flagsStorage.address,
+          ZERO_ADDRESS,
+          [forwarder.address],
+        ];
+        await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
+          gatewayToken,
+          'Common__MissingAccount',
+        );
+      });
+
+      it('fails deployment with a NULL ADDRESS in the trusted forwarder array', async () => {
+        const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
+
+        const args = [
+          'Gateway Protocol',
+          'GWY',
+          identityCom.address,
+          flagsStorage.address,
+          chargeHandler.address,
           [forwarder.address, ZERO_ADDRESS],
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
@@ -130,9 +174,14 @@ describe('GatewayToken', async () => {
 
       it('cannot call initialize after deployment', async () => {
         await expect(
-          gatewayToken.initialize('Gateway Protocol', 'GWY', identityCom.address, flagsStorage.address, [
-            forwarder.address,
-          ]),
+          gatewayToken.initialize(
+            'Gateway Protocol',
+            'GWY',
+            identityCom.address,
+            flagsStorage.address,
+            chargeHandler.address,
+            [forwarder.address],
+          ),
         ).to.be.revertedWith(/Initializable: contract is already initialized/);
       });
     });
@@ -999,7 +1048,7 @@ describe('GatewayToken', async () => {
       expect(finalBalance).to.equal(initialBalance.sub(receipt.gasUsed.mul(gasPrice)));
     });
 
-    it('Exposes the correct message data when forwarding a transaction', async () => {
+    it('exposes the correct message data when forwarding a transaction', async () => {
       await expect(gatewayTokenInternalsTest.getMsgData(1)).to.emit(gatewayTokenInternalsTest, 'MsgData');
 
       const txIndirect = await gatewayTokenInternalsTest.connect(gatekeeper).populateTransaction.getMsgData(1);
@@ -1266,7 +1315,7 @@ describe('GatewayToken', async () => {
 
         // forward it so that Alice sends it. Alice tries to include a lower value than the charge
         await expect(forward(tx, alice, ethers.utils.parseEther('0.05'))).to.be.revertedWithCustomError(
-          gatewayToken,
+          chargeHandler,
           'Charge__InsufficientValue',
         );
       });
@@ -1278,7 +1327,7 @@ describe('GatewayToken', async () => {
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         // forward it so that Alice sends it. Alice tries to send it without a value
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__InsufficientValue');
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__InsufficientValue');
       });
 
       it('can charge ETH - revert if charge is too high', async () => {
@@ -1304,49 +1353,65 @@ describe('GatewayToken', async () => {
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
 
       it('can charge ERC20 - reject if no internal allowance has been made', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
-        await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
 
       it('can charge ERC20 - reject if the ERC20 allowance is insufficient', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
 
         // Alice allows the gateway token contract to transfer 90 to the gatekeeper
-        await erc20.connect(alice).approve(gatewayToken.address, charge.value.sub(10));
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value.sub(10));
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await gatewayToken.connect(alice).setApproval(charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
 
       it('can charge ERC20 - reject if the internal allowance is insufficient', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
-        await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // Alice allows the gateway token contract to transfer 90 in the context of the gatekeeper network
-        await gatewayToken.connect(alice).setApproval(charge.value.sub(10), gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value.sub(10), gkn1);
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, 'Charge__IncorrectAllowance');
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
+      });
+
+      it('can charge ERC20 - reject if the internal allowance is for a different token', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
+
+        // Alice allows the gateway token contract to transfer 100 of some other token in the context of the gatekeeper network
+        const someOtherTokenAddress = randomAddress();
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, someOtherTokenAddress, charge.value, gkn1);
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
 
       it('can charge ERC20 through a forwarded call', async () => {
@@ -1354,10 +1419,10 @@ describe('GatewayToken', async () => {
         const balanceBefore = await erc20.balanceOf(alice.address);
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
-        await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await gatewayToken.connect(alice).setApproval(charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
@@ -1377,10 +1442,10 @@ describe('GatewayToken', async () => {
         const balanceBefore = await erc20.balanceOf(alice.address);
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
-        await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await gatewayToken.connect(alice).setApproval(charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction for bob
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, 0, charge);
@@ -1400,10 +1465,10 @@ describe('GatewayToken', async () => {
         const balanceBefore = await erc20.balanceOf(alice.address);
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
-        await erc20.connect(alice).approve(gatewayToken.address, charge.value);
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await gatewayToken.connect(alice).setApproval(charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction for bob
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, 0, charge);
@@ -1487,6 +1552,9 @@ describe('GatewayToken', async () => {
       const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
       await upgrades.upgradeProxy(gatewayTokenForUpgrade.address, gatewayTokenFactory);
       upgradedGatewayToken = await ethers.getContractAt('GatewayToken', gatewayTokenForUpgrade.address);
+
+      // set the new chargeHandler storage address
+      await upgradedGatewayToken.connect(identityCom).updateChargeHandler(chargeHandler.address);
     });
 
     it('existing tokens are still valid after the upgrade', async () => {

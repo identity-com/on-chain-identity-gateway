@@ -15,6 +15,12 @@ interface IGatewayToken {
      */
     event DAOManagerTransferred(address previousDAOManager, address newDAOManager, uint256 network);
 
+    /**
+     * @dev Emitted when Identity.com Admin updated the ChargeHandler
+     * contract address
+     */
+    event ChargeHandlerUpdated(address indexed chargeHandler);
+
     /// Insufficient funds for withdrawal. Needed `required` but only
     /// `available` available.
     /// @param available balance available.
