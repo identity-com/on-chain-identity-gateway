@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "InternalTokenApproval",
+  "sourceName": "contracts/library/InternalTokenApproval.sol",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea264697066735822122034d71ce13c1b4b8648c1cd8260d8feb2d0277ae0eedbec5b8932415b95b6b10864736f6c63430008130033",
+  "deployedBytecode": "0x6080604052600080fdfea264697066735822122034d71ce13c1b4b8648c1cd8260d8feb2d0277ae0eedbec5b8932415b95b6b10864736f6c63430008130033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

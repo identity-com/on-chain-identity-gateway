@@ -29,7 +29,7 @@ contract InternalTokenApproval {
      * @param tokens The number of tokens to approve.
      * @param network The specific network for which the tokens are approved.
      */
-    function setApproval(address gatewayTokenAddress, address tokenAddress, uint256 tokens, uint256 network) external {
+    function _setApproval(address gatewayTokenAddress, address tokenAddress, uint256 tokens, uint256 network) internal {
         _approvals[msg.sender][gatewayTokenAddress][tokenAddress].tokens = tokens;
         _approvals[msg.sender][gatewayTokenAddress][tokenAddress].network = network;
     }
@@ -49,15 +49,15 @@ contract InternalTokenApproval {
         address tokenAddress,
         uint256 tokens,
         uint256 network
-    ) internal returns (bool) {
+    ) internal returns (bool, uint256) {
         if (
             _approvals[user][gatewayTokenAddress][tokenAddress].network != network ||
             _approvals[user][gatewayTokenAddress][tokenAddress].tokens < tokens
         ) {
-            return false;
+            return (false, _approvals[user][gatewayTokenAddress][tokenAddress].tokens);
         }
 
         _approvals[user][gatewayTokenAddress][tokenAddress].tokens -= tokens;
-        return true;
+        return (true, _approvals[user][gatewayTokenAddress][tokenAddress].tokens);
     }
 }

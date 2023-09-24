@@ -79,7 +79,7 @@ describe('GatewayToken', async () => {
     flagsStorage = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
     await flagsStorage.deployed();
 
-    chargeHandler = await chargeHandlerFactory.deploy();
+    chargeHandler = await upgrades.deployProxy(chargeHandlerFactory, [], { kind: 'uups' });
     await chargeHandler.deployed();
 
     const args = [

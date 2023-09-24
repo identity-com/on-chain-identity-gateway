@@ -2,6 +2,7 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+export { IChargeHandler__factory } from "./IChargeHandler__factory";
 export { IERC721Expirable__factory } from "./IERC721Expirable__factory";
 export { IERC721Freezable__factory } from "./IERC721Freezable__factory";
 export { IERC721Revokable__factory } from "./IERC721Revokable__factory";

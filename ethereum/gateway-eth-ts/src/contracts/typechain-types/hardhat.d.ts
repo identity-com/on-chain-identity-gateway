@@ -150,6 +150,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GatewayToken__factory>;
     getContractFactory(
+      name: "IChargeHandler",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IChargeHandler__factory>;
+    getContractFactory(
       name: "IERC721Expirable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC721Expirable__factory>;
@@ -404,6 +408,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.GatewayToken>;
+    getContractAt(
+      name: "IChargeHandler",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IChargeHandler>;
     getContractAt(
       name: "IERC721Expirable",
       address: string,

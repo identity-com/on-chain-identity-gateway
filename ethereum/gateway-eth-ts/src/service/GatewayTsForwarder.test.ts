@@ -19,13 +19,15 @@ import { ethers, Wallet } from "ethers";
 import { BigNumber } from "ethers";
 import {
   approveERC20Charge,
+  approveInternalERC20Charge,
   makeERC20Charge,
   makeWeiCharge,
 } from "../utils/charge";
+import { ChargeHandler__factory } from "../contracts/typechain-types";
 
 dotenv.config();
 
-describe.only("GatewayTS Forwarder", function () {
+describe("GatewayTS Forwarder", function () {
   let gateway: GatewayTsForwarder;
   let provider: BaseProvider;
 
@@ -162,6 +164,14 @@ describe.only("GatewayTS Forwarder", function () {
     const approveTx = await approveERC20Charge(
       charge,
       provider,
+      TEST_GATEWAY_TOKEN_ADDRESS.chargeHandler
+    );
+
+    const internalApproveTx = await approveInternalERC20Charge(
+      charge,
+      gatekeeperNetwork,
+      provider,
+      TEST_GATEWAY_TOKEN_ADDRESS.chargeHandler,
       TEST_GATEWAY_TOKEN_ADDRESS.gatewayToken
     );
 
@@ -169,6 +179,7 @@ describe.only("GatewayTS Forwarder", function () {
     const gatekeeperBalanceBefore = await erc20Balance(gatekeeper.address);
 
     await (await relayer.sendTransaction(approveTx)).wait();
+    await (await relayer.sendTransaction(internalApproveTx)).wait();
 
     await relaySerialized(() =>
       gateway.issue(wallet, gatekeeperNetwork, undefined, undefined, charge)

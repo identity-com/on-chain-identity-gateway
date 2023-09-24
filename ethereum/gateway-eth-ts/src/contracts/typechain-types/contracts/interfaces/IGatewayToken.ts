@@ -162,11 +162,24 @@ export interface IGatewayTokenInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "ChargeHandlerUpdated(address)": EventFragment;
     "DAOManagerTransferred(address,address,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "ChargeHandlerUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOManagerTransferred"): EventFragment;
 }
+
+export interface ChargeHandlerUpdatedEventObject {
+  chargeHandler: string;
+}
+export type ChargeHandlerUpdatedEvent = TypedEvent<
+  [string],
+  ChargeHandlerUpdatedEventObject
+>;
+
+export type ChargeHandlerUpdatedEventFilter =
+  TypedEventFilter<ChargeHandlerUpdatedEvent>;
 
 export interface DAOManagerTransferredEventObject {
   previousDAOManager: string;
@@ -428,6 +441,13 @@ export interface IGatewayToken extends BaseContract {
   };
 
   filters: {
+    "ChargeHandlerUpdated(address)"(
+      chargeHandler?: PromiseOrValue<string> | null
+    ): ChargeHandlerUpdatedEventFilter;
+    ChargeHandlerUpdated(
+      chargeHandler?: PromiseOrValue<string> | null
+    ): ChargeHandlerUpdatedEventFilter;
+
     "DAOManagerTransferred(address,address,uint256)"(
       previousDAOManager?: null,
       newDAOManager?: null,

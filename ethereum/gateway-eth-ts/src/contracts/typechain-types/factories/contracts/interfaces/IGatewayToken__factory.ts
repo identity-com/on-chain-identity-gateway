@@ -117,6 +117,19 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: true,
+        internalType: "address",
+        name: "chargeHandler",
+        type: "address",
+      },
+    ],
+    name: "ChargeHandlerUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: false,
         internalType: "address",
         name: "previousDAOManager",

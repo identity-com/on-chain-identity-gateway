@@ -6,6 +6,8 @@ export const DEFAULT_GATEWAY_TOKEN_ADDRESS =
 export const DEFAULT_FORWARDER_ADDRESS =
   "0x8419F704CD6520E2C3EF477ef9BFA3159Ea1ACA7"; // Flexible Nonce forwarder
 
+export const DEFAULT_CHARGE_HANDLER_ADDRESS = "???"; // Proxy address
+
 export const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export const ZERO_BN = BigNumber.from("0");

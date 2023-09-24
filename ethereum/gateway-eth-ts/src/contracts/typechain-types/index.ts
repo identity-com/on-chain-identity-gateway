@@ -79,6 +79,8 @@ export type { GatedERC2771Upgradeable } from "./contracts/GatedERC2771Upgradeabl
 export { GatedERC2771Upgradeable__factory } from "./factories/contracts/GatedERC2771Upgradeable__factory";
 export type { GatewayToken } from "./contracts/GatewayToken";
 export { GatewayToken__factory } from "./factories/contracts/GatewayToken__factory";
+export type { IChargeHandler } from "./contracts/interfaces/IChargeHandler";
+export { IChargeHandler__factory } from "./factories/contracts/interfaces/IChargeHandler__factory";
 export type { IERC721Expirable } from "./contracts/interfaces/IERC721Expirable";
 export { IERC721Expirable__factory } from "./factories/contracts/interfaces/IERC721Expirable__factory";
 export type { IERC721Freezable } from "./contracts/interfaces/IERC721Freezable";

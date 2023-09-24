@@ -2,4 +2,4 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
-export type { Ownable } from "./Ownable";
+export type { InternalTokenApproval } from "./InternalTokenApproval";

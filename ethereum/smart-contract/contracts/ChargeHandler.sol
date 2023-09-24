@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.19;
 
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Charge, ChargeType} from "./library/Charge.sol";
 import {InternalTokenApproval} from "./library/InternalTokenApproval.sol";
@@ -28,7 +31,14 @@ import {IChargeHandler} from "./interfaces/IChargeHandler.sol";
  * typically the gateway token recipient, using tx.origin precludes the use of smart contract wallets, as well as
  * being discouraged for other security reasons.
  */
-contract ChargeHandler is IChargeHandler, InternalTokenApproval {
+contract ChargeHandler is Initializable, UUPSUpgradeable, OwnableUpgradeable, IChargeHandler, InternalTokenApproval {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    // empty constructor in line with the UUPS upgradeable proxy pattern
+    // solhint-disable-next-line no-empty-blocks
+    constructor() {
+        _disableInitializers();
+    }
+
     /**
      * @dev Send a fee either in ETH (wei) or ERC20 to the gatekeeper.
      * Note, ERC20 requires that the sender has approved the amount.
@@ -65,9 +75,15 @@ contract ChargeHandler is IChargeHandler, InternalTokenApproval {
             if (allowance < charge.value) {
                 revert Charge__IncorrectAllowance(allowance, charge.value);
             }
-            bool approvalValid = _consumeApproval(charge.tokenSender, msg.sender, charge.token, charge.value, network);
+            (bool approvalValid, uint256 remainingAllowance) = _consumeApproval(
+                charge.tokenSender,
+                _msgSender(),
+                charge.token,
+                charge.value,
+                network
+            );
             if (!approvalValid) {
-                revert Charge__IncorrectAllowance(allowance, charge.value);
+                revert Charge__IncorrectAllowance(remainingAllowance, charge.value);
             }
 
             // EFFECTS
@@ -80,4 +96,14 @@ contract ChargeHandler is IChargeHandler, InternalTokenApproval {
             }
         }
     }
+
+    function setApproval(address gatewayTokenAddress, address tokenAddress, uint256 tokens, uint256 network) external {
+        _setApproval(gatewayTokenAddress, tokenAddress, tokens, network);
+        emit ApprovalSet(gatewayTokenAddress, tokenAddress, tokens, network);
+    }
+
+    // includes the onlySuperAdmin modifier to ensure that only the super admin can call this function
+    // otherwise, no other logic.
+    // solhint-disable-next-line no-empty-blocks
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 }

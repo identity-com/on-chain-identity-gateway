@@ -6,9 +6,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
   const { deployer } = await getNamedAccounts();
 
-  const flagsStorage = await deployments.get('FlagsStorage');
+  const flagsStorage = await deployments.get('FlagsStorageProxy');
+  const chargeHandler = await deployments.get('ChargeHandlerProxy');
 
-  const args = ['Gateway Protocol', 'PASS', deployer, flagsStorage.address, []];
+  const args = ['Gateway Protocol', 'PASS', deployer, flagsStorage.address, chargeHandler.address, []];
   const gatewayTokenContract = await deployProxyCreate2(hre, 'GatewayToken', args);
 
   const gatewayTokenAddress = gatewayTokenContract.address;
@@ -18,4 +19,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 func.id = 'deploy_gateway_token';
 func.tags = ['GatewayToken'];
-func.dependencies = ['FlagsStorage'];
+func.dependencies = ['FlagsStorage', 'ChargeHandler'];
