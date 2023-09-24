@@ -18,7 +18,7 @@ contract GatewayTokenInternalsTest is GatewayToken {
     /**
      * @dev A public version of _msgData() in the GatewayToken contract, use for testing the forwarding logic.
      */
-    function getMsgData(uint x) external {
+    function getMsgData(uint) external {
         emit MsgData(super._msgData());
     }
 

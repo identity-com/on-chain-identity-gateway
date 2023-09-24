@@ -650,6 +650,16 @@ describe('GatewayToken', async () => {
       // Alice is verified
       await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
     });
+
+    it('supports Upgradeable ERC2771 clients', async () => {
+      const erc2771ClientFactory = await ethers.getContractFactory('GatewayTokenClientERC2771UpgradeableTest');
+      const erc2771Client = await upgrades.deployProxy(erc2771ClientFactory, [gatewayToken.address, gkn1, []], {
+        kind: 'uups',
+      });
+      await erc2771Client.deployed();
+      // Alice is verified
+      await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
+    });
   });
 
   describe('Test gateway token operations: freeze, unfreeze, setExpiration, revoke', async () => {
@@ -1307,6 +1317,25 @@ describe('GatewayToken', async () => {
         expect(balanceAfter).to.equal(balanceBefore.sub(charge.value).sub(gas));
       });
 
+      it('charge ETH - revert if the recipient rejects it', async () => {
+        const brokenRecipientFactory = await ethers.getContractFactory('DummyBrokenEthRecipient');
+        const brokenRecipient = await brokenRecipientFactory.deploy();
+        await brokenRecipient.deployed();
+
+        const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
+        charge.recipient = brokenRecipient.address;
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        // forward it so that Alice sends it, and includes a value
+        // this should fail, because the recipient rejects it
+        await expect(forward(tx, alice, charge.value)).to.be.revertedWithCustomError(
+          chargeHandler,
+          'Charge__TransferFailed',
+        );
+      });
+
       it('can charge ETH - revert if amount sent is not equal to the charge', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
@@ -1479,6 +1508,30 @@ describe('GatewayToken', async () => {
         // check that Alice's balance has gone down by the charge amount
         const balanceAfter = await erc20.balanceOf(alice.address);
         expect(balanceAfter).to.equal(balanceBefore.sub(charge.value));
+      });
+
+      it('can charge ERC20 - rejects if the ERC20 transfer fails', async () => {
+        const brokenErc20Factory = await ethers.getContractFactory('DummyBrokenERC20');
+        const brokenErc20 = await brokenErc20Factory.deploy(
+          'broken erc20',
+          'dummyBroken',
+          ethers.utils.parseEther('1000000'),
+          alice.address,
+        );
+        await brokenErc20.deployed();
+
+        const charge = makeERC20Charge(BigNumber.from('100'), brokenErc20.address, alice.address);
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await brokenErc20.connect(alice).approve(chargeHandler.address, charge.value);
+        // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, brokenErc20.address, charge.value, gkn1);
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        // the transfer fails because the erc20 contract blocked it
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__TransferFailed');
       });
     });
   });
