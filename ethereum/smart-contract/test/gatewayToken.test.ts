@@ -79,7 +79,7 @@ describe('GatewayToken', async () => {
     flagsStorage = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
     await flagsStorage.deployed();
 
-    chargeHandler = await upgrades.deployProxy(chargeHandlerFactory, [], { kind: 'uups' });
+    chargeHandler = await upgrades.deployProxy(chargeHandlerFactory, [identityCom.address], { kind: 'uups' });
     await chargeHandler.deployed();
 
     const args = [
@@ -92,6 +92,10 @@ describe('GatewayToken', async () => {
     ];
     gatewayToken = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
     await gatewayToken.deployed();
+
+    // set the gateway token contract as the owner of the chargeHandler
+    const chargeHandlerContract = await ethers.getContractAt('ChargeHandler', chargeHandler.address);
+    await chargeHandlerContract.setRole(keccak256(toUtf8Bytes('CHARGE_CALLER_ROLE')), gatewayToken.address);
 
     // Use the internal test contract to test internal functions
     gatewayTokenInternalsTest = await upgrades.deployProxy(gatewayTokenInternalsTestFactory, args, { kind: 'uups' });
@@ -1533,6 +1537,27 @@ describe('GatewayToken', async () => {
         // the transfer fails because the erc20 contract blocked it
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__TransferFailed');
       });
+
+      it('can charge ERC20 - rejects if the charge handler is called directly', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
+
+        // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
+
+        // attempt to call chargeHandler directly rather than via a gatewayToken mint
+        const attacker = randomWallet();
+        const maliciousCharge = {
+          ...charge,
+          recipient: attacker.address,
+        };
+        // it doesn't matter who sends the transaction
+        const shouldFail = chargeHandler.connect(alice).handleCharge(maliciousCharge, gkn1);
+
+        await expect(shouldFail).to.be.revertedWith(/AccessControl/);
+      });
     });
   });
 
@@ -1608,6 +1633,9 @@ describe('GatewayToken', async () => {
 
       // set the new chargeHandler storage address
       await upgradedGatewayToken.connect(identityCom).updateChargeHandler(chargeHandler.address);
+      await chargeHandler
+        .connect(identityCom)
+        .setRole(keccak256(toUtf8Bytes('CHARGE_CALLER_ROLE')), upgradedGatewayToken.address);
     });
 
     it('existing tokens are still valid after the upgrade', async () => {
