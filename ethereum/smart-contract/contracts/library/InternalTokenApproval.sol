@@ -12,16 +12,14 @@ pragma solidity ^0.8.19;
  * unsuspecting recipients.
  */
 contract InternalTokenApproval {
-    // Struct to represent token approvals for specific networks.
-    struct Approval {
-        uint256 tokens; // The number of tokens approved.
-        uint256 network; // The specific network for which the tokens are approved.
-    }
-
     // Mapping of user addresses to their respective internal approval configurations.
-    // The mapping is structured as follows:
-    // userAddress => gatewayTokenAddress => ERC20TokenAddress => Approval
-    mapping(address => mapping(address => mapping(address => InternalTokenApproval.Approval))) internal _approvals;
+    // prettier-ignore
+    mapping(
+        address userAddress => mapping(
+            address gatewayTokenAddress => mapping(
+                address erc20TokenAddress => mapping(
+                    uint256 network => uint256 tokens
+    )))) internal _approvals;
 
     /**
      * @dev Set a token approval.
@@ -30,8 +28,7 @@ contract InternalTokenApproval {
      * @param network The specific network for which the tokens are approved.
      */
     function _setApproval(address gatewayTokenAddress, address tokenAddress, uint256 tokens, uint256 network) internal {
-        _approvals[msg.sender][gatewayTokenAddress][tokenAddress].tokens = tokens;
-        _approvals[msg.sender][gatewayTokenAddress][tokenAddress].network = network;
+        _approvals[msg.sender][gatewayTokenAddress][tokenAddress][network] = tokens;
     }
 
     /**
@@ -50,14 +47,11 @@ contract InternalTokenApproval {
         uint256 tokens,
         uint256 network
     ) internal returns (bool, uint256) {
-        if (
-            _approvals[user][gatewayTokenAddress][tokenAddress].network != network ||
-            _approvals[user][gatewayTokenAddress][tokenAddress].tokens < tokens
-        ) {
-            return (false, _approvals[user][gatewayTokenAddress][tokenAddress].tokens);
+        if (_approvals[user][gatewayTokenAddress][tokenAddress][network] < tokens) {
+            return (false, _approvals[user][gatewayTokenAddress][tokenAddress][network]);
         }
 
-        _approvals[user][gatewayTokenAddress][tokenAddress].tokens -= tokens;
-        return (true, _approvals[user][gatewayTokenAddress][tokenAddress].tokens);
+        _approvals[user][gatewayTokenAddress][tokenAddress][network] -= tokens;
+        return (true, _approvals[user][gatewayTokenAddress][tokenAddress][network]);
     }
 }
