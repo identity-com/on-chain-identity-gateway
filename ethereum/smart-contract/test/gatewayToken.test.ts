@@ -204,6 +204,16 @@ describe('GatewayToken', async () => {
         ).to.be.revertedWithCustomError(flagsStorage, 'Common__MissingAccount');
       });
     });
+
+    describe('chargeHandler', async () => {
+      it('fails deployment with a NULL ADDRESS for the owner', async () => {
+        const chargeHandlerFactory = await ethers.getContractFactory('ChargeHandler');
+        await expect(upgrades.deployProxy(chargeHandlerFactory, [ZERO_ADDRESS], {kind: 'uups'})).to.be.revertedWithCustomError(
+            chargeHandler,
+            'Common__MissingAccount',
+        );
+      });
+    });
   });
 
   describe('Gatekeeper Networks', async () => {
