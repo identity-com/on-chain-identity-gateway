@@ -208,10 +208,9 @@ describe('GatewayToken', async () => {
     describe('chargeHandler', async () => {
       it('fails deployment with a NULL ADDRESS for the owner', async () => {
         const chargeHandlerFactory = await ethers.getContractFactory('ChargeHandler');
-        await expect(upgrades.deployProxy(chargeHandlerFactory, [ZERO_ADDRESS], {kind: 'uups'})).to.be.revertedWithCustomError(
-            chargeHandler,
-            'Common__MissingAccount',
-        );
+        await expect(
+          upgrades.deployProxy(chargeHandlerFactory, [ZERO_ADDRESS], { kind: 'uups' }),
+        ).to.be.revertedWithCustomError(chargeHandler, 'Common__MissingAccount');
       });
     });
   });
@@ -240,6 +239,12 @@ describe('GatewayToken', async () => {
       await gatewayToken.connect(identityCom).renameNetwork(gkn1, newName);
       let network = await gatewayToken.getNetwork(gkn1);
       expect(network).to.equal(newName);
+    });
+
+    it('create network - reverts if name is empty', async () => {
+      const shouldFail = gatewayToken.connect(identityCom).createNetwork(gkn1, '', false, ZERO_ADDRESS);
+
+      await expect(shouldFail).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__EmptyNetworkName');
     });
   });
 
