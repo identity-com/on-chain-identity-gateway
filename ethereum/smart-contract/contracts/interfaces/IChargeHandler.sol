@@ -14,7 +14,7 @@ interface IChargeHandler {
 
     error Charge__IncorrectAllowance(uint256 allowance, uint256 expectedAllowance);
 
-    error Charge__InsufficientValue(uint256 value, uint256 expectedValue);
+    error Charge__IncorrectValue(uint256 value, uint256 expectedValue);
 
     error Charge__TransferFailed(uint256 value);
 

@@ -208,10 +208,9 @@ describe('GatewayToken', async () => {
     describe('chargeHandler', async () => {
       it('fails deployment with a NULL ADDRESS for the owner', async () => {
         const chargeHandlerFactory = await ethers.getContractFactory('ChargeHandler');
-        await expect(upgrades.deployProxy(chargeHandlerFactory, [ZERO_ADDRESS], {kind: 'uups'})).to.be.revertedWithCustomError(
-            chargeHandler,
-            'Common__MissingAccount',
-        );
+        await expect(
+          upgrades.deployProxy(chargeHandlerFactory, [ZERO_ADDRESS], { kind: 'uups' }),
+        ).to.be.revertedWithCustomError(chargeHandler, 'Common__MissingAccount');
       });
     });
   });
@@ -1350,7 +1349,7 @@ describe('GatewayToken', async () => {
         );
       });
 
-      it('can charge ETH - revert if amount sent is not equal to the charge', async () => {
+      it('can charge ETH - revert if amount sent is lower than the charge', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
         // create a mint transaction
@@ -1359,7 +1358,20 @@ describe('GatewayToken', async () => {
         // forward it so that Alice sends it. Alice tries to include a lower value than the charge
         await expect(forward(tx, alice, ethers.utils.parseEther('0.05'))).to.be.revertedWithCustomError(
           chargeHandler,
-          'Charge__InsufficientValue',
+          'Charge__IncorrectValue',
+        );
+      });
+
+      it('can charge ETH - revert if amount sent is higher than the charge', async () => {
+        const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        // forward it so that Alice sends it. Alice tries to include a higher value than the charge
+        await expect(forward(tx, alice, ethers.utils.parseEther('0.15'))).to.be.revertedWithCustomError(
+          chargeHandler,
+          'Charge__IncorrectValue',
         );
       });
 
@@ -1370,7 +1382,7 @@ describe('GatewayToken', async () => {
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         // forward it so that Alice sends it. Alice tries to send it without a value
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__InsufficientValue');
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectValue');
       });
 
       it('can charge ETH - revert if charge is too high', async () => {
@@ -1455,6 +1467,24 @@ describe('GatewayToken', async () => {
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
+      });
+
+      it('can charge ERC20 - reject if ETH is sent with the transaction', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        // Alice allows the gateway token contract to transfer 90 to the gatekeeper
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
+
+        // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+
+        await expect(forward(tx, alice, ethers.utils.parseEther('0.15'))).to.be.revertedWithCustomError(
+          chargeHandler,
+          'Charge__IncorrectValue',
+        );
       });
 
       it('can charge ERC20 through a forwarded call', async () => {
