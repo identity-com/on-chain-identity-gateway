@@ -35,6 +35,9 @@ interface IGatewayToken {
     /// @param network gatekeeper network id.
     error GatewayToken__NetworkDoesNotExist(uint network);
 
+    /// The gatekeeper network name is empty.
+    error GatewayToken__EmptyNetworkName();
+
     /// The gatekeeper network is not dao-governed.
     /// @param network gatekeeper network id.
     error GatewayToken__NotDAOGoverned(uint network);

@@ -240,6 +240,12 @@ describe('GatewayToken', async () => {
       let network = await gatewayToken.getNetwork(gkn1);
       expect(network).to.equal(newName);
     });
+
+    it('create network - reverts if name is empty', async () => {
+      const shouldFail = gatewayToken.connect(identityCom).createNetwork(gkn1, '', false, ZERO_ADDRESS);
+
+      await expect(shouldFail).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__EmptyNetworkName');
+    });
   });
 
   describe('Test executing functions only for Identity.com admin by third-party address', async () => {
