@@ -1319,7 +1319,7 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     ): Promise<[string]>;
 
     getMsgData(
-      x: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1744,7 +1744,7 @@ export interface GatewayTokenInternalsTest extends BaseContract {
   ): Promise<string>;
 
   getMsgData(
-    x: PromiseOrValue<BigNumberish>,
+    arg0: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -2167,7 +2167,7 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     ): Promise<string>;
 
     getMsgData(
-      x: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2811,7 +2811,7 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     ): Promise<BigNumber>;
 
     getMsgData(
-      x: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -3233,7 +3233,7 @@ export interface GatewayTokenInternalsTest extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getMsgData(
-      x: PromiseOrValue<BigNumberish>,
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

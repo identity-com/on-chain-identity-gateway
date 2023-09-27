@@ -5,6 +5,7 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Charge, ChargeType} from "./library/Charge.sol";
 import {InternalTokenApproval} from "./library/InternalTokenApproval.sol";
 import {IChargeHandler} from "./interfaces/IChargeHandler.sol";
@@ -39,6 +40,7 @@ contract ChargeHandler is
     IChargeHandler,
     InternalTokenApproval
 {
+    using SafeERC20 for IERC20;
     bytes32 public constant CHARGE_CALLER_ROLE = keccak256("CHARGE_CALLER_ROLE");
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -112,10 +114,7 @@ contract ChargeHandler is
             emit ChargePaid(charge);
 
             // INTERACTIONS
-            bool success = token.transferFrom(charge.tokenSender, charge.recipient, charge.value);
-            if (!success) {
-                revert Charge__TransferFailed(charge.value);
-            }
+            token.safeTransferFrom(charge.tokenSender, charge.recipient, charge.value);
         }
     }
 

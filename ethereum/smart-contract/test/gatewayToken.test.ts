@@ -208,10 +208,9 @@ describe('GatewayToken', async () => {
     describe('chargeHandler', async () => {
       it('fails deployment with a NULL ADDRESS for the owner', async () => {
         const chargeHandlerFactory = await ethers.getContractFactory('ChargeHandler');
-        await expect(upgrades.deployProxy(chargeHandlerFactory, [ZERO_ADDRESS], {kind: 'uups'})).to.be.revertedWithCustomError(
-            chargeHandler,
-            'Common__MissingAccount',
-        );
+        await expect(
+          upgrades.deployProxy(chargeHandlerFactory, [ZERO_ADDRESS], { kind: 'uups' }),
+        ).to.be.revertedWithCustomError(chargeHandler, 'Common__MissingAccount');
       });
     });
   });
@@ -1545,7 +1544,7 @@ describe('GatewayToken', async () => {
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         // the transfer fails because the erc20 contract blocked it
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__TransferFailed');
+        await expect(forward(tx, alice)).to.be.revertedWith(/ERC20 operation did not succeed/);
       });
 
       it('can charge ERC20 - rejects if the charge handler is called directly', async () => {
