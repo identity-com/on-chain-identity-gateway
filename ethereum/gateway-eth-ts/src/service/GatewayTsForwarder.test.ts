@@ -23,7 +23,6 @@ import {
   makeERC20Charge,
   makeWeiCharge,
 } from "../utils/charge";
-import { ChargeHandler__factory } from "../contracts/typechain-types";
 
 dotenv.config();
 

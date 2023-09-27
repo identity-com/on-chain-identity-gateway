@@ -4,6 +4,11 @@
   "sourceName": "contracts/interfaces/IGatewayToken.sol",
   "abi": [
     {
+      "inputs": [],
+      "name": "GatewayToken__EmptyNetworkName",
+      "type": "error"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint256",

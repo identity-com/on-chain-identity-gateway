@@ -131,9 +131,8 @@ contract ChargeHandler is
         // EFFECTS
         emit ChargePaid(charge);
 
-            // INTERACTIONS
-            token.safeTransferFrom(charge.tokenSender, charge.recipient, charge.value);
-        }
+        // INTERACTIONS
+        token.safeTransferFrom(charge.tokenSender, charge.recipient, charge.value);
     }
 
     // includes the onlySuperAdmin modifier to ensure that only the super admin can call this function

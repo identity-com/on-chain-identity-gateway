@@ -40,7 +40,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "Charge__InsufficientValue",
+    name: "Charge__IncorrectValue",
     type: "error",
   },
   {

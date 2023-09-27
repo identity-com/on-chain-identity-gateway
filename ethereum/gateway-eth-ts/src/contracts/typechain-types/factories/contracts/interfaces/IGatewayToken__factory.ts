@@ -12,6 +12,11 @@ import type {
 
 const _abi = [
   {
+    inputs: [],
+    name: "GatewayToken__EmptyNetworkName",
+    type: "error",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
