@@ -310,6 +310,11 @@ contract GatewayToken is
     }
 
     function renameNetwork(uint network, string calldata name) external virtual {
+        // do not allow empty names
+        if (bytes(name).length == 0) {
+            revert GatewayToken__EmptyNetworkName();
+        }
+
         if (bytes(_networks[network]).length == 0) {
             revert GatewayToken__NetworkDoesNotExist(network);
         }
