@@ -234,6 +234,13 @@ describe('GatewayToken', async () => {
       ).to.be.revertedWithCustomError(gatewayToken, 'GatewayToken__NetworkDoesNotExist');
     });
 
+    it('rename gatekeeper network - reverts if empty', async () => {
+      await expect(gatewayToken.connect(identityCom).renameNetwork(gkn1, '')).to.be.revertedWithCustomError(
+        gatewayToken,
+        'GatewayToken__EmptyNetworkName',
+      );
+    });
+
     it('rename gatekeeper network', async () => {
       const newName = 'Test GKN 1 Renamed';
       await gatewayToken.connect(identityCom).renameNetwork(gkn1, newName);
