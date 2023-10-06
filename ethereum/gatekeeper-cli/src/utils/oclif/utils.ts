@@ -1,8 +1,7 @@
-import {Provider} from '@ethersproject/providers'
 import {getSigner} from './signer'
 import {GatewayTs, TokenData} from '@identity.com/gateway-eth-ts'
-import {BigNumber} from '@ethersproject/bignumber'
-import {estimateGasPrice, GasPriceKey} from './gas'
+import {estimateGasPrice} from './gas'
+import {ParsedFlags} from './flags'
 export const makeGatewayTs = async ({
   provider,
   privateKey,
@@ -10,7 +9,7 @@ export const makeGatewayTs = async ({
   fees,
   gasLimit,
   readOnly = false,
-}: { provider: Provider, privateKey?: string, gatewayTokenAddress: string, fees?: GasPriceKey, gasLimit?: BigNumber, readOnly: boolean }):Promise<GatewayTs> => {
+}: ParsedFlags):Promise<GatewayTs> => {
   const signer = privateKey ? getSigner(privateKey, provider) : undefined
   const feeAmount = readOnly ? {} : await estimateGasPrice(provider, fees)
   const providerOrWallet = readOnly ? provider : signer || provider

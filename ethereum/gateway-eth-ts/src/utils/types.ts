@@ -68,7 +68,9 @@ export type ReadOnlyOps =
   | "getToken"
   | "getNetwork"
   | "verifyToken(address,uint256)"
-  | "getTokenIdsByOwnerAndNetwork";
+  | "getTokenIdsByOwnerAndNetwork"
+  | "isGatekeeper";
+
 export const readOnlyOpNames = [
   "getToken",
   "getNetwork",

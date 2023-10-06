@@ -95,7 +95,18 @@ type Flags = {
   gasLimit?: BigNumber | undefined
   readOnly?: boolean | undefined
 };
-export const parseFlags = (flags: Flags) => {
+
+export type ParsedFlags = {
+  provider: Provider;
+  gatewayTokenAddress: string;
+  gatekeeperNetwork: bigint;
+  fees?: GasPriceKey | undefined;
+  gasLimit?: BigNumber | undefined;
+  readOnly?: boolean | undefined;
+  privateKey?: string;
+};
+
+export const parseFlags = (flags: Flags): ParsedFlags => {
   // These all have defaults and can therefore be safely cast
   const provider = flags.chain as Provider
   const gatewayTokenAddress = flags.gatewayTokenAddress as string
@@ -111,7 +122,7 @@ export const parseFlags = (flags: Flags) => {
   }
 }
 
-export const parseFlagsWithPrivateKey = (flags: Flags & {privateKey: string | undefined }) => {
+export const parseFlagsWithPrivateKey = (flags: Flags & {privateKey: string | undefined }): ParsedFlags => {
   const privateKey = flags.privateKey as string
   return {
     ...parseFlags(flags),
