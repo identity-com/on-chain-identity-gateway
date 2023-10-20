@@ -1,15 +1,21 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 export const addGatekeeper = async (args: any, hre: HardhatRuntimeEnvironment) => {
-  const { ethers } = hre;
+  const { ethers, getNamedAccounts, deployments } = hre;
+  const [deployer] = await ethers.getSigners();
 
   const gatekeeper = ethers.utils.getAddress(args.gatekeeper);
-  const gatekeeperNetwork = ethers.utils.getAddress(args.gatekeepernetwork);
+  const gatekeeperNetwork = args.gatekeepernetwork;
 
-  const token = await ethers.getContractAt('GatewayToken', gatekeeperNetwork);
+  const gatewayToken = await deployments.get('GatewayTokenProxy');
 
-  const txReceipt = await token.estimateGas.addGatekeeper(gatekeeper, { gasPrice: 1000000, gasLimit: 1000000 });
-  console.log('txReceipt', txReceipt);
-  // const tx = await txReceipt.wait();
-  // console.log("added new gatekeeper with " + gatekeeper + " address into Gateway Token at " + gatekeeperNetwork + " using " + tx.gasUsed.toNumber() + " gas");
+  const contract = await ethers.getContractAt('GatewayToken', gatewayToken.address);
+
+  const alreadyAdded = await contract.isGatekeeper(gatekeeper, gatekeeperNetwork);
+  console.log(`gatekeeper ${gatekeeper} already added to network ${gatekeeperNetwork}: ${alreadyAdded}`)
+  if (alreadyAdded) return;
+
+  const txReceipt = await contract.connect(deployer).addGatekeeper(gatekeeper, gatekeeperNetwork);
+  const tx = await txReceipt.wait();
+  console.log(`added new gatekeeper ${gatekeeper} to network ${gatekeeperNetwork} using ${tx.gasUsed.toNumber()} gas`);
 };

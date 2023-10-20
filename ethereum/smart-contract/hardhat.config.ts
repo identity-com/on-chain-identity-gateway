@@ -13,13 +13,16 @@ import '@openzeppelin/hardhat-upgrades';
 import 'hardhat-contract-sizer';
 
 import { checkGT } from './tasks/checkGT';
+import { createGatekeeperNetwork } from './tasks/createGatekeeperNetwork';
 import { addGatekeeper } from './tasks/addGatekeeper';
+import { removeGatekeeper } from './tasks/removeGatekeeper';
 import { issueGT } from './tasks/issueGT';
 import { fund } from './tasks/fund';
 import { printPrivateKey } from './tasks/printPrivateKey';
 import { createWallet } from './tasks/createWallet';
 import { addForwarder } from './tasks/addForwarder';
 import { execute } from './tasks/execute';
+import { getBalance } from './tasks/getBalance';
 
 const derivedAccounts = {
   mnemonic: process.env.MNEMONIC || 'test test test test test test test test test test test junk',
@@ -39,10 +42,19 @@ task('check-gt', 'check if a wallet has a gateway token for a particular gatekee
   .addParam('address', 'The wallet to check')
   .addParam('gatekeepernetwork', 'The gatekeeper network')
   .setAction(checkGT);
+task('create-gatekeeper-network', 'create a gatekeeper network')
+    .addParam('gatekeepernetwork', 'The gatekeeper network to create')
+    .addParam('gatekeeper', 'The gatekeeper to add')
+    .addParam('name', 'The name of the new gatekeeper network')
+    .setAction(createGatekeeperNetwork);
 task('add-gatekeeper', 'add a gatekeeper to a network')
   .addParam('gatekeeper', 'The gatekeeper to add')
   .addParam('gatekeepernetwork', 'The gatekeeper network to add the gatekeeper to')
   .setAction(addGatekeeper);
+task('remove-gatekeeper', 'remove a gatekeeper from a network')
+    .addParam('gatekeeper', 'The gatekeeper to remove')
+    .addParam('gatekeepernetwork', 'The gatekeeper network to remove the gatekeeper from')
+    .setAction(removeGatekeeper);
 task('issue-gt', 'issue a gateway token')
   .addParam('gatekeepernetwork', 'The gatekeeper network to issue the token against')
   .addParam('address', 'The wallet to issue the gateway token for')
@@ -69,6 +81,7 @@ task('execute', 'sign and send a transaction')
   .addParam('to', 'the recipient of the transaction')
   .addParam('value', 'the amount to send with the transaction')
   .setAction(execute);
+task('get-balance', 'get the balance of the deployer').setAction(getBalance);
 
 // Set the default contracts path to "contracts"
 const defaultPath = './contracts';
