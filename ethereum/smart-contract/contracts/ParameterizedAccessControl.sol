@@ -84,6 +84,7 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     }
 
     function revokeSuperAdmin(address account) external onlySuperAdmin {
+        if (account == _msgSender()) revert ParameterizedAccessControl__NoSelfAdminRemoval();
         emit SuperAdminRemoved(account);
         _superAdmins[account] = false;
     }

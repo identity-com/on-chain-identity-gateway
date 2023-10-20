@@ -2,6 +2,7 @@
 pragma solidity >=0.8.19;
 
 import {Context} from "@openzeppelin/contracts/utils/Context.sol";
+import {console} from "hardhat/console.sol";
 
 /**
  * @dev Context variant with ERC2771 support for multiple trusted forwarders.
@@ -32,7 +33,9 @@ abstract contract MultiERC2771Context is Context {
     }
 
     function _msgSender() internal view virtual override returns (address sender) {
-        if (isTrustedForwarder(msg.sender)) {
+        console.log("MultiERC2771ContextUpgradeable._msgSender()", msg.sender);
+        console.logBytes(msg.data);
+        if (isTrustedForwarder(msg.sender) && msg.data.length >= 20) {
             // The assembly code is more direct than the Solidity version using `abi.decode`.
             // solhint-disable-next-line no-inline-assembly
             assembly {
@@ -44,7 +47,7 @@ abstract contract MultiERC2771Context is Context {
     }
 
     function _msgData() internal view virtual override returns (bytes calldata) {
-        if (isTrustedForwarder(msg.sender)) {
+        if (isTrustedForwarder(msg.sender) && msg.data.length >= 20) {
             return msg.data[:msg.data.length - 20];
         } else {
             return super._msgData();

@@ -419,6 +419,12 @@ describe('GatewayToken', async () => {
       await gatewayToken.connect(identityCom).revokeSuperAdmin(alice.address);
       expect(await gatewayToken.isSuperAdmin(alice.address)).to.be.false;
     });
+
+    it('a superadmin cannot revoke themselves', async () => {
+      await expect(
+        gatewayToken.connect(identityCom).revokeSuperAdmin(identityCom.address),
+      ).to.be.revertedWithCustomError(gatewayToken, 'ParameterizedAccessControl__NoSelfAdminRemoval');
+    });
   });
 
   describe('network authorities', async () => {
@@ -1140,7 +1146,6 @@ describe('GatewayToken', async () => {
       // expect to have to change this if any of the parameters of the tx change, or if the contract chagnes
       const requiredGas = 280000;
       const gasLimit = requiredGas + reservedGas; // - 10; // less than the required
-      console.log('PAssed gas limit ', gasLimit);
       await expect(forwarder.connect(alice).execute(req1.request, req1.signature, { gasLimit })).to.be.reverted;
     });
 
@@ -1170,6 +1175,28 @@ describe('GatewayToken', async () => {
         gatewayTokenInternalsTest,
         'AuthorizedUpgrade',
       );
+    });
+
+    // weird edge case but this is supported - required for ERC2771-compliance
+    it('MultiERC2771Context works if the trusted forwarder is not an ERC2771 contract (as long as msg.data is small)', async () => {
+      // Deploy an instance of ERC2771 - this is a direct contract (no proxy).
+      // Add the gatekeeper as a trusted forwarder (weird because it isn't one).
+      // send a message with a small msg.data (no parameters and not a proxy).
+      // the msg.sender should be the gatekeeper.
+      // This works because we check the size of the msg.data as well as the trusted forwarder
+      // if the msg.data is >20, this would return garbage, as it can't tell the difference between
+      // a message from an ERC2771 forwarder and a normal message.
+      const ERC2771TestFactory = await ethers.getContractFactory('ERC2771Test');
+      const erc2771Test = await ERC2771TestFactory.deploy([]);
+
+      // add the gatekeeper as a trusted forwarder
+      await erc2771Test.connect(identityCom).addForwarder(gatekeeper.address);
+
+      // calls via the gatekeeper still return the correct sender even though
+      // the gatekeeper is a trusted forwarder and expected therefore to send the original
+      // message sender as part of the call data
+      const msgSender = await erc2771Test.connect(gatekeeper).getMsgSender();
+      expect(msgSender).to.equal(gatekeeper.address);
     });
   });
 
@@ -1244,6 +1271,12 @@ describe('GatewayToken', async () => {
       await expect(
         gatewayToken.connect(alice).transferDAOManager(multisigWallet1.address, ZERO_ADDRESS, daoManagedGkn),
       ).to.be.revertedWithCustomError(gatewayToken, 'Common__MissingAccount');
+    });
+
+    it('transfer DAO management - reverts if the new manager is not a contract', async () => {
+      await expect(
+        gatewayToken.connect(alice).transferDAOManager(multisigWallet1.address, bob.address, daoManagedGkn),
+      ).to.be.revertedWithCustomError(gatewayToken, 'Common__NotContract');
     });
 
     it('transfers DAO management to a new multisig', async () => {

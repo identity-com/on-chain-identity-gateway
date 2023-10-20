@@ -254,6 +254,10 @@ contract GatewayToken is
 
         if (newManager == address(0)) revert Common__MissingAccount();
 
+        if (!newManager.isContract()) {
+            revert Common__NotContract(newManager);
+        }
+
         // grant the new manager the relevant roles
         grantRole(DAO_MANAGER_ROLE, network, newManager);
         grantRole(NETWORK_AUTHORITY_ROLE, network, newManager);
