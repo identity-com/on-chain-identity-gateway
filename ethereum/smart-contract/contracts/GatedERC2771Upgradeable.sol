@@ -11,6 +11,13 @@ abstract contract GatedERC2771Upgradeable is MultiERC2771ContextUpgradeable {
     /// The gateway token is not valid.
     error IsGated__InvalidGatewayToken(address gatewayToken);
 
+    /**
+     * @dev Modifier to make a function callable only when the caller has a valid gateway token.
+     *
+     * Requirements:
+     *
+     * - The caller must have a valid, non-expired gateway token on the _gatekeeperNetwork network.
+     */
     modifier gated() {
         IGatewayTokenVerifier verifier = IGatewayTokenVerifier(_gatewayTokenContract);
         if (!verifier.verifyToken(_msgSender(), _gatekeeperNetwork)) {

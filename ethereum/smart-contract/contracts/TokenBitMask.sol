@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.19;
+pragma solidity 0.8.19; // Fixed version for concrete contracts
 
 import {BitMask} from "./library/BitMask.sol";
 import {IFlagsStorage} from "./interfaces/IFlagsStorage.sol";

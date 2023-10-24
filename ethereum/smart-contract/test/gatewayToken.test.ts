@@ -12,7 +12,6 @@ import { IForwarder } from '../typechain-types';
 import { TransactionReceipt } from '@ethersproject/providers';
 
 describe('GatewayToken', async () => {
-  let signers: SignerWithAddress[];
   let identityCom: SignerWithAddress;
   let alice: SignerWithAddress;
   let bob: SignerWithAddress;
@@ -108,6 +107,28 @@ describe('GatewayToken', async () => {
 
   describe('Deployment Tests', async () => {
     describe('gatewayToken', async () => {
+      it('emits an event on deployment', async () => {
+        const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
+
+        const args = [
+          'Gateway Protocol2',
+          'GWY2',
+          identityCom.address,
+          flagsStorage.address,
+          chargeHandler.address,
+          [forwarder.address],
+        ];
+
+        const contract = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
+
+        // check the events emitted by deploying the contract
+        // we use this method (parsing the logs) rather than the hardhat chai matcher `.to.emit()`
+        // because upgrades.deployProxy does not return a transaction.
+        const receipt = await contract.deployTransaction.wait();
+        const parsedLogs = receipt.logs.map((log) => contract.interface.parseLog(log));
+        expect(parsedLogs.map((l) => l.name)).to.include('GatewayTokenInitialized');
+      });
+
       it('fails deployment with a NULL ADDRESS for the superAdmin', async () => {
         const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
@@ -373,6 +394,17 @@ describe('GatewayToken', async () => {
       await expect(gatewayToken.connect(bob).updateFlagsStorage(flagsStorage2.address)).to.be.revertedWithCustomError(
         gatewayToken,
         'Common__NotSuperAdmin',
+      );
+    });
+
+    it('Sets a new flag storage contract - reverts on zero address', async () => {
+      const flagsStorageFactory = await ethers.getContractFactory('FlagsStorage');
+      const flagsStorage2 = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
+      await flagsStorage2.deployed();
+
+      await expect(gatewayToken.connect(identityCom).updateFlagsStorage(ZERO_ADDRESS)).to.be.revertedWithCustomError(
+        gatewayToken,
+        'Common__MissingAccount',
       );
     });
 
@@ -676,21 +708,53 @@ describe('GatewayToken', async () => {
       );
     });
 
-    it('supports ERC2771 clients', async () => {
-      const erc2771ClientFactory = await ethers.getContractFactory('GatewayTokenClientERC2771Test');
-      const erc2771Client = await erc2771ClientFactory.deploy(gatewayToken.address, gkn1);
-      // Alice is verified
-      await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
+    describe('with ERC2771 clients', () => {
+      let erc2771Client: Contract;
+      before('deploy client', async () => {
+        const erc2771ClientFactory = await ethers.getContractFactory('GatewayTokenClientERC2771Test');
+        erc2771Client = await erc2771ClientFactory.deploy(gatewayToken.address, gkn1);
+      });
+
+      it('supports ERC2771 clients', async () => {
+        // Alice is verified
+        await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
+      });
+
+      it('supports ERC2771 clients (negative case)', async () => {
+        // Carol is not verified
+        await expect(erc2771Client.connect(carol).testGated()).to.be.revertedWithCustomError(
+          client,
+          'IsGated__InvalidGatewayToken',
+        );
+      });
     });
 
-    it('supports Upgradeable ERC2771 clients', async () => {
-      const erc2771ClientFactory = await ethers.getContractFactory('GatewayTokenClientERC2771UpgradeableTest');
-      const erc2771Client = await upgrades.deployProxy(erc2771ClientFactory, [gatewayToken.address, gkn1, []], {
-        kind: 'uups',
+    describe('with upgradeable ERC2771 clients', () => {
+      let erc2771Client: Contract;
+      before('deploy client', async () => {
+        const erc2771ClientFactory = await ethers.getContractFactory('GatewayTokenClientERC2771UpgradeableTest');
+        erc2771Client = await upgrades.deployProxy(erc2771ClientFactory, [gatewayToken.address, gkn1, []], {
+          kind: 'uups',
+        });
+        await erc2771Client.deployed();
       });
-      await erc2771Client.deployed();
-      // Alice is verified
-      await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
+      it('supports Upgradeable ERC2771 clients', async () => {
+        // Alice is verified
+        await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
+      });
+
+      it('supports Upgradeable ERC2771 clients (negative case)', async () => {
+        // Carol is not verified
+        await expect(erc2771Client.connect(carol).testGated()).to.be.revertedWithCustomError(
+          client,
+          'IsGated__InvalidGatewayToken',
+        );
+      });
+      it('cannot call initialize after deployment', async () => {
+        await expect(erc2771Client.initialize(gatewayToken.address, gkn1, [])).to.be.revertedWith(
+          /Initializable: contract is already initialized/,
+        );
+      });
     });
   });
 
@@ -849,7 +913,10 @@ describe('GatewayToken', async () => {
     });
     it('add a forwarder', async () => {
       const newForwarder = randomAddress();
-      await gatewayToken.connect(identityCom).addForwarder(newForwarder);
+      await expect(gatewayToken.connect(identityCom).addForwarder(newForwarder)).to.emit(
+        gatewayToken,
+        'ForwarderAdded',
+      );
 
       expect(await gatewayToken.isTrustedForwarder(newForwarder)).to.equal(true);
     });
@@ -868,7 +935,10 @@ describe('GatewayToken', async () => {
       await gatewayToken.connect(identityCom).addForwarder(newForwarder);
       expect(await gatewayToken.isTrustedForwarder(newForwarder)).to.equal(true);
 
-      await gatewayToken.connect(identityCom).removeForwarder(newForwarder);
+      await expect(gatewayToken.connect(identityCom).removeForwarder(newForwarder)).to.emit(
+        gatewayToken,
+        'ForwarderRemoved',
+      );
       expect(await gatewayToken.isTrustedForwarder(newForwarder)).to.equal(false);
     });
 
@@ -1108,7 +1178,7 @@ describe('GatewayToken', async () => {
       );
     });
 
-    it('Exposes the correct message sender when forwarding a transaction', async () => {
+    it('Exposes the correct message sender when forwarding a transaction (upgradeable version)', async () => {
       await expect(gatewayTokenInternalsTest.connect(gatekeeper).getMsgSender())
         .to.emit(gatewayTokenInternalsTest, 'MsgSender')
         .withArgs(gatekeeper.address);
@@ -1177,26 +1247,104 @@ describe('GatewayToken', async () => {
       );
     });
 
-    // weird edge case but this is supported - required for ERC2771-compliance
-    it('MultiERC2771Context works if the trusted forwarder is not an ERC2771 contract (as long as msg.data is small)', async () => {
-      // Deploy an instance of ERC2771 - this is a direct contract (no proxy).
-      // Add the gatekeeper as a trusted forwarder (weird because it isn't one).
-      // send a message with a small msg.data (no parameters and not a proxy).
-      // the msg.sender should be the gatekeeper.
-      // This works because we check the size of the msg.data as well as the trusted forwarder
-      // if the msg.data is >20, this would return garbage, as it can't tell the difference between
-      // a message from an ERC2771 forwarder and a normal message.
-      const ERC2771TestFactory = await ethers.getContractFactory('ERC2771Test');
-      const erc2771Test = await ERC2771TestFactory.deploy([]);
+    describe('using MultiERC2771Context (non-upgradeable version)', () => {
+      let erc2771Test: Contract;
 
-      // add the gatekeeper as a trusted forwarder
-      await erc2771Test.connect(identityCom).addForwarder(gatekeeper.address);
+      // the msgData includes the function code (getMsgData) followed by the packed arguments
+      // we have only one argument, and it's a uint8. So we just check that that is equal to 1.
+      const matchesExpectedMsgData =
+        (expectedValue: number) =>
+        (eventArg: any): boolean => {
+          const bytes = Array.from(Buffer.from(eventArg.replace('0x', ''), 'hex'));
+          console.log(bytes);
+          console.log('Expected', expectedValue);
+          const lastByte = bytes[bytes.length - 1];
+          console.log('lastByte', lastByte);
+          return lastByte === expectedValue;
+        };
 
-      // calls via the gatekeeper still return the correct sender even though
-      // the gatekeeper is a trusted forwarder and expected therefore to send the original
-      // message sender as part of the call data
-      const msgSender = await erc2771Test.connect(gatekeeper).getMsgSender();
-      expect(msgSender).to.equal(gatekeeper.address);
+      // msgData, when a function is called without any arguments,
+      // should be 4 bytes long (the function name hash only)
+      const hasFourBytes = (msgData: string) => {
+        const bytes = Array.from(Buffer.from(msgData.replace('0x', ''), 'hex'));
+        return bytes.length === 4;
+      };
+
+      before('set up erc2771 test contract', async () => {
+        const ERC2771TestFactory = await ethers.getContractFactory('ERC2771Test');
+        erc2771Test = await ERC2771TestFactory.deploy([forwarder.address]);
+      });
+
+      it('remove a forwarder', async () => {
+        const newForwarder = randomAddress();
+        await erc2771Test.connect(identityCom).addForwarder(newForwarder);
+        expect(await erc2771Test.isTrustedForwarder(newForwarder)).to.equal(true);
+
+        await erc2771Test.connect(identityCom).removeForwarder(newForwarder);
+        expect(await erc2771Test.isTrustedForwarder(newForwarder)).to.equal(false);
+      });
+
+      it('Exposes the correct message sender', async () => {
+        const txIndirect = await erc2771Test.connect(gatekeeper).populateTransaction.getMsgSender();
+
+        const req = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, {
+          from: gatekeeper.address,
+          to: erc2771Test.address,
+          data: txIndirect.data as string,
+          gas: 500_000,
+        });
+        await expect(forwarder.connect(alice).execute(req.request, req.signature))
+          .to.emit(erc2771Test, 'MsgSender')
+          .withArgs(gatekeeper.address);
+      });
+
+      it('Exposes the correct message data', async () => {
+        const txIndirect = await erc2771Test.connect(gatekeeper).populateTransaction.getMsgDataWithArg(1);
+
+        const req = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, {
+          from: gatekeeper.address,
+          to: erc2771Test.address,
+          data: txIndirect.data as string,
+          gas: 500_000,
+        });
+        // the msgData includes the function code (getMsgData) followed by the packed arguments
+        // we have only one argument, and it's a uint8. So we just check that that is equal to 1.
+        await expect(forwarder.connect(alice).execute(req.request, req.signature))
+          .to.emit(erc2771Test, 'MsgData')
+          .withArgs(matchesExpectedMsgData(1));
+      });
+
+      // weird edge case but this is supported - required for ERC2771-compliance
+      it('MultiERC2771Context works if the trusted forwarder is not an ERC2771 contract (as long as msg.data is small)', async () => {
+        // Deploy an instance of ERC2771 - this is a direct contract (no proxy).
+        // Add the gatekeeper as a trusted forwarder (weird because it isn't one).
+        // send a message with a small msg.data (no parameters and not a proxy).
+        // the msg.sender should be the gatekeeper.
+        // This works because we check the size of the msg.data as well as the trusted forwarder
+        // if the msg.data is >20, this would return garbage, as it can't tell the difference between
+        // a message from an ERC2771 forwarder and a normal message.
+        const ERC2771TestFactory = await ethers.getContractFactory('ERC2771Test');
+        const erc2771Test = await ERC2771TestFactory.deploy([]);
+
+        // add the gatekeeper as a trusted forwarder
+        await erc2771Test.connect(identityCom).addForwarder(gatekeeper.address);
+
+        // calls via the gatekeeper still return the correct sender and data even though
+        // the gatekeeper is a trusted forwarder and expected therefore to send the original
+        // message sender as part of the call data
+        await expect(erc2771Test.connect(gatekeeper).getMsgSender())
+          .to.emit(erc2771Test, 'MsgSender')
+          .withArgs(gatekeeper.address);
+
+        // If we call a function with no arguments, the resultant msgData will just be the function hash
+        // (MultiERC2771Context will pass it through and will not try to strip the last 20 bytes)
+        // If the function has *any arguments* then MultiERC2771Context cannot tell the difference
+        // between a forwarded function and one called directly from the trusted forwarder
+        // and will therefore assume it is forwarded because it is coming from a trusted forwarder.
+        await expect(erc2771Test.connect(gatekeeper).getMsgData())
+          .to.emit(erc2771Test, 'MsgData')
+          .withArgs(hasFourBytes);
+      });
     });
   });
 
@@ -1359,6 +1507,19 @@ describe('GatewayToken', async () => {
       return receipt;
     };
 
+    it('cannot add some other contract as a charge caller if not an admin', async () => {
+      // A charge caller is a contract that is permitted to ask the charge handler to charge a user
+      await expect(
+        chargeHandler.connect(alice).setRole(keccak256(toUtf8Bytes('CHARGE_CALLER_ROLE')), alice.address),
+      ).to.be.to.be.revertedWith(/AccessControl/);
+    });
+
+    it('cannot call initialize on ChargeHandler after deployment', async () => {
+      await expect(chargeHandler.initialize(alice.address)).to.be.revertedWith(
+        /Initializable: contract is already initialized/,
+      );
+    });
+
     context('ETH', () => {
       it('can charge ETH through a forwarded call', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
@@ -1481,7 +1642,7 @@ describe('GatewayToken', async () => {
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
-        await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
+        await expect(forward(tx, alice)).to.be.revertedWith('ERC20: insufficient allowance');
       });
 
       it('can charge ERC20 - reject if the internal allowance is insufficient', async () => {
@@ -1689,6 +1850,20 @@ describe('GatewayToken', async () => {
       await expect(
         upgrades.upgradeProxy(flagsStorage.address, flagsStorageV2Factory.connect(bob)),
       ).to.be.revertedWithCustomError(gatewayToken, 'Common__NotSuperAdmin');
+    });
+
+    it('upgrades the charge handler contract to v2', async () => {
+      // just using the same contract here, to test the upgradeability feature
+      const chargeHandlerV2Factory = await ethers.getContractFactory('ChargeHandler');
+      await upgrades.upgradeProxy(chargeHandler.address, chargeHandlerV2Factory);
+    });
+
+    it('upgrades the charge handler contract to v2 - reverts if not superadmin', async () => {
+      // just using the same contract here, to test the upgradeability feature
+      const chargeHandlerV2Factory = await ethers.getContractFactory('ChargeHandler');
+      await expect(
+        upgrades.upgradeProxy(chargeHandler.address, chargeHandlerV2Factory.connect(bob)),
+      ).to.be.revertedWith(/AccessControl/);
     });
   });
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.19;
+pragma solidity 0.8.19; // Fixed version for concrete contracts
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
@@ -16,7 +16,7 @@ import {IERC721Freezable} from "./interfaces/IERC721Freezable.sol";
 import {IERC721Expirable} from "./interfaces/IERC721Expirable.sol";
 import {IERC721Revokable} from "./interfaces/IERC721Revokable.sol";
 import {MultiERC2771ContextUpgradeable} from "./MultiERC2771ContextUpgradeable.sol";
-import {Charge, ChargeType} from "./library/Charge.sol";
+import {Charge} from "./library/Charge.sol";
 import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
 import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
 import {BitMask} from "./library/BitMask.sol";
@@ -121,6 +121,8 @@ contract GatewayToken is
         _setFlagsStorage(flagsStorage);
         _setChargeHandler(chargeHandler);
         _superAdmins[superAdmin] = true;
+
+        emit GatewayTokenInitialized(name, symbol, superAdmin, flagsStorage, chargeHandler, trustedForwarders);
     }
 
     function setMetadataDescriptor(address _metadataDescriptor) external onlySuperAdmin {
@@ -129,10 +131,12 @@ contract GatewayToken is
 
     function addForwarder(address forwarder) external onlySuperAdmin {
         _addForwarder(forwarder);
+        emit ForwarderAdded(forwarder);
     }
 
     function removeForwarder(address forwarder) external onlySuperAdmin {
         _removeForwarder(forwarder);
+        emit ForwarderRemoved(forwarder);
     }
 
     /**
@@ -140,6 +144,10 @@ contract GatewayToken is
      * @param flagsStorage FlagsStorage contract address
      */
     function updateFlagsStorage(address flagsStorage) external onlySuperAdmin {
+        // check for zero address
+        if (flagsStorage == address(0)) {
+            revert Common__MissingAccount();
+        }
         _setFlagsStorage(flagsStorage);
     }
 
