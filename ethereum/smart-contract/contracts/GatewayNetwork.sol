@@ -49,6 +49,8 @@ contract GatewayNetwork is ParameterizedAccessControl {
     }
 
     event GatekeeperNetworkCreated(address primaryAuthority, bytes32 name, uint passExpireTime);
+    event GatekeeperNetworkUpdated(GatewayNetworkUpdateOperation updateType);
+    event GatekeeperNetworkDeleted(bytes32 networkName);
 
     /// The gatekeeper network being created already exists.
     /// @param network gatekeeper network id.
@@ -63,7 +65,8 @@ contract GatewayNetwork is ParameterizedAccessControl {
     mapping(bytes32 => GatekeeperNetworkData) public _networks;
 
     modifier onlyPrimaryNetworkAuthority(bytes32 networkName) {
-        require(msg.sender == _networks[networkName].primaryAuthority, "Only the primary authority");
+        require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
+        require(msg.sender == _networks[networkName].primaryAuthority, "Only the primary authority can perform this action");
         _;
     }
 
@@ -91,26 +94,33 @@ contract GatewayNetwork is ParameterizedAccessControl {
         for (uint i = 0; i < gatekeepers.length; i++) {
             _grantRole(GATEKEEPER_ROLE, domain, gatekeepers[i]);
         }
+
+        emit GatekeeperNetworkCreated(network.primaryAuthority, networkName, network.passExpireTimeInSeconds);
     } 
-    function closeNetwork(bytes32 networkName) external onlySuperAdmin {
+    function closeNetwork(bytes32 networkName) external onlyPrimaryNetworkAuthority(networkName) {
         require(_networks[networkName].name.length != 0, "Network does not exist");
-        require(_networks[networkName].gatekeepers.length == 0, "Network can only be removed if no gatekeepers are in it.");
+        require(_networks[networkName].gatekeepers.length == 0, "Network can only be removed if no gatekeepers are in it");
 
         delete _networks[networkName];
+
+        emit GatekeeperNetworkDeleted(networkName);
     }
 
     function updateNetwork(GatewayNetworkUpdateOperation networkUpdate, GatekeeperNetworkData calldata network) external onlyPrimaryNetworkAuthority(network.name){
 
         bytes32 networkName = network.name;
-        require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
         
         if(networkUpdate == GatewayNetworkUpdateOperation.PRIMARY_AUTHORITY){
             require(network.primaryAuthority != address(0), "Primary authority cannot be set to the zero address");
             _networks[networkName].primaryAuthority = network.primaryAuthority;
+            emit GatekeeperNetworkUpdated(networkUpdate);
+            return;
         }
         // Miniumum and maximum values needed?
         if(networkUpdate == GatewayNetworkUpdateOperation.PASS_EXPIRE_TIME){
             _networks[networkName].passExpireTimeInSeconds = network.passExpireTimeInSeconds;
+            emit GatekeeperNetworkUpdated(networkUpdate);
+            return;
         }
 
         
@@ -121,6 +131,8 @@ contract GatewayNetwork is ParameterizedAccessControl {
                 require(supportedTokens[i] != address(0), "Zero address cannot be added to supported token");
             }
             _networks[networkName].supportedTokens = supportedTokens;
+            emit GatekeeperNetworkUpdated(networkUpdate);
+            return;
         }
 
         if(networkUpdate == GatewayNetworkUpdateOperation.GATEKEEPERS){
@@ -131,6 +143,8 @@ contract GatewayNetwork is ParameterizedAccessControl {
             }
 
             _networks[networkName].gatekeepers = gatekeepers;
+            emit GatekeeperNetworkUpdated(networkUpdate);
+            return;
         }
 
         revert GatewayNetworkUnsupportedUpdate(uint(networkUpdate));
@@ -146,6 +160,16 @@ contract GatewayNetwork is ParameterizedAccessControl {
             }
         }
         return false;
+    }
+
+    function supportedTokens(bytes32 networkName) public view returns(address[] memory) {
+        require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
+        return _networks[networkName].supportedTokens;
+    }
+
+    function gatekeepersOnNetwork(bytes32 networkName) public view returns(address[] memory) {
+        require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
+        return _networks[networkName].gatekeepers;
     }
 
 }
