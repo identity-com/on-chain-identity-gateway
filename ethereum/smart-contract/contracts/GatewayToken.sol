@@ -12,6 +12,7 @@ import {IERC721} from "@solvprotocol/erc-3525/IERC721.sol";
 import {IERC3525} from "@solvprotocol/erc-3525/IERC3525.sol";
 import {TokenBitMask} from "./TokenBitMask.sol";
 import {IGatewayToken} from "./interfaces/IGatewayToken.sol";
+import {IGatewayNetwork} from "./interfaces/IGatewayNetwork.sol";
 import {IERC721Freezable} from "./interfaces/IERC721Freezable.sol";
 import {IERC721Expirable} from "./interfaces/IERC721Expirable.sol";
 import {IERC721Revokable} from "./interfaces/IERC721Revokable.sol";
@@ -77,6 +78,9 @@ contract GatewayToken is
     // Mapping for gatekeeper network features
     mapping(uint => uint256) internal _networkFeatures;
 
+    // External contract addresses
+    address private _gatewayNetworkContract;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor is "empty" as we are using the proxy pattern,
     // where setup code is in the initialize function
@@ -90,7 +94,8 @@ contract GatewayToken is
         string calldata _symbol,
         address _superAdmin,
         address _flagsStorage,
-        address[] calldata _trustedForwarders
+        address[] calldata _trustedForwarders,
+        address _gatewayNetworkAddress
     ) external initializer {
         // Check for zero addresses
         if (_superAdmin == address(0)) {
@@ -98,6 +103,10 @@ contract GatewayToken is
         }
 
         if (_flagsStorage == address(0)) {
+            revert Common__MissingAccount();
+        }
+
+        if (_gatewayNetworkAddress == address(0)) {
             revert Common__MissingAccount();
         }
 
@@ -113,6 +122,7 @@ contract GatewayToken is
 
         _setFlagsStorage(_flagsStorage);
         _superAdmins[_superAdmin] = true;
+        _gatewayNetworkContract = _gatewayNetworkAddress;
     }
 
     function setMetadataDescriptor(address _metadataDescriptor) external onlySuperAdmin {

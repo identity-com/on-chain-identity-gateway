@@ -10,6 +10,7 @@ import { NULL_CHARGE, randomAddress, randomWallet, ZERO_ADDRESS } from './utils/
 import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
 import { IForwarder } from '../typechain-types';
 import { TransactionReceipt } from '@ethersproject/providers';
+import { GatewayNetwork, GatewayNetwork__factory } from '../typechain-types' ;
 
 describe('GatewayToken', async () => {
   let signers: SignerWithAddress[];
@@ -25,6 +26,7 @@ describe('GatewayToken', async () => {
   let flagsStorage: Contract;
   let gatewayToken: Contract;
   let gatewayTokenInternalsTest: Contract;
+  let gatewayNetwork: GatewayNetwork;
 
   let hexRetailFlag = toBytes32('Retail');
   let hexInstitutionFlag = toBytes32('Institution');
@@ -70,6 +72,7 @@ describe('GatewayToken', async () => {
     const flagsStorageFactory = await ethers.getContractFactory('FlagsStorage');
     const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
     const gatewayTokenInternalsTestFactory = await ethers.getContractFactory('GatewayTokenInternalsTest');
+    const gatewayNetworkFactory = await new GatewayNetwork__factory(identityCom);
 
     forwarder = await forwarderFactory.deploy(100);
     await forwarder.deployed();
@@ -77,7 +80,10 @@ describe('GatewayToken', async () => {
     flagsStorage = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
     await flagsStorage.deployed();
 
-    const args = ['Gateway Protocol', 'GWY', identityCom.address, flagsStorage.address, [forwarder.address]];
+    gatewayNetwork = await gatewayNetworkFactory.deploy();
+    await gatewayNetwork.deployed();
+
+    const args = ['Gateway Protocol', 'GWY', identityCom.address, flagsStorage.address, [forwarder.address], gatewayNetwork.address];
     gatewayToken = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
     await gatewayToken.deployed();
 
@@ -95,7 +101,7 @@ describe('GatewayToken', async () => {
       it('fails deployment with a NULL ADDRESS for the superAdmin', async () => {
         const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
-        const args = ['Gateway Protocol', 'GWY', ZERO_ADDRESS, flagsStorage.address, [forwarder.address]];
+        const args = ['Gateway Protocol', 'GWY', ZERO_ADDRESS, flagsStorage.address, [forwarder.address], gatewayNetwork.address];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
           'Common__MissingAccount',
@@ -105,7 +111,7 @@ describe('GatewayToken', async () => {
       it('fails deployment with a NULL ADDRESS for the flagsStorage', async () => {
         const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
 
-        const args = ['Gateway Protocol', 'GWY', identityCom.address, ZERO_ADDRESS, [forwarder.address]];
+        const args = ['Gateway Protocol', 'GWY', identityCom.address, ZERO_ADDRESS, [forwarder.address], gatewayNetwork.address];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
           'Common__MissingAccount',
@@ -121,6 +127,7 @@ describe('GatewayToken', async () => {
           identityCom.address,
           flagsStorage.address,
           [forwarder.address, ZERO_ADDRESS],
+          gatewayNetwork.address
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -132,7 +139,7 @@ describe('GatewayToken', async () => {
         await expect(
           gatewayToken.initialize('Gateway Protocol', 'GWY', identityCom.address, flagsStorage.address, [
             forwarder.address,
-          ]),
+          ], gatewayNetwork.address),
         ).to.be.revertedWith(/Initializable: contract is already initialized/);
       });
     });
