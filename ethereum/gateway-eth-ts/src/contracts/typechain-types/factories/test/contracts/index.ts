@@ -6,6 +6,7 @@ export * as v0 from "./v0";
 export { DummyBrokenERC20__factory } from "./DummyBrokenERC20__factory";
 export { DummyBrokenEthRecipient__factory } from "./DummyBrokenEthRecipient__factory";
 export { DummyERC20__factory } from "./DummyERC20__factory";
+export { ERC2771Test__factory } from "./ERC2771Test__factory";
 export { GatewayTokenClientERC2771Test__factory } from "./GatewayTokenClientERC2771Test__factory";
 export { GatewayTokenClientERC2771UpgradeableTest__factory } from "./GatewayTokenClientERC2771UpgradeableTest__factory";
 export { GatewayTokenClientTest__factory } from "./GatewayTokenClientTest__factory";

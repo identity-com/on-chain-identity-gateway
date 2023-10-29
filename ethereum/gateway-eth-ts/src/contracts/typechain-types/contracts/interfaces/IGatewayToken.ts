@@ -164,10 +164,18 @@ export interface IGatewayTokenInterface extends utils.Interface {
   events: {
     "ChargeHandlerUpdated(address)": EventFragment;
     "DAOManagerTransferred(address,address,uint256)": EventFragment;
+    "ForwarderAdded(address)": EventFragment;
+    "ForwarderRemoved(address)": EventFragment;
+    "GatekeeperNetworkCreated(uint256,string,bool,address)": EventFragment;
+    "GatewayTokenInitialized(string,string,address,address,address,address[])": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "ChargeHandlerUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOManagerTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ForwarderAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ForwarderRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GatekeeperNetworkCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GatewayTokenInitialized"): EventFragment;
 }
 
 export interface ChargeHandlerUpdatedEventObject {
@@ -193,6 +201,57 @@ export type DAOManagerTransferredEvent = TypedEvent<
 
 export type DAOManagerTransferredEventFilter =
   TypedEventFilter<DAOManagerTransferredEvent>;
+
+export interface ForwarderAddedEventObject {
+  forwarder: string;
+}
+export type ForwarderAddedEvent = TypedEvent<
+  [string],
+  ForwarderAddedEventObject
+>;
+
+export type ForwarderAddedEventFilter = TypedEventFilter<ForwarderAddedEvent>;
+
+export interface ForwarderRemovedEventObject {
+  forwarder: string;
+}
+export type ForwarderRemovedEvent = TypedEvent<
+  [string],
+  ForwarderRemovedEventObject
+>;
+
+export type ForwarderRemovedEventFilter =
+  TypedEventFilter<ForwarderRemovedEvent>;
+
+export interface GatekeeperNetworkCreatedEventObject {
+  network: BigNumber;
+  name: string;
+  daoGoverned: boolean;
+  daoManager: string;
+}
+export type GatekeeperNetworkCreatedEvent = TypedEvent<
+  [BigNumber, string, boolean, string],
+  GatekeeperNetworkCreatedEventObject
+>;
+
+export type GatekeeperNetworkCreatedEventFilter =
+  TypedEventFilter<GatekeeperNetworkCreatedEvent>;
+
+export interface GatewayTokenInitializedEventObject {
+  name: string;
+  symbol: string;
+  superAdmin: string;
+  flagsStorage: string;
+  chargeHandler: string;
+  trustedForwarders: string[];
+}
+export type GatewayTokenInitializedEvent = TypedEvent<
+  [string, string, string, string, string, string[]],
+  GatewayTokenInitializedEventObject
+>;
+
+export type GatewayTokenInitializedEventFilter =
+  TypedEventFilter<GatewayTokenInitializedEvent>;
 
 export interface IGatewayToken extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -458,6 +517,50 @@ export interface IGatewayToken extends BaseContract {
       newDAOManager?: null,
       network?: null
     ): DAOManagerTransferredEventFilter;
+
+    "ForwarderAdded(address)"(
+      forwarder?: PromiseOrValue<string> | null
+    ): ForwarderAddedEventFilter;
+    ForwarderAdded(
+      forwarder?: PromiseOrValue<string> | null
+    ): ForwarderAddedEventFilter;
+
+    "ForwarderRemoved(address)"(
+      forwarder?: PromiseOrValue<string> | null
+    ): ForwarderRemovedEventFilter;
+    ForwarderRemoved(
+      forwarder?: PromiseOrValue<string> | null
+    ): ForwarderRemovedEventFilter;
+
+    "GatekeeperNetworkCreated(uint256,string,bool,address)"(
+      network?: null,
+      name?: null,
+      daoGoverned?: null,
+      daoManager?: null
+    ): GatekeeperNetworkCreatedEventFilter;
+    GatekeeperNetworkCreated(
+      network?: null,
+      name?: null,
+      daoGoverned?: null,
+      daoManager?: null
+    ): GatekeeperNetworkCreatedEventFilter;
+
+    "GatewayTokenInitialized(string,string,address,address,address,address[])"(
+      name?: null,
+      symbol?: null,
+      superAdmin?: null,
+      flagsStorage?: null,
+      chargeHandler?: null,
+      trustedForwarders?: null
+    ): GatewayTokenInitializedEventFilter;
+    GatewayTokenInitialized(
+      name?: null,
+      symbol?: null,
+      superAdmin?: null,
+      flagsStorage?: null,
+      chargeHandler?: null,
+      trustedForwarders?: null
+    ): GatewayTokenInitializedEventFilter;
   };
 
   estimateGas: {
