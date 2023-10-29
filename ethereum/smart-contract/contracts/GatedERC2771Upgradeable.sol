@@ -10,6 +10,8 @@ abstract contract GatedERC2771Upgradeable is MultiERC2771ContextUpgradeable {
 
     /// The gateway token is not valid.
     error IsGated__InvalidGatewayToken(address gatewayToken);
+    /// The gateway token contract address is zero.
+    error IsGated__ZeroContractAddress();
 
     /**
      * @dev Modifier to make a function callable only when the caller has a valid gateway token.
@@ -40,6 +42,10 @@ abstract contract GatedERC2771Upgradeable is MultiERC2771ContextUpgradeable {
         uint256 gatekeeperNetwork,
         address[] calldata trustedForwarders
     ) internal onlyInitializing {
+        // check for zero address
+        if (gatewayTokenContract == address(0)) {
+            revert IsGated__ZeroContractAddress();
+        }
         _gatewayTokenContract = gatewayTokenContract;
         _gatekeeperNetwork = gatekeeperNetwork;
         __MultiERC2771ContextUpgradeable_init(trustedForwarders);

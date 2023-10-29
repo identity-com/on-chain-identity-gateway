@@ -9,6 +9,8 @@ abstract contract Gated {
 
     /// The gateway token is not valid.
     error IsGated__InvalidGatewayToken(address gatewayToken);
+    /// The gateway token contract address is zero.
+    error IsGated__ZeroContractAddress();
 
     /**
      * @dev Modifier to make a function callable only when the caller has a valid gateway token.
@@ -34,6 +36,10 @@ abstract contract Gated {
      * See {ERC2771Context-constructor}.
      */
     constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) {
+        // check for zero address
+        if (gatewayTokenContract == address(0)) {
+            revert IsGated__ZeroContractAddress();
+        }
         _gatewayTokenContract = gatewayTokenContract;
         _gatekeeperNetwork = gatekeeperNetwork;
     }

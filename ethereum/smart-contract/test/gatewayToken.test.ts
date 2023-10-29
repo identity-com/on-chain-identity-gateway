@@ -8,7 +8,7 @@ import { toBytes32 } from './utils';
 import { expect } from 'chai';
 import { NULL_CHARGE, randomAddress, randomWallet, ZERO_ADDRESS } from './utils/eth';
 import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
-import { IForwarder } from '../typechain-types';
+import { Gated, IForwarder } from '../typechain-types';
 import { TransactionReceipt } from '@ethersproject/providers';
 
 describe('GatewayToken', async () => {
@@ -567,7 +567,6 @@ describe('GatewayToken', async () => {
 
       const aliceTokenIdsGKN1AfterExpiry = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
 
-      console.log('aliceTokenIdsGKN1AfterExpiry.length', aliceTokenIdsGKN1AfterExpiry.length);
       expect(aliceTokenIdsGKN1AfterExpiry.length).to.equal(1);
       expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiry[0])).to.equal(alice.address);
 
@@ -695,6 +694,12 @@ describe('GatewayToken', async () => {
       client = await clientFactory.deploy(gatewayToken.address, gkn1);
     });
 
+    it('rejects if the contract address is zero', async () => {
+      const clientFactory = await ethers.getContractFactory('GatewayTokenClientTest');
+
+      await expect(clientFactory.deploy(ZERO_ADDRESS, gkn1)).to.be.reverted;
+    });
+
     it('approves the user if they have a gateway token', async () => {
       // Alice is verified
       await expect(client.connect(alice).testGated()).to.emit(client, 'Success');
@@ -713,6 +718,12 @@ describe('GatewayToken', async () => {
       before('deploy client', async () => {
         const erc2771ClientFactory = await ethers.getContractFactory('GatewayTokenClientERC2771Test');
         erc2771Client = await erc2771ClientFactory.deploy(gatewayToken.address, gkn1);
+      });
+
+      it('rejects if the contract address is zero', async () => {
+        const erc2771ClientFactory = await ethers.getContractFactory('GatewayTokenClientERC2771Test');
+
+        await expect(erc2771ClientFactory.deploy(ZERO_ADDRESS, gkn1)).to.be.reverted;
       });
 
       it('supports ERC2771 clients', async () => {
@@ -738,6 +749,17 @@ describe('GatewayToken', async () => {
         });
         await erc2771Client.deployed();
       });
+
+      it('rejects if the contract address is zero', async () => {
+        const erc2771ClientFactory = await ethers.getContractFactory('GatewayTokenClientERC2771UpgradeableTest');
+
+        await expect(
+          upgrades.deployProxy(erc2771ClientFactory, [ZERO_ADDRESS, gkn1, []], {
+            kind: 'uups',
+          }),
+        ).to.be.reverted;
+      });
+
       it('supports Upgradeable ERC2771 clients', async () => {
         // Alice is verified
         await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
@@ -1256,10 +1278,7 @@ describe('GatewayToken', async () => {
         (expectedValue: number) =>
         (eventArg: any): boolean => {
           const bytes = Array.from(Buffer.from(eventArg.replace('0x', ''), 'hex'));
-          console.log(bytes);
-          console.log('Expected', expectedValue);
           const lastByte = bytes[bytes.length - 1];
-          console.log('lastByte', lastByte);
           return lastByte === expectedValue;
         };
 
