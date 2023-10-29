@@ -26,6 +26,14 @@ abstract contract GatedERC2771 is MultiERC2771Context {
         _;
     }
 
+    /**
+     * @dev Initializes the contract with a gateway token contract address and a gatekeeper network.
+     *
+     * Contract functions with the `gated` modifier will only be callable when the caller has a valid,
+     * non-expired gateway token on the `gatekeeperNetwork` network using this `gatewayTokenContract`.
+     *
+     * See {ERC2771Context-constructor}.
+     */
     constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) MultiERC2771Context(new address[](0)) {
         _gatewayTokenContract = gatewayTokenContract;
         _gatekeeperNetwork = gatekeeperNetwork;

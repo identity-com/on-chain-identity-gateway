@@ -26,6 +26,14 @@ abstract contract GatedERC2771Upgradeable is MultiERC2771ContextUpgradeable {
         _;
     }
 
+    /**
+     * @dev Initializes the contract with a gateway token contract address and a gatekeeper network.
+     *
+     * Contract functions with the `gated` modifier will only be callable when the caller has a valid,
+     * non-expired gateway token on the `gatekeeperNetwork` network using this `gatewayTokenContract`.
+     *
+     * See {ERC2771Context-constructor}.
+     */
     // solhint-disable-next-line func-name-mixedcase
     function __GatedERC2771Upgradeable_init(
         address gatewayTokenContract,

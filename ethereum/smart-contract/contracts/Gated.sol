@@ -25,6 +25,14 @@ abstract contract Gated {
         _;
     }
 
+    /**
+     * @dev Initializes the contract with a gateway token contract address and a gatekeeper network.
+     *
+     * Contract functions with the `gated` modifier will only be callable when the caller has a valid,
+     * non-expired gateway token on the `gatekeeperNetwork` network using this `gatewayTokenContract`.
+     *
+     * See {ERC2771Context-constructor}.
+     */
     constructor(address gatewayTokenContract, uint256 gatekeeperNetwork) {
         _gatewayTokenContract = gatewayTokenContract;
         _gatekeeperNetwork = gatekeeperNetwork;
