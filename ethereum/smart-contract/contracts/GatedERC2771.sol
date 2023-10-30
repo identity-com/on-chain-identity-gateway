@@ -5,8 +5,8 @@ import {IGatewayTokenVerifier} from "./interfaces/IGatewayTokenVerifier.sol";
 import {MultiERC2771Context} from "./MultiERC2771Context.sol";
 
 abstract contract GatedERC2771 is MultiERC2771Context {
-    address private _gatewayTokenContract;
-    uint256 private _gatekeeperNetwork;
+    address private immutable _gatewayTokenContract;
+    uint256 private immutable _gatekeeperNetwork;
 
     /// The gateway token is not valid.
     error IsGated__InvalidGatewayToken(address gatewayToken);

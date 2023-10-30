@@ -19,6 +19,11 @@ const _abi = [
     name: "IsGated__InvalidGatewayToken",
     type: "error",
   },
+  {
+    inputs: [],
+    name: "IsGated__ZeroContractAddress",
+    type: "error",
+  },
 ] as const;
 
 export class Gated__factory {
