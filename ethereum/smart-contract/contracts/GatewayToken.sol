@@ -56,13 +56,9 @@ contract GatewayToken is
         REMOVE_GATEKEEPER_INVALIDATES_TOKENS
     }
 
-    // Off-chain DAO governance access control
-    mapping(uint => bool) public isNetworkDAOGoverned;
 
     // Access control roles
-    bytes32 public constant DAO_MANAGER_ROLE = keccak256("DAO_MANAGER_ROLE");
-    bytes32 public constant GATEKEEPER_ROLE = keccak256("GATEKEEPER_ROLE");
-    bytes32 public constant NETWORK_AUTHORITY_ROLE = keccak256("NETWORK_AUTHORITY_ROLE");
+    bytes32 public constant NETWORK_AUTHORITY_ROLE = keccak256("NETWORK_AUTHORITY_ROLE"); // remove role
 
     // Mapping from token id to state
     mapping(uint => TokenState) internal _tokenStates;
@@ -70,7 +66,6 @@ contract GatewayToken is
     // Optional Mapping from token ID to expiration date
     mapping(uint => uint) internal _expirations;
 
-    mapping(uint => string) internal _networks;
 
     // Specifies the gatekeeper that minted a given token
     mapping(uint => address) internal _issuingGatekeepers;
@@ -78,7 +73,7 @@ contract GatewayToken is
     // Mapping for gatekeeper network features
     mapping(uint => uint256) internal _networkFeatures;
 
-    // External contract addresses
+    // Gatekeeper network contract addresses
     address private _gatewayNetworkContract;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -230,135 +225,19 @@ contract GatewayToken is
         _handleCharge(charge);
     }
 
-    /**
-     * @dev Transfers Gateway Token DAO Manager access from `previousManager` to `newManager`
-     * Only a current DAO Manager can do this. They can do this for any other DAO Manager.
-     * This is useful for two reasons:
-     * 1. Key rotation of the current (msg signer) DAO manager
-     * 2. Replacing a lost or compromised key of an existing DAO manager
-     * @param newManager Address to transfer DAO Manager role for.
-     * @notice GatewayToken contract has to be DAO Governed
-     */
-    function transferDAOManager(address previousManager, address newManager, uint network) external {
-        if (!isNetworkDAOGoverned[network]) revert GatewayToken__NotDAOGoverned(network);
 
-        // check the previous manager is a current dao manager
-        _checkRole(DAO_MANAGER_ROLE, network, previousManager);
-
-        if (newManager == address(0)) revert Common__MissingAccount();
-
-        // grant the new manager the relevant roles
-        grantRole(DAO_MANAGER_ROLE, network, newManager);
-        grantRole(NETWORK_AUTHORITY_ROLE, network, newManager);
-        grantRole(GATEKEEPER_ROLE, network, newManager);
-
-        // revoke the relevant roles from the previous manager
-        revokeRole(GATEKEEPER_ROLE, network, previousManager);
-        revokeRole(NETWORK_AUTHORITY_ROLE, network, previousManager);
-        revokeRole(DAO_MANAGER_ROLE, network, previousManager);
-
-        emit DAOManagerTransferred(previousManager, newManager, network);
-    }
-
-    function createNetwork(uint network, string calldata name, bool daoGoverned, address daoManager) external virtual {
-        if (bytes(_networks[network]).length != 0) {
-            revert GatewayToken__NetworkAlreadyExists(network);
-        }
-
-        _networks[network] = name;
-
-        if (daoGoverned) {
-            isNetworkDAOGoverned[network] = daoGoverned;
-
-            if (daoManager == address(0)) {
-                revert Common__MissingAccount();
-            }
-            if (!daoManager.isContract()) {
-                revert Common__NotContract(daoManager);
-            }
-
-            // use the internal function to avoid the check for the network authority role
-            // since this network does not exist yet, it has no existing network authority
-            _grantRole(DAO_MANAGER_ROLE, network, daoManager);
-            _grantRole(NETWORK_AUTHORITY_ROLE, network, daoManager);
-
-            // DAO managers can assign and revoke network authorities and gatekeepers
-            _setRoleAdmin(NETWORK_AUTHORITY_ROLE, network, DAO_MANAGER_ROLE);
-            _setRoleAdmin(GATEKEEPER_ROLE, network, DAO_MANAGER_ROLE);
-            // DAO Managers can administrate themselves
-            _setRoleAdmin(DAO_MANAGER_ROLE, network, DAO_MANAGER_ROLE);
-        } else {
-            // use the internal function to avoid the check for the network authority role
-            // since this network does not exist yet, it has no existing network authority
-            _grantRole(NETWORK_AUTHORITY_ROLE, network, _msgSender());
-
-            _setRoleAdmin(NETWORK_AUTHORITY_ROLE, network, NETWORK_AUTHORITY_ROLE);
-            _setRoleAdmin(GATEKEEPER_ROLE, network, NETWORK_AUTHORITY_ROLE);
-        }
-    }
-
-    function renameNetwork(uint network, string calldata name) external virtual {
-        if (bytes(_networks[network]).length == 0) {
-            revert GatewayToken__NetworkDoesNotExist(network);
-        }
-        if (!hasRole(NETWORK_AUTHORITY_ROLE, network, _msgSender())) {
-            revert Common__Unauthorized(_msgSender(), network, NETWORK_AUTHORITY_ROLE);
-        }
-
-        _networks[network] = name;
-    }
-
-    /**
-     * @dev Triggers to add new gatekeeper into the system.
-     * @param gatekeeper Gatekeeper address
-     */
-    function addGatekeeper(address gatekeeper, uint network) external virtual {
-        grantRole(GATEKEEPER_ROLE, network, gatekeeper);
-    }
-
-    /**
-     * @dev Triggers to remove existing gatekeeper from gateway token.
-     * @param gatekeeper Gatekeeper address
-     */
-    function removeGatekeeper(address gatekeeper, uint network) external virtual {
-        revokeRole(GATEKEEPER_ROLE, network, gatekeeper);
-    }
-
-    /**
-     * @dev Triggers to add new network authority into the system.
-     * @param authority Network Authority address
-     *
-     * @notice Can be triggered by DAO Manager or any Network Authority
-     */
-    function addNetworkAuthority(address authority, uint network) external virtual {
-        grantRole(NETWORK_AUTHORITY_ROLE, network, authority);
-    }
-
-    /**
-     * @dev Triggers to remove existing network authority from gateway token.
-     * @param authority Network Authority address
-     *
-     * @notice Can be triggered by DAO Manager or any Network Authority
-     */
-    function removeNetworkAuthority(address authority, uint network) external virtual {
-        revokeRole(NETWORK_AUTHORITY_ROLE, network, authority);
-    }
 
     /**
      * @dev Triggers to set full bitmask for gateway token with `tokenId`
      */
     function setBitmask(uint tokenId, uint mask) external virtual {
-        _checkSenderRole(GATEKEEPER_ROLE, slotOf(tokenId));
+        _checkGatekeeper(slotOf(tokenId));
         _setBitMask(tokenId, mask);
     }
 
     function setNetworkFeatures(uint network, uint256 mask) external virtual {
         _checkSenderRole(NETWORK_AUTHORITY_ROLE, network);
         _networkFeatures[network] = mask;
-    }
-
-    function getNetwork(uint network) external view virtual returns (string memory) {
-        return _networks[network];
     }
 
     function getIssuingGatekeeper(uint tokenId) external view virtual returns (address) {
@@ -428,22 +307,6 @@ contract GatewayToken is
         _checkTokenExists(tokenId);
 
         return _expirations[tokenId];
-    }
-
-    /**
-     * @dev Triggers to verify if address has a GATEKEEPER role.
-     * @param gatekeeper Gatekeeper address
-     */
-    function isGatekeeper(address gatekeeper, uint network) external view virtual returns (bool) {
-        return hasRole(GATEKEEPER_ROLE, network, gatekeeper);
-    }
-
-    /**
-     * @dev Triggers to verify if authority has a NETWORK_AUTHORITY_ROLE role.
-     * @param authority Network Authority address
-     */
-    function isNetworkAuthority(address authority, uint network) external view virtual returns (bool) {
-        return hasRole(NETWORK_AUTHORITY_ROLE, network, authority);
     }
 
     /**
@@ -587,7 +450,7 @@ contract GatewayToken is
         uint network = slotOf(tokenId);
         if (networkHasFeature(network, NetworkFeature.REMOVE_GATEKEEPER_INVALIDATES_TOKENS)) {
             address gatekeeper = _issuingGatekeepers[tokenId];
-            if (gatekeeper != address(0) && !hasRole(GATEKEEPER_ROLE, network, gatekeeper)) {
+            if (gatekeeper != address(0) && !IGatewayNetwork(_gatewayNetworkContract).isGateKeeper(bytes32(network), gatekeeper)) {
                 return false;
             }
         }
@@ -610,7 +473,12 @@ contract GatewayToken is
     }
 
     function _checkGatekeeper(uint network) internal view {
-        _checkSenderRole(GATEKEEPER_ROLE, network);
+        // Checks if message sender is a gatekeeper on the given network
+        bool isGatekeeper = IGatewayNetwork(_gatewayNetworkContract).isGateKeeper(bytes32(network), _msgSender());
+        
+        if(!isGatekeeper) {
+            revert GatewayToken__AddressNotAGatekeeper(network, _msgSender());
+        }
     }
 
     /// @dev Checks if the token exists and is active. Optionally ignore expiry.
