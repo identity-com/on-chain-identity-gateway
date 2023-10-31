@@ -1,10 +1,10 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GatewayNetwork, GatewayNetwork__factory, IGatewayNetwork } from '../../typechain-types' ;
+import { GatewayNetwork, GatewayNetwork__factory, IGatewayNetwork } from '../typechain-types' ;
 import { utils } from 'ethers';
 
-describe('GatewayNetworkToken', async () => {
+describe('GatewayNetwork', async () => {
     let primaryAuthority: SignerWithAddress;
     let alice: SignerWithAddress;
     let bob: SignerWithAddress;
@@ -162,11 +162,22 @@ describe('GatewayNetworkToken', async () => {
         });
 
         it('can retreive the id of a network', async () => {
+            //given
+            const networkId = ethers.utils.hexZeroPad(defaultNetwork.name.toString(), 32);
 
+            //when
+            const resolvedNetworkId = await gatekeeperNetworkContract.getNetworkId(defaultNetwork.name);
+
+            //then
+            expect(ethers.utils.hexZeroPad(resolvedNetworkId.toHexString(), 32)).to.eq(networkId);
         });
 
-        it('can return if a network exist', async () => {
+        it('can check if a network exist', async () => {
+            // when
+            const result = await gatekeeperNetworkContract.doesNetworkExist(ethers.utils.hexZeroPad(defaultNetwork.name.toString(), 32));
 
+            //then
+            expect(result).to.be.true;
         });
         it('cannot update the primary authority of a network if not current primary authority', async () => {
             const updatedNetwork = getDefaultNetwork(alice.address);
