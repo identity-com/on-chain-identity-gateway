@@ -41,12 +41,13 @@ abstract contract  IGatewayNetwork {
         PRIMARY_AUTHORITY,
         PASS_EXPIRE_TIME,
         NETWORK_FEATURES, // TODO to implement
-        SUPPORTED_TOKENS,
-        GATEKEEPERS
+        SUPPORTED_TOKENS
     }
 
     event GatekeeperNetworkCreated(address primaryAuthority, bytes32 name, uint passExpireTime);
     event GatekeeperNetworkUpdated(GatewayNetworkUpdateOperation updateType);
+    event GatekeeperNetworkGatekeeperAdded(address gatekeeper);
+    event GatekeeperNetworkGatekeeperRemoved(address gatekeeper);
     event GatekeeperNetworkDeleted(bytes32 networkName);
 
     /// The gatekeeper network being created already exists.
@@ -56,9 +57,15 @@ abstract contract  IGatewayNetwork {
     /// The gatekeeper network update is not supported
     /// @param requestedUpdate requested update operation
     error GatewayNetworkUnsupportedUpdate(uint requestedUpdate);
+    error GatewayNetworkGatekeeperAlreadyExists(string network, address gatekeeper);
+    error GatewayNetworkGatekeeperDoesNotExists(string network, address gatekeeper);
 
     function createNetwork(GatekeeperNetworkData calldata network) external virtual;
     function closeNetwork(bytes32 networkName) external virtual;
-    function updateNetwork(GatewayNetworkUpdateOperation networkUpdate, GatekeeperNetworkData calldata network) external virtual;
+    function updateNetwork(GatewayNetworkUpdateOperation networkUpdate, GatekeeperNetworkData calldata network) public virtual;
+    function addGatekeeper(address gatekeeper, bytes32 network) external virtual;
+    function removeGatekeeper(address gatekeeper, bytes32 network) external virtual;
+    function getNetworkId(bytes32 networkName) external view virtual returns(uint);
     function isGateKeeper(bytes32 networkName, address gatekeeper) public view virtual returns(bool);
+    function doesNetworkExist(uint networkId) public view virtual returns(bool);
 }

@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GatewayNetwork, GatewayNetwork__factory } from '../../typechain-types' ;
+import { GatewayNetwork, GatewayNetwork__factory, IGatewayNetwork } from '../../typechain-types' ;
 import { utils } from 'ethers';
 
 describe('GatewayNetworkToken', async () => {
@@ -16,7 +16,7 @@ describe('GatewayNetworkToken', async () => {
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
     const DEFAULT_PASS_EXPIRE_IN_SECOUNDS = 1000;
 
-    const getDefaultNetwork = (primaryAuthority: string, gatekeepers?: string[], passExpireTimeInSeconds?: number): GatewayNetwork.GatekeeperNetworkDataStruct => {
+    const getDefaultNetwork = (primaryAuthority: string, gatekeepers?: string[], passExpireTimeInSeconds?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
         return {
             primaryAuthority,
             name: utils.formatBytes32String('default'),
@@ -78,9 +78,10 @@ describe('GatewayNetworkToken', async () => {
     })
 
     describe('Gatekeeper Network Update', async () => {
+        let  defaultNetwork: IGatewayNetwork.GatekeeperNetworkDataStruct;
 
         beforeEach('create network', async () => {
-            const defaultNetwork = getDefaultNetwork(primaryAuthority.address, []);
+            defaultNetwork = getDefaultNetwork(primaryAuthority.address, []);
             await gatekeeperNetworkContract.connect(deployer).createNetwork(defaultNetwork, {gasLimit: 300000});
         });
 
@@ -123,22 +124,49 @@ describe('GatewayNetworkToken', async () => {
             expect(newSupportedTokens.length).to.be.eq(1);
             expect(newSupportedTokens[0]).to.be.eq(stableCoin.address);
         });
-        it('can update gatekeepers if called by primary authority', async () => {
-            // given
-            const updatedNetwork = getDefaultNetwork(primaryAuthority.address);
-            updatedNetwork.gatekeepers = [bob.address, primaryAuthority.address];
 
-            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(updatedNetwork.name);
+        it('can add a gatekeeper if called by primary authority', async () => {
+            // given
+            const newGatekeeper = bob.address;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
             expect(currentGatekeepers.length).to.be.eq(0);
 
             //when
-            await gatekeeperNetworkContract.connect(primaryAuthority).updateNetwork(4, updatedNetwork, {gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
 
             //then
-            const newGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(updatedNetwork.name);
-            expect(newGatekeepers.length).to.be.eq(2);
+            const newGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            expect(newGatekeepers.length).to.be.eq(1);
             expect(newGatekeepers[0]).to.be.eq(bob.address);
-            expect(newGatekeepers[1]).to.be.eq(primaryAuthority.address);
+        });
+        it('can remove a gatekeeper if called by primary authority', async () => {
+            // given
+            const newGatekeeper = bob.address;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            expect(currentGatekeepers.length).to.be.eq(0);
+
+            await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
+
+            const newGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            expect(newGatekeepers.length).to.be.eq(1);
+            expect(newGatekeepers[0]).to.be.eq(bob.address);
+
+            //when
+            await gatekeeperNetworkContract.connect(primaryAuthority).removeGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
+        
+            //then
+            const finalGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            expect(finalGatekeepers.length).to.be.eq(0);
+        });
+
+        it('can retreive the id of a network', async () => {
+
+        });
+
+        it('can return if a network exist', async () => {
+
         });
         it('cannot update the primary authority of a network if not current primary authority', async () => {
             const updatedNetwork = getDefaultNetwork(alice.address);
@@ -162,16 +190,34 @@ describe('GatewayNetworkToken', async () => {
             updatedNetwork.supportedTokens = [stableCoin.address];
             await expect(gatekeeperNetworkContract.connect(alice).updateNetwork(3, updatedNetwork, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
         });
-        it('cannot update gatekeepers if not primary authority', async () => {
-            const updatedNetwork = getDefaultNetwork(alice.address, [alice.address]);
-            await expect(gatekeeperNetworkContract.connect(alice).updateNetwork(4, updatedNetwork, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
+
+        it('cannot add a gatekeeper if not primary authority', async () => {
+            await expect(gatekeeperNetworkContract.connect(bob).addGatekeeper(bob.address, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
+        });
+        it('cannot remove a gatekeeper if not primary authority', async () => {
+            // given
+            const newGatekeeper = bob.address;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            expect(currentGatekeepers.length).to.be.eq(0);
+
+            await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
+
+            const newGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            expect(newGatekeepers.length).to.be.eq(1);
+            expect(newGatekeepers[0]).to.be.eq(bob.address);
+
+            // then
+            await expect(gatekeeperNetworkContract.connect(bob).removeGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
         });
 
     })
 
     describe('Gatekeeper Network Deletion', async () => {
+        let  defaultNetwork: IGatewayNetwork.GatekeeperNetworkDataStruct;
+
         beforeEach('create network', async () => {
-            const defaultNetwork = getDefaultNetwork(primaryAuthority.address, []);
+            defaultNetwork = getDefaultNetwork(primaryAuthority.address, []);
             await gatekeeperNetworkContract.connect(deployer).createNetwork(defaultNetwork, {gasLimit: 300000});
         });
 
@@ -195,14 +241,13 @@ describe('GatewayNetworkToken', async () => {
 
         it('cannot delete a network with gatekeepers', async () => {
             // given
-            const updatedNetwork = getDefaultNetwork(primaryAuthority.address);
-            updatedNetwork.gatekeepers = [bob.address, primaryAuthority.address];
+            const newGatekeeper = bob.address;
 
             // Add gatekeepers to network
-            await gatekeeperNetworkContract.connect(primaryAuthority).updateNetwork(4, updatedNetwork, {gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
 
             //when
-            await expect(gatekeeperNetworkContract.connect(primaryAuthority).closeNetwork(updatedNetwork.name)).to.be.revertedWith("Network can only be removed if no gatekeepers are in it");
+            await expect(gatekeeperNetworkContract.connect(primaryAuthority).closeNetwork(defaultNetwork.name)).to.be.revertedWith("Network can only be removed if no gatekeepers are in it");
         });
     })
 })
