@@ -4,7 +4,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GatewayNetwork, GatewayNetwork__factory, IGatewayNetwork } from '../typechain-types' ;
 import { utils } from 'ethers';
 
-describe('GatewayNetwork', async () => {
+describe('GatewayNetwork', () => {
     let primaryAuthority: SignerWithAddress;
     let alice: SignerWithAddress;
     let bob: SignerWithAddress;

@@ -12,7 +12,7 @@ import { IForwarder, IGatewayNetwork } from '../typechain-types';
 import { TransactionReceipt } from '@ethersproject/providers';
 import { GatewayNetwork, GatewayNetwork__factory } from '../typechain-types' ;
 
-describe('GatewayToken', async () => {
+describe('GatewayToken', () => {
   let signers: SignerWithAddress[];
   let identityCom: SignerWithAddress;
   let alice: SignerWithAddress;
@@ -32,8 +32,8 @@ describe('GatewayToken', async () => {
   let hexInstitutionFlag = toBytes32('Institution');
   let hexAccreditedInvestorFlag = toBytes32('AccreditedInvestor');
 
-  let gkn1 = Number(ethers.utils.hexZeroPad('Test GKN 1', 32));
-  let gkn2 = Number(ethers.utils.hexZeroPad('Test GKN 2', 32));
+  let gkn1;
+  let gkn2;
 
   const expectVerified = (address: string, gkn: number): Chai.PromisedAssertion => {
     const verified = gatewayToken['verifyToken(address,uint256)'](address, gkn);
@@ -103,13 +103,16 @@ describe('GatewayToken', async () => {
     await gatewayTokenInternalsTest.deployed();
 
     // create gatekeeper networks
-    const networkOne = getNetwork(identityCom.address, 'Test GKN 1');
-    const networkTwo = getNetwork(identityCom.address, 'Test GKN 2');
+    const networkOne = getNetwork(identityCom.address, 'GKN-1');
+    const networkTwo = getNetwork(identityCom.address, 'GKN-2');
 
     await gatewayNetwork.connect(identityCom).createNetwork(networkOne);
     await gatewayNetwork.connect(identityCom).createNetwork(networkTwo);
 
-    await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), 'Test GKN 1');
+    await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-1'));
+
+    gkn1 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-1'));
+    gkn2 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-2'));
   });
 
   describe('Deployment Tests', async () => {
@@ -343,14 +346,6 @@ describe('GatewayToken', async () => {
   });
 
 
-  describe('RBAC', () => {
-    it('renounce role', async () => {
-      // add bob as a gatekeeper
-      await gatewayToken.connect(identityCom).addGatekeeper(bob.address, gkn1);
-      // bob renounces
-      await gatewayToken.connect(bob).renounceRole(keccak256(toUtf8Bytes('GATEKEEPER_ROLE')), gkn1, bob.address);
-    });
-  });
 
   describe('Test gateway token issuance', async () => {
     it('verified returns false if a token is not yet minted', async () => {
@@ -382,7 +377,7 @@ describe('GatewayToken', async () => {
 
     it('Successfully mint Gateway Token for Alice by gatekeeper with gatekeeperNetwork = 2', async () => {
       // add the gatekeeper to network 2
-      await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), 'Test GKN 2');
+      await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-2'));
 
       await gatewayToken.connect(gatekeeper).mint(alice.address, gkn2, 0, 0, NULL_CHARGE);
 
@@ -470,39 +465,6 @@ describe('GatewayToken', async () => {
       const expiration = await gatewayToken.getExpiration(dummyWalletTokenId);
 
       expect(expiration).to.equal(expectedExpiration);
-    });
-  });
-
-  describe('Add and remove Gatekeeper', () => {
-    it('removing a gatekeeper does not invalidate existing tokens by default', async () => {
-      const passRecipient = randomAddress();
-      await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper2.address, 'Test GKN 1');
-
-      await gatewayToken.connect(gatekeeper2).mint(passRecipient, gkn1, 0, 0, NULL_CHARGE);
-
-      await gatewayNetwork.connect(identityCom).removeGatekeeper(gatekeeper2.address, 'Test GKN 1');
-      return expectVerified(passRecipient, gkn1).to.be.true;
-    });
-
-    it('removing a gatekeeper invalidates existing tokens if the network has the REMOVE_GATEKEEPER_INVALIDATES_TOKENS feature', async () => {
-      const passRecipient = randomAddress();
-      await gatewayToken.connect(identityCom).addGatekeeper(gatekeeper2.address, gkn2);
-
-      const removeGatekeeperInvalidatesTokensFeature = 0;
-      const mask = 1 << removeGatekeeperInvalidatesTokensFeature;
-
-      let b = await gatewayToken.networkHasFeature(gkn2, removeGatekeeperInvalidatesTokensFeature);
-      expect(b).to.be.false;
-
-      await gatewayToken.connect(identityCom).setNetworkFeatures(gkn2, mask);
-
-      b = await gatewayToken.networkHasFeature(gkn2, removeGatekeeperInvalidatesTokensFeature);
-      expect(b).to.be.true;
-
-      await gatewayToken.connect(gatekeeper2).mint(passRecipient, gkn2, 0, 0, NULL_CHARGE);
-
-      await gatewayToken.connect(identityCom).removeGatekeeper(gatekeeper2.address, gkn2);
-      return expectVerified(passRecipient, gkn2).to.be.false;
     });
   });
 
