@@ -6,6 +6,7 @@ import { IGatewayNetwork } from "./interfaces/IGatewayNetwork.sol";
 
 contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
     mapping(bytes32 => GatekeeperNetworkData) public _networks;
+    mapping(bytes32 => address) private _nextPrimaryAuthoritys;
 
     modifier onlyPrimaryNetworkAuthority(bytes32 networkName) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
@@ -39,22 +40,6 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         delete _networks[networkName];
 
         emit GatekeeperNetworkDeleted(networkName);
-    }
-
-    function updateNetwork(GatewayNetworkUpdateOperation networkUpdate, GatekeeperNetworkData calldata network) public override onlyPrimaryNetworkAuthority(network.name){
-        bytes32 networkName = network.name;
-
-        require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
-        
-        if(networkUpdate == GatewayNetworkUpdateOperation.PRIMARY_AUTHORITY){
-            require(network.primaryAuthority != address(0), "Primary authority cannot be set to the zero address");
-            _networks[networkName].primaryAuthority = network.primaryAuthority;
-            emit GatekeeperNetworkUpdated(networkUpdate);
-            return;
-        }
-
-
-        revert GatewayNetworkUnsupportedUpdate(uint(networkUpdate));
     }
 
     function addGatekeeper(address gatekeeper, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName){
@@ -96,6 +81,22 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
 
         emit GatekeeperNetworkGatekeeperRemoved(gatekeeper);
     }
+
+    // Two transactions are required to transfer the primary authority of a network
+    // Tx 1: The current primary authority submits a transaction setting the new primary authority
+    // Tx 2: The new primary authority must accept the update (this helps prevent misconfiguring the primary authority of a network)
+    function updatePrimaryAuthority(address newPrimaryAuthortiy, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
+        require(newPrimaryAuthortiy != address(0), "Primary authority cannot be set to the zero address");
+        _nextPrimaryAuthoritys[networkName] = newPrimaryAuthortiy;
+    } 
+
+    function claimPrimaryAuthority(bytes32 networkName) external override {
+        require(msg.sender == _nextPrimaryAuthoritys[networkName], "Can only claim authority on a network if given permission by the current primary authority");
+
+        _networks[networkName].primaryAuthority = msg.sender;
+
+        _nextPrimaryAuthoritys[networkName] = address(0);
+    } 
 
     function updatePassExpirationTimestamp(uint newExpirationTimestamp, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
         require(doesNetworkExist(uint(networkName)), "Network does not exist");

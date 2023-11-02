@@ -88,10 +88,9 @@ describe('GatewayNetwork', () => {
         });
 
         it('can update the primary authority of a network if called by the current primary authority', async () => {
-            const updatedNetwork = getDefaultNetwork(alice.address, []);
-            await gatekeeperNetworkContract.connect(primaryAuthority).updateNetwork(0, updatedNetwork, {gasLimit: 300000});
-
-            const network = await gatekeeperNetworkContract._networks(updatedNetwork.name);
+            await gatekeeperNetworkContract.connect(primaryAuthority).updatePrimaryAuthority(alice.address, defaultNetwork.name, {gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(alice).claimPrimaryAuthority(defaultNetwork.name);
+            const network = await gatekeeperNetworkContract._networks(defaultNetwork.name);
 
             expect(network.primaryAuthority).to.equal(alice.address);
         });
@@ -165,17 +164,14 @@ describe('GatewayNetwork', () => {
             expect(result).to.be.true;
         });
         it('cannot update the primary authority of a network if not current primary authority', async () => {
-            const updatedNetwork = getDefaultNetwork(alice.address);
-            await expect(gatekeeperNetworkContract.connect(alice).updateNetwork(0, updatedNetwork, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
+            await expect(gatekeeperNetworkContract.connect(alice).updatePrimaryAuthority(alice.address, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
         });
         it('cannot update network if it does not exist', async () => {
-            const updatedNetwork = getDefaultNetwork(primaryAuthority.address, []);
-            updatedNetwork.name = utils.formatBytes32String('not-default-name');
-            await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateNetwork(0, updatedNetwork, {gasLimit: 300000})).to.be.rejectedWith("Network does not exist");
+            const name = utils.formatBytes32String('not-default-name');
+            await expect(gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(alice.address, name, {gasLimit: 300000})).to.be.rejectedWith("Network does not exist");
         });
         it('cannot update the primary authority of a network to zero address', async () => {
-            const updatedNetwork = getDefaultNetwork(ZERO_ADDRESS, []);
-            await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateNetwork(0, updatedNetwork, {gasLimit: 300000})).to.be.rejectedWith("Primary authority cannot be set to the zero address");
+            await expect(gatekeeperNetworkContract.connect(primaryAuthority).updatePrimaryAuthority(ZERO_ADDRESS, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Primary authority cannot be set to the zero address");
         });
         it('cannot update the pass expire time if not primary authority', async () => {
             // given

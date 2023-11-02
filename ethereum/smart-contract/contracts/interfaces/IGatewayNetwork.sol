@@ -40,15 +40,7 @@ abstract contract  IGatewayNetwork {
         address[] gatekeepers;
     }
 
-    enum GatewayNetworkUpdateOperation {
-        PRIMARY_AUTHORITY,
-        PASS_EXPIRE_TIME,
-        NETWORK_FEATURES, // TODO to implement
-        SUPPORTED_TOKENS
-    }
-
     event GatekeeperNetworkCreated(address primaryAuthority, bytes32 name, uint passExpireTime);
-    event GatekeeperNetworkUpdated(GatewayNetworkUpdateOperation updateType);
     event GatekeeperNetworkGatekeeperAdded(address gatekeeper);
     event GatekeeperNetworkGatekeeperRemoved(address gatekeeper);
     event GatekeeperNetworkDeleted(bytes32 networkName);
@@ -57,18 +49,16 @@ abstract contract  IGatewayNetwork {
     /// @param network gatekeeper network id.
     error GatewayNetworkAlreadyExists(string network);
 
-    /// The gatekeeper network update is not supported
-    /// @param requestedUpdate requested update operation
-    error GatewayNetworkUnsupportedUpdate(uint requestedUpdate);
     error GatewayNetworkGatekeeperAlreadyExists(string network, address gatekeeper);
     error GatewayNetworkGatekeeperDoesNotExists(string network, address gatekeeper);
 
     function createNetwork(GatekeeperNetworkData calldata network) external virtual;
     function closeNetwork(bytes32 networkName) external virtual;
-    function updateNetwork(GatewayNetworkUpdateOperation networkUpdate, GatekeeperNetworkData calldata network) public virtual;
     function updatePassExpirationTimestamp(uint newExpirationTimestamp, bytes32 networkName) external virtual;
     function addGatekeeper(address gatekeeper, bytes32 network) external virtual;
     function removeGatekeeper(address gatekeeper, bytes32 network) external virtual;
+    function updatePrimaryAuthority(address newPrimaryAuthortiy, bytes32 networkName) external virtual;
+    function claimPrimaryAuthority(bytes32 networkName) external virtual;
     function getNetwork(uint networkId) external view virtual returns(GatekeeperNetworkData memory);
     function getNetworkId(bytes32 networkName) external view virtual returns(uint);
     function getSupportedToken(bytes32 networkName) public view virtual returns(address);
