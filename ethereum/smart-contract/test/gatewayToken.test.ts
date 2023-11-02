@@ -71,7 +71,7 @@ describe('GatewayToken', () => {
         passExpireTimestamp: passExpireTimestamp ? passExpireTimestamp : Date.now() + 100000000,
         networkFeatures: 0,
         networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
-        supportedTokens: [ZERO_ADDRESS],
+        supportedToken: ZERO_ADDRESS,
         gatekeepers: gatekeepers ? gatekeepers : []
     }
   }

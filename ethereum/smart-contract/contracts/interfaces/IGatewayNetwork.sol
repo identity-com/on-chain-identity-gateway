@@ -24,7 +24,8 @@ abstract contract  IGatewayNetwork {
         // Unique identifier for a network.
         bytes32 name;
         
-        // The default expiration timestamp of passes on this network
+        // The default expiration timestamp of passes on this network.
+        // A value of 0 means passes never expire
         uint256 passExpireTimestamp;
         
         //Features on the network, index relates to which feature it is.
@@ -32,8 +33,10 @@ abstract contract  IGatewayNetwork {
         
         NetworkFeesPercentage[] networkFees;
 
-        // Tokens supported for fees on this network. The zero address represents native eth
-        address[] supportedTokens;
+        // Token supported for fees on this network. The zero address represents native eth.
+        // Once a network is created, there is no way to update the supported token.
+        address supportedToken;
+
         address[] gatekeepers;
     }
 
@@ -68,6 +71,7 @@ abstract contract  IGatewayNetwork {
     function removeGatekeeper(address gatekeeper, bytes32 network) external virtual;
     function getNetwork(uint networkId) external view virtual returns(GatekeeperNetworkData memory);
     function getNetworkId(bytes32 networkName) external view virtual returns(uint);
+    function getSupportedToken(bytes32 networkName) public view virtual returns(address);
     function isGateKeeper(bytes32 networkName, address gatekeeper) public view virtual returns(bool);
     function doesNetworkExist(uint networkId) public view virtual returns(bool);
 }

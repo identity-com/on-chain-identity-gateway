@@ -53,17 +53,6 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
             return;
         }
 
-        
-        if(networkUpdate == GatewayNetworkUpdateOperation.SUPPORTED_TOKENS){
-            address[] memory supportedTokens = network.supportedTokens;
-
-            for(uint i; i < supportedTokens.length; i++) {
-                require(supportedTokens[i] != address(0), "Zero address cannot be added to supported token");
-            }
-            _networks[networkName].supportedTokens = supportedTokens;
-            emit GatekeeperNetworkUpdated(networkUpdate);
-            return;
-        }
 
         revert GatewayNetworkUnsupportedUpdate(uint(networkUpdate));
     }
@@ -140,9 +129,9 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         return _networks[networkName].primaryAuthority != address(0);
     }
 
-    function supportedTokens(bytes32 networkName) public view returns(address[] memory) {
+    function getSupportedToken(bytes32 networkName) public view override returns(address) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
-        return _networks[networkName].supportedTokens;
+        return _networks[networkName].supportedToken;
     }
 
     function gatekeepersOnNetwork(bytes32 networkName) public view returns(address[] memory) {

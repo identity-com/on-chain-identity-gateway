@@ -23,7 +23,7 @@ describe('GatewayNetwork', () => {
             passExpireTimestamp: passExpireTimestamp ? passExpireTimestamp : DEFAULT_PASS_EXPIRE_TIMESTAMP,
             networkFeatures: 0,
             networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
-            supportedTokens: [ZERO_ADDRESS],
+            supportedToken: ZERO_ADDRESS,
             gatekeepers: gatekeepers ? gatekeepers : []
         }
     }
@@ -45,9 +45,11 @@ describe('GatewayNetwork', () => {
 
             const network = await gatekeeperNetworkContract._networks(defaultNetwork.name);
             const isGatekeeper = await gatekeeperNetworkContract.isGateKeeper(defaultNetwork.name, deployer.address);
+            const supportedToken = await gatekeeperNetworkContract.getSupportedToken(defaultNetwork.name);
 
             expect(network.name).to.equal(defaultNetwork.name);
             expect(network.primaryAuthority).to.equal(primaryAuthority.address);
+            expect(network.supportedToken).to.equal(supportedToken);
             expect(isGatekeeper).to.be.false;
         });
 
@@ -106,23 +108,6 @@ describe('GatewayNetwork', () => {
             //then
             const resolvedUpdatedNetwork = await gatekeeperNetworkContract._networks(defaultNetwork.name);
             expect(resolvedUpdatedNetwork.passExpireTimestamp).to.be.eq(newTimestamp);
-        });
-        it('can update supported tokens if called by primary authority', async () => {
-            // given
-            const updatedNetwork = getDefaultNetwork(primaryAuthority.address);
-            updatedNetwork.supportedTokens = [stableCoin.address];
-
-            const currentSupportedTokens = await gatekeeperNetworkContract.supportedTokens(updatedNetwork.name);
-            expect(currentSupportedTokens.length).to.be.eq(1);
-            expect(currentSupportedTokens[0]).to.be.eq(ZERO_ADDRESS);
-
-            //when
-            await gatekeeperNetworkContract.connect(primaryAuthority).updateNetwork(3, updatedNetwork, {gasLimit: 300000});
-
-            //then
-            const newSupportedTokens = await gatekeeperNetworkContract.supportedTokens(updatedNetwork.name);
-            expect(newSupportedTokens.length).to.be.eq(1);
-            expect(newSupportedTokens[0]).to.be.eq(stableCoin.address);
         });
 
         it('can add a gatekeeper if called by primary authority', async () => {
@@ -198,11 +183,6 @@ describe('GatewayNetwork', () => {
 
             // when
             await expect(gatekeeperNetworkContract.connect(alice).updatePassExpirationTimestamp(newTimestamp, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
-        });
-        it('cannot update supported tokens if not primary authority', async () => {
-            const updatedNetwork = getDefaultNetwork(alice.address);
-            updatedNetwork.supportedTokens = [stableCoin.address];
-            await expect(gatekeeperNetworkContract.connect(alice).updateNetwork(3, updatedNetwork, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
         });
 
         it('cannot add a gatekeeper if not primary authority', async () => {
