@@ -30,7 +30,7 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         
         _networks[networkName] = network;
 
-        emit GatekeeperNetworkCreated(network.primaryAuthority, networkName, network.passExpireTimeInSeconds);
+        emit GatekeeperNetworkCreated(network.primaryAuthority, networkName, network.passExpireTimestamp);
     } 
     function closeNetwork(bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
@@ -49,12 +49,6 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         if(networkUpdate == GatewayNetworkUpdateOperation.PRIMARY_AUTHORITY){
             require(network.primaryAuthority != address(0), "Primary authority cannot be set to the zero address");
             _networks[networkName].primaryAuthority = network.primaryAuthority;
-            emit GatekeeperNetworkUpdated(networkUpdate);
-            return;
-        }
-        
-        if(networkUpdate == GatewayNetworkUpdateOperation.PASS_EXPIRE_TIME){
-            _networks[networkName].passExpireTimeInSeconds = network.passExpireTimeInSeconds;
             emit GatekeeperNetworkUpdated(networkUpdate);
             return;
         }
@@ -114,6 +108,11 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         emit GatekeeperNetworkGatekeeperRemoved(gatekeeper);
     }
 
+    function updatePassExpirationTimestamp(uint newExpirationTimestamp, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
+        require(doesNetworkExist(uint(networkName)), "Network does not exist");
+        _networks[networkName].passExpireTimestamp = newExpirationTimestamp;
+    }
+
     function isGateKeeper(bytes32 networkName, address gatekeeper) public view override returns(bool) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
         address[] memory gatekeepers = _networks[networkName].gatekeepers;
@@ -129,6 +128,11 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
     function getNetworkId(bytes32 networkName) external view override returns(uint) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
         return uint256(networkName);
+    }
+
+    function getNetwork(uint networkId) external view override returns(GatekeeperNetworkData memory) {
+        require(_networks[bytes32(networkId)].primaryAuthority != address(0), "Network does not exist");
+        return _networks[bytes32(networkId)];
     }
 
     function doesNetworkExist(uint networkId) public view override returns(bool) {

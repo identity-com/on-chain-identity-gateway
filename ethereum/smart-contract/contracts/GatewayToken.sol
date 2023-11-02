@@ -74,7 +74,7 @@ contract GatewayToken is
     mapping(uint => uint256) internal _networkFeatures;
 
     // Gatekeeper network contract addresses
-    address private _gatewayNetworkContract;
+    address internal _gatewayNetworkContract;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor is "empty" as we are using the proxy pattern,
@@ -158,7 +158,6 @@ contract GatewayToken is
     function mint(
         address to,
         uint network,
-        uint expiration,
         uint mask,
         Charge calldata charge
     ) external payable virtual {
@@ -167,6 +166,8 @@ contract GatewayToken is
 
         // EFFECTS
         uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
+        uint expiration = IGatewayNetwork(_gatewayNetworkContract).getNetwork(network).passExpireTimestamp;
+   
 
         if (expiration > 0) {
             _expirations[tokenId] = expiration;
@@ -235,6 +236,7 @@ contract GatewayToken is
         _setBitMask(tokenId, mask);
     }
 
+    // Need to reimplement
     function setNetworkFeatures(uint network, uint256 mask) external virtual {
         _checkSenderRole(NETWORK_AUTHORITY_ROLE, network);
         _networkFeatures[network] = mask;
@@ -348,6 +350,7 @@ contract GatewayToken is
             super.supportsInterface(interfaceId);
     }
 
+    // Add network features
     function networkHasFeature(uint network, NetworkFeature feature) public view virtual returns (bool) {
         return _networkFeatures[network].checkBit(uint8(feature));
     }

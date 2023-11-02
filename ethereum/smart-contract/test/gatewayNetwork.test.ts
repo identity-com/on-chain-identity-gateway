@@ -14,13 +14,13 @@ describe('GatewayNetwork', () => {
     let gatekeeperNetworkContract: GatewayNetwork;
 
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-    const DEFAULT_PASS_EXPIRE_IN_SECOUNDS = 1000;
+    const DEFAULT_PASS_EXPIRE_TIMESTAMP = Date.now() + 100000000;
 
-    const getDefaultNetwork = (primaryAuthority: string, gatekeepers?: string[], passExpireTimeInSeconds?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
+    const getDefaultNetwork = (primaryAuthority: string, gatekeepers?: string[], passExpireTimestamp?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
         return {
             primaryAuthority,
             name: utils.formatBytes32String('default'),
-            passExpireTimeInSeconds: passExpireTimeInSeconds ? passExpireTimeInSeconds : DEFAULT_PASS_EXPIRE_IN_SECOUNDS,
+            passExpireTimestamp: passExpireTimestamp ? passExpireTimestamp : DEFAULT_PASS_EXPIRE_TIMESTAMP,
             networkFeatures: 0,
             networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
             supportedTokens: [ZERO_ADDRESS],
@@ -93,19 +93,19 @@ describe('GatewayNetwork', () => {
 
             expect(network.primaryAuthority).to.equal(alice.address);
         });
-        it('can update the pass expire time if called by primary authority', async () => {
+        it('can update the pass expire timestamp if called by primary authority', async () => {
             // given
-            const updatedNetwork = getDefaultNetwork(primaryAuthority.address, [], 500);
+            const network = await gatekeeperNetworkContract._networks(defaultNetwork.name);
+            expect(network.passExpireTimestamp).to.be.eq(DEFAULT_PASS_EXPIRE_TIMESTAMP);
 
-            const network = await gatekeeperNetworkContract._networks(updatedNetwork.name);
-            expect(network.passExpireTimeInSeconds).to.be.eq(DEFAULT_PASS_EXPIRE_IN_SECOUNDS);
+            const newTimestamp = DEFAULT_PASS_EXPIRE_TIMESTAMP + 1000;
 
             //when
-            await gatekeeperNetworkContract.connect(primaryAuthority).updateNetwork(1, updatedNetwork, {gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(primaryAuthority).updatePassExpirationTimestamp(newTimestamp, defaultNetwork.name, {gasLimit: 300000});
 
             //then
-            const resolvedUpdatedNetwork = await gatekeeperNetworkContract._networks(updatedNetwork.name);
-            expect(resolvedUpdatedNetwork.passExpireTimeInSeconds).to.be.eq(500);
+            const resolvedUpdatedNetwork = await gatekeeperNetworkContract._networks(defaultNetwork.name);
+            expect(resolvedUpdatedNetwork.passExpireTimestamp).to.be.eq(newTimestamp);
         });
         it('can update supported tokens if called by primary authority', async () => {
             // given
@@ -193,8 +193,11 @@ describe('GatewayNetwork', () => {
             await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateNetwork(0, updatedNetwork, {gasLimit: 300000})).to.be.rejectedWith("Primary authority cannot be set to the zero address");
         });
         it('cannot update the pass expire time if not primary authority', async () => {
-            const updatedNetwork = getDefaultNetwork(alice.address, [], 400);
-            await expect(gatekeeperNetworkContract.connect(alice).updateNetwork(1, updatedNetwork, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
+            // given
+            const newTimestamp = DEFAULT_PASS_EXPIRE_TIMESTAMP + 1000;
+
+            // when
+            await expect(gatekeeperNetworkContract.connect(alice).updatePassExpirationTimestamp(newTimestamp, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
         });
         it('cannot update supported tokens if not primary authority', async () => {
             const updatedNetwork = getDefaultNetwork(alice.address);

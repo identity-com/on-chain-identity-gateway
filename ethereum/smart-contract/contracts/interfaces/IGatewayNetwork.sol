@@ -24,8 +24,8 @@ abstract contract  IGatewayNetwork {
         // Unique identifier for a network.
         bytes32 name;
         
-        // The default expiration time of passes on this network in seconds
-        uint passExpireTimeInSeconds;
+        // The default expiration timestamp of passes on this network
+        uint256 passExpireTimestamp;
         
         //Features on the network, index relates to which feature it is.
         uint32 networkFeatures;
@@ -63,8 +63,10 @@ abstract contract  IGatewayNetwork {
     function createNetwork(GatekeeperNetworkData calldata network) external virtual;
     function closeNetwork(bytes32 networkName) external virtual;
     function updateNetwork(GatewayNetworkUpdateOperation networkUpdate, GatekeeperNetworkData calldata network) public virtual;
+    function updatePassExpirationTimestamp(uint newExpirationTimestamp, bytes32 networkName) external virtual;
     function addGatekeeper(address gatekeeper, bytes32 network) external virtual;
     function removeGatekeeper(address gatekeeper, bytes32 network) external virtual;
+    function getNetwork(uint networkId) external view virtual returns(GatekeeperNetworkData memory);
     function getNetworkId(bytes32 networkName) external view virtual returns(uint);
     function isGateKeeper(bytes32 networkName, address gatekeeper) public view virtual returns(bool);
     function doesNetworkExist(uint networkId) public view virtual returns(bool);
