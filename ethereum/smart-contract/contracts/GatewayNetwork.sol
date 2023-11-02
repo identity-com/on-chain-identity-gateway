@@ -2,10 +2,14 @@
 pragma solidity >=0.8.19;
 
 import { ParameterizedAccessControl } from "./ParameterizedAccessControl.sol";
+import {BitMask} from "./library/BitMask.sol";
 import { IGatewayNetwork } from "./interfaces/IGatewayNetwork.sol";
 
 contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
+    using BitMask for uint256;
+
     mapping(bytes32 => GatekeeperNetworkData) public _networks;
+
     mapping(bytes32 => address) private _nextPrimaryAuthoritys;
 
     modifier onlyPrimaryNetworkAuthority(bytes32 networkName) {
@@ -101,6 +105,15 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
     function updatePassExpirationTimestamp(uint newExpirationTimestamp, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
         require(doesNetworkExist(uint(networkName)), "Network does not exist");
         _networks[networkName].passExpireTimestamp = newExpirationTimestamp;
+    }
+
+    function updateNetworkFeatures(uint256 newFeatureMask, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
+        _networks[networkName].networkFeatureMask = newFeatureMask;
+    }
+
+    function networkHasFeature(bytes32 networkName, NetworkFeature feature) public view override returns (bool) {
+        require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
+        return _networks[networkName].networkFeatureMask.checkBit(uint8(feature));
     }
 
     function isGateKeeper(bytes32 networkName, address gatekeeper) public view override returns(bool) {

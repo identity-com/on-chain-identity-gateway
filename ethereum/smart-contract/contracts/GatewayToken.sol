@@ -50,16 +50,6 @@ contract GatewayToken is
     using Strings for uint;
     using BitMask for uint256;
 
-    enum NetworkFeature {
-        // if set, gateway tokens are considered invalid if the gatekeeper that minted them is removed from the network
-        // defaults to false, and can be set by the network authority.
-        REMOVE_GATEKEEPER_INVALIDATES_TOKENS
-    }
-
-
-    // Access control roles
-    bytes32 public constant NETWORK_AUTHORITY_ROLE = keccak256("NETWORK_AUTHORITY_ROLE"); // remove role
-
     // Mapping from token id to state
     mapping(uint => TokenState) internal _tokenStates;
 
@@ -69,9 +59,6 @@ contract GatewayToken is
 
     // Specifies the gatekeeper that minted a given token
     mapping(uint => address) internal _issuingGatekeepers;
-
-    // Mapping for gatekeeper network features
-    mapping(uint => uint256) internal _networkFeatures;
 
     // Gatekeeper network contract addresses
     address internal _gatewayNetworkContract;
@@ -236,12 +223,6 @@ contract GatewayToken is
         _setBitMask(tokenId, mask);
     }
 
-    // Need to reimplement
-    function setNetworkFeatures(uint network, uint256 mask) external virtual {
-        _checkSenderRole(NETWORK_AUTHORITY_ROLE, network);
-        _networkFeatures[network] = mask;
-    }
-
     function getIssuingGatekeeper(uint tokenId) external view virtual returns (address) {
         return _issuingGatekeepers[tokenId];
     }
@@ -350,11 +331,6 @@ contract GatewayToken is
             super.supportsInterface(interfaceId);
     }
 
-    // Add network features
-    function networkHasFeature(uint network, NetworkFeature feature) public view virtual returns (bool) {
-        return _networkFeatures[network].checkBit(uint8(feature));
-    }
-
     /**
      * @dev Freezes `tokenId` and it's usage by gateway token owner.
      *
@@ -451,7 +427,7 @@ contract GatewayToken is
         // check that the gatekeeper is still in the gatekeeper network.
         // tokens issued without gatekeepers are exempt.
         uint network = slotOf(tokenId);
-        if (networkHasFeature(network, NetworkFeature.REMOVE_GATEKEEPER_INVALIDATES_TOKENS)) {
+        if (IGatewayNetwork(_gatewayNetworkContract).networkHasFeature(bytes32(network), IGatewayNetwork.NetworkFeature.REMOVE_GATEKEEPER_INVALIDATES_TOKENS)) {
             address gatekeeper = _issuingGatekeepers[tokenId];
             if (gatekeeper != address(0) && !IGatewayNetwork(_gatewayNetworkContract).isGateKeeper(bytes32(network), gatekeeper)) {
                 return false;

@@ -21,7 +21,7 @@ describe('GatewayNetwork', () => {
             primaryAuthority,
             name: utils.formatBytes32String('default'),
             passExpireTimestamp: passExpireTimestamp ? passExpireTimestamp : DEFAULT_PASS_EXPIRE_TIMESTAMP,
-            networkFeatures: 0,
+            networkFeatureMask: 0,
             networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
             supportedToken: ZERO_ADDRESS,
             gatekeepers: gatekeepers ? gatekeepers : []

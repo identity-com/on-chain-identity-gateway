@@ -28,8 +28,8 @@ abstract contract  IGatewayNetwork {
         // A value of 0 means passes never expire
         uint256 passExpireTimestamp;
         
-        //Features on the network, index relates to which feature it is.
-        uint32 networkFeatures;
+        //Features on the network
+        uint256 networkFeatureMask;
         
         NetworkFeesPercentage[] networkFees;
 
@@ -38,6 +38,12 @@ abstract contract  IGatewayNetwork {
         address supportedToken;
 
         address[] gatekeepers;
+    }
+
+    enum NetworkFeature {
+        // if set, gateway tokens are considered invalid if the gatekeeper that minted them is removed from the network
+        // defaults to false, and can be set by the network authority.
+        REMOVE_GATEKEEPER_INVALIDATES_TOKENS
     }
 
     event GatekeeperNetworkCreated(address primaryAuthority, bytes32 name, uint passExpireTime);
@@ -59,6 +65,8 @@ abstract contract  IGatewayNetwork {
     function removeGatekeeper(address gatekeeper, bytes32 network) external virtual;
     function updatePrimaryAuthority(address newPrimaryAuthortiy, bytes32 networkName) external virtual;
     function claimPrimaryAuthority(bytes32 networkName) external virtual;
+    function updateNetworkFeatures(uint256 newFeatureMask, bytes32 networkName) external virtual;
+    function networkHasFeature(bytes32 networkName, NetworkFeature feature) public view virtual returns (bool);
     function getNetwork(uint networkId) external view virtual returns(GatekeeperNetworkData memory);
     function getNetworkId(bytes32 networkName) external view virtual returns(uint);
     function getSupportedToken(bytes32 networkName) public view virtual returns(address);

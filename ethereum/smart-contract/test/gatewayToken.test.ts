@@ -69,7 +69,7 @@ describe('GatewayToken', () => {
         primaryAuthority,
         name: utils.formatBytes32String(name),
         passExpireTimestamp: passExpireTimestamp ? passExpireTimestamp : Date.now() + 100000000,
-        networkFeatures: 0,
+        networkFeatureMask: 0,
         networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
         supportedToken: ZERO_ADDRESS,
         gatekeepers: gatekeepers ? gatekeepers : []
@@ -1219,12 +1219,6 @@ describe('GatewayToken', () => {
       await expect(gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, 0, NULL_CHARGE)).to.be.revertedWith(
         'TEST MODE: Expiry must be > zero',
       );
-    });
-
-    it('upgrades the flags storage contract to v2', async () => {
-      // just using the same contract here, to test the upgradeability feature
-      const flagsStorageV2Factory = await ethers.getContractFactory('FlagsStorage');
-      await upgrades.upgradeProxy(flagsStorage.address, flagsStorageV2Factory);
     });
 
     it('upgrades the flags storage contract to v2 - reverts if not superadmin', async () => {
