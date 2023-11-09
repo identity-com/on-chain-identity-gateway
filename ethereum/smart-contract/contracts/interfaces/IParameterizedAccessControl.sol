@@ -46,6 +46,9 @@ interface IParameterizedAccessControl {
     /// A sender can only renounce roles for themselves
     error ParameterizedAccessControl__RenounceRoleNotForSelf(bytes32 role, address account);
 
+    /// A super-admin cannot remove themselves. This is to prevent an accidental lock-out
+    error ParameterizedAccessControl__NoSelfAdminRemoval();
+
     /**
      * @dev Grants `role` to `account`.
      *

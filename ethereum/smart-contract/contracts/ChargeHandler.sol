@@ -1,8 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.19;
+pragma solidity 0.8.19; // Fixed version for concrete contracts
 
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Charge, ChargeType} from "./library/Charge.sol";
+import {InternalTokenApproval} from "./library/InternalTokenApproval.sol";
+import {IChargeHandler} from "./interfaces/IChargeHandler.sol";
+import {Common__MissingAccount} from "./library/CommonErrors.sol";
 
 /**
  * @dev The ChargeHandler contract is an internal library used by the Gatekeeper
@@ -26,14 +33,35 @@ import {Charge, ChargeType} from "./library/Charge.sol";
  * typically the gateway token recipient, using tx.origin precludes the use of smart contract wallets, as well as
  * being discouraged for other security reasons.
  */
-contract ChargeHandler {
-    event ChargePaid(Charge);
+contract ChargeHandler is
+    Initializable,
+    UUPSUpgradeable,
+    AccessControlUpgradeable,
+    IChargeHandler,
+    InternalTokenApproval
+{
+    using SafeERC20 for IERC20;
+    bytes32 public constant CHARGE_CALLER_ROLE = keccak256("CHARGE_CALLER_ROLE");
 
-    error Charge__InsufficientAllowance(uint256 allowance, uint256 expectedAllowance);
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    // empty constructor in line with the UUPS upgradeable proxy pattern
+    // solhint-disable-next-line no-empty-blocks
+    constructor() {
+        _disableInitializers();
+    }
 
-    error Charge__InsufficientValue(uint256 value, uint256 expectedValue);
+    function initialize(address owner) external initializer {
+        if (owner == address(0)) revert Common__MissingAccount();
 
-    error Charge__TransferFailed(uint256 value);
+        __AccessControl_init();
+        __UUPSUpgradeable_init();
+
+        _setupRole(DEFAULT_ADMIN_ROLE, owner);
+    }
+
+    function setRole(bytes32 role, address recipient) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _setupRole(role, recipient);
+    }
 
     /**
      * @dev Send a fee either in ETH (wei) or ERC20 to the gatekeeper.
@@ -42,41 +70,70 @@ contract ChargeHandler {
      * when sending ETH to the recipient (if the recipient is a smart contract)
      * @param charge The charge details
      **/
-    function _handleCharge(Charge calldata charge) internal {
+    function handleCharge(Charge calldata charge, uint network) external payable onlyRole(CHARGE_CALLER_ROLE) {
         if (charge.chargeType == ChargeType.ETH) {
-            // CHECKS
-            // send wei if the charge type is ETH
-            if (msg.value < charge.value) {
-                revert Charge__InsufficientValue(msg.value, charge.value);
-            }
-
-            // EFFECTS
-            emit ChargePaid(charge);
-
-            // INTERACTIONS
-            (bool success, ) = payable(charge.recipient).call{value: charge.value}("");
-            if (!success) {
-                revert Charge__TransferFailed(charge.value);
-            }
+            _handleEthCharge(charge);
         } else if (charge.chargeType == ChargeType.ERC20) {
-            // send tokens if the charge type is ERC20
-            IERC20 token = IERC20(charge.token);
-
-            // CHECKS
-            // check that the sender has approved the token transfer
-            uint256 allowance = token.allowance(charge.tokenSender, address(this));
-            if (allowance < charge.value) {
-                revert Charge__InsufficientAllowance(allowance, charge.value);
-            }
-
-            // EFFECTS
-            emit ChargePaid(charge);
-
-            // INTERACTIONS
-            bool success = token.transferFrom(charge.tokenSender, charge.recipient, charge.value);
-            if (!success) {
-                revert Charge__TransferFailed(charge.value);
-            }
+            _handleERC20Charge(charge, network);
         }
     }
+
+    function setApproval(address gatewayTokenAddress, address tokenAddress, uint256 tokens, uint256 network) external {
+        _setApproval(gatewayTokenAddress, tokenAddress, tokens, network);
+        emit ApprovalSet(gatewayTokenAddress, tokenAddress, tokens, network);
+    }
+
+    function _handleEthCharge(Charge calldata charge) internal {
+        // CHECKS
+        // send wei if the charge type is ETH
+        if (msg.value != charge.value) {
+            revert Charge__IncorrectValue(msg.value, charge.value);
+        }
+
+        // EFFECTS
+        emit ChargePaid(charge);
+
+        // INTERACTIONS
+        (bool success, ) = payable(charge.recipient).call{value: charge.value}("");
+        if (!success) {
+            revert Charge__TransferFailed(charge.value);
+        }
+    }
+
+    function _handleERC20Charge(Charge calldata charge, uint network) internal {
+        if (msg.value > 0) {
+            // if the charge type is ERC20, the eth value should be zero
+            revert Charge__IncorrectValue(msg.value, 0);
+        }
+        // send tokens if the charge type is ERC20
+        IERC20 token = IERC20(charge.token);
+
+        // CHECKS
+        // check that the sender has approved the token transfer from this particular gatekeeper network
+        // note - for security's sake, the user has to approve the tokens to a particular
+        // gatekeeper network, to avoid front-running attacks. For more details, see
+        // InternalTokenApproval.sol
+        // Note - safeTransferFrom() additionally checks the global allowance for this contract.
+        (bool approvalValid, uint256 remainingAllowance) = _consumeApproval(
+            charge.tokenSender,
+            _msgSender(),
+            charge.token,
+            charge.value,
+            network
+        );
+        if (!approvalValid) {
+            revert Charge__IncorrectAllowance(remainingAllowance, charge.value);
+        }
+
+        // EFFECTS
+        emit ChargePaid(charge);
+
+        // INTERACTIONS
+        token.safeTransferFrom(charge.tokenSender, charge.recipient, charge.value);
+    }
+
+    // includes the onlySuperAdmin modifier to ensure that only the super admin can call this function
+    // otherwise, no other logic.
+    // solhint-disable-next-line no-empty-blocks
+    function _authorizeUpgrade(address) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 }

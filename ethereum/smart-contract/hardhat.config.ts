@@ -253,7 +253,7 @@ module.exports = {
       saveDeployments: true,
       accounts: liveAccounts,
       chainId: 4002,
-    }
+    },
   },
   solidity: {
     version: '0.8.19',

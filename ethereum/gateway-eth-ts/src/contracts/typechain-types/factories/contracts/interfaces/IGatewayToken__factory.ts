@@ -12,6 +12,11 @@ import type {
 
 const _abi = [
   {
+    inputs: [],
+    name: "GatewayToken__EmptyNetworkName",
+    type: "error",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
@@ -117,6 +122,19 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: true,
+        internalType: "address",
+        name: "chargeHandler",
+        type: "address",
+      },
+    ],
+    name: "ChargeHandlerUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: false,
         internalType: "address",
         name: "previousDAOManager",
@@ -136,6 +154,106 @@ const _abi = [
       },
     ],
     name: "DAOManagerTransferred",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    name: "ForwarderAdded",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    name: "ForwarderRemoved",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "network",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "daoGoverned",
+        type: "bool",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "daoManager",
+        type: "address",
+      },
+    ],
+    name: "GatekeeperNetworkCreated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "symbol",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "superAdmin",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "flagsStorage",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "chargeHandler",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address[]",
+        name: "trustedForwarders",
+        type: "address[]",
+      },
+    ],
+    name: "GatewayTokenInitialized",
     type: "event",
   },
   {
