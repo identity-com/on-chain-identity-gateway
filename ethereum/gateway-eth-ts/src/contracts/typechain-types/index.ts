@@ -119,6 +119,8 @@ export type { DummyBrokenEthRecipient } from "./test/contracts/DummyBrokenEthRec
 export { DummyBrokenEthRecipient__factory } from "./factories/test/contracts/DummyBrokenEthRecipient__factory";
 export type { DummyERC20 } from "./test/contracts/DummyERC20";
 export { DummyERC20__factory } from "./factories/test/contracts/DummyERC20__factory";
+export type { ERC2771Test } from "./test/contracts/ERC2771Test";
+export { ERC2771Test__factory } from "./factories/test/contracts/ERC2771Test__factory";
 export type { GatewayTokenClientERC2771Test } from "./test/contracts/GatewayTokenClientERC2771Test";
 export { GatewayTokenClientERC2771Test__factory } from "./factories/test/contracts/GatewayTokenClientERC2771Test__factory";
 export type { GatewayTokenClientERC2771UpgradeableTest } from "./test/contracts/GatewayTokenClientERC2771UpgradeableTest";

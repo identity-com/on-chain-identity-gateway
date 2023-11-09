@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.19;
+pragma solidity 0.8.19; // Fixed version for concrete contracts
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -109,14 +109,11 @@ contract ChargeHandler is
         IERC20 token = IERC20(charge.token);
 
         // CHECKS
-        // check that the sender has approved the token transfer
+        // check that the sender has approved the token transfer from this particular gatekeeper network
         // note - for security's sake, the user has to approve the tokens to a particular
         // gatekeeper network, to avoid front-running attacks. For more details, see
         // InternalTokenApproval.sol
-        uint256 allowance = token.allowance(charge.tokenSender, address(this));
-        if (allowance < charge.value) {
-            revert Charge__IncorrectAllowance(allowance, charge.value);
-        }
+        // Note - safeTransferFrom() additionally checks the global allowance for this contract.
         (bool approvalValid, uint256 remainingAllowance) = _consumeApproval(
             charge.tokenSender,
             _msgSender(),

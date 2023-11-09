@@ -13,6 +13,11 @@
       ],
       "name": "IsGated__InvalidGatewayToken",
       "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "IsGated__ZeroContractAddress",
+      "type": "error"
     }
   ],
   "bytecode": "0x",

@@ -44,6 +44,11 @@ const _abi = [
     type: "error",
   },
   {
+    inputs: [],
+    name: "ParameterizedAccessControl__NoSelfAdminRemoval",
+    type: "error",
+  },
+  {
     inputs: [
       {
         internalType: "bytes32",

@@ -11,6 +11,23 @@ interface IGatewayToken {
     }
 
     /**
+     * @dev Emitted when GatewayToken contract is initialized.
+     */
+    event GatewayTokenInitialized(
+        string name,
+        string symbol,
+        address superAdmin,
+        address flagsStorage,
+        address chargeHandler,
+        address[] trustedForwarders
+    );
+
+    /**
+     * @dev Emitted when a gatekeeper network is created.
+     */
+    event GatekeeperNetworkCreated(uint256 network, string name, bool daoGoverned, address daoManager);
+
+    /**
      * @dev Emitted when GatewayToken DAO Manager transferred to `newDAOManager` address.
      */
     event DAOManagerTransferred(address previousDAOManager, address newDAOManager, uint256 network);
@@ -20,6 +37,18 @@ interface IGatewayToken {
      * contract address
      */
     event ChargeHandlerUpdated(address indexed chargeHandler);
+
+    /**
+     * @dev Emitted when Identity.com Admin added a trusted forwarder
+     * contract address
+     */
+    event ForwarderAdded(address indexed forwarder);
+
+    /**
+     * @dev Emitted when Identity.com Admin removed a trusted forwarder
+     * contract address
+     */
+    event ForwarderRemoved(address indexed forwarder);
 
     /// Insufficient funds for withdrawal. Needed `required` but only
     /// `available` available.

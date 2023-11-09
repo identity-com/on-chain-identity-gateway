@@ -230,6 +230,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.DummyERC20__factory>;
     getContractFactory(
+      name: "ERC2771Test",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC2771Test__factory>;
+    getContractFactory(
       name: "GatewayTokenClientERC2771Test",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GatewayTokenClientERC2771Test__factory>;
@@ -536,6 +540,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.DummyERC20>;
+    getContractAt(
+      name: "ERC2771Test",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC2771Test>;
     getContractAt(
       name: "GatewayTokenClientERC2771Test",
       address: string,

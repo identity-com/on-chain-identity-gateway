@@ -23,6 +23,11 @@ const _abi = [
     type: "error",
   },
   {
+    inputs: [],
+    name: "IsGated__ZeroContractAddress",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {
