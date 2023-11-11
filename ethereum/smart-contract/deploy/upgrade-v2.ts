@@ -13,6 +13,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // upgrade the gateway token
   await upgrades.upgradeProxy(deployedGatewayToken, gatewayTokenFactory);
 
+  console.log("Upgraded - waiting 30s");
+  await new Promise((resolve) => setTimeout(resolve, 30_000));
+  console.log("Setting charge handler");
+
   // set the charge handler address
   const gatewayTokenContract = await ethers.getContractAt('GatewayToken', deployedGatewayToken.address);
   await gatewayTokenContract.updateChargeHandler(chargeHandler.address);

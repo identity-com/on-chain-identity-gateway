@@ -231,7 +231,7 @@ module.exports = {
       chainId: 51,
     },
     polygonZkEVM: {
-      url: 'https://zkevm-rpc.com',
+      url: 'https://polygon-zkevm.drpc.org',
       saveDeployments: true,
       accounts: liveAccounts,
       chainId: 1101,
