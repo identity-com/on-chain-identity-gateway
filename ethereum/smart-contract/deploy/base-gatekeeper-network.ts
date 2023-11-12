@@ -66,7 +66,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, ethers } = hre;
 
   const prodGatekeeper = '0x964617b2d933c6e5c6c1B30681DCAee23Baa9836';
-  const devGatekeeper = '0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688';
+  const devGatekeeper = '0x3Afb27942b60d9D4319557A0f3363DC3dA0645B6';
 
   // WARNING! If any of the below keys are the same as each other
   // hardhat does not resolve them properly. Check by deploying to localhost that they are correct first

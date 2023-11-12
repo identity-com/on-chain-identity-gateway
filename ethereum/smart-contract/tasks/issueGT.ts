@@ -4,10 +4,10 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { DEFAULT_FORWARDER_ADDRESS, DEFAULT_GATEWAY_TOKEN_ADDRESS } from '../../gateway-eth-ts/src';
 import { NULL_CHARGE } from '../test/utils/eth';
 import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
-import { Forwarder } from '../typechain-types';
+import { IForwarder } from '../typechain-types';
 
 export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
-  const { ethers } = hre;
+  const { ethers, deployments } = hre;
 
   const [owner] = await ethers.getSigners();
   const gatekeeper: Wallet | SignerWithAddress = process.env.PRIVATE_KEY
@@ -17,7 +17,8 @@ export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
 
   const account = ethers.utils.getAddress(args.address);
 
-  const contract = await ethers.getContractAt('GatewayToken', DEFAULT_GATEWAY_TOKEN_ADDRESS);
+  const gatewayToken = await deployments.get('GatewayToken');
+  const contract = await ethers.getContractAt('GatewayToken', gatewayToken.address);
 
   const hasToken = await contract['verifyToken(address,uint256)'](account, args.gatekeepernetwork);
   console.log({ hasToken });
@@ -35,10 +36,11 @@ export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
   } else {
     const forwarder = (await ethers.getContractAt('Forwarder', DEFAULT_FORWARDER_ADDRESS)).connect(owner);
 
-    const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as Forwarder, {
+    const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, {
       from: gatekeeper.address,
       to: DEFAULT_GATEWAY_TOKEN_ADDRESS,
       data: mintTx.data,
+      gas: 1_000_000
     });
 
     const unsignedTx = await forwarder.populateTransaction.execute(request, signature);
