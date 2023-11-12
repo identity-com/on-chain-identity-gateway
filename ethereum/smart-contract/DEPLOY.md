@@ -10,7 +10,8 @@ non-breaking changes), so to obtain the correct Create2 address, the following s
 
 1. Check out git tag
    [eth-deployment-step-1](https://github.com/identity-com/on-chain-identity-gateway/releases/tag/eth-deployment-step-1)
-2. Run `yarn build`
+2. Delete `node_modules` directory (the initial build artifact, and therefore Create2 address, depends on a specific solidity version)
+2. Run `yarn && yarn build`
 3. In one terminal `yarn local-no-deploy` (`STAGE=prod hardhat node --no-deploy`)
 4. In another terminal `yarn deploy localhost`
 5. Check that the addresses match `constants.ts`

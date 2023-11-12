@@ -23,6 +23,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log('setting chargeHandler charge caller to ' + gatewayTokenContract.address);
   await chargeHandlerContract.setRole(keccak256(toUtf8Bytes('CHARGE_CALLER_ROLE')), gatewayTokenContract.address);
 
+  console.log('Adding charge handler to gateway token');
+  await gatewayTokenContract.updateChargeHandler(chargeHandler.address);
+
   const gatewayTokenAddress = gatewayTokenContract.address;
   console.log('deployed GatewayToken at ' + gatewayTokenAddress);
 };

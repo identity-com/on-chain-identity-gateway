@@ -12,7 +12,7 @@
     "deploy": "hardhat deploy --tags GatewayToken --network $1",
     "deploy-forwarder": "hardhat deploy --tags Forwarder --network $1",
     "upgrade-contract": "hardhat deploy --tags UpgradeV2 --network $1",
-    "local": "STAGE=dev hardhat node",
+    "local": "STAGE=dev hardhat node --tags TestSetup",
     "local-no-deploy": "STAGE=prod hardhat node --no-deploy",
     "build": "hardhat compile",
     "lint:sol": "solhint --config .solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
