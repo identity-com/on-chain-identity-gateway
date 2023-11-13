@@ -46,38 +46,44 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
   }
 
-  const addGatekeeperTx = await (await token.addGatekeeper(gatekeeper, gatekeeperNetwork)).wait();
-  console.log(
-    'added new gatekeeper with ' +
-      gatekeeper +
-      ' address into Gateway Token at ' +
-      gatewayToken.address +
-      ' using ' +
-      addGatekeeperTx.gasUsed.toNumber() +
-      ' gas',
-  );
+  if (!(await token.isGatekeeper(gatekeeper, gatekeeperNetwork))) {
+    const addGatekeeperTx = await (await token.addGatekeeper(gatekeeper, gatekeeperNetwork)).wait();
+    console.log(
+      'added new gatekeeper with ' +
+        gatekeeper +
+        ' address into Gateway Token at ' +
+        gatewayToken.address +
+        ' using ' +
+        addGatekeeperTx.gasUsed.toNumber() +
+        ' gas',
+    );
+  } else console.log(`gatekeeper ${gatekeeper} already in network ${gatekeeperNetwork}`);
 
-  const addTestGatekeeperTx = await (await token.addGatekeeper(testGatekeeper, gatekeeperNetwork)).wait();
-  console.log(
-    'added test gatekeeper with ' +
-      testGatekeeper +
-      ' address into Gateway Token at ' +
-      gatewayToken.address +
-      ' using ' +
-      addTestGatekeeperTx.gasUsed.toNumber() +
-      ' gas',
-  );
+  if (!(await token.isGatekeeper(testGatekeeper, gatekeeperNetwork))) {
+    const addTestGatekeeperTx = await (await token.addGatekeeper(testGatekeeper, gatekeeperNetwork)).wait();
+    console.log(
+      'added test gatekeeper with ' +
+        testGatekeeper +
+        ' address into Gateway Token at ' +
+        gatewayToken.address +
+        ' using ' +
+        addTestGatekeeperTx.gasUsed.toNumber() +
+        ' gas',
+    );
+  } else console.log(`gatekeeper ${testGatekeeper} already in network ${gatekeeperNetwork}`);
 
-  const addCivicDevGatekeeperTx = await (await token.addGatekeeper(civicDevGatekeeper, gatekeeperNetwork)).wait();
-  console.log(
-    'added civic dev gatekeeper with ' +
-      civicDevGatekeeper +
-      ' address into Gateway Token at ' +
-      gatewayToken.address +
-      ' using ' +
-      addCivicDevGatekeeperTx.gasUsed.toNumber() +
-      ' gas',
-  );
+  if (!(await token.isGatekeeper(civicDevGatekeeper, gatekeeperNetwork))) {
+    const addCivicDevGatekeeperTx = await (await token.addGatekeeper(civicDevGatekeeper, gatekeeperNetwork)).wait();
+    console.log(
+      'added civic dev gatekeeper with ' +
+        civicDevGatekeeper +
+        ' address into Gateway Token at ' +
+        gatewayToken.address +
+        ' using ' +
+        addCivicDevGatekeeperTx.gasUsed.toNumber() +
+        ' gas',
+    );
+  } else console.log(`gatekeeper ${civicDevGatekeeper} already in network ${gatekeeperNetwork}`);
 };
 
 export default func;

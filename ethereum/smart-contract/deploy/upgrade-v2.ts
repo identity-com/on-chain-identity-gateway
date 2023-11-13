@@ -1,8 +1,8 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { ethers } from 'hardhat';
-import {keccak256} from "@ethersproject/keccak256";
-import {toUtf8Bytes} from "@ethersproject/strings";
+import { keccak256 } from '@ethersproject/keccak256';
+import { toUtf8Bytes } from '@ethersproject/strings';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, upgrades } = hre;
@@ -14,9 +14,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await upgrades.upgradeProxy(deployedGatewayToken, gatewayTokenFactory);
 
   // wait for the upgrade to be mined
-  console.log("Upgraded - waiting 30s");
+  console.log('Upgraded - waiting 30s');
   await new Promise((resolve) => setTimeout(resolve, 30_000));
-  console.log("Setting charge handler");
+  console.log('Setting charge handler');
 
   // set the charge handler address
   const gatewayTokenContract = await ethers.getContractAt('GatewayToken', deployedGatewayToken.address);

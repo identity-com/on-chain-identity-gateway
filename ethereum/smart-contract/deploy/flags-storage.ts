@@ -1,10 +1,10 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { deployProxyCreate2 } from '../scripts/util';
-import { ethers } from "hardhat";
+import { ethers } from 'hardhat';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { getNamedAccounts,  deployments } = hre;
+  const { getNamedAccounts, deployments } = hre;
   const { deployer } = await getNamedAccounts();
 
   const hexRetailFlag = ethers.utils.formatBytes32String('Retail');

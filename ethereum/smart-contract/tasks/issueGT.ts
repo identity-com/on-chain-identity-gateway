@@ -40,7 +40,7 @@ export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
       from: gatekeeper.address,
       to: DEFAULT_GATEWAY_TOKEN_ADDRESS,
       data: mintTx.data,
-      gas: 1_000_000
+      gas: 1_000_000,
     });
 
     const unsignedTx = await forwarder.populateTransaction.execute(request, signature);

@@ -8,4 +8,4 @@ export default func;
 func.skip = async () => process.env.NODE_ENV !== 'test';
 func.id = 'test_setup';
 func.tags = ['TestSetup'];
-func.dependencies = ['DummyERC20','BaseGatekeeperNetworks'];
+func.dependencies = ['DummyERC20', 'BaseGatekeeperNetworks'];
