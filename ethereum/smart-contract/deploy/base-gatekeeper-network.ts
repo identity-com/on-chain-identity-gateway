@@ -14,12 +14,14 @@ const networks = {
   prod: {
     ignREusXmGrscGNUesoU9mxfds9AiYTezUKex2PsZV6: 4,
     bni1ewus6aMxTxBi5SAfzEmmXLf8KcVFRmTfproJuKw: 6,
+    b1gz9sD7TeH6cagodm4zTcAx6LkZ56Etisvgr6jGFQb: 7,
     uniqobk8oGh4XBLMqM68K8M2zNu3CdYX7q5go7whQiv: 10,
     vaa1QRNEBb1G2XjPohqGWnPsvxWnwwXF67pdjrhDSwM: 11,
   },
   dev: {
     tigoYhp9SpCDoCQmXGj2im5xa3mnjR1zuXrpCJ5ZRmi: 14,
     tbniJdS9j7BWhUoJesjpqutC54AYr96cn2No7dJcqce: 16,
+    tb1g4GgywqGprgbuRw8RdDuPGUPC4CFMmmNFXfBX79J: 17,
     tunQheuPpHhjjsbrUDp4rikqYez9UXv4SXLRHf9Kzsv: 20,
     tvaaHL9BSgZGLRAqUrx1Fzs2Uneb6BWGdnYuqrFoXm3: 21,
   },

@@ -1,9 +1,10 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { deployProxyCreate2 } from '../scripts/util';
+import { ethers } from "hardhat";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { getNamedAccounts, ethers, deployments } = hre;
+  const { getNamedAccounts,  deployments } = hre;
   const { deployer } = await getNamedAccounts();
 
   const hexRetailFlag = ethers.utils.formatBytes32String('Retail');
@@ -12,7 +13,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const flagCodes = [hexRetailFlag, hexInstitutionFlag, hexAccreditedInvestorFlag];
   const indexArray = [0, 1, 2];
 
-  const flagsStorageContract = await deployProxyCreate2(hre, 'FlagsStorage', [deployer]);
+  // use the old proxy contract to retain the correct Create2 Address
+  const flagsStorageContract = await deployProxyCreate2(hre, 'FlagsStorage', [deployer], false);
 
   // call addFlags function against the proxy
   const flagsAdded = await Promise.all(flagCodes.map((flagCode) => flagsStorageContract.isFlagSupported(flagCode)));
