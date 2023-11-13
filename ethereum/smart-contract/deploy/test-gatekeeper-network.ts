@@ -83,4 +83,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 func.id = 'create_test_gatekeeper_network';
 func.tags = ['TestGatekeeperNetwork'];
-func.dependencies = ['GatewayToken', 'Forwarder'];
+func.dependencies = !!process.env.IGNORE_DEPS ? [] : ['GatewayToken', 'Forwarder'];

@@ -31,4 +31,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 func.id = 'upgrade_v2';
 func.tags = ['UpgradeV2'];
-func.dependencies = ['ChargeHandler'];
+func.dependencies = ['ChargeHandler', 'SetFlagsStorage'];

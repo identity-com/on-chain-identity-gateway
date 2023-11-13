@@ -5,7 +5,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Contract } from 'ethers';
 
 /**
- * Deploy the base set of gatekeeper networks. Note - this is only possible by holders of the gatea
+ * Deploy the base set of gatekeeper networks.
  */
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -91,4 +91,4 @@ export default func;
 func.skip = async () => process.env.NODE_ENV === 'test';
 func.id = 'create_base_gatekeeper_networks';
 func.tags = ['BaseGatekeeperNetworks'];
-func.dependencies = ['GatewayToken', 'Forwarder', 'TestGatekeeperNetwork'];
+func.dependencies = ['TestGatekeeperNetwork'];

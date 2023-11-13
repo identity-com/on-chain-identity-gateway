@@ -13,3 +13,4 @@ rm -rf build
 cp -r artifacts/v0 build
 
 STAGE=prod yarn hardhat deploy --no-compile --tags GatewayTokenV0 --network $CHAIN
+STAGE=prod IGNORE_DEPS=1 yarn hardhat deploy --no-compile --tags BaseGatekeeperNetworks --network $CHAIN

@@ -1,5 +1,9 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
+// Use the packaged version of the ERC1967 proxy, rather than the imported one
+// as this ensures we have the same version as used in initial v0 contract deployments
+// giving us a consistent Create2 address
+// import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
+import ERC1967Proxy from '../artifacts/v0/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
 import { getInitializerData } from '@openzeppelin/hardhat-upgrades/dist/utils';
 
 // A bug in hardhat leads to undefined entries in the accounts if any are duplicates.

@@ -8,6 +8,8 @@ non-breaking changes), so to obtain the correct Create2 address, the following s
 
 ## Deploy the proxy contract at the correct addresses
 
+1. Run ``
+
 1. Check out git tag
    [eth-deployment-step-1](https://github.com/identity-com/on-chain-identity-gateway/releases/tag/eth-deployment-step-1)
 2. Delete `node_modules` directory (the initial build artifact, and therefore Create2 address, depends on a specific solidity version)
