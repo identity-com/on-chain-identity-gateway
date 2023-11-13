@@ -176,6 +176,11 @@ module.exports = {
       accounts: liveAccounts,
       chainId: 421613,
     },
+    arbitrumSepolia: {
+      url: `https://sepolia-rollup.arbitrum.io/rpc`,
+      accounts: liveAccounts,
+      chainId: 421614,
+    },
     arbitrumMainnet: {
       url: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: liveAccounts,
@@ -240,6 +245,16 @@ module.exports = {
       url: 'https://rpc.testnet.fantom.network',
       accounts: liveAccounts,
       chainId: 4002,
+    },
+    baseSepolia: {
+        url: 'https://sepolia.base.org',
+        accounts: liveAccounts,
+        chainId: 84532,
+    },
+    base: {
+        url: 'https://base.llamarpc.com',
+        accounts: liveAccounts,
+        chainId: 8453,
     },
   },
   solidity: {
