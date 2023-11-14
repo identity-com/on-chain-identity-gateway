@@ -43,18 +43,18 @@ task('check-gt', 'check if a wallet has a gateway token for a particular gatekee
   .addParam('gatekeepernetwork', 'The gatekeeper network')
   .setAction(checkGT);
 task('create-gatekeeper-network', 'create a gatekeeper network')
-    .addParam('gatekeepernetwork', 'The gatekeeper network to create')
-    .addParam('gatekeeper', 'The gatekeeper to add')
-    .addParam('name', 'The name of the new gatekeeper network')
-    .setAction(createGatekeeperNetwork);
+  .addParam('gatekeepernetwork', 'The gatekeeper network to create')
+  .addParam('gatekeeper', 'The gatekeeper to add')
+  .addParam('name', 'The name of the new gatekeeper network')
+  .setAction(createGatekeeperNetwork);
 task('add-gatekeeper', 'add a gatekeeper to a network')
   .addParam('gatekeeper', 'The gatekeeper to add')
   .addParam('gatekeepernetwork', 'The gatekeeper network to add the gatekeeper to')
   .setAction(addGatekeeper);
 task('remove-gatekeeper', 'remove a gatekeeper from a network')
-    .addParam('gatekeeper', 'The gatekeeper to remove')
-    .addParam('gatekeepernetwork', 'The gatekeeper network to remove the gatekeeper from')
-    .setAction(removeGatekeeper);
+  .addParam('gatekeeper', 'The gatekeeper to remove')
+  .addParam('gatekeepernetwork', 'The gatekeeper network to remove the gatekeeper from')
+  .setAction(removeGatekeeper);
 task('issue-gt', 'issue a gateway token')
   .addParam('gatekeepernetwork', 'The gatekeeper network to issue the token against')
   .addParam('address', 'The wallet to issue the gateway token for')
@@ -152,9 +152,14 @@ module.exports = {
       chainId: 1313161554,
     },
     optimismGoerli: {
-      url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      // url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      // url: 'https://endpoints.omniatech.io/v1/op/goerli/public',
+      // url: 'https://optimism-goerli.publicnode.com',
+      url: 'https://goerli.optimism.io',
       accounts: liveAccounts,
       chainId: 420,
+      // optimism goerli deployment is only reliable if a gas price is set - the gas oracles are not reliable
+      gasPrice: 1_000_000_000,
     },
     optimismMainnet: {
       url: `https://optimism-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -247,15 +252,16 @@ module.exports = {
       chainId: 4002,
     },
     baseSepolia: {
-        url: 'https://sepolia.base.org',
-        accounts: liveAccounts,
-        chainId: 84532,
-	gasPrice: 150000005
+      url: 'https://sepolia.base.org',
+      accounts: liveAccounts,
+      chainId: 84532,
+      // set a gas price - the gas oracles are not reliable
+      gasPrice: 150000005,
     },
     base: {
-        url: 'https://base.llamarpc.com',
-        accounts: liveAccounts,
-        chainId: 8453,
+      url: 'https://base.llamarpc.com',
+      accounts: liveAccounts,
+      chainId: 8453,
     },
   },
   solidity: {

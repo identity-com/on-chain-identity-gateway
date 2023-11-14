@@ -1,6 +1,6 @@
 // Use this script to fill any nonce gaps caused by sending other transactions via other scripts
 
-import hre from "hardhat";
+import hre from 'hardhat';
 
 (async () => {
   const { ethers, deployments } = hre;
@@ -17,11 +17,11 @@ import hre from "hardhat";
       to: signer.address,
       value: 0,
       nonce,
-    })
-    console.log(`Sent self-transfer with nonce ${nonce}`)
+    });
+    console.log(`Sent self-transfer with nonce ${nonce}`);
     await selfTransfer.wait();
   }
 })().catch((error) => {
-    console.error(error);
-    process.exit(1);
-})
+  console.error(error);
+  process.exit(1);
+});

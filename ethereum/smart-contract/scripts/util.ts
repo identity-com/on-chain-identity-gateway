@@ -17,7 +17,12 @@ export const getAccounts = async (hre: HardhatRuntimeEnvironment) => {
     gatekeeper: gatekeeper || authority || deployer,
   };
 };
-export const deployProxyCreate2 = async (hre: HardhatRuntimeEnvironment, contractName: string, args: any[], useLatestProxy = true) => {
+export const deployProxyCreate2 = async (
+  hre: HardhatRuntimeEnvironment,
+  contractName: string,
+  args: any[],
+  useLatestProxy = true,
+) => {
   const { getNamedAccounts, deployments, ethers } = hre;
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();

@@ -52,16 +52,18 @@ const addToNetwork = async (
     );
   }
 
-  const addGatekeeperTx = await (await contract.addGatekeeper(gatekeeper, slotId)).wait();
-  console.log(
-    'added new gatekeeper with ' +
-      gatekeeper +
-      ' address into Gateway Token at ' +
-      contract.address +
-      ' using ' +
-      addGatekeeperTx.gasUsed.toNumber() +
-      ' gas',
-  );
+  if (!(await contract.isGatekeeper(gatekeeper, slotId))) {
+    const addGatekeeperTx = await (await contract.addGatekeeper(gatekeeper, slotId)).wait();
+    console.log(
+      'added new gatekeeper with ' +
+        gatekeeper +
+        ' address into Gateway Token at ' +
+        contract.address +
+        ' using ' +
+        addGatekeeperTx.gasUsed.toNumber() +
+        ' gas',
+    );
+  } else console.log(`gatekeeper ${gatekeeper} already in network ${slotId}`);
 };
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {

@@ -12,7 +12,7 @@ export const addGatekeeper = async (args: any, hre: HardhatRuntimeEnvironment) =
   const contract = await ethers.getContractAt('GatewayToken', gatewayToken.address);
 
   const alreadyAdded = await contract.isGatekeeper(gatekeeper, gatekeeperNetwork);
-  console.log(`gatekeeper ${gatekeeper} already added to network ${gatekeeperNetwork}: ${alreadyAdded}`)
+  console.log(`gatekeeper ${gatekeeper} already added to network ${gatekeeperNetwork}: ${alreadyAdded}`);
   if (alreadyAdded) return;
 
   const txReceipt = await contract.connect(deployer).addGatekeeper(gatekeeper, gatekeeperNetwork);
