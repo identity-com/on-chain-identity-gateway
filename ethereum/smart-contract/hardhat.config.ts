@@ -250,6 +250,7 @@ module.exports = {
         url: 'https://sepolia.base.org',
         accounts: liveAccounts,
         chainId: 84532,
+	gasPrice: 150000005
     },
     base: {
         url: 'https://base.llamarpc.com',
