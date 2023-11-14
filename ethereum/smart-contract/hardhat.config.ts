@@ -152,10 +152,7 @@ module.exports = {
       chainId: 1313161554,
     },
     optimismGoerli: {
-      // url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      // url: 'https://endpoints.omniatech.io/v1/op/goerli/public',
-      // url: 'https://optimism-goerli.publicnode.com',
-      url: 'https://goerli.optimism.io',
+      url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: liveAccounts,
       chainId: 420,
       // optimism goerli deployment is only reliable if a gas price is set - the gas oracles are not reliable
