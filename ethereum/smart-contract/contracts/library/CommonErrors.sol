@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.9;
+pragma solidity >=0.8.19;
 
 /// The passed-in account is the zero-address
 error Common__MissingAccount();

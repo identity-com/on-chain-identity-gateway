@@ -32,7 +32,7 @@ export default class GetToken extends Command {
     const {args, flags} = await this.parse(GetToken)
 
     const ownerAddress = args.address as string
-    const parsedFlags = parseFlags(flags)
+    const parsedFlags = parseFlags({...flags, readOnly: true})
 
     this.log(`Getting token for ${ownerAddress}`)
 

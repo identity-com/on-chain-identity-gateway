@@ -71,10 +71,10 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     "getRoleAdmin(bytes32,uint256)": FunctionFragment;
     "getToken(uint256)": FunctionFragment;
     "getTokenBitmask(uint256)": FunctionFragment;
-    "getTokenIdsByOwnerAndNetwork(address,uint256)": FunctionFragment;
+    "getTokenIdsByOwnerAndNetwork(address,uint256,bool)": FunctionFragment;
     "grantRole(bytes32,uint256,address)": FunctionFragment;
     "hasRole(bytes32,uint256,address)": FunctionFragment;
-    "initialize(string,string,address,address,address[])": FunctionFragment;
+    "initialize(string,string,address,address,address,address[])": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isGatekeeper(address,uint256)": FunctionFragment;
     "isNetworkAuthority(address,uint256)": FunctionFragment;
@@ -117,6 +117,7 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     "transferFrom(uint256,uint256,uint256)": FunctionFragment;
     "transfersRestricted()": FunctionFragment;
     "unfreeze(uint256)": FunctionFragment;
+    "updateChargeHandler(address)": FunctionFragment;
     "updateFlagsStorage(address)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
@@ -197,6 +198,7 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
       | "transferFrom(uint256,uint256,uint256)"
       | "transfersRestricted"
       | "unfreeze"
+      | "updateChargeHandler"
       | "updateFlagsStorage"
       | "upgradeTo"
       | "upgradeToAndCall"
@@ -312,7 +314,11 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTokenIdsByOwnerAndNetwork",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
@@ -333,6 +339,7 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "initialize",
     values: [
+      PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<string>,
@@ -544,6 +551,10 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "unfreeze",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateChargeHandler",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "updateFlagsStorage",
@@ -794,6 +805,10 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "unfreeze", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "updateChargeHandler",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "updateFlagsStorage",
     data: BytesLike
   ): Result;
@@ -822,11 +837,15 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
     "ApprovalValue(uint256,address,uint256)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
     "BitMaskUpdated(uint256,uint256)": EventFragment;
-    "ChargePaid(tuple)": EventFragment;
+    "ChargeHandlerUpdated(address)": EventFragment;
     "DAOManagerTransferred(address,address,uint256)": EventFragment;
     "Expiration(uint256,uint256)": EventFragment;
     "FlagsStorageUpdated(address)": EventFragment;
+    "ForwarderAdded(address)": EventFragment;
+    "ForwarderRemoved(address)": EventFragment;
     "Freeze(uint256)": EventFragment;
+    "GatekeeperNetworkCreated(uint256,string,bool,address)": EventFragment;
+    "GatewayTokenInitialized(string,string,address,address,address,address[])": EventFragment;
     "Initialized(uint8)": EventFragment;
     "Revoke(uint256)": EventFragment;
     "RoleAdminChanged(bytes32,uint256,bytes32,bytes32)": EventFragment;
@@ -848,11 +867,15 @@ export interface GatewayTokenUpgradeTestInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ApprovalValue"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BitMaskUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ChargePaid"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChargeHandlerUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOManagerTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Expiration"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FlagsStorageUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ForwarderAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ForwarderRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Freeze"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GatekeeperNetworkCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GatewayTokenInitialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Revoke"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
@@ -936,15 +959,16 @@ export type BitMaskUpdatedEvent = TypedEvent<
 
 export type BitMaskUpdatedEventFilter = TypedEventFilter<BitMaskUpdatedEvent>;
 
-export interface ChargePaidEventObject {
-  arg0: ChargeStructOutput;
+export interface ChargeHandlerUpdatedEventObject {
+  chargeHandler: string;
 }
-export type ChargePaidEvent = TypedEvent<
-  [ChargeStructOutput],
-  ChargePaidEventObject
+export type ChargeHandlerUpdatedEvent = TypedEvent<
+  [string],
+  ChargeHandlerUpdatedEventObject
 >;
 
-export type ChargePaidEventFilter = TypedEventFilter<ChargePaidEvent>;
+export type ChargeHandlerUpdatedEventFilter =
+  TypedEventFilter<ChargeHandlerUpdatedEvent>;
 
 export interface DAOManagerTransferredEventObject {
   previousDAOManager: string;
@@ -981,12 +1005,63 @@ export type FlagsStorageUpdatedEvent = TypedEvent<
 export type FlagsStorageUpdatedEventFilter =
   TypedEventFilter<FlagsStorageUpdatedEvent>;
 
+export interface ForwarderAddedEventObject {
+  forwarder: string;
+}
+export type ForwarderAddedEvent = TypedEvent<
+  [string],
+  ForwarderAddedEventObject
+>;
+
+export type ForwarderAddedEventFilter = TypedEventFilter<ForwarderAddedEvent>;
+
+export interface ForwarderRemovedEventObject {
+  forwarder: string;
+}
+export type ForwarderRemovedEvent = TypedEvent<
+  [string],
+  ForwarderRemovedEventObject
+>;
+
+export type ForwarderRemovedEventFilter =
+  TypedEventFilter<ForwarderRemovedEvent>;
+
 export interface FreezeEventObject {
   tokenId: BigNumber;
 }
 export type FreezeEvent = TypedEvent<[BigNumber], FreezeEventObject>;
 
 export type FreezeEventFilter = TypedEventFilter<FreezeEvent>;
+
+export interface GatekeeperNetworkCreatedEventObject {
+  network: BigNumber;
+  name: string;
+  daoGoverned: boolean;
+  daoManager: string;
+}
+export type GatekeeperNetworkCreatedEvent = TypedEvent<
+  [BigNumber, string, boolean, string],
+  GatekeeperNetworkCreatedEventObject
+>;
+
+export type GatekeeperNetworkCreatedEventFilter =
+  TypedEventFilter<GatekeeperNetworkCreatedEvent>;
+
+export interface GatewayTokenInitializedEventObject {
+  name: string;
+  symbol: string;
+  superAdmin: string;
+  flagsStorage: string;
+  chargeHandler: string;
+  trustedForwarders: string[];
+}
+export type GatewayTokenInitializedEvent = TypedEvent<
+  [string, string, string, string, string, string[]],
+  GatewayTokenInitializedEventObject
+>;
+
+export type GatewayTokenInitializedEventFilter =
+  TypedEventFilter<GatewayTokenInitializedEvent>;
 
 export interface InitializedEventObject {
   version: number;
@@ -1274,6 +1349,7 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     getTokenIdsByOwnerAndNetwork(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      onlyActive: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
@@ -1292,11 +1368,12 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     ): Promise<[boolean]>;
 
     initialize(
-      _name: PromiseOrValue<string>,
-      _symbol: PromiseOrValue<string>,
-      _superAdmin: PromiseOrValue<string>,
-      _flagsStorage: PromiseOrValue<string>,
-      _trustedForwarders: PromiseOrValue<string>[],
+      name: PromiseOrValue<string>,
+      symbol: PromiseOrValue<string>,
+      superAdmin: PromiseOrValue<string>,
+      flagsStorage: PromiseOrValue<string>,
+      chargeHandler: PromiseOrValue<string>,
+      trustedForwarders: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1526,6 +1603,11 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    updateChargeHandler(
+      chargeHandler: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     updateFlagsStorage(
       flagsStorage: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1679,6 +1761,7 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
   getTokenIdsByOwnerAndNetwork(
     owner: PromiseOrValue<string>,
     network: PromiseOrValue<BigNumberish>,
+    onlyActive: PromiseOrValue<boolean>,
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
@@ -1697,11 +1780,12 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
   ): Promise<boolean>;
 
   initialize(
-    _name: PromiseOrValue<string>,
-    _symbol: PromiseOrValue<string>,
-    _superAdmin: PromiseOrValue<string>,
-    _flagsStorage: PromiseOrValue<string>,
-    _trustedForwarders: PromiseOrValue<string>[],
+    name: PromiseOrValue<string>,
+    symbol: PromiseOrValue<string>,
+    superAdmin: PromiseOrValue<string>,
+    flagsStorage: PromiseOrValue<string>,
+    chargeHandler: PromiseOrValue<string>,
+    trustedForwarders: PromiseOrValue<string>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1931,6 +2015,11 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  updateChargeHandler(
+    chargeHandler: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   updateFlagsStorage(
     flagsStorage: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -2084,6 +2173,7 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     getTokenIdsByOwnerAndNetwork(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      onlyActive: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
@@ -2102,11 +2192,12 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     ): Promise<boolean>;
 
     initialize(
-      _name: PromiseOrValue<string>,
-      _symbol: PromiseOrValue<string>,
-      _superAdmin: PromiseOrValue<string>,
-      _flagsStorage: PromiseOrValue<string>,
-      _trustedForwarders: PromiseOrValue<string>[],
+      name: PromiseOrValue<string>,
+      symbol: PromiseOrValue<string>,
+      superAdmin: PromiseOrValue<string>,
+      flagsStorage: PromiseOrValue<string>,
+      chargeHandler: PromiseOrValue<string>,
+      trustedForwarders: PromiseOrValue<string>[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2336,6 +2427,11 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    updateChargeHandler(
+      chargeHandler: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     updateFlagsStorage(
       flagsStorage: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -2422,8 +2518,12 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     ): BitMaskUpdatedEventFilter;
     BitMaskUpdated(tokenId?: null, bitmask?: null): BitMaskUpdatedEventFilter;
 
-    "ChargePaid(tuple)"(arg0?: null): ChargePaidEventFilter;
-    ChargePaid(arg0?: null): ChargePaidEventFilter;
+    "ChargeHandlerUpdated(address)"(
+      chargeHandler?: PromiseOrValue<string> | null
+    ): ChargeHandlerUpdatedEventFilter;
+    ChargeHandlerUpdated(
+      chargeHandler?: PromiseOrValue<string> | null
+    ): ChargeHandlerUpdatedEventFilter;
 
     "DAOManagerTransferred(address,address,uint256)"(
       previousDAOManager?: null,
@@ -2452,10 +2552,54 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       flagsStorage?: PromiseOrValue<string> | null
     ): FlagsStorageUpdatedEventFilter;
 
+    "ForwarderAdded(address)"(
+      forwarder?: PromiseOrValue<string> | null
+    ): ForwarderAddedEventFilter;
+    ForwarderAdded(
+      forwarder?: PromiseOrValue<string> | null
+    ): ForwarderAddedEventFilter;
+
+    "ForwarderRemoved(address)"(
+      forwarder?: PromiseOrValue<string> | null
+    ): ForwarderRemovedEventFilter;
+    ForwarderRemoved(
+      forwarder?: PromiseOrValue<string> | null
+    ): ForwarderRemovedEventFilter;
+
     "Freeze(uint256)"(
       tokenId?: PromiseOrValue<BigNumberish> | null
     ): FreezeEventFilter;
     Freeze(tokenId?: PromiseOrValue<BigNumberish> | null): FreezeEventFilter;
+
+    "GatekeeperNetworkCreated(uint256,string,bool,address)"(
+      network?: null,
+      name?: null,
+      daoGoverned?: null,
+      daoManager?: null
+    ): GatekeeperNetworkCreatedEventFilter;
+    GatekeeperNetworkCreated(
+      network?: null,
+      name?: null,
+      daoGoverned?: null,
+      daoManager?: null
+    ): GatekeeperNetworkCreatedEventFilter;
+
+    "GatewayTokenInitialized(string,string,address,address,address,address[])"(
+      name?: null,
+      symbol?: null,
+      superAdmin?: null,
+      flagsStorage?: null,
+      chargeHandler?: null,
+      trustedForwarders?: null
+    ): GatewayTokenInitializedEventFilter;
+    GatewayTokenInitialized(
+      name?: null,
+      symbol?: null,
+      superAdmin?: null,
+      flagsStorage?: null,
+      chargeHandler?: null,
+      trustedForwarders?: null
+    ): GatewayTokenInitializedEventFilter;
 
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
@@ -2689,6 +2833,7 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     getTokenIdsByOwnerAndNetwork(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      onlyActive: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -2707,11 +2852,12 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     ): Promise<BigNumber>;
 
     initialize(
-      _name: PromiseOrValue<string>,
-      _symbol: PromiseOrValue<string>,
-      _superAdmin: PromiseOrValue<string>,
-      _flagsStorage: PromiseOrValue<string>,
-      _trustedForwarders: PromiseOrValue<string>[],
+      name: PromiseOrValue<string>,
+      symbol: PromiseOrValue<string>,
+      superAdmin: PromiseOrValue<string>,
+      flagsStorage: PromiseOrValue<string>,
+      chargeHandler: PromiseOrValue<string>,
+      trustedForwarders: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2941,6 +3087,11 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    updateChargeHandler(
+      chargeHandler: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     updateFlagsStorage(
       flagsStorage: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -3091,6 +3242,7 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     getTokenIdsByOwnerAndNetwork(
       owner: PromiseOrValue<string>,
       network: PromiseOrValue<BigNumberish>,
+      onlyActive: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -3109,11 +3261,12 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     initialize(
-      _name: PromiseOrValue<string>,
-      _symbol: PromiseOrValue<string>,
-      _superAdmin: PromiseOrValue<string>,
-      _flagsStorage: PromiseOrValue<string>,
-      _trustedForwarders: PromiseOrValue<string>[],
+      name: PromiseOrValue<string>,
+      symbol: PromiseOrValue<string>,
+      superAdmin: PromiseOrValue<string>,
+      flagsStorage: PromiseOrValue<string>,
+      chargeHandler: PromiseOrValue<string>,
+      trustedForwarders: PromiseOrValue<string>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -3344,6 +3497,11 @@ export interface GatewayTokenUpgradeTest extends BaseContract {
 
     unfreeze(
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateChargeHandler(
+      chargeHandler: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -4,7 +4,12 @@
 /* eslint-disable */
 import type * as v0 from "./v0";
 export type { v0 };
+export type { DummyBrokenERC20 } from "./DummyBrokenERC20";
+export type { DummyBrokenEthRecipient } from "./DummyBrokenEthRecipient";
 export type { DummyERC20 } from "./DummyERC20";
+export type { ERC2771Test } from "./ERC2771Test";
+export type { GatewayTokenClientERC2771Test } from "./GatewayTokenClientERC2771Test";
+export type { GatewayTokenClientERC2771UpgradeableTest } from "./GatewayTokenClientERC2771UpgradeableTest";
 export type { GatewayTokenClientTest } from "./GatewayTokenClientTest";
 export type { GatewayTokenInternalsTest } from "./GatewayTokenInternalsTest";
 export type { GatewayTokenUpgradeTest } from "./GatewayTokenUpgradeTest";

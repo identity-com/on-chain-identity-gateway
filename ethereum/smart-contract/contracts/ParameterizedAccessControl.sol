@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.8.0) (access/AccessControl.sol)
 
-pragma solidity 0.8.9;
+pragma solidity >=0.8.19;
 
 import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
@@ -84,6 +84,7 @@ abstract contract ParameterizedAccessControl is ContextUpgradeable, IParameteriz
     }
 
     function revokeSuperAdmin(address account) external onlySuperAdmin {
+        if (account == _msgSender()) revert ParameterizedAccessControl__NoSelfAdminRemoval();
         emit SuperAdminRemoved(account);
         _superAdmins[account] = false;
     }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (access/IAccessControl.sol)
 
-pragma solidity 0.8.9;
+pragma solidity >=0.8.19;
 
 /**
  * @dev External interface of AccessControl declared to support ERC165 detection.
@@ -45,6 +45,9 @@ interface IParameterizedAccessControl {
 
     /// A sender can only renounce roles for themselves
     error ParameterizedAccessControl__RenounceRoleNotForSelf(bytes32 role, address account);
+
+    /// A super-admin cannot remove themselves. This is to prevent an accidental lock-out
+    error ParameterizedAccessControl__NoSelfAdminRemoval();
 
     /**
      * @dev Grants `role` to `account`.

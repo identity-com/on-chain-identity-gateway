@@ -93,6 +93,7 @@ type Flags = {
   gatekeeperNetwork: number | undefined
   fees?: GasPriceKey | undefined
   gasLimit?: BigNumber | undefined
+  readOnly?: boolean | undefined
 };
 export const parseFlags = (flags: Flags) => {
   // These all have defaults and can therefore be safely cast
@@ -106,6 +107,7 @@ export const parseFlags = (flags: Flags) => {
     gatekeeperNetwork,
     fees: flags.fees,
     gasLimit: flags.gasLimit,
+    readOnly: false,
   }
 }
 

@@ -10,8 +10,10 @@ export const fund = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const network = await from.provider?.getNetwork();
   const balance = await from.getBalance();
 
+  const recipient = accounts[args.to] ?? args.to;
+
   console.log(
-    `Funding ${args.to} (${accounts[args.to]}) with ${amount} from ${args.from} (${from.address}). Network ${
+    `Funding ${recipient} with ${amount} from ${args.from} (${from.address}). Network ${
       network?.chainId
     }, balance ${balance}`,
   );
@@ -19,7 +21,7 @@ export const fund = async (args: any, hre: HardhatRuntimeEnvironment) => {
   if (args.dryrun) return;
 
   const transactionResponse = await from.sendTransaction({
-    to: accounts[args.to],
+    to: recipient,
     value: amount,
   });
 

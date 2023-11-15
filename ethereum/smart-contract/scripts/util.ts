@@ -1,5 +1,9 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
+// Use the packaged version of the ERC1967 proxy, rather than the imported one
+// as this ensures we have the same version as used in initial v0 contract deployments
+// giving us a consistent Create2 address
+import ERC1967ProxyLatest from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
+import ERC1967Proxy from '../artifacts/v0/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
 import { getInitializerData } from '@openzeppelin/hardhat-upgrades/dist/utils';
 
 // A bug in hardhat leads to undefined entries in the accounts if any are duplicates.
@@ -13,44 +17,12 @@ export const getAccounts = async (hre: HardhatRuntimeEnvironment) => {
     gatekeeper: gatekeeper || authority || deployer,
   };
 };
-export const deployProxy = async (
+export const deployProxyCreate2 = async (
   hre: HardhatRuntimeEnvironment,
   contractName: string,
   args: any[],
-  reuseDeployments = true,
-  opts: any = {},
+  useLatestProxy = true,
 ) => {
-  const { deployments, ethers, upgrades } = hre;
-  const { save } = deployments;
-
-  const Contract = await ethers.getContractFactory(contractName);
-
-  const existingDeployment = await deployments.getOrNull(contractName);
-  if (existingDeployment && reuseDeployments) {
-    console.log(`Deploy ${contractName} proxy skipped - reusing existing deployment at ${existingDeployment.address}`);
-    return ethers.getContractAt(contractName, existingDeployment.address);
-  }
-
-  const proxy = await upgrades.deployProxy(Contract, args, { kind: 'uups', ...opts });
-  await proxy.deployed();
-  console.log(`Deploy ${contractName} Proxy done -> ${proxy.address}`);
-
-  // Integration between hardhat-deploy and hardhat-upgrades inspired by
-  // https://github.com/wighawag/hardhat-deploy/issues/242#issuecomment-998790266
-  // // TODO Do we need this?
-  // const impl = await upgrades.upgradeProxy(proxy, Contract, opts);
-  // console.log(`Deploy ${contractName} Impl  done -> ${impl.address}`);
-  const artifact = await deployments.getExtendedArtifact(contractName);
-  const proxyDeployments = {
-    address: proxy.address,
-    ...artifact,
-  };
-  await save(contractName, proxyDeployments);
-
-  return ethers.getContractAt(contractName, proxy.address);
-};
-
-export const deployProxyCreate2 = async (hre: HardhatRuntimeEnvironment, contractName: string, args: any[]) => {
   const { getNamedAccounts, deployments, ethers } = hre;
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
@@ -64,6 +36,7 @@ export const deployProxyCreate2 = async (hre: HardhatRuntimeEnvironment, contrac
     deterministicDeployment: true,
   });
 
+  const proxyContract = useLatestProxy ? ERC1967ProxyLatest : ERC1967Proxy;
   const Contract = await ethers.getContractFactory(contractName);
   const data = getInitializerData(Contract.interface, args);
   const proxy = await deploy(proxyContractName, {
@@ -71,7 +44,7 @@ export const deployProxyCreate2 = async (hre: HardhatRuntimeEnvironment, contrac
     args: [impl.address, data],
     log: true,
     deterministicDeployment: true,
-    contract: ERC1967Proxy,
+    contract: proxyContract,
   });
 
   return ethers.getContractAt(contractName, proxy.address);

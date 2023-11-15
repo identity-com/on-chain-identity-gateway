@@ -127,7 +127,7 @@ $ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 2. Solana 
 
 ```shell
-$ sh -c "$(curl -sSfL https://release.solana.com/v1.14.17/install)"
+$ sh -c "$(curl -sSfL https://release.solana.com/v1.16.17/install)"
 ```
 
 To build the program:
