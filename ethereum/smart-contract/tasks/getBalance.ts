@@ -7,6 +7,6 @@ export const getBalance = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const balance = await deployer.getBalance();
 
   // Convert the balance from wei to ether and log it
-  console.log("Deployer address:", deployer.address);
-  console.log("Balance:", ethers.utils.formatEther(balance));
+  console.log('Deployer address:', deployer.address);
+  console.log('Balance:', ethers.utils.formatEther(balance));
 };

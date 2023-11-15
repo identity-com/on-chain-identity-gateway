@@ -61,6 +61,10 @@ export const networks = {
     url: 'https://arbitrum-goerli.infura.io/v3/',
     chainId: 421_613,
   },
+  arbitrumSepolia: {
+    url: 'https://sepolia-rollup.arbitrum.io/rpc',
+    chainId: 421_614,
+  },
   arbitrum: {
     url: 'https://arbitrum-mainnet.infura.io/v3/',
     chainId: 42_161,
@@ -132,6 +136,14 @@ export const networks = {
   polygonZkEVM: {
     url: 'https://zkevm-rpc.com',
     chainId: 1101,
+  },
+  baseSepolia: {
+    url: 'https://sepolia.base.org',
+    chainId: 84_532,
+  },
+  base: {
+    url: 'https://base.llamarpc.com',
+    chainId: 8453,
   },
 }
 

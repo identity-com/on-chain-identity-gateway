@@ -5,7 +5,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Contract } from 'ethers';
 
 /**
- * Deploy the base set of gatekeeper networks. Note - this is only possible by holders of the gatea
+ * Deploy the base set of gatekeeper networks.
  */
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -14,12 +14,14 @@ const networks = {
   prod: {
     ignREusXmGrscGNUesoU9mxfds9AiYTezUKex2PsZV6: 4,
     bni1ewus6aMxTxBi5SAfzEmmXLf8KcVFRmTfproJuKw: 6,
+    b1gz9sD7TeH6cagodm4zTcAx6LkZ56Etisvgr6jGFQb: 7,
     uniqobk8oGh4XBLMqM68K8M2zNu3CdYX7q5go7whQiv: 10,
     vaa1QRNEBb1G2XjPohqGWnPsvxWnwwXF67pdjrhDSwM: 11,
   },
   dev: {
     tigoYhp9SpCDoCQmXGj2im5xa3mnjR1zuXrpCJ5ZRmi: 14,
     tbniJdS9j7BWhUoJesjpqutC54AYr96cn2No7dJcqce: 16,
+    tb1g4GgywqGprgbuRw8RdDuPGUPC4CFMmmNFXfBX79J: 17,
     tunQheuPpHhjjsbrUDp4rikqYez9UXv4SXLRHf9Kzsv: 20,
     tvaaHL9BSgZGLRAqUrx1Fzs2Uneb6BWGdnYuqrFoXm3: 21,
   },
@@ -50,16 +52,18 @@ const addToNetwork = async (
     );
   }
 
-  const addGatekeeperTx = await (await contract.addGatekeeper(gatekeeper, slotId)).wait();
-  console.log(
-    'added new gatekeeper with ' +
-      gatekeeper +
-      ' address into Gateway Token at ' +
-      contract.address +
-      ' using ' +
-      addGatekeeperTx.gasUsed.toNumber() +
-      ' gas',
-  );
+  if (!(await contract.isGatekeeper(gatekeeper, slotId))) {
+    const addGatekeeperTx = await (await contract.addGatekeeper(gatekeeper, slotId)).wait();
+    console.log(
+      'added new gatekeeper with ' +
+        gatekeeper +
+        ' address into Gateway Token at ' +
+        contract.address +
+        ' using ' +
+        addGatekeeperTx.gasUsed.toNumber() +
+        ' gas',
+    );
+  } else console.log(`gatekeeper ${gatekeeper} already in network ${slotId}`);
 };
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -91,4 +95,4 @@ export default func;
 func.skip = async () => process.env.NODE_ENV === 'test';
 func.id = 'create_base_gatekeeper_networks';
 func.tags = ['BaseGatekeeperNetworks'];
-func.dependencies = ['GatewayToken', 'Forwarder', 'TestGatekeeperNetwork'];
+func.dependencies = ['TestGatekeeperNetwork'];
