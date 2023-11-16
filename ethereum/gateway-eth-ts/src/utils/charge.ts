@@ -1,6 +1,10 @@
 import { BigNumber, ethers, PopulatedTransaction } from "ethers";
-import { DEFAULT_GATEWAY_TOKEN_ADDRESS } from "./constants";
+import {
+  DEFAULT_CHARGE_HANDLER_ADDRESS,
+  DEFAULT_GATEWAY_TOKEN_ADDRESS,
+} from "./constants";
 import { Provider } from "@ethersproject/providers";
+import { ChargeHandler__factory } from "../contracts/typechain-types";
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -51,7 +55,7 @@ export const makeERC20Charge = (
 export const approveERC20Charge = (
   charge: Charge,
   provider: Provider,
-  contract: string = DEFAULT_GATEWAY_TOKEN_ADDRESS
+  contract: string = DEFAULT_CHARGE_HANDLER_ADDRESS
 ): Promise<PopulatedTransaction> => {
   if (charge.chargeType !== ChargeType.ERC20) {
     throw new Error("Invalid charge type - must be ERC20");
@@ -66,4 +70,29 @@ export const approveERC20Charge = (
   );
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   return tokenContract.populateTransaction.approve(contract, charge.value);
+};
+
+export const approveInternalERC20Charge = (
+  charge: Charge,
+  network: bigint,
+  provider: Provider,
+  chargeContractAddress: string = DEFAULT_GATEWAY_TOKEN_ADDRESS,
+  gatewayContractAddress: string = DEFAULT_GATEWAY_TOKEN_ADDRESS
+): Promise<PopulatedTransaction> => {
+  if (charge.chargeType !== ChargeType.ERC20) {
+    throw new Error("Invalid charge type - must be ERC20");
+  }
+
+  const chargeContract = ChargeHandler__factory.connect(
+    chargeContractAddress,
+    provider
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+  return chargeContract.populateTransaction.setApproval(
+    gatewayContractAddress,
+    charge.token,
+    charge.value,
+    network
+  );
 };

@@ -84,12 +84,15 @@ const charge = makeERC20Charge(
 );
 const approvalTx = await approveERC20Charge(
     charge,
-    provider,
-    DEFAULT_GATEWAY_TOKEN_ADDRESS
+    provider
 );
-
-// send approvalTx to the user to sign
-// once the user has signed the above
+const internalApproveTx = await approveInternalERC20Charge(
+    charge,
+    gatekeeperNetwork,
+    provider
+);
+// send approvalTx and approveInternalTx to the user to sign
+// once the user has signed the above transactions
 
 const gateway = new GatewayTs(
     gatekeeper,

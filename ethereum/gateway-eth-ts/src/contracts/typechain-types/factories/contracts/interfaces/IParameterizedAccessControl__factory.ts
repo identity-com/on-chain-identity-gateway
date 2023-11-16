@@ -12,6 +12,11 @@ import type {
 
 const _abi = [
   {
+    inputs: [],
+    name: "ParameterizedAccessControl__NoSelfAdminRemoval",
+    type: "error",
+  },
+  {
     inputs: [
       {
         internalType: "bytes32",
