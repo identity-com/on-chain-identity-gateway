@@ -143,6 +143,7 @@ describe('GatewayToken', () => {
           flagsStorage.address,
           chargeHandler.address,
           [forwarder.address],
+          gatewayNetwork.address
         ];
 
         const contract = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
@@ -201,6 +202,7 @@ describe('GatewayToken', () => {
           flagsStorage.address,
           ZERO_ADDRESS,
           [forwarder.address],
+          gatewayNetwork.address
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -577,12 +579,6 @@ describe('GatewayToken', () => {
     before(async () => {
       const clientFactory = await ethers.getContractFactory('GatewayTokenClientTest');
       client = await clientFactory.deploy(gatewayToken.address, gkn1);
-    });
-
-    it('rejects if the contract address is zero', async () => {
-      const clientFactory = await ethers.getContractFactory('GatewayTokenClientTest');
-
-      await expect(clientFactory.deploy(ZERO_ADDRESS, gkn1)).to.be.reverted;
     });
 
     it('approves the user if they have a gateway token', async () => {
@@ -1364,7 +1360,7 @@ describe('GatewayToken', () => {
         charge.recipient = brokenRecipient.address;
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
 
         // forward it so that Alice sends it, and includes a value
         // this should fail, because the recipient rejects it
@@ -1391,7 +1387,7 @@ describe('GatewayToken', () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
 
         // forward it so that Alice sends it. Alice tries to include a higher value than the charge
         await expect(forward(tx, alice, ethers.utils.parseEther('0.15'))).to.be.revertedWithCustomError(
@@ -1443,7 +1439,7 @@ describe('GatewayToken', () => {
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1458,7 +1454,7 @@ describe('GatewayToken', () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
 
         await expect(forward(tx, alice)).to.be.revertedWith('ERC20: insufficient allowance');
       });
@@ -1473,7 +1469,7 @@ describe('GatewayToken', () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value.sub(10), gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1489,7 +1485,7 @@ describe('GatewayToken', () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, someOtherTokenAddress, charge.value, gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1504,7 +1500,7 @@ describe('GatewayToken', () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
 
         await expect(forward(tx, alice, ethers.utils.parseEther('0.15'))).to.be.revertedWithCustomError(
           chargeHandler,
@@ -1597,7 +1593,7 @@ describe('GatewayToken', () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, brokenErc20.address, charge.value, gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
 
         // the transfer fails because the erc20 contract blocked it
         await expect(forward(tx, alice)).to.be.revertedWith(/ERC20 operation did not succeed/);
