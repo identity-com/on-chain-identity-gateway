@@ -13,13 +13,16 @@ import '@openzeppelin/hardhat-upgrades';
 import 'hardhat-contract-sizer';
 
 import { checkGT } from './tasks/checkGT';
+import { createGatekeeperNetwork } from './tasks/createGatekeeperNetwork';
 import { addGatekeeper } from './tasks/addGatekeeper';
+import { removeGatekeeper } from './tasks/removeGatekeeper';
 import { issueGT } from './tasks/issueGT';
 import { fund } from './tasks/fund';
 import { printPrivateKey } from './tasks/printPrivateKey';
 import { createWallet } from './tasks/createWallet';
 import { addForwarder } from './tasks/addForwarder';
 import { execute } from './tasks/execute';
+import { getBalance } from './tasks/getBalance';
 
 const derivedAccounts = {
   mnemonic: process.env.MNEMONIC || 'test test test test test test test test test test test junk',
@@ -39,10 +42,19 @@ task('check-gt', 'check if a wallet has a gateway token for a particular gatekee
   .addParam('address', 'The wallet to check')
   .addParam('gatekeepernetwork', 'The gatekeeper network')
   .setAction(checkGT);
+task('create-gatekeeper-network', 'create a gatekeeper network')
+  .addParam('gatekeepernetwork', 'The gatekeeper network to create')
+  .addParam('gatekeeper', 'The gatekeeper to add')
+  .addParam('name', 'The name of the new gatekeeper network')
+  .setAction(createGatekeeperNetwork);
 task('add-gatekeeper', 'add a gatekeeper to a network')
   .addParam('gatekeeper', 'The gatekeeper to add')
   .addParam('gatekeepernetwork', 'The gatekeeper network to add the gatekeeper to')
   .setAction(addGatekeeper);
+task('remove-gatekeeper', 'remove a gatekeeper from a network')
+  .addParam('gatekeeper', 'The gatekeeper to remove')
+  .addParam('gatekeepernetwork', 'The gatekeeper network to remove the gatekeeper from')
+  .setAction(removeGatekeeper);
 task('issue-gt', 'issue a gateway token')
   .addParam('gatekeepernetwork', 'The gatekeeper network to issue the token against')
   .addParam('address', 'The wallet to issue the gateway token for')
@@ -69,6 +81,7 @@ task('execute', 'sign and send a transaction')
   .addParam('to', 'the recipient of the transaction')
   .addParam('value', 'the amount to send with the transaction')
   .setAction(execute);
+task('get-balance', 'get the balance of the deployer').setAction(getBalance);
 
 // Set the default contracts path to "contracts"
 const defaultPath = './contracts';
@@ -100,160 +113,153 @@ module.exports = {
           : liveAccounts.map((a) => ({ privateKey: a, balance: '10000000000000000000000' })),
     },
     localhost: {
-      saveDeployments: true,
       allowUnlimitedContractSize: false,
       accounts: liveAccounts,
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 1,
     },
     sepolia: {
       url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 11155111,
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 5,
     },
     polygonMumbai: {
       url: `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 80001,
     },
     polygonMainnet: {
       url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 137,
     },
     auroraTestnet: {
       url: `https://aurora-testnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 1313161555,
     },
     auroraMainnet: {
       url: `https://aurora-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 1313161554,
     },
     optimismGoerli: {
       url: `https://optimism-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 420,
+      // optimism goerli deployment is only reliable if a gas price is set - the gas oracles are not reliable
+      gasPrice: 1_000_000_000,
     },
     optimismMainnet: {
       url: `https://optimism-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 10,
     },
     palmTestnet: {
       url: `https://palm-testnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 11297108099,
     },
     palmMainnet: {
       url: `https://palm-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 11297108109,
     },
     arbitrumGoerli: {
       url: `https://arbitrum-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 421613,
     },
+    arbitrumSepolia: {
+      url: `https://sepolia-rollup.arbitrum.io/rpc`,
+      accounts: liveAccounts,
+      chainId: 421614,
+    },
     arbitrumMainnet: {
       url: `https://arbitrum-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 42161,
     },
     celoMainnet: {
       url: `https://celo-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 42220,
     },
     celoAlfajores: {
       url: `https://celo-alfajores.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 44787,
     },
     avalancheCChain: {
       url: `https://avalanche-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 43114,
     },
     avalancheCChainFuji: {
       url: `https://avalanche-fuji.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 43113,
     },
     starknetMainnet: {
       url: `https://starknet-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 0, // not documented anywhere
     },
     starknetGoerli: {
       url: `https://starknet-goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 0, // not documented anywhere
     },
     xdc: {
       url: 'https://erpc.xinfin.network',
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 50,
     },
     xdcApothem: {
       url: 'https://erpc.apothem.network',
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 51,
     },
     polygonZkEVM: {
-      url: 'https://zkevm-rpc.com',
-      saveDeployments: true,
+      url: 'https://polygon-zkevm.drpc.org',
       accounts: liveAccounts,
       chainId: 1101,
     },
     polygonZkEVMTestnet: {
       url: 'https://rpc.public.zkevm-test.net',
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 1442,
     },
     fantom: {
       url: 'https://rpcapi.fantom.network',
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 250,
     },
     fantomTestnet: {
       url: 'https://rpc.testnet.fantom.network',
-      saveDeployments: true,
       accounts: liveAccounts,
       chainId: 4002,
-    }
+    },
+    baseSepolia: {
+      url: 'https://sepolia.base.org',
+      accounts: liveAccounts,
+      chainId: 84532,
+      // set a gas price - the gas oracles are not reliable
+      gasPrice: 150000005,
+    },
+    base: {
+      url: 'https://base.llamarpc.com',
+      accounts: liveAccounts,
+      chainId: 8453,
+    },
   },
   solidity: {
     version: '0.8.19',

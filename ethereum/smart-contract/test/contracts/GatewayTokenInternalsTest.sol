@@ -4,7 +4,6 @@ pragma solidity >=0.8.19;
 import {GatewayToken} from "../../contracts/GatewayToken.sol";
 import {Charge} from "../../contracts/library/Charge.sol";
 import {ERC3525Upgradeable} from "@solvprotocol/erc-3525/ERC3525Upgradeable.sol";
-import {console} from "hardhat/console.sol";
 
 /**
  * @dev An extension of the GatewayToken.sol, used to test internal functions of a contract.
@@ -18,7 +17,7 @@ contract GatewayTokenInternalsTest is GatewayToken {
     /**
      * @dev A public version of _msgData() in the GatewayToken contract, use for testing the forwarding logic.
      */
-    function getMsgData(uint x) external {
+    function getMsgData(uint) external {
         emit MsgData(super._msgData());
     }
 

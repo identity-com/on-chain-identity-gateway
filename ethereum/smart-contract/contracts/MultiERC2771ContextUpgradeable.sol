@@ -44,7 +44,7 @@ abstract contract MultiERC2771ContextUpgradeable is ContextUpgradeable {
     }
 
     function _msgSender() internal view virtual override returns (address sender) {
-        if (isTrustedForwarder(msg.sender)) {
+        if (isTrustedForwarder(msg.sender) && msg.data.length >= 20) {
             // The assembly code is more direct than the Solidity version using `abi.decode`.
             // solhint-disable-next-line no-inline-assembly
             assembly {
@@ -56,7 +56,7 @@ abstract contract MultiERC2771ContextUpgradeable is ContextUpgradeable {
     }
 
     function _msgData() internal view virtual override returns (bytes calldata) {
-        if (isTrustedForwarder(msg.sender)) {
+        if (isTrustedForwarder(msg.sender) && msg.data.length >= 20) {
             return msg.data[:msg.data.length - 20];
         } else {
             return super._msgData();

@@ -1,12 +1,12 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { DEFAULT_GATEWAY_TOKEN_ADDRESS } from '../../gateway-eth-ts/src';
 
 export const checkGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
-  const { ethers } = hre;
+  const { ethers, deployments } = hre;
 
   const account = ethers.utils.getAddress(args.address);
 
-  const contract = await ethers.getContractAt('GatewayToken', DEFAULT_GATEWAY_TOKEN_ADDRESS);
+  const gatewayToken = await deployments.get('GatewayToken');
+  const contract = await ethers.getContractAt('GatewayToken', gatewayToken.address);
 
   const result = await contract['verifyToken(address,uint256)'](account, args.gatekeepernetwork);
 

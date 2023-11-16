@@ -2,6 +2,7 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+export type { IChargeHandler } from "./IChargeHandler";
 export type { IERC721Expirable } from "./IERC721Expirable";
 export type { IERC721Freezable } from "./IERC721Freezable";
 export type { IERC721Revokable } from "./IERC721Revokable";

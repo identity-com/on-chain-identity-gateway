@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.19;
+pragma solidity 0.8.19; // Fixed version for concrete contracts
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
@@ -20,8 +20,9 @@ import {MultiERC2771ContextUpgradeable} from "./MultiERC2771ContextUpgradeable.s
 import {Charge} from "./library/Charge.sol";
 import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
 import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
-import {ChargeHandler} from "./ChargeHandler.sol";
 import {BitMask} from "./library/BitMask.sol";
+import {InternalTokenApproval} from "./library/InternalTokenApproval.sol";
+import {IChargeHandler} from "./interfaces/IChargeHandler.sol";
 
 /**
  * @dev Gateway Token contract is responsible for managing Identity.com KYC gateway tokens
@@ -43,8 +44,7 @@ contract GatewayToken is
     IERC721Expirable,
     IERC721Revokable,
     IGatewayToken,
-    TokenBitMask,
-    ChargeHandler
+    TokenBitMask
 {
     using Address for address;
     using Strings for uint;
@@ -63,6 +63,8 @@ contract GatewayToken is
     // Gatekeeper network contract addresses
     address internal _gatewayNetworkContract;
 
+    IChargeHandler internal _chargeHandler;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor is "empty" as we are using the proxy pattern,
     // where setup code is in the initialize function
@@ -72,19 +74,24 @@ contract GatewayToken is
     }
 
     function initialize(
-        string calldata _name,
-        string calldata _symbol,
-        address _superAdmin,
-        address _flagsStorage,
-        address[] calldata _trustedForwarders,
+        string calldata name,
+        string calldata symbol,
+        address superAdmin,
+        address flagsStorage,
+        address chargeHandler,
+        address[] calldata trustedForwarders,
         address _gatewayNetworkAddress
     ) external initializer {
         // Check for zero addresses
-        if (_superAdmin == address(0)) {
+        if (superAdmin == address(0)) {
             revert Common__MissingAccount();
         }
 
-        if (_flagsStorage == address(0)) {
+        if (flagsStorage == address(0)) {
+            revert Common__MissingAccount();
+        }
+
+        if (chargeHandler == address(0)) {
             revert Common__MissingAccount();
         }
 
@@ -93,18 +100,21 @@ contract GatewayToken is
         }
 
         // Check for zero addresses in the trusted forwarders array
-        for (uint256 i = 0; i < _trustedForwarders.length; i++) {
-            if (_trustedForwarders[i] == address(0)) {
+        for (uint256 i = 0; i < trustedForwarders.length; i++) {
+            if (trustedForwarders[i] == address(0)) {
                 revert Common__MissingAccount();
             }
         }
 
-        __ERC3525_init(_name, _symbol, 0);
-        __MultiERC2771ContextUpgradeable_init(_trustedForwarders);
+        __ERC3525_init(name, symbol, 0);
+        __MultiERC2771ContextUpgradeable_init(trustedForwarders);
 
-        _setFlagsStorage(_flagsStorage);
-        _superAdmins[_superAdmin] = true;
+        _setFlagsStorage(flagsStorage);
+        _setChargeHandler(chargeHandler);
         _gatewayNetworkContract = _gatewayNetworkAddress;
+        _superAdmins[superAdmin] = true;
+
+        emit GatewayTokenInitialized(name, symbol, superAdmin, flagsStorage, chargeHandler, trustedForwarders);
     }
 
     function setMetadataDescriptor(address _metadataDescriptor) external onlySuperAdmin {
@@ -113,10 +123,12 @@ contract GatewayToken is
 
     function addForwarder(address forwarder) external onlySuperAdmin {
         _addForwarder(forwarder);
+        emit ForwarderAdded(forwarder);
     }
 
     function removeForwarder(address forwarder) external onlySuperAdmin {
         _removeForwarder(forwarder);
+        emit ForwarderRemoved(forwarder);
     }
 
     /**
@@ -124,7 +136,19 @@ contract GatewayToken is
      * @param flagsStorage FlagsStorage contract address
      */
     function updateFlagsStorage(address flagsStorage) external onlySuperAdmin {
+        // check for zero address
+        if (flagsStorage == address(0)) {
+            revert Common__MissingAccount();
+        }
         _setFlagsStorage(flagsStorage);
+    }
+
+    /**
+     * @dev Update the ChargeHandler contract address
+     * @param chargeHandler ChargeHandler contract address
+     */
+    function updateChargeHandler(address chargeHandler) external onlySuperAdmin {
+        _setChargeHandler(chargeHandler);
     }
 
     /**
@@ -167,7 +191,7 @@ contract GatewayToken is
         _issuingGatekeepers[tokenId] = _msgSender();
 
         // INTERACTIONS
-        _handleCharge(charge);
+        _handleCharge(charge, network);
     }
 
     function revoke(uint tokenId) external virtual override {
@@ -206,11 +230,12 @@ contract GatewayToken is
      */
     function setExpiration(uint tokenId, uint timestamp, Charge calldata charge) external payable virtual {
         // CHECKS
+        uint network = slotOf(tokenId);
         _checkGatekeeper(slotOf(tokenId));
         // EFFECTS
         _setExpiration(tokenId, timestamp);
         // INTERACTIONS
-        _handleCharge(charge);
+        _handleCharge(charge, network);
     }
 
 
@@ -374,6 +399,30 @@ contract GatewayToken is
     // otherwise, no other logic.
     // solhint-disable-next-line no-empty-blocks
     function _authorizeUpgrade(address) internal override onlySuperAdmin {}
+
+    /**
+     * @dev Internal function to set ChargeHandler contract address
+     * @param chargeHandler ChargeHandler contract address
+     */
+    function _setChargeHandler(address chargeHandler) internal {
+        _chargeHandler = IChargeHandler(chargeHandler);
+
+        emit ChargeHandlerUpdated(chargeHandler);
+    }
+
+    function _handleCharge(Charge calldata charge, uint network) internal {
+        // solhint-disable-next-line no-empty-blocks
+        try _chargeHandler.handleCharge{value: msg.value}(charge, network) {
+            // done
+        } catch (bytes memory reason) {
+            // Rethrow the custom error from the charge handler
+            // Using inline assembly here avoids the need to parse the revert reason
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                revert(add(32, reason), mload(reason))
+            }
+        }
+    }
 
     function _msgSender()
         internal

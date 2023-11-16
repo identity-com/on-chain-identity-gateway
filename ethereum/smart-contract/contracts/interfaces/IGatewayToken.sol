@@ -11,9 +11,44 @@ interface IGatewayToken {
     }
 
     /**
+     * @dev Emitted when GatewayToken contract is initialized.
+     */
+    event GatewayTokenInitialized(
+        string name,
+        string symbol,
+        address superAdmin,
+        address flagsStorage,
+        address chargeHandler,
+        address[] trustedForwarders
+    );
+
+    /**
+     * @dev Emitted when a gatekeeper network is created.
+     */
+    event GatekeeperNetworkCreated(uint256 network, string name, bool daoGoverned, address daoManager);
+
+    /**
      * @dev Emitted when GatewayToken DAO Manager transferred to `newDAOManager` address.
      */
     event DAOManagerTransferred(address previousDAOManager, address newDAOManager, uint256 network);
+
+    /**
+     * @dev Emitted when Identity.com Admin updated the ChargeHandler
+     * contract address
+     */
+    event ChargeHandlerUpdated(address indexed chargeHandler);
+
+    /**
+     * @dev Emitted when Identity.com Admin added a trusted forwarder
+     * contract address
+     */
+    event ForwarderAdded(address indexed forwarder);
+
+    /**
+     * @dev Emitted when Identity.com Admin removed a trusted forwarder
+     * contract address
+     */
+    event ForwarderRemoved(address indexed forwarder);
 
     /// Insufficient funds for withdrawal. Needed `required` but only
     /// `available` available.
@@ -25,6 +60,9 @@ interface IGatewayToken {
     /// The gatekeeper network does not exist.
     /// @param network gatekeeper network id.
     error GatewayToken__AddressNotAGatekeeper(uint network, address addr);
+
+    /// The gatekeeper network name is empty.
+    error GatewayToken__EmptyNetworkName();
 
     /// The gatekeeper network is not dao-governed.
     /// @param network gatekeeper network id.
