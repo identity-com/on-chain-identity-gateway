@@ -4,6 +4,11 @@
   "sourceName": "contracts/interfaces/IParameterizedAccessControl.sol",
   "abi": [
     {
+      "inputs": [],
+      "name": "ParameterizedAccessControl__NoSelfAdminRemoval",
+      "type": "error"
+    },
+    {
       "inputs": [
         {
           "internalType": "bytes32",

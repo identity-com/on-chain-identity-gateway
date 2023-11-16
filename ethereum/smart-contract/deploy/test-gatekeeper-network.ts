@@ -6,7 +6,7 @@ const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const gatekeeperNetwork = 1;
 // open to all - private key is known
 const testGatekeeper = '0x34bb5808d46a21AaeBf7C1300Ef17213Fe215B91';
-const civicDevGatekeeper = '0xcbaA8FDf9A9673850cf75E6E42B4eA1aDaA87688';
+const civicDevGatekeeper = '0x3Afb27942b60d9D4319557A0f3363DC3dA0645B6';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, ethers } = hre;
@@ -46,41 +46,47 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
   }
 
-  const addGatekeeperTx = await (await token.addGatekeeper(gatekeeper, gatekeeperNetwork)).wait();
-  console.log(
-    'added new gatekeeper with ' +
-      gatekeeper +
-      ' address into Gateway Token at ' +
-      gatewayToken.address +
-      ' using ' +
-      addGatekeeperTx.gasUsed.toNumber() +
-      ' gas',
-  );
+  if (!(await token.isGatekeeper(gatekeeper, gatekeeperNetwork))) {
+    const addGatekeeperTx = await (await token.addGatekeeper(gatekeeper, gatekeeperNetwork)).wait();
+    console.log(
+      'added new gatekeeper with ' +
+        gatekeeper +
+        ' address into Gateway Token at ' +
+        gatewayToken.address +
+        ' using ' +
+        addGatekeeperTx.gasUsed.toNumber() +
+        ' gas',
+    );
+  } else console.log(`gatekeeper ${gatekeeper} already in network ${gatekeeperNetwork}`);
 
-  const addTestGatekeeperTx = await (await token.addGatekeeper(testGatekeeper, gatekeeperNetwork)).wait();
-  console.log(
-    'added test gatekeeper with ' +
-      testGatekeeper +
-      ' address into Gateway Token at ' +
-      gatewayToken.address +
-      ' using ' +
-      addTestGatekeeperTx.gasUsed.toNumber() +
-      ' gas',
-  );
+  if (!(await token.isGatekeeper(testGatekeeper, gatekeeperNetwork))) {
+    const addTestGatekeeperTx = await (await token.addGatekeeper(testGatekeeper, gatekeeperNetwork)).wait();
+    console.log(
+      'added test gatekeeper with ' +
+        testGatekeeper +
+        ' address into Gateway Token at ' +
+        gatewayToken.address +
+        ' using ' +
+        addTestGatekeeperTx.gasUsed.toNumber() +
+        ' gas',
+    );
+  } else console.log(`gatekeeper ${testGatekeeper} already in network ${gatekeeperNetwork}`);
 
-  const addCivicDevGatekeeperTx = await (await token.addGatekeeper(civicDevGatekeeper, gatekeeperNetwork)).wait();
-  console.log(
-    'added civic dev gatekeeper with ' +
-      civicDevGatekeeper +
-      ' address into Gateway Token at ' +
-      gatewayToken.address +
-      ' using ' +
-      addCivicDevGatekeeperTx.gasUsed.toNumber() +
-      ' gas',
-  );
+  if (!(await token.isGatekeeper(civicDevGatekeeper, gatekeeperNetwork))) {
+    const addCivicDevGatekeeperTx = await (await token.addGatekeeper(civicDevGatekeeper, gatekeeperNetwork)).wait();
+    console.log(
+      'added civic dev gatekeeper with ' +
+        civicDevGatekeeper +
+        ' address into Gateway Token at ' +
+        gatewayToken.address +
+        ' using ' +
+        addCivicDevGatekeeperTx.gasUsed.toNumber() +
+        ' gas',
+    );
+  } else console.log(`gatekeeper ${civicDevGatekeeper} already in network ${gatekeeperNetwork}`);
 };
 
 export default func;
 func.id = 'create_test_gatekeeper_network';
 func.tags = ['TestGatekeeperNetwork'];
-func.dependencies = ['GatewayToken', 'Forwarder'];
+func.dependencies = !!process.env.IGNORE_DEPS ? [] : ['GatewayToken', 'Forwarder'];

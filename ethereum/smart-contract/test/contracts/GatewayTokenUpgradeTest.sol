@@ -25,7 +25,7 @@ contract GatewayTokenUpgradeTest is GatewayToken {
         Charge calldata charge
     ) external payable override(GatewayToken) {
         _checkGatekeeper(network);
-        _handleCharge(charge);
+        _handleCharge(charge, network);
 
         uint256 tokenId = ERC3525Upgradeable._mint(to, network, 1);
         uint expiration = IGatewayNetwork(_gatewayNetworkContract).getNetwork(network).passExpireTimestamp;
