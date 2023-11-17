@@ -135,6 +135,7 @@ describe('GatewayNetwork', () => {
 
             //then
             const newGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+
             expect(newGatekeepers.length).to.be.eq(1);
             expect(newGatekeepers[0]).to.be.eq(bob.address);
         });
@@ -156,7 +157,22 @@ describe('GatewayNetwork', () => {
         
             //then
             const finalGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+
             expect(finalGatekeepers.length).to.be.eq(0);
+            await expect(gatekeeperContract.getGatekeeperNetworkData(defaultNetwork.name, newGatekeeper, {gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperContract, 'GatekeeperNotInNetwork');
+        });
+
+        it('can update the status of a gatekeeper', async () => {
+            const newGatekeeper = bob.address;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            expect(currentGatekeepers.length).to.be.eq(0);
+
+            await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(primaryAuthority).updateGatekeeperStatus(newGatekeeper, defaultNetwork.name, 2, {gasLimit: 300000});
+
+            expect((await gatekeeperContract.getGatekeeperNetworkData(defaultNetwork.name, newGatekeeper)).status).to.be.eq(2);
+
         });
 
         it('can retreive the id of a network', async () => {
@@ -193,6 +209,15 @@ describe('GatewayNetwork', () => {
 
             // when
             await expect(gatekeeperNetworkContract.connect(alice).updatePassExpirationTimestamp(newTimestamp, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
+        });
+
+        it('cannot update the status of a gatekeeper if not primary authority', async () => {
+            const newGatekeeper = bob.address;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            expect(currentGatekeepers.length).to.be.eq(0);
+
+            await expect(gatekeeperNetworkContract.connect(bob).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
         });
 
         it('cannot add a gatekeeper if not primary authority', async () => {
