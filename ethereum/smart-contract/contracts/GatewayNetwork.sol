@@ -65,7 +65,7 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
   
         networkData.gatekeepers.push(gatekeeper);
 
-        IGatewayGatekeeper(_gatewayGatekeeperContractAddress).initializeGatekeeperNetworkData(uint256(networkName), gatekeeper, IGatewayGatekeeper.GatekeeperStatus.ACTIVE);
+        IGatewayGatekeeper(_gatewayGatekeeperContractAddress).initializeGatekeeperNetworkData(networkName, gatekeeper, IGatewayGatekeeper.GatekeeperStatus.ACTIVE);
         emit GatekeeperNetworkGatekeeperAdded(gatekeeper);
     }
 
@@ -90,7 +90,7 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
             }
         }
         
-        IGatewayGatekeeper(_gatewayGatekeeperContractAddress).removeGatekeeper(uint256(networkName), gatekeeper);
+        IGatewayGatekeeper(_gatewayGatekeeperContractAddress).removeGatekeeper(networkName, gatekeeper);
         emit GatekeeperNetworkGatekeeperRemoved(gatekeeper);
     }
 
@@ -101,6 +101,11 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         require(newPrimaryAuthortiy != address(0), "Primary authority cannot be set to the zero address");
         _nextPrimaryAuthoritys[networkName] = newPrimaryAuthortiy;
     } 
+
+    function updateGatekeeperStatus(address gatekeeper, bytes32 networkName, IGatewayGatekeeper.GatekeeperStatus status) external override onlyPrimaryNetworkAuthority(networkName) {
+        require(isGateKeeper(networkName, gatekeeper), "Address is not a gatekeeper for the requested network");
+        IGatewayGatekeeper(_gatewayGatekeeperContractAddress).updateGatekeeperStatus(networkName, gatekeeper, status);
+    }
 
     function claimPrimaryAuthority(bytes32 networkName) external override {
         require(msg.sender == _nextPrimaryAuthoritys[networkName], "Can only claim authority on a network if given permission by the current primary authority");

@@ -7,7 +7,7 @@ import { ParameterizedAccessControl } from "./ParameterizedAccessControl.sol";
 
 
 contract Gatekeeper is ParameterizedAccessControl, IGatewayGatekeeper {
-    address private _gatewayNetworkContract;
+    address public _gatewayNetworkContract;
 
 
     modifier onlyNetworkContract() {
@@ -25,37 +25,37 @@ contract Gatekeeper is ParameterizedAccessControl, IGatewayGatekeeper {
     }
 
 
-    function getGatekeeperNetworkData(uint networkId, address gatekeeper) external view override returns(GatekeeperNetworkData memory) {
-        if(!_gatekeeperStates[gatekeeper][networkId].initialized) {
-            revert GatekeeperNotInNetwork(networkId, gatekeeper);
+    function getGatekeeperNetworkData(bytes32 networkName, address gatekeeper) external view override returns(GatekeeperNetworkData memory) {
+        if(!_gatekeeperStates[gatekeeper][networkName].initialized) {
+            revert GatekeeperNotInNetwork(uint256(networkName), gatekeeper);
         }
-        return _gatekeeperStates[gatekeeper][networkId];
+        return _gatekeeperStates[gatekeeper][networkName];
     }
 
-    function initializeGatekeeperNetworkData(uint networkId, address gatekeeper, GatekeeperStatus initialStatus) external onlyNetworkContract override {
-        _gatekeeperStates[gatekeeper][networkId].initialized = true;
-        updateGatekeeperStatus(networkId, gatekeeper, initialStatus);
+    function initializeGatekeeperNetworkData(bytes32 networkName, address gatekeeper, GatekeeperStatus initialStatus) external onlyNetworkContract override {
+        _gatekeeperStates[gatekeeper][networkName].initialized = true;
+        updateGatekeeperStatus(networkName, gatekeeper, initialStatus);
     }
 
 
-    function updateGatekeeperStatus(uint networkId, address gatekeeper, GatekeeperStatus status) public onlyNetworkContract override {
-        GatekeeperStatus oldStatus = _gatekeeperStates[gatekeeper][networkId].status;
-        _gatekeeperStates[gatekeeper][networkId].status = status;
+    function updateGatekeeperStatus(bytes32 networkName, address gatekeeper, GatekeeperStatus status) public onlyNetworkContract override {
+        GatekeeperStatus oldStatus = _gatekeeperStates[gatekeeper][networkName].status;
+        _gatekeeperStates[gatekeeper][networkName].status = status;
         emit GatekeeperStatusChanged(oldStatus, status);
     }
 
-    function updateFees(GatekeeperFees calldata fees, uint networkId) external override {
+    function updateFees(GatekeeperFees calldata fees, bytes32 networkName) external override {
         address gatekeeper = msg.sender;
 
-        if(!_gatekeeperStates[gatekeeper][networkId].initialized) {
-            revert GatekeeperNotInNetwork(networkId, gatekeeper);
+        if(!_gatekeeperStates[gatekeeper][networkName].initialized) {
+            revert GatekeeperNotInNetwork(uint256(networkName), gatekeeper);
         }
 
-        _gatekeeperStates[gatekeeper][networkId].fees = fees;
+        _gatekeeperStates[gatekeeper][networkName].fees = fees;
     }
 
-    function removeGatekeeper(uint networkId, address gatekeeper) external onlyNetworkContract override {
-        delete _gatekeeperStates[gatekeeper][networkId];
+    function removeGatekeeper(bytes32 networkName, address gatekeeper) external onlyNetworkContract override {
+        delete _gatekeeperStates[gatekeeper][networkName];
     }
 
 }

@@ -12,6 +12,7 @@ abstract contract  IGatewayGatekeeper {
         uint64 issueFee;
         uint64 refreshFee;
         uint64 expireFee;
+        uint64 verificationFee;
     }
 
     struct GatekeeperNetworkData { 
@@ -26,15 +27,15 @@ abstract contract  IGatewayGatekeeper {
     /**
      *@dev A mapping of the primaryAuthority of a gatekeeper, of a mapping of the gatekeepers configuration by networkId
      */
-    mapping(address => mapping(uint => GatekeeperNetworkData)) internal _gatekeeperStates;
+    mapping(address => mapping(bytes32 => GatekeeperNetworkData)) internal _gatekeeperStates;
 
     function setNetworkContractAddress(address gatewayNetworkContract) external virtual;
 
-    function getGatekeeperNetworkData(uint networkId, address gatekeeper) external view virtual returns(GatekeeperNetworkData memory);
-    function initializeGatekeeperNetworkData(uint networkId, address gatekeeper, GatekeeperStatus initialStatus) external virtual;
+    function getGatekeeperNetworkData(bytes32 networkName, address gatekeeper) external view virtual returns(GatekeeperNetworkData memory);
+    function initializeGatekeeperNetworkData(bytes32 networkName, address gatekeeper, GatekeeperStatus initialStatus) external virtual;
 
-    function updateGatekeeperStatus(uint networkId, address gatekeeper, GatekeeperStatus status) external virtual;
-    function updateFees(GatekeeperFees calldata fees, uint networkId) external virtual;
+    function updateGatekeeperStatus(bytes32 networkName, address gatekeeper, GatekeeperStatus status) external virtual;
+    function updateFees(GatekeeperFees calldata fees, bytes32 networkName) external virtual;
     // What are the conditions for removing a gatekeeper?
-    function removeGatekeeper(uint networkId, address gatekeeper) external virtual;
+    function removeGatekeeper(bytes32 networkName, address gatekeeper) external virtual;
 }
