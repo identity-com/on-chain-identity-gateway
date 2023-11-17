@@ -10,9 +10,9 @@ import { NULL_CHARGE, randomAddress, randomWallet, ZERO_ADDRESS } from './utils/
 import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
 import { Gated, IForwarder, IGatewayNetwork } from '../typechain-types';
 import { TransactionReceipt } from '@ethersproject/providers';
-import { GatewayNetwork, GatewayNetwork__factory } from '../typechain-types' ;
+import { GatewayNetwork, GatewayNetwork__factory, Gatekeeper, Gatekeeper__factory } from '../typechain-types' ;
 
-describe('GatewayToken', () => {
+describe('GatewayToken', async () => {
   let identityCom: SignerWithAddress;
   let alice: SignerWithAddress;
   let bob: SignerWithAddress;
@@ -27,6 +27,7 @@ describe('GatewayToken', () => {
   let gatewayToken: Contract;
   let gatewayTokenInternalsTest: Contract;
   let gatewayNetwork: GatewayNetwork;
+  let gatekeeperContract: Gatekeeper;
 
   let hexRetailFlag = toBytes32('Retail');
   let hexInstitutionFlag = toBytes32('Institution');
@@ -85,18 +86,24 @@ describe('GatewayToken', () => {
     const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
     const gatewayTokenInternalsTestFactory = await ethers.getContractFactory('GatewayTokenInternalsTest');
     const gatewayNetworkFactory = await new GatewayNetwork__factory(identityCom);
+    const gatekeeperContractFactory = await new Gatekeeper__factory(identityCom);
 
     forwarder = await forwarderFactory.deploy(100);
     await forwarder.deployed();
+
+    gatekeeperContract = await gatekeeperContractFactory.deploy();
+    await gatekeeperContract.deployed();
 
     flagsStorage = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
     await flagsStorage.deployed();
 
     chargeHandler = await upgrades.deployProxy(chargeHandlerFactory, [identityCom.address], { kind: 'uups' });
-    gatewayNetwork = await gatewayNetworkFactory.connect(identityCom).deploy();
+    gatewayNetwork = await gatewayNetworkFactory.connect(identityCom).deploy(gatekeeperContract.address);
     
     await chargeHandler.deployed();
     await gatewayNetwork.deployed();
+
+    await gatekeeperContract.setNetworkContractAddress(gatewayNetwork.address);
 
     const args = [
       'Gateway Protocol',

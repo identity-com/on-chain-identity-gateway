@@ -1,7 +1,14 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GatewayNetwork, GatewayNetwork__factory, IGatewayNetwork } from '../typechain-types' ;
+import {
+    GatewayNetwork, 
+    Gatekeeper,
+    GatewayNetwork__factory, 
+    Gatekeeper__factory,
+    IGatewayNetwork,
+    IGatewayGatekeeper
+} from '../typechain-types' ;
 import { utils } from 'ethers';
 
 describe('GatewayNetwork', () => {
@@ -12,6 +19,7 @@ describe('GatewayNetwork', () => {
     let stableCoin: SignerWithAddress;
 
     let gatekeeperNetworkContract: GatewayNetwork;
+    let gatekeeperContract: Gatekeeper;
 
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
     const DEFAULT_PASS_EXPIRE_TIMESTAMP = Date.now() + 100000000;
@@ -32,9 +40,15 @@ describe('GatewayNetwork', () => {
         [deployer, primaryAuthority, alice, bob, stableCoin] = await ethers.getSigners();
 
         const gatewayNetworkFactory = await new GatewayNetwork__factory(deployer);
+        const gatekeeperContractFactory = await new Gatekeeper__factory(deployer);
 
-        gatekeeperNetworkContract = await gatewayNetworkFactory.deploy();
+        gatekeeperContract = await gatekeeperContractFactory.deploy();
+        await gatekeeperContract.deployed();
+
+        gatekeeperNetworkContract = await gatewayNetworkFactory.deploy(gatekeeperContract.address);
         await gatekeeperNetworkContract.deployed();
+
+        await gatekeeperContract.setNetworkContractAddress(gatekeeperNetworkContract.address);
     })
 
 
