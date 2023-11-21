@@ -16,12 +16,16 @@ contract GatewayStaking is IGatewayStaking, ParameterizedAccessControl {
 
    function depositStake(uint256 assests) public override returns(uint256) {
       // Deposit stake using ERC-4626 deposit method
+      require(assests > 0, "Must deposit assets to receive shares");
       deposit(assests, msg.sender);
    }
 
-   function withdrawkStake(uint256 assests) public override returns (uint256) {
-      // Withdraw stake using ERC-4626 withdraw method
-      withdraw(assests, msg.sender, msg.sender);
+   function withdrawStake(uint256 shares) public override returns (uint256) {
+      // checks
+      require(shares > 0, "Must burn shares to receive assets");
+
+      // Redeem stake using ERC-4626 redeem method
+      redeem(shares, msg.sender, msg.sender);
    }
 
    function setMinimumGatekeeperStake (uint256 minStakeAmount) public override onlySuperAdmin {
@@ -29,8 +33,7 @@ contract GatewayStaking is IGatewayStaking, ParameterizedAccessControl {
    }
 
    function hasMinimumGatekeeperStake(address staker) public override returns(bool) {
-      uint256 stakerBalance = ERC20(asset()).balanceOf(staker);
-      return stakerBalance >= GLOBAL_MIN_GATEKEEPER_STAKE;
+      return stakerShares[msg.sender] >= GLOBAL_MIN_GATEKEEPER_STAKE;
    }
 
    function _msgSender() internal view override(Context,ContextUpgradeable) returns (address) {
