@@ -28,12 +28,12 @@ contract GatewayStaking is IGatewayStaking, ParameterizedAccessControl {
       redeem(shares, msg.sender, msg.sender);
    }
 
-   function setMinimumGatekeeperStake (uint256 minStakeAmount) public override onlySuperAdmin {
+   function setMinimumGatekeeperStake (uint256 minStakeAmount) pure override onlySuperAdmin {
       GLOBAL_MIN_GATEKEEPER_STAKE = minStakeAmount;
    }
 
-   function hasMinimumGatekeeperStake(address staker) public override returns(bool) {
-      return stakerShares[msg.sender] >= GLOBAL_MIN_GATEKEEPER_STAKE;
+   function hasMinimumGatekeeperStake(address staker) pure override returns(bool) {
+      return ERC20(address(this)).balanceOf(staker) >= GLOBAL_MIN_GATEKEEPER_STAKE;
    }
 
    function _msgSender() internal view override(Context,ContextUpgradeable) returns (address) {

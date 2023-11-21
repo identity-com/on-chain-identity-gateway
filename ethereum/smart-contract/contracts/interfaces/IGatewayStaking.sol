@@ -3,12 +3,11 @@ pragma solidity >=0.8.19;
 
 import { ERC4626 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 abstract contract  IGatewayStaking is ERC4626 {
 
     uint256 public GLOBAL_MIN_GATEKEEPER_STAKE;
-
-    mapping(address => uint256) stakerShares;
 
     error VaultMethodNotImplemented();
 
@@ -17,33 +16,9 @@ abstract contract  IGatewayStaking is ERC4626 {
    /** @dev Attempts to withdraw the specified shares*/
    function withdrawStake(uint256 shares) public virtual returns (uint256);
 
-   function setMinimumGatekeeperStake(uint256 minStakeAmount) public virtual;
+   function setMinimumGatekeeperStake(uint256 minStakeAmount) pure virtual;
 
-   function hasMinimumGatekeeperStake(address staker) public virtual returns(bool);
-   
-    /**
-    * @dev Override default deposit method to include share accounting
-    */
-   function deposit(uint256 assets, address receiver) public override returns (uint256) {
-        uint256 shares = ERC4626.deposit(assets, receiver);
-        stakerShares[msg.sender] += shares;
-        return shares;
-    }
-
-    /**
-    * @dev Override default redeem method to include share accounting
-    */
-    function redeem(
-        uint256 shares,
-        address receiver,
-        address owner
-    ) public override returns (uint256) {
-        require(stakerShares[msg.sender] >= shares, "Message sender does not have enough shares to redeem the requested shares");
-
-        stakerShares[msg.sender] -= shares;
-
-        return ERC4626.redeem(shares, receiver, owner);
-    }
+   function hasMinimumGatekeeperStake(address staker) pure virtual returns(bool);
 
    /**
     * @dev Only allow staking through the deposit method
@@ -77,7 +52,7 @@ abstract contract  IGatewayStaking is ERC4626 {
      * @dev Users can only redeem up to the amount of shares minted through the depositStake method
      */
     function previewRedeem(uint256 shares) public view override returns (uint256) {
-        require(stakerShares[msg.sender] >= shares, "Message sender does not have enough shares to redeem the requested shares");
+        require(ERC20(address(this)).balanceOf(msg.sender) >= shares, "Message sender does not have enough shares to redeem the requested shares");
         return shares;
     }
 
