@@ -64,6 +64,19 @@ describe('Gateway Staking', () => {
         });
     })
 
+    describe('- gatekeeper staking admin', async () => {
+        it('default minimum gatekeeper stake', async () => {
+            expect(await gatewayStakingContract.GLOBAL_MIN_GATEKEEPER_STAKE()).to.be.eq(0);
+        });
+        
+        it('should be able to set minimum gatekeeper stake', async () => {
+            const minAssetAmount = 500;
+            await gatewayStakingContract.connect(deployer).setMinimumGatekeeperStake(minAssetAmount, {gasLimit: 300000});
+
+            expect(await gatewayStakingContract.GLOBAL_MIN_GATEKEEPER_STAKE()).to.be.eq(minAssetAmount);
+        });
+    })
+
     describe('- vault operations', async () => {
         it('should allow a user to deposit assests and receive an equal amount of shares', async () => {
             const assetAmount = 500;
