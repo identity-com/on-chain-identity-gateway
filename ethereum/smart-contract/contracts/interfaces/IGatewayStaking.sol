@@ -16,9 +16,9 @@ abstract contract  IGatewayStaking is ERC4626 {
    /** @dev Attempts to withdraw the specified shares*/
    function withdrawStake(uint256 shares) public virtual returns (uint256);
 
-   function setMinimumGatekeeperStake(uint256 minStakeAmount) pure virtual;
+   function setMinimumGatekeeperStake(uint256 minStakeAmount) public virtual;
 
-   function hasMinimumGatekeeperStake(address staker) pure virtual returns(bool);
+   function hasMinimumGatekeeperStake(address staker) public view virtual returns(bool);
 
    /**
     * @dev Only allow staking through the deposit method
