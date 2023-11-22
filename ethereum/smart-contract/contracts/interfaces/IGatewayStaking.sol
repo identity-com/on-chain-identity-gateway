@@ -36,6 +36,7 @@ abstract contract  IGatewayStaking is ERC4626 {
 
     /**
      * @dev Enforce 1:1 conversion of assets to shares. This vault assumes the deposited asset is a stable coin.
+        This is the internal method called by the ERC-4626 `deposit` and `withdraw` methods
      */
     function _convertToShares(uint256 assets, Math.Rounding rounding) internal view override returns (uint256 shares) {
         return assets;
@@ -43,15 +44,9 @@ abstract contract  IGatewayStaking is ERC4626 {
 
     /**
      * @dev Enforce 1:1 conversion of shares to assets. This vault assumes the deposited asset is a stable coin.
+        Users can only receive assets based on the number of shares they have. This is the internal method called by the ERC-4626 `mint` and `redeem` methods
      */
     function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view override returns (uint256 assets) {
-        return shares;
-    }
-
-    /** 
-     * @dev Users can only redeem up to the amount of shares minted through the depositStake method
-     */
-    function previewRedeem(uint256 shares) public view override returns (uint256) {
         require(ERC20(address(this)).balanceOf(msg.sender) >= shares, "Message sender does not have enough shares to redeem the requested shares");
         return shares;
     }
