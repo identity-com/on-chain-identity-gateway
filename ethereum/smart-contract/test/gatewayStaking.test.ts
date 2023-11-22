@@ -68,12 +68,21 @@ describe('Gateway Staking', () => {
         it('default minimum gatekeeper stake', async () => {
             expect(await gatewayStakingContract.GLOBAL_MIN_GATEKEEPER_STAKE()).to.be.eq(0);
         });
-        
+
         it('should be able to set minimum gatekeeper stake', async () => {
             const minAssetAmount = 500;
             await gatewayStakingContract.connect(deployer).setMinimumGatekeeperStake(minAssetAmount, {gasLimit: 300000});
 
             expect(await gatewayStakingContract.GLOBAL_MIN_GATEKEEPER_STAKE()).to.be.eq(minAssetAmount);
+        });
+
+        it('should not be able to set minimum gatekeeper stake of not contract admin', async () => {
+            const minAssetAmount = 500;
+            await gatewayStakingContract.connect(deployer).setMinimumGatekeeperStake(minAssetAmount, {gasLimit: 300000});
+
+            expect(await gatewayStakingContract.GLOBAL_MIN_GATEKEEPER_STAKE()).to.be.eq(minAssetAmount);
+
+            await expect(gatewayStakingContract.connect(bob).setMinimumGatekeeperStake(minAssetAmount, {gasLimit: 300000})).to.be.revertedWithCustomError(gatewayStakingContract, 'Common__NotSuperAdmin');
         });
     })
 

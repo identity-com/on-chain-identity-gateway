@@ -5,6 +5,7 @@ import { ParameterizedAccessControl } from "./ParameterizedAccessControl.sol";
 import {BitMask} from "./library/BitMask.sol";
 import { IGatewayNetwork } from "./interfaces/IGatewayNetwork.sol";
 import { IGatewayGatekeeper } from './interfaces/IGatewayGatekeeper.sol';
+import { IGatewayStaking } from './interfaces/IGatewayStaking.sol';
 
 
 contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
@@ -15,6 +16,7 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
     mapping(bytes32 => address) private _nextPrimaryAuthoritys;
 
     address private _gatewayGatekeeperContractAddress;
+    address private _gatewayGatekeeperStakingContractAddress;
 
     modifier onlyPrimaryNetworkAuthority(bytes32 networkName) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
@@ -22,10 +24,11 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         _;
     }
 
-    constructor(address gatewayGatekeeperContractAddress) {
+    constructor(address gatewayGatekeeperContractAddress, address gatewayStakingContractAddress) {
         // Contract deployer is the initial super admin
         _superAdmins[msg.sender] = true;
         _gatewayGatekeeperContractAddress = gatewayGatekeeperContractAddress;
+        _gatewayGatekeeperStakingContractAddress = gatewayStakingContractAddress;
     }
    
     function createNetwork(GatekeeperNetworkData calldata network) external override onlySuperAdmin {
@@ -60,6 +63,10 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         if(isAlreadyGatekeeper) {
             revert GatewayNetworkGatekeeperAlreadyExists(string(abi.encodePacked(networkName)), gatekeeper);
         }
+
+        bool hasMinimumStake = IGatewayStaking(_gatewayGatekeeperStakingContractAddress).hasMinimumGatekeeperStake(gatekeeper);
+
+        require(hasMinimumStake, "Address does not meet the minimum stake requirements of the gateway protocol");
 
         GatekeeperNetworkData storage networkData = _networks[networkName];
   

@@ -7,7 +7,10 @@ import {
     GatewayNetwork__factory, 
     Gatekeeper__factory,
     IGatewayNetwork,
-    IGatewayGatekeeper
+    GatewayStaking,
+    GatewayStaking__factory,
+    DummyERC20,
+    DummyERC20__factory,
 } from '../typechain-types' ;
 import { utils } from 'ethers';
 
@@ -20,6 +23,8 @@ describe('GatewayNetwork', () => {
 
     let gatekeeperNetworkContract: GatewayNetwork;
     let gatekeeperContract: Gatekeeper;
+    let gatewayStakingContract: GatewayStaking;
+    let dummyErc20Contract: DummyERC20;
 
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
     const DEFAULT_PASS_EXPIRE_TIMESTAMP = Date.now() + 100000000;
@@ -41,11 +46,19 @@ describe('GatewayNetwork', () => {
 
         const gatewayNetworkFactory = await new GatewayNetwork__factory(deployer);
         const gatekeeperContractFactory = await new Gatekeeper__factory(deployer);
+        const gatewayStakingFactory = await new GatewayStaking__factory(deployer);
+        const dummyERC20Factory = await new DummyERC20__factory(deployer);
 
         gatekeeperContract = await gatekeeperContractFactory.deploy();
         await gatekeeperContract.deployed();
 
-        gatekeeperNetworkContract = await gatewayNetworkFactory.deploy(gatekeeperContract.address);
+        dummyErc20Contract = await dummyERC20Factory.deploy('DummyToken', 'DT', 10000000000, deployer.address);
+        await dummyErc20Contract.deployed();
+
+        gatewayStakingContract = await gatewayStakingFactory.deploy(dummyErc20Contract.address, 'GatewayProtocolShares', 'GPS');
+        await gatewayStakingContract.deployed();
+
+        gatekeeperNetworkContract = await gatewayNetworkFactory.deploy(gatekeeperContract.address, gatewayStakingContract.address);
         await gatekeeperNetworkContract.deployed();
 
         await gatekeeperContract.setNetworkContractAddress(gatekeeperNetworkContract.address);

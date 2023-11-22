@@ -1,7 +1,18 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GatewayNetwork, GatewayNetwork__factory, IGatewayNetwork, Gatekeeper, Gatekeeper__factory, IGatewayGatekeeper } from '../typechain-types' ;
+import { 
+    GatewayNetwork, 
+    GatewayNetwork__factory, 
+    IGatewayNetwork, 
+    Gatekeeper, 
+    Gatekeeper__factory, 
+    IGatewayGatekeeper,
+    GatewayStaking,
+    GatewayStaking__factory,
+    DummyERC20,
+    DummyERC20__factory, 
+} from '../typechain-types' ;
 import { utils } from 'ethers';
 
 describe('Gatekeeper', () => {
@@ -13,6 +24,8 @@ describe('Gatekeeper', () => {
 
     let gatekeeperNetworkContract: GatewayNetwork;
     let gatekeeperContract: Gatekeeper;
+    let gatewayStakingContract: GatewayStaking;
+    let dummyErc20Contract: DummyERC20;
 
     let  defaultNetwork: IGatewayNetwork.GatekeeperNetworkDataStruct;
 
@@ -36,9 +49,18 @@ describe('Gatekeeper', () => {
 
         const gatewayNetworkFactory = await new GatewayNetwork__factory(deployer);
         const gatekeeperContractFactory = await new Gatekeeper__factory(deployer);
+        const gatewayStakingFactory = await new GatewayStaking__factory(deployer);
+        const erc20Factory = await new DummyERC20__factory(deployer);
 
         gatekeeperContract = await gatekeeperContractFactory.deploy();
-        gatekeeperNetworkContract = await gatewayNetworkFactory.deploy(gatekeeperContract.address);
+
+        dummyErc20Contract = await erc20Factory.deploy('DummyToken', 'DT', 10000000000, deployer.address);
+        await dummyErc20Contract.deployed();
+
+        gatewayStakingContract = await gatewayStakingFactory.deploy(dummyErc20Contract.address, 'GatewayProtocolShares', 'GPS');
+        await gatewayStakingContract.deployed();
+
+        gatekeeperNetworkContract = await gatewayNetworkFactory.deploy(gatekeeperContract.address, gatewayStakingContract.address);
         await gatekeeperNetworkContract.deployed();
 
         defaultNetwork = getDefaultNetwork(primaryAuthority.address, []);

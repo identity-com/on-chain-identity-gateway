@@ -10,7 +10,16 @@ import { NULL_CHARGE, randomAddress, randomWallet, ZERO_ADDRESS } from './utils/
 import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
 import { Gated, IForwarder, IGatewayNetwork } from '../typechain-types';
 import { TransactionReceipt } from '@ethersproject/providers';
-import { GatewayNetwork, GatewayNetwork__factory, Gatekeeper, Gatekeeper__factory } from '../typechain-types' ;
+import { 
+  GatewayNetwork, 
+  GatewayNetwork__factory, 
+  Gatekeeper, 
+  Gatekeeper__factory,
+  GatewayStaking,
+  GatewayStaking__factory,
+  DummyERC20,
+  DummyERC20__factory,
+} from '../typechain-types' ;
 
 describe('GatewayToken', async () => {
   let identityCom: SignerWithAddress;
@@ -18,8 +27,8 @@ describe('GatewayToken', async () => {
   let bob: SignerWithAddress;
   let carol: SignerWithAddress;
   let gatekeeper: SignerWithAddress;
-  let gatekeeper2: SignerWithAddress;
-  let networkAuthority2: SignerWithAddress;
+  let gatewayStakingContract: GatewayStaking;
+  let dummyErc20Contract: DummyERC20;
 
   let forwarder: Contract;
   let flagsStorage: Contract;
@@ -78,7 +87,7 @@ describe('GatewayToken', async () => {
   }
 
   before('deploy contracts', async () => {
-    [identityCom, alice, bob, carol, gatekeeper, gatekeeper2, networkAuthority2] = await ethers.getSigners();
+    [identityCom, alice, bob, carol, gatekeeper] = await ethers.getSigners();
 
     const forwarderFactory = await ethers.getContractFactory('FlexibleNonceForwarder');
     const flagsStorageFactory = await ethers.getContractFactory('FlagsStorage');
@@ -87,6 +96,8 @@ describe('GatewayToken', async () => {
     const gatewayTokenInternalsTestFactory = await ethers.getContractFactory('GatewayTokenInternalsTest');
     const gatewayNetworkFactory = await new GatewayNetwork__factory(identityCom);
     const gatekeeperContractFactory = await new Gatekeeper__factory(identityCom);
+    const gatewayStakingFactory = await new GatewayStaking__factory(identityCom);
+    const dummyERC20Factory = await new DummyERC20__factory(identityCom);
 
     forwarder = await forwarderFactory.deploy(100);
     await forwarder.deployed();
@@ -94,11 +105,17 @@ describe('GatewayToken', async () => {
     gatekeeperContract = await gatekeeperContractFactory.deploy();
     await gatekeeperContract.deployed();
 
+    dummyErc20Contract = await dummyERC20Factory.deploy('DummyToken', 'DT', 10000000000, identityCom.address);
+        await dummyErc20Contract.deployed();
+
+    gatewayStakingContract = await gatewayStakingFactory.deploy(dummyErc20Contract.address, 'GatewayProtocolShares', 'GPS');
+    await gatewayStakingContract.deployed();
+
     flagsStorage = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
     await flagsStorage.deployed();
 
     chargeHandler = await upgrades.deployProxy(chargeHandlerFactory, [identityCom.address], { kind: 'uups' });
-    gatewayNetwork = await gatewayNetworkFactory.connect(identityCom).deploy(gatekeeperContract.address);
+    gatewayNetwork = await gatewayNetworkFactory.connect(identityCom).deploy(gatekeeperContract.address, gatewayStakingContract.address);
     
     await chargeHandler.deployed();
     await gatewayNetwork.deployed();
