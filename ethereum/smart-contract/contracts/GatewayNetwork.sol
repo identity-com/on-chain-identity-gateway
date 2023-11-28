@@ -35,7 +35,7 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         
         _networks[networkName] = network;
 
-        emit GatekeeperNetworkCreated(network.primaryAuthority, networkName, network.passExpireTimestamp);
+        emit GatekeeperNetworkCreated(network.primaryAuthority, networkName, network.passExpireTimeInSeconds);
     } 
     function closeNetwork(bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
@@ -70,7 +70,6 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
             revert GatewayNetworkGatekeeperDoesNotExists(string(abi.encodePacked(networkName)), gatekeeper);
         }
 
-        GatekeeperNetworkData storage networkData = _networks[networkName];
         address[] storage currentGatekeepers = _networks[networkName].gatekeepers;
 
         // Remove gatekeeper
@@ -102,9 +101,9 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         _nextPrimaryAuthoritys[networkName] = address(0);
     } 
 
-    function updatePassExpirationTimestamp(uint newExpirationTimestamp, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
+    function updatePassExpirationTime(uint newExpirationTimeInSeconds, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
         require(doesNetworkExist(uint(networkName)), "Network does not exist");
-        _networks[networkName].passExpireTimestamp = newExpirationTimestamp;
+        _networks[networkName].passExpireTimeInSeconds = newExpirationTimeInSeconds;
     }
 
     function updateNetworkFeatures(uint256 newFeatureMask, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {

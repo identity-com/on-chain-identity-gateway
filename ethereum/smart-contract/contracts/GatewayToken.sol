@@ -169,6 +169,7 @@ contract GatewayToken is
     function mint(
         address to,
         uint network,
+        uint expiration,
         uint mask,
         Charge calldata charge
     ) external payable virtual {
@@ -177,10 +178,11 @@ contract GatewayToken is
 
         // EFFECTS
         uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
-        uint expiration = IGatewayNetwork(_gatewayNetworkContract).getNetwork(network).passExpireTimestamp;
+        uint networkExpiration = block.timestamp + IGatewayNetwork(_gatewayNetworkContract).getNetwork(network).passExpireTimeInSeconds;
    
-
-        if (expiration > 0) {
+        if(networkExpiration > block.timestamp) {
+            _expirations[tokenId] = networkExpiration;
+        } else if (expiration > 0) {
             _expirations[tokenId] = expiration;
         }
 

@@ -21,6 +21,7 @@ contract GatewayTokenUpgradeTest is GatewayToken {
     function mint(
         address to,
         uint256 network,
+        uint expiration,
         uint256 mask,
         Charge calldata charge
     ) external payable override(GatewayToken) {
@@ -28,7 +29,6 @@ contract GatewayTokenUpgradeTest is GatewayToken {
         _handleCharge(charge, network);
 
         uint256 tokenId = ERC3525Upgradeable._mint(to, network, 1);
-        uint expiration = IGatewayNetwork(_gatewayNetworkContract).getNetwork(network).passExpireTimestamp;
 
         // THIS IS THE ONLY CHANGE IN THE CONTRACT COMPARED TO GatewayToken.sol
         // Enforces positive expiry times i.e. cannot set to zero
