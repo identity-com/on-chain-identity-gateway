@@ -12,7 +12,7 @@ import {
     DummyERC20,
     DummyERC20__factory,
 } from '../typechain-types' ;
-import { utils } from 'ethers';
+import { BigNumberish, utils } from 'ethers';
 
 describe('GatewayNetwork', () => {
     let primaryAuthority: SignerWithAddress;
@@ -39,6 +39,10 @@ describe('GatewayNetwork', () => {
             supportedToken: ZERO_ADDRESS,
             gatekeepers: gatekeepers ? gatekeepers : []
         }
+    }
+
+    const giveDummyToken = async (account: SignerWithAddress, amountToTransfer: BigNumberish) => {
+        await dummyErc20Contract.connect(deployer).transfer(account.address, amountToTransfer);
     }
 
     beforeEach('setup', async () => {
@@ -152,6 +156,31 @@ describe('GatewayNetwork', () => {
             expect(newGatekeepers.length).to.be.eq(1);
             expect(newGatekeepers[0]).to.be.eq(bob.address);
         });
+        it('can add a gatekeeper that does have the minimum amount of global stake', async () => {
+            // given
+            const newGatekeeper = bob.address;
+            const minStake = 500;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            expect(currentGatekeepers.length).to.be.eq(0);
+
+            await gatewayStakingContract.connect(deployer).setMinimumGatekeeperStake(minStake, {gasLimit: 300000});
+
+            // when 
+            await giveDummyToken(bob, minStake);
+
+            // give staking contract allowance and deposit stake
+            await dummyErc20Contract.connect(bob).increaseAllowance(gatewayStakingContract.address, minStake);
+            await gatewayStakingContract.connect(bob).depositStake(minStake, {gasLimit: 300000});
+
+            await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
+            
+            //then
+            const newGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+
+            expect(newGatekeepers.length).to.be.eq(1);
+            expect(newGatekeepers[0]).to.be.eq(bob.address);
+        });
         it('can remove a gatekeeper if called by primary authority', async () => {
             // given
             const newGatekeeper = bob.address;
@@ -205,6 +234,18 @@ describe('GatewayNetwork', () => {
 
             //then
             expect(result).to.be.true;
+        });
+        it('cannot add a gatekeeper that does not have the minimum amount of global stake', async () => {
+            // given
+            const newGatekeeper = bob.address;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            expect(currentGatekeepers.length).to.be.eq(0);
+
+            await gatewayStakingContract.connect(deployer).setMinimumGatekeeperStake(500, {gasLimit: 300000});
+
+
+            await expect(gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Address does not meet the minimum stake requirements of the gateway protocol");
         });
         it('cannot update the primary authority of a network if not current primary authority', async () => {
             await expect(gatekeeperNetworkContract.connect(alice).updatePrimaryAuthority(alice.address, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
