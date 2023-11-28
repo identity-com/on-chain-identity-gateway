@@ -36,6 +36,9 @@ contract GatewayStaking is IGatewayStaking, ParameterizedAccessControl {
       return ERC20(address(this)).balanceOf(staker) >= GLOBAL_MIN_GATEKEEPER_STAKE;
    }
 
+   /**
+    * @dev These overrides can be removed once this contract is upgradeble
+    */
    function _msgSender() internal view override(Context,ContextUpgradeable) returns (address) {
       return Context._msgSender();
    }

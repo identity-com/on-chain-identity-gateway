@@ -35,7 +35,7 @@ abstract contract  IGatewayStaking is ERC4626 {
     }
 
     /**
-     * @dev Enforce 1:1 conversion of assets to shares. This vault assumes the deposited asset is a stable coin.
+     * @dev Enforce 1:1 conversion of assets to shares.
         This is the internal method called by the ERC-4626 `deposit` and `withdraw` methods
      */
     function _convertToShares(uint256 assets, Math.Rounding rounding) internal view override returns (uint256 shares) {
@@ -43,7 +43,7 @@ abstract contract  IGatewayStaking is ERC4626 {
     }
 
     /**
-     * @dev Enforce 1:1 conversion of shares to assets. This vault assumes the deposited asset is a stable coin.
+     * @dev Enforce 1:1 conversion of shares to assets.
         Users can only receive assets based on the number of shares they have. This is the internal method called by the ERC-4626 `mint` and `redeem` methods
      */
     function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view override returns (uint256 assets) {
