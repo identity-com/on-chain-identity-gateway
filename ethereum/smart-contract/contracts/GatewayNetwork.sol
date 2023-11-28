@@ -147,7 +147,7 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         return _networks[networkName].supportedToken;
     }
 
-    function gatekeepersOnNetwork(bytes32 networkName) public view returns(address[] memory) {
+    function getGatekeepersOnNetwork(bytes32 networkName) public view returns(address[] memory) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
         return _networks[networkName].gatekeepers;
     }

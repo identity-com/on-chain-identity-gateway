@@ -113,14 +113,14 @@ describe('GatewayNetwork', () => {
             // given
             const newGatekeeper = bob.address;
 
-            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            const currentGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
             expect(currentGatekeepers.length).to.be.eq(0);
 
             //when
             await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
 
             //then
-            const newGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            const newGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
             expect(newGatekeepers.length).to.be.eq(1);
             expect(newGatekeepers[0]).to.be.eq(bob.address);
         });
@@ -128,12 +128,12 @@ describe('GatewayNetwork', () => {
             // given
             const newGatekeeper = bob.address;
 
-            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            const currentGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
             expect(currentGatekeepers.length).to.be.eq(0);
 
             await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
 
-            const newGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            const newGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
             expect(newGatekeepers.length).to.be.eq(1);
             expect(newGatekeepers[0]).to.be.eq(bob.address);
 
@@ -141,7 +141,7 @@ describe('GatewayNetwork', () => {
             await gatekeeperNetworkContract.connect(primaryAuthority).removeGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
         
             //then
-            const finalGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            const finalGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
             expect(finalGatekeepers.length).to.be.eq(0);
         });
 
@@ -188,12 +188,12 @@ describe('GatewayNetwork', () => {
             // given
             const newGatekeeper = bob.address;
 
-            const currentGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            const currentGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
             expect(currentGatekeepers.length).to.be.eq(0);
 
             await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
 
-            const newGatekeepers = await gatekeeperNetworkContract.gatekeepersOnNetwork(defaultNetwork.name);
+            const newGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
             expect(newGatekeepers.length).to.be.eq(1);
             expect(newGatekeepers[0]).to.be.eq(bob.address);
 
