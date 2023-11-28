@@ -27,7 +27,7 @@ abstract contract  IGatewayNetwork {
         
         // The default expiration time in seconds of passes on this network.
         // A value of 0 means passes never expire
-        uint256 passExpireTimeInSeconds;
+        uint256 passExpireDurationInSeconds;
         
         //Features on the network
         uint256 networkFeatureMask;

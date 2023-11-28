@@ -178,7 +178,7 @@ contract GatewayToken is
 
         // EFFECTS
         uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
-        uint networkExpiration = block.timestamp + IGatewayNetwork(_gatewayNetworkContract).getNetwork(network).passExpireTimeInSeconds;
+        uint networkExpiration = block.timestamp + IGatewayNetwork(_gatewayNetworkContract).getNetwork(network).passExpireDurationInSeconds;
    
         if(networkExpiration > block.timestamp) {
             _expirations[tokenId] = networkExpiration;

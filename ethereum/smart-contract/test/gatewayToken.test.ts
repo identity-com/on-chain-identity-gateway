@@ -64,11 +64,11 @@ describe('GatewayToken', () => {
     tokenSender,
   });
 
-  const getNetwork = (primaryAuthority: string, name: string, gatekeepers?: string[], passExpireTimeInSeconds?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
+  const getNetwork = (primaryAuthority: string, name: string, gatekeepers?: string[], passExpireDurationInSeconds?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
     return {
         primaryAuthority,
         name: utils.formatBytes32String(name),
-        passExpireTimeInSeconds: passExpireTimeInSeconds ? passExpireTimeInSeconds : 100000000,
+        passExpireDurationInSeconds: passExpireDurationInSeconds ? passExpireDurationInSeconds : 100000000,
         networkFeatureMask: 0,
         networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
         supportedToken: ZERO_ADDRESS,
@@ -568,7 +568,7 @@ describe('GatewayToken', () => {
       const blockBefore = await ethers.provider.getBlock(blockNum);
       const timestampBefore = blockBefore.timestamp;
 
-      const expectedExpiration = (await gatewayNetwork.connect(identityCom).getNetwork(gkn1)).passExpireTimeInSeconds.add(timestampBefore + 1);
+      const expectedExpiration = (await gatewayNetwork.connect(identityCom).getNetwork(gkn1)).passExpireDurationInSeconds.add(timestampBefore + 1);
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
 
       const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);

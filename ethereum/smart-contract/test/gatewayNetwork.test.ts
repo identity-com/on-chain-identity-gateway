@@ -16,11 +16,11 @@ describe('GatewayNetwork', () => {
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
     const DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS = Date.now() + 100000000;
 
-    const getDefaultNetwork = (primaryAuthority: string, gatekeepers?: string[], passExpireTimeInSeconds?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
+    const getDefaultNetwork = (primaryAuthority: string, gatekeepers?: string[], passExpireDurationInSeconds?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
         return {
             primaryAuthority,
             name: utils.formatBytes32String('default'),
-            passExpireTimeInSeconds: passExpireTimeInSeconds ? passExpireTimeInSeconds : DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS,
+            passExpireDurationInSeconds: passExpireDurationInSeconds ? passExpireDurationInSeconds : DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS,
             networkFeatureMask: 0,
             networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
             supportedToken: ZERO_ADDRESS,
@@ -97,7 +97,7 @@ describe('GatewayNetwork', () => {
         it('can update the pass expire timestamp if called by primary authority', async () => {
             // given
             const network = await gatekeeperNetworkContract._networks(defaultNetwork.name);
-            expect(network.passExpireTimeInSeconds).to.be.eq(DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS);
+            expect(network.passExpireDurationInSeconds).to.be.eq(DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS);
 
             const newTimestamp = DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS + 1000;
 
@@ -106,7 +106,7 @@ describe('GatewayNetwork', () => {
 
             //then
             const resolvedUpdatedNetwork = await gatekeeperNetworkContract._networks(defaultNetwork.name);
-            expect(resolvedUpdatedNetwork.passExpireTimeInSeconds).to.be.eq(newTimestamp);
+            expect(resolvedUpdatedNetwork.passExpireDurationInSeconds).to.be.eq(newTimestamp);
         });
 
         it('can add a gatekeeper if called by primary authority', async () => {
