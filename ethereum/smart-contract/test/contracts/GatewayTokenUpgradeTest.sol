@@ -4,6 +4,7 @@ pragma solidity >=0.8.19;
 import {ERC3525Upgradeable} from "@solvprotocol/erc-3525/ERC3525Upgradeable.sol";
 import {Charge} from "../../contracts/library/Charge.sol";
 import {GatewayToken} from "../../contracts/GatewayToken.sol";
+import {IGatewayNetwork} from "../../contracts/interfaces/IGatewayNetwork.sol";
 
 /**
  * @dev An extension of the GatewayToken.sol, used to test the upgradeability of the contract.
@@ -20,7 +21,7 @@ contract GatewayTokenUpgradeTest is GatewayToken {
     function mint(
         address to,
         uint256 network,
-        uint256 expiration,
+        uint expiration,
         uint256 mask,
         Charge calldata charge
     ) external payable override(GatewayToken) {

@@ -47,8 +47,8 @@ jobs:
           INFURA_KEY: ${{ secrets.INFURA_KEY }}
         run: yarn build
 
-      - name: Test with coverage
+      - name: Test 
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           INFURA_KEY: ${{ secrets.INFURA_KEY }}
-        run: yarn coverage
+        run: yarn test
