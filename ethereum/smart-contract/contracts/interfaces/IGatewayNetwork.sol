@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.19;
 
+import { IGatewayGatekeeper } from './IGatewayGatekeeper.sol';
 abstract contract  IGatewayNetwork {
 
     // Ranges from 0% - 100%
@@ -65,6 +66,7 @@ abstract contract  IGatewayNetwork {
     function addGatekeeper(address gatekeeper, bytes32 network) external virtual;
     function removeGatekeeper(address gatekeeper, bytes32 network) external virtual;
     function updatePrimaryAuthority(address newPrimaryAuthortiy, bytes32 networkName) external virtual;
+    function updateGatekeeperStatus(address gatekeeper, bytes32 networkName, IGatewayGatekeeper.GatekeeperStatus status) external virtual;
     function claimPrimaryAuthority(bytes32 networkName) external virtual;
     function updateNetworkFeatures(uint256 newFeatureMask, bytes32 networkName) external virtual;
     function networkHasFeature(bytes32 networkName, NetworkFeature feature) public view virtual returns (bool);

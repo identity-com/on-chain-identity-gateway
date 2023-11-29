@@ -1,7 +1,13 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GatewayNetwork, GatewayNetwork__factory, IGatewayNetwork } from '../typechain-types' ;
+import {
+    GatewayNetwork, 
+    Gatekeeper,
+    GatewayNetwork__factory, 
+    Gatekeeper__factory,
+    IGatewayNetwork,
+} from '../typechain-types' ;
 import { utils } from 'ethers';
 
 describe('GatewayNetwork', () => {
@@ -12,6 +18,7 @@ describe('GatewayNetwork', () => {
     let stableCoin: SignerWithAddress;
 
     let gatekeeperNetworkContract: GatewayNetwork;
+    let gatekeeperContract: Gatekeeper;
 
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
     const DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS = Date.now() + 100000000;
@@ -32,9 +39,15 @@ describe('GatewayNetwork', () => {
         [deployer, primaryAuthority, alice, bob, stableCoin] = await ethers.getSigners();
 
         const gatewayNetworkFactory = await new GatewayNetwork__factory(deployer);
+        const gatekeeperContractFactory = await new Gatekeeper__factory(deployer);
 
-        gatekeeperNetworkContract = await gatewayNetworkFactory.deploy();
+        gatekeeperContract = await gatekeeperContractFactory.deploy();
+        await gatekeeperContract.deployed();
+
+        gatekeeperNetworkContract = await gatewayNetworkFactory.deploy(gatekeeperContract.address);
         await gatekeeperNetworkContract.deployed();
+
+        await gatekeeperContract.setNetworkContractAddress(gatekeeperNetworkContract.address);
     })
 
 
@@ -143,6 +156,20 @@ describe('GatewayNetwork', () => {
             //then
             const finalGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
             expect(finalGatekeepers.length).to.be.eq(0);
+            await expect(gatekeeperContract.getGatekeeperNetworkData(defaultNetwork.name, newGatekeeper, {gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperContract, 'GatekeeperNotInNetwork');
+        });
+
+        it('can update the status of a gatekeeper', async () => {
+            const newGatekeeper = bob.address;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
+            expect(currentGatekeepers.length).to.be.eq(0);
+
+            await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(primaryAuthority).updateGatekeeperStatus(newGatekeeper, defaultNetwork.name, 2, {gasLimit: 300000});
+
+            expect((await gatekeeperContract.getGatekeeperNetworkData(defaultNetwork.name, newGatekeeper)).status).to.be.eq(2);
+
         });
 
         it('can retreive the id of a network', async () => {
@@ -179,6 +206,15 @@ describe('GatewayNetwork', () => {
 
             // when
             await expect(gatekeeperNetworkContract.connect(alice).updatePassExpirationTime(newTimestamp, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
+        });
+
+        it('cannot update the status of a gatekeeper if not primary authority', async () => {
+            const newGatekeeper = bob.address;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
+            expect(currentGatekeepers.length).to.be.eq(0);
+
+            await expect(gatekeeperNetworkContract.connect(bob).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
         });
 
         it('cannot add a gatekeeper if not primary authority', async () => {
