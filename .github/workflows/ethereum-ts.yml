@@ -1,0 +1,59 @@
+name: Ethereum Typescript
+on:
+  push:
+    paths:
+      - 'ethereum/gateway-eth-ts/**'
+      - '.github/**'
+  pull_request:
+jobs:
+  ethereum-build:
+    # Disabling this workflow from running due to smart contract changes that break the typescript client
+    if: false
+    name: Build, lint and test the ethereum libraries on ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: ['16.x']
+        os: [ubuntu-latest]
+
+    defaults:
+      run:
+        working-directory: ./ethereum/gateway-eth-ts
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./node_modules
+          key: yarn-ethereum-${{ hashFiles('ethereum/yarn.lock') }}
+
+      - name: NPM login
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+
+      - name: Install
+        run: yarn
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build dependencies
+        run: (cd ../smart-contract && yarn && yarn build)
+
+      - name: Run tests
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          INFURA_KEY: ${{ secrets.INFURA_KEY }}
+        run: yarn test
+
+      - name: Build
+        run: yarn build

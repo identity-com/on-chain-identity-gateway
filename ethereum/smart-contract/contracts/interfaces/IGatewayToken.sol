@@ -89,6 +89,7 @@ interface IGatewayToken {
     function mint(
         address to,
         uint256 network,
+        uint expiration,
         uint256 mask,
         Charge calldata charge
     ) external payable;
