@@ -70,7 +70,7 @@ contract ChargeHandler is
      * when sending ETH to the recipient (if the recipient is a smart contract)
      * @param charge The charge details
      **/
-    function handleCharge(Charge calldata charge, uint network) external payable onlyRole(CHARGE_CALLER_ROLE) {
+    function handleCharge(Charge memory charge, uint network) external payable onlyRole(CHARGE_CALLER_ROLE) {
         if (charge.chargeType == ChargeType.ETH) {
             _handleEthCharge(charge);
         } else if (charge.chargeType == ChargeType.ERC20) {
@@ -83,7 +83,7 @@ contract ChargeHandler is
         emit ApprovalSet(gatewayTokenAddress, tokenAddress, tokens, network);
     }
 
-    function _handleEthCharge(Charge calldata charge) internal {
+    function _handleEthCharge(Charge memory charge) internal {
         // CHECKS
         // send wei if the charge type is ETH
         if (msg.value != charge.value) {
@@ -94,13 +94,13 @@ contract ChargeHandler is
         emit ChargePaid(charge);
 
         // INTERACTIONS
-        (bool success, ) = payable(charge.recipient).call{value: charge.value}("");
+        (bool success, ) = payable(charge.partiesInCharge.recipient).call{value: charge.value}("");
         if (!success) {
             revert Charge__TransferFailed(charge.value);
         }
     }
 
-    function _handleERC20Charge(Charge calldata charge, uint network) internal {
+    function _handleERC20Charge(Charge memory charge, uint network) internal {
         if (msg.value > 0) {
             // if the charge type is ERC20, the eth value should be zero
             revert Charge__IncorrectValue(msg.value, 0);
@@ -115,7 +115,7 @@ contract ChargeHandler is
         // InternalTokenApproval.sol
         // Note - safeTransferFrom() additionally checks the global allowance for this contract.
         (bool approvalValid, uint256 remainingAllowance) = _consumeApproval(
-            charge.tokenSender,
+            charge.partiesInCharge.tokenSender,
             _msgSender(),
             charge.token,
             charge.value,
@@ -129,7 +129,7 @@ contract ChargeHandler is
         emit ChargePaid(charge);
 
         // INTERACTIONS
-        token.safeTransferFrom(charge.tokenSender, charge.recipient, charge.value);
+        token.safeTransferFrom(charge.partiesInCharge.tokenSender, charge.partiesInCharge.recipient, charge.value);
     }
 
     // includes the onlySuperAdmin modifier to ensure that only the super admin can call this function

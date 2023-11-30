@@ -130,6 +130,14 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         _networks[networkName].networkFeatureMask = newFeatureMask;
     }
 
+    function updateFees(NetworkFeesBps calldata fees, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
+        require(fees.issueFee <= MAX_FEE_BPS, "Issue fee must be below 100%");
+        require(fees.refreshFee <= MAX_FEE_BPS, "Refresh fee must be below 100%");
+        require(fees.expireFee <= MAX_FEE_BPS, "Expiration fee must be below 100%");
+        require(fees.verificationFee <= MAX_FEE_BPS, "Verification fee must be below 100%");
+        _networks[networkName].networkFee = fees;
+    }
+
     function networkHasFeature(bytes32 networkName, NetworkFeature feature) public view override returns (bool) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
         return _networks[networkName].networkFeatureMask.checkBit(uint8(feature));

@@ -4,17 +4,18 @@ pragma solidity >=0.8.19;
 import { IGatewayGatekeeper } from './IGatewayGatekeeper.sol';
 abstract contract  IGatewayNetwork {
 
-    // Ranges from 0% - 100%
     /**
      * @dev Struct that describes the fees of each 
+     * All network fees are represented in basis points (bps) ranges from 0%(0 bps) - 100% (10000 bps)
      */
-    struct NetworkFeesPercentage {
-        // Token address used to pay fees. Zero address for this mean native eth
-        address tokenAddress;
+    struct NetworkFeesBps {
         uint16 issueFee;
         uint16 refreshFee;
         uint16 expireFee;
+        uint16 verificationFee;
     }
+
+    uint16 MAX_FEE_BPS = 10000;
 
     /**
      * @dev This struct represents data associated with the state of a gatekeeper network
@@ -33,7 +34,7 @@ abstract contract  IGatewayNetwork {
         //Features on the network
         uint256 networkFeatureMask;
         
-        NetworkFeesPercentage[] networkFees;
+        NetworkFeesBps networkFee;
 
         // Token supported for fees on this network. The zero address represents native eth.
         // Once a network is created, there is no way to update the supported token.
@@ -69,6 +70,7 @@ abstract contract  IGatewayNetwork {
     function updateGatekeeperStatus(address gatekeeper, bytes32 networkName, IGatewayGatekeeper.GatekeeperStatus status) external virtual;
     function claimPrimaryAuthority(bytes32 networkName) external virtual;
     function updateNetworkFeatures(uint256 newFeatureMask, bytes32 networkName) external virtual;
+    function updateFees(NetworkFeesBps calldata fees, bytes32 networkName) external virtual;
     function networkHasFeature(bytes32 networkName, NetworkFeature feature) public view virtual returns (bool);
     function getNetwork(uint networkId) external view virtual returns(GatekeeperNetworkData memory);
     function getNetworkId(bytes32 networkName) external view virtual returns(uint);
