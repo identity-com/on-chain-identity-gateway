@@ -428,12 +428,14 @@ contract GatewayToken is
         IGatewayNetwork.GatekeeperNetworkData memory networkData = IGatewayNetwork(_gatewayNetworkContract).getNetwork(networkId);
 
         (uint256 totalFeeAmount, uint16 networkFeeBps) = _resolveTotalFeeAmount(feeType, gatekeeperData, networkData);
+        
         ChargeType chargeType = (networkData.supportedToken == address(0)) ? ChargeType.ETH : ChargeType.ERC20;
+        bool shouldBeNullCharge = totalFeeAmount == 0 && msg.value == 0;
 
         Charge memory charge = Charge(
             totalFeeAmount, 
             networkFeeBps, 
-            chargeType, 
+            shouldBeNullCharge ? ChargeType.NONE : chargeType, 
             networkData.supportedToken, 
             partiesInCharge
         );

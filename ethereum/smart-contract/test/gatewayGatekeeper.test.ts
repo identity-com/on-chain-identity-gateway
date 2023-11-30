@@ -32,13 +32,13 @@ describe('Gatekeeper', () => {
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
     const DEFAULT_PASS_EXPIRE_TIMESTAMP = Date.now() + 100000000;
 
-    const getDefaultNetwork = (primaryAuthority: string, gatekeepers?: string[], passExpireTimestamp?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
+    const getDefaultNetwork = (primaryAuthority: string, gatekeepers?: string[], passExpireDurationInSeconds?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
         return {
             primaryAuthority,
             name: utils.formatBytes32String('default'),
-            passExpireTimestamp: passExpireTimestamp ? passExpireTimestamp : DEFAULT_PASS_EXPIRE_TIMESTAMP,
+            passExpireDurationInSeconds: passExpireDurationInSeconds ? passExpireDurationInSeconds : DEFAULT_PASS_EXPIRE_TIMESTAMP,
             networkFeatureMask: 0,
-            networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
+            networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0},
             supportedToken: ZERO_ADDRESS,
             gatekeepers: gatekeepers ? gatekeepers : []
         }
