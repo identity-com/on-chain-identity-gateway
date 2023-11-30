@@ -3,6 +3,7 @@ pragma solidity >=0.8.19;
 
 import { IGatewayGatekeeper } from './IGatewayGatekeeper.sol';
 abstract contract  IGatewayNetwork {
+
     // Ranges from 0% - 100%
     /**
      * @dev Struct that describes the fees of each 
@@ -25,9 +26,9 @@ abstract contract  IGatewayNetwork {
         // Unique identifier for a network.
         bytes32 name;
         
-        // The default expiration timestamp of passes on this network.
+        // The default expiration time in seconds of passes on this network.
         // A value of 0 means passes never expire
-        uint256 passExpireTimestamp;
+        uint256 passExpireDurationInSeconds;
         
         //Features on the network
         uint256 networkFeatureMask;
@@ -61,7 +62,7 @@ abstract contract  IGatewayNetwork {
 
     function createNetwork(GatekeeperNetworkData calldata network) external virtual;
     function closeNetwork(bytes32 networkName) external virtual;
-    function updatePassExpirationTimestamp(uint newExpirationTimestamp, bytes32 networkName) external virtual;
+    function updatePassExpirationTime(uint newExpirationTimeInSeconds, bytes32 networkName) external virtual;
     function addGatekeeper(address gatekeeper, bytes32 network) external virtual;
     function removeGatekeeper(address gatekeeper, bytes32 network) external virtual;
     function updatePrimaryAuthority(address newPrimaryAuthortiy, bytes32 networkName) external virtual;

@@ -74,11 +74,11 @@ describe('GatewayToken', async () => {
     tokenSender,
   });
 
-  const getNetwork = (primaryAuthority: string, name: string, gatekeepers?: string[], passExpireTimestamp?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
+  const getNetwork = (primaryAuthority: string, name: string, gatekeepers?: string[], passExpireDurationInSeconds?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
     return {
         primaryAuthority,
         name: utils.formatBytes32String(name),
-        passExpireTimestamp: passExpireTimestamp ? passExpireTimestamp : Date.now() + 100000000,
+        passExpireDurationInSeconds: passExpireDurationInSeconds ? passExpireDurationInSeconds : 100000000,
         networkFeatureMask: 0,
         networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
         supportedToken: ZERO_ADDRESS,
@@ -483,7 +483,7 @@ describe('GatewayToken', async () => {
     });
 
     it('mint Gateway Token for Alice by gatekeeper with gatekeeperNetwork = 1', async () => {
-      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE);
 
       return expectVerified(alice.address, gkn1).to.be.true;
     });
@@ -509,13 +509,13 @@ describe('GatewayToken', async () => {
       // add the gatekeeper to network 2
       await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-2'));
 
-      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn2, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn2, 0, 0, NULL_CHARGE);
 
       return expectVerified(alice.address, gkn2).to.be.true;
     });
 
     it('mint a second token for Alice with gatekeeperNetwork = 1', async () => {
-      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE);
 
       return expectVerified(alice.address, gkn2).to.be.true;
     });
@@ -577,7 +577,7 @@ describe('GatewayToken', async () => {
     it('Mint a token with a bitmask', async () => {
       const expectedBitmask = 1;
       const dummyWallet = randomAddress();
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, expectedBitmask, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, expectedBitmask, NULL_CHARGE);
 
       const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
       const bitmask = await gatewayToken.getTokenBitmask(dummyWalletTokenId);
@@ -585,14 +585,36 @@ describe('GatewayToken', async () => {
       expect(bitmask).to.equal(expectedBitmask);
     });
 
-    it('Mint a token with an expiration', async () => {
+    it('Mint a token with an network expiration', async () => {
       const dummyWallet = randomAddress();
-      const expectedExpiration = (await gatewayNetwork.connect(identityCom).getNetwork(gkn1)).passExpireTimestamp;
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, NULL_CHARGE);
+
+      const blockNum = await ethers.provider.getBlockNumber();
+      const blockBefore = await ethers.provider.getBlock(blockNum);
+      const timestampBefore = blockBefore.timestamp;
+
+      const expectedExpiration = (await gatewayNetwork.connect(identityCom).getNetwork(gkn1)).passExpireDurationInSeconds.add(timestampBefore + 1);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
 
       const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
       const expiration = await gatewayToken.getExpiration(dummyWalletTokenId);
 
+      expect(expiration).to.equal(expectedExpiration);
+    });
+
+    it('Mint a token with a gatekeeper expiration', async () => {
+      // given
+      const dummyWallet = randomAddress();
+      const expectedExpiration = (Date.now() * 1000) + 100000;
+
+      await gatewayNetwork.connect(identityCom).updatePassExpirationTime(0,utils.formatBytes32String('GKN-1'));
+      
+      // when
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, expectedExpiration, 0, NULL_CHARGE);
+
+      const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
+      const expiration = await gatewayToken.getExpiration(dummyWalletTokenId);
+
+      // expect
       expect(expiration).to.equal(expectedExpiration);
     });
   });
@@ -691,7 +713,7 @@ describe('GatewayToken', async () => {
 
     beforeEach(async () => {
       dummyWallet = randomAddress();
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
 
       [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
     });
@@ -728,7 +750,7 @@ describe('GatewayToken', async () => {
 
     it('all tokens must be frozen for to verify to return false', async () => {
       // mint a second token
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
       const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenIds[0]);
@@ -780,7 +802,7 @@ describe('GatewayToken', async () => {
 
     it('all tokens must be burned for verified to return false', async () => {
       // mint a second token
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
       const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).burn(dummyWalletTokenIds[0]);
@@ -796,7 +818,7 @@ describe('GatewayToken', async () => {
 
     it('all tokens must be revoked for verified to return false', async () => {
       // mint a second token
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
       const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenIds[0]);
@@ -882,7 +904,7 @@ describe('GatewayToken', async () => {
     it('forward a call', async () => {
       const mintTx = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(carol.address, gkn1, 0, NULL_CHARGE);
+        .populateTransaction.mint(carol.address, gkn1, 0, 0, NULL_CHARGE);
 
       // Carol does not have the GT yet, because the tx has not been sent
       await expectVerified(carol.address, gkn1).to.be.false;
@@ -907,7 +929,7 @@ describe('GatewayToken', async () => {
     it('forward a call - revert if the signer is not the from address', async () => {
       const mintTx = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
 
       const input = {
         from: gatekeeper.address,
@@ -936,7 +958,7 @@ describe('GatewayToken', async () => {
       const wallet = randomWallet();
       const mintTx = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(wallet.address, gkn1, 0, NULL_CHARGE);
+        .populateTransaction.mint(wallet.address, gkn1, 0, 0, NULL_CHARGE);
 
       const input1 = {
         from: gatekeeper.address,
@@ -979,10 +1001,10 @@ describe('GatewayToken', async () => {
       // create two transactions, that share the same forwarder nonce
       const tx1 = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
       const tx2 = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
 
       const req1 = await makeMetaTx(tx1);
       const req2 = await makeMetaTx(tx2);
@@ -1000,7 +1022,7 @@ describe('GatewayToken', async () => {
     it('Protects against replay attacks', async () => {
       const userToBeFrozen = randomWallet();
       // mint and freeze a user's token
-      await gatewayToken.connect(gatekeeper).mint(userToBeFrozen.address, gkn1, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(userToBeFrozen.address, gkn1, 0, 0, NULL_CHARGE);
       const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(userToBeFrozen.address, gkn1, true);
       await gatewayToken.connect(gatekeeper).freeze(tokenId);
       await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
@@ -1039,10 +1061,10 @@ describe('GatewayToken', async () => {
       // create two transactions,
       const tx1 = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
       const tx2 = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
       const req1 = await signMetaTxRequest(gatekeeper, intolerantForwarder as IForwarder, {
         from: gatekeeper.address,
         to: gatewayToken.address,
@@ -1069,7 +1091,7 @@ describe('GatewayToken', async () => {
     it('Refunds excess Eth sent with a transaction', async () => {
       const tx = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
       const req = await makeMetaTx(tx);
 
       const valueInForwardedTransaction = ethers.utils.parseUnits('1', 'ether');
@@ -1130,7 +1152,7 @@ describe('GatewayToken', async () => {
       // create two transactions, that share the same forwarder nonce
       const tx1 = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
       const req1 = await makeMetaTx(tx1);
       // we pass 2,000,000 gas limit to the inner tx (see makeMetaTx)
       // The forwarder reserves 1/64th of that
@@ -1364,7 +1386,7 @@ describe('GatewayToken', async () => {
         const balanceBefore = await alice.getBalance();
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         // forward it so that Alice sends it, and includes a value
         const receipt = await forward(tx, alice, charge.value);
@@ -1384,7 +1406,7 @@ describe('GatewayToken', async () => {
         charge.recipient = brokenRecipient.address;
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         // forward it so that Alice sends it, and includes a value
         // this should fail, because the recipient rejects it
@@ -1398,7 +1420,7 @@ describe('GatewayToken', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         // forward it so that Alice sends it. Alice tries to include a lower value than the charge
         await expect(forward(tx, alice, ethers.utils.parseEther('0.05'))).to.be.revertedWithCustomError(
@@ -1411,7 +1433,7 @@ describe('GatewayToken', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         // forward it so that Alice sends it. Alice tries to include a higher value than the charge
         await expect(forward(tx, alice, ethers.utils.parseEther('0.15'))).to.be.revertedWithCustomError(
@@ -1424,7 +1446,7 @@ describe('GatewayToken', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         // forward it so that Alice sends it. Alice tries to send it without a value
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectValue');
@@ -1433,7 +1455,7 @@ describe('GatewayToken', async () => {
       it('can charge ETH - revert if charge is too high', async () => {
         const balance = await alice.getBalance();
         const charge = makeWeiCharge(balance.mul(2));
-        const shouldFail = gatewayToken.connect(alice).mint(alice.address, gkn1, 0, charge, { value: charge.value });
+        const shouldFail = gatewayToken.connect(alice).mint(alice.address, gkn1, 0, 0, charge, { value: charge.value });
         await expect(shouldFail).to.be.rejectedWith(/sender doesn't have enough funds/);
       });
     });
@@ -1451,7 +1473,7 @@ describe('GatewayToken', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1463,7 +1485,7 @@ describe('GatewayToken', async () => {
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1478,7 +1500,7 @@ describe('GatewayToken', async () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         await expect(forward(tx, alice)).to.be.revertedWith('ERC20: insufficient allowance');
       });
@@ -1493,7 +1515,7 @@ describe('GatewayToken', async () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value.sub(10), gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1509,7 +1531,7 @@ describe('GatewayToken', async () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, someOtherTokenAddress, charge.value, gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1524,7 +1546,7 @@ describe('GatewayToken', async () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         await expect(forward(tx, alice, ethers.utils.parseEther('0.15'))).to.be.revertedWithCustomError(
           chargeHandler,
@@ -1543,7 +1565,7 @@ describe('GatewayToken', async () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         // forward it so that Alice sends it
         await forward(tx, alice);
@@ -1566,7 +1588,7 @@ describe('GatewayToken', async () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction for bob
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, 0, charge);
 
         // forward it so that Alice sends it
         await forward(tx, alice);
@@ -1589,7 +1611,7 @@ describe('GatewayToken', async () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
 
         // create a mint transaction for bob
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, 0, charge);
 
         // forward it so that Bob sends it
         await forward(tx, bob);
@@ -1617,7 +1639,7 @@ describe('GatewayToken', async () => {
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, brokenErc20.address, charge.value, gkn1);
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
 
         // the transfer fails because the erc20 contract blocked it
         await expect(forward(tx, alice)).to.be.revertedWith(/ERC20 operation did not succeed/);
@@ -1658,8 +1680,11 @@ describe('GatewayToken', async () => {
     });
 
     it('can issue a token with a positive expiry', async () => {
+      const currentDate = Math.ceil(Date.now() / 1000);
+      const tomorrow = currentDate + 86_400;
+
       const wallet = randomWallet();
-      await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, tomorrow, 0, NULL_CHARGE);
 
       let verified = await gatewayToken['verifyToken(address,uint256)'](wallet.address, gkn1);
       expect(verified).to.be.true;
@@ -1667,9 +1692,11 @@ describe('GatewayToken', async () => {
 
     it('can no longer issue a token with no expiry (testing the upgraded behaviour)', async () => {
       const wallet = randomWallet();
+
+      await gatewayNetwork.connect(identityCom).updatePassExpirationTime(0,utils.formatBytes32String('GKN-1'));
       
-      await gatewayNetwork.connect(identityCom).updatePassExpirationTimestamp(0, gkn1);
-      await expect(gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, 0, NULL_CHARGE)).to.be.revertedWith(
+      await gatewayNetwork.connect(identityCom).updatePassExpirationTime(0, gkn1);
+      await expect(gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, 0, 0, NULL_CHARGE)).to.be.revertedWith(
         'TEST MODE: Expiry must be > zero',
       );
     });
