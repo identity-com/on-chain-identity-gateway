@@ -248,7 +248,7 @@ contract GatewayToken is
         // EFFECTS
         _setExpiration(tokenId, timestamp);
         // INTERACTIONS
-        _handleCharge(FeeType.EXPIRE, network, gatekeeper, partiesInCharge);
+        _handleCharge(FeeType.REFRESH, network, gatekeeper, partiesInCharge);
     }
 
 
