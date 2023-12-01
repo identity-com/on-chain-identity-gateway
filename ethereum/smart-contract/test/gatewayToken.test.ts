@@ -141,7 +141,6 @@ describe('GatewayToken', async () => {
       gatekeeperContract.address
     ];
 
-    console.log(JSON.stringify(args));
     gatewayToken = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
     await gatewayToken.deployed();
 
@@ -1476,6 +1475,7 @@ describe('GatewayToken', async () => {
       it('can charge ETH through a forwarded call', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
         const balanceBefore = await alice.getBalance();
+        const gatekeeperBalanceBefore = await gatekeeper.getBalance();
 
         const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
           issueFee: charge.value,
@@ -1493,8 +1493,11 @@ describe('GatewayToken', async () => {
 
         // check that Alice's balance has gone down by the charge amount + gas
         const balanceAfter = await alice.getBalance();
+        const gatekeeperBalanceAfter = await gatekeeper.getBalance();
+        
         const gas = receipt.gasUsed.mul(receipt.effectiveGasPrice);
         expect(balanceAfter).to.equal(balanceBefore.sub(charge.value).sub(gas));
+        expect(gatekeeperBalanceAfter).to.greaterThan(gatekeeperBalanceBefore);
       });
 
       it('charge ETH - revert if the recipient rejects it', async () => {
