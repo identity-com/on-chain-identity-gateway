@@ -15,7 +15,8 @@ abstract contract  IGatewayNetwork {
         uint16 verificationFee;
     }
 
-    uint16 MAX_FEE_BPS = 10000;
+    uint16 MAX_FEE_BPS = 10000; // 100%
+    uint256 public FEE_CONFIG_DELAY_TIME = 7 days;
 
     /**
      * @dev This struct represents data associated with the state of a gatekeeper network
@@ -41,6 +42,7 @@ abstract contract  IGatewayNetwork {
         address supportedToken;
 
         address[] gatekeepers;
+        uint256 lastFeeUpdateTimestamp;
     }
 
     enum NetworkFeature {
@@ -62,6 +64,7 @@ abstract contract  IGatewayNetwork {
     error GatewayNetworkGatekeeperDoesNotExists(string network, address gatekeeper);
     error GatewayNetwork_Cannot_Be_Sent_Eth_Directly();
     error GatewayNetwork__TransferFailed(uint256 value);
+    error GatewayNetwork_Fee_Cannot_Be_Updated_Yet(uint lastUpdateTimestamp, uint nextAvalibleUpdateTimestamp);
 
     function createNetwork(GatekeeperNetworkData calldata network) external virtual;
     function receiveNetworkFees(uint256 feeAmount, bytes32 networkName, address tokenSender) external payable virtual;
