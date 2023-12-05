@@ -32,6 +32,11 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
     constructor(address gatewayGatekeeperContractAddress, address gatewayStakingContractAddress) {
         // Contract deployer is the initial super admin
         _superAdmins[msg.sender] = true;
+
+        // Allow contract deployer to set NETWORK_FEE_PAYER_ROLE role
+        _grantRole(DEFAULT_ADMIN_ROLE, 0, msg.sender);
+        _setRoleAdmin(NETWORK_FEE_PAYER_ROLE, 0, DEFAULT_ADMIN_ROLE);
+
         _gatewayGatekeeperContractAddress = gatewayGatekeeperContractAddress;
         _gatewayGatekeeperStakingContractAddress = gatewayStakingContractAddress;
     }
@@ -61,9 +66,10 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
 
         // If network fees are paid in native ETH
         if(feeToken == address(0)) {
-            require(feeAmount != msg.value, "The feeAmount in native eth must equal the eth sent in msg.value");
+            require(feeAmount == msg.value, "The feeAmount in native eth must equal the eth sent in msg.value");
             networkFeeBalances[networkName] += feeAmount;
         } else {
+            require(msg.value == 0, "No eth can be transferred for fees in ERC-20");
             // Effect
             networkFeeBalances[networkName] += feeAmount;
 
@@ -80,7 +86,7 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         require(feeBalance > 0, "Network does not have any fees to withdraw");
 
         // Effect
-        networkFeeBalances[networkName] == 0;
+        networkFeeBalances[networkName] = 0;
 
         //Interaction 
 
@@ -92,7 +98,7 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
             }
         } else {
             IERC20 token = IERC20(feeToken);
-            token.safeTransferFrom(address(this), _networks[networkName].primaryAuthority, feeBalance);
+            token.safeTransfer(_networks[networkName].primaryAuthority, feeBalance);
         }
     }
 
