@@ -129,6 +129,7 @@ describe('GatewayToken', async () => {
     await gatewayNetwork.deployed();
 
     await gatekeeperContract.setNetworkContractAddress(gatewayNetwork.address);
+    await chargeHandler.setNetworkContractAddress(gatewayNetwork.address);
 
     const args = [
       'Gateway Protocol',

@@ -107,7 +107,9 @@ contract ChargeHandler is
         // INTERACTIONS
 
         // pay network fee
-        IGatewayNetwork(_gatewayNetworkContract).receiveNetworkFees{value: networkFee}(networkFee, bytes32(network), address(0));
+        if(networkFee > 0 ) {
+            IGatewayNetwork(_gatewayNetworkContract).receiveNetworkFees{value: networkFee}(networkFee, bytes32(network), address(0));
+        }
 
         // pay gatekeeper fee
         (bool success, ) = payable(charge.partiesInCharge.recipient).call{value: gatekeeperFee}("");
@@ -150,7 +152,9 @@ contract ChargeHandler is
         // INTERACTIONS
 
         // pay network fee
-        IGatewayNetwork(_gatewayNetworkContract).receiveNetworkFees(networkFee, bytes32(network), charge.partiesInCharge.tokenSender);
+        if(networkFee > 0 ) {
+            IGatewayNetwork(_gatewayNetworkContract).receiveNetworkFees(networkFee, bytes32(network), charge.partiesInCharge.tokenSender);
+        }
 
         // pay gatekeeper fee
         token.safeTransferFrom(charge.partiesInCharge.tokenSender, charge.partiesInCharge.recipient, gatekeeperFee);
