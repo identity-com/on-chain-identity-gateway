@@ -1,5 +1,5 @@
 import { ethers, upgrades } from 'hardhat';
-import { BigNumber, Contract, PopulatedTransaction, utils } from 'ethers';
+import { BigNumber, BigNumberish, Contract, PopulatedTransaction, utils } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { keccak256 } from '@ethersproject/keccak256';
 import { toUtf8Bytes } from '@ethersproject/strings';
@@ -94,6 +94,10 @@ describe('GatewayToken', async () => {
     }
   }
 
+  const giveDummyToken = async (account: SignerWithAddress, amountToTransfer: BigNumberish) => {
+    await dummyErc20Contract.connect(identityCom).transfer(account.address, amountToTransfer);
+  }
+
   before('deploy contracts', async () => {
     [identityCom, alice, bob, carol, gatekeeper] = await ethers.getSigners();
 
@@ -141,7 +145,8 @@ describe('GatewayToken', async () => {
       chargeHandler.address,
       [forwarder.address],
       gatewayNetwork.address,
-      gatekeeperContract.address
+      gatekeeperContract.address,
+      gatewayStakingContract.address
     ];
 
     gatewayToken = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
@@ -185,7 +190,8 @@ describe('GatewayToken', async () => {
           chargeHandler.address,
           [forwarder.address],
           gatewayNetwork.address,
-          gatekeeperContract.address
+          gatekeeperContract.address,
+          gatewayStakingContract.address
         ];
 
         const contract = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
@@ -209,7 +215,8 @@ describe('GatewayToken', async () => {
           chargeHandler.address,
           [forwarder.address],
           gatewayNetwork.address,
-          gatekeeperContract.address
+          gatekeeperContract.address,
+          gatewayStakingContract.address
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -228,7 +235,8 @@ describe('GatewayToken', async () => {
           chargeHandler.address,
           [forwarder.address],
           gatewayNetwork.address,
-          gatekeeperContract.address
+          gatekeeperContract.address,
+          gatewayStakingContract.address
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -247,7 +255,8 @@ describe('GatewayToken', async () => {
           ZERO_ADDRESS,
           [forwarder.address],
           gatewayNetwork.address,
-          gatekeeperContract.address
+          gatekeeperContract.address,
+          gatewayStakingContract.address
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -266,7 +275,8 @@ describe('GatewayToken', async () => {
           chargeHandler.address,
           [forwarder.address, ZERO_ADDRESS],
           gatewayNetwork.address,
-          gatekeeperContract.address
+          gatekeeperContract.address,
+          gatewayStakingContract.address
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -284,7 +294,8 @@ describe('GatewayToken', async () => {
             chargeHandler.address,
             [forwarder.address],
             gatewayNetwork.address,
-            gatekeeperContract.address
+            gatekeeperContract.address,
+            gatewayStakingContract.address
           ),
         ).to.be.revertedWith(/Initializable: contract is already initialized/);
       });
@@ -1475,6 +1486,15 @@ describe('GatewayToken', async () => {
       );
     });
 
+    afterEach('charge clean up', async () => {
+      await gatewayStakingContract.connect(identityCom).setMinimumGatekeeperStake(0);
+      const gatekeeperShares = await gatewayStakingContract.balanceOf(gatekeeper.address);
+
+      if(gatekeeperShares.gt(0)) {
+        await gatewayStakingContract.connect(gatekeeper).withdrawStake(gatekeeperShares);
+      }
+    })
+
     context('ETH', () => {
       it('can charge ETH through a forwarded call', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
@@ -1489,6 +1509,50 @@ describe('GatewayToken', async () => {
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
+
+        // forward it so that Alice sends it, and includes a value
+        const receipt = await forward(tx, alice, charge.value);
+
+        // check that Alice's balance has gone down by the charge amount + gas
+        const balanceAfter = await alice.getBalance();
+        const gatekeeperBalanceAfter = await gatekeeper.getBalance();
+        
+        const gas = receipt.gasUsed.mul(receipt.effectiveGasPrice);
+        expect(balanceAfter).to.equal(balanceBefore.sub(charge.value).sub(gas));
+        expect(gatekeeperBalanceAfter).to.greaterThan(gatekeeperBalanceBefore);
+      });
+
+      it('can charge ETH through a forwarded call with a gatekeeper that meets minimum stake requirement', async () => {
+        const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
+        const balanceBefore = await alice.getBalance();
+        const gatekeeperBalanceBefore = await gatekeeper.getBalance();
+        
+        const MINIMUM_STAKE = 5000;
+
+        // require a minimum amount of stake for gatekeepers
+        await gatewayStakingContract.connect(identityCom).setMinimumGatekeeperStake(MINIMUM_STAKE);
+
+        // gatekeeper deposit stake
+        await giveDummyToken(gatekeeper, MINIMUM_STAKE * 2);
+        await dummyErc20Contract.connect(gatekeeper).increaseAllowance(gatewayStakingContract.address, MINIMUM_STAKE);
+        await gatewayStakingContract.connect(gatekeeper).depositStake(MINIMUM_STAKE, {gasLimit: 300000});
+
+        const sharesBalance = await gatewayStakingContract.balanceOf(gatekeeper.address);
+
+        expect(sharesBalance).to.be.eq(MINIMUM_STAKE);
+
+        // update gatekeeper fees
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
 
@@ -1549,6 +1613,33 @@ describe('GatewayToken', async () => {
         expect(gatekeeperBalanceAfter.sub(gatekeeperBalanceBefore)).to.greaterThan(gatekeeperFeeValue);
         expect(networkBalanceAfter.sub(networkBalanceBefore)).to.eq(networkFeeValue);
 
+      });
+
+      it('can charge ETH - revert if gatekeeper does not meet minimum stake requirement', async () => {
+        const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
+
+        
+        const MINIMUM_STAKE = 5000;
+
+        // require a minimum amount of stake for gatekeepers
+        await gatewayStakingContract.connect(identityCom).setMinimumGatekeeperStake(MINIMUM_STAKE);
+
+
+        // update gatekeeper fees
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
+
+        // forward it so that Alice sends it, and includes a value
+        await expect(forward(tx, alice, charge.value)).to.be.revertedWithCustomError(gatewayToken, "GatewayToken__GatekeeperDoesNotMeetStakingRequirements");
       });
 
       it('charge ETH - revert if the recipient rejects it', async () => {
@@ -1809,6 +1900,39 @@ describe('GatewayToken', async () => {
         );
       });
 
+      it('can charge ERC20 - reject if gatekeeper does not meet minimum stake requirements', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        await dummyErc20Contract.connect(identityCom).transfer(alice.address, BigNumber.from('100'));
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
+
+        // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
+
+        const MINIMUM_STAKE = 5000;
+
+        // require a minimum amount of stake for gatekeepers
+        await gatewayStakingContract.connect(identityCom).setMinimumGatekeeperStake(MINIMUM_STAKE);
+
+
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
+
+        // forward it so that Alice sends it
+        await expect(forward(tx, alice)).to.be.revertedWithCustomError(gatewayToken, "GatewayToken__GatekeeperDoesNotMeetStakingRequirements");
+      });
+
       it('can charge ERC20 through a forwarded call', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
 
@@ -1820,6 +1944,52 @@ describe('GatewayToken', async () => {
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
+
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
+
+        // forward it so that Alice sends it
+        await forward(tx, alice);
+
+        // check that Alice's balance has gone down by the charge amount
+        const balanceAfter = await erc20.balanceOf(alice.address);
+        expect(balanceAfter).to.equal(balanceBefore.sub(charge.value));
+      });
+
+      it('can charge ERC20 through a forwarded call with a gatekeeper that meets minimum stake requirements', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        await dummyErc20Contract.connect(identityCom).transfer(alice.address, BigNumber.from('100'));
+
+        const balanceBefore = await erc20.balanceOf(alice.address);
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
+
+        // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
+
+        const MINIMUM_STAKE = 5000;
+
+        // require a minimum amount of stake for gatekeepers
+        await gatewayStakingContract.connect(identityCom).setMinimumGatekeeperStake(MINIMUM_STAKE);
+
+        // gatekeeper deposit stake
+        await giveDummyToken(gatekeeper, MINIMUM_STAKE * 2);
+        await dummyErc20Contract.connect(gatekeeper).increaseAllowance(gatewayStakingContract.address, MINIMUM_STAKE);
+        await gatewayStakingContract.connect(gatekeeper).depositStake(MINIMUM_STAKE, {gasLimit: 300000});
+
+        const sharesBalance = await gatewayStakingContract.balanceOf(gatekeeper.address);
+
+        expect(sharesBalance).to.be.eq(MINIMUM_STAKE);
 
         const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
