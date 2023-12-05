@@ -87,6 +87,8 @@ interface IGatewayToken {
 
     /// Token transfers are disabled
     error GatewayToken__TransferDisabled();
+    /// Token transfers are disabled
+    error GatewayToken__GatekeeperDoesNotMeetStakingRequirements();
 
     function mint(
         address to,
