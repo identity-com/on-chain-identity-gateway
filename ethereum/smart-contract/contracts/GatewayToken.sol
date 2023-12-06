@@ -167,6 +167,11 @@ contract GatewayToken is
     function burn(uint tokenId) external virtual {
         _checkGatekeeper(slotOf(tokenId));
         _burn(tokenId);
+
+        address gatekeeper = _msgSender();
+        uint network = slotOf(tokenId);
+
+        _handleCharge(FeeType.EXPIRE, network, gatekeeper, partiesInCharge);
     }
 
     /**
@@ -206,22 +211,31 @@ contract GatewayToken is
         _handleCharge(FeeType.ISSUE, network, gatekeeper, partiesInCharge);
     }
 
-    function revoke(uint tokenId) external virtual override {
+    function revoke(uint tokenId, ChargeParties calldata partiesInCharge) external virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
         _tokenStates[tokenId] = TokenState.REVOKED;
 
+        address gatekeeper = _msgSender();
+        uint network = slotOf(tokenId);
+
         emit Revoke(tokenId);
+        // INTERACTIONS
+        _handleCharge(FeeType.REVOKE, network, gatekeeper, partiesInCharge);
     }
 
     /**
      * @dev Triggers to freeze gateway token
      * @param tokenId Gateway token id
      */
-    function freeze(uint tokenId) external virtual {
+    function freeze(uint tokenId, ChargeParties calldata partiesInCharge) external virtual {
         _checkGatekeeper(slotOf(tokenId));
 
         _freeze(tokenId);
+
+        address gatekeeper = _msgSender();
+        uint network = slotOf(tokenId);
+        _handleCharge(FeeType.FREEZE, network, gatekeeper, partiesInCharge);
     }
 
     /**
@@ -232,6 +246,11 @@ contract GatewayToken is
         _checkGatekeeper(slotOf(tokenId));
 
         _unfreeze(tokenId);
+
+        address gatekeeper = _msgSender();
+        uint network = slotOf(tokenId);
+
+        _handleCharge(FeeType.FREEZE, network, gatekeeper, partiesInCharge);
     }
 
     /**
@@ -285,8 +304,13 @@ contract GatewayToken is
      *
      * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
      */
-    function verifyToken(address owner, uint network) external view virtual returns (bool) {
+    function verifyToken(address owner, uint network, ChargeParties calldata partiesInCharge) external view virtual returns (bool) {
         (, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, true);
+
+        address gatekeeper = _msgSender();
+        uint network = slotOf(tokenId);
+
+        _handleCharge(FeeType.VERIFY, network, gatekeeper, partiesInCharge);
 
         return count > 0;
     }
@@ -468,6 +492,12 @@ contract GatewayToken is
         } else if(feeType == FeeType.VERIFY) {
             totalFeeAmount = gatekeeperData.fees.verificationFee;
             networkFeeBps = networkData.networkFee.verificationFee;
+        } else if(feeType == FeeType.REVOKE) {
+            totalFeeAmount = gatekeeperData.fees.revokeFee;
+            networkFeeBps = networkData.networkFee.revokeFee;
+        } else if(feeType == FeeType.FREEZE) {
+            totalFeeAmount = gatekeeperData.fees.freezeFee;
+            networkFeeBps = networkData.networkFee.freezeFee;
         } else {
             revert GatewayToken__UnsupportedFeeType();
         }

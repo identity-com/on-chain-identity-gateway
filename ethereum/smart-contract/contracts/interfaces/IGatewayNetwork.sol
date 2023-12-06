@@ -13,6 +13,8 @@ abstract contract  IGatewayNetwork {
         uint16 refreshFee;
         uint16 expireFee;
         uint16 verificationFee;
+        uint16 revokeFee;
+        uint16 freezeFee;
     }
 
     uint16 MAX_FEE_BPS = 10000;

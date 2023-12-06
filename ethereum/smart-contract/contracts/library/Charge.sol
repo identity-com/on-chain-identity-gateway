@@ -11,7 +11,9 @@ enum FeeType {
     ISSUE,
     REFRESH,
     EXPIRE,
-    VERIFY
+    VERIFY,
+    REVOKE,
+    FREEZE
 }
 
 /**
