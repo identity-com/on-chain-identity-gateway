@@ -7,8 +7,12 @@ import {
     GatewayNetwork__factory, 
     Gatekeeper__factory,
     IGatewayNetwork,
+    GatewayStaking,
+    GatewayStaking__factory,
+    DummyERC20,
+    DummyERC20__factory,
 } from '../typechain-types' ;
-import { utils } from 'ethers';
+import { BigNumberish, utils } from 'ethers';
 
 describe('GatewayNetwork', () => {
     let primaryAuthority: SignerWithAddress;
@@ -19,6 +23,8 @@ describe('GatewayNetwork', () => {
 
     let gatekeeperNetworkContract: GatewayNetwork;
     let gatekeeperContract: Gatekeeper;
+    let gatewayStakingContract: GatewayStaking;
+    let dummyErc20Contract: DummyERC20;
 
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
     const DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS = Date.now() + 100000000;
@@ -35,16 +41,28 @@ describe('GatewayNetwork', () => {
         }
     }
 
+    const giveDummyToken = async (account: SignerWithAddress, amountToTransfer: BigNumberish) => {
+        await dummyErc20Contract.connect(deployer).transfer(account.address, amountToTransfer);
+    }
+
     beforeEach('setup', async () => {
         [deployer, primaryAuthority, alice, bob, stableCoin] = await ethers.getSigners();
 
         const gatewayNetworkFactory = await new GatewayNetwork__factory(deployer);
         const gatekeeperContractFactory = await new Gatekeeper__factory(deployer);
+        const gatewayStakingFactory = await new GatewayStaking__factory(deployer);
+        const dummyERC20Factory = await new DummyERC20__factory(deployer);
 
         gatekeeperContract = await gatekeeperContractFactory.deploy();
         await gatekeeperContract.deployed();
 
-        gatekeeperNetworkContract = await gatewayNetworkFactory.deploy(gatekeeperContract.address);
+        dummyErc20Contract = await dummyERC20Factory.deploy('DummyToken', 'DT', 10000000000, deployer.address);
+        await dummyErc20Contract.deployed();
+
+        gatewayStakingContract = await gatewayStakingFactory.deploy(dummyErc20Contract.address, 'GatewayProtocolShares', 'GPS');
+        await gatewayStakingContract.deployed();
+
+        gatekeeperNetworkContract = await gatewayNetworkFactory.deploy(gatekeeperContract.address, gatewayStakingContract.address);
         await gatekeeperNetworkContract.deployed();
 
         await gatekeeperContract.setNetworkContractAddress(gatekeeperNetworkContract.address);
@@ -134,6 +152,32 @@ describe('GatewayNetwork', () => {
 
             //then
             const newGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
+
+            expect(newGatekeepers.length).to.be.eq(1);
+            expect(newGatekeepers[0]).to.be.eq(bob.address);
+        });
+        it('can add a gatekeeper that does have the minimum amount of global stake', async () => {
+            // given
+            const newGatekeeper = bob.address;
+            const minStake = 500;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
+            expect(currentGatekeepers.length).to.be.eq(0);
+
+            await gatewayStakingContract.connect(deployer).setMinimumGatekeeperStake(minStake, {gasLimit: 300000});
+
+            // when 
+            await giveDummyToken(bob, minStake);
+
+            // give staking contract allowance and deposit stake
+            await dummyErc20Contract.connect(bob).increaseAllowance(gatewayStakingContract.address, minStake);
+            await gatewayStakingContract.connect(bob).depositStake(minStake, {gasLimit: 300000});
+
+            await gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000});
+            
+            //then
+            const newGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
+
             expect(newGatekeepers.length).to.be.eq(1);
             expect(newGatekeepers[0]).to.be.eq(bob.address);
         });
@@ -189,6 +233,18 @@ describe('GatewayNetwork', () => {
 
             //then
             expect(result).to.be.true;
+        });
+        it('cannot add a gatekeeper that does not have the minimum amount of global stake', async () => {
+            // given
+            const newGatekeeper = bob.address;
+
+            const currentGatekeepers = await gatekeeperNetworkContract.getGatekeepersOnNetwork(defaultNetwork.name);
+            expect(currentGatekeepers.length).to.be.eq(0);
+
+            await gatewayStakingContract.connect(deployer).setMinimumGatekeeperStake(500, {gasLimit: 300000});
+
+
+            await expect(gatekeeperNetworkContract.connect(primaryAuthority).addGatekeeper(newGatekeeper, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Address does not meet the minimum stake requirements of the gateway protocol");
         });
         it('cannot update the primary authority of a network if not current primary authority', async () => {
             await expect(gatekeeperNetworkContract.connect(alice).updatePrimaryAuthority(alice.address, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Only the primary authority can perform this action");
