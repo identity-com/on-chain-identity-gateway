@@ -78,6 +78,7 @@ abstract contract  IGatewayNetwork {
     function claimPrimaryAuthority(bytes32 networkName) external virtual;
     function updateNetworkFeatures(uint256 newFeatureMask, bytes32 networkName) external virtual;
     function updateFees(NetworkFeesBps calldata fees, bytes32 networkName) external virtual;
+    function resetNetworkFeeUpdateTime(bytes32 networkName) external virtual;
     function networkHasFeature(bytes32 networkName, NetworkFeature feature) public view virtual returns (bool);
     function getNetwork(uint networkId) external view virtual returns(GatekeeperNetworkData memory);
     function getNetworkId(bytes32 networkName) external view virtual returns(uint);

@@ -535,6 +535,42 @@ describe('GatewayNetwork', () => {
             expect(finalErc20Balance.sub(initialErc20Balance)).to.be.greaterThanOrEqual(DEFAULT_TEST_FEE_AMOUNT.mul(99).div(100));
         });
 
+        it('can reset a networks lastFeeUpdated time if super admin', async () => {
+            //given
+            let updatedFees = {issueFee: 100, verificationFee: 100, expireFee: 100, refreshFee: 100};
+            const networkId = await gatekeeperNetworkContract.getNetworkId(defaultNetwork.name);
+            const networkState = await gatekeeperNetworkContract.getNetwork(networkId);
+
+            expect(networkState.networkFee.issueFee).to.eq(0);
+            expect(networkState.networkFee.verificationFee).to.eq(0);
+            expect(networkState.networkFee.refreshFee).to.eq(0);
+            expect(networkState.networkFee.expireFee).to.eq(0);
+            
+
+            await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperNetworkContract, 'GatewayNetwork_Fee_Cannot_Be_Updated_Yet');
+
+            // then
+            await gatekeeperNetworkContract.connect(deployer).resetNetworkFeeUpdateTime(defaultNetwork.name);
+            
+            const updatedNetworkState = await gatekeeperNetworkContract.getNetwork(networkId);
+            expect(updatedNetworkState.lastFeeUpdateTimestamp).to.eq(0);
+        })
+
+        it('cannot reset a networks lastFeeUpdated time if not super admin', async () => {
+            //given
+            let updatedFees = {issueFee: 100, verificationFee: 100, expireFee: 100, refreshFee: 100};
+            const networkId = await gatekeeperNetworkContract.getNetworkId(defaultNetwork.name);
+            const networkState = await gatekeeperNetworkContract.getNetwork(networkId);
+
+            expect(networkState.networkFee.issueFee).to.eq(0);
+            expect(networkState.networkFee.verificationFee).to.eq(0);
+            expect(networkState.networkFee.refreshFee).to.eq(0);
+            expect(networkState.networkFee.expireFee).to.eq(0);
+            
+
+            await expect(gatekeeperNetworkContract.connect(primaryAuthority).resetNetworkFeeUpdateTime(defaultNetwork.name)).to.be.revertedWithCustomError(gatekeeperNetworkContract, 'Common__NotSuperAdmin');
+        })
+
 
         it('cannot send ETH directly to network contract', async () => {
             await expect(networkFeePayer.sendTransaction({to: gatekeeperNetworkContract.address, value: DEFAULT_TEST_FEE_AMOUNT})).to.be.revertedWithCustomError(gatekeeperNetworkContract, "GatewayNetwork_Cannot_Be_Sent_Eth_Directly");
@@ -573,7 +609,7 @@ describe('GatewayNetwork', () => {
             expect(initialFeeBalance).to.eq(0);
 
             //then
-            await expect(gatekeeperNetworkContract.connect(alice).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperNetworkContract, 'Common__Unauthorized');;
+            await expect(gatekeeperNetworkContract.connect(alice).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperNetworkContract, 'Common__Unauthorized');
         });
 
         it('cannot withdraw ETH network fees if not primary authority', async () => {

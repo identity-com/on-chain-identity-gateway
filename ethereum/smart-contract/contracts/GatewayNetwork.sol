@@ -206,6 +206,11 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         _networks[networkName].lastFeeUpdateTimestamp = block.timestamp;
     }
 
+    function resetNetworkFeeUpdateTime(bytes32 networkName) external override onlySuperAdmin {
+        require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
+        _networks[networkName].lastFeeUpdateTimestamp = 0;
+    }
+
     function networkHasFeature(bytes32 networkName, NetworkFeature feature) public view override returns (bool) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
         return _networks[networkName].networkFeatureMask.checkBit(uint8(feature));
