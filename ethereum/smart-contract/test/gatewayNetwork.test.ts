@@ -13,7 +13,7 @@ import {
     DummyERC20__factory,
 } from '../typechain-types' ;
 import { BigNumberish, utils } from 'ethers';
-import { formatEther, parseEther } from 'ethers/lib/utils';
+import { parseEther } from 'ethers/lib/utils';
 
 describe('GatewayNetwork', () => {
     let primaryAuthority: SignerWithAddress;

@@ -169,7 +169,6 @@ describe('GatewayToken', async () => {
     gkn1 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-1'));
     gkn2 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-2'));
     gkn3 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-3'));
-
   });
 
   describe('Deployment Tests', async () => {
