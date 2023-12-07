@@ -108,7 +108,7 @@ contract ChargeHandler is
 
         // pay network fee
         if(networkFee > 0 ) {
-            IGatewayNetwork(_gatewayNetworkContract).receiveNetworkFees{value: networkFee}(networkFee, bytes32(network), address(0));
+            IGatewayNetwork(_gatewayNetworkContract).transferNetworkFees{value: networkFee}(networkFee, bytes32(network), address(0));
         }
 
         // pay gatekeeper fee
@@ -153,7 +153,7 @@ contract ChargeHandler is
 
         // pay network fee
         if(networkFee > 0 ) {
-            IGatewayNetwork(_gatewayNetworkContract).receiveNetworkFees(networkFee, bytes32(network), charge.partiesInCharge.tokenSender);
+            IGatewayNetwork(_gatewayNetworkContract).transferNetworkFees(networkFee, bytes32(network), charge.partiesInCharge.tokenSender);
         }
 
         // pay gatekeeper fee

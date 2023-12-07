@@ -56,7 +56,7 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         emit GatekeeperNetworkCreated(network.primaryAuthority, networkName, network.passExpireDurationInSeconds);
     } 
 
-    function receiveNetworkFees(uint256 feeAmount, bytes32 networkName, address tokenSender) external payable override onlyRole(NETWORK_FEE_PAYER_ROLE, 0) {
+    function transferNetworkFees(uint256 feeAmount, bytes32 networkName, address tokenSender) external payable override onlyRole(NETWORK_FEE_PAYER_ROLE, 0) {
         // Check
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
 
