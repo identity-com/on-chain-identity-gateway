@@ -8,11 +8,12 @@ abstract contract  IGatewayGatekeeper {
         FROZEN
     }
 
+    // the amount in either wei (if fee is paid in ETH) or ERC20 minor denomination (if fee is paid in ERC20)
     struct GatekeeperFees{
-        uint64 issueFee;
-        uint64 refreshFee;
-        uint64 expireFee;
-        uint64 verificationFee;
+        uint256 issueFee;
+        uint256 refreshFee;
+        uint256 expireFee;
+        uint256 verificationFee;
     }
 
     struct GatekeeperNetworkData { 

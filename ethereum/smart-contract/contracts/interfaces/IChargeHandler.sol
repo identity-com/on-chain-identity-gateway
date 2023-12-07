@@ -18,7 +18,7 @@ interface IChargeHandler {
 
     error Charge__TransferFailed(uint256 value);
 
-    function handleCharge(Charge calldata charge, uint network) external payable;
+    function handleCharge(Charge memory charge, uint network) external payable;
 
     function setApproval(address gatewayTokenAddress, address tokenAddress, uint256 tokens, uint256 network) external;
 }

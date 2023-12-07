@@ -13,11 +13,12 @@ import {IERC3525} from "@solvprotocol/erc-3525/IERC3525.sol";
 import {TokenBitMask} from "./TokenBitMask.sol";
 import {IGatewayToken} from "./interfaces/IGatewayToken.sol";
 import {IGatewayNetwork} from "./interfaces/IGatewayNetwork.sol";
+import {IGatewayGatekeeper} from "./interfaces/IGatewayGatekeeper.sol";
 import {IERC721Freezable} from "./interfaces/IERC721Freezable.sol";
 import {IERC721Expirable} from "./interfaces/IERC721Expirable.sol";
 import {IERC721Revokable} from "./interfaces/IERC721Revokable.sol";
 import {MultiERC2771ContextUpgradeable} from "./MultiERC2771ContextUpgradeable.sol";
-import {Charge} from "./library/Charge.sol";
+import {Charge, ChargeParties, FeeType, ChargeType} from "./library/Charge.sol";
 import {ParameterizedAccessControl} from "./ParameterizedAccessControl.sol";
 import {Common__MissingAccount, Common__NotContract, Common__Unauthorized} from "./library/CommonErrors.sol";
 import {BitMask} from "./library/BitMask.sol";
@@ -62,6 +63,8 @@ contract GatewayToken is
 
     // Gatekeeper network contract addresses
     address internal _gatewayNetworkContract;
+    // Gatekeeper contract address
+    address internal _gatekeeperContract;
 
     IChargeHandler internal _chargeHandler;
 
@@ -80,7 +83,8 @@ contract GatewayToken is
         address flagsStorage,
         address chargeHandler,
         address[] calldata trustedForwarders,
-        address _gatewayNetworkAddress
+        address _gatewayNetworkAddress,
+        address _gatekeeperContractAddress
     ) external initializer {
         // Check for zero addresses
         if (superAdmin == address(0)) {
@@ -99,6 +103,10 @@ contract GatewayToken is
             revert Common__MissingAccount();
         }
 
+        if (_gatekeeperContractAddress == address(0)) {
+            revert Common__MissingAccount();
+        }
+
         // Check for zero addresses in the trusted forwarders array
         for (uint256 i = 0; i < trustedForwarders.length; i++) {
             if (trustedForwarders[i] == address(0)) {
@@ -112,6 +120,7 @@ contract GatewayToken is
         _setFlagsStorage(flagsStorage);
         _setChargeHandler(chargeHandler);
         _gatewayNetworkContract = _gatewayNetworkAddress;
+        _gatekeeperContract = _gatekeeperContractAddress;
         _superAdmins[superAdmin] = true;
 
         emit GatewayTokenInitialized(name, symbol, superAdmin, flagsStorage, chargeHandler, trustedForwarders);
@@ -171,10 +180,11 @@ contract GatewayToken is
         uint network,
         uint expiration,
         uint mask,
-        Charge calldata charge
+        ChargeParties calldata partiesInCharge
     ) external payable virtual {
         // CHECKS
         _checkGatekeeper(network);
+        address gatekeeper = _msgSender();
 
         // EFFECTS
         uint tokenId = ERC3525Upgradeable._mint(to, network, 1);
@@ -193,7 +203,7 @@ contract GatewayToken is
         _issuingGatekeepers[tokenId] = _msgSender();
 
         // INTERACTIONS
-        _handleCharge(charge, network);
+        _handleCharge(FeeType.ISSUE, network, gatekeeper, partiesInCharge);
     }
 
     function revoke(uint tokenId) external virtual override {
@@ -228,16 +238,17 @@ contract GatewayToken is
      * @dev Triggers to set expiration for tokenId
      * @param tokenId Gateway token id
      * @param timestamp Expiration timestamp
-     * @param charge Charge for the operation
      */
-    function setExpiration(uint tokenId, uint timestamp, Charge calldata charge) external payable virtual {
+    function setExpiration(uint tokenId, uint timestamp, ChargeParties calldata partiesInCharge) external payable virtual {
         // CHECKS
         uint network = slotOf(tokenId);
         _checkGatekeeper(slotOf(tokenId));
+
+        address gatekeeper = _msgSender();
         // EFFECTS
         _setExpiration(tokenId, timestamp);
         // INTERACTIONS
-        _handleCharge(charge, network);
+        _handleCharge(FeeType.REFRESH, network, gatekeeper, partiesInCharge);
     }
 
 
@@ -412,9 +423,24 @@ contract GatewayToken is
         emit ChargeHandlerUpdated(chargeHandler);
     }
 
-    function _handleCharge(Charge calldata charge, uint network) internal {
+    function _handleCharge(FeeType feeType, uint networkId, address gatekeeper, ChargeParties calldata partiesInCharge) internal {
+        IGatewayGatekeeper.GatekeeperNetworkData memory gatekeeperData = IGatewayGatekeeper(_gatekeeperContract).getGatekeeperNetworkData(bytes32(networkId), gatekeeper);
+        IGatewayNetwork.GatekeeperNetworkData memory networkData = IGatewayNetwork(_gatewayNetworkContract).getNetwork(networkId);
+
+        (uint256 totalFeeAmount, uint16 networkFeeBps) = _resolveTotalFeeAmount(feeType, gatekeeperData, networkData);
+        
+        ChargeType chargeType = (networkData.supportedToken == address(0)) ? ChargeType.ETH : ChargeType.ERC20;
+        bool shouldBeNullCharge = totalFeeAmount == 0 && msg.value == 0;
+
+        Charge memory charge = Charge(
+            totalFeeAmount, 
+            networkFeeBps, 
+            shouldBeNullCharge ? ChargeType.NONE : chargeType, 
+            networkData.supportedToken, 
+            partiesInCharge
+        );
         // solhint-disable-next-line no-empty-blocks
-        try _chargeHandler.handleCharge{value: msg.value}(charge, network) {
+        try _chargeHandler.handleCharge{value: msg.value}(charge, networkId) {
             // done
         } catch (bytes memory reason) {
             // Rethrow the custom error from the charge handler
@@ -424,6 +450,29 @@ contract GatewayToken is
                 revert(add(32, reason), mload(reason))
             }
         }
+    }
+
+    function _resolveTotalFeeAmount(FeeType feeType, IGatewayGatekeeper.GatekeeperNetworkData memory gatekeeperData, IGatewayNetwork.GatekeeperNetworkData memory networkData) internal returns(uint256, uint16) {
+        uint256 totalFeeAmount;
+        uint16 networkFeeBps;
+
+        if(feeType == FeeType.ISSUE) {
+            totalFeeAmount = gatekeeperData.fees.issueFee;
+            networkFeeBps = networkData.networkFee.issueFee;
+        } else if(feeType == FeeType.EXPIRE) {
+            totalFeeAmount = gatekeeperData.fees.expireFee;
+            networkFeeBps = networkData.networkFee.expireFee;
+        } else if(feeType == FeeType.REFRESH) {
+            totalFeeAmount = gatekeeperData.fees.refreshFee;
+            networkFeeBps = networkData.networkFee.refreshFee;
+        } else if(feeType == FeeType.VERIFY) {
+            totalFeeAmount = gatekeeperData.fees.verificationFee;
+            networkFeeBps = networkData.networkFee.verificationFee;
+        } else {
+            revert GatewayToken__UnsupportedFeeType();
+        }
+
+        return(totalFeeAmount, networkFeeBps);
     }
 
     function _msgSender()

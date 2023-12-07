@@ -2,7 +2,7 @@
 pragma solidity >=0.8.19;
 
 import {ERC3525Upgradeable} from "@solvprotocol/erc-3525/ERC3525Upgradeable.sol";
-import {Charge} from "../../contracts/library/Charge.sol";
+import {Charge, FeeType, ChargeParties} from "../../contracts/library/Charge.sol";
 import {GatewayToken} from "../../contracts/GatewayToken.sol";
 import {IGatewayNetwork} from "../../contracts/interfaces/IGatewayNetwork.sol";
 
@@ -16,17 +16,18 @@ contract GatewayTokenUpgradeTest is GatewayToken {
      * @param to Gateway token owner
      * @param network Gateway token type
      * @param mask The bitmask for the token
-     * @param charge The charge to be paid
      */
     function mint(
         address to,
         uint256 network,
         uint expiration,
         uint256 mask,
-        Charge calldata charge
+        ChargeParties calldata partiesInCharge
     ) external payable override(GatewayToken) {
         _checkGatekeeper(network);
-        _handleCharge(charge, network);
+        address gatekeeper = _msgSender();
+
+        _handleCharge(FeeType.ISSUE, network, gatekeeper, partiesInCharge);
 
         uint256 tokenId = ERC3525Upgradeable._mint(to, network, 1);
 

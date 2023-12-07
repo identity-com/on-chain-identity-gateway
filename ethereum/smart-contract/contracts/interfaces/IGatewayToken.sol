@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.19;
 
-import {Charge} from "../library/Charge.sol";
+import {ChargeParties} from "../library/Charge.sol";
 
 interface IGatewayToken {
     enum TokenState {
@@ -64,6 +64,8 @@ interface IGatewayToken {
     /// The gatekeeper network name is empty.
     error GatewayToken__EmptyNetworkName();
 
+    error GatewayToken__UnsupportedFeeType();
+
     /// The gatekeeper network is not dao-governed.
     /// @param network gatekeeper network id.
     error GatewayToken__NotDAOGoverned(uint network);
@@ -91,7 +93,7 @@ interface IGatewayToken {
         uint256 network,
         uint expiration,
         uint256 mask,
-        Charge calldata charge
+        ChargeParties calldata partiesInCharge
     ) external payable;
 
     /**

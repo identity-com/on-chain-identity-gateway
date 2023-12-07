@@ -19,6 +19,7 @@ import {
   GatewayStaking__factory,
   DummyERC20,
   DummyERC20__factory,
+  ChargeHandler
 } from '../typechain-types' ;
 
 describe('GatewayToken', async () => {
@@ -32,7 +33,7 @@ describe('GatewayToken', async () => {
 
   let forwarder: Contract;
   let flagsStorage: Contract;
-  let chargeHandler: Contract;
+  let chargeHandler: ChargeHandler;
   let gatewayToken: Contract;
   let gatewayTokenInternalsTest: Contract;
   let gatewayNetwork: GatewayNetwork;
@@ -44,6 +45,7 @@ describe('GatewayToken', async () => {
 
   let gkn1;
   let gkn2;
+  let gkn3;
 
   const expectVerified = (address: string, gkn: number): Chai.PromisedAssertion => {
     const verified = gatewayToken['verifyToken(address,uint256)'](address, gkn);
@@ -62,26 +64,32 @@ describe('GatewayToken', async () => {
     token: ZERO_ADDRESS,
     chargeType: 1,
     value,
-    recipient: gatekeeper.address,
-    tokenSender: ZERO_ADDRESS,
+    networkFeeBps: 0,
+    partiesInCharge: {
+      recipient: gatekeeper.address,
+      tokenSender: ZERO_ADDRESS,
+    }
   });
 
   const makeERC20Charge = (value: BigNumber, token: string, tokenSender: string) => ({
     token,
     chargeType: 2,
     value,
-    recipient: gatekeeper.address,
-    tokenSender,
+    networkFeeBps: 0,
+    partiesInCharge: {
+      recipient: gatekeeper.address,
+      tokenSender,
+    }
   });
 
-  const getNetwork = (primaryAuthority: string, name: string, gatekeepers?: string[], passExpireDurationInSeconds?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
+  const getNetwork = (primaryAuthority: string, name: string, supportedToken?: string, gatekeepers?: string[], passExpireDurationInSeconds?: number): IGatewayNetwork.GatekeeperNetworkDataStruct => {
     return {
         primaryAuthority,
         name: utils.formatBytes32String(name),
         passExpireDurationInSeconds: passExpireDurationInSeconds ? passExpireDurationInSeconds : 100000000,
         networkFeatureMask: 0,
-        networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
-        supportedToken: ZERO_ADDRESS,
+        networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0},
+        supportedToken: supportedToken ? supportedToken : ZERO_ADDRESS,
         gatekeepers: gatekeepers ? gatekeepers : []
     }
   }
@@ -114,7 +122,7 @@ describe('GatewayToken', async () => {
     flagsStorage = await upgrades.deployProxy(flagsStorageFactory, [identityCom.address], { kind: 'uups' });
     await flagsStorage.deployed();
 
-    chargeHandler = await upgrades.deployProxy(chargeHandlerFactory, [identityCom.address], { kind: 'uups' });
+    chargeHandler = await upgrades.deployProxy(chargeHandlerFactory, [identityCom.address], { kind: 'uups' }) as ChargeHandler;
     gatewayNetwork = await gatewayNetworkFactory.connect(identityCom).deploy(gatekeeperContract.address, gatewayStakingContract.address);
     
     await chargeHandler.deployed();
@@ -129,8 +137,10 @@ describe('GatewayToken', async () => {
       flagsStorage.address,
       chargeHandler.address,
       [forwarder.address],
-      gatewayNetwork.address
+      gatewayNetwork.address,
+      gatekeeperContract.address
     ];
+
     gatewayToken = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
     await gatewayToken.deployed();
 
@@ -145,14 +155,17 @@ describe('GatewayToken', async () => {
     // create gatekeeper networks
     const networkOne = getNetwork(identityCom.address, 'GKN-1');
     const networkTwo = getNetwork(identityCom.address, 'GKN-2');
+    const networkThree = getNetwork(identityCom.address, 'GKN-3', dummyErc20Contract.address);
 
     await gatewayNetwork.connect(identityCom).createNetwork(networkOne);
     await gatewayNetwork.connect(identityCom).createNetwork(networkTwo);
+    await gatewayNetwork.connect(identityCom).createNetwork(networkThree);
 
     await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-1'));
 
     gkn1 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-1'));
     gkn2 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-2'));
+    gkn3 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-3'));
   });
 
   describe('Deployment Tests', async () => {
@@ -167,7 +180,8 @@ describe('GatewayToken', async () => {
           flagsStorage.address,
           chargeHandler.address,
           [forwarder.address],
-          gatewayNetwork.address
+          gatewayNetwork.address,
+          gatekeeperContract.address
         ];
 
         const contract = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
@@ -190,7 +204,8 @@ describe('GatewayToken', async () => {
           flagsStorage.address,
           chargeHandler.address,
           [forwarder.address],
-          gatewayNetwork.address
+          gatewayNetwork.address,
+          gatekeeperContract.address
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -208,7 +223,8 @@ describe('GatewayToken', async () => {
           ZERO_ADDRESS,
           chargeHandler.address,
           [forwarder.address],
-          gatewayNetwork.address
+          gatewayNetwork.address,
+          gatekeeperContract.address
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -226,7 +242,8 @@ describe('GatewayToken', async () => {
           flagsStorage.address,
           ZERO_ADDRESS,
           [forwarder.address],
-          gatewayNetwork.address
+          gatewayNetwork.address,
+          gatekeeperContract.address
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -244,7 +261,8 @@ describe('GatewayToken', async () => {
           flagsStorage.address,
           chargeHandler.address,
           [forwarder.address, ZERO_ADDRESS],
-          gatewayNetwork.address
+          gatewayNetwork.address,
+          gatekeeperContract.address
         ];
         await expect(upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })).to.be.revertedWithCustomError(
           gatewayToken,
@@ -261,7 +279,8 @@ describe('GatewayToken', async () => {
             flagsStorage.address,
             chargeHandler.address,
             [forwarder.address],
-            gatewayNetwork.address
+            gatewayNetwork.address,
+            gatekeeperContract.address
           ),
         ).to.be.revertedWith(/Initializable: contract is already initialized/);
       });
@@ -483,7 +502,10 @@ describe('GatewayToken', async () => {
     });
 
     it('mint Gateway Token for Alice by gatekeeper with gatekeeperNetwork = 1', async () => {
-      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      }); 
 
       return expectVerified(alice.address, gkn1).to.be.true;
     });
@@ -509,13 +531,19 @@ describe('GatewayToken', async () => {
       // add the gatekeeper to network 2
       await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-2'));
 
-      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn2, 0, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn2, 0, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
 
       return expectVerified(alice.address, gkn2).to.be.true;
     });
 
     it('mint a second token for Alice with gatekeeperNetwork = 1', async () => {
-      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(alice.address, gkn1, 0, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
 
       return expectVerified(alice.address, gkn2).to.be.true;
     });
@@ -532,7 +560,10 @@ describe('GatewayToken', async () => {
       const beforeExpiration = await gatewayToken.getExpiration(aliceTokenIdsGKN1[1]);
       await gatewayToken
         .connect(gatekeeper)
-        .setExpiration(aliceTokenIdsGKN1[1], Date.parse('2020-01-01') / 1000, NULL_CHARGE);
+        .setExpiration(aliceTokenIdsGKN1[1], Date.parse('2020-01-01') / 1000, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
 
       const aliceTokenIdsGKN1AfterExpiry = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
 
@@ -549,7 +580,10 @@ describe('GatewayToken', async () => {
       expect(await gatewayToken.ownerOf(aliceTokenIdsGKN1AfterExpiryFlagFalse[1])).to.equal(alice.address);
 
       // reset expiration
-      await gatewayToken.connect(gatekeeper).setExpiration(aliceTokenIdsGKN1[1], beforeExpiration, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).setExpiration(aliceTokenIdsGKN1[1], beforeExpiration, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
     });
 
     it('Try to transfer a token, expect revert', async () => {
@@ -577,7 +611,10 @@ describe('GatewayToken', async () => {
     it('Mint a token with a bitmask', async () => {
       const expectedBitmask = 1;
       const dummyWallet = randomAddress();
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, expectedBitmask, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, expectedBitmask, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
 
       const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
       const bitmask = await gatewayToken.getTokenBitmask(dummyWalletTokenId);
@@ -593,7 +630,10 @@ describe('GatewayToken', async () => {
       const timestampBefore = blockBefore.timestamp;
 
       const expectedExpiration = (await gatewayNetwork.connect(identityCom).getNetwork(gkn1)).passExpireDurationInSeconds.add(timestampBefore + 1);
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
 
       const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
       const expiration = await gatewayToken.getExpiration(dummyWalletTokenId);
@@ -609,7 +649,10 @@ describe('GatewayToken', async () => {
       await gatewayNetwork.connect(identityCom).updatePassExpirationTime(0,utils.formatBytes32String('GKN-1'));
       
       // when
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, expectedExpiration, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, expectedExpiration, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
 
       const [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
       const expiration = await gatewayToken.getExpiration(dummyWalletTokenId);
@@ -713,7 +756,10 @@ describe('GatewayToken', async () => {
 
     beforeEach(async () => {
       dummyWallet = randomAddress();
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
 
       [dummyWalletTokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
     });
@@ -750,7 +796,10 @@ describe('GatewayToken', async () => {
 
     it('all tokens must be frozen for to verify to return false', async () => {
       // mint a second token
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
       const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenIds[0]);
@@ -769,7 +818,10 @@ describe('GatewayToken', async () => {
     it('expire token', async () => {
       await gatewayToken
         .connect(gatekeeper)
-        .setExpiration(dummyWalletTokenId, Date.parse('2020-01-01') / 1000, NULL_CHARGE);
+        .setExpiration(dummyWalletTokenId, Date.parse('2020-01-01') / 1000, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
 
       const currentExpiration = await gatewayToken.getExpiration(dummyWalletTokenId);
       expect(currentExpiration).to.equal(Date.parse('2020-01-01') / 1000);
@@ -780,7 +832,10 @@ describe('GatewayToken', async () => {
     it('extend expiry', async () => {
       await gatewayToken
         .connect(gatekeeper)
-        .setExpiration(dummyWalletTokenId, Date.parse('2222-01-01') / 1000, NULL_CHARGE);
+        .setExpiration(dummyWalletTokenId, Date.parse('2222-01-01') / 1000, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
 
       const currentExpiration = await gatewayToken.getExpiration(dummyWalletTokenId);
       expect(currentExpiration).to.equal(Date.parse('2222-01-01') / 1000);
@@ -802,7 +857,10 @@ describe('GatewayToken', async () => {
 
     it('all tokens must be burned for verified to return false', async () => {
       // mint a second token
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
       const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).burn(dummyWalletTokenIds[0]);
@@ -818,7 +876,10 @@ describe('GatewayToken', async () => {
 
     it('all tokens must be revoked for verified to return false', async () => {
       // mint a second token
-      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
       const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
 
       await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenIds[0]);
@@ -904,7 +965,10 @@ describe('GatewayToken', async () => {
     it('forward a call', async () => {
       const mintTx = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(carol.address, gkn1, 0, 0, NULL_CHARGE);
+        .populateTransaction.mint(carol.address, gkn1, 0, 0, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
 
       // Carol does not have the GT yet, because the tx has not been sent
       await expectVerified(carol.address, gkn1).to.be.false;
@@ -929,7 +993,10 @@ describe('GatewayToken', async () => {
     it('forward a call - revert if the signer is not the from address', async () => {
       const mintTx = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
 
       const input = {
         from: gatekeeper.address,
@@ -958,7 +1025,10 @@ describe('GatewayToken', async () => {
       const wallet = randomWallet();
       const mintTx = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(wallet.address, gkn1, 0, 0, NULL_CHARGE);
+        .populateTransaction.mint(wallet.address, gkn1, 0, 0, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
 
       const input1 = {
         from: gatekeeper.address,
@@ -1001,10 +1071,16 @@ describe('GatewayToken', async () => {
       // create two transactions, that share the same forwarder nonce
       const tx1 = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
       const tx2 = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
 
       const req1 = await makeMetaTx(tx1);
       const req2 = await makeMetaTx(tx2);
@@ -1022,7 +1098,10 @@ describe('GatewayToken', async () => {
     it('Protects against replay attacks', async () => {
       const userToBeFrozen = randomWallet();
       // mint and freeze a user's token
-      await gatewayToken.connect(gatekeeper).mint(userToBeFrozen.address, gkn1, 0, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(userToBeFrozen.address, gkn1, 0, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
       const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(userToBeFrozen.address, gkn1, true);
       await gatewayToken.connect(gatekeeper).freeze(tokenId);
       await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
@@ -1061,10 +1140,16 @@ describe('GatewayToken', async () => {
       // create two transactions,
       const tx1 = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
       const tx2 = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
       const req1 = await signMetaTxRequest(gatekeeper, intolerantForwarder as IForwarder, {
         from: gatekeeper.address,
         to: gatewayToken.address,
@@ -1091,7 +1176,10 @@ describe('GatewayToken', async () => {
     it('Refunds excess Eth sent with a transaction', async () => {
       const tx = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
       const req = await makeMetaTx(tx);
 
       const valueInForwardedTransaction = ethers.utils.parseUnits('1', 'ether');
@@ -1152,7 +1240,10 @@ describe('GatewayToken', async () => {
       // create two transactions, that share the same forwarder nonce
       const tx1 = await gatewayToken
         .connect(gatekeeper)
-        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, NULL_CHARGE);
+        .populateTransaction.mint(randomAddress(), gkn1, 0, 0, {
+          recipient: gatekeeper.address,
+          tokenSender: ZERO_ADDRESS,
+        });
       const req1 = await makeMetaTx(tx1);
       // we pass 2,000,000 gas limit to the inner tx (see makeMetaTx)
       // The forwarder reserves 1/64th of that
@@ -1384,17 +1475,29 @@ describe('GatewayToken', async () => {
       it('can charge ETH through a forwarded call', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
         const balanceBefore = await alice.getBalance();
+        const gatekeeperBalanceBefore = await gatekeeper.getBalance();
 
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
 
         // forward it so that Alice sends it, and includes a value
         const receipt = await forward(tx, alice, charge.value);
 
         // check that Alice's balance has gone down by the charge amount + gas
         const balanceAfter = await alice.getBalance();
+        const gatekeeperBalanceAfter = await gatekeeper.getBalance();
+        
         const gas = receipt.gasUsed.mul(receipt.effectiveGasPrice);
         expect(balanceAfter).to.equal(balanceBefore.sub(charge.value).sub(gas));
+        expect(gatekeeperBalanceAfter).to.greaterThan(gatekeeperBalanceBefore);
       });
 
       it('charge ETH - revert if the recipient rejects it', async () => {
@@ -1403,10 +1506,19 @@ describe('GatewayToken', async () => {
         await brokenRecipient.deployed();
 
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
-        charge.recipient = brokenRecipient.address;
+        charge.partiesInCharge.recipient = brokenRecipient.address;
+
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
 
         // forward it so that Alice sends it, and includes a value
         // this should fail, because the recipient rejects it
@@ -1419,8 +1531,16 @@ describe('GatewayToken', async () => {
       it('can charge ETH - revert if amount sent is lower than the charge', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
 
         // forward it so that Alice sends it. Alice tries to include a lower value than the charge
         await expect(forward(tx, alice, ethers.utils.parseEther('0.05'))).to.be.revertedWithCustomError(
@@ -1432,8 +1552,17 @@ describe('GatewayToken', async () => {
       it('can charge ETH - revert if amount sent is higher than the charge', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
 
         // forward it so that Alice sends it. Alice tries to include a higher value than the charge
         await expect(forward(tx, alice, ethers.utils.parseEther('0.15'))).to.be.revertedWithCustomError(
@@ -1445,8 +1574,16 @@ describe('GatewayToken', async () => {
       it('can charge ETH - revert if no amount sent', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
 
         // forward it so that Alice sends it. Alice tries to send it without a value
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectValue');
@@ -1455,7 +1592,17 @@ describe('GatewayToken', async () => {
       it('can charge ETH - revert if charge is too high', async () => {
         const balance = await alice.getBalance();
         const charge = makeWeiCharge(balance.mul(2));
-        const shouldFail = gatewayToken.connect(alice).mint(alice.address, gkn1, 0, 0, charge, { value: charge.value });
+
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+
+        const shouldFail = gatewayToken.connect(alice).mint(alice.address, gkn1, 0, 0, charge.partiesInCharge, { value: charge.value });
         await expect(shouldFail).to.be.rejectedWith(/sender doesn't have enough funds/);
       });
     });
@@ -1464,16 +1611,26 @@ describe('GatewayToken', async () => {
       let erc20: Contract;
 
       before('deploy ERC20 token', async () => {
-        const erc20Factory = await ethers.getContractFactory('DummyERC20');
-        erc20 = await erc20Factory.deploy('dummy erc20', 'dummy', ethers.utils.parseEther('1000000'), alice.address);
+        erc20 = dummyErc20Contract;
         await erc20.deployed();
+
+        await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-3'));
       });
 
       it('can charge ERC20 - rejects if the ERC20 allowance was not made', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
 
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1484,8 +1641,18 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1497,10 +1664,19 @@ describe('GatewayToken', async () => {
         await erc20.connect(alice).approve(chargeHandler.address, charge.value.sub(10));
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
+
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
 
         await expect(forward(tx, alice)).to.be.revertedWith('ERC20: insufficient allowance');
       });
@@ -1511,11 +1687,21 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
+
         // Alice allows the gateway token contract to transfer 90 in the context of the gatekeeper network
-        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value.sub(10), gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value.sub(10), gkn3);
+
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1530,8 +1716,17 @@ describe('GatewayToken', async () => {
         const someOtherTokenAddress = randomAddress();
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, someOtherTokenAddress, charge.value, gkn1);
 
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
 
         await expect(forward(tx, alice)).to.be.revertedWithCustomError(chargeHandler, 'Charge__IncorrectAllowance');
       });
@@ -1543,10 +1738,19 @@ describe('GatewayToken', async () => {
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
+
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
 
         await expect(forward(tx, alice, ethers.utils.parseEther('0.15'))).to.be.revertedWithCustomError(
           chargeHandler,
@@ -1556,16 +1760,27 @@ describe('GatewayToken', async () => {
 
       it('can charge ERC20 through a forwarded call', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
-        const balanceBefore = await erc20.balanceOf(alice.address);
 
+        await dummyErc20Contract.connect(identityCom).transfer(alice.address, BigNumber.from('100'));
+
+        const balanceBefore = await erc20.balanceOf(alice.address);
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
+
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
 
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
 
         // forward it so that Alice sends it
         await forward(tx, alice);
@@ -1579,16 +1794,28 @@ describe('GatewayToken', async () => {
         // Alice will be forwarding the tx and paying the fee on behalf of bob
         // no connection between the fee payer, forwarder and the gateway token recipient
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        await dummyErc20Contract.connect(identityCom).transfer(alice.address, BigNumber.from('100'));
+
         const balanceBefore = await erc20.balanceOf(alice.address);
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
+
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
 
         // create a mint transaction for bob
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn3, 0, 0, charge.partiesInCharge);
 
         // forward it so that Alice sends it
         await forward(tx, alice);
@@ -1602,16 +1829,28 @@ describe('GatewayToken', async () => {
         // Bob will be forwarding the tx, but Alice will be paying the fee on behalf of bob
         // no connection between the fee payer, forwarder and the gateway token recipient
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        await dummyErc20Contract.connect(identityCom).transfer(alice.address, BigNumber.from('100'));
+
         const balanceBefore = await erc20.balanceOf(alice.address);
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
+
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
 
         // create a mint transaction for bob
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn3, 0, 0, charge.partiesInCharge);
 
         // forward it so that Bob sends it
         await forward(tx, bob);
@@ -1631,15 +1870,31 @@ describe('GatewayToken', async () => {
         );
         await brokenErc20.deployed();
 
+        // Create new gatekeeper network with broken token
+        const networkFour = getNetwork(identityCom.address, 'GKN-4', brokenErc20.address);
+        await gatewayNetwork.connect(identityCom).createNetwork(networkFour);
+        await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-4'));
+
+        let gkn4 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-4'));
+
         const charge = makeERC20Charge(BigNumber.from('100'), brokenErc20.address, alice.address);
 
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await brokenErc20.connect(alice).approve(chargeHandler.address, charge.value);
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await chargeHandler.connect(alice).setApproval(gatewayToken.address, brokenErc20.address, charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, brokenErc20.address, charge.value, gkn4);
 
+        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-4'));
+        
         // create a mint transaction
-        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge);
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn4, 0, 0, charge.partiesInCharge);
 
         // the transfer fails because the erc20 contract blocked it
         await expect(forward(tx, alice)).to.be.revertedWith(/ERC20 operation did not succeed/);
@@ -1648,20 +1903,27 @@ describe('GatewayToken', async () => {
       it('can charge ERC20 - rejects if the charge handler is called directly', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
 
+        await erc20.connect(identityCom).transfer(alice.address, BigNumber.from('100'));
+        
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
-        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn1);
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
 
         // attempt to call chargeHandler directly rather than via a gatewayToken mint
         const attacker = randomWallet();
         const maliciousCharge = {
           ...charge,
-          recipient: attacker.address,
+          partiesInCharge: {
+            ...charge.partiesInCharge,
+            recipient: attacker.address,
+          }
         };
+
         // it doesn't matter who sends the transaction
-        const shouldFail = chargeHandler.connect(alice).handleCharge(maliciousCharge, gkn1);
+        const shouldFail = chargeHandler.connect(alice).handleCharge(maliciousCharge, gkn3);
+
 
         await expect(shouldFail).to.be.revertedWith(/AccessControl/);
       });
@@ -1683,8 +1945,20 @@ describe('GatewayToken', async () => {
       const currentDate = Math.ceil(Date.now() / 1000);
       const tomorrow = currentDate + 86_400;
 
+      const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        issueFee: 0,
+        refreshFee: 0,
+        expireFee: 0,
+        verificationFee: 0
+      }
+      // Remove gatekeeper fees
+      await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+
       const wallet = randomWallet();
-      await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, tomorrow, 0, NULL_CHARGE);
+      await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, tomorrow, 0, {
+        recipient: gatekeeper.address,
+        tokenSender: ZERO_ADDRESS,
+      });
 
       let verified = await gatewayToken['verifyToken(address,uint256)'](wallet.address, gkn1);
       expect(verified).to.be.true;

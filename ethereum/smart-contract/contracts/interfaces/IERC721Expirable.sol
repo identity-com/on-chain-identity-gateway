@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.19;
 
-import {Charge} from "../library/Charge.sol";
+import {ChargeParties} from "../library/Charge.sol";
 
 interface IERC721Expirable {
     /**
@@ -13,9 +13,8 @@ interface IERC721Expirable {
      * @dev Set the gateway token expiry
      * @param tokenId Gateway token id
      * @param tokenId Expiration timestamp
-     * @param charge The charge details for token issuance (ignored here - handled if at all by the forwarding contract)
      */
-    function setExpiration(uint256 tokenId, uint256 timestamp, Charge calldata charge) external payable;
+    function setExpiration(uint256 tokenId, uint256 timestamp, ChargeParties calldata partiesInCharge) external payable;
 
     /**
      * @dev Get the gateway token expiry

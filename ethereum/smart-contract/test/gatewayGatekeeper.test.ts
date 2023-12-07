@@ -38,7 +38,7 @@ describe('Gatekeeper', () => {
             name: utils.formatBytes32String('default'),
             passExpireDurationInSeconds: passExpireDurationInSeconds ? passExpireDurationInSeconds : DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS,
             networkFeatureMask: 0,
-            networkFees: [{tokenAddress: ZERO_ADDRESS, issueFee: 0, refreshFee: 0, expireFee: 0}],
+            networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0},
             supportedToken: ZERO_ADDRESS,
             gatekeepers: gatekeepers ? gatekeepers : []
         }
