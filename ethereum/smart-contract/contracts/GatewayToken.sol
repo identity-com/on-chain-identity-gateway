@@ -71,6 +71,15 @@ contract GatewayToken is
 
     IChargeHandler internal _chargeHandler;
 
+    modifier checkGatekeeperHasMinimumStake(address gatekeeper) {
+        bool gateKeeperHasMinimumStake = IGatewayStaking(_gatewayStakingContract).hasMinimumGatekeeperStake(gatekeeper);
+
+        if(!gateKeeperHasMinimumStake) {
+            revert GatewayToken__GatekeeperDoesNotMeetStakingRequirements();
+        }
+        _;
+    }
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor is "empty" as we are using the proxy pattern,
     // where setup code is in the initialize function
@@ -432,15 +441,9 @@ contract GatewayToken is
         emit ChargeHandlerUpdated(chargeHandler);
     }
 
-    function _handleCharge(FeeType feeType, uint networkId, address gatekeeper, ChargeParties calldata partiesInCharge) internal {
+    function _handleCharge(FeeType feeType, uint networkId, address gatekeeper, ChargeParties calldata partiesInCharge) internal checkGatekeeperHasMinimumStake(gatekeeper){
         IGatewayGatekeeper.GatekeeperNetworkData memory gatekeeperData = IGatewayGatekeeper(_gatekeeperContract).getGatekeeperNetworkData(bytes32(networkId), gatekeeper);
         IGatewayNetwork.GatekeeperNetworkData memory networkData = IGatewayNetwork(_gatewayNetworkContract).getNetwork(networkId);
-
-        bool gateKeeperHasMinimumStake = IGatewayStaking(_gatewayStakingContract).hasMinimumGatekeeperStake(gatekeeper);
-
-        if(!gateKeeperHasMinimumStake) {
-            revert GatewayToken__GatekeeperDoesNotMeetStakingRequirements();
-        }
 
         (uint256 totalFeeAmount, uint16 networkFeeBps) = _resolveTotalFeeAmount(feeType, gatekeeperData, networkData);
         
