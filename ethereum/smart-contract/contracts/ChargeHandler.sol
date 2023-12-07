@@ -9,6 +9,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Charge, ChargeType} from "./library/Charge.sol";
 import {InternalTokenApproval} from "./library/InternalTokenApproval.sol";
 import {IChargeHandler} from "./interfaces/IChargeHandler.sol";
+import {IGatewayNetwork} from "./interfaces/IGatewayNetwork.sol";
 import {Common__MissingAccount} from "./library/CommonErrors.sol";
 
 /**
@@ -43,6 +44,8 @@ contract ChargeHandler is
     using SafeERC20 for IERC20;
     bytes32 public constant CHARGE_CALLER_ROLE = keccak256("CHARGE_CALLER_ROLE");
 
+    address public _gatewayNetworkContract;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     // empty constructor in line with the UUPS upgradeable proxy pattern
     // solhint-disable-next-line no-empty-blocks
@@ -63,6 +66,11 @@ contract ChargeHandler is
         _setupRole(role, recipient);
     }
 
+    function setNetworkContractAddress(address gatewayNetworkContract) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _gatewayNetworkContract = gatewayNetworkContract;
+    }
+
+
     /**
      * @dev Send a fee either in ETH (wei) or ERC20 to the gatekeeper.
      * Note, ERC20 requires that the sender has approved the amount.
@@ -72,7 +80,7 @@ contract ChargeHandler is
      **/
     function handleCharge(Charge memory charge, uint network) external payable onlyRole(CHARGE_CALLER_ROLE) {
         if (charge.chargeType == ChargeType.ETH) {
-            _handleEthCharge(charge);
+            _handleEthCharge(charge, network);
         } else if (charge.chargeType == ChargeType.ERC20) {
             _handleERC20Charge(charge, network);
         }
@@ -83,7 +91,7 @@ contract ChargeHandler is
         emit ApprovalSet(gatewayTokenAddress, tokenAddress, tokens, network);
     }
 
-    function _handleEthCharge(Charge memory charge) internal {
+    function _handleEthCharge(Charge memory charge, uint network) internal {
         // CHECKS
         // send wei if the charge type is ETH
         if (msg.value != charge.value) {
@@ -93,8 +101,18 @@ contract ChargeHandler is
         // EFFECTS
         emit ChargePaid(charge);
 
+        uint256 networkFee = (charge.value * charge.networkFeeBps) / 10_000;
+        uint256 gatekeeperFee = charge.value - networkFee;
+
         // INTERACTIONS
-        (bool success, ) = payable(charge.partiesInCharge.recipient).call{value: charge.value}("");
+
+        // pay network fee
+        if(networkFee > 0 ) {
+            IGatewayNetwork(_gatewayNetworkContract).transferNetworkFees{value: networkFee}(networkFee, bytes32(network), address(0));
+        }
+
+        // pay gatekeeper fee
+        (bool success, ) = payable(charge.partiesInCharge.recipient).call{value: gatekeeperFee}("");
         if (!success) {
             revert Charge__TransferFailed(charge.value);
         }
@@ -128,8 +146,18 @@ contract ChargeHandler is
         // EFFECTS
         emit ChargePaid(charge);
 
+        uint256 networkFee = (charge.value * charge.networkFeeBps) / 10_000;
+        uint256 gatekeeperFee = charge.value - networkFee;
+
         // INTERACTIONS
-        token.safeTransferFrom(charge.partiesInCharge.tokenSender, charge.partiesInCharge.recipient, charge.value);
+
+        // pay network fee
+        if(networkFee > 0 ) {
+            IGatewayNetwork(_gatewayNetworkContract).transferNetworkFees(networkFee, bytes32(network), charge.partiesInCharge.tokenSender);
+        }
+
+        // pay gatekeeper fee
+        token.safeTransferFrom(charge.partiesInCharge.tokenSender, charge.partiesInCharge.recipient, gatekeeperFee);
     }
 
     // includes the onlySuperAdmin modifier to ensure that only the super admin can call this function

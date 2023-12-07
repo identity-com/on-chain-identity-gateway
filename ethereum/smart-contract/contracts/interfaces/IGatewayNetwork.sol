@@ -60,8 +60,12 @@ abstract contract  IGatewayNetwork {
 
     error GatewayNetworkGatekeeperAlreadyExists(string network, address gatekeeper);
     error GatewayNetworkGatekeeperDoesNotExists(string network, address gatekeeper);
+    error GatewayNetwork_Cannot_Be_Sent_Eth_Directly();
+    error GatewayNetwork__TransferFailed(uint256 value);
 
     function createNetwork(GatekeeperNetworkData calldata network) external virtual;
+    function transferNetworkFees(uint256 feeAmount, bytes32 networkName, address tokenSender) external payable virtual;
+    function withdrawNetworkFees(bytes32 networkName) external payable virtual;
     function closeNetwork(bytes32 networkName) external virtual;
     function updatePassExpirationTime(uint newExpirationTimeInSeconds, bytes32 networkName) external virtual;
     function addGatekeeper(address gatekeeper, bytes32 network) external virtual;

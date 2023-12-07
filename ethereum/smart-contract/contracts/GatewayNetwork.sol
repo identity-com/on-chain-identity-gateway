@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.19;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { ParameterizedAccessControl } from "./ParameterizedAccessControl.sol";
 import {BitMask} from "./library/BitMask.sol";
 import { IGatewayNetwork } from "./interfaces/IGatewayNetwork.sol";
@@ -10,9 +12,12 @@ import { IGatewayStaking } from './interfaces/IGatewayStaking.sol';
 
 contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
     using BitMask for uint256;
+    using SafeERC20 for IERC20;
+
+    bytes32 public constant NETWORK_FEE_PAYER_ROLE = keccak256("NETWORK_FEE_PAYER_ROLE");
 
     mapping(bytes32 => GatekeeperNetworkData) public _networks;
-
+    mapping(bytes32 => uint256) public networkFeeBalances;
     mapping(bytes32 => address) private _nextPrimaryAuthoritys;
 
     address private _gatewayGatekeeperContractAddress;
@@ -27,6 +32,11 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
     constructor(address gatewayGatekeeperContractAddress, address gatewayStakingContractAddress) {
         // Contract deployer is the initial super admin
         _superAdmins[msg.sender] = true;
+
+        // Allow contract deployer to set NETWORK_FEE_PAYER_ROLE role
+        _grantRole(DEFAULT_ADMIN_ROLE, 0, msg.sender);
+        _setRoleAdmin(NETWORK_FEE_PAYER_ROLE, 0, DEFAULT_ADMIN_ROLE);
+
         _gatewayGatekeeperContractAddress = gatewayGatekeeperContractAddress;
         _gatewayGatekeeperStakingContractAddress = gatewayStakingContractAddress;
     }
@@ -45,9 +55,57 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
 
         emit GatekeeperNetworkCreated(network.primaryAuthority, networkName, network.passExpireDurationInSeconds);
     } 
+
+    function transferNetworkFees(uint256 feeAmount, bytes32 networkName, address tokenSender) external payable override onlyRole(NETWORK_FEE_PAYER_ROLE, 0) {
+        // Check
+        require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
+
+        address feeToken = _networks[networkName].supportedToken;
+
+        // Interaction
+
+        // If network fees are paid in native ETH
+        if(feeToken == address(0)) {
+            require(feeAmount == msg.value, "The feeAmount in native eth must equal the eth sent in msg.value");
+            networkFeeBalances[networkName] += feeAmount;
+        } else {
+            require(msg.value == 0, "No eth can be transferred for fees in ERC-20");
+            // Effect
+            networkFeeBalances[networkName] += feeAmount;
+
+            IERC20 token = IERC20(feeToken);
+            token.safeTransferFrom(tokenSender, address(this), feeAmount);
+        }
+    }
+
+    function withdrawNetworkFees(bytes32 networkName) external payable override onlyPrimaryNetworkAuthority(networkName) {
+        address feeToken = _networks[networkName].supportedToken;
+        uint256 feeBalance = networkFeeBalances[networkName];
+        
+        //Check
+        require(feeBalance > 0, "Network does not have any fees to withdraw");
+
+        // Effect
+        networkFeeBalances[networkName] = 0;
+
+        //Interaction 
+
+        // If networks fees are paid in ETH
+        if(feeToken == address(0)) {
+            (bool success, ) = payable(_networks[networkName].primaryAuthority).call{value: feeBalance}("");
+            if (!success) {
+                revert GatewayNetwork__TransferFailed(feeBalance);
+            }
+        } else {
+            IERC20 token = IERC20(feeToken);
+            token.safeTransfer(_networks[networkName].primaryAuthority, feeBalance);
+        }
+    }
+
     function closeNetwork(bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
         require(_networks[networkName].gatekeepers.length == 0, "Network can only be removed if no gatekeepers are in it");
+        require(networkFeeBalances[networkName] == 0, "Network has fees that need to be withdrawn");
 
         delete _networks[networkName];
 
@@ -178,5 +236,12 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
     function getGatekeepersOnNetwork(bytes32 networkName) public view returns(address[] memory) {
         require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
         return _networks[networkName].gatekeepers;
+    }
+
+    /**
+     * @dev Fallback function to receive ETH disabled
+     */
+    receive() external payable {
+        revert GatewayNetwork_Cannot_Be_Sent_Eth_Directly();
     }
 }

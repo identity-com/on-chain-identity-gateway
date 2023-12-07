@@ -8,7 +8,7 @@ import { toBytes32 } from './utils';
 import { expect } from 'chai';
 import { NULL_CHARGE, randomAddress, randomWallet, ZERO_ADDRESS } from './utils/eth';
 import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
-import { Gated, IForwarder, IGatewayNetwork } from '../typechain-types';
+import { Gated, IForwarder, IGatewayGatekeeper, IGatewayNetwork } from '../typechain-types';
 import { TransactionReceipt } from '@ethersproject/providers';
 import { 
   GatewayNetwork, 
@@ -129,6 +129,9 @@ describe('GatewayToken', async () => {
     await gatewayNetwork.deployed();
 
     await gatekeeperContract.setNetworkContractAddress(gatewayNetwork.address);
+    await chargeHandler.setNetworkContractAddress(gatewayNetwork.address);
+
+    await gatewayNetwork.connect(identityCom).grantRole(await gatewayNetwork.NETWORK_FEE_PAYER_ROLE(), 0, chargeHandler.address, {gasLimit: 300000});
 
     const args = [
       'Gateway Protocol',
@@ -1477,7 +1480,7 @@ describe('GatewayToken', async () => {
         const balanceBefore = await alice.getBalance();
         const gatekeeperBalanceBefore = await gatekeeper.getBalance();
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1500,6 +1503,53 @@ describe('GatewayToken', async () => {
         expect(gatekeeperBalanceAfter).to.greaterThan(gatekeeperBalanceBefore);
       });
 
+      it('can charge ETH through a forwarded call with a network fee', async () => {
+        const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
+        const balanceBefore = await alice.getBalance();
+        const gatekeeperBalanceBefore = await gatekeeper.getBalance();
+        const networkBalanceBefore = await ethers.provider.getBalance(gatewayNetwork.address);
+
+        const GATEKEEPER_FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        const NETWORK_FEES_IN_BPS: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: 1000, // 10% fee [(100 bps) / 10_000]
+          refreshFee: 1000, // 10% fee [(100 bps) / 10_000]
+          expireFee: 1000, // 10% fee [(100 bps) / 10_000]
+          verificationFee: 1000, // 10% fee [(100 bps) / 10_000]
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(GATEKEEPER_FEES, utils.formatBytes32String('GKN-1'));
+        await gatewayNetwork.connect(identityCom).updateFees(NETWORK_FEES_IN_BPS, utils.formatBytes32String('GKN-1'));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
+
+        // forward it so that Alice sends it, and includes a value
+        const receipt = await forward(tx, alice, charge.value);
+
+        // check that Alice's balance has gone down by the charge amount + gas
+        const balanceAfter = await alice.getBalance();
+        const gatekeeperBalanceAfter = await gatekeeper.getBalance();
+        const networkBalanceAfter = await ethers.provider.getBalance(gatewayNetwork.address);
+        
+        const gas = receipt.gasUsed.mul(receipt.effectiveGasPrice);
+
+        const gatekeeperFeePercentage = BigNumber.from(10000).sub(NETWORK_FEES_IN_BPS.issueFee as BigNumber); // 100% - 10%
+        const gatekeeperFeeValue = charge.value.mul(gatekeeperFeePercentage).div(10000).sub(gas);
+
+        const networkFeeValue = charge.value.mul(NETWORK_FEES_IN_BPS.issueFee as BigNumber).div(10000);
+        
+        expect(balanceAfter).to.equal(balanceBefore.sub(charge.value).sub(gas));
+        expect(gatekeeperBalanceAfter.sub(gatekeeperBalanceBefore)).to.greaterThan(gatekeeperFeeValue);
+        expect(networkBalanceAfter.sub(networkBalanceBefore)).to.eq(networkFeeValue);
+
+      });
+
       it('charge ETH - revert if the recipient rejects it', async () => {
         const brokenRecipientFactory = await ethers.getContractFactory('DummyBrokenEthRecipient');
         const brokenRecipient = await brokenRecipientFactory.deploy();
@@ -1508,7 +1558,7 @@ describe('GatewayToken', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
         charge.partiesInCharge.recipient = brokenRecipient.address;
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1531,7 +1581,7 @@ describe('GatewayToken', async () => {
       it('can charge ETH - revert if amount sent is lower than the charge', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1552,7 +1602,7 @@ describe('GatewayToken', async () => {
       it('can charge ETH - revert if amount sent is higher than the charge', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1574,7 +1624,7 @@ describe('GatewayToken', async () => {
       it('can charge ETH - revert if no amount sent', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1593,7 +1643,7 @@ describe('GatewayToken', async () => {
         const balance = await alice.getBalance();
         const charge = makeWeiCharge(balance.mul(2));
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1620,7 +1670,7 @@ describe('GatewayToken', async () => {
       it('can charge ERC20 - rejects if the ERC20 allowance was not made', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1641,7 +1691,7 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1666,7 +1716,7 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1691,7 +1741,7 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 90 in the context of the gatekeeper network
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value.sub(10), gkn3);
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1716,7 +1766,7 @@ describe('GatewayToken', async () => {
         const someOtherTokenAddress = randomAddress();
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, someOtherTokenAddress, charge.value, gkn1);
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1740,7 +1790,7 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1770,7 +1820,7 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1790,6 +1840,62 @@ describe('GatewayToken', async () => {
         expect(balanceAfter).to.equal(balanceBefore.sub(charge.value));
       });
 
+      it('can charge ERC20 through a forwarded call with network fees', async () => {
+        const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
+
+        await dummyErc20Contract.connect(identityCom).transfer(alice.address, BigNumber.from('100'));
+
+        const balanceBefore = await erc20.balanceOf(alice.address);
+        const gatekeeperBalanceBefore = await erc20.balanceOf(gatekeeper.address);
+        const networkBalanceBefore = await erc20.balanceOf(gatewayNetwork.address);
+
+        // Alice allows the gateway token contract to transfer 100 to the gatekeeper
+        await erc20.connect(alice).approve(chargeHandler.address, charge.value);
+
+        //Alice allows the network contract to transfer funds to the network
+        await erc20.connect(alice).approve(gatewayNetwork.address, charge.value);
+
+        // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
+        await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
+
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
+          issueFee: charge.value,
+          refreshFee: charge.value,
+          expireFee: charge.value,
+          verificationFee: charge.value
+        }
+
+        const NETWORK_FEES_IN_BPS: IGatewayNetwork.NetworkFeesBpsStruct = {
+          issueFee: 1000, // 10% fee [(100 bps) / 10_000]
+          refreshFee: 1000, // 10% fee [(100 bps) / 10_000]
+          expireFee: 1000, // 10% fee [(100 bps) / 10_000]
+          verificationFee: 1000, // 10% fee [(100 bps) / 10_000]
+        }
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+        await gatewayNetwork.connect(identityCom).updateFees(NETWORK_FEES_IN_BPS, utils.formatBytes32String('GKN-3'));
+
+        // create a mint transaction
+        const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
+
+        // forward it so that Alice sends it
+        await forward(tx, alice);
+
+        const gatekeeperFeePercentage = BigNumber.from(10000).sub(NETWORK_FEES_IN_BPS.issueFee as BigNumber); // 100% - 10%
+        const gatekeeperFeeValue = charge.value.mul(gatekeeperFeePercentage).div(10000);
+
+        const networkFeeValue = charge.value.mul(NETWORK_FEES_IN_BPS.issueFee as BigNumber).div(10000);
+
+        // check that Alice's balance has gone down by the charge amount
+        const balanceAfter = await erc20.balanceOf(alice.address);
+        const gatekeeperBalanceAfter = await erc20.balanceOf(gatekeeper.address);
+        const networkBalanceAfter = await erc20.balanceOf(gatewayNetwork.address);
+
+        expect(balanceAfter).to.equal(balanceBefore.sub(charge.value));
+        expect(gatekeeperBalanceAfter).to.equal(gatekeeperBalanceBefore.add(gatekeeperFeeValue));
+        expect(networkBalanceAfter).to.equal(networkBalanceBefore.add(networkFeeValue));
+      });
+
       it('charge ERC20 - allows someone else to forward and pay the fee', async () => {
         // Alice will be forwarding the tx and paying the fee on behalf of bob
         // no connection between the fee payer, forwarder and the gateway token recipient
@@ -1805,7 +1911,7 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1840,7 +1946,7 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, erc20.address, charge.value, gkn3);
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1884,7 +1990,7 @@ describe('GatewayToken', async () => {
         // Alice allows the gateway token contract to transfer 100 in the context of the gatekeeper network
         await chargeHandler.connect(alice).setApproval(gatewayToken.address, brokenErc20.address, charge.value, gkn4);
 
-        const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+        const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
@@ -1945,7 +2051,7 @@ describe('GatewayToken', async () => {
       const currentDate = Math.ceil(Date.now() / 1000);
       const tomorrow = currentDate + 86_400;
 
-      const FEES: IGatewayNetwork.NetworkFeesBpsStruct = {
+      const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
         issueFee: 0,
         refreshFee: 0,
         expireFee: 0,
