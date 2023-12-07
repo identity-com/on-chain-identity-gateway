@@ -167,11 +167,6 @@ contract GatewayToken is
     function burn(uint tokenId) external virtual {
         _checkGatekeeper(slotOf(tokenId));
         _burn(tokenId);
-
-        address gatekeeper = _msgSender();
-        uint network = slotOf(tokenId);
-
-        _handleCharge(FeeType.EXPIRE, network, gatekeeper, partiesInCharge);
     }
 
     /**
@@ -185,7 +180,7 @@ contract GatewayToken is
         uint network,
         uint expiration,
         uint mask,
-        ChargeParties calldata partiesInCharge
+        ChargeParties memory partiesInCharge
     ) external payable virtual {
         // CHECKS
         _checkGatekeeper(network);
@@ -211,7 +206,7 @@ contract GatewayToken is
         _handleCharge(FeeType.ISSUE, network, gatekeeper, partiesInCharge);
     }
 
-    function revoke(uint tokenId, ChargeParties calldata partiesInCharge) external virtual override {
+    function revoke(uint tokenId, ChargeParties memory partiesInCharge) external virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
         _tokenStates[tokenId] = TokenState.REVOKED;
@@ -228,7 +223,7 @@ contract GatewayToken is
      * @dev Triggers to freeze gateway token
      * @param tokenId Gateway token id
      */
-    function freeze(uint tokenId, ChargeParties calldata partiesInCharge) external virtual {
+    function freeze(uint tokenId, ChargeParties memory partiesInCharge) external virtual {
         _checkGatekeeper(slotOf(tokenId));
 
         _freeze(tokenId);
@@ -242,7 +237,7 @@ contract GatewayToken is
      * @dev Triggers to unfreeze gateway token
      * @param tokenId Gateway token id
      */
-    function unfreeze(uint tokenId) external virtual {
+    function unfreeze(uint tokenId, ChargeParties memory partiesInCharge) external virtual {
         _checkGatekeeper(slotOf(tokenId));
 
         _unfreeze(tokenId);
@@ -258,7 +253,7 @@ contract GatewayToken is
      * @param tokenId Gateway token id
      * @param timestamp Expiration timestamp
      */
-    function setExpiration(uint tokenId, uint timestamp, ChargeParties calldata partiesInCharge) external payable virtual {
+    function setExpiration(uint tokenId, uint timestamp, ChargeParties memory partiesInCharge) external payable virtual {
         // CHECKS
         uint network = slotOf(tokenId);
         _checkGatekeeper(slotOf(tokenId));
@@ -304,13 +299,14 @@ contract GatewayToken is
      *
      * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
      */
-    function verifyToken(address owner, uint network, ChargeParties calldata partiesInCharge) external view virtual returns (bool) {
-        (, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, true);
+    function verifyToken(address owner, uint network, address feeSender) external virtual returns (bool) {
+        (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, true);
 
-        address gatekeeper = _msgSender();
-        uint network = slotOf(tokenId);
-
-        _handleCharge(FeeType.VERIFY, network, gatekeeper, partiesInCharge);
+        if(count > 0) {
+            address gatekeeper = _issuingGatekeepers[tokenIds[0]];
+            ChargeParties memory partiesInCharge = ChargeParties({tokenSender: feeSender, recipient: gatekeeper});
+            _handleCharge(FeeType.VERIFY, network, gatekeeper, partiesInCharge);
+        }
 
         return count > 0;
     }
@@ -320,8 +316,18 @@ contract GatewayToken is
      *
      * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
      */
-    function verifyToken(uint tokenId) external view virtual returns (bool) {
-        return _existsAndActive(tokenId, false);
+    function verifyToken(uint tokenId, address feeSender) external virtual returns (bool) {
+        bool doesExistAndIsActive = _existsAndActive(tokenId, false);
+
+        if(doesExistAndIsActive) {
+            address gatekeeper = _issuingGatekeepers[tokenId];
+            ChargeParties memory partiesInCharge = ChargeParties({tokenSender: feeSender, recipient: gatekeeper});
+            uint network = slotOf(tokenId);
+
+            _handleCharge(FeeType.VERIFY, network, gatekeeper, partiesInCharge);
+        }
+
+        return doesExistAndIsActive;
     }
 
     /**
@@ -447,7 +453,7 @@ contract GatewayToken is
         emit ChargeHandlerUpdated(chargeHandler);
     }
 
-    function _handleCharge(FeeType feeType, uint networkId, address gatekeeper, ChargeParties calldata partiesInCharge) internal {
+    function _handleCharge(FeeType feeType, uint networkId, address gatekeeper, ChargeParties memory partiesInCharge) internal {
         IGatewayGatekeeper.GatekeeperNetworkData memory gatekeeperData = IGatewayGatekeeper(_gatekeeperContract).getGatekeeperNetworkData(bytes32(networkId), gatekeeper);
         IGatewayNetwork.GatekeeperNetworkData memory networkData = IGatewayNetwork(_gatewayNetworkContract).getNetwork(networkId);
 

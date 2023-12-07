@@ -15,7 +15,7 @@ contract GatewayTokenClientERC2771Test is GatedERC2771 {
         uint256 gatekeeperNetwork
     ) GatedERC2771(gatewayTokenContract, gatekeeperNetwork) {}
 
-    function testGated() external gated {
+    function testGated(address feeSender) external gated(feeSender) {
         emit Success();
     }
 }

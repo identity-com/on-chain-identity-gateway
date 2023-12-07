@@ -22,7 +22,7 @@ contract GatewayTokenUpgradeTest is GatewayToken {
         uint256 network,
         uint expiration,
         uint256 mask,
-        ChargeParties calldata partiesInCharge
+        ChargeParties memory partiesInCharge
     ) external payable override(GatewayToken) {
         _checkGatekeeper(network);
         address gatekeeper = _msgSender();

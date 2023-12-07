@@ -20,9 +20,9 @@ abstract contract GatedERC2771Upgradeable is MultiERC2771ContextUpgradeable {
      *
      * - The caller must have a valid, non-expired gateway token on the _gatekeeperNetwork network.
      */
-    modifier gated() {
+    modifier gated(address feeSender) {
         IGatewayTokenVerifier verifier = IGatewayTokenVerifier(_gatewayTokenContract);
-        if (!verifier.verifyToken(_msgSender(), _gatekeeperNetwork)) {
+        if (!verifier.verifyToken(_msgSender(), _gatekeeperNetwork, feeSender)) {
             revert IsGated__InvalidGatewayToken(_gatewayTokenContract);
         }
         _;

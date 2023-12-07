@@ -13,6 +13,8 @@ import { TransactionReceipt } from '@ethersproject/providers';
 import { 
   GatewayNetwork, 
   GatewayNetwork__factory, 
+  GatewayToken,
+  GatewayToken__factory,
   Gatekeeper, 
   Gatekeeper__factory,
   GatewayStaking,
@@ -34,7 +36,7 @@ describe('GatewayToken', async () => {
   let forwarder: Contract;
   let flagsStorage: Contract;
   let chargeHandler: ChargeHandler;
-  let gatewayToken: Contract;
+  let gatewayToken: GatewayToken;
   let gatewayTokenInternalsTest: Contract;
   let gatewayNetwork: GatewayNetwork;
   let gatekeeperContract: Gatekeeper;
@@ -47,9 +49,9 @@ describe('GatewayToken', async () => {
   let gkn2;
   let gkn3;
 
-  const expectVerified = (address: string, gkn: number): Chai.PromisedAssertion => {
-    const verified = gatewayToken['verifyToken(address,uint256)'](address, gkn);
-    return expect(verified).eventually;
+  const checkVerification = async (address: string, gkn: number, feeTokenSender: string = ZERO_ADDRESS): Promise<boolean> => {
+    const verified: boolean = await gatewayToken.callStatic['verifyToken(address,uint256,address)'](address, gkn, feeTokenSender);
+    return verified;
   };
 
   const makeMetaTx = (tx: PopulatedTransaction) =>
@@ -88,7 +90,7 @@ describe('GatewayToken', async () => {
         name: utils.formatBytes32String(name),
         passExpireDurationInSeconds: passExpireDurationInSeconds ? passExpireDurationInSeconds : 100000000,
         networkFeatureMask: 0,
-        networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0},
+        networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0, revokeFee: 0, freezeFee: 0},
         supportedToken: supportedToken ? supportedToken : ZERO_ADDRESS,
         gatekeepers: gatekeepers ? gatekeepers : []
     }
@@ -100,7 +102,7 @@ describe('GatewayToken', async () => {
     const forwarderFactory = await ethers.getContractFactory('FlexibleNonceForwarder');
     const flagsStorageFactory = await ethers.getContractFactory('FlagsStorage');
     const chargeHandlerFactory = await ethers.getContractFactory('ChargeHandler');
-    const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
+    const gatewayTokenFactory = await new GatewayToken__factory(identityCom);
     const gatewayTokenInternalsTestFactory = await ethers.getContractFactory('GatewayTokenInternalsTest');
     const gatewayNetworkFactory = await new GatewayNetwork__factory(identityCom);
     const gatekeeperContractFactory = await new Gatekeeper__factory(identityCom);
@@ -144,7 +146,7 @@ describe('GatewayToken', async () => {
       gatekeeperContract.address
     ];
 
-    gatewayToken = await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' });
+    gatewayToken = (await upgrades.deployProxy(gatewayTokenFactory, args, { kind: 'uups' })) as GatewayToken;
     await gatewayToken.deployed();
 
     // set the gateway token contract as the owner of the chargeHandler
@@ -502,7 +504,7 @@ describe('GatewayToken', async () => {
 
   describe('Test gateway token issuance', async () => {
     it('verified returns false if a token is not yet minted', async () => {
-      return expectVerified(alice.address, gkn1).to.be.false;
+      return expect(await checkVerification(alice.address, gkn1)).to.be.false;
     });
 
     it('mint Gateway Token for Alice by gatekeeper with gatekeeperNetwork = 1', async () => {
@@ -511,11 +513,11 @@ describe('GatewayToken', async () => {
         tokenSender: ZERO_ADDRESS,
       }); 
 
-      return expectVerified(alice.address, gkn1).to.be.true;
+      return expect(await checkVerification(alice.address, gkn1)).to.be.true;
     });
 
     it('verified returns false if for a different gatekeeper network', async () => {
-      return expectVerified(alice.address, gkn2).to.be.false;
+      return expect(await checkVerification(alice.address, gkn2)).to.be.false;
     });
 
     it('retrieves tokenId', async () => {
@@ -540,7 +542,7 @@ describe('GatewayToken', async () => {
         tokenSender: ZERO_ADDRESS,
       });
 
-      return expectVerified(alice.address, gkn2).to.be.true;
+      return expect(await checkVerification(alice.address, gkn2)).to.be.true;
     });
 
     it('mint a second token for Alice with gatekeeperNetwork = 1', async () => {
@@ -549,7 +551,7 @@ describe('GatewayToken', async () => {
         tokenSender: ZERO_ADDRESS,
       });
 
-      return expectVerified(alice.address, gkn2).to.be.true;
+      return expect(await checkVerification(alice.address, gkn2)).to.be.true;
     });
 
     it('get all tokens for a user and network', async () => {
@@ -702,12 +704,12 @@ describe('GatewayToken', async () => {
 
       it('supports ERC2771 clients', async () => {
         // Alice is verified
-        await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
+        await expect(erc2771Client.connect(alice).testGated(ZERO_ADDRESS)).to.emit(erc2771Client, 'Success');
       });
 
       it('supports ERC2771 clients (negative case)', async () => {
         // Carol is not verified
-        await expect(erc2771Client.connect(carol).testGated()).to.be.revertedWithCustomError(
+        await expect(erc2771Client.connect(carol).testGated(ZERO_ADDRESS)).to.be.revertedWithCustomError(
           client,
           'IsGated__InvalidGatewayToken',
         );
@@ -736,12 +738,12 @@ describe('GatewayToken', async () => {
 
       it('supports Upgradeable ERC2771 clients', async () => {
         // Alice is verified
-        await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
+        await expect(erc2771Client.connect(alice).testGated(ZERO_ADDRESS)).to.emit(erc2771Client, 'Success');
       });
 
       it('supports Upgradeable ERC2771 clients (negative case)', async () => {
         // Carol is not verified
-        await expect(erc2771Client.connect(carol).testGated()).to.be.revertedWithCustomError(
+        await expect(erc2771Client.connect(carol).testGated(ZERO_ADDRESS)).to.be.revertedWithCustomError(
           client,
           'IsGated__InvalidGatewayToken',
         );
@@ -756,7 +758,7 @@ describe('GatewayToken', async () => {
 
   describe('Test gateway token operations: freeze, unfreeze, setExpiration, revoke', async () => {
     let dummyWallet: string;
-    let dummyWalletTokenId: number;
+    let dummyWalletTokenId: BigNumber;
 
     beforeEach(async () => {
       dummyWallet = randomAddress();
@@ -769,30 +771,30 @@ describe('GatewayToken', async () => {
     });
 
     it('freeze token', async () => {
-      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId);
+      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId, { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
 
-      return expectVerified(dummyWallet, gkn1).to.be.false;
+      return expect(await checkVerification(dummyWallet, gkn1)).to.be.false;
     });
 
     it('freeze token - revert if already frozen', async () => {
-      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId);
+      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId, { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
 
-      await expect(gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId)).to.be.revertedWithCustomError(
+      await expect(gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId, { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address})).to.be.revertedWithCustomError(
         gatewayToken,
         'GatewayToken__TokenDoesNotExistOrIsInactive',
       );
     });
 
     it('unfreeze token', async () => {
-      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId);
+      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenId, { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
 
-      await gatewayToken.connect(gatekeeper).unfreeze(dummyWalletTokenId);
+      await gatewayToken.connect(gatekeeper).unfreeze(dummyWalletTokenId, { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
 
-      return expectVerified(alice.address, gkn2).to.be.true;
+      return expect(await checkVerification(alice.address, gkn2)).to.be.true;
     });
 
     it('unfreeze token - revert if not frozen', async () => {
-      await expect(gatewayToken.connect(gatekeeper).unfreeze(dummyWalletTokenId)).to.be.revertedWithCustomError(
+      await expect(gatewayToken.connect(gatekeeper).unfreeze(dummyWalletTokenId, { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address})).to.be.revertedWithCustomError(
         gatewayToken,
         'GatewayToken__TokenInvalidStateForOperation',
       );
@@ -806,17 +808,17 @@ describe('GatewayToken', async () => {
       });
       const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(alice.address, gkn1, true);
 
-      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenIds[0]);
+      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenIds[0], { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
 
-      await expectVerified(alice.address, gkn1).to.be.true;
+      expect(await checkVerification(alice.address, gkn1)).to.be.true;
 
-      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenIds[1]);
+      await gatewayToken.connect(gatekeeper).freeze(dummyWalletTokenIds[1], { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
 
-      await expectVerified(alice.address, gkn1).to.be.false;
+      expect(await checkVerification(alice.address, gkn1)).to.be.false;
 
-      await gatewayToken.connect(gatekeeper).unfreeze(dummyWalletTokenIds[0]);
+      await gatewayToken.connect(gatekeeper).unfreeze(dummyWalletTokenIds[0], { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
 
-      return expectVerified(alice.address, gkn1).to.be.true;
+      return expect(await checkVerification(alice.address, gkn1)).to.be.true;
     });
 
     it('expire token', async () => {
@@ -830,7 +832,7 @@ describe('GatewayToken', async () => {
       const currentExpiration = await gatewayToken.getExpiration(dummyWalletTokenId);
       expect(currentExpiration).to.equal(Date.parse('2020-01-01') / 1000);
 
-      return expectVerified(dummyWallet, gkn1).to.be.false;
+      return expect(await checkVerification(dummyWallet, gkn1)).to.be.false;
     });
 
     it('extend expiry', async () => {
@@ -844,7 +846,7 @@ describe('GatewayToken', async () => {
       const currentExpiration = await gatewayToken.getExpiration(dummyWalletTokenId);
       expect(currentExpiration).to.equal(Date.parse('2222-01-01') / 1000);
 
-      return expectVerified(dummyWallet, gkn1).to.be.true;
+      return expect(await checkVerification(dummyWallet, gkn1)).to.be.true;
     });
 
     it('get expiration - reverts if the token does not exist', async () => {
@@ -856,7 +858,7 @@ describe('GatewayToken', async () => {
 
     it('burn', async () => {
       await gatewayToken.connect(gatekeeper).burn(dummyWalletTokenId);
-      return expectVerified(dummyWallet, gkn1).to.be.false;
+      return expect(await checkVerification(dummyWallet, gkn1)).to.be.false;
     });
 
     it('all tokens must be burned for verified to return false', async () => {
@@ -870,15 +872,27 @@ describe('GatewayToken', async () => {
       await gatewayToken.connect(gatekeeper).burn(dummyWalletTokenIds[0]);
 
       // the wallet still has the other token
-      return expectVerified(dummyWallet, gkn1).to.be.true;
+      return expect(await checkVerification(dummyWallet, gkn1)).to.be.true;
     });
 
     it('revoke a token', async () => {
-      await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenId);
-      return expectVerified(dummyWallet, gkn1).to.be.false;
+      await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenId, { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
+      return expect(await checkVerification(dummyWallet, gkn1)).to.be.false;
     });
 
     it('all tokens must be revoked for verified to return false', async () => {
+
+      const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
+        issueFee: 0,
+        refreshFee: 0,
+        expireFee: 0,
+        verificationFee: 0,
+        revokeFee: 0,
+          freezeFee: 0
+      }
+      // Remove gatekeeper fees
+      await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+
       // mint a second token
       await gatewayToken.connect(gatekeeper).mint(dummyWallet, gkn1, 0, 0, {
         recipient: gatekeeper.address,
@@ -886,13 +900,13 @@ describe('GatewayToken', async () => {
       });
       const dummyWalletTokenIds = await gatewayToken.getTokenIdsByOwnerAndNetwork(dummyWallet, gkn1, true);
 
-      await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenIds[0]);
+      await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenIds[0], { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
 
-      let validity = await gatewayToken.functions['verifyToken(uint256)'](dummyWalletTokenIds[0]);
-      expect(validity[0]).to.equal(false);
+      let validity = await gatewayToken.callStatic['verifyToken(uint256,address)'](dummyWalletTokenIds[0], ZERO_ADDRESS);
+      expect(validity).to.equal(false);
 
       // the wallet still has the other token
-      return expectVerified(dummyWallet, gkn1).to.be.true;
+      return expect(await checkVerification(dummyWallet, gkn1)).to.be.true;
     });
   });
 
@@ -975,7 +989,7 @@ describe('GatewayToken', async () => {
         });
 
       // Carol does not have the GT yet, because the tx has not been sent
-      await expectVerified(carol.address, gkn1).to.be.false;
+      expect(await checkVerification(carol.address, gkn1)).to.be.false;
 
       const input = {
         from: gatekeeper.address,
@@ -991,7 +1005,7 @@ describe('GatewayToken', async () => {
       expect(receipt.status).to.equal(1);
 
       // carol now has the GT
-      await expectVerified(carol.address, gkn1).to.be.true;
+      expect(await checkVerification(carol.address, gkn1)).to.be.true;
     });
 
     it('forward a call - revert if the signer is not the from address', async () => {
@@ -1066,7 +1080,7 @@ describe('GatewayToken', async () => {
         /ReentrancyGuard: reentrant call/,
       );
 
-      await expectVerified(wallet.address, gkn1).to.be.false;
+      expect(await checkVerification(wallet.address, gkn1)).to.be.false;
     });
 
     // The forwarder allows two transactions to be sent with the same nonce, as long as they are different
@@ -1107,11 +1121,11 @@ describe('GatewayToken', async () => {
         tokenSender: ZERO_ADDRESS,
       });
       const [tokenId] = await gatewayToken.getTokenIdsByOwnerAndNetwork(userToBeFrozen.address, gkn1, true);
-      await gatewayToken.connect(gatekeeper).freeze(tokenId);
-      await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
+      await gatewayToken.connect(gatekeeper).freeze(tokenId, { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
+      expect(await checkVerification(userToBeFrozen.address, gkn1)).to.be.false;
 
       // create a forwarded metatx to unfreeze the user
-      const unfreezeTx = await gatewayToken.connect(gatekeeper).populateTransaction.unfreeze(tokenId);
+      const unfreezeTx = await gatewayToken.connect(gatekeeper).populateTransaction.unfreeze(tokenId, { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
       const forwardedUnfreezeTx = await makeMetaTx(unfreezeTx);
 
       // unfreeze the user, then freeze them again
@@ -1120,8 +1134,8 @@ describe('GatewayToken', async () => {
           .connect(alice)
           .execute(forwardedUnfreezeTx.request, forwardedUnfreezeTx.signature, { gasLimit: 1000000 })
       ).wait;
-      await gatewayToken.connect(gatekeeper).freeze(tokenId);
-      await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
+      await gatewayToken.connect(gatekeeper).freeze(tokenId, { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
+      expect(await checkVerification(userToBeFrozen.address, gkn1)).to.be.false;
 
       // cannot replay the unfreeze transaction
       const shouldFail = forwarder
@@ -1130,7 +1144,7 @@ describe('GatewayToken', async () => {
       // const shouldFail = attemptedReplayTransactionResponse.wait();
       // expect(attemptedReplayTransactionReceipt.status).to.equal(0);
       await expect(shouldFail).to.be.revertedWithCustomError(forwarder, 'FlexibleNonceForwarder__TxAlreadySeen');
-      await expectVerified(userToBeFrozen.address, gkn1).to.be.false;
+      expect(await checkVerification(userToBeFrozen.address, gkn1)).to.be.false;
     });
 
     it('Rejects old transactions', async () => {
@@ -1485,7 +1499,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
@@ -1514,7 +1530,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         const NETWORK_FEES_IN_BPS: IGatewayNetwork.NetworkFeesBpsStruct = {
@@ -1522,6 +1540,8 @@ describe('GatewayToken', async () => {
           refreshFee: 1000, // 10% fee [(100 bps) / 10_000]
           expireFee: 1000, // 10% fee [(100 bps) / 10_000]
           verificationFee: 1000, // 10% fee [(100 bps) / 10_000]
+          revokeFee: 1000, // 10% fee [(100 bps) / 10_000]
+          freezeFee: 1000 // 10% fee [(100 bps) / 10_000]
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(GATEKEEPER_FEES, utils.formatBytes32String('GKN-1'));
@@ -1563,7 +1583,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
@@ -1586,7 +1608,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
@@ -1607,7 +1631,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
@@ -1629,7 +1655,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
@@ -1648,12 +1676,14 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
 
-        const shouldFail = gatewayToken.connect(alice).mint(alice.address, gkn1, 0, 0, charge.partiesInCharge, { value: charge.value });
+        const shouldFail = gatewayToken.connect(alice).mint(alice.address, gkn1, 0, 0, charge.partiesInCharge, { value: charge.value, gasLimit: 300000 });
         await expect(shouldFail).to.be.rejectedWith(/sender doesn't have enough funds/);
       });
     });
@@ -1675,7 +1705,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
@@ -1696,7 +1728,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
 
@@ -1721,7 +1755,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
@@ -1746,7 +1782,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
@@ -1771,7 +1809,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
@@ -1795,7 +1835,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
@@ -1825,7 +1867,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
@@ -1863,7 +1907,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         const NETWORK_FEES_IN_BPS: IGatewayNetwork.NetworkFeesBpsStruct = {
@@ -1871,6 +1917,8 @@ describe('GatewayToken', async () => {
           refreshFee: 1000, // 10% fee [(100 bps) / 10_000]
           expireFee: 1000, // 10% fee [(100 bps) / 10_000]
           verificationFee: 1000, // 10% fee [(100 bps) / 10_000]
+          revokeFee: 1000,
+          freezeFee: 1000
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
@@ -1916,7 +1964,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
@@ -1951,7 +2001,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
@@ -1995,7 +2047,9 @@ describe('GatewayToken', async () => {
           issueFee: charge.value,
           refreshFee: charge.value,
           expireFee: charge.value,
-          verificationFee: charge.value
+          verificationFee: charge.value,
+          revokeFee: charge.value,
+          freezeFee: charge.value
         }
 
         await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-4'));
@@ -2038,13 +2092,25 @@ describe('GatewayToken', async () => {
   });
 
   describe('Test gateway token future version upgradeability', async () => {
+
     it('upgrades the gateway token contract to v2', async () => {
       const gatewayTokenV2Factory = await ethers.getContractFactory('GatewayTokenUpgradeTest');
       await upgrades.upgradeProxy(gatewayToken.address, gatewayTokenV2Factory);
     });
 
     it('existing tokens are still valid after the upgrade', async () => {
-      let verified = await gatewayToken['verifyToken(address,uint256)'](alice.address, gkn1);
+      const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
+        issueFee: 0,
+        refreshFee: 0,
+        expireFee: 0,
+        verificationFee: 0,
+        revokeFee: 0,
+          freezeFee: 0
+      }
+      // Remove gatekeeper fees
+      await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+
+      let verified = await checkVerification(alice.address, gkn1, ZERO_ADDRESS);
       expect(verified).to.be.true;
     });
 
@@ -2056,7 +2122,9 @@ describe('GatewayToken', async () => {
         issueFee: 0,
         refreshFee: 0,
         expireFee: 0,
-        verificationFee: 0
+        verificationFee: 0,
+        revokeFee: 0,
+        freezeFee: 0
       }
       // Remove gatekeeper fees
       await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
@@ -2067,7 +2135,7 @@ describe('GatewayToken', async () => {
         tokenSender: ZERO_ADDRESS,
       });
 
-      let verified = await gatewayToken['verifyToken(address,uint256)'](wallet.address, gkn1);
+      let verified = await checkVerification(wallet.address, gkn1, ZERO_ADDRESS);
       expect(verified).to.be.true;
     });
 

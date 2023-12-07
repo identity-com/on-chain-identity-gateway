@@ -22,7 +22,7 @@ contract GatewayTokenClientERC2771UpgradeableTest is GatedERC2771Upgradeable, Ow
         __GatedERC2771Upgradeable_init(gatewayTokenContract, gatekeeperNetwork, trustedForwarders);
     }
 
-    function testGated() external gated {
+    function testGated(address feeSender) external gated(feeSender) {
         emit Success();
     }
 

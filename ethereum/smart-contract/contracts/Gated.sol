@@ -2,6 +2,8 @@
 pragma solidity >=0.8.19;
 
 import {IGatewayTokenVerifier} from "./interfaces/IGatewayTokenVerifier.sol";
+import {ChargeParties} from "./library/Charge.sol";
+
 
 abstract contract Gated {
     address private immutable _gatewayTokenContract;
@@ -19,9 +21,9 @@ abstract contract Gated {
      *
      * - The caller must have a valid, non-expired gateway token on the _gatekeeperNetwork network.
      */
-    modifier gated() {
+    modifier gated(address feeSender) {
         IGatewayTokenVerifier verifier = IGatewayTokenVerifier(_gatewayTokenContract);
-        if (!verifier.verifyToken(msg.sender, _gatekeeperNetwork)) {
+        if (!verifier.verifyToken(msg.sender, _gatekeeperNetwork, feeSender)) {
             revert IsGated__InvalidGatewayToken(_gatewayTokenContract);
         }
         _;

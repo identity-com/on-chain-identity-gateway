@@ -18,7 +18,7 @@ contract GatewayTokenClientTest is Gated {
     /**
      * @dev A public version of _msgData() in the GatewayToken contract, use for testing the forwarding logic.
      */
-    function testGated() external gated {
+    function testGated() external gated(address(0)) {
         emit Success();
     }
 }

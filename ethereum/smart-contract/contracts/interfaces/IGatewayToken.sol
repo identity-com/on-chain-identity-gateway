@@ -93,7 +93,7 @@ interface IGatewayToken {
         uint256 network,
         uint expiration,
         uint256 mask,
-        ChargeParties calldata partiesInCharge
+        ChargeParties memory partiesInCharge
     ) external payable;
 
     /**
