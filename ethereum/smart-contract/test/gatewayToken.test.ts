@@ -171,7 +171,6 @@ describe('GatewayToken', async () => {
     gkn1 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-1'));
     gkn2 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-2'));
     gkn3 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-3'));
-
   });
 
   describe('Deployment Tests', async () => {
@@ -1694,6 +1693,8 @@ describe('GatewayToken', async () => {
       before('deploy ERC20 token', async () => {
         erc20 = dummyErc20Contract;
         await erc20.deployed();
+
+        await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-3'));
       });
 
       beforeEach('reset gatekeepers', async () => {

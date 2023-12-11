@@ -65,9 +65,9 @@ abstract contract  IGatewayNetwork {
     error GatewayNetwork_Cannot_Be_Sent_Eth_Directly();
     error GatewayNetwork__TransferFailed(uint256 value);
     error GatewayNetwork_Fee_Cannot_Be_Updated_Yet(uint lastUpdateTimestamp, uint nextAvalibleUpdateTimestamp);
-
+    
     function createNetwork(GatekeeperNetworkData calldata network) external virtual;
-    function receiveNetworkFees(uint256 feeAmount, bytes32 networkName, address tokenSender) external payable virtual;
+    function transferNetworkFees(uint256 feeAmount, bytes32 networkName, address tokenSender) external payable virtual;
     function withdrawNetworkFees(bytes32 networkName) external payable virtual;
     function closeNetwork(bytes32 networkName) external virtual;
     function updatePassExpirationTime(uint newExpirationTimeInSeconds, bytes32 networkName) external virtual;
