@@ -90,7 +90,7 @@ describe('GatewayToken', async () => {
         name: utils.formatBytes32String(name),
         passExpireDurationInSeconds: passExpireDurationInSeconds ? passExpireDurationInSeconds : 100000000,
         networkFeatureMask: 0,
-        networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0, revokeFee: 0, freezeFee: 0},
+        networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0, freezeFee: 0},
         supportedToken: supportedToken ? supportedToken : ZERO_ADDRESS,
         gatekeepers: gatekeepers ? gatekeepers : []
     }
@@ -887,8 +887,7 @@ describe('GatewayToken', async () => {
         refreshFee: 0,
         expireFee: 0,
         verificationFee: 0,
-        revokeFee: 0,
-          freezeFee: 0
+        freezeFee: 0
       }
       // Remove gatekeeper fees
       await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
@@ -1500,7 +1499,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1531,7 +1529,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1540,7 +1537,6 @@ describe('GatewayToken', async () => {
           refreshFee: 1000, // 10% fee [(100 bps) / 10_000]
           expireFee: 1000, // 10% fee [(100 bps) / 10_000]
           verificationFee: 1000, // 10% fee [(100 bps) / 10_000]
-          revokeFee: 1000, // 10% fee [(100 bps) / 10_000]
           freezeFee: 1000 // 10% fee [(100 bps) / 10_000]
         }
 
@@ -1584,7 +1580,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1609,7 +1604,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1632,7 +1626,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1656,7 +1649,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1677,7 +1669,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1706,7 +1697,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1729,7 +1719,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1756,7 +1745,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1783,7 +1771,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1810,7 +1797,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1836,7 +1822,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1868,7 +1853,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1908,7 +1892,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -1917,7 +1900,6 @@ describe('GatewayToken', async () => {
           refreshFee: 1000, // 10% fee [(100 bps) / 10_000]
           expireFee: 1000, // 10% fee [(100 bps) / 10_000]
           verificationFee: 1000, // 10% fee [(100 bps) / 10_000]
-          revokeFee: 1000,
           freezeFee: 1000
         }
 
@@ -1965,7 +1947,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -2002,7 +1983,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -2048,7 +2028,6 @@ describe('GatewayToken', async () => {
           refreshFee: charge.value,
           expireFee: charge.value,
           verificationFee: charge.value,
-          revokeFee: charge.value,
           freezeFee: charge.value
         }
 
@@ -2104,9 +2083,9 @@ describe('GatewayToken', async () => {
         refreshFee: 0,
         expireFee: 0,
         verificationFee: 0,
-        revokeFee: 0,
-          freezeFee: 0
+        freezeFee: 0
       }
+
       // Remove gatekeeper fees
       await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
 
@@ -2123,19 +2102,25 @@ describe('GatewayToken', async () => {
         refreshFee: 0,
         expireFee: 0,
         verificationFee: 0,
-        revokeFee: 0,
         freezeFee: 0
       }
+      
       // Remove gatekeeper fees
       await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
 
       const wallet = randomWallet();
-      await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, tomorrow, 0, {
+
+      const tx = await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, tomorrow, 0, {
         recipient: gatekeeper.address,
         tokenSender: ZERO_ADDRESS,
       });
 
-      let verified = await checkVerification(wallet.address, gkn1, ZERO_ADDRESS);
+      const receipt = await tx.wait();
+      
+      const transferEvent = receipt.events?.filter(event => event.event === "Transfer")[0];
+      const tokenId =  transferEvent?.topics[3].toString()!!;
+    
+      const verified: boolean = await gatewayToken.callStatic['verifyToken(uint256,address)'](tokenId, wallet.address, {gasLimit: 300000});
       expect(verified).to.be.true;
     });
 

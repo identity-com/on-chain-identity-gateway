@@ -37,6 +37,7 @@ contract GatewayTokenUpgradeTest is GatewayToken {
         require(expiration > 0, "TEST MODE: Expiry must be > zero");
 
         _expirations[tokenId] = expiration;
+        _issuingGatekeepers[tokenId] = gatekeeper;
 
         if (mask > 0) {
             _setBitMask(tokenId, mask);

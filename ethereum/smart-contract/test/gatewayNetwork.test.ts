@@ -38,7 +38,7 @@ describe('GatewayNetwork', () => {
             name: utils.formatBytes32String(name ? name : 'default'),
             passExpireDurationInSeconds: passExpireDurationInSeconds ? passExpireDurationInSeconds : DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS,
             networkFeatureMask: 0,
-            networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0, revokeFee: 0, freezeFee: 0},
+            networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0, freezeFee: 0},
             supportedToken: supportedToken ? supportedToken : ZERO_ADDRESS,
             gatekeepers: gatekeepers ? gatekeepers : []
         }
@@ -245,7 +245,7 @@ describe('GatewayNetwork', () => {
 
         it('can update network fees if primary authority', async () => {
             //given
-            const updatedFees = {issueFee: 100, verificationFee: 100, expireFee: 100, refreshFee: 100, freezeFee: 100, revokeFee: 100};
+            const updatedFees = {issueFee: 100, verificationFee: 100, expireFee: 100, refreshFee: 100, freezeFee: 100};
             const networkId = await gatekeeperNetworkContract.getNetworkId(defaultNetwork.name);
             const networkState = await gatekeeperNetworkContract.getNetwork(networkId);
 
@@ -264,7 +264,6 @@ describe('GatewayNetwork', () => {
             expect(updatedNetworkState.networkFee.verificationFee).to.eq(updatedFees.verificationFee);
             expect(updatedNetworkState.networkFee.refreshFee).to.eq(updatedFees.refreshFee);
             expect(updatedNetworkState.networkFee.expireFee).to.eq(updatedFees.expireFee);
-            expect(updatedNetworkState.networkFee.revokeFee).to.eq(updatedFees.revokeFee);
             expect(updatedNetworkState.networkFee.freezeFee).to.eq(updatedFees.freezeFee);
         });
         it('cannot add a gatekeeper that does not have the minimum amount of global stake', async () => {
@@ -304,7 +303,7 @@ describe('GatewayNetwork', () => {
 
         it('cannot update network fees if not primary authority', async () => {
             //given
-            let updatedFees = {issueFee: 10001, verificationFee: 0, expireFee: 0, refreshFee: 0, revokeFee: 0, freezeFee: 0};
+            let updatedFees = {issueFee: 10001, verificationFee: 0, expireFee: 0, refreshFee: 0, freezeFee: 0};
             const networkId = await gatekeeperNetworkContract.getNetworkId(defaultNetwork.name);
             const networkState = await gatekeeperNetworkContract.getNetwork(networkId);
 
@@ -312,26 +311,22 @@ describe('GatewayNetwork', () => {
             expect(networkState.networkFee.verificationFee).to.eq(0);
             expect(networkState.networkFee.refreshFee).to.eq(0);
             expect(networkState.networkFee.expireFee).to.eq(0);
-            expect(networkState.networkFee.revokeFee).to.eq(0);
             expect(networkState.networkFee.freezeFee).to.eq(0);
 
             // then
             await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Issue fee must be below 100%");
 
-            updatedFees =  {issueFee: 0, verificationFee: 10001, expireFee: 0, refreshFee: 0, revokeFee: 0, freezeFee: 0};
+            updatedFees =  {issueFee: 0, verificationFee: 10001, expireFee: 0, refreshFee: 0, freezeFee: 0};
             await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Verification fee must be below 100%");
 
-            updatedFees = {issueFee: 0, verificationFee: 0, expireFee: 10001, refreshFee: 0, revokeFee: 0, freezeFee: 0};
+            updatedFees = {issueFee: 0, verificationFee: 0, expireFee: 10001, refreshFee: 0, freezeFee: 0};
             await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Expiration fee must be below 100%");
 
-            updatedFees = {issueFee: 0, verificationFee: 0, expireFee: 0, refreshFee: 10001, revokeFee: 0, freezeFee: 0};
+            updatedFees = {issueFee: 0, verificationFee: 0, expireFee: 0, refreshFee: 10001, freezeFee: 0};
             await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Refresh fee must be below 100%");
 
-            updatedFees = {issueFee: 0, verificationFee: 0, expireFee: 0, refreshFee: 0, revokeFee: 0, freezeFee: 10001};
+            updatedFees = {issueFee: 0, verificationFee: 0, expireFee: 0, refreshFee: 0, freezeFee: 10001};
             await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Freeze fee must be below 100%");
-
-            updatedFees = {issueFee: 0, verificationFee: 0, expireFee: 0, refreshFee: 0, revokeFee: 10001, freezeFee: 0};
-            await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Revoke fee must be below 100%");
         });
 
         it('cannot update the status of a gatekeeper if not primary authority', async () => {
