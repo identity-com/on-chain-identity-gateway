@@ -200,7 +200,8 @@ contract GatewayToken is
             _setBitMask(tokenId, mask);
         }
 
-        _issuingGatekeepers[tokenId] = _msgSender();
+        _issuingGatekeepers[tokenId] = gatekeeper;
+
 
         // INTERACTIONS
         _handleCharge(FeeType.ISSUE, network, gatekeeper, partiesInCharge);
@@ -211,12 +212,8 @@ contract GatewayToken is
 
         _tokenStates[tokenId] = TokenState.REVOKED;
 
-        address gatekeeper = _msgSender();
-        uint network = slotOf(tokenId);
 
         emit Revoke(tokenId);
-        // INTERACTIONS
-        _handleCharge(FeeType.REVOKE, network, gatekeeper, partiesInCharge);
     }
 
     /**
@@ -227,10 +224,6 @@ contract GatewayToken is
         _checkGatekeeper(slotOf(tokenId));
 
         _freeze(tokenId);
-
-        address gatekeeper = _msgSender();
-        uint network = slotOf(tokenId);
-        _handleCharge(FeeType.FREEZE, network, gatekeeper, partiesInCharge);
     }
 
     /**
@@ -318,6 +311,7 @@ contract GatewayToken is
      */
     function verifyToken(uint tokenId, address feeSender) external virtual returns (bool) {
         bool doesExistAndIsActive = _existsAndActive(tokenId, false);
+
 
         if(doesExistAndIsActive) {
             address gatekeeper = _issuingGatekeepers[tokenId];
@@ -498,9 +492,6 @@ contract GatewayToken is
         } else if(feeType == FeeType.VERIFY) {
             totalFeeAmount = gatekeeperData.fees.verificationFee;
             networkFeeBps = networkData.networkFee.verificationFee;
-        } else if(feeType == FeeType.REVOKE) {
-            totalFeeAmount = gatekeeperData.fees.revokeFee;
-            networkFeeBps = networkData.networkFee.revokeFee;
         } else if(feeType == FeeType.FREEZE) {
             totalFeeAmount = gatekeeperData.fees.freezeFee;
             networkFeeBps = networkData.networkFee.freezeFee;
