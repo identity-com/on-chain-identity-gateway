@@ -21,9 +21,9 @@ abstract contract Gated {
      *
      * - The caller must have a valid, non-expired gateway token on the _gatekeeperNetwork network.
      */
-    modifier gated(address feeSender) {
+    modifier gated() {
         IGatewayTokenVerifier verifier = IGatewayTokenVerifier(_gatewayTokenContract);
-        if (!verifier.verifyToken(msg.sender, _gatekeeperNetwork, feeSender)) {
+        if (!verifier.verifyToken(msg.sender, _gatekeeperNetwork)) {
             revert IsGated__InvalidGatewayToken(_gatewayTokenContract);
         }
         _;

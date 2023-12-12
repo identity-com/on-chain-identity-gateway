@@ -292,15 +292,8 @@ contract GatewayToken is
      *
      * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
      */
-    function verifyToken(address owner, uint network, address feeSender) external virtual returns (bool) {
+    function verifyToken(address owner, uint network) external virtual returns (bool) {
         (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, true);
-
-        if(count > 0) {
-            address gatekeeper = _issuingGatekeepers[tokenIds[0]];
-            ChargeParties memory partiesInCharge = ChargeParties({tokenSender: feeSender, recipient: gatekeeper});
-            _handleCharge(FeeType.VERIFY, network, gatekeeper, partiesInCharge);
-        }
-
         return count > 0;
     }
 
@@ -309,17 +302,8 @@ contract GatewayToken is
      *
      * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
      */
-    function verifyToken(uint tokenId, address feeSender) external virtual returns (bool) {
+    function verifyToken(uint tokenId) external virtual returns (bool) {
         bool doesExistAndIsActive = _existsAndActive(tokenId, false);
-
-
-        if(doesExistAndIsActive) {
-            address gatekeeper = _issuingGatekeepers[tokenId];
-            ChargeParties memory partiesInCharge = ChargeParties({tokenSender: feeSender, recipient: gatekeeper});
-            uint network = slotOf(tokenId);
-
-            _handleCharge(FeeType.VERIFY, network, gatekeeper, partiesInCharge);
-        }
 
         return doesExistAndIsActive;
     }

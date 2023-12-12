@@ -49,8 +49,8 @@ describe('GatewayToken', async () => {
   let gkn2;
   let gkn3;
 
-  const checkVerification = async (address: string, gkn: number, feeTokenSender: string = ZERO_ADDRESS): Promise<boolean> => {
-    const verified: boolean = await gatewayToken.callStatic['verifyToken(address,uint256,address)'](address, gkn, feeTokenSender);
+  const checkVerification = async (address: string, gkn: number): Promise<boolean> => {
+    const verified: boolean = await gatewayToken.callStatic['verifyToken(address,uint256)'](address, gkn);
     return verified;
   };
 
@@ -704,12 +704,12 @@ describe('GatewayToken', async () => {
 
       it('supports ERC2771 clients', async () => {
         // Alice is verified
-        await expect(erc2771Client.connect(alice).testGated(ZERO_ADDRESS)).to.emit(erc2771Client, 'Success');
+        await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
       });
 
       it('supports ERC2771 clients (negative case)', async () => {
         // Carol is not verified
-        await expect(erc2771Client.connect(carol).testGated(ZERO_ADDRESS)).to.be.revertedWithCustomError(
+        await expect(erc2771Client.connect(carol).testGated()).to.be.revertedWithCustomError(
           client,
           'IsGated__InvalidGatewayToken',
         );
@@ -738,12 +738,12 @@ describe('GatewayToken', async () => {
 
       it('supports Upgradeable ERC2771 clients', async () => {
         // Alice is verified
-        await expect(erc2771Client.connect(alice).testGated(ZERO_ADDRESS)).to.emit(erc2771Client, 'Success');
+        await expect(erc2771Client.connect(alice).testGated()).to.emit(erc2771Client, 'Success');
       });
 
       it('supports Upgradeable ERC2771 clients (negative case)', async () => {
         // Carol is not verified
-        await expect(erc2771Client.connect(carol).testGated(ZERO_ADDRESS)).to.be.revertedWithCustomError(
+        await expect(erc2771Client.connect(carol).testGated()).to.be.revertedWithCustomError(
           client,
           'IsGated__InvalidGatewayToken',
         );
@@ -901,7 +901,7 @@ describe('GatewayToken', async () => {
 
       await gatewayToken.connect(gatekeeper).revoke(dummyWalletTokenIds[0], { tokenSender: ZERO_ADDRESS, recipient: gatekeeper.address});
 
-      let validity = await gatewayToken.callStatic['verifyToken(uint256,address)'](dummyWalletTokenIds[0], ZERO_ADDRESS);
+      let validity = await gatewayToken.callStatic['verifyToken(uint256)'](dummyWalletTokenIds[0]);
       expect(validity).to.equal(false);
 
       // the wallet still has the other token
@@ -2089,7 +2089,7 @@ describe('GatewayToken', async () => {
       // Remove gatekeeper fees
       await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
 
-      let verified = await checkVerification(alice.address, gkn1, ZERO_ADDRESS);
+      let verified = await checkVerification(alice.address, gkn1);
       expect(verified).to.be.true;
     });
 
@@ -2120,7 +2120,7 @@ describe('GatewayToken', async () => {
       const transferEvent = receipt.events?.filter(event => event.event === "Transfer")[0];
       const tokenId =  transferEvent?.topics[3].toString()!!;
     
-      const verified: boolean = await gatewayToken.callStatic['verifyToken(uint256,address)'](tokenId, wallet.address, {gasLimit: 300000});
+      const verified: boolean = await gatewayToken.callStatic['verifyToken(uint256)'](tokenId, {gasLimit: 300000});
       expect(verified).to.be.true;
     });
 
