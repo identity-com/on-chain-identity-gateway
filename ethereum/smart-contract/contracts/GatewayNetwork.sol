@@ -52,6 +52,7 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         }
         
         _networks[networkName] = network;
+        _networks[networkName].lastFeeUpdateTimestamp = block.timestamp;
 
         emit GatekeeperNetworkCreated(network.primaryAuthority, networkName, network.passExpireDurationInSeconds);
     } 
@@ -189,11 +190,25 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
     }
 
     function updateFees(NetworkFeesBps calldata fees, bytes32 networkName) external override onlyPrimaryNetworkAuthority(networkName) {
+        // checks 
         require(fees.issueFee <= MAX_FEE_BPS, "Issue fee must be below 100%");
         require(fees.refreshFee <= MAX_FEE_BPS, "Refresh fee must be below 100%");
         require(fees.expireFee <= MAX_FEE_BPS, "Expiration fee must be below 100%");
         require(fees.verificationFee <= MAX_FEE_BPS, "Verification fee must be below 100%");
+
+        uint lastFeeUpdateTimestamp = _networks[networkName].lastFeeUpdateTimestamp;
+
+        if(lastFeeUpdateTimestamp != 0 && block.timestamp < lastFeeUpdateTimestamp + FEE_CONFIG_DELAY_TIME) {
+            revert GatewayNetwork_Fee_Cannot_Be_Updated_Yet(lastFeeUpdateTimestamp, lastFeeUpdateTimestamp + FEE_CONFIG_DELAY_TIME);
+        }
+
         _networks[networkName].networkFee = fees;
+        _networks[networkName].lastFeeUpdateTimestamp = block.timestamp;
+    }
+
+    function resetNetworkFeeUpdateTime(bytes32 networkName) external override onlySuperAdmin {
+        require(_networks[networkName].primaryAuthority != address(0), "Network does not exist");
+        _networks[networkName].lastFeeUpdateTimestamp = 0;
     }
 
     function networkHasFeature(bytes32 networkName, NetworkFeature feature) public view override returns (bool) {
