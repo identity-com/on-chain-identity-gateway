@@ -14,7 +14,7 @@ interface IERC721Expirable {
      * @param tokenId Gateway token id
      * @param tokenId Expiration timestamp
      */
-    function setExpiration(uint256 tokenId, uint256 timestamp, ChargeParties memory partiesInCharge) external payable;
+    function setExpiration(uint256 tokenId, uint256 timestamp, ChargeParties calldata partiesInCharge) external payable;
 
     /**
      * @dev Get the gateway token expiry

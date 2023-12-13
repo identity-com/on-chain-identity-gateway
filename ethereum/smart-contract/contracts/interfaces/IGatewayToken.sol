@@ -87,13 +87,15 @@ interface IGatewayToken {
 
     /// Token transfers are disabled
     error GatewayToken__TransferDisabled();
+    /// Token transfers are disabled
+    error GatewayToken__GatekeeperDoesNotMeetStakingRequirements();
 
     function mint(
         address to,
         uint256 network,
         uint expiration,
         uint256 mask,
-        ChargeParties memory partiesInCharge
+        ChargeParties calldata partiesInCharge
     ) external payable;
 
     /**

@@ -34,6 +34,7 @@ contract Gatekeeper is ParameterizedAccessControl, IGatewayGatekeeper {
 
     function initializeGatekeeperNetworkData(bytes32 networkName, address gatekeeper, GatekeeperStatus initialStatus) external onlyNetworkContract override {
         _gatekeeperStates[gatekeeper][networkName].initialized = true;
+        _gatekeeperStates[gatekeeper][networkName].lastFeeUpdateTimestamp = 0;
         updateGatekeeperStatus(networkName, gatekeeper, initialStatus);
     }
 
@@ -51,7 +52,14 @@ contract Gatekeeper is ParameterizedAccessControl, IGatewayGatekeeper {
             revert GatekeeperNotInNetwork(uint256(networkName), gatekeeper);
         }
 
+        uint lastUpdatedTimestamp = _gatekeeperStates[gatekeeper][networkName].lastFeeUpdateTimestamp;
+
+        if(lastUpdatedTimestamp != 0 && block.timestamp < lastUpdatedTimestamp + FEE_CONFIG_DELAY_TIME) {
+            revert GatekeeperFeeCannotBeUpdatedYet(lastUpdatedTimestamp, lastUpdatedTimestamp + FEE_CONFIG_DELAY_TIME);
+        }
+
         _gatekeeperStates[gatekeeper][networkName].fees = fees;
+        _gatekeeperStates[gatekeeper][networkName].lastFeeUpdateTimestamp = block.timestamp;
     }
 
     function removeGatekeeper(bytes32 networkName, address gatekeeper) external onlyNetworkContract override {
