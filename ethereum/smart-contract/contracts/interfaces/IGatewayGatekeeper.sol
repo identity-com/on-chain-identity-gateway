@@ -20,14 +20,19 @@ abstract contract  IGatewayGatekeeper {
         bool initialized;
         GatekeeperStatus status;
         GatekeeperFees fees;
+        uint256 lastFeeUpdateTimestamp;
     }
 
     event GatekeeperStatusChanged(GatekeeperStatus oldStatus, GatekeeperStatus newStatus);
 
     error GatekeeperNotInNetwork(uint networkId, address gatekeeper);
+    error GatekeeperFeeCannotBeUpdatedYet(uint lastUpdateTimestamp, uint nextAvalibleUpdateTimestamp);
     /**
      *@dev A mapping of the primaryAuthority of a gatekeeper, of a mapping of the gatekeepers configuration by networkId
      */
+
+    uint256 public FEE_CONFIG_DELAY_TIME = 7 days;
+
     mapping(address => mapping(bytes32 => GatekeeperNetworkData)) internal _gatekeeperStates;
 
     function setNetworkContractAddress(address gatewayNetworkContract) external virtual;

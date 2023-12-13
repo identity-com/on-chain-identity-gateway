@@ -1,6 +1,7 @@
 import { ethers, upgrades } from 'hardhat';
 import { BigNumber, BigNumberish, Contract, PopulatedTransaction, utils } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { keccak256 } from '@ethersproject/keccak256';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { toBytes32 } from './utils';
@@ -90,7 +91,8 @@ describe('GatewayToken', async () => {
         networkFeatureMask: 0,
         networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0},
         supportedToken: supportedToken ? supportedToken : ZERO_ADDRESS,
-        gatekeepers: gatekeepers ? gatekeepers : []
+        gatekeepers: gatekeepers ? gatekeepers : [],
+        lastFeeUpdateTimestamp: 0
     }
   }
 
@@ -174,7 +176,6 @@ describe('GatewayToken', async () => {
     gkn1 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-1'));
     gkn2 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-2'));
     gkn3 = await gatewayNetwork.getNetworkId(utils.formatBytes32String('GKN-3'));
-
   });
 
   describe('Deployment Tests', async () => {
@@ -1473,6 +1474,7 @@ describe('GatewayToken', async () => {
       return receipt;
     };
 
+
     it('cannot add some other contract as a charge caller if not an admin', async () => {
       // A charge caller is a contract that is permitted to ask the charge handler to charge a user
       await expect(
@@ -1496,6 +1498,30 @@ describe('GatewayToken', async () => {
     })
 
     context('ETH', () => {
+
+      beforeEach('reset gatekeepers', async () => {
+  
+        // re-create gatekeeper network
+        const networkOne = getNetwork(identityCom.address, 'GKN-1');
+  
+  
+        const networkOneFeeBalance = await gatewayNetwork.networkFeeBalances(networkOne.name);
+  
+        // withdraw fees from networks
+        if(networkOneFeeBalance.gt(0)) { await gatewayNetwork.connect(identityCom).withdrawNetworkFees(networkOne.name, {gasLimit: 300000 })}
+
+  
+        // remove networks gatekeeper and close networks
+        await gatewayNetwork.connect(identityCom).removeGatekeeper(gatekeeper.address, networkOne.name);
+  
+        await gatewayNetwork.connect(identityCom).closeNetwork(networkOne.name);
+    
+        // recreate networks so fees can be updated in each test
+        await gatewayNetwork.connect(identityCom).createNetwork(networkOne);
+    
+        await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-1'));
+      });
+
       it('can charge ETH through a forwarded call', async () => {
         const charge = makeWeiCharge(ethers.utils.parseEther('0.1'));
         const balanceBefore = await alice.getBalance();
@@ -1508,7 +1534,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'), { gasLimit: 1000000 });
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
 
@@ -1588,8 +1614,12 @@ describe('GatewayToken', async () => {
           verificationFee: 1000, // 10% fee [(100 bps) / 10_000]
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(GATEKEEPER_FEES, utils.formatBytes32String('GKN-1'));
-        await gatewayNetwork.connect(identityCom).updateFees(NETWORK_FEES_IN_BPS, utils.formatBytes32String('GKN-1'));
+        // Fast forward blocks so that fees can be updated again
+        const networkFeeConfigDelayInSeconds = await gatewayNetwork.FEE_CONFIG_DELAY_TIME();
+        await time.increase(networkFeeConfigDelayInSeconds.toNumber());
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(GATEKEEPER_FEES, utils.formatBytes32String('GKN-1'), { gasLimit: 1000000 });
+        await gatewayNetwork.connect(identityCom).updateFees(NETWORK_FEES_IN_BPS, utils.formatBytes32String('GKN-1'), { gasLimit: 1000000 });
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
@@ -1657,7 +1687,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'), { gasLimit: 1000000 });
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
@@ -1680,7 +1710,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'), { gasLimit: 1000000 });
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
 
@@ -1701,7 +1731,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'), { gasLimit: 1000000 });
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
@@ -1723,7 +1753,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'), { gasLimit: 1000000 });
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn1, 0, 0, charge.partiesInCharge);
 
@@ -1742,7 +1772,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'), { gasLimit: 1000000 });
 
         const shouldFail = gatewayToken.connect(alice).mint(alice.address, gkn1, 0, 0, charge.partiesInCharge, { value: charge.value });
         await expect(shouldFail).to.be.rejectedWith(/sender doesn't have enough funds/);
@@ -1759,6 +1789,32 @@ describe('GatewayToken', async () => {
         await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-3'));
       });
 
+      beforeEach('reset gatekeepers', async () => {
+  
+        // re-create gatekeeper network
+        const networkThree = getNetwork(identityCom.address, 'GKN-3', dummyErc20Contract.address);
+  
+        const networkThreeFeeBalance = await gatewayNetwork.networkFeeBalances(networkThree.name);
+  
+        // withdraw fees from networks if still present
+        if(networkThreeFeeBalance.gt(0)) { await gatewayNetwork.connect(identityCom).withdrawNetworkFees(networkThree.name, {gasLimit: 300000 })}
+  
+        // remove networks gatekeeper and close network
+
+        const isGatekeeper = await gatewayNetwork.connect(identityCom).isGateKeeper(networkThree.name, gatekeeper.address);
+
+        if(isGatekeeper) {
+          await gatewayNetwork.connect(identityCom).removeGatekeeper(gatekeeper.address, networkThree.name);
+        }
+
+        await gatewayNetwork.connect(identityCom).closeNetwork(networkThree.name);
+    
+        // recreate networks so fees can be updated in each test
+        await gatewayNetwork.connect(identityCom).createNetwork(networkThree);
+    
+        await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), networkThree.name);
+      });
+
       it('can charge ERC20 - rejects if the ERC20 allowance was not made', async () => {
         const charge = makeERC20Charge(BigNumber.from('100'), erc20.address, alice.address);
 
@@ -1769,7 +1825,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'), { gasLimit: 1000000 });
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
@@ -1791,7 +1847,7 @@ describe('GatewayToken', async () => {
         }
 
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'), { gasLimit: 1000000 });
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
@@ -1815,7 +1871,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'), { gasLimit: 1000000 });
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
@@ -1840,7 +1896,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'), { gasLimit: 1000000 });
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
@@ -1865,7 +1921,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'), { gasLimit: 1000000 });
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
@@ -1889,7 +1945,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'), { gasLimit: 1000000 });
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
@@ -1905,6 +1961,7 @@ describe('GatewayToken', async () => {
 
         await dummyErc20Contract.connect(identityCom).transfer(alice.address, BigNumber.from('100'));
 
+        const balanceBefore = await erc20.balanceOf(alice.address);
         // Alice allows the gateway token contract to transfer 100 to the gatekeeper
         await erc20.connect(alice).approve(chargeHandler.address, charge.value);
 
@@ -2043,8 +2100,12 @@ describe('GatewayToken', async () => {
           verificationFee: 1000, // 10% fee [(100 bps) / 10_000]
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
-        await gatewayNetwork.connect(identityCom).updateFees(NETWORK_FEES_IN_BPS, utils.formatBytes32String('GKN-3'));
+        // Fast forward blocks so that fees can be updated again
+        const networkFeeConfigDelayInSeconds = await gatewayNetwork.FEE_CONFIG_DELAY_TIME();
+        await time.increase(networkFeeConfigDelayInSeconds.toNumber());
+
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'), { gasLimit: 1000000 });
+        await gatewayNetwork.connect(identityCom).updateFees(NETWORK_FEES_IN_BPS, utils.formatBytes32String('GKN-3'), { gasLimit: 1000000 });
 
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn3, 0, 0, charge.partiesInCharge);
@@ -2089,7 +2150,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'), { gasLimit: 1000000 });
 
         // create a mint transaction for bob
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn3, 0, 0, charge.partiesInCharge);
@@ -2124,7 +2185,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-3'), { gasLimit: 1000000 });
 
         // create a mint transaction for bob
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(bob.address, gkn3, 0, 0, charge.partiesInCharge);
@@ -2168,7 +2229,7 @@ describe('GatewayToken', async () => {
           verificationFee: charge.value
         }
 
-        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-4'));
+        await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-4'), { gasLimit: 1000000 });
         
         // create a mint transaction
         const tx = await gatewayToken.connect(gatekeeper).populateTransaction.mint(alice.address, gkn4, 0, 0, charge.partiesInCharge);
@@ -2208,6 +2269,30 @@ describe('GatewayToken', async () => {
   });
 
   describe('Test gateway token future version upgradeability', async () => {
+
+    beforeEach('reset gatekeepers', async () => {
+  
+      // re-create gatekeeper network
+      const networkOne = getNetwork(identityCom.address, 'GKN-1');
+
+
+      const networkOneFeeBalance = await gatewayNetwork.networkFeeBalances(networkOne.name);
+
+      // withdraw fees from networks
+      if(networkOneFeeBalance.gt(0)) { await gatewayNetwork.connect(identityCom).withdrawNetworkFees(networkOne.name, {gasLimit: 300000 })}
+
+
+      // remove networks gatekeeper and close networks
+      await gatewayNetwork.connect(identityCom).removeGatekeeper(gatekeeper.address, networkOne.name);
+
+      await gatewayNetwork.connect(identityCom).closeNetwork(networkOne.name);
+  
+      // recreate networks so fees can be updated in each test
+      await gatewayNetwork.connect(identityCom).createNetwork(networkOne);
+  
+      await gatewayNetwork.connect(identityCom).addGatekeeper(gatekeeper.address.toString(), utils.formatBytes32String('GKN-1'));
+    });
+
     it('upgrades the gateway token contract to v2', async () => {
       const gatewayTokenV2Factory = await ethers.getContractFactory('GatewayTokenUpgradeTest');
       await upgrades.upgradeProxy(gatewayToken.address, gatewayTokenV2Factory);
@@ -2219,8 +2304,8 @@ describe('GatewayToken', async () => {
     });
 
     it('can issue a token with a positive expiry', async () => {
-      const currentDate = Math.ceil(Date.now() / 1000);
-      const tomorrow = currentDate + 86_400;
+      const currentDate = await time.latest();
+      const tomorrow = currentDate + (86_400);
 
       const FEES: IGatewayGatekeeper.GatekeeperFeesStruct = {
         issueFee: 0,
@@ -2229,7 +2314,7 @@ describe('GatewayToken', async () => {
         verificationFee: 0
       }
       // Remove gatekeeper fees
-      await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'));
+      await gatekeeperContract.connect(gatekeeper).updateFees(FEES, utils.formatBytes32String('GKN-1'), { gasLimit: 1000000 });
 
       const wallet = randomWallet();
       await gatewayToken.connect(gatekeeper).mint(wallet.address, gkn1, tomorrow, 0, {

@@ -1,6 +1,7 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { 
     GatewayNetwork, 
     GatewayNetwork__factory, 
@@ -40,7 +41,8 @@ describe('Gatekeeper', () => {
             networkFeatureMask: 0,
             networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0},
             supportedToken: ZERO_ADDRESS,
-            gatekeepers: gatekeepers ? gatekeepers : []
+            gatekeepers: gatekeepers ? gatekeepers : [],
+            lastFeeUpdateTimestamp: 0
         }
     }
 
@@ -87,6 +89,7 @@ describe('Gatekeeper', () => {
 
             expect(gatekeeperNetworkData.status).to.be.eq(1);
             expect(gatekeeperNetworkData.initialized).to.be.true;
+            expect(gatekeeperNetworkData.lastFeeUpdateTimestamp).to.eq(0);
         });
 
         it('gatekeeper can only be added by the network contract', async () => {
@@ -113,12 +116,43 @@ describe('Gatekeeper', () => {
             }
 
             await gatekeeperContract.connect(gatekeeper).updateFees(newFees, defaultNetwork.name, {gasLimit: 300000});
-            const updatedFees = (await gatekeeperContract.getGatekeeperNetworkData(defaultNetwork.name, gatekeeper.address)).fees;
+            const gatekeeperNetworkData = await gatekeeperContract.getGatekeeperNetworkData(defaultNetwork.name, gatekeeper.address);
+            const updatedFees = gatekeeperNetworkData.fees
 
+            expect(gatekeeperNetworkData.lastFeeUpdateTimestamp).to.be.eq(await time.latest());
             expect(updatedFees.issueFee).to.be.eq(newFees.issueFee);
             expect(updatedFees.refreshFee).to.be.eq(newFees.refreshFee);
             expect(updatedFees.expireFee).to.be.eq(newFees.expireFee);
             expect(updatedFees.verificationFee).to.be.eq(newFees.verificationFee);
+        });
+
+        it('gatekeepers cannot update fees on a network that recently updated fees', async () => {
+            /// given 
+            const defaultFees = (await gatekeeperContract.getGatekeeperNetworkData(defaultNetwork.name, gatekeeper.address)).fees;
+            expect(defaultFees.issueFee).to.be.eq(0);
+            expect(defaultFees.refreshFee).to.be.eq(0);
+            expect(defaultFees.expireFee).to.be.eq(0);
+            expect(defaultFees.verificationFee).to.be.eq(0);
+
+            // when
+            const newFees: IGatewayGatekeeper.GatekeeperFeesStruct =  {
+                issueFee: 100,
+                refreshFee: 200,
+                expireFee: 300,
+                verificationFee: 400
+            }
+
+            await gatekeeperContract.connect(gatekeeper).updateFees(newFees, defaultNetwork.name, {gasLimit: 300000});
+            const gatekeeperNetworkData = await gatekeeperContract.getGatekeeperNetworkData(defaultNetwork.name, gatekeeper.address);
+
+            expect(gatekeeperNetworkData.lastFeeUpdateTimestamp).to.be.eq(await time.latest());
+
+            const gatekeeperFeeConfigDelay = await gatekeeperContract.FEE_CONFIG_DELAY_TIME();
+
+            // fast forward to the future where fees still can't be updated
+            await time.increaseTo(gatekeeperNetworkData.lastFeeUpdateTimestamp.add(gatekeeperFeeConfigDelay.sub(100)));
+
+            await expect(gatekeeperContract.connect(gatekeeper).updateFees(newFees, defaultNetwork.name, {gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperContract, 'GatekeeperFeeCannotBeUpdatedYet');
         });
 
         it('gatekeepers cannot update fees on the networks they are not a part of', async () => {

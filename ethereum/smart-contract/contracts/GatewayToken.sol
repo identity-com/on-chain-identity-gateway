@@ -70,7 +70,7 @@ contract GatewayToken is
     address internal _gatewayStakingContract;
 
     IChargeHandler internal _chargeHandler;
-
+    
     modifier checkGatekeeperHasMinimumStake(address gatekeeper) {
         bool gateKeeperHasMinimumStake = IGatewayStaking(_gatewayStakingContract).hasMinimumGatekeeperStake(gatekeeper);
 

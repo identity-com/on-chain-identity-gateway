@@ -1,6 +1,7 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 import {
     GatewayNetwork, 
     Gatekeeper,
@@ -13,7 +14,7 @@ import {
     DummyERC20__factory,
 } from '../typechain-types' ;
 import { BigNumberish, utils } from 'ethers';
-import { formatEther, parseEther } from 'ethers/lib/utils';
+import { parseEther } from 'ethers/lib/utils';
 
 describe('GatewayNetwork', () => {
     let primaryAuthority: SignerWithAddress;
@@ -40,7 +41,8 @@ describe('GatewayNetwork', () => {
             networkFeatureMask: 0,
             networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0},
             supportedToken: supportedToken ? supportedToken : ZERO_ADDRESS,
-            gatekeepers: gatekeepers ? gatekeepers : []
+            gatekeepers: gatekeepers ? gatekeepers : [],
+            lastFeeUpdateTimestamp: 0
         }
     }
 
@@ -86,6 +88,7 @@ describe('GatewayNetwork', () => {
             expect(network.primaryAuthority).to.equal(primaryAuthority.address);
             expect(network.supportedToken).to.equal(supportedToken);
             expect(isGatekeeper).to.be.false;
+            expect(network.lastFeeUpdateTimestamp).to.equal(await time.latest());
         });
 
         it('creates a new network with gatekeepers', async () => {
@@ -254,6 +257,9 @@ describe('GatewayNetwork', () => {
             expect(networkState.networkFee.refreshFee).to.eq(0);
             expect(networkState.networkFee.expireFee).to.eq(0);
 
+            const feeConfigDelayInSeconds = await gatekeeperNetworkContract.FEE_CONFIG_DELAY_TIME();
+            await time.increase(feeConfigDelayInSeconds.toNumber());
+
             // when
             await gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000});
             
@@ -264,6 +270,7 @@ describe('GatewayNetwork', () => {
             expect(updatedNetworkState.networkFee.verificationFee).to.eq(updatedFees.verificationFee);
             expect(updatedNetworkState.networkFee.refreshFee).to.eq(updatedFees.refreshFee);
             expect(updatedNetworkState.networkFee.expireFee).to.eq(updatedFees.expireFee);
+            expect(updatedNetworkState.lastFeeUpdateTimestamp).to.equal(await time.latest());
         });
         it('cannot add a gatekeeper that does not have the minimum amount of global stake', async () => {
             // given
@@ -311,6 +318,9 @@ describe('GatewayNetwork', () => {
             expect(networkState.networkFee.refreshFee).to.eq(0);
             expect(networkState.networkFee.expireFee).to.eq(0);
 
+            const feeConfigDelayInSeconds = await gatekeeperNetworkContract.FEE_CONFIG_DELAY_TIME();
+            await time.increase(feeConfigDelayInSeconds.toNumber());
+
             // then
             await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Issue fee must be below 100%");
 
@@ -322,6 +332,22 @@ describe('GatewayNetwork', () => {
 
             updatedFees = {issueFee: 0, verificationFee: 0, expireFee: 0, refreshFee: 10001};
             await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.rejectedWith("Refresh fee must be below 100%");
+        });
+
+        it('cannot update network fees if not enough time has passed since previous fee changes', async () => {
+            //given
+            let updatedFees = {issueFee: 100, verificationFee: 100, expireFee: 100, refreshFee: 100};
+            const networkId = await gatekeeperNetworkContract.getNetworkId(defaultNetwork.name);
+            const networkState = await gatekeeperNetworkContract.getNetwork(networkId);
+
+            expect(networkState.networkFee.issueFee).to.eq(0);
+            expect(networkState.networkFee.verificationFee).to.eq(0);
+            expect(networkState.networkFee.refreshFee).to.eq(0);
+            expect(networkState.networkFee.expireFee).to.eq(0);
+            
+
+            // then
+            await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperNetworkContract, 'GatewayNetwork_Fee_Cannot_Be_Updated_Yet');
         });
 
         it('cannot update the status of a gatekeeper if not primary authority', async () => {
@@ -394,7 +420,7 @@ describe('GatewayNetwork', () => {
 
         it('cannot delete a network with fees in vault', async () => {
             //given
-            await gatekeeperNetworkContract.connect(networkFeePayer).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(networkFeePayer).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000});
 
             const initialFeeBalance = await gatekeeperNetworkContract.networkFeeBalances(defaultNetwork.name);
             
@@ -426,7 +452,7 @@ describe('GatewayNetwork', () => {
             expect(initialFeeBalance).to.eq(0);
 
             //when
-            await gatekeeperNetworkContract.connect(networkFeePayer).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(networkFeePayer).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000});
             
             //then
             const finalFeeBalance = await gatekeeperNetworkContract.networkFeeBalances(defaultNetwork.name);
@@ -451,7 +477,7 @@ describe('GatewayNetwork', () => {
 
 
             //when
-            await gatekeeperNetworkContract.connect(networkFeePayer).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, networkWithErc20.name, networkFeePayer.address, { gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(networkFeePayer).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, networkWithErc20.name, networkFeePayer.address, { gasLimit: 300000});
 
             //then
             const finalFeeBalance = await gatekeeperNetworkContract.networkFeeBalances(networkWithErc20.name);
@@ -463,7 +489,7 @@ describe('GatewayNetwork', () => {
 
         it('primary authority can withdraw receive network fees in ETH', async () => {
             //given
-            await gatekeeperNetworkContract.connect(networkFeePayer).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(networkFeePayer).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000});
 
             const initialFeeBalance = await gatekeeperNetworkContract.networkFeeBalances(defaultNetwork.name);
             const initialEthBalance = await ethers.provider.getBalance(primaryAuthority.address);
@@ -489,7 +515,7 @@ describe('GatewayNetwork', () => {
             await dummyErc20Contract.connect(deployer).transfer(networkFeePayer.address, DEFAULT_TEST_FEE_AMOUNT.mul(3), { gasLimit: 300000 });
             await dummyErc20Contract.connect(networkFeePayer).approve(gatekeeperNetworkContract.address, DEFAULT_TEST_FEE_AMOUNT, { gasLimit: 300000 });
 
-            await gatekeeperNetworkContract.connect(networkFeePayer).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, networkWithErc20.name, networkFeePayer.address, { gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(networkFeePayer).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, networkWithErc20.name, networkFeePayer.address, { gasLimit: 300000});
 
             const initialFeeBalance = await gatekeeperNetworkContract.networkFeeBalances(networkWithErc20.name);
             const initialErc20Balance = await dummyErc20Contract.balanceOf(primaryAuthority.address);
@@ -508,6 +534,42 @@ describe('GatewayNetwork', () => {
             expect(finalErc20Balance.sub(initialErc20Balance)).to.be.greaterThanOrEqual(DEFAULT_TEST_FEE_AMOUNT.mul(99).div(100));
         });
 
+        it('can reset a networks lastFeeUpdated time if super admin', async () => {
+            //given
+            let updatedFees = {issueFee: 100, verificationFee: 100, expireFee: 100, refreshFee: 100};
+            const networkId = await gatekeeperNetworkContract.getNetworkId(defaultNetwork.name);
+            const networkState = await gatekeeperNetworkContract.getNetwork(networkId);
+
+            expect(networkState.networkFee.issueFee).to.eq(0);
+            expect(networkState.networkFee.verificationFee).to.eq(0);
+            expect(networkState.networkFee.refreshFee).to.eq(0);
+            expect(networkState.networkFee.expireFee).to.eq(0);
+            
+
+            await expect(gatekeeperNetworkContract.connect(primaryAuthority).updateFees(updatedFees, defaultNetwork.name, {gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperNetworkContract, 'GatewayNetwork_Fee_Cannot_Be_Updated_Yet');
+
+            // then
+            await gatekeeperNetworkContract.connect(deployer).resetNetworkFeeUpdateTime(defaultNetwork.name);
+            
+            const updatedNetworkState = await gatekeeperNetworkContract.getNetwork(networkId);
+            expect(updatedNetworkState.lastFeeUpdateTimestamp).to.eq(0);
+        })
+
+        it('cannot reset a networks lastFeeUpdated time if not super admin', async () => {
+            //given
+            let updatedFees = {issueFee: 100, verificationFee: 100, expireFee: 100, refreshFee: 100};
+            const networkId = await gatekeeperNetworkContract.getNetworkId(defaultNetwork.name);
+            const networkState = await gatekeeperNetworkContract.getNetwork(networkId);
+
+            expect(networkState.networkFee.issueFee).to.eq(0);
+            expect(networkState.networkFee.verificationFee).to.eq(0);
+            expect(networkState.networkFee.refreshFee).to.eq(0);
+            expect(networkState.networkFee.expireFee).to.eq(0);
+            
+
+            await expect(gatekeeperNetworkContract.connect(primaryAuthority).resetNetworkFeeUpdateTime(defaultNetwork.name)).to.be.revertedWithCustomError(gatekeeperNetworkContract, 'Common__NotSuperAdmin');
+        })
+
 
         it('cannot send ETH directly to network contract', async () => {
             await expect(networkFeePayer.sendTransaction({to: gatekeeperNetworkContract.address, value: DEFAULT_TEST_FEE_AMOUNT})).to.be.revertedWithCustomError(gatekeeperNetworkContract, "GatewayNetwork_Cannot_Be_Sent_Eth_Directly");
@@ -515,11 +577,11 @@ describe('GatewayNetwork', () => {
 
         it('cannot pay fees on a network that does not exist', async () => {
             const nonExisitantNetworkName = utils.formatBytes32String('not-real-network');
-            await expect(gatekeeperNetworkContract.connect(networkFeePayer).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, nonExisitantNetworkName, networkFeePayer.address, { gasLimit: 300000})).to.be.revertedWith("Network does not exist");
+            await expect(gatekeeperNetworkContract.connect(networkFeePayer).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, nonExisitantNetworkName, networkFeePayer.address, { gasLimit: 300000})).to.be.revertedWith("Network does not exist");
         });
 
         it('cannot pay fees in ETH if the feeAmount does not match msg.value', async () => {
-            await expect(gatekeeperNetworkContract.connect(networkFeePayer).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT.sub(10), gasLimit: 300000})).to.be.revertedWith("The feeAmount in native eth must equal the eth sent in msg.value");
+            await expect(gatekeeperNetworkContract.connect(networkFeePayer).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT.sub(10), gasLimit: 300000})).to.be.revertedWith("The feeAmount in native eth must equal the eth sent in msg.value");
         });
 
         it('cannot pay fees in ERC-20 if the msg.value (eth sent) is non-zero', async () => {
@@ -527,7 +589,7 @@ describe('GatewayNetwork', () => {
             await dummyErc20Contract.connect(deployer).transfer(networkFeePayer.address, DEFAULT_TEST_FEE_AMOUNT.mul(3), { gasLimit: 300000 });
             await dummyErc20Contract.connect(networkFeePayer).approve(gatekeeperNetworkContract.address, DEFAULT_TEST_FEE_AMOUNT, { gasLimit: 300000 });
 
-            await expect(gatekeeperNetworkContract.connect(networkFeePayer).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, networkWithErc20.name, networkFeePayer.address, { gasLimit: 300000, value: DEFAULT_TEST_FEE_AMOUNT})).to.be.revertedWith("No eth can be transferred for fees in ERC-20");
+            await expect(gatekeeperNetworkContract.connect(networkFeePayer).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, networkWithErc20.name, networkFeePayer.address, { gasLimit: 300000, value: DEFAULT_TEST_FEE_AMOUNT})).to.be.revertedWith("No eth can be transferred for fees in ERC-20");
         });
 
         it('cannot withdraw network fees if network has no fee balance', async () => {
@@ -546,7 +608,7 @@ describe('GatewayNetwork', () => {
             expect(initialFeeBalance).to.eq(0);
 
             //then
-            await expect(gatekeeperNetworkContract.connect(alice).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperNetworkContract, 'Common__Unauthorized');;
+            await expect(gatekeeperNetworkContract.connect(alice).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperNetworkContract, 'Common__Unauthorized');;
         });
 
         it('cannot withdraw ETH network fees if not primary authority', async () => {
@@ -557,7 +619,7 @@ describe('GatewayNetwork', () => {
             expect(initialFeeBalance).to.eq(0);
 
             //when
-            await gatekeeperNetworkContract.connect(networkFeePayer).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(networkFeePayer).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, defaultNetwork.name, ZERO_ADDRESS, {value: DEFAULT_TEST_FEE_AMOUNT, gasLimit: 300000});
 
             // then
             await expect(gatekeeperNetworkContract.connect(alice).withdrawNetworkFees(defaultNetwork.name, {gasLimit: 300000 })).to.be.revertedWith("Only the primary authority can perform this action");
@@ -578,7 +640,7 @@ describe('GatewayNetwork', () => {
 
 
             //when
-            await gatekeeperNetworkContract.connect(networkFeePayer).receiveNetworkFees(DEFAULT_TEST_FEE_AMOUNT, networkWithErc20.name, networkFeePayer.address, { gasLimit: 300000});
+            await gatekeeperNetworkContract.connect(networkFeePayer).transferNetworkFees(DEFAULT_TEST_FEE_AMOUNT, networkWithErc20.name, networkFeePayer.address, { gasLimit: 300000});
 
             //then
             await expect(gatekeeperNetworkContract.connect(alice).withdrawNetworkFees(networkWithErc20.name, {gasLimit: 300000 })).to.be.revertedWith("Only the primary authority can perform this action");
