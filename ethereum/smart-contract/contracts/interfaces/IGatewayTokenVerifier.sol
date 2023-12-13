@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.19;
 pragma experimental ABIEncoderV2;
-import {ChargeParties} from "../library/Charge.sol";
-
+=
 
 interface IGatewayTokenVerifier {
     /**

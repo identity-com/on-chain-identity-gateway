@@ -2,7 +2,6 @@
 pragma solidity >=0.8.19;
 
 import {IGatewayTokenVerifier} from "./interfaces/IGatewayTokenVerifier.sol";
-import {ChargeParties} from "./library/Charge.sol";
 
 
 abstract contract Gated {
