@@ -491,9 +491,6 @@ contract GatewayToken is
         } else if(feeType == FeeType.REFRESH) {
             totalFeeAmount = gatekeeperData.fees.refreshFee;
             networkFeeBps = networkData.networkFee.refreshFee;
-        } else if(feeType == FeeType.VERIFY) {
-            totalFeeAmount = gatekeeperData.fees.verificationFee;
-            networkFeeBps = networkData.networkFee.verificationFee;
         } else if(feeType == FeeType.FREEZE) {
             totalFeeAmount = gatekeeperData.fees.freezeFee;
             networkFeeBps = networkData.networkFee.freezeFee;

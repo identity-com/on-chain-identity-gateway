@@ -13,7 +13,6 @@ abstract contract  IGatewayGatekeeper {
         uint256 issueFee;
         uint256 refreshFee;
         uint256 expireFee;
-        uint256 verificationFee;
         uint256 freezeFee;
     }
 

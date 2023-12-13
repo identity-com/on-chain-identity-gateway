@@ -12,7 +12,6 @@ abstract contract  IGatewayNetwork {
         uint16 issueFee;
         uint16 refreshFee;
         uint16 expireFee;
-        uint16 verificationFee;
         uint16 freezeFee;
     }
 
