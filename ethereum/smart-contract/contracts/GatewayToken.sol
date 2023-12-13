@@ -13,6 +13,7 @@ import {IERC3525} from "@solvprotocol/erc-3525/IERC3525.sol";
 import {TokenBitMask} from "./TokenBitMask.sol";
 import {IGatewayToken} from "./interfaces/IGatewayToken.sol";
 import {IGatewayNetwork} from "./interfaces/IGatewayNetwork.sol";
+import { IGatewayStaking } from "./interfaces/IGatewayStaking.sol";
 import {IGatewayGatekeeper} from "./interfaces/IGatewayGatekeeper.sol";
 import {IERC721Freezable} from "./interfaces/IERC721Freezable.sol";
 import {IERC721Expirable} from "./interfaces/IERC721Expirable.sol";
@@ -65,8 +66,19 @@ contract GatewayToken is
     address internal _gatewayNetworkContract;
     // Gatekeeper contract address
     address internal _gatekeeperContract;
+    // Gatekeeper contract address
+    address internal _gatewayStakingContract;
 
     IChargeHandler internal _chargeHandler;
+    
+    modifier checkGatekeeperHasMinimumStake(address gatekeeper) {
+        bool gateKeeperHasMinimumStake = IGatewayStaking(_gatewayStakingContract).hasMinimumGatekeeperStake(gatekeeper);
+
+        if(!gateKeeperHasMinimumStake) {
+            revert GatewayToken__GatekeeperDoesNotMeetStakingRequirements();
+        }
+        _;
+    }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor is "empty" as we are using the proxy pattern,
@@ -84,7 +96,8 @@ contract GatewayToken is
         address chargeHandler,
         address[] calldata trustedForwarders,
         address _gatewayNetworkAddress,
-        address _gatekeeperContractAddress
+        address _gatekeeperContractAddress,
+        address _gatewayStakingAddress
     ) external initializer {
         // Check for zero addresses
         if (superAdmin == address(0)) {
@@ -107,6 +120,10 @@ contract GatewayToken is
             revert Common__MissingAccount();
         }
 
+        if (_gatewayStakingAddress == address(0)) {
+            revert Common__MissingAccount();
+        }
+
         // Check for zero addresses in the trusted forwarders array
         for (uint256 i = 0; i < trustedForwarders.length; i++) {
             if (trustedForwarders[i] == address(0)) {
@@ -121,6 +138,7 @@ contract GatewayToken is
         _setChargeHandler(chargeHandler);
         _gatewayNetworkContract = _gatewayNetworkAddress;
         _gatekeeperContract = _gatekeeperContractAddress;
+        _gatewayStakingContract = _gatewayStakingAddress;
         _superAdmins[superAdmin] = true;
 
         emit GatewayTokenInitialized(name, symbol, superAdmin, flagsStorage, chargeHandler, trustedForwarders);
@@ -423,7 +441,7 @@ contract GatewayToken is
         emit ChargeHandlerUpdated(chargeHandler);
     }
 
-    function _handleCharge(FeeType feeType, uint networkId, address gatekeeper, ChargeParties calldata partiesInCharge) internal {
+    function _handleCharge(FeeType feeType, uint networkId, address gatekeeper, ChargeParties calldata partiesInCharge) internal checkGatekeeperHasMinimumStake(gatekeeper){
         IGatewayGatekeeper.GatekeeperNetworkData memory gatekeeperData = IGatewayGatekeeper(_gatekeeperContract).getGatekeeperNetworkData(bytes32(networkId), gatekeeper);
         IGatewayNetwork.GatekeeperNetworkData memory networkData = IGatewayNetwork(_gatewayNetworkContract).getNetwork(networkId);
 
