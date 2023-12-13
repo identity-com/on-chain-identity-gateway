@@ -194,7 +194,8 @@ contract GatewayNetwork is ParameterizedAccessControl, IGatewayNetwork {
         require(fees.issueFee <= MAX_FEE_BPS, "Issue fee must be below 100%");
         require(fees.refreshFee <= MAX_FEE_BPS, "Refresh fee must be below 100%");
         require(fees.expireFee <= MAX_FEE_BPS, "Expiration fee must be below 100%");
-        require(fees.verificationFee <= MAX_FEE_BPS, "Verification fee must be below 100%");
+        require(fees.freezeFee <= MAX_FEE_BPS, "Freeze fee must be below 100%");
+
 
         uint lastFeeUpdateTimestamp = _networks[networkName].lastFeeUpdateTimestamp;
 

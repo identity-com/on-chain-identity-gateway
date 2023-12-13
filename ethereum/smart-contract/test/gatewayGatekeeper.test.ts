@@ -39,7 +39,7 @@ describe('Gatekeeper', () => {
             name: utils.formatBytes32String('default'),
             passExpireDurationInSeconds: passExpireDurationInSeconds ? passExpireDurationInSeconds : DEFAULT_PASS_EXPIRE_TIME_IN_SECONDS,
             networkFeatureMask: 0,
-            networkFee: {verificationFee: 0, issueFee: 0, refreshFee: 0, expireFee: 0},
+            networkFee: {issueFee: 0, refreshFee: 0, expireFee: 0, freezeFee: 0},
             supportedToken: ZERO_ADDRESS,
             gatekeepers: gatekeepers ? gatekeepers : [],
             lastFeeUpdateTimestamp: 0
@@ -105,14 +105,13 @@ describe('Gatekeeper', () => {
             expect(defaultFees.issueFee).to.be.eq(0);
             expect(defaultFees.refreshFee).to.be.eq(0);
             expect(defaultFees.expireFee).to.be.eq(0);
-            expect(defaultFees.verificationFee).to.be.eq(0);
 
             // when
             const newFees: IGatewayGatekeeper.GatekeeperFeesStruct =  {
                 issueFee: 100,
                 refreshFee: 200,
                 expireFee: 300,
-                verificationFee: 400
+                freezeFee: 50
             }
 
             await gatekeeperContract.connect(gatekeeper).updateFees(newFees, defaultNetwork.name, {gasLimit: 300000});
@@ -123,7 +122,6 @@ describe('Gatekeeper', () => {
             expect(updatedFees.issueFee).to.be.eq(newFees.issueFee);
             expect(updatedFees.refreshFee).to.be.eq(newFees.refreshFee);
             expect(updatedFees.expireFee).to.be.eq(newFees.expireFee);
-            expect(updatedFees.verificationFee).to.be.eq(newFees.verificationFee);
         });
 
         it('gatekeepers cannot update fees on a network that recently updated fees', async () => {
@@ -132,14 +130,13 @@ describe('Gatekeeper', () => {
             expect(defaultFees.issueFee).to.be.eq(0);
             expect(defaultFees.refreshFee).to.be.eq(0);
             expect(defaultFees.expireFee).to.be.eq(0);
-            expect(defaultFees.verificationFee).to.be.eq(0);
 
             // when
             const newFees: IGatewayGatekeeper.GatekeeperFeesStruct =  {
                 issueFee: 100,
                 refreshFee: 200,
                 expireFee: 300,
-                verificationFee: 400
+                freezeFee: 500
             }
 
             await gatekeeperContract.connect(gatekeeper).updateFees(newFees, defaultNetwork.name, {gasLimit: 300000});
@@ -161,7 +158,7 @@ describe('Gatekeeper', () => {
                 issueFee: 100,
                 refreshFee: 200,
                 expireFee: 300,
-                verificationFee: 400
+                freezeFee: 50
             }
             await expect(gatekeeperContract.connect(bob).updateFees(newFees, defaultNetwork.name, {gasLimit: 300000})).to.be.revertedWithCustomError(gatekeeperContract, 'GatekeeperNotInNetwork');
         });

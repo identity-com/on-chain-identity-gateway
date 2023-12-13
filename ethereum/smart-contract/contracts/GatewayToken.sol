@@ -198,7 +198,7 @@ contract GatewayToken is
         uint network,
         uint expiration,
         uint mask,
-        ChargeParties calldata partiesInCharge
+        ChargeParties memory partiesInCharge
     ) external payable virtual {
         // CHECKS
         _checkGatekeeper(network);
@@ -218,16 +218,18 @@ contract GatewayToken is
             _setBitMask(tokenId, mask);
         }
 
-        _issuingGatekeepers[tokenId] = _msgSender();
+        _issuingGatekeepers[tokenId] = gatekeeper;
+
 
         // INTERACTIONS
         _handleCharge(FeeType.ISSUE, network, gatekeeper, partiesInCharge);
     }
 
-    function revoke(uint tokenId) external virtual override {
+    function revoke(uint tokenId, ChargeParties memory partiesInCharge) external virtual override {
         _checkGatekeeper(slotOf(tokenId));
 
         _tokenStates[tokenId] = TokenState.REVOKED;
+
 
         emit Revoke(tokenId);
     }
@@ -236,7 +238,7 @@ contract GatewayToken is
      * @dev Triggers to freeze gateway token
      * @param tokenId Gateway token id
      */
-    function freeze(uint tokenId) external virtual {
+    function freeze(uint tokenId, ChargeParties memory partiesInCharge) external virtual {
         _checkGatekeeper(slotOf(tokenId));
 
         _freeze(tokenId);
@@ -246,10 +248,15 @@ contract GatewayToken is
      * @dev Triggers to unfreeze gateway token
      * @param tokenId Gateway token id
      */
-    function unfreeze(uint tokenId) external virtual {
+    function unfreeze(uint tokenId, ChargeParties memory partiesInCharge) external virtual {
         _checkGatekeeper(slotOf(tokenId));
 
         _unfreeze(tokenId);
+
+        address gatekeeper = _msgSender();
+        uint network = slotOf(tokenId);
+
+        _handleCharge(FeeType.FREEZE, network, gatekeeper, partiesInCharge);
     }
 
     /**
@@ -303,9 +310,8 @@ contract GatewayToken is
      *
      * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
      */
-    function verifyToken(address owner, uint network) external view virtual returns (bool) {
-        (, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, true);
-
+    function verifyToken(address owner, uint network) external virtual returns (bool) {
+        (uint[] memory tokenIds, uint count) = _getTokenIdsByOwnerAndNetwork(owner, network, true);
         return count > 0;
     }
 
@@ -314,8 +320,10 @@ contract GatewayToken is
      *
      * Checks owner has any token on gateway token contract, `tokenId` still active, and not expired.
      */
-    function verifyToken(uint tokenId) external view virtual returns (bool) {
-        return _existsAndActive(tokenId, false);
+    function verifyToken(uint tokenId) external virtual returns (bool) {
+        bool doesExistAndIsActive = _existsAndActive(tokenId, false);
+
+        return doesExistAndIsActive;
     }
 
     /**
@@ -441,7 +449,7 @@ contract GatewayToken is
         emit ChargeHandlerUpdated(chargeHandler);
     }
 
-    function _handleCharge(FeeType feeType, uint networkId, address gatekeeper, ChargeParties calldata partiesInCharge) internal checkGatekeeperHasMinimumStake(gatekeeper){
+    function _handleCharge(FeeType feeType, uint networkId, address gatekeeper, ChargeParties memory partiesInCharge) internal checkGatekeeperHasMinimumStake(gatekeeper){
         IGatewayGatekeeper.GatekeeperNetworkData memory gatekeeperData = IGatewayGatekeeper(_gatekeeperContract).getGatekeeperNetworkData(bytes32(networkId), gatekeeper);
         IGatewayNetwork.GatekeeperNetworkData memory networkData = IGatewayNetwork(_gatewayNetworkContract).getNetwork(networkId);
 
@@ -483,9 +491,9 @@ contract GatewayToken is
         } else if(feeType == FeeType.REFRESH) {
             totalFeeAmount = gatekeeperData.fees.refreshFee;
             networkFeeBps = networkData.networkFee.refreshFee;
-        } else if(feeType == FeeType.VERIFY) {
-            totalFeeAmount = gatekeeperData.fees.verificationFee;
-            networkFeeBps = networkData.networkFee.verificationFee;
+        } else if(feeType == FeeType.FREEZE) {
+            totalFeeAmount = gatekeeperData.fees.freezeFee;
+            networkFeeBps = networkData.networkFee.freezeFee;
         } else {
             revert GatewayToken__UnsupportedFeeType();
         }

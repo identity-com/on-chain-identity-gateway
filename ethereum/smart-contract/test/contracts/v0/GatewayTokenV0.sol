@@ -14,6 +14,7 @@ import {TokenBitMask} from "../../../contracts/TokenBitMask.sol";
 import {IERC721Freezable} from "../../../contracts/interfaces/IERC721Freezable.sol";
 import {IERC721ExpirableV0} from "./IERC721ExpirableV0.sol";
 import {IERC721Revokable} from "../../../contracts/interfaces/IERC721Revokable.sol";
+import { ChargeParties } from "../../../contracts/library/Charge.sol";
 import {MultiERC2771ContextUpgradeable} from "../../../contracts/MultiERC2771ContextUpgradeable.sol";
 import {Charge} from "./ChargeV0.sol";
 import {ParameterizedAccessControl} from "../../../contracts/ParameterizedAccessControl.sol";
@@ -152,7 +153,7 @@ contract GatewayTokenV0 is
         }
     }
 
-    function revoke(uint tokenId) external virtual override {
+    function revoke(uint tokenId) external virtual {
         _checkGatekeeper(slotOf(tokenId));
 
         _tokenStates[tokenId] = TokenState.REVOKED;
@@ -168,6 +169,18 @@ contract GatewayTokenV0 is
         _checkGatekeeper(slotOf(tokenId));
 
         _freeze(tokenId);
+    }
+
+    function freeze(uint256 tokenId, ChargeParties calldata partiesInCharge) external override {
+
+    }
+
+    function revoke(uint256 tokenId, ChargeParties calldata partiesInCharge) external override {
+
+    }
+
+    function unfreeze(uint256 tokenId, ChargeParties calldata partiesInCharge) external {
+        
     }
 
     /**
