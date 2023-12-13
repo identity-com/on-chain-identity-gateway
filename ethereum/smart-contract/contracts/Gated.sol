@@ -3,7 +3,6 @@ pragma solidity >=0.8.19;
 
 import {IGatewayTokenVerifier} from "./interfaces/IGatewayTokenVerifier.sol";
 
-
 abstract contract Gated {
     address private immutable _gatewayTokenContract;
     uint256 private immutable _gatekeeperNetwork;
