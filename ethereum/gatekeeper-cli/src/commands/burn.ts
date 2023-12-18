@@ -9,11 +9,11 @@ import {Command, Flags} from '@oclif/core'
 import {makeGatewayTs} from '../utils/oclif/utils'
 import {addressArg} from '../utils/oclif/args'
 
-export default class RevokeToken extends Command {
-  static description = 'Revoke existing gateway token';
+export default class BurnToken extends Command {
+  static description = 'Burn existing gateway token';
 
   static examples = [
-    `$ gateway-eth revoke 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
+    `$ gateway-eth burn 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 		`,
   ];
 
@@ -31,16 +31,16 @@ export default class RevokeToken extends Command {
   static args = [addressArg({description: 'Token owner address'})];
 
   async run(): Promise<void> {
-    const {args, flags} = await this.parse(RevokeToken)
+    const {args, flags} = await this.parse(BurnToken)
 
     const ownerAddress = args.address as string
     const parsedFlags = parseFlagsWithPrivateKey(flags)
 
-    this.log(`Revoking token for ${ownerAddress}`)
+    this.log(`Burning token for ${ownerAddress}`)
 
     const gateway = await makeGatewayTs(parsedFlags)
 
-    const sendableTransaction = await gateway.revoke(
+    const sendableTransaction = await gateway.burn(
       ownerAddress, parsedFlags.gatekeeperNetwork,
     )
 
@@ -48,6 +48,6 @@ export default class RevokeToken extends Command {
 
     const receipt = await sendableTransaction.wait(flags.confirmations)
 
-    this.log(`Token revoked. TxHash: ${receipt.transactionHash}`)
+    this.log(`Token burned. TxHash: ${receipt.transactionHash}`)
   }
 }
