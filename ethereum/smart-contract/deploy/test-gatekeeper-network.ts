@@ -7,6 +7,7 @@ const gatekeeperNetwork = 1;
 // open to all - private key is known
 const testGatekeeper = '0x34bb5808d46a21AaeBf7C1300Ef17213Fe215B91';
 const civicDevGatekeeper = '0x3Afb27942b60d9D4319557A0f3363DC3dA0645B6';
+const civicProdGatekeeper = '0x964617b2d933c6e5c6c1B30681DCAee23Baa9836';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, ethers } = hre;
@@ -84,6 +85,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         ' gas',
     );
   } else console.log(`gatekeeper ${civicDevGatekeeper} already in network ${gatekeeperNetwork}`);
+
+  if (!(await token.isGatekeeper(civicProdGatekeeper, gatekeeperNetwork))) {
+    const addCivicProdGatekeeperTx = await (await token.addGatekeeper(civicProdGatekeeper, gatekeeperNetwork)).wait();
+    console.log(
+        'added civic prod gatekeeper with ' +
+        civicProdGatekeeper +
+        ' address into Gateway Token at ' +
+        gatewayToken.address +
+        ' using ' +
+        addCivicProdGatekeeperTx.gasUsed.toNumber() +
+        ' gas',
+    );
+  } else console.log(`gatekeeper ${civicProdGatekeeper} already in network ${gatekeeperNetwork}`);
 };
 
 export default func;
