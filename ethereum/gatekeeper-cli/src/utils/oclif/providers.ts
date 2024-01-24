@@ -61,6 +61,10 @@ export const networks = {
     url: 'https://arbitrum-goerli.infura.io/v3/',
     chainId: 421_613,
   },
+  arbitrumSepolia: {
+    url: 'https://arbitrum-sepolia.infura.io/v3/',
+    chainId: 421_614,
+  },
   arbitrum: {
     url: 'https://arbitrum-mainnet.infura.io/v3/',
     chainId: 42_161,
