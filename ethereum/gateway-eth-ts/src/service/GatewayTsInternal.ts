@@ -113,6 +113,16 @@ export class GatewayTsInternal<
     );
   }
 
+  isGatekeeper(
+    gatekeeperAuthorityAddress: string,
+    network: bigint
+  ): Promise<boolean> {
+    return this.gatewayTokenContract.isGatekeeper(
+      gatekeeperAuthorityAddress,
+      network
+    );
+  }
+
   listNetworks(
     max: bigint = BigInt(256),
     startAt: bigint = BigInt(0)
