@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.19;
+pragma solidity 0.8.19; // Fixed version for concrete contracts
 
 import {BitMask} from "./library/BitMask.sol";
 import {IFlagsStorage} from "./interfaces/IFlagsStorage.sol";
 
 /**
  * @dev TokenBitMask contract is an internal smart contract for Gateway Token
- * implementation that stores KYC flags per identity token in a bitmask
+ * implementation that stores KYC flags, defined in a FlagsStorage contract,
+ * for each gateway token in a bitmask.
  */
 contract TokenBitMask {
     using BitMask for uint256;

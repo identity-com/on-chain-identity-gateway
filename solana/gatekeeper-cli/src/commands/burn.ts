@@ -13,7 +13,7 @@ export default class Burn extends Command {
 
   static examples = [
     `$ gateway burn EzZgkwaDrgycsiyGeCVRXXRcieE1fxhGMp829qwj5TMv
-Revoked
+Burned
 `,
   ];
 

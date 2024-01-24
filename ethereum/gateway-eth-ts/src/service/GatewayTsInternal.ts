@@ -58,7 +58,10 @@ export class GatewayTsInternal<
    * @private
    */
   private get readOnlyOverrides(): Overrides {
-    return omit(["gasPrice"], this.overrides);
+    return omit(
+      ["gasPrice", "maxFeePerGas", "maxPriorityFeePerGas"],
+      this.overrides
+    );
   }
 
   public async checkedGetTokenId(

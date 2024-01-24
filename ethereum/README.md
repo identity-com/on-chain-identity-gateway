@@ -193,6 +193,30 @@ Of the upgradeability standards available, the EIP-1822 (UUPS) standard was chos
 The upgrade key (the key used to upgrade the protocol) is set to an Identity.com key on deployment. It can be rotated by a
 superadmin. The superadmin can also disable upgradeability.
 
+## Additional Features
+
+### Token Flags
+
+The Gateway Protocol includes a global namespace of token flags, which can be set by the gatekeeper when issuing a token.
+
+The flags are stored as a bitmask, and can be used to indicate additional information about the token.
+
+Examples are:
+- a "negative reputation" flag, which indicates that the token should be treated as a form of blacklist
+- a "verified human" flag, which indicates that the token holder has been verified to be a human
+- a "verified over 18" flag, which indicates that the token holder has been verified to be over 18 years of age
+- a region flag, which indicates that the token holder is a resident of a particular region
+
+This model has two advantages over storing this information in the token type:
+- it allows gatekeepers to issue tokens with multiple flags, 
+without needing to create a new token type for each combination
+- it allows clients to accept tokens from multiple gatekeeper networks,
+if those tokens share common properties.
+
+The flag namespace is managed by Identity.com. Gatekeepers can set and unset flags on their tokens at any time.
+
+To request a new flag be added to the namespace, please contact identity.com via [www.identity.com](www.identity.com).
+
 ## Glossary
 
 - Gateway Token

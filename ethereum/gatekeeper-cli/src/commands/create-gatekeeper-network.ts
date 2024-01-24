@@ -11,7 +11,7 @@ export default class CreateGatekeeperNetwork extends Command {
   static description = 'Create a new gatekeeper network';
 
   static examples = [
-    `$ gateway-eth create-gatekeeper-network <name> <number>
+    `$ gateway-eth create-gatekeeper-network <number> <name>
 		`,
   ];
 
