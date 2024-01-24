@@ -78,7 +78,7 @@ $ npm install -g @identity.com/gateway-eth-cli
 $ gateway-eth COMMAND
 running command...
 $ gateway-eth (--version)
-@identity.com/gateway-eth-cli/0.2.2-alpha.2 darwin-arm64 node-v20.10.0
+@identity.com/gateway-eth-cli/0.2.2 darwin-x64 node-v19.4.0
 $ gateway-eth --help [COMMAND]
 USAGE
   $ gateway-eth COMMAND
@@ -95,6 +95,7 @@ USAGE
 * [`gateway-eth get-gatekeeper-network ID`](#gateway-eth-get-gatekeeper-network-id)
 * [`gateway-eth get-token ADDRESS`](#gateway-eth-get-token-address)
 * [`gateway-eth help [COMMAND]`](#gateway-eth-help-command)
+* [`gateway-eth is-gatekeeper GATEKEEPERADDRESS`](#gateway-eth-is-gatekeeper-gatekeeperaddress)
 * [`gateway-eth issue ADDRESS [EXPIRY]`](#gateway-eth-issue-address-expiry)
 * [`gateway-eth listen ADDRESS`](#gateway-eth-listen-address)
 * [`gateway-eth refresh ADDRESS [EXPIRY]`](#gateway-eth-refresh-address-expiry)
@@ -158,7 +159,7 @@ EXAMPLES
   $ gateway-eth add-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/add-gatekeeper.ts)_
+_See code: [dist/commands/add-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/add-gatekeeper.ts)_
 
 ## `gateway-eth add-network-authority ADDRESS`
 
@@ -213,7 +214,7 @@ EXAMPLES
   $ gateway-eth add-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/add-network-authority.ts)_
+_See code: [dist/commands/add-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/add-network-authority.ts)_
 
 ## `gateway-eth burn ADDRESS`
 
@@ -268,7 +269,7 @@ EXAMPLES
   $ gateway-eth burn 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/burn.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/burn.ts)_
+_See code: [dist/commands/burn.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/burn.ts)_
 
 ## `gateway-eth create-gatekeeper-network ID NAME`
 
@@ -321,7 +322,7 @@ EXAMPLES
   $ gateway-eth create-gatekeeper-network <number> <name>
 ```
 
-_See code: [dist/commands/create-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/create-gatekeeper-network.ts)_
+_See code: [dist/commands/create-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/create-gatekeeper-network.ts)_
 
 ## `gateway-eth freeze ADDRESS`
 
@@ -376,7 +377,7 @@ EXAMPLES
   $ gateway-eth freeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/freeze.ts)_
+_See code: [dist/commands/freeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/freeze.ts)_
 
 ## `gateway-eth get-gatekeeper-network ID`
 
@@ -415,7 +416,7 @@ EXAMPLES
   $ gateway-eth get-gatekeeper-network <number>
 ```
 
-_See code: [dist/commands/get-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/get-gatekeeper-network.ts)_
+_See code: [dist/commands/get-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/get-gatekeeper-network.ts)_
 
 ## `gateway-eth get-token ADDRESS`
 
@@ -460,7 +461,7 @@ EXAMPLES
   $ gateway-eth get 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/get-token.ts)_
+_See code: [dist/commands/get-token.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/get-token.ts)_
 
 ## `gateway-eth help [COMMAND]`
 
@@ -481,6 +482,48 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.20/src/commands/help.ts)_
+
+## `gateway-eth is-gatekeeper GATEKEEPERADDRESS`
+
+Check if a gatekeeper is added to a network
+
+```
+USAGE
+  $ gateway-eth is-gatekeeper [GATEKEEPERADDRESS] [-h] [-c
+    localhost|ethereum|sepolia|goerli|polygonMumbai|polygon|auroraTestnet|aurora|optimismGoerli|optimism|palmTestnet|pal
+    m|arbitrumGoerli|arbitrumSepolia|arbitrum|celo|celoAlfajores|avalancheCChain|avalancheCChainFuji|starknet|starknetGo
+    erli|xdc|xdcApothem|bsc|cronos|fantom|fantomTestnet|gnosis|moonbeam|moonriver|polygonZkEVMTestnet|polygonZkEVM|baseS
+    epolia|base] [-t <value>] [-n <value>]
+
+ARGUMENTS
+  GATEKEEPERADDRESS  Address of the Gatekeeper Authority
+
+FLAGS
+  -c, --chain=<option>
+      [default: [object Object]] Specify target chain to work with (or set DEFAULT_CHAIN environment variable)
+      <options: localhost|ethereum|sepolia|goerli|polygonMumbai|polygon|auroraTestnet|aurora|optimismGoerli|optimism|palmT
+      estnet|palm|arbitrumGoerli|arbitrumSepolia|arbitrum|celo|celoAlfajores|avalancheCChain|avalancheCChainFuji|starknet|
+      starknetGoerli|xdc|xdcApothem|bsc|cronos|fantom|fantomTestnet|gnosis|moonbeam|moonriver|polygonZkEVMTestnet|polygonZ
+      kEVM|baseSepolia|base>
+
+  -h, --help
+      Show CLI help.
+
+  -n, --gatekeeperNetwork=<value>
+      [default: 1] Gatekeeper network. Defaults to the test Gatekeeper Network
+
+  -t, --gatewayTokenAddress=<value>
+      [default: 0xF65b6396dF6B7e2D8a6270E3AB6c7BB08BAEF22E] GatewayToken address to target (or set GATEWAY_TOKEN_ADDRESS
+      environment variable)
+
+DESCRIPTION
+  Check if a gatekeeper is added to a network
+
+EXAMPLES
+  $ gateway-eth is-gatekeeper -n <slot id> <gatekeeper address>
+```
+
+_See code: [dist/commands/is-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/is-gatekeeper.ts)_
 
 ## `gateway-eth issue ADDRESS [EXPIRY]`
 
@@ -548,7 +591,7 @@ EXAMPLES
   $ gateway-eth issue 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/issue.ts)_
+_See code: [dist/commands/issue.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/issue.ts)_
 
 ## `gateway-eth listen ADDRESS`
 
@@ -590,7 +633,7 @@ EXAMPLES
   $ gateway-eth listen 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/listen.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/listen.ts)_
+_See code: [dist/commands/listen.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/listen.ts)_
 
 ## `gateway-eth refresh ADDRESS [EXPIRY]`
 
@@ -646,7 +689,7 @@ EXAMPLES
   $ gateway-eth refresh 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 60 -n 123
 ```
 
-_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/refresh.ts)_
+_See code: [dist/commands/refresh.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/refresh.ts)_
 
 ## `gateway-eth remove-gatekeeper ADDRESS`
 
@@ -701,7 +744,7 @@ EXAMPLES
   $ gateway-eth remove-gatekeeper 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/remove-gatekeeper.ts)_
+_See code: [dist/commands/remove-gatekeeper.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/remove-gatekeeper.ts)_
 
 ## `gateway-eth remove-network-authority ADDRESS`
 
@@ -756,7 +799,7 @@ EXAMPLES
   $ gateway-eth remove-network-authority 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/remove-network-authority.ts)_
+_See code: [dist/commands/remove-network-authority.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/remove-network-authority.ts)_
 
 ## `gateway-eth rename-gatekeeper-network ID NAME`
 
@@ -809,7 +852,7 @@ EXAMPLES
   $ gateway-eth rename-gatekeeper-network <name> <number>
 ```
 
-_See code: [dist/commands/rename-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/rename-gatekeeper-network.ts)_
+_See code: [dist/commands/rename-gatekeeper-network.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/rename-gatekeeper-network.ts)_
 
 ## `gateway-eth revoke ADDRESS`
 
@@ -864,7 +907,7 @@ EXAMPLES
   $ gateway-eth revoke 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/revoke.ts)_
+_See code: [dist/commands/revoke.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/revoke.ts)_
 
 ## `gateway-eth unfreeze ADDRESS`
 
@@ -919,7 +962,7 @@ EXAMPLES
   $ gateway-eth unfreeze 0x893F4Be53274353CD3379C87C8fd1cb4f8458F94 -n 123
 ```
 
-_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2-alpha.2/dist/commands/unfreeze.ts)_
+_See code: [dist/commands/unfreeze.ts](https://github.com/identity-com/on-chain-identity-gateway/blob/v0.2.2/dist/commands/unfreeze.ts)_
 
 ## `gateway-eth verify ADDRESS`
 
