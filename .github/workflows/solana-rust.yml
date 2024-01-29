@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         # This should match rust-toolchain.toml ( actions-rs/toolchain@v1 does not pick it up directly in monorepos )
-        rust: [ '1.69' ]
+        rust: [ '1.74' ]
         os: [ ubuntu-latest ]
 
     steps:
@@ -58,7 +58,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [ '1.69' ] # This should match rust-toolchain.toml ( actions-rs/toolchain@v1 does not pick it up directly in monorepos )
+        rust: [ '1.74' ] # This should match rust-toolchain.toml ( actions-rs/toolchain@v1 does not pick it up directly in monorepos )
         solana: [ 'edge' ]
         os: [ ubuntu-latest ]
 
