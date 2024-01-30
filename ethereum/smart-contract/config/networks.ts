@@ -229,4 +229,14 @@ export const networks = {
         accounts: liveAccounts,
         chainId: 280,
     },
+    oasisSapphireTestnet: {
+        url: 'https://testnet.sapphire.oasis.dev',
+        accounts: liveAccounts,
+        chainId: 23295,
+    },
+    oasisSapphire: {
+        url: 'https://sapphire.oasis.io',
+        accounts: liveAccounts,
+        chainId: 23294,
+    }
 };

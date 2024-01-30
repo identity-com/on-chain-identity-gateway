@@ -43,6 +43,8 @@ For example `yarn deploy hardhat` will deploy the protocol on the local hardhat 
 
 After the successful deployment you'll be able to find the deployment result in the `deployments` folder.
 
+Note - see more details in [DEPLOY.md](DEPLOY.md)
+
 ## Integration
 
 To integrate Gateway in your smart contract:
