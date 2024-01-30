@@ -16,8 +16,7 @@ clap = "3.0.0-beta.1"
 debug_print = "1.0.0"
 rand = { version = "0.7.3" }
 solana-client = "1.6.8"
-solana-gateway = { path = "../../integration-lib" }
-solana-gateway-program = { path = "../", features = ["no-entrypoint"]  }
+solana-gateway = { path = "../", features = ["no-entrypoint"] }
 solana-program = "1.6.8"
 solana-sdk = "1.6.8"
 thiserror = "1.0"
