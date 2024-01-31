@@ -3,9 +3,9 @@
 CLI to manage OCIV Gateway Tokens
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/ociv.svg)](https://npmjs.org/package/ociv)
-[![Downloads/week](https://img.shields.io/npm/dw/ociv.svg)](https://npmjs.org/package/ociv)
-[![License](https://img.shields.io/npm/l/ociv.svg)](https://github.com/identity-com/ociv/blob/master/package.json)
+[![Version](https://img.shields.io/npm/v/@identity.com/solana-gatekeeper-cli.svg)](https://npmjs.org/package/@identity.com/solana-gatekeeper-cli)
+[![Downloads/week](https://img.shields.io/npm/dw/@identity.com/solana-gatekeeper-cli.svg)](https://npmjs.org/package/@identity.com/solana-gatekeeper-cli)
+[![License](https://img.shields.io/npm/l/@identity.com/solana-gatekeeper-cli.svg)](https://github.com/identity-com/on-chain-identity-gateway/blob/main/solana/gatekeeper-cli/package.json)
 
 <!-- toc -->
 * [gatekeeper-cli](#gatekeeper-cli)
