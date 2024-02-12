@@ -13,7 +13,7 @@ import {BigNumber} from '@ethersproject/bignumber'
 const DEFAULT_NETWORK_AUTHORITY_PRIVATE_KEY = '0xf1ddf80d2b5d038bc2ab7ae9a26e017d2252218dc687ab72d45f84bfbee2957d'
 
 // The test GKN: tgnuXXNMDLK8dy7Xm1TdeGyc95MDym4bvAQCwcW21Bf
-export const DEFAULT_GATEKEEPER_NETWORK = 1
+export const DEFAULT_GATEKEEPER_NETWORK = '1'
 
 export const privateKeyFlag = Flags.custom<string>({
   char: 'p',
@@ -45,10 +45,9 @@ export const chainFlag = Flags.custom<BaseProvider>({
   description: 'Specify target chain to work with (or set DEFAULT_CHAIN environment variable)',
 })
 
-export const gatekeeperNetworkFlag = Flags.custom<number>({
+export const gatekeeperNetworkFlag = Flags.custom<string>({
   char: 'n',
   name: 'gatekeeper-network',
-  parse: async (input: string) => Number(input),
   default: DEFAULT_GATEKEEPER_NETWORK,
   description:
       'Gatekeeper network. Defaults to the test Gatekeeper Network',
@@ -90,7 +89,7 @@ export const gasLimitFlag = Flags.custom<BigNumber>({
 type Flags = {
   chain: Provider | undefined
   gatewayTokenAddress: string | undefined
-  gatekeeperNetwork: number | undefined
+  gatekeeperNetwork: string | undefined
   fees?: GasPriceKey | undefined
   gasLimit?: BigNumber | undefined
   readOnly?: boolean | undefined
@@ -110,7 +109,7 @@ export const parseFlags = (flags: Flags): ParsedFlags => {
   // These all have defaults and can therefore be safely cast
   const provider = flags.chain as Provider
   const gatewayTokenAddress = flags.gatewayTokenAddress as string
-  const gatekeeperNetwork = BigInt(flags.gatekeeperNetwork as number)
+  const gatekeeperNetwork = BigInt(flags.gatekeeperNetwork as string)
 
   return {
     provider,
