@@ -5,7 +5,7 @@ pub mod processor;
 
 #[macro_use]
 pub mod error;
-pub mod borsh;
+pub mod program_borsh;
 pub mod instruction;
 pub mod networks;
 pub mod state;
@@ -16,7 +16,6 @@ mod test_utils;
 use crate::instruction::expire_token;
 use crate::state::{GatewayTokenAccess, GatewayTokenFunctions};
 use crate::{
-    borsh as program_borsh,
     error::GatewayError,
     state::{GatewayToken, GatewayTokenState},
 };

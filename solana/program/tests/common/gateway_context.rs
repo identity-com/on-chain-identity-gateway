@@ -4,7 +4,7 @@
 
 use super::util::clone_keypair;
 use crate::instruction::GatewayInstruction;
-use solana_gateway::borsh::try_from_slice_incomplete;
+use solana_gateway::program_borsh::try_from_slice_incomplete;
 use solana_gateway::processor::process_instruction;
 use solana_gateway::state::{
     get_gatekeeper_account_address, get_gateway_token_address_with_seed, GatewayToken,
