@@ -1,7 +1,7 @@
 //! Borsh helpers
 
 use borsh::{
-    maybestd::io::{Error, Write},
+    io::{Error, Write},
     BorshDeserialize, BorshSerialize,
 };
 

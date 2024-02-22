@@ -266,7 +266,7 @@ pub mod tests {
     #[test]
     fn serialize_data() {
         let token = stub_gateway_token();
-        let serialized = token.try_to_vec().unwrap();
+        let serialized = borsh::to_vec(&token).unwrap();
         let deserialized = GatewayToken::try_from_slice(&serialized).unwrap();
         assert_eq!(token, deserialized);
     }
