@@ -15,12 +15,12 @@ test-sbf = []
 borsh = "0.10"
 num-derive = "0.4.2"
 num-traits = "0.2.18"
-solana-program = "=1.17.6"
+solana-program = "1.17"
 thiserror = "1.0.57"
 
 [dev-dependencies]
-solana-program-test = "=1.17.6"
-solana-sdk = "=1.17.6"
+solana-program-test = "1.17"
+solana-sdk = "1.17"
 tokio = { version = "1.36.0", features = ["macros"]}
 
 [lib]
