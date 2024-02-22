@@ -5,9 +5,9 @@ pub mod processor;
 
 #[macro_use]
 pub mod error;
-pub mod program_borsh;
 pub mod instruction;
 pub mod networks;
+pub mod program_borsh;
 pub mod state;
 
 #[cfg(test)]
