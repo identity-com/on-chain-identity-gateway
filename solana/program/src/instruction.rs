@@ -348,7 +348,7 @@ mod tests {
             seed: None,
             expire_time: None,
         };
-        assert_eq!(instruction.try_to_vec().unwrap(), expected);
+        assert_eq!(borsh::to_vec(&instruction).unwrap(), expected);
         assert_eq!(
             GatewayInstruction::try_from_slice(&expected).unwrap(),
             instruction
