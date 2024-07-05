@@ -5,6 +5,8 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import ERC1967ProxyLatest from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
 import ERC1967Proxy from '../artifacts/v0/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
 import { getInitializerData } from '@openzeppelin/hardhat-upgrades/dist/utils';
+import { IFlagsStorage__factory } from '../typechain-types';
+import {BaseContract, ContractRunner} from "ethers";
 
 // A bug in hardhat leads to undefined entries in the accounts if any are duplicates.
 // This function normalises this by creating defaults for each one
@@ -17,10 +19,11 @@ export const getAccounts = async (hre: HardhatRuntimeEnvironment) => {
     gatekeeper: gatekeeper || authority || deployer,
   };
 };
-export const deployProxyCreate2 = async (
+export const deployProxyCreate2 = async <T extends BaseContract>(
   hre: HardhatRuntimeEnvironment,
   contractName: string,
   args: any[],
+  connectFn: (address: string, runner: ContractRunner) => T,
   useLatestProxy = true,
 ) => {
   const { getNamedAccounts, deployments, ethers } = hre;
@@ -47,5 +50,6 @@ export const deployProxyCreate2 = async (
     contract: proxyContract,
   });
 
-  return ethers.getContractAt(contractName, proxy.address);
+  const signer = await ethers.getSigner(deployer);
+  return connectFn(proxy.address, signer);
 };

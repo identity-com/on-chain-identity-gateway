@@ -1,9 +1,8 @@
-import { Provider } from "@ethersproject/providers";
-import { Wallet } from "ethers";
+import { Provider, Signer } from "ethers";
 
 export const isProvider = (
-  providerOrWallet: Provider | Wallet
-): providerOrWallet is Provider => !("_signTypedData" in providerOrWallet);
+  providerOrSigner: Provider | Signer
+): providerOrSigner is Provider => !("provider" in providerOrSigner);
 
-export const asProvider = (providerOrWallet: Provider | Wallet): Provider =>
-  isProvider(providerOrWallet) ? providerOrWallet : providerOrWallet.provider;
+export const asProvider = (providerOrSigner: Provider | Signer): Provider =>
+  isProvider(providerOrSigner) ? providerOrSigner : providerOrSigner.provider;

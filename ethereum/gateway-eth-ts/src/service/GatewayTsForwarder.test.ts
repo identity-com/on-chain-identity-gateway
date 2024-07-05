@@ -1,8 +1,9 @@
 import {
-  BaseProvider,
-  getDefaultProvider,
+  Provider,
   TransactionReceipt,
-} from "@ethersproject/providers";
+  getDefaultProvider,
+  Signer,
+} from "ethers";
 import { TokenState } from "../utils";
 import * as assert from "assert";
 import * as dotenv from "dotenv";
@@ -13,10 +14,8 @@ import {
   gatekeeperWallet,
   TEST_GATEWAY_TOKEN_ADDRESS,
 } from "./testUtils";
-import { PopulatedTransaction } from "ethers/lib/ethers";
 import { GatewayTsForwarder } from "./GatewayTsForwarder";
-import { ethers, Wallet } from "ethers";
-import { BigNumber } from "ethers";
+import { ContractTransaction, ethers, Wallet } from "ethers";
 import {
   approveERC20Charge,
   approveInternalERC20Charge,
@@ -26,27 +25,32 @@ import {
 
 dotenv.config();
 
-describe("GatewayTS Forwarder", function () {
-  let gateway: GatewayTsForwarder;
-  let provider: BaseProvider;
+// A JSON stringifier that supports bigint, because JSON.stringify doesn't know how to handle that natively
+const bigintStringifier = (key: string, value: unknown) =>
+  typeof value === "bigint" ? value.toString() : value;
 
-  let gatekeeper: Wallet;
-  let relayer: Wallet;
+describe("GatewayTS Forwarder", function () {
+  this.timeout(15_000);
+  let gateway: GatewayTsForwarder;
+  let provider: Provider;
+
+  let gatekeeper: Signer;
+  let relayer: Signer;
 
   const sampleWalletAddress = Wallet.createRandom().address;
 
   const relay = async (
-    fn: () => Promise<PopulatedTransaction>
+    fn: () => Promise<ContractTransaction>
   ): Promise<TransactionReceipt> => {
     const populatedTx = await fn();
     return (await relayer.sendTransaction(populatedTx)).wait();
   };
 
   const estimateGas = async (
-    fn: () => Promise<PopulatedTransaction>
-  ): Promise<BigNumber> => {
+    fn: () => Promise<ContractTransaction>
+  ): Promise<bigint> => {
     const populatedTx = await fn();
-    const serialized = JSON.stringify(populatedTx);
+    const serialized = JSON.stringify(populatedTx, bigintStringifier);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { to, data, value } = JSON.parse(serialized);
@@ -62,10 +66,10 @@ describe("GatewayTS Forwarder", function () {
   };
 
   const relaySerialized = async (
-    fn: () => Promise<PopulatedTransaction>
+    fn: () => Promise<ContractTransaction>
   ): Promise<TransactionReceipt> => {
     const populatedTx = await fn();
-    const serialized = JSON.stringify(populatedTx);
+    const serialized = JSON.stringify(populatedTx, bigintStringifier);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { to, data, value } = JSON.parse(serialized);
@@ -78,14 +82,13 @@ describe("GatewayTS Forwarder", function () {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       value,
     });
-    console.log("GAS LIMIT:", r.gasLimit.toString());
 
     return r.wait();
   };
 
   // address of the erc20 token used for testing (obtainable from the output of yarn pretest)
-  const ERC20_TOKEN = "0x32CC358eb763B345f565fcf84f2B31a52d6a93D6";
-  const erc20Balance = (address: string): Promise<BigNumber> => {
+  const ERC20_TOKEN = "0x5C341B3429ac43bC81804382ae233dD6c7E9F6Ae";
+  const erc20Balance = (address: string): Promise<bigint> => {
     // check erc20 balance
     const contract = new ethers.Contract(
       ERC20_TOKEN,
@@ -100,16 +103,11 @@ describe("GatewayTS Forwarder", function () {
   };
 
   before("Initialize GatewayTS class", function () {
-    this.timeout(20_000);
-
     provider = getDefaultProvider("http://localhost:8545");
 
     // use the deployer account here as the relayer, as they are guaranteed to be funded by hardhat on localnet startup
     relayer = deployerWallet(provider);
     gatekeeper = gatekeeperWallet(provider);
-
-    console.log("Gatekeeper:", gatekeeper.address);
-    console.log("Relayer:", relayer.address);
 
     gateway = new GatewayTs(
       gatekeeper,
@@ -132,32 +130,29 @@ describe("GatewayTS Forwarder", function () {
   });
 
   it("should issue a token with an eth charge", async () => {
-    const gatekeeperBalanceBefore = await gatekeeper.getBalance();
+    const gatekeeperBalanceBefore = await provider.getBalance(gatekeeper);
 
     const wallet = Wallet.createRandom().address;
-    const chargeValue = BigNumber.from(1000);
-    const charge = makeWeiCharge(chargeValue, gatekeeper.address);
+    const chargeValue = BigInt(1000);
+    const charge = makeWeiCharge(chargeValue, await gatekeeper.getAddress());
     await relaySerialized(() =>
       gateway.issue(wallet, gatekeeperNetwork, undefined, undefined, charge)
     );
 
-    const gatekeeperBalanceAfter = await gatekeeper.getBalance();
+    const gatekeeperBalanceAfter = await provider.getBalance(gatekeeper);
 
-    assert.equal(
-      chargeValue.toNumber(),
-      gatekeeperBalanceAfter.sub(gatekeeperBalanceBefore).toNumber()
-    );
+    assert.equal(chargeValue, gatekeeperBalanceAfter - gatekeeperBalanceBefore);
   });
 
   it("should issue a token with an ERC20 charge", async () => {
     const wallet = Wallet.createRandom().address;
-    const chargeValue = BigNumber.from(1000);
+    const chargeValue = BigInt(1000);
 
     const charge = makeERC20Charge(
       chargeValue,
       ERC20_TOKEN,
-      relayer.address, // we are making the relayer pay (not the gateway token recipient)
-      gatekeeper.address
+      await relayer.getAddress(), // we are making the relayer pay (not the gateway token recipient)
+      await gatekeeper.getAddress()
     );
 
     const approveTx = await approveERC20Charge(
@@ -174,8 +169,10 @@ describe("GatewayTS Forwarder", function () {
       TEST_GATEWAY_TOKEN_ADDRESS.gatewayToken
     );
 
-    const payerBalanceBefore = await erc20Balance(relayer.address);
-    const gatekeeperBalanceBefore = await erc20Balance(gatekeeper.address);
+    const payerBalanceBefore = await erc20Balance(await relayer.getAddress());
+    const gatekeeperBalanceBefore = await erc20Balance(
+      await gatekeeper.getAddress()
+    );
 
     await (await relayer.sendTransaction(approveTx)).wait();
     await (await relayer.sendTransaction(internalApproveTx)).wait();
@@ -184,20 +181,16 @@ describe("GatewayTS Forwarder", function () {
       gateway.issue(wallet, gatekeeperNetwork, undefined, undefined, charge)
     );
 
-    const payerBalanceAfter = await erc20Balance(relayer.address);
-    const gatekeeperBalanceAfter = await erc20Balance(gatekeeper.address);
+    const payerBalanceAfter = await erc20Balance(await relayer.getAddress());
+    const gatekeeperBalanceAfter = await erc20Balance(
+      await gatekeeper.getAddress()
+    );
 
     // the gatekeeper's balance has gone up
-    assert.equal(
-      chargeValue.toNumber(),
-      gatekeeperBalanceAfter.sub(gatekeeperBalanceBefore).toNumber()
-    );
+    assert.equal(chargeValue, gatekeeperBalanceAfter - gatekeeperBalanceBefore);
 
     // the payer's balance has gone down
-    assert.equal(
-      chargeValue.toNumber(),
-      payerBalanceBefore.sub(payerBalanceAfter).toNumber()
-    );
+    assert.equal(chargeValue, payerBalanceBefore - payerBalanceAfter);
   });
 
   it("Test freeze", async () => {
@@ -233,29 +226,26 @@ describe("GatewayTS Forwarder", function () {
 
     token = await gateway.getToken(sampleWalletAddress, gatekeeperNetwork);
 
-    assert.equal(BigNumber.from(token.expiration).gt(originalExpiry), true);
+    assert.equal(token.expiration > originalExpiry, true);
   });
 
   it("Test refresh with an eth charge", async () => {
-    const gatekeeperBalanceBefore = await gatekeeper.getBalance();
+    const gatekeeperBalanceBefore = await provider.getBalance(gatekeeper);
 
     const token = await gateway.getToken(
       sampleWalletAddress,
       gatekeeperNetwork
     );
-    const chargeValue = BigNumber.from(1000);
-    const charge = makeWeiCharge(chargeValue, gatekeeper.address);
+    const chargeValue = BigInt(1000);
+    const charge = makeWeiCharge(chargeValue, await gatekeeper.getAddress());
 
     await relay(() =>
       gateway.refresh(sampleWalletAddress, gatekeeperNetwork, 1000, charge)
     );
 
-    const gatekeeperBalanceAfter = await gatekeeper.getBalance();
+    const gatekeeperBalanceAfter = await provider.getBalance(gatekeeper);
 
-    assert.equal(
-      chargeValue.toNumber(),
-      gatekeeperBalanceAfter.sub(gatekeeperBalanceBefore).toNumber()
-    );
+    assert.equal(chargeValue, gatekeeperBalanceAfter - gatekeeperBalanceBefore);
   });
 
   it("should allow parameterisable gas limit for the internal transaction", async () => {
@@ -276,6 +266,6 @@ describe("GatewayTS Forwarder", function () {
       gateway.issue(sampleWalletAddress, gatekeeperNetwork)
     );
 
-    assert.ok(estimatedGasWithHighLimit.gt(estimatedGasWithNormalLimit));
+    assert.ok(estimatedGasWithHighLimit > estimatedGasWithNormalLimit);
   });
 });

@@ -1,20 +1,20 @@
-import { BigNumber, BigNumberish } from "ethers";
+import { BigNumberish } from "ethers";
 import { ZERO_BN } from "./constants";
 
-export const getExpirationTime = (expiration?: BigNumberish): BigNumber => {
+export const getExpirationTime = (expiration?: BigNumberish): bigint => {
   const now = Math.floor(Date.now() / 1000);
-  const bnTime = BigNumber.from(now);
+  const bnTime = BigInt(now);
 
   // missing expiration
   if (!expiration) return ZERO_BN;
 
   if (typeof expiration === "number") {
-    expiration = BigNumber.from(expiration.toString());
+    expiration = BigInt(expiration);
   }
 
-  if (BigNumber.from(expiration).lt(ZERO_BN)) {
+  if (BigInt(expiration) < ZERO_BN) {
     throw new Error("Negative expiration time not allowed");
   }
 
-  return bnTime.add(expiration);
+  return bnTime + BigInt(expiration);
 };

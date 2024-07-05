@@ -4,106 +4,115 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface GatewayTokenClientTestInterface extends utils.Interface {
-  functions: {
-    "testGated()": FunctionFragment;
-  };
+export interface GatewayTokenClientTestInterface extends Interface {
+  getFunction(nameOrSignature: "testGated"): FunctionFragment;
 
-  getFunction(nameOrSignatureOrTopic: "testGated"): FunctionFragment;
+  getEvent(nameOrSignatureOrTopic: "Success"): EventFragment;
 
   encodeFunctionData(functionFragment: "testGated", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "testGated", data: BytesLike): Result;
-
-  events: {
-    "Success()": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "Success"): EventFragment;
 }
 
-export interface SuccessEventObject {}
-export type SuccessEvent = TypedEvent<[], SuccessEventObject>;
-
-export type SuccessEventFilter = TypedEventFilter<SuccessEvent>;
+export namespace SuccessEvent {
+  export type InputTuple = [];
+  export type OutputTuple = [];
+  export interface OutputObject {}
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
 
 export interface GatewayTokenClientTest extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): GatewayTokenClientTest;
+  waitForDeployment(): Promise<this>;
 
   interface: GatewayTokenClientTestInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    testGated(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  testGated(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  callStatic: {
-    testGated(overrides?: CallOverrides): Promise<void>;
-  };
+  testGated: TypedContractMethod<[], [void], "nonpayable">;
+
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
+
+  getFunction(
+    nameOrSignature: "testGated"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+
+  getEvent(
+    key: "Success"
+  ): TypedContractEvent<
+    SuccessEvent.InputTuple,
+    SuccessEvent.OutputTuple,
+    SuccessEvent.OutputObject
+  >;
 
   filters: {
-    "Success()"(): SuccessEventFilter;
-    Success(): SuccessEventFilter;
-  };
-
-  estimateGas: {
-    testGated(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    testGated(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "Success()": TypedContractEvent<
+      SuccessEvent.InputTuple,
+      SuccessEvent.OutputTuple,
+      SuccessEvent.OutputObject
+    >;
+    Success: TypedContractEvent<
+      SuccessEvent.InputTuple,
+      SuccessEvent.OutputTuple,
+      SuccessEvent.OutputObject
+    >;
   };
 }

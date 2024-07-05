@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   IERC721Revokable,
   IERC721RevokableInterface,
@@ -42,12 +41,12 @@ const _abi = [
 export class IERC721Revokable__factory {
   static readonly abi = _abi;
   static createInterface(): IERC721RevokableInterface {
-    return new utils.Interface(_abi) as IERC721RevokableInterface;
+    return new Interface(_abi) as IERC721RevokableInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): IERC721Revokable {
-    return new Contract(address, _abi, signerOrProvider) as IERC721Revokable;
+    return new Contract(address, _abi, runner) as unknown as IERC721Revokable;
   }
 }

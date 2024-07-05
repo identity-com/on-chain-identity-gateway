@@ -4,54 +4,29 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PayableOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface IERC3525Interface extends utils.Interface {
-  functions: {
-    "allowance(uint256,address)": FunctionFragment;
-    "approve(address,uint256)": FunctionFragment;
-    "approve(uint256,address,uint256)": FunctionFragment;
-    "balanceOf(address)": FunctionFragment;
-    "balanceOf(uint256)": FunctionFragment;
-    "getApproved(uint256)": FunctionFragment;
-    "isApprovedForAll(address,address)": FunctionFragment;
-    "ownerOf(uint256)": FunctionFragment;
-    "safeTransferFrom(address,address,uint256)": FunctionFragment;
-    "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
-    "setApprovalForAll(address,bool)": FunctionFragment;
-    "slotOf(uint256)": FunctionFragment;
-    "supportsInterface(bytes4)": FunctionFragment;
-    "transferFrom(uint256,address,uint256)": FunctionFragment;
-    "transferFrom(address,address,uint256)": FunctionFragment;
-    "transferFrom(uint256,uint256,uint256)": FunctionFragment;
-    "valueDecimals()": FunctionFragment;
-  };
-
+export interface IERC3525Interface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic:
+    nameOrSignature:
       | "allowance"
       | "approve(address,uint256)"
       | "approve(uint256,address,uint256)"
@@ -71,94 +46,79 @@ export interface IERC3525Interface extends utils.Interface {
       | "valueDecimals"
   ): FunctionFragment;
 
+  getEvent(
+    nameOrSignatureOrTopic:
+      | "Approval"
+      | "ApprovalForAll"
+      | "ApprovalValue"
+      | "SlotChanged"
+      | "Transfer"
+      | "TransferValue"
+  ): EventFragment;
+
   encodeFunctionData(
     functionFragment: "allowance",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "approve(address,uint256)",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "approve(uint256,address,uint256)",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "balanceOf(address)",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "balanceOf(uint256)",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+    values: [AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom(address,address,uint256)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom(address,address,uint256,bytes)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [AddressLike, AddressLike, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
-    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
+    values: [AddressLike, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "slotOf",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
-    values: [PromiseOrValue<BytesLike>]
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom(uint256,address,uint256)",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom(address,address,uint256)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom(uint256,uint256,uint256)",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "valueDecimals",
@@ -224,690 +184,487 @@ export interface IERC3525Interface extends utils.Interface {
     functionFragment: "valueDecimals",
     data: BytesLike
   ): Result;
-
-  events: {
-    "Approval(address,address,uint256)": EventFragment;
-    "ApprovalForAll(address,address,bool)": EventFragment;
-    "ApprovalValue(uint256,address,uint256)": EventFragment;
-    "SlotChanged(uint256,uint256,uint256)": EventFragment;
-    "Transfer(address,address,uint256)": EventFragment;
-    "TransferValue(uint256,uint256,uint256)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ApprovalValue"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SlotChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TransferValue"): EventFragment;
 }
 
-export interface ApprovalEventObject {
-  _owner: string;
-  _approved: string;
-  _tokenId: BigNumber;
+export namespace ApprovalEvent {
+  export type InputTuple = [
+    _owner: AddressLike,
+    _approved: AddressLike,
+    _tokenId: BigNumberish
+  ];
+  export type OutputTuple = [
+    _owner: string,
+    _approved: string,
+    _tokenId: bigint
+  ];
+  export interface OutputObject {
+    _owner: string;
+    _approved: string;
+    _tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ApprovalEvent = TypedEvent<
-  [string, string, BigNumber],
-  ApprovalEventObject
->;
 
-export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>;
-
-export interface ApprovalForAllEventObject {
-  _owner: string;
-  _operator: string;
-  _approved: boolean;
+export namespace ApprovalForAllEvent {
+  export type InputTuple = [
+    _owner: AddressLike,
+    _operator: AddressLike,
+    _approved: boolean
+  ];
+  export type OutputTuple = [
+    _owner: string,
+    _operator: string,
+    _approved: boolean
+  ];
+  export interface OutputObject {
+    _owner: string;
+    _operator: string;
+    _approved: boolean;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ApprovalForAllEvent = TypedEvent<
-  [string, string, boolean],
-  ApprovalForAllEventObject
->;
 
-export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
-
-export interface ApprovalValueEventObject {
-  _tokenId: BigNumber;
-  _operator: string;
-  _value: BigNumber;
+export namespace ApprovalValueEvent {
+  export type InputTuple = [
+    _tokenId: BigNumberish,
+    _operator: AddressLike,
+    _value: BigNumberish
+  ];
+  export type OutputTuple = [
+    _tokenId: bigint,
+    _operator: string,
+    _value: bigint
+  ];
+  export interface OutputObject {
+    _tokenId: bigint;
+    _operator: string;
+    _value: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ApprovalValueEvent = TypedEvent<
-  [BigNumber, string, BigNumber],
-  ApprovalValueEventObject
->;
 
-export type ApprovalValueEventFilter = TypedEventFilter<ApprovalValueEvent>;
-
-export interface SlotChangedEventObject {
-  _tokenId: BigNumber;
-  _oldSlot: BigNumber;
-  _newSlot: BigNumber;
+export namespace SlotChangedEvent {
+  export type InputTuple = [
+    _tokenId: BigNumberish,
+    _oldSlot: BigNumberish,
+    _newSlot: BigNumberish
+  ];
+  export type OutputTuple = [
+    _tokenId: bigint,
+    _oldSlot: bigint,
+    _newSlot: bigint
+  ];
+  export interface OutputObject {
+    _tokenId: bigint;
+    _oldSlot: bigint;
+    _newSlot: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type SlotChangedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber],
-  SlotChangedEventObject
->;
 
-export type SlotChangedEventFilter = TypedEventFilter<SlotChangedEvent>;
-
-export interface TransferEventObject {
-  _from: string;
-  _to: string;
-  _tokenId: BigNumber;
+export namespace TransferEvent {
+  export type InputTuple = [
+    _from: AddressLike,
+    _to: AddressLike,
+    _tokenId: BigNumberish
+  ];
+  export type OutputTuple = [_from: string, _to: string, _tokenId: bigint];
+  export interface OutputObject {
+    _from: string;
+    _to: string;
+    _tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type TransferEvent = TypedEvent<
-  [string, string, BigNumber],
-  TransferEventObject
->;
 
-export type TransferEventFilter = TypedEventFilter<TransferEvent>;
-
-export interface TransferValueEventObject {
-  _fromTokenId: BigNumber;
-  _toTokenId: BigNumber;
-  _value: BigNumber;
+export namespace TransferValueEvent {
+  export type InputTuple = [
+    _fromTokenId: BigNumberish,
+    _toTokenId: BigNumberish,
+    _value: BigNumberish
+  ];
+  export type OutputTuple = [
+    _fromTokenId: bigint,
+    _toTokenId: bigint,
+    _value: bigint
+  ];
+  export interface OutputObject {
+    _fromTokenId: bigint;
+    _toTokenId: bigint;
+    _value: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type TransferValueEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber],
-  TransferValueEventObject
->;
-
-export type TransferValueEventFilter = TypedEventFilter<TransferValueEvent>;
 
 export interface IERC3525 extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IERC3525;
+  waitForDeployment(): Promise<this>;
 
   interface: IERC3525Interface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    allowance(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      _operator: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    "approve(address,uint256)"(
-      _approved: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    "approve(uint256,address,uint256)"(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      _operator: PromiseOrValue<string>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  allowance: TypedContractMethod<
+    [_tokenId: BigNumberish, _operator: AddressLike],
+    [bigint],
+    "view"
+  >;
 
-    "balanceOf(address)"(
-      _owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+  "approve(address,uint256)": TypedContractMethod<
+    [_approved: AddressLike, _tokenId: BigNumberish],
+    [void],
+    "payable"
+  >;
 
-    "balanceOf(uint256)"(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+  "approve(uint256,address,uint256)": TypedContractMethod<
+    [_tokenId: BigNumberish, _operator: AddressLike, _value: BigNumberish],
+    [void],
+    "payable"
+  >;
 
-    getApproved(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+  "balanceOf(address)": TypedContractMethod<
+    [_owner: AddressLike],
+    [bigint],
+    "view"
+  >;
 
-    isApprovedForAll(
-      _owner: PromiseOrValue<string>,
-      _operator: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+  "balanceOf(uint256)": TypedContractMethod<
+    [_tokenId: BigNumberish],
+    [bigint],
+    "view"
+  >;
 
-    ownerOf(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+  getApproved: TypedContractMethod<[_tokenId: BigNumberish], [string], "view">;
 
-    "safeTransferFrom(address,address,uint256)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  isApprovedForAll: TypedContractMethod<
+    [_owner: AddressLike, _operator: AddressLike],
+    [boolean],
+    "view"
+  >;
 
-    "safeTransferFrom(address,address,uint256,bytes)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  ownerOf: TypedContractMethod<[_tokenId: BigNumberish], [string], "view">;
 
-    setApprovalForAll(
-      _operator: PromiseOrValue<string>,
-      _approved: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  "safeTransferFrom(address,address,uint256)": TypedContractMethod<
+    [_from: AddressLike, _to: AddressLike, _tokenId: BigNumberish],
+    [void],
+    "payable"
+  >;
 
-    slotOf(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+  "safeTransferFrom(address,address,uint256,bytes)": TypedContractMethod<
+    [
+      _from: AddressLike,
+      _to: AddressLike,
+      _tokenId: BigNumberish,
+      data: BytesLike
+    ],
+    [void],
+    "payable"
+  >;
 
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+  setApprovalForAll: TypedContractMethod<
+    [_operator: AddressLike, _approved: boolean],
+    [void],
+    "nonpayable"
+  >;
 
-    "transferFrom(uint256,address,uint256)"(
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _to: PromiseOrValue<string>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  slotOf: TypedContractMethod<[_tokenId: BigNumberish], [bigint], "view">;
 
-    "transferFrom(address,address,uint256)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  supportsInterface: TypedContractMethod<
+    [interfaceId: BytesLike],
+    [boolean],
+    "view"
+  >;
 
-    "transferFrom(uint256,uint256,uint256)"(
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _toTokenId: PromiseOrValue<BigNumberish>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  "transferFrom(uint256,address,uint256)": TypedContractMethod<
+    [_fromTokenId: BigNumberish, _to: AddressLike, _value: BigNumberish],
+    [bigint],
+    "payable"
+  >;
 
-    valueDecimals(overrides?: CallOverrides): Promise<[number]>;
-  };
+  "transferFrom(address,address,uint256)": TypedContractMethod<
+    [_from: AddressLike, _to: AddressLike, _tokenId: BigNumberish],
+    [void],
+    "payable"
+  >;
 
-  allowance(
-    _tokenId: PromiseOrValue<BigNumberish>,
-    _operator: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  "transferFrom(uint256,uint256,uint256)": TypedContractMethod<
+    [
+      _fromTokenId: BigNumberish,
+      _toTokenId: BigNumberish,
+      _value: BigNumberish
+    ],
+    [void],
+    "payable"
+  >;
 
-  "approve(address,uint256)"(
-    _approved: PromiseOrValue<string>,
-    _tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  valueDecimals: TypedContractMethod<[], [bigint], "view">;
 
-  "approve(uint256,address,uint256)"(
-    _tokenId: PromiseOrValue<BigNumberish>,
-    _operator: PromiseOrValue<string>,
-    _value: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-  "balanceOf(address)"(
-    _owner: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  getFunction(
+    nameOrSignature: "allowance"
+  ): TypedContractMethod<
+    [_tokenId: BigNumberish, _operator: AddressLike],
+    [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "approve(address,uint256)"
+  ): TypedContractMethod<
+    [_approved: AddressLike, _tokenId: BigNumberish],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "approve(uint256,address,uint256)"
+  ): TypedContractMethod<
+    [_tokenId: BigNumberish, _operator: AddressLike, _value: BigNumberish],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "balanceOf(address)"
+  ): TypedContractMethod<[_owner: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "balanceOf(uint256)"
+  ): TypedContractMethod<[_tokenId: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getApproved"
+  ): TypedContractMethod<[_tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "isApprovedForAll"
+  ): TypedContractMethod<
+    [_owner: AddressLike, _operator: AddressLike],
+    [boolean],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "ownerOf"
+  ): TypedContractMethod<[_tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "safeTransferFrom(address,address,uint256)"
+  ): TypedContractMethod<
+    [_from: AddressLike, _to: AddressLike, _tokenId: BigNumberish],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "safeTransferFrom(address,address,uint256,bytes)"
+  ): TypedContractMethod<
+    [
+      _from: AddressLike,
+      _to: AddressLike,
+      _tokenId: BigNumberish,
+      data: BytesLike
+    ],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "setApprovalForAll"
+  ): TypedContractMethod<
+    [_operator: AddressLike, _approved: boolean],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "slotOf"
+  ): TypedContractMethod<[_tokenId: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "supportsInterface"
+  ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "transferFrom(uint256,address,uint256)"
+  ): TypedContractMethod<
+    [_fromTokenId: BigNumberish, _to: AddressLike, _value: BigNumberish],
+    [bigint],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "transferFrom(address,address,uint256)"
+  ): TypedContractMethod<
+    [_from: AddressLike, _to: AddressLike, _tokenId: BigNumberish],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "transferFrom(uint256,uint256,uint256)"
+  ): TypedContractMethod<
+    [
+      _fromTokenId: BigNumberish,
+      _toTokenId: BigNumberish,
+      _value: BigNumberish
+    ],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "valueDecimals"
+  ): TypedContractMethod<[], [bigint], "view">;
 
-  "balanceOf(uint256)"(
-    _tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  getApproved(
-    _tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  isApprovedForAll(
-    _owner: PromiseOrValue<string>,
-    _operator: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  ownerOf(
-    _tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  "safeTransferFrom(address,address,uint256)"(
-    _from: PromiseOrValue<string>,
-    _to: PromiseOrValue<string>,
-    _tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "safeTransferFrom(address,address,uint256,bytes)"(
-    _from: PromiseOrValue<string>,
-    _to: PromiseOrValue<string>,
-    _tokenId: PromiseOrValue<BigNumberish>,
-    data: PromiseOrValue<BytesLike>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setApprovalForAll(
-    _operator: PromiseOrValue<string>,
-    _approved: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  slotOf(
-    _tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  supportsInterface(
-    interfaceId: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  "transferFrom(uint256,address,uint256)"(
-    _fromTokenId: PromiseOrValue<BigNumberish>,
-    _to: PromiseOrValue<string>,
-    _value: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "transferFrom(address,address,uint256)"(
-    _from: PromiseOrValue<string>,
-    _to: PromiseOrValue<string>,
-    _tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "transferFrom(uint256,uint256,uint256)"(
-    _fromTokenId: PromiseOrValue<BigNumberish>,
-    _toTokenId: PromiseOrValue<BigNumberish>,
-    _value: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  valueDecimals(overrides?: CallOverrides): Promise<number>;
-
-  callStatic: {
-    allowance(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      _operator: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "approve(address,uint256)"(
-      _approved: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "approve(uint256,address,uint256)"(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      _operator: PromiseOrValue<string>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "balanceOf(address)"(
-      _owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "balanceOf(uint256)"(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getApproved(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    isApprovedForAll(
-      _owner: PromiseOrValue<string>,
-      _operator: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    ownerOf(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    "safeTransferFrom(address,address,uint256)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "safeTransferFrom(address,address,uint256,bytes)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setApprovalForAll(
-      _operator: PromiseOrValue<string>,
-      _approved: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    slotOf(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    "transferFrom(uint256,address,uint256)"(
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _to: PromiseOrValue<string>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "transferFrom(address,address,uint256)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "transferFrom(uint256,uint256,uint256)"(
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _toTokenId: PromiseOrValue<BigNumberish>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    valueDecimals(overrides?: CallOverrides): Promise<number>;
-  };
+  getEvent(
+    key: "Approval"
+  ): TypedContractEvent<
+    ApprovalEvent.InputTuple,
+    ApprovalEvent.OutputTuple,
+    ApprovalEvent.OutputObject
+  >;
+  getEvent(
+    key: "ApprovalForAll"
+  ): TypedContractEvent<
+    ApprovalForAllEvent.InputTuple,
+    ApprovalForAllEvent.OutputTuple,
+    ApprovalForAllEvent.OutputObject
+  >;
+  getEvent(
+    key: "ApprovalValue"
+  ): TypedContractEvent<
+    ApprovalValueEvent.InputTuple,
+    ApprovalValueEvent.OutputTuple,
+    ApprovalValueEvent.OutputObject
+  >;
+  getEvent(
+    key: "SlotChanged"
+  ): TypedContractEvent<
+    SlotChangedEvent.InputTuple,
+    SlotChangedEvent.OutputTuple,
+    SlotChangedEvent.OutputObject
+  >;
+  getEvent(
+    key: "Transfer"
+  ): TypedContractEvent<
+    TransferEvent.InputTuple,
+    TransferEvent.OutputTuple,
+    TransferEvent.OutputObject
+  >;
+  getEvent(
+    key: "TransferValue"
+  ): TypedContractEvent<
+    TransferValueEvent.InputTuple,
+    TransferValueEvent.OutputTuple,
+    TransferValueEvent.OutputObject
+  >;
 
   filters: {
-    "Approval(address,address,uint256)"(
-      _owner?: PromiseOrValue<string> | null,
-      _approved?: PromiseOrValue<string> | null,
-      _tokenId?: PromiseOrValue<BigNumberish> | null
-    ): ApprovalEventFilter;
-    Approval(
-      _owner?: PromiseOrValue<string> | null,
-      _approved?: PromiseOrValue<string> | null,
-      _tokenId?: PromiseOrValue<BigNumberish> | null
-    ): ApprovalEventFilter;
+    "Approval(address,address,uint256)": TypedContractEvent<
+      ApprovalEvent.InputTuple,
+      ApprovalEvent.OutputTuple,
+      ApprovalEvent.OutputObject
+    >;
+    Approval: TypedContractEvent<
+      ApprovalEvent.InputTuple,
+      ApprovalEvent.OutputTuple,
+      ApprovalEvent.OutputObject
+    >;
 
-    "ApprovalForAll(address,address,bool)"(
-      _owner?: PromiseOrValue<string> | null,
-      _operator?: PromiseOrValue<string> | null,
-      _approved?: null
-    ): ApprovalForAllEventFilter;
-    ApprovalForAll(
-      _owner?: PromiseOrValue<string> | null,
-      _operator?: PromiseOrValue<string> | null,
-      _approved?: null
-    ): ApprovalForAllEventFilter;
+    "ApprovalForAll(address,address,bool)": TypedContractEvent<
+      ApprovalForAllEvent.InputTuple,
+      ApprovalForAllEvent.OutputTuple,
+      ApprovalForAllEvent.OutputObject
+    >;
+    ApprovalForAll: TypedContractEvent<
+      ApprovalForAllEvent.InputTuple,
+      ApprovalForAllEvent.OutputTuple,
+      ApprovalForAllEvent.OutputObject
+    >;
 
-    "ApprovalValue(uint256,address,uint256)"(
-      _tokenId?: PromiseOrValue<BigNumberish> | null,
-      _operator?: PromiseOrValue<string> | null,
-      _value?: null
-    ): ApprovalValueEventFilter;
-    ApprovalValue(
-      _tokenId?: PromiseOrValue<BigNumberish> | null,
-      _operator?: PromiseOrValue<string> | null,
-      _value?: null
-    ): ApprovalValueEventFilter;
+    "ApprovalValue(uint256,address,uint256)": TypedContractEvent<
+      ApprovalValueEvent.InputTuple,
+      ApprovalValueEvent.OutputTuple,
+      ApprovalValueEvent.OutputObject
+    >;
+    ApprovalValue: TypedContractEvent<
+      ApprovalValueEvent.InputTuple,
+      ApprovalValueEvent.OutputTuple,
+      ApprovalValueEvent.OutputObject
+    >;
 
-    "SlotChanged(uint256,uint256,uint256)"(
-      _tokenId?: PromiseOrValue<BigNumberish> | null,
-      _oldSlot?: PromiseOrValue<BigNumberish> | null,
-      _newSlot?: PromiseOrValue<BigNumberish> | null
-    ): SlotChangedEventFilter;
-    SlotChanged(
-      _tokenId?: PromiseOrValue<BigNumberish> | null,
-      _oldSlot?: PromiseOrValue<BigNumberish> | null,
-      _newSlot?: PromiseOrValue<BigNumberish> | null
-    ): SlotChangedEventFilter;
+    "SlotChanged(uint256,uint256,uint256)": TypedContractEvent<
+      SlotChangedEvent.InputTuple,
+      SlotChangedEvent.OutputTuple,
+      SlotChangedEvent.OutputObject
+    >;
+    SlotChanged: TypedContractEvent<
+      SlotChangedEvent.InputTuple,
+      SlotChangedEvent.OutputTuple,
+      SlotChangedEvent.OutputObject
+    >;
 
-    "Transfer(address,address,uint256)"(
-      _from?: PromiseOrValue<string> | null,
-      _to?: PromiseOrValue<string> | null,
-      _tokenId?: PromiseOrValue<BigNumberish> | null
-    ): TransferEventFilter;
-    Transfer(
-      _from?: PromiseOrValue<string> | null,
-      _to?: PromiseOrValue<string> | null,
-      _tokenId?: PromiseOrValue<BigNumberish> | null
-    ): TransferEventFilter;
+    "Transfer(address,address,uint256)": TypedContractEvent<
+      TransferEvent.InputTuple,
+      TransferEvent.OutputTuple,
+      TransferEvent.OutputObject
+    >;
+    Transfer: TypedContractEvent<
+      TransferEvent.InputTuple,
+      TransferEvent.OutputTuple,
+      TransferEvent.OutputObject
+    >;
 
-    "TransferValue(uint256,uint256,uint256)"(
-      _fromTokenId?: PromiseOrValue<BigNumberish> | null,
-      _toTokenId?: PromiseOrValue<BigNumberish> | null,
-      _value?: null
-    ): TransferValueEventFilter;
-    TransferValue(
-      _fromTokenId?: PromiseOrValue<BigNumberish> | null,
-      _toTokenId?: PromiseOrValue<BigNumberish> | null,
-      _value?: null
-    ): TransferValueEventFilter;
-  };
-
-  estimateGas: {
-    allowance(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      _operator: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "approve(address,uint256)"(
-      _approved: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "approve(uint256,address,uint256)"(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      _operator: PromiseOrValue<string>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "balanceOf(address)"(
-      _owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "balanceOf(uint256)"(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getApproved(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    isApprovedForAll(
-      _owner: PromiseOrValue<string>,
-      _operator: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    ownerOf(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "safeTransferFrom(address,address,uint256)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "safeTransferFrom(address,address,uint256,bytes)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setApprovalForAll(
-      _operator: PromiseOrValue<string>,
-      _approved: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    slotOf(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "transferFrom(uint256,address,uint256)"(
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _to: PromiseOrValue<string>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "transferFrom(address,address,uint256)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "transferFrom(uint256,uint256,uint256)"(
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _toTokenId: PromiseOrValue<BigNumberish>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    valueDecimals(overrides?: CallOverrides): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    allowance(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      _operator: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "approve(address,uint256)"(
-      _approved: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "approve(uint256,address,uint256)"(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      _operator: PromiseOrValue<string>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "balanceOf(address)"(
-      _owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "balanceOf(uint256)"(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getApproved(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isApprovedForAll(
-      _owner: PromiseOrValue<string>,
-      _operator: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    ownerOf(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "safeTransferFrom(address,address,uint256)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "safeTransferFrom(address,address,uint256,bytes)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setApprovalForAll(
-      _operator: PromiseOrValue<string>,
-      _approved: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    slotOf(
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "transferFrom(uint256,address,uint256)"(
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _to: PromiseOrValue<string>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "transferFrom(address,address,uint256)"(
-      _from: PromiseOrValue<string>,
-      _to: PromiseOrValue<string>,
-      _tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "transferFrom(uint256,uint256,uint256)"(
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _toTokenId: PromiseOrValue<BigNumberish>,
-      _value: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    valueDecimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    "TransferValue(uint256,uint256,uint256)": TypedContractEvent<
+      TransferValueEvent.InputTuple,
+      TransferValueEvent.OutputTuple,
+      TransferValueEvent.OutputObject
+    >;
+    TransferValue: TypedContractEvent<
+      TransferValueEvent.InputTuple,
+      TransferValueEvent.OutputTuple,
+      TransferValueEvent.OutputObject
+    >;
   };
 }

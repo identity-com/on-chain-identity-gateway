@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   ContextUpgradeable,
   ContextUpgradeableInterface,
@@ -29,12 +28,12 @@ const _abi = [
 export class ContextUpgradeable__factory {
   static readonly abi = _abi;
   static createInterface(): ContextUpgradeableInterface {
-    return new utils.Interface(_abi) as ContextUpgradeableInterface;
+    return new Interface(_abi) as ContextUpgradeableInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): ContextUpgradeable {
-    return new Contract(address, _abi, signerOrProvider) as ContextUpgradeable;
+    return new Contract(address, _abi, runner) as unknown as ContextUpgradeable;
   }
 }

@@ -3,15 +3,19 @@
 /* tslint:disable */
 /* eslint-disable */
 import {
-  Signer,
-  utils,
   Contract,
   ContractFactory,
-  BigNumberish,
-  Overrides,
+  ContractTransactionResponse,
+  Interface,
 } from "ethers";
-import type { Provider, TransactionRequest } from "@ethersproject/providers";
-import type { PromiseOrValue } from "../../../common";
+import type {
+  Signer,
+  BigNumberish,
+  AddressLike,
+  ContractDeployTransaction,
+  ContractRunner,
+} from "ethers";
+import type { NonPayableOverrides } from "../../../common";
 import type {
   StubMultisig,
   StubMultisigInterface,
@@ -69,44 +73,45 @@ export class StubMultisig__factory extends ContractFactory {
     }
   }
 
-  override deploy(
-    gatewayTokenContract: PromiseOrValue<string>,
-    gatekeeperNetwork: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<StubMultisig> {
-    return super.deploy(
-      gatewayTokenContract,
-      gatekeeperNetwork,
-      overrides || {}
-    ) as Promise<StubMultisig>;
-  }
   override getDeployTransaction(
-    gatewayTokenContract: PromiseOrValue<string>,
-    gatekeeperNetwork: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): TransactionRequest {
+    gatewayTokenContract: AddressLike,
+    gatekeeperNetwork: BigNumberish,
+    overrides?: NonPayableOverrides & { from?: string }
+  ): Promise<ContractDeployTransaction> {
     return super.getDeployTransaction(
       gatewayTokenContract,
       gatekeeperNetwork,
       overrides || {}
     );
   }
-  override attach(address: string): StubMultisig {
-    return super.attach(address) as StubMultisig;
+  override deploy(
+    gatewayTokenContract: AddressLike,
+    gatekeeperNetwork: BigNumberish,
+    overrides?: NonPayableOverrides & { from?: string }
+  ) {
+    return super.deploy(
+      gatewayTokenContract,
+      gatekeeperNetwork,
+      overrides || {}
+    ) as Promise<
+      StubMultisig & {
+        deploymentTransaction(): ContractTransactionResponse;
+      }
+    >;
   }
-  override connect(signer: Signer): StubMultisig__factory {
-    return super.connect(signer) as StubMultisig__factory;
+  override connect(runner: ContractRunner | null): StubMultisig__factory {
+    return super.connect(runner) as StubMultisig__factory;
   }
 
   static readonly bytecode = _bytecode;
   static readonly abi = _abi;
   static createInterface(): StubMultisigInterface {
-    return new utils.Interface(_abi) as StubMultisigInterface;
+    return new Interface(_abi) as StubMultisigInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): StubMultisig {
-    return new Contract(address, _abi, signerOrProvider) as StubMultisig;
+    return new Contract(address, _abi, runner) as unknown as StubMultisig;
   }
 }

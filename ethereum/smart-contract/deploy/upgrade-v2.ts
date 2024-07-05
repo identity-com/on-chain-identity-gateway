@@ -11,7 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const chargeHandler = await deployments.get('ChargeHandlerProxy');
 
   // upgrade the gateway token
-  await upgrades.upgradeProxy(deployedGatewayToken, gatewayTokenFactory);
+  await upgrades.upgradeProxy(deployedGatewayToken.address, gatewayTokenFactory);
 
   // wait for the upgrade to be mined
   console.log('Upgraded - waiting 30s');

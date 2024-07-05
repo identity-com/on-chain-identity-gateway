@@ -4,168 +4,161 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface IERC721FreezableInterface extends utils.Interface {
-  functions: {
-    "freeze(uint256)": FunctionFragment;
-    "unfreeze(uint256)": FunctionFragment;
-  };
+export interface IERC721FreezableInterface extends Interface {
+  getFunction(nameOrSignature: "freeze" | "unfreeze"): FunctionFragment;
 
-  getFunction(nameOrSignatureOrTopic: "freeze" | "unfreeze"): FunctionFragment;
+  getEvent(nameOrSignatureOrTopic: "Freeze" | "Unfreeze"): EventFragment;
 
   encodeFunctionData(
     functionFragment: "freeze",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "unfreeze",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
 
   decodeFunctionResult(functionFragment: "freeze", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "unfreeze", data: BytesLike): Result;
-
-  events: {
-    "Freeze(uint256)": EventFragment;
-    "Unfreeze(uint256)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "Freeze"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Unfreeze"): EventFragment;
 }
 
-export interface FreezeEventObject {
-  tokenId: BigNumber;
+export namespace FreezeEvent {
+  export type InputTuple = [tokenId: BigNumberish];
+  export type OutputTuple = [tokenId: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type FreezeEvent = TypedEvent<[BigNumber], FreezeEventObject>;
 
-export type FreezeEventFilter = TypedEventFilter<FreezeEvent>;
-
-export interface UnfreezeEventObject {
-  tokenId: BigNumber;
+export namespace UnfreezeEvent {
+  export type InputTuple = [tokenId: BigNumberish];
+  export type OutputTuple = [tokenId: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type UnfreezeEvent = TypedEvent<[BigNumber], UnfreezeEventObject>;
-
-export type UnfreezeEventFilter = TypedEventFilter<UnfreezeEvent>;
 
 export interface IERC721Freezable extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IERC721Freezable;
+  waitForDeployment(): Promise<this>;
 
   interface: IERC721FreezableInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    freeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    unfreeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  freeze(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  freeze: TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
 
-  unfreeze(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  unfreeze: TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
 
-  callStatic: {
-    freeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-    unfreeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  getFunction(
+    nameOrSignature: "freeze"
+  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "unfreeze"
+  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
+
+  getEvent(
+    key: "Freeze"
+  ): TypedContractEvent<
+    FreezeEvent.InputTuple,
+    FreezeEvent.OutputTuple,
+    FreezeEvent.OutputObject
+  >;
+  getEvent(
+    key: "Unfreeze"
+  ): TypedContractEvent<
+    UnfreezeEvent.InputTuple,
+    UnfreezeEvent.OutputTuple,
+    UnfreezeEvent.OutputObject
+  >;
 
   filters: {
-    "Freeze(uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null
-    ): FreezeEventFilter;
-    Freeze(tokenId?: PromiseOrValue<BigNumberish> | null): FreezeEventFilter;
+    "Freeze(uint256)": TypedContractEvent<
+      FreezeEvent.InputTuple,
+      FreezeEvent.OutputTuple,
+      FreezeEvent.OutputObject
+    >;
+    Freeze: TypedContractEvent<
+      FreezeEvent.InputTuple,
+      FreezeEvent.OutputTuple,
+      FreezeEvent.OutputObject
+    >;
 
-    "Unfreeze(uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null
-    ): UnfreezeEventFilter;
-    Unfreeze(
-      tokenId?: PromiseOrValue<BigNumberish> | null
-    ): UnfreezeEventFilter;
-  };
-
-  estimateGas: {
-    freeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    unfreeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    freeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    unfreeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "Unfreeze(uint256)": TypedContractEvent<
+      UnfreezeEvent.InputTuple,
+      UnfreezeEvent.OutputTuple,
+      UnfreezeEvent.OutputObject
+    >;
+    Unfreeze: TypedContractEvent<
+      UnfreezeEvent.InputTuple,
+      UnfreezeEvent.OutputTuple,
+      UnfreezeEvent.OutputObject
+    >;
   };
 }

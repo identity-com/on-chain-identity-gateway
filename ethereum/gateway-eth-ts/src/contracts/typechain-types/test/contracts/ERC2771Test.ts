@@ -4,42 +4,29 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface ERC2771TestInterface extends utils.Interface {
-  functions: {
-    "addForwarder(address)": FunctionFragment;
-    "getMsgData()": FunctionFragment;
-    "getMsgDataWithArg(uint256)": FunctionFragment;
-    "getMsgSender()": FunctionFragment;
-    "isTrustedForwarder(address)": FunctionFragment;
-    "removeForwarder(address)": FunctionFragment;
-  };
-
+export interface ERC2771TestInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic:
+    nameOrSignature:
       | "addForwarder"
       | "getMsgData"
       | "getMsgDataWithArg"
@@ -48,9 +35,11 @@ export interface ERC2771TestInterface extends utils.Interface {
       | "removeForwarder"
   ): FunctionFragment;
 
+  getEvent(nameOrSignatureOrTopic: "MsgData" | "MsgSender"): EventFragment;
+
   encodeFunctionData(
     functionFragment: "addForwarder",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getMsgData",
@@ -58,7 +47,7 @@ export interface ERC2771TestInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getMsgDataWithArg",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getMsgSender",
@@ -66,11 +55,11 @@ export interface ERC2771TestInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "isTrustedForwarder",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "removeForwarder",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
 
   decodeFunctionResult(
@@ -94,205 +83,162 @@ export interface ERC2771TestInterface extends utils.Interface {
     functionFragment: "removeForwarder",
     data: BytesLike
   ): Result;
-
-  events: {
-    "MsgData(bytes)": EventFragment;
-    "MsgSender(address)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "MsgData"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "MsgSender"): EventFragment;
 }
 
-export interface MsgDataEventObject {
-  arg0: string;
+export namespace MsgDataEvent {
+  export type InputTuple = [arg0: BytesLike];
+  export type OutputTuple = [arg0: string];
+  export interface OutputObject {
+    arg0: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type MsgDataEvent = TypedEvent<[string], MsgDataEventObject>;
 
-export type MsgDataEventFilter = TypedEventFilter<MsgDataEvent>;
-
-export interface MsgSenderEventObject {
-  arg0: string;
+export namespace MsgSenderEvent {
+  export type InputTuple = [arg0: AddressLike];
+  export type OutputTuple = [arg0: string];
+  export interface OutputObject {
+    arg0: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type MsgSenderEvent = TypedEvent<[string], MsgSenderEventObject>;
-
-export type MsgSenderEventFilter = TypedEventFilter<MsgSenderEvent>;
 
 export interface ERC2771Test extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): ERC2771Test;
+  waitForDeployment(): Promise<this>;
 
   interface: ERC2771TestInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    getMsgData(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    getMsgDataWithArg(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  addForwarder: TypedContractMethod<
+    [forwarder: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    getMsgSender(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  getMsgData: TypedContractMethod<[], [void], "nonpayable">;
 
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+  getMsgDataWithArg: TypedContractMethod<
+    [arg0: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  getMsgSender: TypedContractMethod<[], [string], "nonpayable">;
 
-  addForwarder(
-    forwarder: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  isTrustedForwarder: TypedContractMethod<
+    [forwarder: AddressLike],
+    [boolean],
+    "view"
+  >;
 
-  getMsgData(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  removeForwarder: TypedContractMethod<
+    [forwarder: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-  getMsgDataWithArg(
-    arg0: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-  getMsgSender(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  getFunction(
+    nameOrSignature: "addForwarder"
+  ): TypedContractMethod<[forwarder: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "getMsgData"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "getMsgDataWithArg"
+  ): TypedContractMethod<[arg0: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "getMsgSender"
+  ): TypedContractMethod<[], [string], "nonpayable">;
+  getFunction(
+    nameOrSignature: "isTrustedForwarder"
+  ): TypedContractMethod<[forwarder: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "removeForwarder"
+  ): TypedContractMethod<[forwarder: AddressLike], [void], "nonpayable">;
 
-  isTrustedForwarder(
-    forwarder: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  removeForwarder(
-    forwarder: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  callStatic: {
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    getMsgData(overrides?: CallOverrides): Promise<void>;
-
-    getMsgDataWithArg(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    getMsgSender(overrides?: CallOverrides): Promise<string>;
-
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  getEvent(
+    key: "MsgData"
+  ): TypedContractEvent<
+    MsgDataEvent.InputTuple,
+    MsgDataEvent.OutputTuple,
+    MsgDataEvent.OutputObject
+  >;
+  getEvent(
+    key: "MsgSender"
+  ): TypedContractEvent<
+    MsgSenderEvent.InputTuple,
+    MsgSenderEvent.OutputTuple,
+    MsgSenderEvent.OutputObject
+  >;
 
   filters: {
-    "MsgData(bytes)"(arg0?: null): MsgDataEventFilter;
-    MsgData(arg0?: null): MsgDataEventFilter;
+    "MsgData(bytes)": TypedContractEvent<
+      MsgDataEvent.InputTuple,
+      MsgDataEvent.OutputTuple,
+      MsgDataEvent.OutputObject
+    >;
+    MsgData: TypedContractEvent<
+      MsgDataEvent.InputTuple,
+      MsgDataEvent.OutputTuple,
+      MsgDataEvent.OutputObject
+    >;
 
-    "MsgSender(address)"(arg0?: null): MsgSenderEventFilter;
-    MsgSender(arg0?: null): MsgSenderEventFilter;
-  };
-
-  estimateGas: {
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    getMsgData(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    getMsgDataWithArg(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    getMsgSender(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    getMsgData(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    getMsgDataWithArg(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    getMsgSender(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "MsgSender(address)": TypedContractEvent<
+      MsgSenderEvent.InputTuple,
+      MsgSenderEvent.OutputTuple,
+      MsgSenderEvent.OutputObject
+    >;
+    MsgSender: TypedContractEvent<
+      MsgSenderEvent.InputTuple,
+      MsgSenderEvent.OutputTuple,
+      MsgSenderEvent.OutputObject
+    >;
   };
 }

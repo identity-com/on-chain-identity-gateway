@@ -1,10 +1,9 @@
 import { addFlagsToBitmask } from "./bitmask_flags";
 import { ZERO_BN } from "./constants";
-import { BigNumber } from "ethers";
 import assert = require("assert");
 
 describe("Bitmask flags test", function () {
-  let bitmask: BigNumber = ZERO_BN;
+  let bitmask: bigint = ZERO_BN;
   let flags: number[];
 
   it("Should return bitmask == 1 on adding flag with 0 index", function () {

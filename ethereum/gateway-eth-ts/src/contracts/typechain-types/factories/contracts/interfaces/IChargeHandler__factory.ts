@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   IChargeHandler,
   IChargeHandlerInterface,
@@ -203,12 +202,12 @@ const _abi = [
 export class IChargeHandler__factory {
   static readonly abi = _abi;
   static createInterface(): IChargeHandlerInterface {
-    return new utils.Interface(_abi) as IChargeHandlerInterface;
+    return new Interface(_abi) as IChargeHandlerInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): IChargeHandler {
-    return new Contract(address, _abi, signerOrProvider) as IChargeHandler;
+    return new Contract(address, _abi, runner) as unknown as IChargeHandler;
   }
 }

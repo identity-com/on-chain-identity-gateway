@@ -1,4 +1,4 @@
-import { BigNumber, Overrides } from "ethers";
+import { BigNumberish, Overrides } from "ethers";
 import { GatewayToken } from "../contracts/typechain-types";
 
 export type Options = Overrides & {
@@ -13,10 +13,10 @@ export enum TokenState {
 
 export declare type TokenData = {
   owner: string;
-  tokenId: BigNumber;
+  tokenId: BigNumberish;
   state: TokenState;
-  expiration: BigNumber;
-  bitmask: BigNumber;
+  expiration: BigInt;
+  bitmask: BigInt;
 
   tokenURI?: string;
 };
@@ -51,7 +51,7 @@ export const mappedOpNames = [
   "revoke",
   "burn",
   "setBitmask",
-];
+] as (keyof GatewayToken)[];
 
 type SubsetMappedWriteOps = Pick<GatewayToken, WriteOps>;
 

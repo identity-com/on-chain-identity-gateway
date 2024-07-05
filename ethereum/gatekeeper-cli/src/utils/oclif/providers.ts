@@ -39,7 +39,7 @@ export const networks = {
   },
   optimismSepolia: {
     url: 'https://optimism-sepolia.infura.io/v3/',
-    chainId: 11155420,
+    chainId: 11_155_420,
   },
   optimism: {
     url: 'https://optimism-mainnet.infura.io/v3/',

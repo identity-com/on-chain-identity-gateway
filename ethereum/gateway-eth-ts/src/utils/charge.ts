@@ -1,9 +1,8 @@
-import { BigNumber, ethers, PopulatedTransaction } from "ethers";
+import { BigNumberish, ContractTransaction, ethers, Provider } from "ethers";
 import {
   DEFAULT_CHARGE_HANDLER_ADDRESS,
   DEFAULT_GATEWAY_TOKEN_ADDRESS,
 } from "./constants";
-import { Provider } from "@ethersproject/providers";
 import { ChargeHandler__factory } from "../contracts/typechain-types";
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -15,7 +14,7 @@ export enum ChargeType {
 }
 
 export type Charge = {
-  value: BigNumber;
+  value: BigNumberish;
   chargeType: ChargeType;
   token: string;
   recipient: string;
@@ -24,14 +23,14 @@ export type Charge = {
 
 // A null object for passing into functions that require charge details, when no charge is incurred
 export const NULL_CHARGE: Charge = {
-  value: BigNumber.from(0),
+  value: BigInt(0),
   chargeType: ChargeType.NONE,
   token: ZERO_ADDRESS,
   recipient: ZERO_ADDRESS,
   tokenSender: ZERO_ADDRESS,
 };
 
-export const makeWeiCharge = (value: BigNumber, recipient: string) => ({
+export const makeWeiCharge = (value: BigNumberish, recipient: string) => ({
   token: ZERO_ADDRESS,
   chargeType: ChargeType.ETH,
   value,
@@ -40,7 +39,7 @@ export const makeWeiCharge = (value: BigNumber, recipient: string) => ({
 });
 
 export const makeERC20Charge = (
-  value: BigNumber,
+  value: BigNumberish,
   token: string,
   tokenSender: string,
   tokenRecipient: string
@@ -56,7 +55,7 @@ export const approveERC20Charge = (
   charge: Charge,
   provider: Provider,
   contract: string = DEFAULT_CHARGE_HANDLER_ADDRESS
-): Promise<PopulatedTransaction> => {
+): Promise<ContractTransaction> => {
   if (charge.chargeType !== ChargeType.ERC20) {
     throw new Error("Invalid charge type - must be ERC20");
   }
@@ -69,7 +68,7 @@ export const approveERC20Charge = (
     provider
   );
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  return tokenContract.populateTransaction.approve(contract, charge.value);
+  return tokenContract.approve.populateTransaction(contract, charge.value);
 };
 
 export const approveInternalERC20Charge = (
@@ -78,7 +77,7 @@ export const approveInternalERC20Charge = (
   provider: Provider,
   chargeContractAddress: string = DEFAULT_GATEWAY_TOKEN_ADDRESS,
   gatewayContractAddress: string = DEFAULT_GATEWAY_TOKEN_ADDRESS
-): Promise<PopulatedTransaction> => {
+): Promise<ContractTransaction> => {
   if (charge.chargeType !== ChargeType.ERC20) {
     throw new Error("Invalid charge type - must be ERC20");
   }
@@ -89,7 +88,7 @@ export const approveInternalERC20Charge = (
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
-  return chargeContract.populateTransaction.setApproval(
+  return chargeContract.setApproval.populateTransaction(
     gatewayContractAddress,
     charge.token,
     charge.value,

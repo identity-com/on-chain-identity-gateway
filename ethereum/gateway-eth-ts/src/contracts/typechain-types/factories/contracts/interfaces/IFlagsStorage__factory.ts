@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   IFlagsStorage,
   IFlagsStorageInterface,
@@ -206,12 +205,12 @@ const _abi = [
 export class IFlagsStorage__factory {
   static readonly abi = _abi;
   static createInterface(): IFlagsStorageInterface {
-    return new utils.Interface(_abi) as IFlagsStorageInterface;
+    return new Interface(_abi) as IFlagsStorageInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): IFlagsStorage {
-    return new Contract(address, _abi, signerOrProvider) as IFlagsStorage;
+    return new Contract(address, _abi, runner) as unknown as IFlagsStorage;
   }
 }

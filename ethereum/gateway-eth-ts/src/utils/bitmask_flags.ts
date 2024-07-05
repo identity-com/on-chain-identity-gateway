@@ -1,13 +1,9 @@
-import { BigNumber } from "ethers";
 import { ONE_BN } from "./constants";
 
-export const addFlagsToBitmask = (
-  bitmask: BigNumber,
-  flags: number[]
-): BigNumber => {
+export const addFlagsToBitmask = (bitmask: bigint, flags: number[]): bigint => {
   for (const index of flags) {
     if (index >= 256) break;
-    bitmask = bitmask.or(ONE_BN.shl(index));
+    bitmask = bitmask | (ONE_BN << BigInt(index));
   }
 
   return bitmask;

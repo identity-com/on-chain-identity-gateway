@@ -4,63 +4,51 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PayableOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
 export type ChargeStruct = {
-  value: PromiseOrValue<BigNumberish>;
-  chargeType: PromiseOrValue<BigNumberish>;
-  token: PromiseOrValue<string>;
-  tokenSender: PromiseOrValue<string>;
-  recipient: PromiseOrValue<string>;
+  value: BigNumberish;
+  chargeType: BigNumberish;
+  token: AddressLike;
+  tokenSender: AddressLike;
+  recipient: AddressLike;
 };
 
-export type ChargeStructOutput = [BigNumber, number, string, string, string] & {
-  value: BigNumber;
-  chargeType: number;
+export type ChargeStructOutput = [
+  value: bigint,
+  chargeType: bigint,
+  token: string,
+  tokenSender: string,
+  recipient: string
+] & {
+  value: bigint;
+  chargeType: bigint;
   token: string;
   tokenSender: string;
   recipient: string;
 };
 
-export interface IGatewayTokenInterface extends utils.Interface {
-  functions: {
-    "addNetworkAuthority(address,uint256)": FunctionFragment;
-    "createNetwork(uint256,string,bool,address)": FunctionFragment;
-    "getNetwork(uint256)": FunctionFragment;
-    "getToken(uint256)": FunctionFragment;
-    "isGatekeeper(address,uint256)": FunctionFragment;
-    "isNetworkAuthority(address,uint256)": FunctionFragment;
-    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
-    "removeNetworkAuthority(address,uint256)": FunctionFragment;
-    "renameNetwork(uint256,string)": FunctionFragment;
-    "transferDAOManager(address,address,uint256)": FunctionFragment;
-  };
-
+export interface IGatewayTokenInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic:
+    nameOrSignature:
       | "addNetworkAuthority"
       | "createNetwork"
       | "getNetwork"
@@ -73,60 +61,61 @@ export interface IGatewayTokenInterface extends utils.Interface {
       | "transferDAOManager"
   ): FunctionFragment;
 
+  getEvent(
+    nameOrSignatureOrTopic:
+      | "ChargeHandlerUpdated"
+      | "DAOManagerTransferred"
+      | "ForwarderAdded"
+      | "ForwarderRemoved"
+      | "GatekeeperNetworkCreated"
+      | "GatewayTokenInitialized"
+  ): EventFragment;
+
   encodeFunctionData(
     functionFragment: "addNetworkAuthority",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "createNetwork",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<string>
-    ]
+    values: [BigNumberish, string, boolean, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getNetwork",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getToken",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isGatekeeper",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isNetworkAuthority",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
     values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
+      AddressLike,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
       ChargeStruct
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "removeNetworkAuthority",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "renameNetwork",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "transferDAOManager",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, AddressLike, BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -160,538 +149,446 @@ export interface IGatewayTokenInterface extends utils.Interface {
     functionFragment: "transferDAOManager",
     data: BytesLike
   ): Result;
-
-  events: {
-    "ChargeHandlerUpdated(address)": EventFragment;
-    "DAOManagerTransferred(address,address,uint256)": EventFragment;
-    "ForwarderAdded(address)": EventFragment;
-    "ForwarderRemoved(address)": EventFragment;
-    "GatekeeperNetworkCreated(uint256,string,bool,address)": EventFragment;
-    "GatewayTokenInitialized(string,string,address,address,address,address[])": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "ChargeHandlerUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "DAOManagerTransferred"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ForwarderAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ForwarderRemoved"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "GatekeeperNetworkCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "GatewayTokenInitialized"): EventFragment;
 }
 
-export interface ChargeHandlerUpdatedEventObject {
-  chargeHandler: string;
+export namespace ChargeHandlerUpdatedEvent {
+  export type InputTuple = [chargeHandler: AddressLike];
+  export type OutputTuple = [chargeHandler: string];
+  export interface OutputObject {
+    chargeHandler: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ChargeHandlerUpdatedEvent = TypedEvent<
-  [string],
-  ChargeHandlerUpdatedEventObject
->;
 
-export type ChargeHandlerUpdatedEventFilter =
-  TypedEventFilter<ChargeHandlerUpdatedEvent>;
-
-export interface DAOManagerTransferredEventObject {
-  previousDAOManager: string;
-  newDAOManager: string;
-  network: BigNumber;
+export namespace DAOManagerTransferredEvent {
+  export type InputTuple = [
+    previousDAOManager: AddressLike,
+    newDAOManager: AddressLike,
+    network: BigNumberish
+  ];
+  export type OutputTuple = [
+    previousDAOManager: string,
+    newDAOManager: string,
+    network: bigint
+  ];
+  export interface OutputObject {
+    previousDAOManager: string;
+    newDAOManager: string;
+    network: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type DAOManagerTransferredEvent = TypedEvent<
-  [string, string, BigNumber],
-  DAOManagerTransferredEventObject
->;
 
-export type DAOManagerTransferredEventFilter =
-  TypedEventFilter<DAOManagerTransferredEvent>;
-
-export interface ForwarderAddedEventObject {
-  forwarder: string;
+export namespace ForwarderAddedEvent {
+  export type InputTuple = [forwarder: AddressLike];
+  export type OutputTuple = [forwarder: string];
+  export interface OutputObject {
+    forwarder: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ForwarderAddedEvent = TypedEvent<
-  [string],
-  ForwarderAddedEventObject
->;
 
-export type ForwarderAddedEventFilter = TypedEventFilter<ForwarderAddedEvent>;
-
-export interface ForwarderRemovedEventObject {
-  forwarder: string;
+export namespace ForwarderRemovedEvent {
+  export type InputTuple = [forwarder: AddressLike];
+  export type OutputTuple = [forwarder: string];
+  export interface OutputObject {
+    forwarder: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ForwarderRemovedEvent = TypedEvent<
-  [string],
-  ForwarderRemovedEventObject
->;
 
-export type ForwarderRemovedEventFilter =
-  TypedEventFilter<ForwarderRemovedEvent>;
-
-export interface GatekeeperNetworkCreatedEventObject {
-  network: BigNumber;
-  name: string;
-  daoGoverned: boolean;
-  daoManager: string;
+export namespace GatekeeperNetworkCreatedEvent {
+  export type InputTuple = [
+    network: BigNumberish,
+    name: string,
+    daoGoverned: boolean,
+    daoManager: AddressLike
+  ];
+  export type OutputTuple = [
+    network: bigint,
+    name: string,
+    daoGoverned: boolean,
+    daoManager: string
+  ];
+  export interface OutputObject {
+    network: bigint;
+    name: string;
+    daoGoverned: boolean;
+    daoManager: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type GatekeeperNetworkCreatedEvent = TypedEvent<
-  [BigNumber, string, boolean, string],
-  GatekeeperNetworkCreatedEventObject
->;
 
-export type GatekeeperNetworkCreatedEventFilter =
-  TypedEventFilter<GatekeeperNetworkCreatedEvent>;
-
-export interface GatewayTokenInitializedEventObject {
-  name: string;
-  symbol: string;
-  superAdmin: string;
-  flagsStorage: string;
-  chargeHandler: string;
-  trustedForwarders: string[];
+export namespace GatewayTokenInitializedEvent {
+  export type InputTuple = [
+    name: string,
+    symbol: string,
+    superAdmin: AddressLike,
+    flagsStorage: AddressLike,
+    chargeHandler: AddressLike,
+    trustedForwarders: AddressLike[]
+  ];
+  export type OutputTuple = [
+    name: string,
+    symbol: string,
+    superAdmin: string,
+    flagsStorage: string,
+    chargeHandler: string,
+    trustedForwarders: string[]
+  ];
+  export interface OutputObject {
+    name: string;
+    symbol: string;
+    superAdmin: string;
+    flagsStorage: string;
+    chargeHandler: string;
+    trustedForwarders: string[];
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type GatewayTokenInitializedEvent = TypedEvent<
-  [string, string, string, string, string, string[]],
-  GatewayTokenInitializedEventObject
->;
-
-export type GatewayTokenInitializedEventFilter =
-  TypedEventFilter<GatewayTokenInitializedEvent>;
 
 export interface IGatewayToken extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IGatewayToken;
+  waitForDeployment(): Promise<this>;
 
   interface: IGatewayTokenInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    addNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    createNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      daoGoverned: PromiseOrValue<boolean>,
-      daoManager: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    getNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    getToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<
-      [string, number, string, BigNumber, BigNumber] & {
-        owner: string;
-        state: number;
-        identity: string;
-        expiration: BigNumber;
-        bitmask: BigNumber;
-      }
-    >;
-
-    isGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    isNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    mint(
-      to: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      expiration: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    removeNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    renameNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    transferDAOManager(
-      previousManager: PromiseOrValue<string>,
-      newManager: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
-
-  addNetworkAuthority(
-    authority: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  createNetwork(
-    network: PromiseOrValue<BigNumberish>,
-    name: PromiseOrValue<string>,
-    daoGoverned: PromiseOrValue<boolean>,
-    daoManager: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  getNetwork(
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  getToken(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<
-    [string, number, string, BigNumber, BigNumber] & {
-      owner: string;
-      state: number;
-      identity: string;
-      expiration: BigNumber;
-      bitmask: BigNumber;
-    }
+  addNetworkAuthority: TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
   >;
 
-  isGatekeeper(
-    gatekeeper: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  createNetwork: TypedContractMethod<
+    [
+      network: BigNumberish,
+      name: string,
+      daoGoverned: boolean,
+      daoManager: AddressLike
+    ],
+    [void],
+    "nonpayable"
+  >;
 
-  isNetworkAuthority(
-    authority: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  getNetwork: TypedContractMethod<[network: BigNumberish], [string], "view">;
 
-  mint(
-    to: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    expiration: PromiseOrValue<BigNumberish>,
-    mask: PromiseOrValue<BigNumberish>,
-    charge: ChargeStruct,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  removeNetworkAuthority(
-    authority: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  renameNetwork(
-    network: PromiseOrValue<BigNumberish>,
-    name: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  transferDAOManager(
-    previousManager: PromiseOrValue<string>,
-    newManager: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  callStatic: {
-    addNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    createNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      daoGoverned: PromiseOrValue<boolean>,
-      daoManager: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    getNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    getToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<
-      [string, number, string, BigNumber, BigNumber] & {
+  getToken: TypedContractMethod<
+    [tokenId: BigNumberish],
+    [
+      [string, bigint, string, bigint, bigint] & {
         owner: string;
-        state: number;
+        state: bigint;
         identity: string;
-        expiration: BigNumber;
-        bitmask: BigNumber;
+        expiration: bigint;
+        bitmask: bigint;
       }
-    >;
+    ],
+    "view"
+  >;
 
-    isGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  isGatekeeper: TypedContractMethod<
+    [gatekeeper: AddressLike, network: BigNumberish],
+    [boolean],
+    "nonpayable"
+  >;
 
-    isNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  isNetworkAuthority: TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [boolean],
+    "nonpayable"
+  >;
 
-    mint(
-      to: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      expiration: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  mint: TypedContractMethod<
+    [
+      to: AddressLike,
+      network: BigNumberish,
+      expiration: BigNumberish,
+      mask: BigNumberish,
+      charge: ChargeStruct
+    ],
+    [void],
+    "payable"
+  >;
 
-    removeNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  removeNetworkAuthority: TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-    renameNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  renameNetwork: TypedContractMethod<
+    [network: BigNumberish, name: string],
+    [void],
+    "nonpayable"
+  >;
 
-    transferDAOManager(
-      previousManager: PromiseOrValue<string>,
-      newManager: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  transferDAOManager: TypedContractMethod<
+    [
+      previousManager: AddressLike,
+      newManager: AddressLike,
+      network: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
+
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
+
+  getFunction(
+    nameOrSignature: "addNetworkAuthority"
+  ): TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "createNetwork"
+  ): TypedContractMethod<
+    [
+      network: BigNumberish,
+      name: string,
+      daoGoverned: boolean,
+      daoManager: AddressLike
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "getNetwork"
+  ): TypedContractMethod<[network: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "getToken"
+  ): TypedContractMethod<
+    [tokenId: BigNumberish],
+    [
+      [string, bigint, string, bigint, bigint] & {
+        owner: string;
+        state: bigint;
+        identity: string;
+        expiration: bigint;
+        bitmask: bigint;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "isGatekeeper"
+  ): TypedContractMethod<
+    [gatekeeper: AddressLike, network: BigNumberish],
+    [boolean],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "isNetworkAuthority"
+  ): TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [boolean],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "mint"
+  ): TypedContractMethod<
+    [
+      to: AddressLike,
+      network: BigNumberish,
+      expiration: BigNumberish,
+      mask: BigNumberish,
+      charge: ChargeStruct
+    ],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "removeNetworkAuthority"
+  ): TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "renameNetwork"
+  ): TypedContractMethod<
+    [network: BigNumberish, name: string],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "transferDAOManager"
+  ): TypedContractMethod<
+    [
+      previousManager: AddressLike,
+      newManager: AddressLike,
+      network: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
+
+  getEvent(
+    key: "ChargeHandlerUpdated"
+  ): TypedContractEvent<
+    ChargeHandlerUpdatedEvent.InputTuple,
+    ChargeHandlerUpdatedEvent.OutputTuple,
+    ChargeHandlerUpdatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "DAOManagerTransferred"
+  ): TypedContractEvent<
+    DAOManagerTransferredEvent.InputTuple,
+    DAOManagerTransferredEvent.OutputTuple,
+    DAOManagerTransferredEvent.OutputObject
+  >;
+  getEvent(
+    key: "ForwarderAdded"
+  ): TypedContractEvent<
+    ForwarderAddedEvent.InputTuple,
+    ForwarderAddedEvent.OutputTuple,
+    ForwarderAddedEvent.OutputObject
+  >;
+  getEvent(
+    key: "ForwarderRemoved"
+  ): TypedContractEvent<
+    ForwarderRemovedEvent.InputTuple,
+    ForwarderRemovedEvent.OutputTuple,
+    ForwarderRemovedEvent.OutputObject
+  >;
+  getEvent(
+    key: "GatekeeperNetworkCreated"
+  ): TypedContractEvent<
+    GatekeeperNetworkCreatedEvent.InputTuple,
+    GatekeeperNetworkCreatedEvent.OutputTuple,
+    GatekeeperNetworkCreatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "GatewayTokenInitialized"
+  ): TypedContractEvent<
+    GatewayTokenInitializedEvent.InputTuple,
+    GatewayTokenInitializedEvent.OutputTuple,
+    GatewayTokenInitializedEvent.OutputObject
+  >;
 
   filters: {
-    "ChargeHandlerUpdated(address)"(
-      chargeHandler?: PromiseOrValue<string> | null
-    ): ChargeHandlerUpdatedEventFilter;
-    ChargeHandlerUpdated(
-      chargeHandler?: PromiseOrValue<string> | null
-    ): ChargeHandlerUpdatedEventFilter;
+    "ChargeHandlerUpdated(address)": TypedContractEvent<
+      ChargeHandlerUpdatedEvent.InputTuple,
+      ChargeHandlerUpdatedEvent.OutputTuple,
+      ChargeHandlerUpdatedEvent.OutputObject
+    >;
+    ChargeHandlerUpdated: TypedContractEvent<
+      ChargeHandlerUpdatedEvent.InputTuple,
+      ChargeHandlerUpdatedEvent.OutputTuple,
+      ChargeHandlerUpdatedEvent.OutputObject
+    >;
 
-    "DAOManagerTransferred(address,address,uint256)"(
-      previousDAOManager?: null,
-      newDAOManager?: null,
-      network?: null
-    ): DAOManagerTransferredEventFilter;
-    DAOManagerTransferred(
-      previousDAOManager?: null,
-      newDAOManager?: null,
-      network?: null
-    ): DAOManagerTransferredEventFilter;
+    "DAOManagerTransferred(address,address,uint256)": TypedContractEvent<
+      DAOManagerTransferredEvent.InputTuple,
+      DAOManagerTransferredEvent.OutputTuple,
+      DAOManagerTransferredEvent.OutputObject
+    >;
+    DAOManagerTransferred: TypedContractEvent<
+      DAOManagerTransferredEvent.InputTuple,
+      DAOManagerTransferredEvent.OutputTuple,
+      DAOManagerTransferredEvent.OutputObject
+    >;
 
-    "ForwarderAdded(address)"(
-      forwarder?: PromiseOrValue<string> | null
-    ): ForwarderAddedEventFilter;
-    ForwarderAdded(
-      forwarder?: PromiseOrValue<string> | null
-    ): ForwarderAddedEventFilter;
+    "ForwarderAdded(address)": TypedContractEvent<
+      ForwarderAddedEvent.InputTuple,
+      ForwarderAddedEvent.OutputTuple,
+      ForwarderAddedEvent.OutputObject
+    >;
+    ForwarderAdded: TypedContractEvent<
+      ForwarderAddedEvent.InputTuple,
+      ForwarderAddedEvent.OutputTuple,
+      ForwarderAddedEvent.OutputObject
+    >;
 
-    "ForwarderRemoved(address)"(
-      forwarder?: PromiseOrValue<string> | null
-    ): ForwarderRemovedEventFilter;
-    ForwarderRemoved(
-      forwarder?: PromiseOrValue<string> | null
-    ): ForwarderRemovedEventFilter;
+    "ForwarderRemoved(address)": TypedContractEvent<
+      ForwarderRemovedEvent.InputTuple,
+      ForwarderRemovedEvent.OutputTuple,
+      ForwarderRemovedEvent.OutputObject
+    >;
+    ForwarderRemoved: TypedContractEvent<
+      ForwarderRemovedEvent.InputTuple,
+      ForwarderRemovedEvent.OutputTuple,
+      ForwarderRemovedEvent.OutputObject
+    >;
 
-    "GatekeeperNetworkCreated(uint256,string,bool,address)"(
-      network?: null,
-      name?: null,
-      daoGoverned?: null,
-      daoManager?: null
-    ): GatekeeperNetworkCreatedEventFilter;
-    GatekeeperNetworkCreated(
-      network?: null,
-      name?: null,
-      daoGoverned?: null,
-      daoManager?: null
-    ): GatekeeperNetworkCreatedEventFilter;
+    "GatekeeperNetworkCreated(uint256,string,bool,address)": TypedContractEvent<
+      GatekeeperNetworkCreatedEvent.InputTuple,
+      GatekeeperNetworkCreatedEvent.OutputTuple,
+      GatekeeperNetworkCreatedEvent.OutputObject
+    >;
+    GatekeeperNetworkCreated: TypedContractEvent<
+      GatekeeperNetworkCreatedEvent.InputTuple,
+      GatekeeperNetworkCreatedEvent.OutputTuple,
+      GatekeeperNetworkCreatedEvent.OutputObject
+    >;
 
-    "GatewayTokenInitialized(string,string,address,address,address,address[])"(
-      name?: null,
-      symbol?: null,
-      superAdmin?: null,
-      flagsStorage?: null,
-      chargeHandler?: null,
-      trustedForwarders?: null
-    ): GatewayTokenInitializedEventFilter;
-    GatewayTokenInitialized(
-      name?: null,
-      symbol?: null,
-      superAdmin?: null,
-      flagsStorage?: null,
-      chargeHandler?: null,
-      trustedForwarders?: null
-    ): GatewayTokenInitializedEventFilter;
-  };
-
-  estimateGas: {
-    addNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    createNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      daoGoverned: PromiseOrValue<boolean>,
-      daoManager: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    getNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    isGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    isNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    mint(
-      to: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      expiration: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    removeNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    renameNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    transferDAOManager(
-      previousManager: PromiseOrValue<string>,
-      newManager: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    addNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    createNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      daoGoverned: PromiseOrValue<boolean>,
-      daoManager: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    getNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    isNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    mint(
-      to: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      expiration: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    removeNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    renameNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    transferDAOManager(
-      previousManager: PromiseOrValue<string>,
-      newManager: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "GatewayTokenInitialized(string,string,address,address,address,address[])": TypedContractEvent<
+      GatewayTokenInitializedEvent.InputTuple,
+      GatewayTokenInitializedEvent.OutputTuple,
+      GatewayTokenInitializedEvent.OutputObject
+    >;
+    GatewayTokenInitialized: TypedContractEvent<
+      GatewayTokenInitializedEvent.InputTuple,
+      GatewayTokenInitializedEvent.OutputTuple,
+      GatewayTokenInitializedEvent.OutputObject
+    >;
   };
 }

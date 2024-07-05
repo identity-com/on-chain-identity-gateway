@@ -4,130 +4,51 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PayableOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../common";
 
 export type ChargeStruct = {
-  value: PromiseOrValue<BigNumberish>;
-  chargeType: PromiseOrValue<BigNumberish>;
-  token: PromiseOrValue<string>;
-  tokenSender: PromiseOrValue<string>;
-  recipient: PromiseOrValue<string>;
+  value: BigNumberish;
+  chargeType: BigNumberish;
+  token: AddressLike;
+  tokenSender: AddressLike;
+  recipient: AddressLike;
 };
 
-export type ChargeStructOutput = [BigNumber, number, string, string, string] & {
-  value: BigNumber;
-  chargeType: number;
+export type ChargeStructOutput = [
+  value: bigint,
+  chargeType: bigint,
+  token: string,
+  tokenSender: string,
+  recipient: string
+] & {
+  value: bigint;
+  chargeType: bigint;
   token: string;
   tokenSender: string;
   recipient: string;
 };
 
-export interface GatewayTokenInterface extends utils.Interface {
-  functions: {
-    "DAO_MANAGER_ROLE()": FunctionFragment;
-    "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "GATEKEEPER_ROLE()": FunctionFragment;
-    "NETWORK_AUTHORITY_ROLE()": FunctionFragment;
-    "addForwarder(address)": FunctionFragment;
-    "addGatekeeper(address,uint256)": FunctionFragment;
-    "addNetworkAuthority(address,uint256)": FunctionFragment;
-    "allowance(uint256,address)": FunctionFragment;
-    "approve(address,uint256)": FunctionFragment;
-    "approve(uint256,address,uint256)": FunctionFragment;
-    "balanceOf(address)": FunctionFragment;
-    "balanceOf(uint256)": FunctionFragment;
-    "burn(uint256)": FunctionFragment;
-    "contractURI()": FunctionFragment;
-    "createNetwork(uint256,string,bool,address)": FunctionFragment;
-    "flagsStorage()": FunctionFragment;
-    "freeze(uint256)": FunctionFragment;
-    "getApproved(uint256)": FunctionFragment;
-    "getExpiration(uint256)": FunctionFragment;
-    "getIssuingGatekeeper(uint256)": FunctionFragment;
-    "getNetwork(uint256)": FunctionFragment;
-    "getRoleAdmin(bytes32,uint256)": FunctionFragment;
-    "getToken(uint256)": FunctionFragment;
-    "getTokenBitmask(uint256)": FunctionFragment;
-    "getTokenIdsByOwnerAndNetwork(address,uint256,bool)": FunctionFragment;
-    "grantRole(bytes32,uint256,address)": FunctionFragment;
-    "hasRole(bytes32,uint256,address)": FunctionFragment;
-    "initialize(string,string,address,address,address,address[])": FunctionFragment;
-    "isApprovedForAll(address,address)": FunctionFragment;
-    "isGatekeeper(address,uint256)": FunctionFragment;
-    "isNetworkAuthority(address,uint256)": FunctionFragment;
-    "isNetworkDAOGoverned(uint256)": FunctionFragment;
-    "isSuperAdmin(address)": FunctionFragment;
-    "isTrustedForwarder(address)": FunctionFragment;
-    "metadataDescriptor()": FunctionFragment;
-    "mint(address,uint256,uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
-    "name()": FunctionFragment;
-    "networkHasFeature(uint256,uint8)": FunctionFragment;
-    "ownerOf(uint256)": FunctionFragment;
-    "proxiableUUID()": FunctionFragment;
-    "removeForwarder(address)": FunctionFragment;
-    "removeGatekeeper(address,uint256)": FunctionFragment;
-    "removeNetworkAuthority(address,uint256)": FunctionFragment;
-    "renameNetwork(uint256,string)": FunctionFragment;
-    "renounceRole(bytes32,uint256,address)": FunctionFragment;
-    "revoke(uint256)": FunctionFragment;
-    "revokeRole(bytes32,uint256,address)": FunctionFragment;
-    "revokeSuperAdmin(address)": FunctionFragment;
-    "safeTransferFrom(address,address,uint256)": FunctionFragment;
-    "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
-    "setApprovalForAll(address,bool)": FunctionFragment;
-    "setBitmask(uint256,uint256)": FunctionFragment;
-    "setExpiration(uint256,uint256,(uint256,uint8,address,address,address))": FunctionFragment;
-    "setMetadataDescriptor(address)": FunctionFragment;
-    "setNetworkFeatures(uint256,uint256)": FunctionFragment;
-    "setSuperAdmin(address)": FunctionFragment;
-    "slotOf(uint256)": FunctionFragment;
-    "slotURI(uint256)": FunctionFragment;
-    "supportsInterface(bytes4)": FunctionFragment;
-    "symbol()": FunctionFragment;
-    "tokenByIndex(uint256)": FunctionFragment;
-    "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
-    "tokenURI(uint256)": FunctionFragment;
-    "totalSupply()": FunctionFragment;
-    "transferDAOManager(address,address,uint256)": FunctionFragment;
-    "transferFrom(uint256,address,uint256)": FunctionFragment;
-    "transferFrom(address,address,uint256)": FunctionFragment;
-    "transferFrom(uint256,uint256,uint256)": FunctionFragment;
-    "transfersRestricted()": FunctionFragment;
-    "unfreeze(uint256)": FunctionFragment;
-    "updateChargeHandler(address)": FunctionFragment;
-    "updateFlagsStorage(address)": FunctionFragment;
-    "upgradeTo(address)": FunctionFragment;
-    "upgradeToAndCall(address,bytes)": FunctionFragment;
-    "valueDecimals()": FunctionFragment;
-    "verifyToken(address,uint256)": FunctionFragment;
-    "verifyToken(uint256)": FunctionFragment;
-  };
-
+export interface GatewayTokenInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic:
+    nameOrSignature:
       | "DAO_MANAGER_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "GATEKEEPER_ROLE"
@@ -207,6 +128,38 @@ export interface GatewayTokenInterface extends utils.Interface {
       | "verifyToken(uint256)"
   ): FunctionFragment;
 
+  getEvent(
+    nameOrSignatureOrTopic:
+      | "AdminChanged"
+      | "Approval"
+      | "ApprovalForAll"
+      | "ApprovalValue"
+      | "BeaconUpgraded"
+      | "BitMaskUpdated"
+      | "ChargeHandlerUpdated"
+      | "DAOManagerTransferred"
+      | "Expiration"
+      | "FlagsStorageUpdated"
+      | "ForwarderAdded"
+      | "ForwarderRemoved"
+      | "Freeze"
+      | "GatekeeperNetworkCreated"
+      | "GatewayTokenInitialized"
+      | "Initialized"
+      | "Revoke"
+      | "RoleAdminChanged"
+      | "RoleGranted"
+      | "RoleRevoked"
+      | "SetMetadataDescriptor"
+      | "SlotChanged"
+      | "SuperAdminAdded"
+      | "SuperAdminRemoved"
+      | "Transfer"
+      | "TransferValue"
+      | "Unfreeze"
+      | "Upgraded"
+  ): EventFragment;
+
   encodeFunctionData(
     functionFragment: "DAO_MANAGER_ROLE",
     values?: undefined
@@ -225,56 +178,44 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "addForwarder",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "addGatekeeper",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "addNetworkAuthority",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "allowance",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "approve(address,uint256)",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "approve(uint256,address,uint256)",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "balanceOf(address)",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "balanceOf(uint256)",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "burn",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+  encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "contractURI",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "createNetwork",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<string>
-    ]
+    values: [BigNumberish, string, boolean, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "flagsStorage",
@@ -282,94 +223,82 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "freeze",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getExpiration",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getIssuingGatekeeper",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getNetwork",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
-    values: [PromiseOrValue<BytesLike>, PromiseOrValue<BigNumberish>]
+    values: [BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getToken",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getTokenBitmask",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getTokenIdsByOwnerAndNetwork",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<boolean>
-    ]
+    values: [AddressLike, BigNumberish, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
-    values: [
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>
-    ]
+    values: [BytesLike, BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "hasRole",
-    values: [
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>
-    ]
+    values: [BytesLike, BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
     values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>[]
+      string,
+      string,
+      AddressLike,
+      AddressLike,
+      AddressLike,
+      AddressLike[]
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+    values: [AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isGatekeeper",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isNetworkAuthority",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isNetworkDAOGoverned",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isSuperAdmin",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isTrustedForwarder",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "metadataDescriptor",
@@ -378,21 +307,21 @@ export interface GatewayTokenInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "mint",
     values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
+      AddressLike,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
       ChargeStruct
     ]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "networkHasFeature",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "proxiableUUID",
@@ -400,113 +329,92 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "removeForwarder",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "removeGatekeeper",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "removeNetworkAuthority",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "renameNetwork",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceRole",
-    values: [
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>
-    ]
+    values: [BytesLike, BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "revoke",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "revokeRole",
-    values: [
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>
-    ]
+    values: [BytesLike, BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "revokeSuperAdmin",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom(address,address,uint256)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom(address,address,uint256,bytes)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [AddressLike, AddressLike, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
-    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
+    values: [AddressLike, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "setBitmask",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setExpiration",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      ChargeStruct
-    ]
+    values: [BigNumberish, BigNumberish, ChargeStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "setMetadataDescriptor",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "setNetworkFeatures",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setSuperAdmin",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "slotOf",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "slotURI",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
-    values: [PromiseOrValue<BytesLike>]
+    values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "tokenByIndex",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "tokenOfOwnerByIndex",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "tokenURI",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
@@ -514,35 +422,19 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "transferDAOManager",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom(uint256,address,uint256)",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom(address,address,uint256)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom(uint256,uint256,uint256)",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "transfersRestricted",
@@ -550,23 +442,23 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "unfreeze",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "updateChargeHandler",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "updateFlagsStorage",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "upgradeTo",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "upgradeToAndCall",
-    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
+    values: [AddressLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "valueDecimals",
@@ -574,11 +466,11 @@ export interface GatewayTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "verifyToken(address,uint256)",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "verifyToken(uint256)",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -829,2709 +721,1851 @@ export interface GatewayTokenInterface extends utils.Interface {
     functionFragment: "verifyToken(uint256)",
     data: BytesLike
   ): Result;
-
-  events: {
-    "AdminChanged(address,address)": EventFragment;
-    "Approval(address,address,uint256)": EventFragment;
-    "ApprovalForAll(address,address,bool)": EventFragment;
-    "ApprovalValue(uint256,address,uint256)": EventFragment;
-    "BeaconUpgraded(address)": EventFragment;
-    "BitMaskUpdated(uint256,uint256)": EventFragment;
-    "ChargeHandlerUpdated(address)": EventFragment;
-    "DAOManagerTransferred(address,address,uint256)": EventFragment;
-    "Expiration(uint256,uint256)": EventFragment;
-    "FlagsStorageUpdated(address)": EventFragment;
-    "ForwarderAdded(address)": EventFragment;
-    "ForwarderRemoved(address)": EventFragment;
-    "Freeze(uint256)": EventFragment;
-    "GatekeeperNetworkCreated(uint256,string,bool,address)": EventFragment;
-    "GatewayTokenInitialized(string,string,address,address,address,address[])": EventFragment;
-    "Initialized(uint8)": EventFragment;
-    "Revoke(uint256)": EventFragment;
-    "RoleAdminChanged(bytes32,uint256,bytes32,bytes32)": EventFragment;
-    "RoleGranted(bytes32,uint256,address,address)": EventFragment;
-    "RoleRevoked(bytes32,uint256,address,address)": EventFragment;
-    "SetMetadataDescriptor(address)": EventFragment;
-    "SlotChanged(uint256,uint256,uint256)": EventFragment;
-    "SuperAdminAdded(address)": EventFragment;
-    "SuperAdminRemoved(address)": EventFragment;
-    "Transfer(address,address,uint256)": EventFragment;
-    "TransferValue(uint256,uint256,uint256)": EventFragment;
-    "Unfreeze(uint256)": EventFragment;
-    "Upgraded(address)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ApprovalValue"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "BitMaskUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ChargeHandlerUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "DAOManagerTransferred"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Expiration"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "FlagsStorageUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ForwarderAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ForwarderRemoved"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Freeze"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "GatekeeperNetworkCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "GatewayTokenInitialized"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Revoke"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SetMetadataDescriptor"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SlotChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SuperAdminAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SuperAdminRemoved"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TransferValue"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Unfreeze"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
 
-export interface AdminChangedEventObject {
-  previousAdmin: string;
-  newAdmin: string;
+export namespace AdminChangedEvent {
+  export type InputTuple = [previousAdmin: AddressLike, newAdmin: AddressLike];
+  export type OutputTuple = [previousAdmin: string, newAdmin: string];
+  export interface OutputObject {
+    previousAdmin: string;
+    newAdmin: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type AdminChangedEvent = TypedEvent<
-  [string, string],
-  AdminChangedEventObject
->;
 
-export type AdminChangedEventFilter = TypedEventFilter<AdminChangedEvent>;
-
-export interface ApprovalEventObject {
-  _owner: string;
-  _approved: string;
-  _tokenId: BigNumber;
+export namespace ApprovalEvent {
+  export type InputTuple = [
+    _owner: AddressLike,
+    _approved: AddressLike,
+    _tokenId: BigNumberish
+  ];
+  export type OutputTuple = [
+    _owner: string,
+    _approved: string,
+    _tokenId: bigint
+  ];
+  export interface OutputObject {
+    _owner: string;
+    _approved: string;
+    _tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ApprovalEvent = TypedEvent<
-  [string, string, BigNumber],
-  ApprovalEventObject
->;
 
-export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>;
-
-export interface ApprovalForAllEventObject {
-  _owner: string;
-  _operator: string;
-  _approved: boolean;
+export namespace ApprovalForAllEvent {
+  export type InputTuple = [
+    _owner: AddressLike,
+    _operator: AddressLike,
+    _approved: boolean
+  ];
+  export type OutputTuple = [
+    _owner: string,
+    _operator: string,
+    _approved: boolean
+  ];
+  export interface OutputObject {
+    _owner: string;
+    _operator: string;
+    _approved: boolean;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ApprovalForAllEvent = TypedEvent<
-  [string, string, boolean],
-  ApprovalForAllEventObject
->;
 
-export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
-
-export interface ApprovalValueEventObject {
-  _tokenId: BigNumber;
-  _operator: string;
-  _value: BigNumber;
+export namespace ApprovalValueEvent {
+  export type InputTuple = [
+    _tokenId: BigNumberish,
+    _operator: AddressLike,
+    _value: BigNumberish
+  ];
+  export type OutputTuple = [
+    _tokenId: bigint,
+    _operator: string,
+    _value: bigint
+  ];
+  export interface OutputObject {
+    _tokenId: bigint;
+    _operator: string;
+    _value: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ApprovalValueEvent = TypedEvent<
-  [BigNumber, string, BigNumber],
-  ApprovalValueEventObject
->;
 
-export type ApprovalValueEventFilter = TypedEventFilter<ApprovalValueEvent>;
-
-export interface BeaconUpgradedEventObject {
-  beacon: string;
+export namespace BeaconUpgradedEvent {
+  export type InputTuple = [beacon: AddressLike];
+  export type OutputTuple = [beacon: string];
+  export interface OutputObject {
+    beacon: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type BeaconUpgradedEvent = TypedEvent<
-  [string],
-  BeaconUpgradedEventObject
->;
 
-export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
-
-export interface BitMaskUpdatedEventObject {
-  tokenId: BigNumber;
-  bitmask: BigNumber;
+export namespace BitMaskUpdatedEvent {
+  export type InputTuple = [tokenId: BigNumberish, bitmask: BigNumberish];
+  export type OutputTuple = [tokenId: bigint, bitmask: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+    bitmask: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type BitMaskUpdatedEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  BitMaskUpdatedEventObject
->;
 
-export type BitMaskUpdatedEventFilter = TypedEventFilter<BitMaskUpdatedEvent>;
-
-export interface ChargeHandlerUpdatedEventObject {
-  chargeHandler: string;
+export namespace ChargeHandlerUpdatedEvent {
+  export type InputTuple = [chargeHandler: AddressLike];
+  export type OutputTuple = [chargeHandler: string];
+  export interface OutputObject {
+    chargeHandler: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ChargeHandlerUpdatedEvent = TypedEvent<
-  [string],
-  ChargeHandlerUpdatedEventObject
->;
 
-export type ChargeHandlerUpdatedEventFilter =
-  TypedEventFilter<ChargeHandlerUpdatedEvent>;
-
-export interface DAOManagerTransferredEventObject {
-  previousDAOManager: string;
-  newDAOManager: string;
-  network: BigNumber;
+export namespace DAOManagerTransferredEvent {
+  export type InputTuple = [
+    previousDAOManager: AddressLike,
+    newDAOManager: AddressLike,
+    network: BigNumberish
+  ];
+  export type OutputTuple = [
+    previousDAOManager: string,
+    newDAOManager: string,
+    network: bigint
+  ];
+  export interface OutputObject {
+    previousDAOManager: string;
+    newDAOManager: string;
+    network: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type DAOManagerTransferredEvent = TypedEvent<
-  [string, string, BigNumber],
-  DAOManagerTransferredEventObject
->;
 
-export type DAOManagerTransferredEventFilter =
-  TypedEventFilter<DAOManagerTransferredEvent>;
-
-export interface ExpirationEventObject {
-  tokenId: BigNumber;
-  timestamp: BigNumber;
+export namespace ExpirationEvent {
+  export type InputTuple = [tokenId: BigNumberish, timestamp: BigNumberish];
+  export type OutputTuple = [tokenId: bigint, timestamp: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+    timestamp: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ExpirationEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  ExpirationEventObject
->;
 
-export type ExpirationEventFilter = TypedEventFilter<ExpirationEvent>;
-
-export interface FlagsStorageUpdatedEventObject {
-  flagsStorage: string;
+export namespace FlagsStorageUpdatedEvent {
+  export type InputTuple = [flagsStorage: AddressLike];
+  export type OutputTuple = [flagsStorage: string];
+  export interface OutputObject {
+    flagsStorage: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type FlagsStorageUpdatedEvent = TypedEvent<
-  [string],
-  FlagsStorageUpdatedEventObject
->;
 
-export type FlagsStorageUpdatedEventFilter =
-  TypedEventFilter<FlagsStorageUpdatedEvent>;
-
-export interface ForwarderAddedEventObject {
-  forwarder: string;
+export namespace ForwarderAddedEvent {
+  export type InputTuple = [forwarder: AddressLike];
+  export type OutputTuple = [forwarder: string];
+  export interface OutputObject {
+    forwarder: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ForwarderAddedEvent = TypedEvent<
-  [string],
-  ForwarderAddedEventObject
->;
 
-export type ForwarderAddedEventFilter = TypedEventFilter<ForwarderAddedEvent>;
-
-export interface ForwarderRemovedEventObject {
-  forwarder: string;
+export namespace ForwarderRemovedEvent {
+  export type InputTuple = [forwarder: AddressLike];
+  export type OutputTuple = [forwarder: string];
+  export interface OutputObject {
+    forwarder: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ForwarderRemovedEvent = TypedEvent<
-  [string],
-  ForwarderRemovedEventObject
->;
 
-export type ForwarderRemovedEventFilter =
-  TypedEventFilter<ForwarderRemovedEvent>;
-
-export interface FreezeEventObject {
-  tokenId: BigNumber;
+export namespace FreezeEvent {
+  export type InputTuple = [tokenId: BigNumberish];
+  export type OutputTuple = [tokenId: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type FreezeEvent = TypedEvent<[BigNumber], FreezeEventObject>;
 
-export type FreezeEventFilter = TypedEventFilter<FreezeEvent>;
-
-export interface GatekeeperNetworkCreatedEventObject {
-  network: BigNumber;
-  name: string;
-  daoGoverned: boolean;
-  daoManager: string;
+export namespace GatekeeperNetworkCreatedEvent {
+  export type InputTuple = [
+    network: BigNumberish,
+    name: string,
+    daoGoverned: boolean,
+    daoManager: AddressLike
+  ];
+  export type OutputTuple = [
+    network: bigint,
+    name: string,
+    daoGoverned: boolean,
+    daoManager: string
+  ];
+  export interface OutputObject {
+    network: bigint;
+    name: string;
+    daoGoverned: boolean;
+    daoManager: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type GatekeeperNetworkCreatedEvent = TypedEvent<
-  [BigNumber, string, boolean, string],
-  GatekeeperNetworkCreatedEventObject
->;
 
-export type GatekeeperNetworkCreatedEventFilter =
-  TypedEventFilter<GatekeeperNetworkCreatedEvent>;
-
-export interface GatewayTokenInitializedEventObject {
-  name: string;
-  symbol: string;
-  superAdmin: string;
-  flagsStorage: string;
-  chargeHandler: string;
-  trustedForwarders: string[];
+export namespace GatewayTokenInitializedEvent {
+  export type InputTuple = [
+    name: string,
+    symbol: string,
+    superAdmin: AddressLike,
+    flagsStorage: AddressLike,
+    chargeHandler: AddressLike,
+    trustedForwarders: AddressLike[]
+  ];
+  export type OutputTuple = [
+    name: string,
+    symbol: string,
+    superAdmin: string,
+    flagsStorage: string,
+    chargeHandler: string,
+    trustedForwarders: string[]
+  ];
+  export interface OutputObject {
+    name: string;
+    symbol: string;
+    superAdmin: string;
+    flagsStorage: string;
+    chargeHandler: string;
+    trustedForwarders: string[];
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type GatewayTokenInitializedEvent = TypedEvent<
-  [string, string, string, string, string, string[]],
-  GatewayTokenInitializedEventObject
->;
 
-export type GatewayTokenInitializedEventFilter =
-  TypedEventFilter<GatewayTokenInitializedEvent>;
-
-export interface InitializedEventObject {
-  version: number;
+export namespace InitializedEvent {
+  export type InputTuple = [version: BigNumberish];
+  export type OutputTuple = [version: bigint];
+  export interface OutputObject {
+    version: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
-export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
-
-export interface RevokeEventObject {
-  tokenId: BigNumber;
+export namespace RevokeEvent {
+  export type InputTuple = [tokenId: BigNumberish];
+  export type OutputTuple = [tokenId: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type RevokeEvent = TypedEvent<[BigNumber], RevokeEventObject>;
 
-export type RevokeEventFilter = TypedEventFilter<RevokeEvent>;
-
-export interface RoleAdminChangedEventObject {
-  role: string;
-  domain: BigNumber;
-  previousAdminRole: string;
-  newAdminRole: string;
+export namespace RoleAdminChangedEvent {
+  export type InputTuple = [
+    role: BytesLike,
+    domain: BigNumberish,
+    previousAdminRole: BytesLike,
+    newAdminRole: BytesLike
+  ];
+  export type OutputTuple = [
+    role: string,
+    domain: bigint,
+    previousAdminRole: string,
+    newAdminRole: string
+  ];
+  export interface OutputObject {
+    role: string;
+    domain: bigint;
+    previousAdminRole: string;
+    newAdminRole: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type RoleAdminChangedEvent = TypedEvent<
-  [string, BigNumber, string, string],
-  RoleAdminChangedEventObject
->;
 
-export type RoleAdminChangedEventFilter =
-  TypedEventFilter<RoleAdminChangedEvent>;
-
-export interface RoleGrantedEventObject {
-  role: string;
-  domain: BigNumber;
-  account: string;
-  sender: string;
+export namespace RoleGrantedEvent {
+  export type InputTuple = [
+    role: BytesLike,
+    domain: BigNumberish,
+    account: AddressLike,
+    sender: AddressLike
+  ];
+  export type OutputTuple = [
+    role: string,
+    domain: bigint,
+    account: string,
+    sender: string
+  ];
+  export interface OutputObject {
+    role: string;
+    domain: bigint;
+    account: string;
+    sender: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type RoleGrantedEvent = TypedEvent<
-  [string, BigNumber, string, string],
-  RoleGrantedEventObject
->;
 
-export type RoleGrantedEventFilter = TypedEventFilter<RoleGrantedEvent>;
-
-export interface RoleRevokedEventObject {
-  role: string;
-  domain: BigNumber;
-  account: string;
-  sender: string;
+export namespace RoleRevokedEvent {
+  export type InputTuple = [
+    role: BytesLike,
+    domain: BigNumberish,
+    account: AddressLike,
+    sender: AddressLike
+  ];
+  export type OutputTuple = [
+    role: string,
+    domain: bigint,
+    account: string,
+    sender: string
+  ];
+  export interface OutputObject {
+    role: string;
+    domain: bigint;
+    account: string;
+    sender: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type RoleRevokedEvent = TypedEvent<
-  [string, BigNumber, string, string],
-  RoleRevokedEventObject
->;
 
-export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
-
-export interface SetMetadataDescriptorEventObject {
-  metadataDescriptor: string;
+export namespace SetMetadataDescriptorEvent {
+  export type InputTuple = [metadataDescriptor: AddressLike];
+  export type OutputTuple = [metadataDescriptor: string];
+  export interface OutputObject {
+    metadataDescriptor: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type SetMetadataDescriptorEvent = TypedEvent<
-  [string],
-  SetMetadataDescriptorEventObject
->;
 
-export type SetMetadataDescriptorEventFilter =
-  TypedEventFilter<SetMetadataDescriptorEvent>;
-
-export interface SlotChangedEventObject {
-  _tokenId: BigNumber;
-  _oldSlot: BigNumber;
-  _newSlot: BigNumber;
+export namespace SlotChangedEvent {
+  export type InputTuple = [
+    _tokenId: BigNumberish,
+    _oldSlot: BigNumberish,
+    _newSlot: BigNumberish
+  ];
+  export type OutputTuple = [
+    _tokenId: bigint,
+    _oldSlot: bigint,
+    _newSlot: bigint
+  ];
+  export interface OutputObject {
+    _tokenId: bigint;
+    _oldSlot: bigint;
+    _newSlot: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type SlotChangedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber],
-  SlotChangedEventObject
->;
 
-export type SlotChangedEventFilter = TypedEventFilter<SlotChangedEvent>;
-
-export interface SuperAdminAddedEventObject {
-  account: string;
+export namespace SuperAdminAddedEvent {
+  export type InputTuple = [account: AddressLike];
+  export type OutputTuple = [account: string];
+  export interface OutputObject {
+    account: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type SuperAdminAddedEvent = TypedEvent<
-  [string],
-  SuperAdminAddedEventObject
->;
 
-export type SuperAdminAddedEventFilter = TypedEventFilter<SuperAdminAddedEvent>;
-
-export interface SuperAdminRemovedEventObject {
-  account: string;
+export namespace SuperAdminRemovedEvent {
+  export type InputTuple = [account: AddressLike];
+  export type OutputTuple = [account: string];
+  export interface OutputObject {
+    account: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type SuperAdminRemovedEvent = TypedEvent<
-  [string],
-  SuperAdminRemovedEventObject
->;
 
-export type SuperAdminRemovedEventFilter =
-  TypedEventFilter<SuperAdminRemovedEvent>;
-
-export interface TransferEventObject {
-  _from: string;
-  _to: string;
-  _tokenId: BigNumber;
+export namespace TransferEvent {
+  export type InputTuple = [
+    _from: AddressLike,
+    _to: AddressLike,
+    _tokenId: BigNumberish
+  ];
+  export type OutputTuple = [_from: string, _to: string, _tokenId: bigint];
+  export interface OutputObject {
+    _from: string;
+    _to: string;
+    _tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type TransferEvent = TypedEvent<
-  [string, string, BigNumber],
-  TransferEventObject
->;
 
-export type TransferEventFilter = TypedEventFilter<TransferEvent>;
-
-export interface TransferValueEventObject {
-  _fromTokenId: BigNumber;
-  _toTokenId: BigNumber;
-  _value: BigNumber;
+export namespace TransferValueEvent {
+  export type InputTuple = [
+    _fromTokenId: BigNumberish,
+    _toTokenId: BigNumberish,
+    _value: BigNumberish
+  ];
+  export type OutputTuple = [
+    _fromTokenId: bigint,
+    _toTokenId: bigint,
+    _value: bigint
+  ];
+  export interface OutputObject {
+    _fromTokenId: bigint;
+    _toTokenId: bigint;
+    _value: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type TransferValueEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber],
-  TransferValueEventObject
->;
 
-export type TransferValueEventFilter = TypedEventFilter<TransferValueEvent>;
-
-export interface UnfreezeEventObject {
-  tokenId: BigNumber;
+export namespace UnfreezeEvent {
+  export type InputTuple = [tokenId: BigNumberish];
+  export type OutputTuple = [tokenId: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type UnfreezeEvent = TypedEvent<[BigNumber], UnfreezeEventObject>;
 
-export type UnfreezeEventFilter = TypedEventFilter<UnfreezeEvent>;
-
-export interface UpgradedEventObject {
-  implementation: string;
+export namespace UpgradedEvent {
+  export type InputTuple = [implementation: AddressLike];
+  export type OutputTuple = [implementation: string];
+  export interface OutputObject {
+    implementation: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type UpgradedEvent = TypedEvent<[string], UpgradedEventObject>;
-
-export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
 export interface GatewayToken extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): GatewayToken;
+  waitForDeployment(): Promise<this>;
 
   interface: GatewayTokenInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
-
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
-
-  functions: {
-    DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    GATEKEEPER_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    NETWORK_AUTHORITY_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    addGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    addNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    allowance(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      operator_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    "approve(address,uint256)"(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "approve(uint256,address,uint256)"(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<string>,
-      arg2: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "balanceOf(address)"(
-      owner_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { balance: BigNumber }>;
-
-    "balanceOf(uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    burn(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    contractURI(overrides?: CallOverrides): Promise<[string]>;
-
-    createNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      daoGoverned: PromiseOrValue<boolean>,
-      daoManager: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    flagsStorage(overrides?: CallOverrides): Promise<[string]>;
-
-    freeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    getApproved(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    getExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    getIssuingGatekeeper(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    getNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    getRoleAdmin(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    getToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<
-      [string, number, string, BigNumber, BigNumber] & {
-        owner: string;
-        state: number;
-        identity: string;
-        expiration: BigNumber;
-        bitmask: BigNumber;
-      }
-    >;
-
-    getTokenBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    getTokenIdsByOwnerAndNetwork(
-      owner: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      onlyActive: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>;
-
-    grantRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    hasRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    initialize(
-      name: PromiseOrValue<string>,
-      symbol: PromiseOrValue<string>,
-      superAdmin: PromiseOrValue<string>,
-      flagsStorage: PromiseOrValue<string>,
-      chargeHandler: PromiseOrValue<string>,
-      trustedForwarders: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    isApprovedForAll(
-      owner_: PromiseOrValue<string>,
-      operator_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    isGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    isNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    isNetworkDAOGoverned(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    isSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    metadataDescriptor(overrides?: CallOverrides): Promise<[string]>;
-
-    mint(
-      to: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      expiration: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    name(overrides?: CallOverrides): Promise<[string]>;
-
-    networkHasFeature(
-      network: PromiseOrValue<BigNumberish>,
-      feature: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    ownerOf(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string] & { owner_: string }>;
-
-    proxiableUUID(overrides?: CallOverrides): Promise<[string]>;
-
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    removeGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    removeNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    renameNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    renounceRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    revoke(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    revokeRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    revokeSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "safeTransferFrom(address,address,uint256)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "safeTransferFrom(address,address,uint256,bytes)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      data_: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setApprovalForAll(
-      operator_: PromiseOrValue<string>,
-      approved_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setMetadataDescriptor(
-      _metadataDescriptor: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setNetworkFeatures(
-      network: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    slotOf(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    slotURI(
-      slot_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    symbol(overrides?: CallOverrides): Promise<[string]>;
-
-    tokenByIndex(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    tokenOfOwnerByIndex(
-      owner_: PromiseOrValue<string>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    tokenURI(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    transferDAOManager(
-      previousManager: PromiseOrValue<string>,
-      newManager: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "transferFrom(uint256,address,uint256)"(
-      fromTokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "transferFrom(address,address,uint256)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "transferFrom(uint256,uint256,uint256)"(
-      fromTokenId_: PromiseOrValue<BigNumberish>,
-      toTokenId_: PromiseOrValue<BigNumberish>,
-      value_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    transfersRestricted(overrides?: CallOverrides): Promise<[boolean]>;
-
-    unfreeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    updateChargeHandler(
-      chargeHandler: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    updateFlagsStorage(
-      flagsStorage: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    valueDecimals(overrides?: CallOverrides): Promise<[number]>;
-
-    "verifyToken(address,uint256)"(
-      owner: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    "verifyToken(uint256)"(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-  };
-
-  DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  GATEKEEPER_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  NETWORK_AUTHORITY_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  addForwarder(
-    forwarder: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  addGatekeeper(
-    gatekeeper: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  addNetworkAuthority(
-    authority: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  allowance(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    operator_: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  "approve(address,uint256)"(
-    arg0: PromiseOrValue<string>,
-    arg1: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "approve(uint256,address,uint256)"(
-    arg0: PromiseOrValue<BigNumberish>,
-    arg1: PromiseOrValue<string>,
-    arg2: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "balanceOf(address)"(
-    owner_: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  "balanceOf(uint256)"(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  burn(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  contractURI(overrides?: CallOverrides): Promise<string>;
-
-  createNetwork(
-    network: PromiseOrValue<BigNumberish>,
-    name: PromiseOrValue<string>,
-    daoGoverned: PromiseOrValue<boolean>,
-    daoManager: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  flagsStorage(overrides?: CallOverrides): Promise<string>;
-
-  freeze(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  getApproved(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  getExpiration(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  getIssuingGatekeeper(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  getNetwork(
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  getRoleAdmin(
-    role: PromiseOrValue<BytesLike>,
-    domain: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  getToken(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<
-    [string, number, string, BigNumber, BigNumber] & {
-      owner: string;
-      state: number;
-      identity: string;
-      expiration: BigNumber;
-      bitmask: BigNumber;
-    }
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
+
+  DAO_MANAGER_ROLE: TypedContractMethod<[], [string], "view">;
+
+  DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
+
+  GATEKEEPER_ROLE: TypedContractMethod<[], [string], "view">;
+
+  NETWORK_AUTHORITY_ROLE: TypedContractMethod<[], [string], "view">;
+
+  addForwarder: TypedContractMethod<
+    [forwarder: AddressLike],
+    [void],
+    "nonpayable"
   >;
 
-  getTokenBitmask(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  getTokenIdsByOwnerAndNetwork(
-    owner: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    onlyActive: PromiseOrValue<boolean>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber[]>;
-
-  grantRole(
-    role: PromiseOrValue<BytesLike>,
-    domain: PromiseOrValue<BigNumberish>,
-    account: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  hasRole(
-    role: PromiseOrValue<BytesLike>,
-    domain: PromiseOrValue<BigNumberish>,
-    account: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  initialize(
-    name: PromiseOrValue<string>,
-    symbol: PromiseOrValue<string>,
-    superAdmin: PromiseOrValue<string>,
-    flagsStorage: PromiseOrValue<string>,
-    chargeHandler: PromiseOrValue<string>,
-    trustedForwarders: PromiseOrValue<string>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  isApprovedForAll(
-    owner_: PromiseOrValue<string>,
-    operator_: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  isGatekeeper(
-    gatekeeper: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  isNetworkAuthority(
-    authority: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  isNetworkDAOGoverned(
-    arg0: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  isSuperAdmin(
-    account: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  isTrustedForwarder(
-    forwarder: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  metadataDescriptor(overrides?: CallOverrides): Promise<string>;
-
-  mint(
-    to: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    expiration: PromiseOrValue<BigNumberish>,
-    mask: PromiseOrValue<BigNumberish>,
-    charge: ChargeStruct,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  name(overrides?: CallOverrides): Promise<string>;
-
-  networkHasFeature(
-    network: PromiseOrValue<BigNumberish>,
-    feature: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  ownerOf(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  proxiableUUID(overrides?: CallOverrides): Promise<string>;
-
-  removeForwarder(
-    forwarder: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  removeGatekeeper(
-    gatekeeper: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  removeNetworkAuthority(
-    authority: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  renameNetwork(
-    network: PromiseOrValue<BigNumberish>,
-    name: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  renounceRole(
-    role: PromiseOrValue<BytesLike>,
-    domain: PromiseOrValue<BigNumberish>,
-    account: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  revoke(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  revokeRole(
-    role: PromiseOrValue<BytesLike>,
-    domain: PromiseOrValue<BigNumberish>,
-    account: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  revokeSuperAdmin(
-    account: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "safeTransferFrom(address,address,uint256)"(
-    from_: PromiseOrValue<string>,
-    to_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "safeTransferFrom(address,address,uint256,bytes)"(
-    from_: PromiseOrValue<string>,
-    to_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
-    data_: PromiseOrValue<BytesLike>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setApprovalForAll(
-    operator_: PromiseOrValue<string>,
-    approved_: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setBitmask(
-    tokenId: PromiseOrValue<BigNumberish>,
-    mask: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setExpiration(
-    tokenId: PromiseOrValue<BigNumberish>,
-    timestamp: PromiseOrValue<BigNumberish>,
-    charge: ChargeStruct,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setMetadataDescriptor(
-    _metadataDescriptor: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setNetworkFeatures(
-    network: PromiseOrValue<BigNumberish>,
-    mask: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setSuperAdmin(
-    account: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  slotOf(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  slotURI(
-    slot_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  supportsInterface(
-    interfaceId: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  symbol(overrides?: CallOverrides): Promise<string>;
-
-  tokenByIndex(
-    index_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  tokenOfOwnerByIndex(
-    owner_: PromiseOrValue<string>,
-    index_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  tokenURI(
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-  transferDAOManager(
-    previousManager: PromiseOrValue<string>,
-    newManager: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "transferFrom(uint256,address,uint256)"(
-    fromTokenId_: PromiseOrValue<BigNumberish>,
-    to_: PromiseOrValue<string>,
-    value_: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "transferFrom(address,address,uint256)"(
-    from_: PromiseOrValue<string>,
-    to_: PromiseOrValue<string>,
-    tokenId_: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "transferFrom(uint256,uint256,uint256)"(
-    fromTokenId_: PromiseOrValue<BigNumberish>,
-    toTokenId_: PromiseOrValue<BigNumberish>,
-    value_: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  transfersRestricted(overrides?: CallOverrides): Promise<boolean>;
-
-  unfreeze(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  updateChargeHandler(
-    chargeHandler: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  updateFlagsStorage(
-    flagsStorage: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  upgradeTo(
-    newImplementation: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  upgradeToAndCall(
-    newImplementation: PromiseOrValue<string>,
-    data: PromiseOrValue<BytesLike>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  valueDecimals(overrides?: CallOverrides): Promise<number>;
-
-  "verifyToken(address,uint256)"(
-    owner: PromiseOrValue<string>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  "verifyToken(uint256)"(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  callStatic: {
-    DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    GATEKEEPER_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    NETWORK_AUTHORITY_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    addGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    addNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    allowance(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      operator_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "approve(address,uint256)"(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "approve(uint256,address,uint256)"(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<string>,
-      arg2: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "balanceOf(address)"(
-      owner_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "balanceOf(uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    burn(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    contractURI(overrides?: CallOverrides): Promise<string>;
-
-    createNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      daoGoverned: PromiseOrValue<boolean>,
-      daoManager: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    flagsStorage(overrides?: CallOverrides): Promise<string>;
-
-    freeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    getApproved(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    getExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getIssuingGatekeeper(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    getNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    getRoleAdmin(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    getToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<
-      [string, number, string, BigNumber, BigNumber] & {
+  addGatekeeper: TypedContractMethod<
+    [gatekeeper: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  addNetworkAuthority: TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  allowance: TypedContractMethod<
+    [tokenId_: BigNumberish, operator_: AddressLike],
+    [bigint],
+    "view"
+  >;
+
+  "approve(address,uint256)": TypedContractMethod<
+    [arg0: AddressLike, arg1: BigNumberish],
+    [void],
+    "payable"
+  >;
+
+  "approve(uint256,address,uint256)": TypedContractMethod<
+    [arg0: BigNumberish, arg1: AddressLike, arg2: BigNumberish],
+    [void],
+    "payable"
+  >;
+
+  "balanceOf(address)": TypedContractMethod<
+    [owner_: AddressLike],
+    [bigint],
+    "view"
+  >;
+
+  "balanceOf(uint256)": TypedContractMethod<
+    [tokenId_: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
+  burn: TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
+
+  contractURI: TypedContractMethod<[], [string], "view">;
+
+  createNetwork: TypedContractMethod<
+    [
+      network: BigNumberish,
+      name: string,
+      daoGoverned: boolean,
+      daoManager: AddressLike
+    ],
+    [void],
+    "nonpayable"
+  >;
+
+  flagsStorage: TypedContractMethod<[], [string], "view">;
+
+  freeze: TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
+
+  getApproved: TypedContractMethod<[tokenId_: BigNumberish], [string], "view">;
+
+  getExpiration: TypedContractMethod<[tokenId: BigNumberish], [bigint], "view">;
+
+  getIssuingGatekeeper: TypedContractMethod<
+    [tokenId: BigNumberish],
+    [string],
+    "view"
+  >;
+
+  getNetwork: TypedContractMethod<[network: BigNumberish], [string], "view">;
+
+  getRoleAdmin: TypedContractMethod<
+    [role: BytesLike, domain: BigNumberish],
+    [string],
+    "view"
+  >;
+
+  getToken: TypedContractMethod<
+    [tokenId: BigNumberish],
+    [
+      [string, bigint, string, bigint, bigint] & {
         owner: string;
-        state: number;
+        state: bigint;
         identity: string;
-        expiration: BigNumber;
-        bitmask: BigNumber;
+        expiration: bigint;
+        bitmask: bigint;
       }
-    >;
+    ],
+    "view"
+  >;
 
-    getTokenBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+  getTokenBitmask: TypedContractMethod<
+    [tokenId: BigNumberish],
+    [bigint],
+    "view"
+  >;
 
-    getTokenIdsByOwnerAndNetwork(
-      owner: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      onlyActive: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
+  getTokenIdsByOwnerAndNetwork: TypedContractMethod<
+    [owner: AddressLike, network: BigNumberish, onlyActive: boolean],
+    [bigint[]],
+    "view"
+  >;
 
-    grantRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  grantRole: TypedContractMethod<
+    [role: BytesLike, domain: BigNumberish, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    hasRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  hasRole: TypedContractMethod<
+    [role: BytesLike, domain: BigNumberish, account: AddressLike],
+    [boolean],
+    "view"
+  >;
 
-    initialize(
-      name: PromiseOrValue<string>,
-      symbol: PromiseOrValue<string>,
-      superAdmin: PromiseOrValue<string>,
-      flagsStorage: PromiseOrValue<string>,
-      chargeHandler: PromiseOrValue<string>,
-      trustedForwarders: PromiseOrValue<string>[],
-      overrides?: CallOverrides
-    ): Promise<void>;
+  initialize: TypedContractMethod<
+    [
+      name: string,
+      symbol: string,
+      superAdmin: AddressLike,
+      flagsStorage: AddressLike,
+      chargeHandler: AddressLike,
+      trustedForwarders: AddressLike[]
+    ],
+    [void],
+    "nonpayable"
+  >;
 
-    isApprovedForAll(
-      owner_: PromiseOrValue<string>,
-      operator_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  isApprovedForAll: TypedContractMethod<
+    [owner_: AddressLike, operator_: AddressLike],
+    [boolean],
+    "view"
+  >;
 
-    isGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  isGatekeeper: TypedContractMethod<
+    [gatekeeper: AddressLike, network: BigNumberish],
+    [boolean],
+    "view"
+  >;
 
-    isNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  isNetworkAuthority: TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [boolean],
+    "view"
+  >;
 
-    isNetworkDAOGoverned(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  isNetworkDAOGoverned: TypedContractMethod<
+    [arg0: BigNumberish],
+    [boolean],
+    "view"
+  >;
 
-    isSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  isSuperAdmin: TypedContractMethod<[account: AddressLike], [boolean], "view">;
 
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  isTrustedForwarder: TypedContractMethod<
+    [forwarder: AddressLike],
+    [boolean],
+    "view"
+  >;
 
-    metadataDescriptor(overrides?: CallOverrides): Promise<string>;
+  metadataDescriptor: TypedContractMethod<[], [string], "view">;
 
-    mint(
-      to: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      expiration: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  mint: TypedContractMethod<
+    [
+      to: AddressLike,
+      network: BigNumberish,
+      expiration: BigNumberish,
+      mask: BigNumberish,
+      charge: ChargeStruct
+    ],
+    [void],
+    "payable"
+  >;
 
-    name(overrides?: CallOverrides): Promise<string>;
+  name: TypedContractMethod<[], [string], "view">;
 
-    networkHasFeature(
-      network: PromiseOrValue<BigNumberish>,
-      feature: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  networkHasFeature: TypedContractMethod<
+    [network: BigNumberish, feature: BigNumberish],
+    [boolean],
+    "view"
+  >;
 
-    ownerOf(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
+  ownerOf: TypedContractMethod<[tokenId_: BigNumberish], [string], "view">;
 
-    proxiableUUID(overrides?: CallOverrides): Promise<string>;
+  proxiableUUID: TypedContractMethod<[], [string], "view">;
 
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  removeForwarder: TypedContractMethod<
+    [forwarder: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    removeGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  removeGatekeeper: TypedContractMethod<
+    [gatekeeper: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-    removeNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  removeNetworkAuthority: TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-    renameNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  renameNetwork: TypedContractMethod<
+    [network: BigNumberish, name: string],
+    [void],
+    "nonpayable"
+  >;
 
-    renounceRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  renounceRole: TypedContractMethod<
+    [role: BytesLike, domain: BigNumberish, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    revoke(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  revoke: TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
 
-    revokeRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  revokeRole: TypedContractMethod<
+    [role: BytesLike, domain: BigNumberish, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    revokeSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  revokeSuperAdmin: TypedContractMethod<
+    [account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    "safeTransferFrom(address,address,uint256)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  "safeTransferFrom(address,address,uint256)": TypedContractMethod<
+    [from_: AddressLike, to_: AddressLike, tokenId_: BigNumberish],
+    [void],
+    "payable"
+  >;
 
-    "safeTransferFrom(address,address,uint256,bytes)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      data_: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  "safeTransferFrom(address,address,uint256,bytes)": TypedContractMethod<
+    [
+      from_: AddressLike,
+      to_: AddressLike,
+      tokenId_: BigNumberish,
+      data_: BytesLike
+    ],
+    [void],
+    "payable"
+  >;
 
-    setApprovalForAll(
-      operator_: PromiseOrValue<string>,
-      approved_: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  setApprovalForAll: TypedContractMethod<
+    [operator_: AddressLike, approved_: boolean],
+    [void],
+    "nonpayable"
+  >;
 
-    setBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  setBitmask: TypedContractMethod<
+    [tokenId: BigNumberish, mask: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-    setExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  setExpiration: TypedContractMethod<
+    [tokenId: BigNumberish, timestamp: BigNumberish, charge: ChargeStruct],
+    [void],
+    "payable"
+  >;
 
-    setMetadataDescriptor(
-      _metadataDescriptor: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  setMetadataDescriptor: TypedContractMethod<
+    [_metadataDescriptor: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    setNetworkFeatures(
-      network: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  setNetworkFeatures: TypedContractMethod<
+    [network: BigNumberish, mask: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-    setSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  setSuperAdmin: TypedContractMethod<
+    [account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    slotOf(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+  slotOf: TypedContractMethod<[tokenId_: BigNumberish], [bigint], "view">;
 
-    slotURI(
-      slot_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
+  slotURI: TypedContractMethod<[slot_: BigNumberish], [string], "view">;
 
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  supportsInterface: TypedContractMethod<
+    [interfaceId: BytesLike],
+    [boolean],
+    "view"
+  >;
 
-    symbol(overrides?: CallOverrides): Promise<string>;
+  symbol: TypedContractMethod<[], [string], "view">;
 
-    tokenByIndex(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+  tokenByIndex: TypedContractMethod<[index_: BigNumberish], [bigint], "view">;
 
-    tokenOfOwnerByIndex(
-      owner_: PromiseOrValue<string>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+  tokenOfOwnerByIndex: TypedContractMethod<
+    [owner_: AddressLike, index_: BigNumberish],
+    [bigint],
+    "view"
+  >;
 
-    tokenURI(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
+  tokenURI: TypedContractMethod<[tokenId_: BigNumberish], [string], "view">;
 
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+  totalSupply: TypedContractMethod<[], [bigint], "view">;
 
-    transferDAOManager(
-      previousManager: PromiseOrValue<string>,
-      newManager: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  transferDAOManager: TypedContractMethod<
+    [
+      previousManager: AddressLike,
+      newManager: AddressLike,
+      network: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
 
-    "transferFrom(uint256,address,uint256)"(
-      fromTokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+  "transferFrom(uint256,address,uint256)": TypedContractMethod<
+    [fromTokenId_: BigNumberish, to_: AddressLike, value_: BigNumberish],
+    [bigint],
+    "payable"
+  >;
 
-    "transferFrom(address,address,uint256)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  "transferFrom(address,address,uint256)": TypedContractMethod<
+    [from_: AddressLike, to_: AddressLike, tokenId_: BigNumberish],
+    [void],
+    "payable"
+  >;
 
-    "transferFrom(uint256,uint256,uint256)"(
-      fromTokenId_: PromiseOrValue<BigNumberish>,
-      toTokenId_: PromiseOrValue<BigNumberish>,
-      value_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  "transferFrom(uint256,uint256,uint256)": TypedContractMethod<
+    [
+      fromTokenId_: BigNumberish,
+      toTokenId_: BigNumberish,
+      value_: BigNumberish
+    ],
+    [void],
+    "payable"
+  >;
 
-    transfersRestricted(overrides?: CallOverrides): Promise<boolean>;
+  transfersRestricted: TypedContractMethod<[], [boolean], "view">;
 
-    unfreeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  unfreeze: TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
 
-    updateChargeHandler(
-      chargeHandler: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  updateChargeHandler: TypedContractMethod<
+    [chargeHandler: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    updateFlagsStorage(
-      flagsStorage: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  updateFlagsStorage: TypedContractMethod<
+    [flagsStorage: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  upgradeTo: TypedContractMethod<
+    [newImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  upgradeToAndCall: TypedContractMethod<
+    [newImplementation: AddressLike, data: BytesLike],
+    [void],
+    "payable"
+  >;
 
-    valueDecimals(overrides?: CallOverrides): Promise<number>;
+  valueDecimals: TypedContractMethod<[], [bigint], "view">;
 
-    "verifyToken(address,uint256)"(
-      owner: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  "verifyToken(address,uint256)": TypedContractMethod<
+    [owner: AddressLike, network: BigNumberish],
+    [boolean],
+    "view"
+  >;
 
-    "verifyToken(uint256)"(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-  };
+  "verifyToken(uint256)": TypedContractMethod<
+    [tokenId: BigNumberish],
+    [boolean],
+    "view"
+  >;
+
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
+
+  getFunction(
+    nameOrSignature: "DAO_MANAGER_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "DEFAULT_ADMIN_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "GATEKEEPER_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "NETWORK_AUTHORITY_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "addForwarder"
+  ): TypedContractMethod<[forwarder: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "addGatekeeper"
+  ): TypedContractMethod<
+    [gatekeeper: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "addNetworkAuthority"
+  ): TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "allowance"
+  ): TypedContractMethod<
+    [tokenId_: BigNumberish, operator_: AddressLike],
+    [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "approve(address,uint256)"
+  ): TypedContractMethod<
+    [arg0: AddressLike, arg1: BigNumberish],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "approve(uint256,address,uint256)"
+  ): TypedContractMethod<
+    [arg0: BigNumberish, arg1: AddressLike, arg2: BigNumberish],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "balanceOf(address)"
+  ): TypedContractMethod<[owner_: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "balanceOf(uint256)"
+  ): TypedContractMethod<[tokenId_: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "burn"
+  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "contractURI"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "createNetwork"
+  ): TypedContractMethod<
+    [
+      network: BigNumberish,
+      name: string,
+      daoGoverned: boolean,
+      daoManager: AddressLike
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "flagsStorage"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "freeze"
+  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "getApproved"
+  ): TypedContractMethod<[tokenId_: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "getExpiration"
+  ): TypedContractMethod<[tokenId: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getIssuingGatekeeper"
+  ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "getNetwork"
+  ): TypedContractMethod<[network: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "getRoleAdmin"
+  ): TypedContractMethod<
+    [role: BytesLike, domain: BigNumberish],
+    [string],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getToken"
+  ): TypedContractMethod<
+    [tokenId: BigNumberish],
+    [
+      [string, bigint, string, bigint, bigint] & {
+        owner: string;
+        state: bigint;
+        identity: string;
+        expiration: bigint;
+        bitmask: bigint;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getTokenBitmask"
+  ): TypedContractMethod<[tokenId: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getTokenIdsByOwnerAndNetwork"
+  ): TypedContractMethod<
+    [owner: AddressLike, network: BigNumberish, onlyActive: boolean],
+    [bigint[]],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "grantRole"
+  ): TypedContractMethod<
+    [role: BytesLike, domain: BigNumberish, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "hasRole"
+  ): TypedContractMethod<
+    [role: BytesLike, domain: BigNumberish, account: AddressLike],
+    [boolean],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "initialize"
+  ): TypedContractMethod<
+    [
+      name: string,
+      symbol: string,
+      superAdmin: AddressLike,
+      flagsStorage: AddressLike,
+      chargeHandler: AddressLike,
+      trustedForwarders: AddressLike[]
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "isApprovedForAll"
+  ): TypedContractMethod<
+    [owner_: AddressLike, operator_: AddressLike],
+    [boolean],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "isGatekeeper"
+  ): TypedContractMethod<
+    [gatekeeper: AddressLike, network: BigNumberish],
+    [boolean],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "isNetworkAuthority"
+  ): TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [boolean],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "isNetworkDAOGoverned"
+  ): TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "isSuperAdmin"
+  ): TypedContractMethod<[account: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "isTrustedForwarder"
+  ): TypedContractMethod<[forwarder: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "metadataDescriptor"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "mint"
+  ): TypedContractMethod<
+    [
+      to: AddressLike,
+      network: BigNumberish,
+      expiration: BigNumberish,
+      mask: BigNumberish,
+      charge: ChargeStruct
+    ],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "name"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "networkHasFeature"
+  ): TypedContractMethod<
+    [network: BigNumberish, feature: BigNumberish],
+    [boolean],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "ownerOf"
+  ): TypedContractMethod<[tokenId_: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "proxiableUUID"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "removeForwarder"
+  ): TypedContractMethod<[forwarder: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "removeGatekeeper"
+  ): TypedContractMethod<
+    [gatekeeper: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "removeNetworkAuthority"
+  ): TypedContractMethod<
+    [authority: AddressLike, network: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "renameNetwork"
+  ): TypedContractMethod<
+    [network: BigNumberish, name: string],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "renounceRole"
+  ): TypedContractMethod<
+    [role: BytesLike, domain: BigNumberish, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "revoke"
+  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "revokeRole"
+  ): TypedContractMethod<
+    [role: BytesLike, domain: BigNumberish, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "revokeSuperAdmin"
+  ): TypedContractMethod<[account: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "safeTransferFrom(address,address,uint256)"
+  ): TypedContractMethod<
+    [from_: AddressLike, to_: AddressLike, tokenId_: BigNumberish],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "safeTransferFrom(address,address,uint256,bytes)"
+  ): TypedContractMethod<
+    [
+      from_: AddressLike,
+      to_: AddressLike,
+      tokenId_: BigNumberish,
+      data_: BytesLike
+    ],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "setApprovalForAll"
+  ): TypedContractMethod<
+    [operator_: AddressLike, approved_: boolean],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setBitmask"
+  ): TypedContractMethod<
+    [tokenId: BigNumberish, mask: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setExpiration"
+  ): TypedContractMethod<
+    [tokenId: BigNumberish, timestamp: BigNumberish, charge: ChargeStruct],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "setMetadataDescriptor"
+  ): TypedContractMethod<
+    [_metadataDescriptor: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setNetworkFeatures"
+  ): TypedContractMethod<
+    [network: BigNumberish, mask: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setSuperAdmin"
+  ): TypedContractMethod<[account: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "slotOf"
+  ): TypedContractMethod<[tokenId_: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "slotURI"
+  ): TypedContractMethod<[slot_: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "supportsInterface"
+  ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "symbol"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "tokenByIndex"
+  ): TypedContractMethod<[index_: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "tokenOfOwnerByIndex"
+  ): TypedContractMethod<
+    [owner_: AddressLike, index_: BigNumberish],
+    [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "tokenURI"
+  ): TypedContractMethod<[tokenId_: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "totalSupply"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "transferDAOManager"
+  ): TypedContractMethod<
+    [
+      previousManager: AddressLike,
+      newManager: AddressLike,
+      network: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "transferFrom(uint256,address,uint256)"
+  ): TypedContractMethod<
+    [fromTokenId_: BigNumberish, to_: AddressLike, value_: BigNumberish],
+    [bigint],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "transferFrom(address,address,uint256)"
+  ): TypedContractMethod<
+    [from_: AddressLike, to_: AddressLike, tokenId_: BigNumberish],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "transferFrom(uint256,uint256,uint256)"
+  ): TypedContractMethod<
+    [
+      fromTokenId_: BigNumberish,
+      toTokenId_: BigNumberish,
+      value_: BigNumberish
+    ],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "transfersRestricted"
+  ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "unfreeze"
+  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "updateChargeHandler"
+  ): TypedContractMethod<[chargeHandler: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "updateFlagsStorage"
+  ): TypedContractMethod<[flagsStorage: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "upgradeTo"
+  ): TypedContractMethod<
+    [newImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "upgradeToAndCall"
+  ): TypedContractMethod<
+    [newImplementation: AddressLike, data: BytesLike],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "valueDecimals"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "verifyToken(address,uint256)"
+  ): TypedContractMethod<
+    [owner: AddressLike, network: BigNumberish],
+    [boolean],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "verifyToken(uint256)"
+  ): TypedContractMethod<[tokenId: BigNumberish], [boolean], "view">;
+
+  getEvent(
+    key: "AdminChanged"
+  ): TypedContractEvent<
+    AdminChangedEvent.InputTuple,
+    AdminChangedEvent.OutputTuple,
+    AdminChangedEvent.OutputObject
+  >;
+  getEvent(
+    key: "Approval"
+  ): TypedContractEvent<
+    ApprovalEvent.InputTuple,
+    ApprovalEvent.OutputTuple,
+    ApprovalEvent.OutputObject
+  >;
+  getEvent(
+    key: "ApprovalForAll"
+  ): TypedContractEvent<
+    ApprovalForAllEvent.InputTuple,
+    ApprovalForAllEvent.OutputTuple,
+    ApprovalForAllEvent.OutputObject
+  >;
+  getEvent(
+    key: "ApprovalValue"
+  ): TypedContractEvent<
+    ApprovalValueEvent.InputTuple,
+    ApprovalValueEvent.OutputTuple,
+    ApprovalValueEvent.OutputObject
+  >;
+  getEvent(
+    key: "BeaconUpgraded"
+  ): TypedContractEvent<
+    BeaconUpgradedEvent.InputTuple,
+    BeaconUpgradedEvent.OutputTuple,
+    BeaconUpgradedEvent.OutputObject
+  >;
+  getEvent(
+    key: "BitMaskUpdated"
+  ): TypedContractEvent<
+    BitMaskUpdatedEvent.InputTuple,
+    BitMaskUpdatedEvent.OutputTuple,
+    BitMaskUpdatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "ChargeHandlerUpdated"
+  ): TypedContractEvent<
+    ChargeHandlerUpdatedEvent.InputTuple,
+    ChargeHandlerUpdatedEvent.OutputTuple,
+    ChargeHandlerUpdatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "DAOManagerTransferred"
+  ): TypedContractEvent<
+    DAOManagerTransferredEvent.InputTuple,
+    DAOManagerTransferredEvent.OutputTuple,
+    DAOManagerTransferredEvent.OutputObject
+  >;
+  getEvent(
+    key: "Expiration"
+  ): TypedContractEvent<
+    ExpirationEvent.InputTuple,
+    ExpirationEvent.OutputTuple,
+    ExpirationEvent.OutputObject
+  >;
+  getEvent(
+    key: "FlagsStorageUpdated"
+  ): TypedContractEvent<
+    FlagsStorageUpdatedEvent.InputTuple,
+    FlagsStorageUpdatedEvent.OutputTuple,
+    FlagsStorageUpdatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "ForwarderAdded"
+  ): TypedContractEvent<
+    ForwarderAddedEvent.InputTuple,
+    ForwarderAddedEvent.OutputTuple,
+    ForwarderAddedEvent.OutputObject
+  >;
+  getEvent(
+    key: "ForwarderRemoved"
+  ): TypedContractEvent<
+    ForwarderRemovedEvent.InputTuple,
+    ForwarderRemovedEvent.OutputTuple,
+    ForwarderRemovedEvent.OutputObject
+  >;
+  getEvent(
+    key: "Freeze"
+  ): TypedContractEvent<
+    FreezeEvent.InputTuple,
+    FreezeEvent.OutputTuple,
+    FreezeEvent.OutputObject
+  >;
+  getEvent(
+    key: "GatekeeperNetworkCreated"
+  ): TypedContractEvent<
+    GatekeeperNetworkCreatedEvent.InputTuple,
+    GatekeeperNetworkCreatedEvent.OutputTuple,
+    GatekeeperNetworkCreatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "GatewayTokenInitialized"
+  ): TypedContractEvent<
+    GatewayTokenInitializedEvent.InputTuple,
+    GatewayTokenInitializedEvent.OutputTuple,
+    GatewayTokenInitializedEvent.OutputObject
+  >;
+  getEvent(
+    key: "Initialized"
+  ): TypedContractEvent<
+    InitializedEvent.InputTuple,
+    InitializedEvent.OutputTuple,
+    InitializedEvent.OutputObject
+  >;
+  getEvent(
+    key: "Revoke"
+  ): TypedContractEvent<
+    RevokeEvent.InputTuple,
+    RevokeEvent.OutputTuple,
+    RevokeEvent.OutputObject
+  >;
+  getEvent(
+    key: "RoleAdminChanged"
+  ): TypedContractEvent<
+    RoleAdminChangedEvent.InputTuple,
+    RoleAdminChangedEvent.OutputTuple,
+    RoleAdminChangedEvent.OutputObject
+  >;
+  getEvent(
+    key: "RoleGranted"
+  ): TypedContractEvent<
+    RoleGrantedEvent.InputTuple,
+    RoleGrantedEvent.OutputTuple,
+    RoleGrantedEvent.OutputObject
+  >;
+  getEvent(
+    key: "RoleRevoked"
+  ): TypedContractEvent<
+    RoleRevokedEvent.InputTuple,
+    RoleRevokedEvent.OutputTuple,
+    RoleRevokedEvent.OutputObject
+  >;
+  getEvent(
+    key: "SetMetadataDescriptor"
+  ): TypedContractEvent<
+    SetMetadataDescriptorEvent.InputTuple,
+    SetMetadataDescriptorEvent.OutputTuple,
+    SetMetadataDescriptorEvent.OutputObject
+  >;
+  getEvent(
+    key: "SlotChanged"
+  ): TypedContractEvent<
+    SlotChangedEvent.InputTuple,
+    SlotChangedEvent.OutputTuple,
+    SlotChangedEvent.OutputObject
+  >;
+  getEvent(
+    key: "SuperAdminAdded"
+  ): TypedContractEvent<
+    SuperAdminAddedEvent.InputTuple,
+    SuperAdminAddedEvent.OutputTuple,
+    SuperAdminAddedEvent.OutputObject
+  >;
+  getEvent(
+    key: "SuperAdminRemoved"
+  ): TypedContractEvent<
+    SuperAdminRemovedEvent.InputTuple,
+    SuperAdminRemovedEvent.OutputTuple,
+    SuperAdminRemovedEvent.OutputObject
+  >;
+  getEvent(
+    key: "Transfer"
+  ): TypedContractEvent<
+    TransferEvent.InputTuple,
+    TransferEvent.OutputTuple,
+    TransferEvent.OutputObject
+  >;
+  getEvent(
+    key: "TransferValue"
+  ): TypedContractEvent<
+    TransferValueEvent.InputTuple,
+    TransferValueEvent.OutputTuple,
+    TransferValueEvent.OutputObject
+  >;
+  getEvent(
+    key: "Unfreeze"
+  ): TypedContractEvent<
+    UnfreezeEvent.InputTuple,
+    UnfreezeEvent.OutputTuple,
+    UnfreezeEvent.OutputObject
+  >;
+  getEvent(
+    key: "Upgraded"
+  ): TypedContractEvent<
+    UpgradedEvent.InputTuple,
+    UpgradedEvent.OutputTuple,
+    UpgradedEvent.OutputObject
+  >;
 
   filters: {
-    "AdminChanged(address,address)"(
-      previousAdmin?: null,
-      newAdmin?: null
-    ): AdminChangedEventFilter;
-    AdminChanged(
-      previousAdmin?: null,
-      newAdmin?: null
-    ): AdminChangedEventFilter;
-
-    "Approval(address,address,uint256)"(
-      _owner?: PromiseOrValue<string> | null,
-      _approved?: PromiseOrValue<string> | null,
-      _tokenId?: PromiseOrValue<BigNumberish> | null
-    ): ApprovalEventFilter;
-    Approval(
-      _owner?: PromiseOrValue<string> | null,
-      _approved?: PromiseOrValue<string> | null,
-      _tokenId?: PromiseOrValue<BigNumberish> | null
-    ): ApprovalEventFilter;
-
-    "ApprovalForAll(address,address,bool)"(
-      _owner?: PromiseOrValue<string> | null,
-      _operator?: PromiseOrValue<string> | null,
-      _approved?: null
-    ): ApprovalForAllEventFilter;
-    ApprovalForAll(
-      _owner?: PromiseOrValue<string> | null,
-      _operator?: PromiseOrValue<string> | null,
-      _approved?: null
-    ): ApprovalForAllEventFilter;
-
-    "ApprovalValue(uint256,address,uint256)"(
-      _tokenId?: PromiseOrValue<BigNumberish> | null,
-      _operator?: PromiseOrValue<string> | null,
-      _value?: null
-    ): ApprovalValueEventFilter;
-    ApprovalValue(
-      _tokenId?: PromiseOrValue<BigNumberish> | null,
-      _operator?: PromiseOrValue<string> | null,
-      _value?: null
-    ): ApprovalValueEventFilter;
-
-    "BeaconUpgraded(address)"(
-      beacon?: PromiseOrValue<string> | null
-    ): BeaconUpgradedEventFilter;
-    BeaconUpgraded(
-      beacon?: PromiseOrValue<string> | null
-    ): BeaconUpgradedEventFilter;
-
-    "BitMaskUpdated(uint256,uint256)"(
-      tokenId?: null,
-      bitmask?: null
-    ): BitMaskUpdatedEventFilter;
-    BitMaskUpdated(tokenId?: null, bitmask?: null): BitMaskUpdatedEventFilter;
-
-    "ChargeHandlerUpdated(address)"(
-      chargeHandler?: PromiseOrValue<string> | null
-    ): ChargeHandlerUpdatedEventFilter;
-    ChargeHandlerUpdated(
-      chargeHandler?: PromiseOrValue<string> | null
-    ): ChargeHandlerUpdatedEventFilter;
-
-    "DAOManagerTransferred(address,address,uint256)"(
-      previousDAOManager?: null,
-      newDAOManager?: null,
-      network?: null
-    ): DAOManagerTransferredEventFilter;
-    DAOManagerTransferred(
-      previousDAOManager?: null,
-      newDAOManager?: null,
-      network?: null
-    ): DAOManagerTransferredEventFilter;
-
-    "Expiration(uint256,uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      timestamp?: null
-    ): ExpirationEventFilter;
-    Expiration(
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      timestamp?: null
-    ): ExpirationEventFilter;
-
-    "FlagsStorageUpdated(address)"(
-      flagsStorage?: PromiseOrValue<string> | null
-    ): FlagsStorageUpdatedEventFilter;
-    FlagsStorageUpdated(
-      flagsStorage?: PromiseOrValue<string> | null
-    ): FlagsStorageUpdatedEventFilter;
-
-    "ForwarderAdded(address)"(
-      forwarder?: PromiseOrValue<string> | null
-    ): ForwarderAddedEventFilter;
-    ForwarderAdded(
-      forwarder?: PromiseOrValue<string> | null
-    ): ForwarderAddedEventFilter;
-
-    "ForwarderRemoved(address)"(
-      forwarder?: PromiseOrValue<string> | null
-    ): ForwarderRemovedEventFilter;
-    ForwarderRemoved(
-      forwarder?: PromiseOrValue<string> | null
-    ): ForwarderRemovedEventFilter;
-
-    "Freeze(uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null
-    ): FreezeEventFilter;
-    Freeze(tokenId?: PromiseOrValue<BigNumberish> | null): FreezeEventFilter;
-
-    "GatekeeperNetworkCreated(uint256,string,bool,address)"(
-      network?: null,
-      name?: null,
-      daoGoverned?: null,
-      daoManager?: null
-    ): GatekeeperNetworkCreatedEventFilter;
-    GatekeeperNetworkCreated(
-      network?: null,
-      name?: null,
-      daoGoverned?: null,
-      daoManager?: null
-    ): GatekeeperNetworkCreatedEventFilter;
-
-    "GatewayTokenInitialized(string,string,address,address,address,address[])"(
-      name?: null,
-      symbol?: null,
-      superAdmin?: null,
-      flagsStorage?: null,
-      chargeHandler?: null,
-      trustedForwarders?: null
-    ): GatewayTokenInitializedEventFilter;
-    GatewayTokenInitialized(
-      name?: null,
-      symbol?: null,
-      superAdmin?: null,
-      flagsStorage?: null,
-      chargeHandler?: null,
-      trustedForwarders?: null
-    ): GatewayTokenInitializedEventFilter;
-
-    "Initialized(uint8)"(version?: null): InitializedEventFilter;
-    Initialized(version?: null): InitializedEventFilter;
-
-    "Revoke(uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null
-    ): RevokeEventFilter;
-    Revoke(tokenId?: PromiseOrValue<BigNumberish> | null): RevokeEventFilter;
-
-    "RoleAdminChanged(bytes32,uint256,bytes32,bytes32)"(
-      role?: PromiseOrValue<BytesLike> | null,
-      domain?: null,
-      previousAdminRole?: PromiseOrValue<BytesLike> | null,
-      newAdminRole?: PromiseOrValue<BytesLike> | null
-    ): RoleAdminChangedEventFilter;
-    RoleAdminChanged(
-      role?: PromiseOrValue<BytesLike> | null,
-      domain?: null,
-      previousAdminRole?: PromiseOrValue<BytesLike> | null,
-      newAdminRole?: PromiseOrValue<BytesLike> | null
-    ): RoleAdminChangedEventFilter;
-
-    "RoleGranted(bytes32,uint256,address,address)"(
-      role?: PromiseOrValue<BytesLike> | null,
-      domain?: null,
-      account?: PromiseOrValue<string> | null,
-      sender?: PromiseOrValue<string> | null
-    ): RoleGrantedEventFilter;
-    RoleGranted(
-      role?: PromiseOrValue<BytesLike> | null,
-      domain?: null,
-      account?: PromiseOrValue<string> | null,
-      sender?: PromiseOrValue<string> | null
-    ): RoleGrantedEventFilter;
-
-    "RoleRevoked(bytes32,uint256,address,address)"(
-      role?: PromiseOrValue<BytesLike> | null,
-      domain?: null,
-      account?: PromiseOrValue<string> | null,
-      sender?: PromiseOrValue<string> | null
-    ): RoleRevokedEventFilter;
-    RoleRevoked(
-      role?: PromiseOrValue<BytesLike> | null,
-      domain?: null,
-      account?: PromiseOrValue<string> | null,
-      sender?: PromiseOrValue<string> | null
-    ): RoleRevokedEventFilter;
-
-    "SetMetadataDescriptor(address)"(
-      metadataDescriptor?: PromiseOrValue<string> | null
-    ): SetMetadataDescriptorEventFilter;
-    SetMetadataDescriptor(
-      metadataDescriptor?: PromiseOrValue<string> | null
-    ): SetMetadataDescriptorEventFilter;
-
-    "SlotChanged(uint256,uint256,uint256)"(
-      _tokenId?: PromiseOrValue<BigNumberish> | null,
-      _oldSlot?: PromiseOrValue<BigNumberish> | null,
-      _newSlot?: PromiseOrValue<BigNumberish> | null
-    ): SlotChangedEventFilter;
-    SlotChanged(
-      _tokenId?: PromiseOrValue<BigNumberish> | null,
-      _oldSlot?: PromiseOrValue<BigNumberish> | null,
-      _newSlot?: PromiseOrValue<BigNumberish> | null
-    ): SlotChangedEventFilter;
-
-    "SuperAdminAdded(address)"(
-      account?: PromiseOrValue<string> | null
-    ): SuperAdminAddedEventFilter;
-    SuperAdminAdded(
-      account?: PromiseOrValue<string> | null
-    ): SuperAdminAddedEventFilter;
-
-    "SuperAdminRemoved(address)"(
-      account?: PromiseOrValue<string> | null
-    ): SuperAdminRemovedEventFilter;
-    SuperAdminRemoved(
-      account?: PromiseOrValue<string> | null
-    ): SuperAdminRemovedEventFilter;
-
-    "Transfer(address,address,uint256)"(
-      _from?: PromiseOrValue<string> | null,
-      _to?: PromiseOrValue<string> | null,
-      _tokenId?: PromiseOrValue<BigNumberish> | null
-    ): TransferEventFilter;
-    Transfer(
-      _from?: PromiseOrValue<string> | null,
-      _to?: PromiseOrValue<string> | null,
-      _tokenId?: PromiseOrValue<BigNumberish> | null
-    ): TransferEventFilter;
-
-    "TransferValue(uint256,uint256,uint256)"(
-      _fromTokenId?: PromiseOrValue<BigNumberish> | null,
-      _toTokenId?: PromiseOrValue<BigNumberish> | null,
-      _value?: null
-    ): TransferValueEventFilter;
-    TransferValue(
-      _fromTokenId?: PromiseOrValue<BigNumberish> | null,
-      _toTokenId?: PromiseOrValue<BigNumberish> | null,
-      _value?: null
-    ): TransferValueEventFilter;
-
-    "Unfreeze(uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null
-    ): UnfreezeEventFilter;
-    Unfreeze(
-      tokenId?: PromiseOrValue<BigNumberish> | null
-    ): UnfreezeEventFilter;
-
-    "Upgraded(address)"(
-      implementation?: PromiseOrValue<string> | null
-    ): UpgradedEventFilter;
-    Upgraded(
-      implementation?: PromiseOrValue<string> | null
-    ): UpgradedEventFilter;
-  };
-
-  estimateGas: {
-    DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    GATEKEEPER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    NETWORK_AUTHORITY_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    addGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    addNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    allowance(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      operator_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "approve(address,uint256)"(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "approve(uint256,address,uint256)"(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<string>,
-      arg2: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "balanceOf(address)"(
-      owner_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "balanceOf(uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    burn(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    contractURI(overrides?: CallOverrides): Promise<BigNumber>;
-
-    createNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      daoGoverned: PromiseOrValue<boolean>,
-      daoManager: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    flagsStorage(overrides?: CallOverrides): Promise<BigNumber>;
-
-    freeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    getApproved(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getIssuingGatekeeper(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getRoleAdmin(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getTokenBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getTokenIdsByOwnerAndNetwork(
-      owner: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      onlyActive: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    grantRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    hasRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    initialize(
-      name: PromiseOrValue<string>,
-      symbol: PromiseOrValue<string>,
-      superAdmin: PromiseOrValue<string>,
-      flagsStorage: PromiseOrValue<string>,
-      chargeHandler: PromiseOrValue<string>,
-      trustedForwarders: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    isApprovedForAll(
-      owner_: PromiseOrValue<string>,
-      operator_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    isGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    isNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    isNetworkDAOGoverned(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    isSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    metadataDescriptor(overrides?: CallOverrides): Promise<BigNumber>;
-
-    mint(
-      to: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      expiration: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    name(overrides?: CallOverrides): Promise<BigNumber>;
-
-    networkHasFeature(
-      network: PromiseOrValue<BigNumberish>,
-      feature: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    ownerOf(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    proxiableUUID(overrides?: CallOverrides): Promise<BigNumber>;
-
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    removeGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    removeNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    renameNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    renounceRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    revoke(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    revokeRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    revokeSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "safeTransferFrom(address,address,uint256)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "safeTransferFrom(address,address,uint256,bytes)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      data_: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setApprovalForAll(
-      operator_: PromiseOrValue<string>,
-      approved_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setMetadataDescriptor(
-      _metadataDescriptor: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setNetworkFeatures(
-      network: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    slotOf(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    slotURI(
-      slot_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    symbol(overrides?: CallOverrides): Promise<BigNumber>;
-
-    tokenByIndex(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner_: PromiseOrValue<string>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenURI(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-    transferDAOManager(
-      previousManager: PromiseOrValue<string>,
-      newManager: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "transferFrom(uint256,address,uint256)"(
-      fromTokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "transferFrom(address,address,uint256)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "transferFrom(uint256,uint256,uint256)"(
-      fromTokenId_: PromiseOrValue<BigNumberish>,
-      toTokenId_: PromiseOrValue<BigNumberish>,
-      value_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    transfersRestricted(overrides?: CallOverrides): Promise<BigNumber>;
-
-    unfreeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    updateChargeHandler(
-      chargeHandler: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    updateFlagsStorage(
-      flagsStorage: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    valueDecimals(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "verifyToken(address,uint256)"(
-      owner: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "verifyToken(uint256)"(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    DAO_MANAGER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    DEFAULT_ADMIN_ROLE(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    GATEKEEPER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    NETWORK_AUTHORITY_ROLE(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    addForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    addGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    addNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    allowance(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      operator_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "approve(address,uint256)"(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "approve(uint256,address,uint256)"(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<string>,
-      arg2: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "balanceOf(address)"(
-      owner_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "balanceOf(uint256)"(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    burn(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    createNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      daoGoverned: PromiseOrValue<boolean>,
-      daoManager: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    flagsStorage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    freeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    getApproved(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getIssuingGatekeeper(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getRoleAdmin(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getTokenBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getTokenIdsByOwnerAndNetwork(
-      owner: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      onlyActive: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    grantRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    hasRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    initialize(
-      name: PromiseOrValue<string>,
-      symbol: PromiseOrValue<string>,
-      superAdmin: PromiseOrValue<string>,
-      flagsStorage: PromiseOrValue<string>,
-      chargeHandler: PromiseOrValue<string>,
-      trustedForwarders: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    isApprovedForAll(
-      owner_: PromiseOrValue<string>,
-      operator_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isNetworkDAOGoverned(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    metadataDescriptor(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    mint(
-      to: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      expiration: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    networkHasFeature(
-      network: PromiseOrValue<BigNumberish>,
-      feature: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    ownerOf(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    proxiableUUID(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    removeForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    removeGatekeeper(
-      gatekeeper: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    removeNetworkAuthority(
-      authority: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    renameNetwork(
-      network: PromiseOrValue<BigNumberish>,
-      name: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    renounceRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    revoke(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    revokeRole(
-      role: PromiseOrValue<BytesLike>,
-      domain: PromiseOrValue<BigNumberish>,
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    revokeSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "safeTransferFrom(address,address,uint256)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "safeTransferFrom(address,address,uint256,bytes)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      data_: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setApprovalForAll(
-      operator_: PromiseOrValue<string>,
-      approved_: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setBitmask(
-      tokenId: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setMetadataDescriptor(
-      _metadataDescriptor: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setNetworkFeatures(
-      network: PromiseOrValue<BigNumberish>,
-      mask: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setSuperAdmin(
-      account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    slotOf(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    slotURI(
-      slot_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    supportsInterface(
-      interfaceId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    tokenByIndex(
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokenOfOwnerByIndex(
-      owner_: PromiseOrValue<string>,
-      index_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokenURI(
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    transferDAOManager(
-      previousManager: PromiseOrValue<string>,
-      newManager: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "transferFrom(uint256,address,uint256)"(
-      fromTokenId_: PromiseOrValue<BigNumberish>,
-      to_: PromiseOrValue<string>,
-      value_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "transferFrom(address,address,uint256)"(
-      from_: PromiseOrValue<string>,
-      to_: PromiseOrValue<string>,
-      tokenId_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "transferFrom(uint256,uint256,uint256)"(
-      fromTokenId_: PromiseOrValue<BigNumberish>,
-      toTokenId_: PromiseOrValue<BigNumberish>,
-      value_: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    transfersRestricted(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    unfreeze(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    updateChargeHandler(
-      chargeHandler: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    updateFlagsStorage(
-      flagsStorage: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    valueDecimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "verifyToken(address,uint256)"(
-      owner: PromiseOrValue<string>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "verifyToken(uint256)"(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    "AdminChanged(address,address)": TypedContractEvent<
+      AdminChangedEvent.InputTuple,
+      AdminChangedEvent.OutputTuple,
+      AdminChangedEvent.OutputObject
+    >;
+    AdminChanged: TypedContractEvent<
+      AdminChangedEvent.InputTuple,
+      AdminChangedEvent.OutputTuple,
+      AdminChangedEvent.OutputObject
+    >;
+
+    "Approval(address,address,uint256)": TypedContractEvent<
+      ApprovalEvent.InputTuple,
+      ApprovalEvent.OutputTuple,
+      ApprovalEvent.OutputObject
+    >;
+    Approval: TypedContractEvent<
+      ApprovalEvent.InputTuple,
+      ApprovalEvent.OutputTuple,
+      ApprovalEvent.OutputObject
+    >;
+
+    "ApprovalForAll(address,address,bool)": TypedContractEvent<
+      ApprovalForAllEvent.InputTuple,
+      ApprovalForAllEvent.OutputTuple,
+      ApprovalForAllEvent.OutputObject
+    >;
+    ApprovalForAll: TypedContractEvent<
+      ApprovalForAllEvent.InputTuple,
+      ApprovalForAllEvent.OutputTuple,
+      ApprovalForAllEvent.OutputObject
+    >;
+
+    "ApprovalValue(uint256,address,uint256)": TypedContractEvent<
+      ApprovalValueEvent.InputTuple,
+      ApprovalValueEvent.OutputTuple,
+      ApprovalValueEvent.OutputObject
+    >;
+    ApprovalValue: TypedContractEvent<
+      ApprovalValueEvent.InputTuple,
+      ApprovalValueEvent.OutputTuple,
+      ApprovalValueEvent.OutputObject
+    >;
+
+    "BeaconUpgraded(address)": TypedContractEvent<
+      BeaconUpgradedEvent.InputTuple,
+      BeaconUpgradedEvent.OutputTuple,
+      BeaconUpgradedEvent.OutputObject
+    >;
+    BeaconUpgraded: TypedContractEvent<
+      BeaconUpgradedEvent.InputTuple,
+      BeaconUpgradedEvent.OutputTuple,
+      BeaconUpgradedEvent.OutputObject
+    >;
+
+    "BitMaskUpdated(uint256,uint256)": TypedContractEvent<
+      BitMaskUpdatedEvent.InputTuple,
+      BitMaskUpdatedEvent.OutputTuple,
+      BitMaskUpdatedEvent.OutputObject
+    >;
+    BitMaskUpdated: TypedContractEvent<
+      BitMaskUpdatedEvent.InputTuple,
+      BitMaskUpdatedEvent.OutputTuple,
+      BitMaskUpdatedEvent.OutputObject
+    >;
+
+    "ChargeHandlerUpdated(address)": TypedContractEvent<
+      ChargeHandlerUpdatedEvent.InputTuple,
+      ChargeHandlerUpdatedEvent.OutputTuple,
+      ChargeHandlerUpdatedEvent.OutputObject
+    >;
+    ChargeHandlerUpdated: TypedContractEvent<
+      ChargeHandlerUpdatedEvent.InputTuple,
+      ChargeHandlerUpdatedEvent.OutputTuple,
+      ChargeHandlerUpdatedEvent.OutputObject
+    >;
+
+    "DAOManagerTransferred(address,address,uint256)": TypedContractEvent<
+      DAOManagerTransferredEvent.InputTuple,
+      DAOManagerTransferredEvent.OutputTuple,
+      DAOManagerTransferredEvent.OutputObject
+    >;
+    DAOManagerTransferred: TypedContractEvent<
+      DAOManagerTransferredEvent.InputTuple,
+      DAOManagerTransferredEvent.OutputTuple,
+      DAOManagerTransferredEvent.OutputObject
+    >;
+
+    "Expiration(uint256,uint256)": TypedContractEvent<
+      ExpirationEvent.InputTuple,
+      ExpirationEvent.OutputTuple,
+      ExpirationEvent.OutputObject
+    >;
+    Expiration: TypedContractEvent<
+      ExpirationEvent.InputTuple,
+      ExpirationEvent.OutputTuple,
+      ExpirationEvent.OutputObject
+    >;
+
+    "FlagsStorageUpdated(address)": TypedContractEvent<
+      FlagsStorageUpdatedEvent.InputTuple,
+      FlagsStorageUpdatedEvent.OutputTuple,
+      FlagsStorageUpdatedEvent.OutputObject
+    >;
+    FlagsStorageUpdated: TypedContractEvent<
+      FlagsStorageUpdatedEvent.InputTuple,
+      FlagsStorageUpdatedEvent.OutputTuple,
+      FlagsStorageUpdatedEvent.OutputObject
+    >;
+
+    "ForwarderAdded(address)": TypedContractEvent<
+      ForwarderAddedEvent.InputTuple,
+      ForwarderAddedEvent.OutputTuple,
+      ForwarderAddedEvent.OutputObject
+    >;
+    ForwarderAdded: TypedContractEvent<
+      ForwarderAddedEvent.InputTuple,
+      ForwarderAddedEvent.OutputTuple,
+      ForwarderAddedEvent.OutputObject
+    >;
+
+    "ForwarderRemoved(address)": TypedContractEvent<
+      ForwarderRemovedEvent.InputTuple,
+      ForwarderRemovedEvent.OutputTuple,
+      ForwarderRemovedEvent.OutputObject
+    >;
+    ForwarderRemoved: TypedContractEvent<
+      ForwarderRemovedEvent.InputTuple,
+      ForwarderRemovedEvent.OutputTuple,
+      ForwarderRemovedEvent.OutputObject
+    >;
+
+    "Freeze(uint256)": TypedContractEvent<
+      FreezeEvent.InputTuple,
+      FreezeEvent.OutputTuple,
+      FreezeEvent.OutputObject
+    >;
+    Freeze: TypedContractEvent<
+      FreezeEvent.InputTuple,
+      FreezeEvent.OutputTuple,
+      FreezeEvent.OutputObject
+    >;
+
+    "GatekeeperNetworkCreated(uint256,string,bool,address)": TypedContractEvent<
+      GatekeeperNetworkCreatedEvent.InputTuple,
+      GatekeeperNetworkCreatedEvent.OutputTuple,
+      GatekeeperNetworkCreatedEvent.OutputObject
+    >;
+    GatekeeperNetworkCreated: TypedContractEvent<
+      GatekeeperNetworkCreatedEvent.InputTuple,
+      GatekeeperNetworkCreatedEvent.OutputTuple,
+      GatekeeperNetworkCreatedEvent.OutputObject
+    >;
+
+    "GatewayTokenInitialized(string,string,address,address,address,address[])": TypedContractEvent<
+      GatewayTokenInitializedEvent.InputTuple,
+      GatewayTokenInitializedEvent.OutputTuple,
+      GatewayTokenInitializedEvent.OutputObject
+    >;
+    GatewayTokenInitialized: TypedContractEvent<
+      GatewayTokenInitializedEvent.InputTuple,
+      GatewayTokenInitializedEvent.OutputTuple,
+      GatewayTokenInitializedEvent.OutputObject
+    >;
+
+    "Initialized(uint8)": TypedContractEvent<
+      InitializedEvent.InputTuple,
+      InitializedEvent.OutputTuple,
+      InitializedEvent.OutputObject
+    >;
+    Initialized: TypedContractEvent<
+      InitializedEvent.InputTuple,
+      InitializedEvent.OutputTuple,
+      InitializedEvent.OutputObject
+    >;
+
+    "Revoke(uint256)": TypedContractEvent<
+      RevokeEvent.InputTuple,
+      RevokeEvent.OutputTuple,
+      RevokeEvent.OutputObject
+    >;
+    Revoke: TypedContractEvent<
+      RevokeEvent.InputTuple,
+      RevokeEvent.OutputTuple,
+      RevokeEvent.OutputObject
+    >;
+
+    "RoleAdminChanged(bytes32,uint256,bytes32,bytes32)": TypedContractEvent<
+      RoleAdminChangedEvent.InputTuple,
+      RoleAdminChangedEvent.OutputTuple,
+      RoleAdminChangedEvent.OutputObject
+    >;
+    RoleAdminChanged: TypedContractEvent<
+      RoleAdminChangedEvent.InputTuple,
+      RoleAdminChangedEvent.OutputTuple,
+      RoleAdminChangedEvent.OutputObject
+    >;
+
+    "RoleGranted(bytes32,uint256,address,address)": TypedContractEvent<
+      RoleGrantedEvent.InputTuple,
+      RoleGrantedEvent.OutputTuple,
+      RoleGrantedEvent.OutputObject
+    >;
+    RoleGranted: TypedContractEvent<
+      RoleGrantedEvent.InputTuple,
+      RoleGrantedEvent.OutputTuple,
+      RoleGrantedEvent.OutputObject
+    >;
+
+    "RoleRevoked(bytes32,uint256,address,address)": TypedContractEvent<
+      RoleRevokedEvent.InputTuple,
+      RoleRevokedEvent.OutputTuple,
+      RoleRevokedEvent.OutputObject
+    >;
+    RoleRevoked: TypedContractEvent<
+      RoleRevokedEvent.InputTuple,
+      RoleRevokedEvent.OutputTuple,
+      RoleRevokedEvent.OutputObject
+    >;
+
+    "SetMetadataDescriptor(address)": TypedContractEvent<
+      SetMetadataDescriptorEvent.InputTuple,
+      SetMetadataDescriptorEvent.OutputTuple,
+      SetMetadataDescriptorEvent.OutputObject
+    >;
+    SetMetadataDescriptor: TypedContractEvent<
+      SetMetadataDescriptorEvent.InputTuple,
+      SetMetadataDescriptorEvent.OutputTuple,
+      SetMetadataDescriptorEvent.OutputObject
+    >;
+
+    "SlotChanged(uint256,uint256,uint256)": TypedContractEvent<
+      SlotChangedEvent.InputTuple,
+      SlotChangedEvent.OutputTuple,
+      SlotChangedEvent.OutputObject
+    >;
+    SlotChanged: TypedContractEvent<
+      SlotChangedEvent.InputTuple,
+      SlotChangedEvent.OutputTuple,
+      SlotChangedEvent.OutputObject
+    >;
+
+    "SuperAdminAdded(address)": TypedContractEvent<
+      SuperAdminAddedEvent.InputTuple,
+      SuperAdminAddedEvent.OutputTuple,
+      SuperAdminAddedEvent.OutputObject
+    >;
+    SuperAdminAdded: TypedContractEvent<
+      SuperAdminAddedEvent.InputTuple,
+      SuperAdminAddedEvent.OutputTuple,
+      SuperAdminAddedEvent.OutputObject
+    >;
+
+    "SuperAdminRemoved(address)": TypedContractEvent<
+      SuperAdminRemovedEvent.InputTuple,
+      SuperAdminRemovedEvent.OutputTuple,
+      SuperAdminRemovedEvent.OutputObject
+    >;
+    SuperAdminRemoved: TypedContractEvent<
+      SuperAdminRemovedEvent.InputTuple,
+      SuperAdminRemovedEvent.OutputTuple,
+      SuperAdminRemovedEvent.OutputObject
+    >;
+
+    "Transfer(address,address,uint256)": TypedContractEvent<
+      TransferEvent.InputTuple,
+      TransferEvent.OutputTuple,
+      TransferEvent.OutputObject
+    >;
+    Transfer: TypedContractEvent<
+      TransferEvent.InputTuple,
+      TransferEvent.OutputTuple,
+      TransferEvent.OutputObject
+    >;
+
+    "TransferValue(uint256,uint256,uint256)": TypedContractEvent<
+      TransferValueEvent.InputTuple,
+      TransferValueEvent.OutputTuple,
+      TransferValueEvent.OutputObject
+    >;
+    TransferValue: TypedContractEvent<
+      TransferValueEvent.InputTuple,
+      TransferValueEvent.OutputTuple,
+      TransferValueEvent.OutputObject
+    >;
+
+    "Unfreeze(uint256)": TypedContractEvent<
+      UnfreezeEvent.InputTuple,
+      UnfreezeEvent.OutputTuple,
+      UnfreezeEvent.OutputObject
+    >;
+    Unfreeze: TypedContractEvent<
+      UnfreezeEvent.InputTuple,
+      UnfreezeEvent.OutputTuple,
+      UnfreezeEvent.OutputObject
+    >;
+
+    "Upgraded(address)": TypedContractEvent<
+      UpgradedEvent.InputTuple,
+      UpgradedEvent.OutputTuple,
+      UpgradedEvent.OutputObject
+    >;
+    Upgraded: TypedContractEvent<
+      UpgradedEvent.InputTuple,
+      UpgradedEvent.OutputTuple,
+      UpgradedEvent.OutputObject
+    >;
   };
 }

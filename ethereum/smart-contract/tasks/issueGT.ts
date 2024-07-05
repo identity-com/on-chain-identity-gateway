@@ -3,7 +3,7 @@ import { Wallet } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { DEFAULT_FORWARDER_ADDRESS, DEFAULT_GATEWAY_TOKEN_ADDRESS } from '../../gateway-eth-ts/src';
 import { NULL_CHARGE } from '../test/utils/eth';
-import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
+// import { signMetaTxRequest } from '../../gateway-eth-ts/src/utils/metatx';
 import { IForwarder } from '../typechain-types';
 
 export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
@@ -32,22 +32,23 @@ export const issueGT = async (args: any, hre: HardhatRuntimeEnvironment) => {
 
   let transactionReceipt;
 
-  if (!args.forwarded) {
+  // if (!args.forwarded) {
     transactionReceipt = await gatekeeper.sendTransaction(mintTx);
-  } else {
-    const forwarder = (await ethers.getContractAt('FlexibleNonceForwarder', DEFAULT_FORWARDER_ADDRESS)).connect(owner);
-
-    const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, {
-      from: gatekeeper.address,
-      to: DEFAULT_GATEWAY_TOKEN_ADDRESS,
-      data: mintTx.data,
-      gas: 1_000_000,
-    });
-
-    const unsignedTx = await forwarder.populateTransaction.execute(request, signature);
-
-    transactionReceipt = await owner.sendTransaction(unsignedTx);
-  }
+    // Requires ../gateway-eth so this is commented out to ensure building works without it
+  // } else {
+  //   const forwarder = (await ethers.getContractAt('FlexibleNonceForwarder', DEFAULT_FORWARDER_ADDRESS)).connect(owner);
+  //
+  //   const { request, signature } = await signMetaTxRequest(gatekeeper, forwarder as IForwarder, {
+  //     from: gatekeeper.address,
+  //     to: DEFAULT_GATEWAY_TOKEN_ADDRESS,
+  //     data: mintTx.data,
+  //     gas: 1_000_000,
+  //   });
+  //
+  //   const unsignedTx = await forwarder.populateTransaction.execute(request, signature);
+  //
+  //   transactionReceipt = await owner.sendTransaction(unsignedTx);
+  // }
   console.log(transactionReceipt);
 
   await transactionReceipt.wait();

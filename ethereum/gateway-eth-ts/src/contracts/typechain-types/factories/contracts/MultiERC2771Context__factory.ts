@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   MultiERC2771Context,
   MultiERC2771ContextInterface,
@@ -35,12 +34,16 @@ const _abi = [
 export class MultiERC2771Context__factory {
   static readonly abi = _abi;
   static createInterface(): MultiERC2771ContextInterface {
-    return new utils.Interface(_abi) as MultiERC2771ContextInterface;
+    return new Interface(_abi) as MultiERC2771ContextInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): MultiERC2771Context {
-    return new Contract(address, _abi, signerOrProvider) as MultiERC2771Context;
+    return new Contract(
+      address,
+      _abi,
+      runner
+    ) as unknown as MultiERC2771Context;
   }
 }

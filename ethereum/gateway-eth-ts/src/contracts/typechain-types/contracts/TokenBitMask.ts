@@ -4,33 +4,32 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
+  BigNumberish,
   BytesLike,
-  CallOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../common";
 
-export interface TokenBitMaskInterface extends utils.Interface {
-  functions: {
-    "flagsStorage()": FunctionFragment;
-  };
+export interface TokenBitMaskInterface extends Interface {
+  getFunction(nameOrSignature: "flagsStorage"): FunctionFragment;
 
-  getFunction(nameOrSignatureOrTopic: "flagsStorage"): FunctionFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "BitMaskUpdated" | "FlagsStorageUpdated"
+  ): EventFragment;
 
   encodeFunctionData(
     functionFragment: "flagsStorage",
@@ -41,94 +40,122 @@ export interface TokenBitMaskInterface extends utils.Interface {
     functionFragment: "flagsStorage",
     data: BytesLike
   ): Result;
-
-  events: {
-    "BitMaskUpdated(uint256,uint256)": EventFragment;
-    "FlagsStorageUpdated(address)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "BitMaskUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "FlagsStorageUpdated"): EventFragment;
 }
 
-export interface BitMaskUpdatedEventObject {
-  tokenId: BigNumber;
-  bitmask: BigNumber;
+export namespace BitMaskUpdatedEvent {
+  export type InputTuple = [tokenId: BigNumberish, bitmask: BigNumberish];
+  export type OutputTuple = [tokenId: bigint, bitmask: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+    bitmask: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type BitMaskUpdatedEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  BitMaskUpdatedEventObject
->;
 
-export type BitMaskUpdatedEventFilter = TypedEventFilter<BitMaskUpdatedEvent>;
-
-export interface FlagsStorageUpdatedEventObject {
-  flagsStorage: string;
+export namespace FlagsStorageUpdatedEvent {
+  export type InputTuple = [flagsStorage: AddressLike];
+  export type OutputTuple = [flagsStorage: string];
+  export interface OutputObject {
+    flagsStorage: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type FlagsStorageUpdatedEvent = TypedEvent<
-  [string],
-  FlagsStorageUpdatedEventObject
->;
-
-export type FlagsStorageUpdatedEventFilter =
-  TypedEventFilter<FlagsStorageUpdatedEvent>;
 
 export interface TokenBitMask extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): TokenBitMask;
+  waitForDeployment(): Promise<this>;
 
   interface: TokenBitMaskInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    flagsStorage(overrides?: CallOverrides): Promise<[string]>;
-  };
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  flagsStorage(overrides?: CallOverrides): Promise<string>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  callStatic: {
-    flagsStorage(overrides?: CallOverrides): Promise<string>;
-  };
+  flagsStorage: TypedContractMethod<[], [string], "view">;
+
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
+
+  getFunction(
+    nameOrSignature: "flagsStorage"
+  ): TypedContractMethod<[], [string], "view">;
+
+  getEvent(
+    key: "BitMaskUpdated"
+  ): TypedContractEvent<
+    BitMaskUpdatedEvent.InputTuple,
+    BitMaskUpdatedEvent.OutputTuple,
+    BitMaskUpdatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "FlagsStorageUpdated"
+  ): TypedContractEvent<
+    FlagsStorageUpdatedEvent.InputTuple,
+    FlagsStorageUpdatedEvent.OutputTuple,
+    FlagsStorageUpdatedEvent.OutputObject
+  >;
 
   filters: {
-    "BitMaskUpdated(uint256,uint256)"(
-      tokenId?: null,
-      bitmask?: null
-    ): BitMaskUpdatedEventFilter;
-    BitMaskUpdated(tokenId?: null, bitmask?: null): BitMaskUpdatedEventFilter;
+    "BitMaskUpdated(uint256,uint256)": TypedContractEvent<
+      BitMaskUpdatedEvent.InputTuple,
+      BitMaskUpdatedEvent.OutputTuple,
+      BitMaskUpdatedEvent.OutputObject
+    >;
+    BitMaskUpdated: TypedContractEvent<
+      BitMaskUpdatedEvent.InputTuple,
+      BitMaskUpdatedEvent.OutputTuple,
+      BitMaskUpdatedEvent.OutputObject
+    >;
 
-    "FlagsStorageUpdated(address)"(
-      flagsStorage?: PromiseOrValue<string> | null
-    ): FlagsStorageUpdatedEventFilter;
-    FlagsStorageUpdated(
-      flagsStorage?: PromiseOrValue<string> | null
-    ): FlagsStorageUpdatedEventFilter;
-  };
-
-  estimateGas: {
-    flagsStorage(overrides?: CallOverrides): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    flagsStorage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    "FlagsStorageUpdated(address)": TypedContractEvent<
+      FlagsStorageUpdatedEvent.InputTuple,
+      FlagsStorageUpdatedEvent.OutputTuple,
+      FlagsStorageUpdatedEvent.OutputObject
+    >;
+    FlagsStorageUpdated: TypedContractEvent<
+      FlagsStorageUpdatedEvent.InputTuple,
+      FlagsStorageUpdatedEvent.OutputTuple,
+      FlagsStorageUpdatedEvent.OutputObject
+    >;
   };
 }

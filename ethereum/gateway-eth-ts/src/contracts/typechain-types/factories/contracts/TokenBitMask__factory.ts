@@ -2,9 +2,14 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
-import { Signer, utils, Contract, ContractFactory, Overrides } from "ethers";
-import type { Provider, TransactionRequest } from "@ethersproject/providers";
-import type { PromiseOrValue } from "../../common";
+import {
+  Contract,
+  ContractFactory,
+  ContractTransactionResponse,
+  Interface,
+} from "ethers";
+import type { Signer, ContractDeployTransaction, ContractRunner } from "ethers";
+import type { NonPayableOverrides } from "../../common";
 import type {
   TokenBitMask,
   TokenBitMaskInterface,
@@ -78,32 +83,31 @@ export class TokenBitMask__factory extends ContractFactory {
     }
   }
 
-  override deploy(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<TokenBitMask> {
-    return super.deploy(overrides || {}) as Promise<TokenBitMask>;
-  }
   override getDeployTransaction(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): TransactionRequest {
+    overrides?: NonPayableOverrides & { from?: string }
+  ): Promise<ContractDeployTransaction> {
     return super.getDeployTransaction(overrides || {});
   }
-  override attach(address: string): TokenBitMask {
-    return super.attach(address) as TokenBitMask;
+  override deploy(overrides?: NonPayableOverrides & { from?: string }) {
+    return super.deploy(overrides || {}) as Promise<
+      TokenBitMask & {
+        deploymentTransaction(): ContractTransactionResponse;
+      }
+    >;
   }
-  override connect(signer: Signer): TokenBitMask__factory {
-    return super.connect(signer) as TokenBitMask__factory;
+  override connect(runner: ContractRunner | null): TokenBitMask__factory {
+    return super.connect(runner) as TokenBitMask__factory;
   }
 
   static readonly bytecode = _bytecode;
   static readonly abi = _abi;
   static createInterface(): TokenBitMaskInterface {
-    return new utils.Interface(_abi) as TokenBitMaskInterface;
+    return new Interface(_abi) as TokenBitMaskInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): TokenBitMask {
-    return new Contract(address, _abi, signerOrProvider) as TokenBitMask;
+    return new Contract(address, _abi, runner) as unknown as TokenBitMask;
   }
 }

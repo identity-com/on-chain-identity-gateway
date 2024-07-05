@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   IForwarder,
   IForwarderInterface,
@@ -96,12 +95,9 @@ const _abi = [
 export class IForwarder__factory {
   static readonly abi = _abi;
   static createInterface(): IForwarderInterface {
-    return new utils.Interface(_abi) as IForwarderInterface;
+    return new Interface(_abi) as IForwarderInterface;
   }
-  static connect(
-    address: string,
-    signerOrProvider: Signer | Provider
-  ): IForwarder {
-    return new Contract(address, _abi, signerOrProvider) as IForwarder;
+  static connect(address: string, runner?: ContractRunner | null): IForwarder {
+    return new Contract(address, _abi, runner) as unknown as IForwarder;
   }
 }

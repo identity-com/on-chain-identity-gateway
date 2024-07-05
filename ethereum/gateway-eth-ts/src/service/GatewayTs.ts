@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { Provider } from "@ethersproject/providers";
+import { ContractTransactionResponse, Provider, Signer } from "ethers";
 import {
   GatewayToken,
   GatewayToken__factory,
@@ -7,8 +7,6 @@ import {
 } from "../contracts/typechain-types";
 import { GatewayTsInternal } from "./GatewayTsInternal";
 import { ForwarderOptions, GatewayTsForwarder } from "./GatewayTsForwarder";
-import { Wallet } from "ethers";
-import { ContractTransaction } from "ethers";
 import {
   onGatewayTokenChange,
   removeGatewayTokenChangeListener,
@@ -19,24 +17,23 @@ import { Options } from "../utils/types";
 
 export class GatewayTs extends GatewayTsInternal<
   GatewayToken,
-  ContractTransaction
+  ContractTransactionResponse
 > {
-  readonly providerOrWallet: Provider | Wallet;
+  readonly providerOrSigner: Provider | Signer;
 
   constructor(
-    // ethers.js requires a Wallet instead of Signer for the _signTypedData function, until v6
-    providerOrWallet: Provider | Wallet,
+    providerOrSigner: Provider | Signer,
     defaultGatewayToken: string,
     options: Options = {}
   ) {
     const gatewayTokenContract = GatewayToken__factory.connect(
       defaultGatewayToken,
-      providerOrWallet
+      providerOrSigner
     );
     super(gatewayTokenContract, options);
 
     this.gatewayTokenContract = gatewayTokenContract;
-    this.providerOrWallet = providerOrWallet;
+    this.providerOrSigner = providerOrSigner;
   }
 
   private get forwarderOptions(): ForwarderOptions {
@@ -50,11 +47,11 @@ export class GatewayTs extends GatewayTsInternal<
   public forward(forwarderAddress: string): GatewayTsForwarder {
     const forwarderContract = IForwarder__factory.connect(
       forwarderAddress,
-      this.providerOrWallet
+      this.providerOrSigner
     );
 
     return new GatewayTsForwarder(
-      this.providerOrWallet,
+      this.providerOrSigner,
       this.gatewayTokenContract,
       forwarderContract,
       this.forwarderOptions

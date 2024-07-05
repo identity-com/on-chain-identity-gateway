@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@identity.com/gateway-eth-cli": "^0.2.2"
+  }
+}

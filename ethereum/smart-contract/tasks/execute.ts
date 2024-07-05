@@ -1,5 +1,4 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { BigNumber } from 'ethers';
 
 export const execute = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const { ethers, getNamedAccounts } = hre;
@@ -8,7 +7,7 @@ export const execute = async (args: any, hre: HardhatRuntimeEnvironment) => {
 
   const tx = args.tx;
   const to = args.to;
-  const value = BigNumber.from(args.value);
+  const value = BigInt(args.value);
 
   const [owner] = await ethers.getSigners();
   const signer = new ethers.Wallet(process.env.PRIVATE_KEY, owner.provider);

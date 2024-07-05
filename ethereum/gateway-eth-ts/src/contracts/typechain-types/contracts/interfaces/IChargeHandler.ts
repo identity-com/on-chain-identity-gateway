@@ -4,69 +4,62 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PayableOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
 export type ChargeStruct = {
-  value: PromiseOrValue<BigNumberish>;
-  chargeType: PromiseOrValue<BigNumberish>;
-  token: PromiseOrValue<string>;
-  tokenSender: PromiseOrValue<string>;
-  recipient: PromiseOrValue<string>;
+  value: BigNumberish;
+  chargeType: BigNumberish;
+  token: AddressLike;
+  tokenSender: AddressLike;
+  recipient: AddressLike;
 };
 
-export type ChargeStructOutput = [BigNumber, number, string, string, string] & {
-  value: BigNumber;
-  chargeType: number;
+export type ChargeStructOutput = [
+  value: bigint,
+  chargeType: bigint,
+  token: string,
+  tokenSender: string,
+  recipient: string
+] & {
+  value: bigint;
+  chargeType: bigint;
   token: string;
   tokenSender: string;
   recipient: string;
 };
 
-export interface IChargeHandlerInterface extends utils.Interface {
-  functions: {
-    "handleCharge((uint256,uint8,address,address,address),uint256)": FunctionFragment;
-    "setApproval(address,address,uint256,uint256)": FunctionFragment;
-  };
-
+export interface IChargeHandlerInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic: "handleCharge" | "setApproval"
+    nameOrSignature: "handleCharge" | "setApproval"
   ): FunctionFragment;
 
+  getEvent(nameOrSignatureOrTopic: "ApprovalSet" | "ChargePaid"): EventFragment;
+
   encodeFunctionData(
     functionFragment: "handleCharge",
-    values: [ChargeStruct, PromiseOrValue<BigNumberish>]
+    values: [ChargeStruct, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setApproval",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [AddressLike, AddressLike, BigNumberish, BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -77,158 +70,165 @@ export interface IChargeHandlerInterface extends utils.Interface {
     functionFragment: "setApproval",
     data: BytesLike
   ): Result;
-
-  events: {
-    "ApprovalSet(address,address,uint256,uint256)": EventFragment;
-    "ChargePaid(tuple)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "ApprovalSet"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ChargePaid"): EventFragment;
 }
 
-export interface ApprovalSetEventObject {
-  gatewayTokenAddress: string;
-  tokenAddress: string;
-  tokens: BigNumber;
-  network: BigNumber;
+export namespace ApprovalSetEvent {
+  export type InputTuple = [
+    gatewayTokenAddress: AddressLike,
+    tokenAddress: AddressLike,
+    tokens: BigNumberish,
+    network: BigNumberish
+  ];
+  export type OutputTuple = [
+    gatewayTokenAddress: string,
+    tokenAddress: string,
+    tokens: bigint,
+    network: bigint
+  ];
+  export interface OutputObject {
+    gatewayTokenAddress: string;
+    tokenAddress: string;
+    tokens: bigint;
+    network: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ApprovalSetEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber],
-  ApprovalSetEventObject
->;
 
-export type ApprovalSetEventFilter = TypedEventFilter<ApprovalSetEvent>;
-
-export interface ChargePaidEventObject {
-  arg0: ChargeStructOutput;
+export namespace ChargePaidEvent {
+  export type InputTuple = [arg0: ChargeStruct];
+  export type OutputTuple = [arg0: ChargeStructOutput];
+  export interface OutputObject {
+    arg0: ChargeStructOutput;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ChargePaidEvent = TypedEvent<
-  [ChargeStructOutput],
-  ChargePaidEventObject
->;
-
-export type ChargePaidEventFilter = TypedEventFilter<ChargePaidEvent>;
 
 export interface IChargeHandler extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IChargeHandler;
+  waitForDeployment(): Promise<this>;
 
   interface: IChargeHandlerInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    handleCharge(
-      charge: ChargeStruct,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    setApproval(
-      gatewayTokenAddress: PromiseOrValue<string>,
-      tokenAddress: PromiseOrValue<string>,
-      tokens: PromiseOrValue<BigNumberish>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  handleCharge(
-    charge: ChargeStruct,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  handleCharge: TypedContractMethod<
+    [charge: ChargeStruct, network: BigNumberish],
+    [void],
+    "payable"
+  >;
 
-  setApproval(
-    gatewayTokenAddress: PromiseOrValue<string>,
-    tokenAddress: PromiseOrValue<string>,
-    tokens: PromiseOrValue<BigNumberish>,
-    network: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  setApproval: TypedContractMethod<
+    [
+      gatewayTokenAddress: AddressLike,
+      tokenAddress: AddressLike,
+      tokens: BigNumberish,
+      network: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
 
-  callStatic: {
-    handleCharge(
-      charge: ChargeStruct,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-    setApproval(
-      gatewayTokenAddress: PromiseOrValue<string>,
-      tokenAddress: PromiseOrValue<string>,
-      tokens: PromiseOrValue<BigNumberish>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  getFunction(
+    nameOrSignature: "handleCharge"
+  ): TypedContractMethod<
+    [charge: ChargeStruct, network: BigNumberish],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "setApproval"
+  ): TypedContractMethod<
+    [
+      gatewayTokenAddress: AddressLike,
+      tokenAddress: AddressLike,
+      tokens: BigNumberish,
+      network: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
+
+  getEvent(
+    key: "ApprovalSet"
+  ): TypedContractEvent<
+    ApprovalSetEvent.InputTuple,
+    ApprovalSetEvent.OutputTuple,
+    ApprovalSetEvent.OutputObject
+  >;
+  getEvent(
+    key: "ChargePaid"
+  ): TypedContractEvent<
+    ChargePaidEvent.InputTuple,
+    ChargePaidEvent.OutputTuple,
+    ChargePaidEvent.OutputObject
+  >;
 
   filters: {
-    "ApprovalSet(address,address,uint256,uint256)"(
-      gatewayTokenAddress?: null,
-      tokenAddress?: null,
-      tokens?: null,
-      network?: null
-    ): ApprovalSetEventFilter;
-    ApprovalSet(
-      gatewayTokenAddress?: null,
-      tokenAddress?: null,
-      tokens?: null,
-      network?: null
-    ): ApprovalSetEventFilter;
+    "ApprovalSet(address,address,uint256,uint256)": TypedContractEvent<
+      ApprovalSetEvent.InputTuple,
+      ApprovalSetEvent.OutputTuple,
+      ApprovalSetEvent.OutputObject
+    >;
+    ApprovalSet: TypedContractEvent<
+      ApprovalSetEvent.InputTuple,
+      ApprovalSetEvent.OutputTuple,
+      ApprovalSetEvent.OutputObject
+    >;
 
-    "ChargePaid(tuple)"(arg0?: null): ChargePaidEventFilter;
-    ChargePaid(arg0?: null): ChargePaidEventFilter;
-  };
-
-  estimateGas: {
-    handleCharge(
-      charge: ChargeStruct,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setApproval(
-      gatewayTokenAddress: PromiseOrValue<string>,
-      tokenAddress: PromiseOrValue<string>,
-      tokens: PromiseOrValue<BigNumberish>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    handleCharge(
-      charge: ChargeStruct,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setApproval(
-      gatewayTokenAddress: PromiseOrValue<string>,
-      tokenAddress: PromiseOrValue<string>,
-      tokens: PromiseOrValue<BigNumberish>,
-      network: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "ChargePaid(tuple)": TypedContractEvent<
+      ChargePaidEvent.InputTuple,
+      ChargePaidEvent.OutputTuple,
+      ChargePaidEvent.OutputObject
+    >;
+    ChargePaid: TypedContractEvent<
+      ChargePaidEvent.InputTuple,
+      ChargePaidEvent.OutputTuple,
+      ChargePaidEvent.OutputObject
+    >;
   };
 }

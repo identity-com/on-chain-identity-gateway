@@ -4,121 +4,121 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface IERC721RevokableInterface extends utils.Interface {
-  functions: {
-    "revoke(uint256)": FunctionFragment;
-  };
+export interface IERC721RevokableInterface extends Interface {
+  getFunction(nameOrSignature: "revoke"): FunctionFragment;
 
-  getFunction(nameOrSignatureOrTopic: "revoke"): FunctionFragment;
+  getEvent(nameOrSignatureOrTopic: "Revoke"): EventFragment;
 
   encodeFunctionData(
     functionFragment: "revoke",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
 
   decodeFunctionResult(functionFragment: "revoke", data: BytesLike): Result;
-
-  events: {
-    "Revoke(uint256)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "Revoke"): EventFragment;
 }
 
-export interface RevokeEventObject {
-  tokenId: BigNumber;
+export namespace RevokeEvent {
+  export type InputTuple = [tokenId: BigNumberish];
+  export type OutputTuple = [tokenId: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type RevokeEvent = TypedEvent<[BigNumber], RevokeEventObject>;
-
-export type RevokeEventFilter = TypedEventFilter<RevokeEvent>;
 
 export interface IERC721Revokable extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IERC721Revokable;
+  waitForDeployment(): Promise<this>;
 
   interface: IERC721RevokableInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    revoke(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  revoke(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  callStatic: {
-    revoke(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  revoke: TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
+
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
+
+  getFunction(
+    nameOrSignature: "revoke"
+  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
+
+  getEvent(
+    key: "Revoke"
+  ): TypedContractEvent<
+    RevokeEvent.InputTuple,
+    RevokeEvent.OutputTuple,
+    RevokeEvent.OutputObject
+  >;
 
   filters: {
-    "Revoke(uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null
-    ): RevokeEventFilter;
-    Revoke(tokenId?: PromiseOrValue<BigNumberish> | null): RevokeEventFilter;
-  };
-
-  estimateGas: {
-    revoke(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    revoke(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "Revoke(uint256)": TypedContractEvent<
+      RevokeEvent.InputTuple,
+      RevokeEvent.OutputTuple,
+      RevokeEvent.OutputObject
+    >;
+    Revoke: TypedContractEvent<
+      RevokeEvent.InputTuple,
+      RevokeEvent.OutputTuple,
+      RevokeEvent.OutputObject
+    >;
   };
 }

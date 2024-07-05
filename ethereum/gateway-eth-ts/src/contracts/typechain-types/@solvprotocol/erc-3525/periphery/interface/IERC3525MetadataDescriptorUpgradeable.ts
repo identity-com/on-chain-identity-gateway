@@ -4,34 +4,27 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
+  FunctionFragment,
+  Result,
+  Interface,
+  ContractRunner,
+  ContractMethod,
+  Listener,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../../../common";
 
 export interface IERC3525MetadataDescriptorUpgradeableInterface
-  extends utils.Interface {
-  functions: {
-    "constructContractURI()": FunctionFragment;
-    "constructSlotURI(uint256)": FunctionFragment;
-    "constructTokenURI(uint256)": FunctionFragment;
-  };
-
+  extends Interface {
   getFunction(
-    nameOrSignatureOrTopic:
+    nameOrSignature:
       | "constructContractURI"
       | "constructSlotURI"
       | "constructTokenURI"
@@ -43,11 +36,11 @@ export interface IERC3525MetadataDescriptorUpgradeableInterface
   ): string;
   encodeFunctionData(
     functionFragment: "constructSlotURI",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "constructTokenURI",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -62,105 +55,76 @@ export interface IERC3525MetadataDescriptorUpgradeableInterface
     functionFragment: "constructTokenURI",
     data: BytesLike
   ): Result;
-
-  events: {};
 }
 
 export interface IERC3525MetadataDescriptorUpgradeable extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(
+    runner?: ContractRunner | null
+  ): IERC3525MetadataDescriptorUpgradeable;
+  waitForDeployment(): Promise<this>;
 
   interface: IERC3525MetadataDescriptorUpgradeableInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    constructContractURI(overrides?: CallOverrides): Promise<[string]>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    constructSlotURI(
-      slot: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    constructTokenURI(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-  };
+  constructContractURI: TypedContractMethod<[], [string], "view">;
 
-  constructContractURI(overrides?: CallOverrides): Promise<string>;
+  constructSlotURI: TypedContractMethod<[slot: BigNumberish], [string], "view">;
 
-  constructSlotURI(
-    slot: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
+  constructTokenURI: TypedContractMethod<
+    [tokenId: BigNumberish],
+    [string],
+    "view"
+  >;
 
-  constructTokenURI(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-  callStatic: {
-    constructContractURI(overrides?: CallOverrides): Promise<string>;
-
-    constructSlotURI(
-      slot: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    constructTokenURI(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-  };
+  getFunction(
+    nameOrSignature: "constructContractURI"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "constructSlotURI"
+  ): TypedContractMethod<[slot: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "constructTokenURI"
+  ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
   filters: {};
-
-  estimateGas: {
-    constructContractURI(overrides?: CallOverrides): Promise<BigNumber>;
-
-    constructSlotURI(
-      slot: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    constructTokenURI(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    constructContractURI(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    constructSlotURI(
-      slot: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    constructTokenURI(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-  };
 }

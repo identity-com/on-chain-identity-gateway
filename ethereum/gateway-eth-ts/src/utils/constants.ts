@@ -1,4 +1,3 @@
-import { BigNumber } from "ethers";
 export const DEFAULT_FLAGS_STORAGE_ADDRESS =
   "0x490D0801844C41E88674F00940590D646E6948b8"; // Proxy address
 export const DEFAULT_GATEWAY_TOKEN_ADDRESS =
@@ -11,5 +10,5 @@ export const DEFAULT_CHARGE_HANDLER_ADDRESS =
 
 export const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-export const ZERO_BN = BigNumber.from("0");
-export const ONE_BN = BigNumber.from("1");
+export const ZERO_BN = BigInt(0);
+export const ONE_BN = BigInt(1);

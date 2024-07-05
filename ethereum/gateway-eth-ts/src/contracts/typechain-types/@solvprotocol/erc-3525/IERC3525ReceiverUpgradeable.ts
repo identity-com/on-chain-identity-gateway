@@ -4,130 +4,110 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
+  FunctionFragment,
+  Result,
+  Interface,
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface IERC3525ReceiverUpgradeableInterface extends utils.Interface {
-  functions: {
-    "onERC3525Received(address,uint256,uint256,uint256,bytes)": FunctionFragment;
-  };
-
-  getFunction(nameOrSignatureOrTopic: "onERC3525Received"): FunctionFragment;
+export interface IERC3525ReceiverUpgradeableInterface extends Interface {
+  getFunction(nameOrSignature: "onERC3525Received"): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "onERC3525Received",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [AddressLike, BigNumberish, BigNumberish, BigNumberish, BytesLike]
   ): string;
 
   decodeFunctionResult(
     functionFragment: "onERC3525Received",
     data: BytesLike
   ): Result;
-
-  events: {};
 }
 
 export interface IERC3525ReceiverUpgradeable extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IERC3525ReceiverUpgradeable;
+  waitForDeployment(): Promise<this>;
 
   interface: IERC3525ReceiverUpgradeableInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    onERC3525Received(
-      _operator: PromiseOrValue<string>,
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _toTokenId: PromiseOrValue<BigNumberish>,
-      _value: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  onERC3525Received(
-    _operator: PromiseOrValue<string>,
-    _fromTokenId: PromiseOrValue<BigNumberish>,
-    _toTokenId: PromiseOrValue<BigNumberish>,
-    _value: PromiseOrValue<BigNumberish>,
-    _data: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  callStatic: {
-    onERC3525Received(
-      _operator: PromiseOrValue<string>,
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _toTokenId: PromiseOrValue<BigNumberish>,
-      _value: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-  };
+  onERC3525Received: TypedContractMethod<
+    [
+      _operator: AddressLike,
+      _fromTokenId: BigNumberish,
+      _toTokenId: BigNumberish,
+      _value: BigNumberish,
+      _data: BytesLike
+    ],
+    [string],
+    "nonpayable"
+  >;
+
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
+
+  getFunction(
+    nameOrSignature: "onERC3525Received"
+  ): TypedContractMethod<
+    [
+      _operator: AddressLike,
+      _fromTokenId: BigNumberish,
+      _toTokenId: BigNumberish,
+      _value: BigNumberish,
+      _data: BytesLike
+    ],
+    [string],
+    "nonpayable"
+  >;
 
   filters: {};
-
-  estimateGas: {
-    onERC3525Received(
-      _operator: PromiseOrValue<string>,
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _toTokenId: PromiseOrValue<BigNumberish>,
-      _value: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    onERC3525Received(
-      _operator: PromiseOrValue<string>,
-      _fromTokenId: PromiseOrValue<BigNumberish>,
-      _toTokenId: PromiseOrValue<BigNumberish>,
-      _value: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-  };
 }

@@ -1,9 +1,4 @@
-import {
-  BaseProvider,
-  getDefaultProvider,
-  Network,
-} from "@ethersproject/providers";
-import { BigNumber, Wallet } from "ethers";
+import { Wallet, Provider, getDefaultProvider, Network, Signer } from "ethers";
 import { TokenData, TokenState } from "../utils";
 import * as assert from "assert";
 import * as dotenv from "dotenv";
@@ -19,11 +14,11 @@ dotenv.config();
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe("GatewayTS", function () {
-  this.timeout(5_000);
+  this.timeout(15_000);
   let gateway: GatewayTs;
-  let provider: BaseProvider;
+  let provider: Provider;
   let network: Network;
-  let gatekeeper: Wallet;
+  let gatekeeper: Signer;
 
   const sampleWalletAddress = Wallet.createRandom().address;
 
@@ -50,7 +45,7 @@ describe("GatewayTS", function () {
   });
 
   it("should issue a token", async () => {
-    await (await gateway.issue(sampleWalletAddress, gatekeeperNetwork)).wait();
+    await gateway.issue(sampleWalletAddress, gatekeeperNetwork);
 
     const token = await gateway.getToken(
       sampleWalletAddress,
@@ -64,12 +59,13 @@ describe("GatewayTS", function () {
   it("should tolerate multiple tokens", async () => {
     const walletWithMultipleTokens = Wallet.createRandom().address;
 
-    await (
-      await gateway.issue(walletWithMultipleTokens, gatekeeperNetwork)
-    ).wait();
-    await (
-      await gateway.issue(walletWithMultipleTokens, gatekeeperNetwork)
-    ).wait();
+    await gateway
+      .issue(walletWithMultipleTokens, gatekeeperNetwork)
+      .then((tx) => tx.wait());
+    // Wait for tx1 before tx2 otherwise the node will complain about replays
+    await gateway
+      .issue(walletWithMultipleTokens, gatekeeperNetwork)
+      .then((tx) => tx.wait());
 
     // should fail
     const shouldFail = gateway.checkedGetTokenId(
@@ -95,17 +91,15 @@ describe("GatewayTS", function () {
 
   it("should issue a token with additional parameters", async () => {
     const address = Wallet.createRandom().address;
-    const expiry = BigNumber.from(100);
-    const expectedExpiry = BigNumber.from(Math.floor(Date.now() / 1000 + 100));
-    const mask = BigNumber.from(1);
-    await (
-      await gateway.issue(address, gatekeeperNetwork, expiry, mask)
-    ).wait();
+    const expiry = BigInt(100);
+    const expectedExpiry = BigInt(Math.floor(Date.now() / 1000 + 100));
+    const mask = BigInt(1);
 
+    await gateway.issue(address, gatekeeperNetwork, expiry, mask);
     const token = await gateway.getToken(address, gatekeeperNetwork);
 
-    assert.equal(token.expiration.toNumber(), expectedExpiry.toNumber());
-    assert.equal(token.bitmask.toNumber(), mask.toNumber());
+    assert.equal(token.expiration, expectedExpiry);
+    assert.equal(token.bitmask, mask);
   });
 
   it("Verify gateway tokens for multiple addresses", async () => {
@@ -116,19 +110,17 @@ describe("GatewayTS", function () {
     const dummyWallet = new Wallet(SAMPLE_PRIVATE_KEY);
     result = await gateway.verify(dummyWallet.address, gatekeeperNetwork);
     assert.equal(result, false);
-  }).timeout(10_000);
+  });
 
   context("getTokenIdsByOwnerAndNetwork", () => {
     let expiredTokenAddress: string;
     before("issue a token with a short-lived expiry", async () => {
       expiredTokenAddress = Wallet.createRandom().address;
-      const expiry = BigNumber.from(1);
-      const expectedExpiry = BigNumber.from(
-        Math.floor(Date.now() / 1000 + 100)
-      );
-      await (
-        await gateway.issue(expiredTokenAddress, gatekeeperNetwork, expiry)
-      ).wait();
+      const expiry = BigInt(1);
+      const expectedExpiry = BigInt(Math.floor(Date.now() / 1000 + 100));
+      await gateway
+        .issue(expiredTokenAddress, gatekeeperNetwork, expiry)
+        .then((tx) => tx.wait());
 
       // wait for the token to expire
       await sleep(101);
@@ -193,7 +185,7 @@ describe("GatewayTS", function () {
       sampleWalletAddress,
       gatekeeperNetwork
     );
-    const targetBitmask = BigNumber.from("0");
+    const targetBitmask = BigInt("0");
     assert.deepEqual(token.bitmask, targetBitmask);
   }).timeout(10_000);
 
@@ -227,7 +219,7 @@ describe("GatewayTS", function () {
 
     token = await gateway.getToken(sampleWalletAddress, gatekeeperNetwork);
 
-    assert.equal(BigNumber.from(token.expiration).gt(originalExpiry), true);
+    assert.equal(token.expiration > originalExpiry, true);
   });
 
   it("Test subscribe", async () => {
@@ -247,7 +239,9 @@ describe("GatewayTS", function () {
       resolvePromiseCallback
     );
 
-    await gateway.refresh(sampleWalletAddress, gatekeeperNetwork, 1000);
+    await gateway
+      .refresh(sampleWalletAddress, gatekeeperNetwork, 1000)
+      .then((tx) => tx.wait());
 
     const updatedToken = await resolvedPromise.finally(
       subscription.unsubscribe

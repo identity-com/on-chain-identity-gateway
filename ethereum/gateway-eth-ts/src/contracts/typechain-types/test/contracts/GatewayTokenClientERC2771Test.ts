@@ -4,43 +4,35 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../common";
 
-export interface GatewayTokenClientERC2771TestInterface
-  extends utils.Interface {
-  functions: {
-    "isTrustedForwarder(address)": FunctionFragment;
-    "testGated()": FunctionFragment;
-  };
-
+export interface GatewayTokenClientERC2771TestInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic: "isTrustedForwarder" | "testGated"
+    nameOrSignature: "isTrustedForwarder" | "testGated"
   ): FunctionFragment;
+
+  getEvent(nameOrSignatureOrTopic: "Success"): EventFragment;
 
   encodeFunctionData(
     functionFragment: "isTrustedForwarder",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "testGated", values?: undefined): string;
 
@@ -49,98 +41,98 @@ export interface GatewayTokenClientERC2771TestInterface
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "testGated", data: BytesLike): Result;
-
-  events: {
-    "Success()": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "Success"): EventFragment;
 }
 
-export interface SuccessEventObject {}
-export type SuccessEvent = TypedEvent<[], SuccessEventObject>;
-
-export type SuccessEventFilter = TypedEventFilter<SuccessEvent>;
+export namespace SuccessEvent {
+  export type InputTuple = [];
+  export type OutputTuple = [];
+  export interface OutputObject {}
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
 
 export interface GatewayTokenClientERC2771Test extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): GatewayTokenClientERC2771Test;
+  waitForDeployment(): Promise<this>;
 
   interface: GatewayTokenClientERC2771TestInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    testGated(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  isTrustedForwarder(
-    forwarder: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  isTrustedForwarder: TypedContractMethod<
+    [forwarder: AddressLike],
+    [boolean],
+    "view"
+  >;
 
-  testGated(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  testGated: TypedContractMethod<[], [void], "nonpayable">;
 
-  callStatic: {
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-    testGated(overrides?: CallOverrides): Promise<void>;
-  };
+  getFunction(
+    nameOrSignature: "isTrustedForwarder"
+  ): TypedContractMethod<[forwarder: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "testGated"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+
+  getEvent(
+    key: "Success"
+  ): TypedContractEvent<
+    SuccessEvent.InputTuple,
+    SuccessEvent.OutputTuple,
+    SuccessEvent.OutputObject
+  >;
 
   filters: {
-    "Success()"(): SuccessEventFilter;
-    Success(): SuccessEventFilter;
-  };
-
-  estimateGas: {
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    testGated(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    isTrustedForwarder(
-      forwarder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    testGated(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "Success()": TypedContractEvent<
+      SuccessEvent.InputTuple,
+      SuccessEvent.OutputTuple,
+      SuccessEvent.OutputObject
+    >;
+    Success: TypedContractEvent<
+      SuccessEvent.InputTuple,
+      SuccessEvent.OutputTuple,
+      SuccessEvent.OutputObject
+    >;
   };
 }

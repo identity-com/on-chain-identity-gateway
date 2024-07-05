@@ -9,7 +9,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const gatewayTokenFactory = await ethers.getContractFactory('GatewayToken');
   const deployedGatewayToken = await deployments.get('GatewayTokenProxy');
   await upgrades.forceImport(deployedGatewayToken.address, gatewayTokenFactoryV0);
-  await upgrades.upgradeProxy(deployedGatewayToken, gatewayTokenFactory);
+  await upgrades.upgradeProxy(deployedGatewayToken.address, gatewayTokenFactory);
 
   console.log('upgraded GatewayToken at ' + deployedGatewayToken.address);
 };

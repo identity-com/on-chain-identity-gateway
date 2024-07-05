@@ -16,7 +16,7 @@
     "gateway_v2-client"
   ],
   "engines": {
-    "node": ">=14"
+    "node": ">=20.13.1"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   IERC3525MetadataDescriptorUpgradeable,
   IERC3525MetadataDescriptorUpgradeableInterface,
@@ -67,18 +66,18 @@ const _abi = [
 export class IERC3525MetadataDescriptorUpgradeable__factory {
   static readonly abi = _abi;
   static createInterface(): IERC3525MetadataDescriptorUpgradeableInterface {
-    return new utils.Interface(
+    return new Interface(
       _abi
     ) as IERC3525MetadataDescriptorUpgradeableInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): IERC3525MetadataDescriptorUpgradeable {
     return new Contract(
       address,
       _abi,
-      signerOrProvider
-    ) as IERC3525MetadataDescriptorUpgradeable;
+      runner
+    ) as unknown as IERC3525MetadataDescriptorUpgradeable;
   }
 }

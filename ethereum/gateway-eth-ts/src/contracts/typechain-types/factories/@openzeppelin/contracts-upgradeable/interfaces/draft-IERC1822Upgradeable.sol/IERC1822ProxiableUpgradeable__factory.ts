@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   IERC1822ProxiableUpgradeable,
   IERC1822ProxiableUpgradeableInterface,
@@ -29,16 +28,16 @@ const _abi = [
 export class IERC1822ProxiableUpgradeable__factory {
   static readonly abi = _abi;
   static createInterface(): IERC1822ProxiableUpgradeableInterface {
-    return new utils.Interface(_abi) as IERC1822ProxiableUpgradeableInterface;
+    return new Interface(_abi) as IERC1822ProxiableUpgradeableInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): IERC1822ProxiableUpgradeable {
     return new Contract(
       address,
       _abi,
-      signerOrProvider
-    ) as IERC1822ProxiableUpgradeable;
+      runner
+    ) as unknown as IERC1822ProxiableUpgradeable;
   }
 }

@@ -1,14 +1,11 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import {BigNumber} from "ethers";
-
-
 
 export const getFees = async (args: any, hre: HardhatRuntimeEnvironment) => {
   const { ethers, getNamedAccounts, deployments } = hre;
 
   const [deployer] = await ethers.getSigners();
 
-  const toGwei = (wei: BigNumber) => ethers.utils.formatUnits(wei, "gwei")
+  const toGwei = (wei: bigint) => ethers.formatUnits(wei, "gwei")
 
   const fees = await deployer.getFeeData();
 

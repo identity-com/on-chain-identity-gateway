@@ -1,5 +1,6 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
+import { GatewayToken__factory } from '../typechain-types';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, ethers, getNamedAccounts } = hre;
@@ -19,7 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   const gatewayToken = await deployments.get('GatewayTokenProxy');
-  const token = (await ethers.getContractAt('GatewayToken', gatewayToken.address)).connect(deployerSigner);
+  const token = GatewayToken__factory.connect(gatewayToken.address, deployerSigner);
   const addForwarderTx = await (await token.addForwarder(flexibleNonceForwarderDeployment.address)).wait();
   console.log(
     'Added flexible nonce forwarder ' +
@@ -27,7 +28,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       ' on Gateway Token at ' +
       gatewayToken.address +
       ' using ' +
-      addForwarderTx.gasUsed.toNumber() +
+      addForwarderTx?.gasUsed.toString() +
       ' gas',
   );
 };

@@ -4,196 +4,163 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../../../common";
 
 export type ChargeStruct = {
-  value: PromiseOrValue<BigNumberish>;
-  chargeType: PromiseOrValue<BigNumberish>;
-  token: PromiseOrValue<string>;
-  recipient: PromiseOrValue<string>;
+  value: BigNumberish;
+  chargeType: BigNumberish;
+  token: AddressLike;
+  recipient: AddressLike;
 };
 
-export type ChargeStructOutput = [BigNumber, number, string, string] & {
-  value: BigNumber;
-  chargeType: number;
-  token: string;
-  recipient: string;
-};
+export type ChargeStructOutput = [
+  value: bigint,
+  chargeType: bigint,
+  token: string,
+  recipient: string
+] & { value: bigint; chargeType: bigint; token: string; recipient: string };
 
-export interface IERC721ExpirableV0Interface extends utils.Interface {
-  functions: {
-    "getExpiration(uint256)": FunctionFragment;
-    "setExpiration(uint256,uint256,(uint256,uint8,address,address))": FunctionFragment;
-  };
-
+export interface IERC721ExpirableV0Interface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic: "getExpiration" | "setExpiration"
+    nameOrSignature: "getExpiration" | "setExpiration"
   ): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: "getExpiration",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setExpiration",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      ChargeStruct
-    ]
-  ): string;
-
-  decodeFunctionResult(
-    functionFragment: "getExpiration",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setExpiration",
-    data: BytesLike
-  ): Result;
-
-  events: {
-    "Expiration(uint256,uint256)": EventFragment;
-  };
-
   getEvent(nameOrSignatureOrTopic: "Expiration"): EventFragment;
+
+  encodeFunctionData(
+    functionFragment: "getExpiration",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setExpiration",
+    values: [BigNumberish, BigNumberish, ChargeStruct]
+  ): string;
+
+  decodeFunctionResult(
+    functionFragment: "getExpiration",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setExpiration",
+    data: BytesLike
+  ): Result;
 }
 
-export interface ExpirationEventObject {
-  tokenId: BigNumber;
-  timestamp: BigNumber;
+export namespace ExpirationEvent {
+  export type InputTuple = [tokenId: BigNumberish, timestamp: BigNumberish];
+  export type OutputTuple = [tokenId: bigint, timestamp: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+    timestamp: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type ExpirationEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  ExpirationEventObject
->;
-
-export type ExpirationEventFilter = TypedEventFilter<ExpirationEvent>;
 
 export interface IERC721ExpirableV0 extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): IERC721ExpirableV0;
+  waitForDeployment(): Promise<this>;
 
   interface: IERC721ExpirableV0Interface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    getExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    setExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  getExpiration(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  getExpiration: TypedContractMethod<[tokenId: BigNumberish], [bigint], "view">;
 
-  setExpiration(
-    tokenId: PromiseOrValue<BigNumberish>,
-    timestamp: PromiseOrValue<BigNumberish>,
-    charge: ChargeStruct,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  setExpiration: TypedContractMethod<
+    [tokenId: BigNumberish, timestamp: BigNumberish, charge: ChargeStruct],
+    [void],
+    "nonpayable"
+  >;
 
-  callStatic: {
-    getExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-    setExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  getFunction(
+    nameOrSignature: "getExpiration"
+  ): TypedContractMethod<[tokenId: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "setExpiration"
+  ): TypedContractMethod<
+    [tokenId: BigNumberish, timestamp: BigNumberish, charge: ChargeStruct],
+    [void],
+    "nonpayable"
+  >;
+
+  getEvent(
+    key: "Expiration"
+  ): TypedContractEvent<
+    ExpirationEvent.InputTuple,
+    ExpirationEvent.OutputTuple,
+    ExpirationEvent.OutputObject
+  >;
 
   filters: {
-    "Expiration(uint256,uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      timestamp?: null
-    ): ExpirationEventFilter;
-    Expiration(
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      timestamp?: null
-    ): ExpirationEventFilter;
-  };
-
-  estimateGas: {
-    getExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    setExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    getExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    setExpiration(
-      tokenId: PromiseOrValue<BigNumberish>,
-      timestamp: PromiseOrValue<BigNumberish>,
-      charge: ChargeStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "Expiration(uint256,uint256)": TypedContractEvent<
+      ExpirationEvent.InputTuple,
+      ExpirationEvent.OutputTuple,
+      ExpirationEvent.OutputObject
+    >;
+    Expiration: TypedContractEvent<
+      ExpirationEvent.InputTuple,
+      ExpirationEvent.OutputTuple,
+      ExpirationEvent.OutputObject
+    >;
   };
 }

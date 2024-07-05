@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   IGatewayToken,
   IGatewayTokenInterface,
@@ -532,12 +531,12 @@ const _abi = [
 export class IGatewayToken__factory {
   static readonly abi = _abi;
   static createInterface(): IGatewayTokenInterface {
-    return new utils.Interface(_abi) as IGatewayTokenInterface;
+    return new Interface(_abi) as IGatewayTokenInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): IGatewayToken {
-    return new Contract(address, _abi, signerOrProvider) as IGatewayToken;
+    return new Contract(address, _abi, runner) as unknown as IGatewayToken;
   }
 }

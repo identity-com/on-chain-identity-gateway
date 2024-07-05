@@ -4,50 +4,29 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumber,
   BigNumberish,
   BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PayableOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
   FunctionFragment,
   Result,
+  Interface,
   EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
+  AddressLike,
+  ContractRunner,
+  ContractMethod,
+  Listener,
+} from "ethers";
 import type {
-  TypedEventFilter,
-  TypedEvent,
+  TypedContractEvent,
+  TypedDeferredTopicFilter,
+  TypedEventLog,
+  TypedLogDescription,
   TypedListener,
-  OnEvent,
-  PromiseOrValue,
+  TypedContractMethod,
 } from "../common";
 
-export interface FlagsStorageInterface extends utils.Interface {
-  functions: {
-    "addFlag(bytes32,uint8)": FunctionFragment;
-    "addFlags(bytes32[],uint8[])": FunctionFragment;
-    "flagIndexes(bytes32)": FunctionFragment;
-    "initialize(address)": FunctionFragment;
-    "isFlagSupported(bytes32)": FunctionFragment;
-    "proxiableUUID()": FunctionFragment;
-    "removeFlag(bytes32)": FunctionFragment;
-    "removeFlags(bytes32[])": FunctionFragment;
-    "superAdmin()": FunctionFragment;
-    "supportedFlagsMask()": FunctionFragment;
-    "updateSuperAdmin(address)": FunctionFragment;
-    "upgradeTo(address)": FunctionFragment;
-    "upgradeToAndCall(address,bytes)": FunctionFragment;
-  };
-
+export interface FlagsStorageInterface extends Interface {
   getFunction(
-    nameOrSignatureOrTopic:
+    nameOrSignature:
       | "addFlag"
       | "addFlags"
       | "flagIndexes"
@@ -63,25 +42,36 @@ export interface FlagsStorageInterface extends utils.Interface {
       | "upgradeToAndCall"
   ): FunctionFragment;
 
+  getEvent(
+    nameOrSignatureOrTopic:
+      | "AdminChanged"
+      | "BeaconUpgraded"
+      | "FlagAdded"
+      | "FlagRemoved"
+      | "Initialized"
+      | "SuperAdminUpdated"
+      | "Upgraded"
+  ): EventFragment;
+
   encodeFunctionData(
     functionFragment: "addFlag",
-    values: [PromiseOrValue<BytesLike>, PromiseOrValue<BigNumberish>]
+    values: [BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "addFlags",
-    values: [PromiseOrValue<BytesLike>[], PromiseOrValue<BigNumberish>[]]
+    values: [BytesLike[], BigNumberish[]]
   ): string;
   encodeFunctionData(
     functionFragment: "flagIndexes",
-    values: [PromiseOrValue<BytesLike>]
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isFlagSupported",
-    values: [PromiseOrValue<BytesLike>]
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "proxiableUUID",
@@ -89,11 +79,11 @@ export interface FlagsStorageInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "removeFlag",
-    values: [PromiseOrValue<BytesLike>]
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "removeFlags",
-    values: [PromiseOrValue<BytesLike>[]]
+    values: [BytesLike[]]
   ): string;
   encodeFunctionData(
     functionFragment: "superAdmin",
@@ -105,15 +95,15 @@ export interface FlagsStorageInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "updateSuperAdmin",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "upgradeTo",
-    values: [PromiseOrValue<string>]
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "upgradeToAndCall",
-    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
+    values: [AddressLike, BytesLike]
   ): string;
 
   decodeFunctionResult(functionFragment: "addFlag", data: BytesLike): Result;
@@ -150,469 +140,377 @@ export interface FlagsStorageInterface extends utils.Interface {
     functionFragment: "upgradeToAndCall",
     data: BytesLike
   ): Result;
-
-  events: {
-    "AdminChanged(address,address)": EventFragment;
-    "BeaconUpgraded(address)": EventFragment;
-    "FlagAdded(bytes32,uint8)": EventFragment;
-    "FlagRemoved(bytes32)": EventFragment;
-    "Initialized(uint8)": EventFragment;
-    "SuperAdminUpdated(address,address)": EventFragment;
-    "Upgraded(address)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "FlagAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "FlagRemoved"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SuperAdminUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
 
-export interface AdminChangedEventObject {
-  previousAdmin: string;
-  newAdmin: string;
+export namespace AdminChangedEvent {
+  export type InputTuple = [previousAdmin: AddressLike, newAdmin: AddressLike];
+  export type OutputTuple = [previousAdmin: string, newAdmin: string];
+  export interface OutputObject {
+    previousAdmin: string;
+    newAdmin: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type AdminChangedEvent = TypedEvent<
-  [string, string],
-  AdminChangedEventObject
->;
 
-export type AdminChangedEventFilter = TypedEventFilter<AdminChangedEvent>;
-
-export interface BeaconUpgradedEventObject {
-  beacon: string;
+export namespace BeaconUpgradedEvent {
+  export type InputTuple = [beacon: AddressLike];
+  export type OutputTuple = [beacon: string];
+  export interface OutputObject {
+    beacon: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type BeaconUpgradedEvent = TypedEvent<
-  [string],
-  BeaconUpgradedEventObject
->;
 
-export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
-
-export interface FlagAddedEventObject {
-  flag: string;
-  index: number;
+export namespace FlagAddedEvent {
+  export type InputTuple = [flag: BytesLike, index: BigNumberish];
+  export type OutputTuple = [flag: string, index: bigint];
+  export interface OutputObject {
+    flag: string;
+    index: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type FlagAddedEvent = TypedEvent<[string, number], FlagAddedEventObject>;
 
-export type FlagAddedEventFilter = TypedEventFilter<FlagAddedEvent>;
-
-export interface FlagRemovedEventObject {
-  flag: string;
+export namespace FlagRemovedEvent {
+  export type InputTuple = [flag: BytesLike];
+  export type OutputTuple = [flag: string];
+  export interface OutputObject {
+    flag: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type FlagRemovedEvent = TypedEvent<[string], FlagRemovedEventObject>;
 
-export type FlagRemovedEventFilter = TypedEventFilter<FlagRemovedEvent>;
-
-export interface InitializedEventObject {
-  version: number;
+export namespace InitializedEvent {
+  export type InputTuple = [version: BigNumberish];
+  export type OutputTuple = [version: bigint];
+  export interface OutputObject {
+    version: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
-export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
-
-export interface SuperAdminUpdatedEventObject {
-  prevSuperAdmin: string;
-  superAdmin: string;
+export namespace SuperAdminUpdatedEvent {
+  export type InputTuple = [
+    prevSuperAdmin: AddressLike,
+    superAdmin: AddressLike
+  ];
+  export type OutputTuple = [prevSuperAdmin: string, superAdmin: string];
+  export interface OutputObject {
+    prevSuperAdmin: string;
+    superAdmin: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type SuperAdminUpdatedEvent = TypedEvent<
-  [string, string],
-  SuperAdminUpdatedEventObject
->;
 
-export type SuperAdminUpdatedEventFilter =
-  TypedEventFilter<SuperAdminUpdatedEvent>;
-
-export interface UpgradedEventObject {
-  implementation: string;
+export namespace UpgradedEvent {
+  export type InputTuple = [implementation: AddressLike];
+  export type OutputTuple = [implementation: string];
+  export interface OutputObject {
+    implementation: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
-export type UpgradedEvent = TypedEvent<[string], UpgradedEventObject>;
-
-export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
 export interface FlagsStorage extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  connect(runner?: ContractRunner | null): FlagsStorage;
+  waitForDeployment(): Promise<this>;
 
   interface: FlagsStorageInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
+  queryFilter<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  queryFilter<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    fromBlockOrBlockhash?: string | number | undefined,
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  on<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  on<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-  functions: {
-    addFlag(
-      flag: PromiseOrValue<BytesLike>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  once<TCEvent extends TypedContractEvent>(
+    event: TCEvent,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
+  once<TCEvent extends TypedContractEvent>(
+    filter: TypedDeferredTopicFilter<TCEvent>,
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
-    addFlags(
-      flags: PromiseOrValue<BytesLike>[],
-      indexes: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  listeners<TCEvent extends TypedContractEvent>(
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-    flagIndexes(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<[number]>;
+  addFlag: TypedContractMethod<
+    [flag: BytesLike, index: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-    initialize(
-      _superAdmin: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  addFlags: TypedContractMethod<
+    [flags: BytesLike[], indexes: BigNumberish[]],
+    [void],
+    "nonpayable"
+  >;
 
-    isFlagSupported(
-      flag: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+  flagIndexes: TypedContractMethod<[arg0: BytesLike], [bigint], "view">;
 
-    proxiableUUID(overrides?: CallOverrides): Promise<[string]>;
+  initialize: TypedContractMethod<
+    [_superAdmin: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-    removeFlag(
-      flag: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  isFlagSupported: TypedContractMethod<[flag: BytesLike], [boolean], "view">;
 
-    removeFlags(
-      flags: PromiseOrValue<BytesLike>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  proxiableUUID: TypedContractMethod<[], [string], "view">;
 
-    superAdmin(overrides?: CallOverrides): Promise<[string]>;
+  removeFlag: TypedContractMethod<[flag: BytesLike], [void], "nonpayable">;
 
-    supportedFlagsMask(overrides?: CallOverrides): Promise<[BigNumber]>;
+  removeFlags: TypedContractMethod<[flags: BytesLike[]], [void], "nonpayable">;
 
-    updateSuperAdmin(
-      newSuperAdmin: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  superAdmin: TypedContractMethod<[], [string], "view">;
 
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+  supportedFlagsMask: TypedContractMethod<[], [bigint], "view">;
 
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
+  updateSuperAdmin: TypedContractMethod<
+    [newSuperAdmin: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-  addFlag(
-    flag: PromiseOrValue<BytesLike>,
-    index: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  upgradeTo: TypedContractMethod<
+    [newImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-  addFlags(
-    flags: PromiseOrValue<BytesLike>[],
-    indexes: PromiseOrValue<BigNumberish>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  upgradeToAndCall: TypedContractMethod<
+    [newImplementation: AddressLike, data: BytesLike],
+    [void],
+    "payable"
+  >;
 
-  flagIndexes(
-    arg0: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<number>;
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-  initialize(
-    _superAdmin: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  getFunction(
+    nameOrSignature: "addFlag"
+  ): TypedContractMethod<
+    [flag: BytesLike, index: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "addFlags"
+  ): TypedContractMethod<
+    [flags: BytesLike[], indexes: BigNumberish[]],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "flagIndexes"
+  ): TypedContractMethod<[arg0: BytesLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "initialize"
+  ): TypedContractMethod<[_superAdmin: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "isFlagSupported"
+  ): TypedContractMethod<[flag: BytesLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "proxiableUUID"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "removeFlag"
+  ): TypedContractMethod<[flag: BytesLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "removeFlags"
+  ): TypedContractMethod<[flags: BytesLike[]], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "superAdmin"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "supportedFlagsMask"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "updateSuperAdmin"
+  ): TypedContractMethod<[newSuperAdmin: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "upgradeTo"
+  ): TypedContractMethod<
+    [newImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "upgradeToAndCall"
+  ): TypedContractMethod<
+    [newImplementation: AddressLike, data: BytesLike],
+    [void],
+    "payable"
+  >;
 
-  isFlagSupported(
-    flag: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  proxiableUUID(overrides?: CallOverrides): Promise<string>;
-
-  removeFlag(
-    flag: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  removeFlags(
-    flags: PromiseOrValue<BytesLike>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  superAdmin(overrides?: CallOverrides): Promise<string>;
-
-  supportedFlagsMask(overrides?: CallOverrides): Promise<BigNumber>;
-
-  updateSuperAdmin(
-    newSuperAdmin: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  upgradeTo(
-    newImplementation: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  upgradeToAndCall(
-    newImplementation: PromiseOrValue<string>,
-    data: PromiseOrValue<BytesLike>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  callStatic: {
-    addFlag(
-      flag: PromiseOrValue<BytesLike>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    addFlags(
-      flags: PromiseOrValue<BytesLike>[],
-      indexes: PromiseOrValue<BigNumberish>[],
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    flagIndexes(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<number>;
-
-    initialize(
-      _superAdmin: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    isFlagSupported(
-      flag: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    proxiableUUID(overrides?: CallOverrides): Promise<string>;
-
-    removeFlag(
-      flag: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    removeFlags(
-      flags: PromiseOrValue<BytesLike>[],
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    superAdmin(overrides?: CallOverrides): Promise<string>;
-
-    supportedFlagsMask(overrides?: CallOverrides): Promise<BigNumber>;
-
-    updateSuperAdmin(
-      newSuperAdmin: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+  getEvent(
+    key: "AdminChanged"
+  ): TypedContractEvent<
+    AdminChangedEvent.InputTuple,
+    AdminChangedEvent.OutputTuple,
+    AdminChangedEvent.OutputObject
+  >;
+  getEvent(
+    key: "BeaconUpgraded"
+  ): TypedContractEvent<
+    BeaconUpgradedEvent.InputTuple,
+    BeaconUpgradedEvent.OutputTuple,
+    BeaconUpgradedEvent.OutputObject
+  >;
+  getEvent(
+    key: "FlagAdded"
+  ): TypedContractEvent<
+    FlagAddedEvent.InputTuple,
+    FlagAddedEvent.OutputTuple,
+    FlagAddedEvent.OutputObject
+  >;
+  getEvent(
+    key: "FlagRemoved"
+  ): TypedContractEvent<
+    FlagRemovedEvent.InputTuple,
+    FlagRemovedEvent.OutputTuple,
+    FlagRemovedEvent.OutputObject
+  >;
+  getEvent(
+    key: "Initialized"
+  ): TypedContractEvent<
+    InitializedEvent.InputTuple,
+    InitializedEvent.OutputTuple,
+    InitializedEvent.OutputObject
+  >;
+  getEvent(
+    key: "SuperAdminUpdated"
+  ): TypedContractEvent<
+    SuperAdminUpdatedEvent.InputTuple,
+    SuperAdminUpdatedEvent.OutputTuple,
+    SuperAdminUpdatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "Upgraded"
+  ): TypedContractEvent<
+    UpgradedEvent.InputTuple,
+    UpgradedEvent.OutputTuple,
+    UpgradedEvent.OutputObject
+  >;
 
   filters: {
-    "AdminChanged(address,address)"(
-      previousAdmin?: null,
-      newAdmin?: null
-    ): AdminChangedEventFilter;
-    AdminChanged(
-      previousAdmin?: null,
-      newAdmin?: null
-    ): AdminChangedEventFilter;
+    "AdminChanged(address,address)": TypedContractEvent<
+      AdminChangedEvent.InputTuple,
+      AdminChangedEvent.OutputTuple,
+      AdminChangedEvent.OutputObject
+    >;
+    AdminChanged: TypedContractEvent<
+      AdminChangedEvent.InputTuple,
+      AdminChangedEvent.OutputTuple,
+      AdminChangedEvent.OutputObject
+    >;
 
-    "BeaconUpgraded(address)"(
-      beacon?: PromiseOrValue<string> | null
-    ): BeaconUpgradedEventFilter;
-    BeaconUpgraded(
-      beacon?: PromiseOrValue<string> | null
-    ): BeaconUpgradedEventFilter;
+    "BeaconUpgraded(address)": TypedContractEvent<
+      BeaconUpgradedEvent.InputTuple,
+      BeaconUpgradedEvent.OutputTuple,
+      BeaconUpgradedEvent.OutputObject
+    >;
+    BeaconUpgraded: TypedContractEvent<
+      BeaconUpgradedEvent.InputTuple,
+      BeaconUpgradedEvent.OutputTuple,
+      BeaconUpgradedEvent.OutputObject
+    >;
 
-    "FlagAdded(bytes32,uint8)"(
-      flag?: PromiseOrValue<BytesLike> | null,
-      index?: null
-    ): FlagAddedEventFilter;
-    FlagAdded(
-      flag?: PromiseOrValue<BytesLike> | null,
-      index?: null
-    ): FlagAddedEventFilter;
+    "FlagAdded(bytes32,uint8)": TypedContractEvent<
+      FlagAddedEvent.InputTuple,
+      FlagAddedEvent.OutputTuple,
+      FlagAddedEvent.OutputObject
+    >;
+    FlagAdded: TypedContractEvent<
+      FlagAddedEvent.InputTuple,
+      FlagAddedEvent.OutputTuple,
+      FlagAddedEvent.OutputObject
+    >;
 
-    "FlagRemoved(bytes32)"(
-      flag?: PromiseOrValue<BytesLike> | null
-    ): FlagRemovedEventFilter;
-    FlagRemoved(
-      flag?: PromiseOrValue<BytesLike> | null
-    ): FlagRemovedEventFilter;
+    "FlagRemoved(bytes32)": TypedContractEvent<
+      FlagRemovedEvent.InputTuple,
+      FlagRemovedEvent.OutputTuple,
+      FlagRemovedEvent.OutputObject
+    >;
+    FlagRemoved: TypedContractEvent<
+      FlagRemovedEvent.InputTuple,
+      FlagRemovedEvent.OutputTuple,
+      FlagRemovedEvent.OutputObject
+    >;
 
-    "Initialized(uint8)"(version?: null): InitializedEventFilter;
-    Initialized(version?: null): InitializedEventFilter;
+    "Initialized(uint8)": TypedContractEvent<
+      InitializedEvent.InputTuple,
+      InitializedEvent.OutputTuple,
+      InitializedEvent.OutputObject
+    >;
+    Initialized: TypedContractEvent<
+      InitializedEvent.InputTuple,
+      InitializedEvent.OutputTuple,
+      InitializedEvent.OutputObject
+    >;
 
-    "SuperAdminUpdated(address,address)"(
-      prevSuperAdmin?: PromiseOrValue<string> | null,
-      superAdmin?: PromiseOrValue<string> | null
-    ): SuperAdminUpdatedEventFilter;
-    SuperAdminUpdated(
-      prevSuperAdmin?: PromiseOrValue<string> | null,
-      superAdmin?: PromiseOrValue<string> | null
-    ): SuperAdminUpdatedEventFilter;
+    "SuperAdminUpdated(address,address)": TypedContractEvent<
+      SuperAdminUpdatedEvent.InputTuple,
+      SuperAdminUpdatedEvent.OutputTuple,
+      SuperAdminUpdatedEvent.OutputObject
+    >;
+    SuperAdminUpdated: TypedContractEvent<
+      SuperAdminUpdatedEvent.InputTuple,
+      SuperAdminUpdatedEvent.OutputTuple,
+      SuperAdminUpdatedEvent.OutputObject
+    >;
 
-    "Upgraded(address)"(
-      implementation?: PromiseOrValue<string> | null
-    ): UpgradedEventFilter;
-    Upgraded(
-      implementation?: PromiseOrValue<string> | null
-    ): UpgradedEventFilter;
-  };
-
-  estimateGas: {
-    addFlag(
-      flag: PromiseOrValue<BytesLike>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    addFlags(
-      flags: PromiseOrValue<BytesLike>[],
-      indexes: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    flagIndexes(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    initialize(
-      _superAdmin: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    isFlagSupported(
-      flag: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    proxiableUUID(overrides?: CallOverrides): Promise<BigNumber>;
-
-    removeFlag(
-      flag: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    removeFlags(
-      flags: PromiseOrValue<BytesLike>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    superAdmin(overrides?: CallOverrides): Promise<BigNumber>;
-
-    supportedFlagsMask(overrides?: CallOverrides): Promise<BigNumber>;
-
-    updateSuperAdmin(
-      newSuperAdmin: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    addFlag(
-      flag: PromiseOrValue<BytesLike>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    addFlags(
-      flags: PromiseOrValue<BytesLike>[],
-      indexes: PromiseOrValue<BigNumberish>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    flagIndexes(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    initialize(
-      _superAdmin: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    isFlagSupported(
-      flag: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    proxiableUUID(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    removeFlag(
-      flag: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    removeFlags(
-      flags: PromiseOrValue<BytesLike>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    superAdmin(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    supportedFlagsMask(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    updateSuperAdmin(
-      newSuperAdmin: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    upgradeTo(
-      newImplementation: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    upgradeToAndCall(
-      newImplementation: PromiseOrValue<string>,
-      data: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    "Upgraded(address)": TypedContractEvent<
+      UpgradedEvent.InputTuple,
+      UpgradedEvent.OutputTuple,
+      UpgradedEvent.OutputObject
+    >;
+    Upgraded: TypedContractEvent<
+      UpgradedEvent.InputTuple,
+      UpgradedEvent.OutputTuple,
+      UpgradedEvent.OutputObject
+    >;
   };
 }

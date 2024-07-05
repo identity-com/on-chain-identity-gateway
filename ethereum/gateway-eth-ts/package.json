@@ -31,7 +31,7 @@
     "bignumber.js": "^9.0.1",
     "debug": "^4.3.4",
     "eth-sig-util": "2.1.1",
-    "ethers": "^5.7.2",
+    "ethers": "^6.12.1",
     "gas-price-oracle": "^0.3.3",
     "ramda": "^0.28.0",
     "tslib": "^2.5.0"

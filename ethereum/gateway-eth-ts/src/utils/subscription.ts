@@ -7,9 +7,8 @@ export const onGatewayTokenChange = (
   network: bigint,
   gateway: GatewayTs,
   callback: (gatewayToken: TokenData) => void
-  // eslint-disable-next-line max-params
 ): ReturnType<typeof setInterval> => {
-  const provider = asProvider(gateway.providerOrWallet);
+  const provider = asProvider(gateway.providerOrSigner);
   let block = 0;
   return setInterval(() => {
     // setInterval does not like a promise return value, so we wrap the async function in an IIFE

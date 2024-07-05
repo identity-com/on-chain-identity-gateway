@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
-import type { Provider } from "@ethersproject/providers";
+import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
   ParameterizedAccessControl,
   ParameterizedAccessControlInterface,
@@ -400,16 +399,16 @@ const _abi = [
 export class ParameterizedAccessControl__factory {
   static readonly abi = _abi;
   static createInterface(): ParameterizedAccessControlInterface {
-    return new utils.Interface(_abi) as ParameterizedAccessControlInterface;
+    return new Interface(_abi) as ParameterizedAccessControlInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): ParameterizedAccessControl {
     return new Contract(
       address,
       _abi,
-      signerOrProvider
-    ) as ParameterizedAccessControl;
+      runner
+    ) as unknown as ParameterizedAccessControl;
   }
 }

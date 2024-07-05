@@ -1,8 +1,8 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { getAccounts } from '../scripts/util';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { Contract } from 'ethers';
+import {GatewayToken } from '../typechain-types';
+import { GatewayToken__factory } from '../../gateway-eth-ts/src/contracts/typechain-types';
 
 /**
  * Deploy the base set of gatekeeper networks.
@@ -29,9 +29,8 @@ const networks = {
 
 const addToNetwork = async (
   networkName: string,
-  deployer: SignerWithAddress,
   gatekeeper: string,
-  contract: Contract,
+  contract: GatewayToken,
   slotId: number,
 ) => {
   console.log('Creating NETWORK: ' + networkName + ' with slotId: ' + slotId + ' and gatekeeper: ' + gatekeeper);
@@ -45,9 +44,9 @@ const addToNetwork = async (
         ' (' +
         slotId +
         ') on Gateway Token at ' +
-        contract.address +
+        await contract.getAddress() +
         ' using ' +
-        createNetworkTx.gasUsed.toNumber() +
+        createNetworkTx?.gasUsed.toString() +
         ' gas',
     );
   }
@@ -58,9 +57,9 @@ const addToNetwork = async (
       'added new gatekeeper with ' +
         gatekeeper +
         ' address into Gateway Token at ' +
-        contract.address +
+        await contract.getAddress() +
         ' using ' +
-        addGatekeeperTx.gasUsed.toNumber() +
+        addGatekeeperTx?.gasUsed.toString() +
         ' gas',
     );
   } else console.log(`gatekeeper ${gatekeeper} already in network ${slotId}`);
@@ -81,13 +80,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const deployerSigner = await ethers.getSigner(deployer);
 
   const gatewayToken = await deployments.get('GatewayTokenProxy');
-  const token = (await ethers.getContractAt('GatewayToken', gatewayToken.address)).connect(deployerSigner);
+  const token = GatewayToken__factory.connect(gatewayToken.address, deployerSigner);
 
   for (const [address, slotId] of Object.entries(networks.prod)) {
-    await addToNetwork(address, deployerSigner, prodGatekeeper, token, slotId);
+    await addToNetwork(address, prodGatekeeper, token, slotId);
   }
   for (const [address, slotId] of Object.entries(networks.dev)) {
-    await addToNetwork(address, deployerSigner, devGatekeeper, token, slotId);
+    await addToNetwork(address, devGatekeeper, token, slotId);
   }
 };
 

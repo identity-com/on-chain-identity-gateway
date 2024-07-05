@@ -3,15 +3,19 @@
 /* tslint:disable */
 /* eslint-disable */
 import {
-  Signer,
-  utils,
   Contract,
   ContractFactory,
-  BigNumberish,
-  Overrides,
+  ContractTransactionResponse,
+  Interface,
 } from "ethers";
-import type { Provider, TransactionRequest } from "@ethersproject/providers";
-import type { PromiseOrValue } from "../../../common";
+import type {
+  Signer,
+  BigNumberish,
+  AddressLike,
+  ContractDeployTransaction,
+  ContractRunner,
+} from "ethers";
+import type { NonPayableOverrides } from "../../../common";
 import type {
   GatewayTokenClientTest,
   GatewayTokenClientTestInterface,
@@ -85,48 +89,51 @@ export class GatewayTokenClientTest__factory extends ContractFactory {
     }
   }
 
-  override deploy(
-    gatewayTokenContract: PromiseOrValue<string>,
-    gatekeeperNetwork: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<GatewayTokenClientTest> {
-    return super.deploy(
-      gatewayTokenContract,
-      gatekeeperNetwork,
-      overrides || {}
-    ) as Promise<GatewayTokenClientTest>;
-  }
   override getDeployTransaction(
-    gatewayTokenContract: PromiseOrValue<string>,
-    gatekeeperNetwork: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): TransactionRequest {
+    gatewayTokenContract: AddressLike,
+    gatekeeperNetwork: BigNumberish,
+    overrides?: NonPayableOverrides & { from?: string }
+  ): Promise<ContractDeployTransaction> {
     return super.getDeployTransaction(
       gatewayTokenContract,
       gatekeeperNetwork,
       overrides || {}
     );
   }
-  override attach(address: string): GatewayTokenClientTest {
-    return super.attach(address) as GatewayTokenClientTest;
+  override deploy(
+    gatewayTokenContract: AddressLike,
+    gatekeeperNetwork: BigNumberish,
+    overrides?: NonPayableOverrides & { from?: string }
+  ) {
+    return super.deploy(
+      gatewayTokenContract,
+      gatekeeperNetwork,
+      overrides || {}
+    ) as Promise<
+      GatewayTokenClientTest & {
+        deploymentTransaction(): ContractTransactionResponse;
+      }
+    >;
   }
-  override connect(signer: Signer): GatewayTokenClientTest__factory {
-    return super.connect(signer) as GatewayTokenClientTest__factory;
+  override connect(
+    runner: ContractRunner | null
+  ): GatewayTokenClientTest__factory {
+    return super.connect(runner) as GatewayTokenClientTest__factory;
   }
 
   static readonly bytecode = _bytecode;
   static readonly abi = _abi;
   static createInterface(): GatewayTokenClientTestInterface {
-    return new utils.Interface(_abi) as GatewayTokenClientTestInterface;
+    return new Interface(_abi) as GatewayTokenClientTestInterface;
   }
   static connect(
     address: string,
-    signerOrProvider: Signer | Provider
+    runner?: ContractRunner | null
   ): GatewayTokenClientTest {
     return new Contract(
       address,
       _abi,
-      signerOrProvider
-    ) as GatewayTokenClientTest;
+      runner
+    ) as unknown as GatewayTokenClientTest;
   }
 }
