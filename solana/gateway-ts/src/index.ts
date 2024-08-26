@@ -46,10 +46,11 @@ export * from "./lib/AssignablePublicKey";
 export const findGatewayTokens = async (
   connection: Connection,
   owner: PublicKey | undefined,
-  gatekeeperNetwork: PublicKey,
+  gatekeeperNetwork?: PublicKey,
   includeRevoked = false,
   page?: number,
 ): Promise<GatewayToken[]> => {
+  if (!owner && !gatekeeperNetwork) return [];
   // if owner is specified, filter on the gateway token owner
   const ownerFilter = owner
     ? {
@@ -61,18 +62,18 @@ export const findGatewayTokens = async (
     : undefined;
 
   // filter on the gatekeeper network
-  const gatekeeperNetworkFilter = {
+  const gatekeeperNetworkFilter = gatekeeperNetwork ? {
     memcmp: {
       offset: GATEWAY_TOKEN_ACCOUNT_GATEKEEPER_NETWORK_FIELD_OFFSET,
       bytes: gatekeeperNetwork.toBase58(),
     },
-  };
+  } : undefined;
 
   const pageFilter =
     page !== undefined
       ? {
           memcmp: {
-            offset: GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET,
+            offset: gatekeeperNetwork ? GATEWAY_TOKEN_ACCOUNT_OWNER_FIELD_OFFSET : GATEWAY_TOKEN_ACCOUNT_GATEKEEPER_NETWORK_FIELD_OFFSET,
             bytes: encode([page]),
           },
         }
